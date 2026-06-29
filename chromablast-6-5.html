@@ -145,6 +145,28 @@ body {
 .cell.filled { border: none; }
 .cell.pop-line  { animation: popLine  0.35s ease forwards; }
 .cell.pop-color { animation: popColor 0.45s ease forwards; }
+.cell.thorn-cell {
+  position: relative;
+}
+.cell.thorn-cell::after {
+  content: '🌿';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  line-height: 44px;
+  text-align: center;
+  background:
+    repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(0,80,0,0.35) 3px, rgba(0,80,0,0.35) 4px),
+    repeating-linear-gradient(-45deg, transparent, transparent 3px, rgba(0,100,0,0.25) 3px, rgba(0,100,0,0.25) 4px);
+  border: 2px solid #2d5a1b;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: inset 0 0 6px rgba(0,60,0,0.5);
+  z-index: 2;
+}
 @keyframes popLine {
   0%  { transform:scale(1); filter:brightness(1); }
   30% { transform:scale(1.25); filter:brightness(2); }
@@ -623,6 +645,14 @@ let consecutiveBursts = 0; // counts chain explosions toward unlock
 let awaitingSecretUnlock=true;  // mở map ẩn 1 khi đạt TEST_UNLOCK_SCORE điểm từ map thường
 let secretUnlockBaseline=0;     // mốc điểm lúc bắt đầu đếm
 
+// Thorn vine difficulty state (activates after returning from Map ẩn 5)
+let thornMode = false;
+let thornPlacementCount = 0;
+let thornWave = 0;
+let thornThreshold = 6;
+let thornCells = new Set();
+let cellBurstCount = {};
+
 // Mode B state
 let secretBoard = [];        // 8x8 color indices
 let secretMode = false;
@@ -751,7 +781,7 @@ function getSC(r,c){ return document.querySelector(`#secret-grid [data-r="${r}"]
 /* ══════════════════════════════════════════
    MODE A — MAIN GAME
 ══════════════════════════════════════════ */
-function initBoard(){ board=Array.from({length:ROWS},()=>Array(COLS).fill(null)); }
+function initBoard(){ board=Array.from({length:ROWS},()=>Array(COLS).fill(null)); thornMode=false; thornCells=new Set(); cellBurstCount={}; thornPlacementCount=0; thornWave=0; thornThreshold=6; }
 function makePiece(){ return {shape:SHAPES[rnd(SHAPES.length)], color:rndColor(), used:false}; }
 function refillPieces(){ pieces=[makePiece(),makePiece(),makePiece()]; selected=null; }
 
@@ -784,7 +814,8 @@ function renderGrid(){
   grid.innerHTML='';
   for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
     const cell=document.createElement('div');
-    cell.className='cell'+(board[r][c]?' filled':'');
+    const thornKey=`${r},${c}`;
+    cell.className='cell'+(board[r][c]?' filled':'')+(thornCells.has(thornKey)?' thorn-cell':'');
     if(board[r][c]) cell.style.background=board[r][c];
     cell.dataset.r=r; cell.dataset.c=c;
     cell.addEventListener('click', onCellClick);
@@ -896,6 +927,15 @@ function placeAt(R,C){
   piece.used=true;
   sfxPlacePiece();
   endDrag();                 // xoá chọn + ghost + preview
+  if(thornMode){
+    thornPlacementCount++;
+    if(thornPlacementCount>=thornThreshold){
+      thornPlacementCount=0;
+      thornWave++;
+      thornThreshold=Math.max(3,6-thornWave);
+      spawnThorns();
+    }
+  }
   renderGrid(); renderPieces();
   setTimeout(()=>processClears(), 90);
   return true;
@@ -1004,12 +1044,13 @@ function processClears(){
     const color=board[r][c];
     const key=`${r},${c}`;
     if(!color || seen.has(key)) continue;
+    if(thornCells.has(key)){ seen.add(key); continue; } // thorn cell cannot start or join a burst
     const comp=[[r,c]]; const q=[[r,c]]; seen.add(key);   // BFS cụm cùng màu liền kề
     while(q.length){
       const [cr,cc]=q.shift();
       for(const [dr,dc] of [[-1,0],[1,0],[0,-1],[0,1]]){
         const nr=cr+dr, nc=cc+dc, nk=`${nr},${nc}`;
-        if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&!seen.has(nk)&&board[nr][nc]===color){
+        if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&!seen.has(nk)&&board[nr][nc]===color&&!thornCells.has(nk)){
           seen.add(nk); q.push([nr,nc]); comp.push([nr,nc]);
         }
       }
@@ -1065,6 +1106,15 @@ function processClears(){
     totalKeys.forEach(key=>{
       const [r,c]=key.split(',').map(Number);
       board[r][c]=null;
+      // Track burst history and remove adjacent thorns
+      if(thornMode){
+        cellBurstCount[key]=(cellBurstCount[key]||0)+1;
+        thornCells.delete(key); // cleared cells are no longer thorned
+        for(const [dr,dc] of [[-1,0],[1,0],[0,-1],[0,1]]){
+          const nk=`${r+dr},${c+dc}`;
+          if(thornCells.has(nk)) thornCells.delete(nk);
+        }
+      }
     });
     renderGrid();
 
@@ -1075,6 +1125,25 @@ function processClears(){
       setTimeout(()=>processClears(), 100);
     }
   }, waitTime);
+}
+
+/* 🌿 Thorn vine difficulty mechanic */
+function spawnThorns(){
+  let newThorns=0;
+  for(let r=0;r<ROWS;r++){
+    for(let c=0;c<COLS;c++){
+      const key=`${r},${c}`;
+      if(!cellBurstCount[key] && board[r][c]!==null && !thornCells.has(key)){
+        thornCells.add(key);
+        newThorns++;
+      }
+    }
+  }
+  renderGrid();
+  if(newThorns>0){
+    const msg='🌿 Dây gai xuất hiện! ('+newThorns+' ô bị phong toả)';
+    showComboFlash(0,false,msg);
+  }
 }
 
 /* 🎆 Hiệu ứng pháo hoa viền + tia lấp lánh cho map thường */
@@ -4229,6 +4298,10 @@ function exitGoldToMain(){
   consecutiveBursts=0; updateBurstCount();
   document.getElementById('hint-bar').textContent='Chạm khối → ghost hiện · Di ngón → ghost bám · Thả trên ô → đặt · Thả vùng trống → xoay';
   goldWave=1;
+  // Activate thorn vine difficulty after returning from Map ẩn 5
+  thornMode=true; thornPlacementCount=0; thornWave=0; thornThreshold=6;
+  thornCells=new Set(); cellBurstCount={};
+  setTimeout(()=>showComboFlash(0,false,'🌿 Chế độ khó: Dây gai xuất hiện!'), 600);
   renderPieces(); checkGameOverA();
 }
 
