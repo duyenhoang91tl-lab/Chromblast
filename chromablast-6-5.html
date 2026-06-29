@@ -36,21 +36,14 @@ body {
   position: relative; border-radius: 14px; overflow: hidden;
   transition: box-shadow 0.4s;
 }
-/* Khung map ẩn: viền neon rực rỡ */
+/* Khung map ẩn: viền sparkler đơn giản */
 #grid-wrap.secret-mode {
-  box-shadow:
-    0 0 0 4px #f7c948,
-    0 0 0 8px rgba(247,201,72,0.6),
-    0 0 0 14px rgba(247,201,72,0.25),
-    0 0 30px rgba(247,201,72,0.5),
-    0 0 70px rgba(247,201,72,0.3),
-    0 0 130px rgba(247,201,72,0.15);
-  animation: scFrameGlow 1.6s ease-in-out infinite;
+  box-shadow: 0 0 0 3px #ffd700, 0 0 12px rgba(255,215,0,0.5);
+  animation: scFrameGlow 1.2s ease-in-out infinite;
 }
 @keyframes scFrameGlow {
-  0%   { box-shadow: 0 0 0 4px #f7c948, 0 0 0 8px rgba(247,201,72,0.55), 0 0 0 14px rgba(247,201,72,0.22), 0 0 28px rgba(247,201,72,0.45), 0 0 65px rgba(247,201,72,0.28), 0 0 120px rgba(247,201,72,0.12); }
-  50%  { box-shadow: 0 0 0 5px #ffe566, 0 0 0 10px rgba(255,229,102,0.7), 0 0 0 18px rgba(255,229,102,0.28), 0 0 50px rgba(255,229,102,0.65), 0 0 100px rgba(255,200,50,0.4), 0 0 180px rgba(255,160,30,0.2); }
-  100% { box-shadow: 0 0 0 4px #f7c948, 0 0 0 8px rgba(247,201,72,0.55), 0 0 0 14px rgba(247,201,72,0.22), 0 0 28px rgba(247,201,72,0.45), 0 0 65px rgba(247,201,72,0.28), 0 0 120px rgba(247,201,72,0.12); }
+  0%,100% { box-shadow: 0 0 0 3px #ffd700, 0 0 10px rgba(255,215,0,0.4); }
+  50%     { box-shadow: 0 0 0 4px #ffe566, 0 0 20px rgba(255,229,102,0.6); }
 }
 /* Ultra mode */
 #grid-wrap.ultra-glow {
@@ -120,19 +113,20 @@ body {
 }
 .cb-spark {
   position: absolute;
-  width: var(--len,14px); height: 3px; margin-top: -1.5px;
-  border-radius: 3px;
-  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, var(--col,#ffd24a) 50%, #fff 100%);
-  transform-origin: left center;
-  filter: drop-shadow(0 0 4px var(--col,#ffd24a));
+  width: var(--len, 4px);
+  height: 2px;
+  background: var(--col, #fff);
+  border-radius: 50%;
+  transform-origin: 0 50%;
+  pointer-events: none;
   opacity: 0;
-  animation: cbSparkFly var(--dur,0.7s) ease-out forwards;
+  filter: blur(0.5px) brightness(2);
+  animation: cbSparkFly var(--dur, 0.25s) ease-out forwards;
 }
 @keyframes cbSparkFly {
-  0%   { opacity: 0; transform: rotate(var(--ang)) translateX(0) scaleX(0.3); }
-  12%  { opacity: 1; }
-  60%  { opacity: 0.9; }
-  100% { opacity: 0; transform: rotate(var(--ang)) translateX(var(--dist)) scaleX(1.2); }
+  0%   { opacity: 1; transform: rotate(var(--ang)) translateX(0); }
+  50%  { opacity: 1; }
+  100% { opacity: 0; transform: rotate(var(--ang)) translateX(var(--dist)); }
 }
 
 /* ── MAIN GRID (mode A) ── */
@@ -166,7 +160,7 @@ body {
 #secret-grid {
   display: none; grid-template-columns: repeat(8, 44px);
   gap: 3px; background: #0a0a1a; border-radius: 14px; padding: 10px;
-  position: relative;
+  position: relative; margin: 0 auto;
 }
 #secret-grid.active { display: grid; }
 
@@ -1184,7 +1178,7 @@ function enterSecretMode(){
   borderSparkInterval = setInterval(()=>{
     if(!secretMode){ clearInterval(borderSparkInterval); borderSparkInterval=null; return; }
     spawnContinuousBorderSparks();
-  }, 180);
+  }, 60);
 
   initSecretBoard();
   renderSecretGrid();
@@ -1318,9 +1312,9 @@ function spawnContinuousBorderSparks(){
   if(!wrap||!cbDiv) return;
   const W=wrap.clientWidth, H=wrap.clientHeight;
   const streakColors=secretUltra
-    ? ['#ff4444','#ff9900','#00e5ff','#cc44ff','#44ff88','#ffe566']
-    : ['#f7c948','#ffe566','#fff0a8','#ffb830','#ffffff','#ffd24a'];
-  const n = secretUltra ? 6 : 3;
+    ? ['#ffffff','#fffde0','#ffd700','#ffec5c','#fff5a0','#ffcc00']
+    : ['#ffffff','#fffde0','#ffd700','#ffec5c','#fff5a0','#ffcc00'];
+  const n = secretUltra ? 16 : 8;
   for(let i=0;i<n;i++){
     const side=Math.floor(Math.random()*4);
     const t=Math.random();
@@ -1329,10 +1323,10 @@ function spawnContinuousBorderSparks(){
     else if(side===1){ x=W-2; y=t*H; ang=0;   }
     else if(side===2){ x=t*W; y=H-2; ang=90;  }
     else             { x=2;   y=t*H; ang=180; }
-    ang += Math.random()*60-30;
-    const dist=30+Math.random()*55;
-    const len=10+Math.random()*22;
-    const dur=300+Math.random()*280;
+    ang += Math.random()*120-60;
+    const dist=20+Math.random()*50;
+    const len=3+Math.random()*5;
+    const dur=120+Math.random()*200;
     const col=streakColors[(Math.random()*streakColors.length)|0];
     const s=document.createElement('div');
     s.className='cb-spark';
