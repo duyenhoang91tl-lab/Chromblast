@@ -133,23 +133,29 @@ body {
 /* ══════════════ FIRE BORDER — Map ẩn 1 combo ══════════════ */
 .fire-particle {
   position: absolute;
-  border-radius: 50% 50% 30% 30%;
+  border-radius: 50% 40% 50% 40% / 60% 60% 40% 40%;
   pointer-events: none;
   transform-origin: 50% 100%;
-  animation: fireRise var(--fdur, 0.7s) ease-out forwards;
+  animation: fireRise var(--fdur, 0.6s) cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
   z-index: 15;
+  mix-blend-mode: screen;
 }
 @keyframes fireRise {
-  0%   { opacity: 1;   transform: scaleX(1) scaleY(1) translateY(0) rotate(var(--frot,0deg)); }
-  40%  { opacity: 0.9; transform: scaleX(0.85) scaleY(1.3) translateY(calc(var(--fdy)*0.4)) rotate(calc(var(--frot,0deg)*1.2)); }
-  100% { opacity: 0;   transform: scaleX(0.4) scaleY(0.3) translateY(var(--fdy)) rotate(calc(var(--frot,0deg)*2)); }
+  0%   { opacity: 0.9; transform: scaleX(1) scaleY(1) translateY(0) translateX(0) rotate(var(--frot,0deg)); filter: blur(0.5px) brightness(2.5); }
+  30%  { opacity: 1;   transform: scaleX(0.8) scaleY(1.4) translateY(calc(var(--fdy)*0.35)) translateX(calc(var(--fdx,0px)*0.3)) rotate(calc(var(--frot,0deg)*0.8)); filter: blur(1px) brightness(2); }
+  70%  { opacity: 0.7; transform: scaleX(0.5) scaleY(1.1) translateY(calc(var(--fdy)*0.75)) translateX(var(--fdx,0px)) rotate(calc(var(--frot,0deg)*1.5)); filter: blur(2px) brightness(1.5); }
+  100% { opacity: 0;   transform: scaleX(0.2) scaleY(0.5) translateY(var(--fdy)) translateX(calc(var(--fdx,0px)*1.5)) rotate(calc(var(--frot,0deg)*2.5)); filter: blur(3px) brightness(1); }
 }
-
-#grid-wrap.fire-low  { box-shadow: 0 0 0 3px #ffd700, 0 0 18px rgba(255,100,0,0.6), 0 0 40px rgba(255,60,0,0.3) !important; }
-#grid-wrap.fire-high { box-shadow: 0 0 0 4px #fff0a0, 0 0 30px rgba(255,200,0,0.9), 0 0 70px rgba(255,120,0,0.6), 0 0 120px rgba(255,60,0,0.3) !important; animation: fireHighPulse 0.4s ease-in-out infinite !important; }
+#grid-wrap.fire-low {
+  box-shadow: 0 0 0 3px #ff6600, 0 0 15px rgba(255,100,0,0.7), 0 0 35px rgba(255,50,0,0.4) !important;
+}
+#grid-wrap.fire-high {
+  box-shadow: 0 0 0 5px #fff0a0, 0 0 25px rgba(255,220,0,1), 0 0 60px rgba(255,140,0,0.7), 0 0 100px rgba(255,60,0,0.4) !important;
+  animation: fireHighPulse 0.3s ease-in-out infinite !important;
+}
 @keyframes fireHighPulse {
-  0%,100% { box-shadow: 0 0 0 4px #fff0a0, 0 0 28px rgba(255,200,0,0.85), 0 0 65px rgba(255,140,0,0.55), 0 0 110px rgba(255,60,0,0.28); }
-  50%     { box-shadow: 0 0 0 6px #ffffff, 0 0 45px rgba(255,230,100,1),   0 0 90px rgba(255,180,0,0.75), 0 0 160px rgba(255,80,0,0.4); }
+  0%,100% { box-shadow: 0 0 0 4px #ffdd00, 0 0 22px rgba(255,200,0,0.9), 0 0 55px rgba(255,120,0,0.6), 0 0 100px rgba(255,50,0,0.3); }
+  50%     { box-shadow: 0 0 0 7px #ffffff, 0 0 40px rgba(255,240,100,1),  0 0 85px rgba(255,180,0,0.8), 0 0 150px rgba(255,80,0,0.45); }
 }
 
 /* ── MAIN GRID (mode A) ── */
@@ -1582,6 +1588,8 @@ function spawnFireBorder(ultra){
     f.style.filter = ultra ? 'blur(1px) brightness(2)' : 'blur(1.5px) brightness(1.4)';
     f.style.setProperty('--fdur', dur+'s');
     f.style.setProperty('--fdy', outward+'px');
+    const fdx = (Math.random()*20-10)+'px';
+    f.style.setProperty('--fdx', fdx);
     f.style.setProperty('--frot', frot);
     cbDiv.appendChild(f);
     setTimeout(()=>f.remove(), dur*1000+80);
@@ -2880,6 +2888,8 @@ FCV().addEventListener('pointercancel', fruitPointerUp);
 let beeMode=false, beeRAF=null, beeLast=0, beeElapsed=0, beeSpawnTimer=0;
 let bees=[], fences=[], dog=null, popFx=[];
 let dogStung=false, dogStungTimer=0;
+let dogImg=null; // pre-rendered SVG chibi Samoyed
+const dogSVGW=140, dogSVGH=160;
 let beeCombo=0, beeComboTimer=0;
 let drawingFence=false, lastFencePt=null;
 const FENCE_LIFETIME = 6000; // ms — dây phai sau khoảng thời gian này, buộc người chơi vẽ lại
@@ -2925,6 +2935,7 @@ function initBee(){
   beeElapsed=0; beeSpawnTimer=0;
   dogStung=false; dogStungTimer=0;
   drawingFence=false; lastFencePt=null;
+  if(!dogImg) buildDogSVG();
 }
 
 function beeDiff(){
@@ -3238,6 +3249,131 @@ function drawBee(ctx,W,H,now){
   ctx.restore();
 }
 
+function buildDogSVG(){
+  const svgStr = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 160" width="140" height="160">
+  <defs>
+    <radialGradient id="dogBodyG" cx="45%" cy="35%" r="62%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="70%" stop-color="#f5f2ea"/>
+      <stop offset="100%" stop-color="#e8e0d0"/>
+    </radialGradient>
+    <radialGradient id="dogHeadG" cx="40%" cy="32%" r="60%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="65%" stop-color="#f8f5ef"/>
+      <stop offset="100%" stop-color="#ede5d8"/>
+    </radialGradient>
+    <filter id="dogDs">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="rgba(0,0,0,0.2)"/>
+    </filter>
+    <filter id="dogSoft">
+      <feGaussianBlur stdDeviation="1.5"/>
+    </filter>
+  </defs>
+
+  <!-- TAIL — big fluffy curl at back right -->
+  <circle cx="108" cy="108" r="18" fill="#f0ece0" filter="url(#dogDs)"/>
+  <circle cx="117" cy="98" r="14" fill="#f3efe5"/>
+  <circle cx="120" cy="88" r="11" fill="#f5f1e8"/>
+  <circle cx="118" cy="79" r="9" fill="#f7f4ec"/>
+  <circle cx="113" cy="72" r="8" fill="#f9f6f0"/>
+  <circle cx="107" cy="70" r="7" fill="#faf8f4"/>
+  <!-- tail fluff overlay -->
+  <circle cx="112" cy="96" r="10" fill="white" opacity="0.6"/>
+  <circle cx="118" cy="84" r="7" fill="white" opacity="0.5"/>
+  <circle cx="116" cy="74" r="6" fill="white" opacity="0.5"/>
+
+  <!-- BODY — big round fluffy -->
+  <ellipse cx="68" cy="108" rx="44" ry="40" fill="url(#dogBodyG)" filter="url(#dogDs)"/>
+  <!-- body fur puffs -->
+  <circle cx="32" cy="105" r="16" fill="#f5f2ea" opacity="0.8"/>
+  <circle cx="38" cy="120" r="13" fill="#f7f4ee" opacity="0.7"/>
+  <circle cx="104" cy="105" r="16" fill="#f5f2ea" opacity="0.8"/>
+  <circle cx="98" cy="120" r="13" fill="#f7f4ee" opacity="0.7"/>
+  <circle cx="68" cy="140" r="14" fill="#f5f2ea" opacity="0.7"/>
+  <circle cx="54" cy="138" r="11" fill="#f7f4ee" opacity="0.65"/>
+  <circle cx="82" cy="138" r="11" fill="#f7f4ee" opacity="0.65"/>
+  <!-- chest tuft -->
+  <circle cx="68" cy="92" r="18" fill="white" opacity="0.75"/>
+  <circle cx="58" cy="96" r="13" fill="white" opacity="0.6"/>
+  <circle cx="78" cy="96" r="13" fill="white" opacity="0.6"/>
+
+  <!-- PAWS -->
+  <ellipse cx="46" cy="148" rx="16" ry="10" fill="#f0ece2" filter="url(#dogDs)"/>
+  <ellipse cx="90" cy="148" rx="16" ry="10" fill="#f0ece2" filter="url(#dogDs)"/>
+  <!-- paw toes -->
+  <circle cx="38" cy="151" r="5" fill="#e8e2d4"/>
+  <circle cx="46" cy="154" r="5" fill="#e8e2d4"/>
+  <circle cx="54" cy="151" r="5" fill="#e8e2d4"/>
+  <circle cx="82" cy="151" r="5" fill="#e8e2d4"/>
+  <circle cx="90" cy="154" r="5" fill="#e8e2d4"/>
+  <circle cx="98" cy="151" r="5" fill="#e8e2d4"/>
+
+  <!-- HEAD — big round chibi -->
+  <circle cx="68" cy="55" r="38" fill="url(#dogHeadG)" filter="url(#dogDs)"/>
+
+  <!-- FLUFFY FUR around face -->
+  <circle cx="30" cy="48" r="16" fill="#f8f5ef" opacity="0.9"/>
+  <circle cx="28" cy="62" r="14" fill="#f9f6f1" opacity="0.85"/>
+  <circle cx="106" cy="48" r="16" fill="#f8f5ef" opacity="0.9"/>
+  <circle cx="108" cy="62" r="14" fill="#f9f6f1" opacity="0.85"/>
+  <circle cx="40" cy="30" r="13" fill="#faf7f2" opacity="0.8"/>
+  <circle cx="96" cy="30" r="13" fill="#faf7f2" opacity="0.8"/>
+  <circle cx="58" cy="22" r="12" fill="#faf8f4" opacity="0.75"/>
+  <circle cx="78" cy="22" r="12" fill="#faf8f4" opacity="0.75"/>
+  <circle cx="68" cy="18" r="11" fill="#ffffff" opacity="0.7"/>
+
+  <!-- EARS — fluffy rounded triangles -->
+  <ellipse cx="38" cy="22" rx="16" ry="20" transform="rotate(-20,38,22)" fill="#f5f1e8" filter="url(#dogDs)"/>
+  <ellipse cx="98" cy="22" rx="16" ry="20" transform="rotate(20,98,22)" fill="#f5f1e8" filter="url(#dogDs)"/>
+  <!-- ear inner pink -->
+  <ellipse cx="38" cy="24" rx="9" ry="12" transform="rotate(-20,38,24)" fill="#ffc8c8" opacity="0.55"/>
+  <ellipse cx="98" cy="24" rx="9" ry="12" transform="rotate(20,98,24)" fill="#ffc8c8" opacity="0.55"/>
+  <!-- ear fur puffs -->
+  <circle cx="33" cy="16" r="8" fill="white" opacity="0.6"/>
+  <circle cx="103" cy="16" r="8" fill="white" opacity="0.6"/>
+
+  <!-- EYES — big round black with warm iris -->
+  <circle cx="52" cy="52" r="13" fill="white"/>
+  <circle cx="84" cy="52" r="13" fill="white"/>
+  <!-- iris warm brown -->
+  <circle cx="52" cy="53" r="10" fill="#6b3d1a"/>
+  <circle cx="84" cy="53" r="10" fill="#6b3d1a"/>
+  <!-- pupil -->
+  <circle cx="52" cy="54" r="7" fill="#0d0805"/>
+  <circle cx="84" cy="54" r="7" fill="#0d0805"/>
+  <!-- big shine -->
+  <circle cx="57" cy="47" r="4.5" fill="white"/>
+  <circle cx="89" cy="47" r="4.5" fill="white"/>
+  <!-- small shine -->
+  <circle cx="46" cy="55" r="2" fill="rgba(255,255,255,0.7)"/>
+  <circle cx="78" cy="55" r="2" fill="rgba(255,255,255,0.7)"/>
+  <!-- eye ring -->
+  <circle cx="52" cy="52" r="13" fill="none" stroke="#c8a888" stroke-width="1.2" opacity="0.4"/>
+  <circle cx="84" cy="52" r="13" fill="none" stroke="#c8a888" stroke-width="1.2" opacity="0.4"/>
+
+  <!-- NOSE — small pink oval -->
+  <ellipse cx="68" cy="67" rx="7" ry="4.5" fill="#ff9eb5"/>
+  <ellipse cx="66" cy="65.5" rx="3" ry="1.8" fill="#ffccd8" opacity="0.75"/>
+  <!-- nose shine -->
+  <ellipse cx="65" cy="66" rx="2.5" ry="1.5" fill="white" opacity="0.4"/>
+
+  <!-- MOUTH — cute smile arc -->
+  <path d="M62 71 Q68 77 74 71" stroke="#e07090" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+  <!-- CHEEKS — rosy blush -->
+  <ellipse cx="42" cy="63" rx="13" ry="8" fill="rgba(255,150,170,0.28)"/>
+  <ellipse cx="94" cy="63" rx="13" ry="8" fill="rgba(255,150,170,0.28)"/>
+
+  <!-- head top shine -->
+  <ellipse cx="56" cy="36" rx="18" ry="11" fill="white" opacity="0.22" transform="rotate(-15,56,36)"/>
+</svg>`;
+  const blob = new Blob([svgStr], {type:'image/svg+xml'});
+  const url = URL.createObjectURL(blob);
+  const img = new Image();
+  img.src = url;
+  dogImg = img;
+}
+
 function drawDog(ctx,cx,cy,r,now){
   const stung = dogStung;
   const stungFlash = stung ? Math.sin(dogStungTimer * 0.025) * 0.5 + 0.5 : 0;
@@ -3294,61 +3430,42 @@ function drawDog(ctx,cx,cy,r,now){
     ctx.beginPath(); ctx.arc(cx,cy,bR,0,Math.PI*2); ctx.fill();
   }
 
-  // outer fluffy glow
-  const glow=ctx.createRadialGradient(cx,cy,r*0.5,cx,cy,r*1.35);
-  glow.addColorStop(0,'rgba(255,250,240,0)'); glow.addColorStop(1,'rgba(255,240,200,0.18)');
-  ctx.fillStyle=glow; ctx.beginPath(); ctx.arc(cx,cy,r*1.35,0,Math.PI*2); ctx.fill();
+  // ── chibi Samoyed SVG body ──
+  if(!dogImg) buildDogSVG();
+  const dogDrawW = r * 2.4, dogDrawH = r * 2.75;
+  if(dogImg && dogImg.complete && dogImg.naturalWidth > 0){
+    if(stung){
+      ctx.save(); ctx.globalAlpha=0.88;
+      ctx.filter='saturate(0.5) hue-rotate(-10deg)';
+      ctx.drawImage(dogImg, cx - dogDrawW/2, cy - dogDrawH*0.55, dogDrawW, dogDrawH);
+      ctx.restore();
+    } else {
+      ctx.drawImage(dogImg, cx - dogDrawW/2, cy - dogDrawH*0.55, dogDrawW, dogDrawH);
+    }
+  }
 
-  // fluffy fur puffs
-  ctx.fillStyle=stung?'#f4dede':'#f7f2e8';
-  const puffs=[[cx-r*0.7,cy+r*0.1,r*0.3],[cx+r*0.7,cy+r*0.1,r*0.3],[cx-r*0.55,cy-r*0.4,r*0.25],[cx+r*0.55,cy-r*0.4,r*0.25],[cx,cy+r*0.75,r*0.28],[cx-r*0.3,cy+r*0.8,r*0.22],[cx+r*0.3,cy+r*0.8,r*0.22]];
-  puffs.forEach(([px,py,pr])=>{ ctx.beginPath(); ctx.arc(px,py,pr,0,Math.PI*2); ctx.fill(); });
-
-  // main body
-  const bg2=ctx.createRadialGradient(cx-4,cy-2,4,cx,cy+4,r*0.85);
-  if(stung){ bg2.addColorStop(0,'#fff0f0'); bg2.addColorStop(1,'#f0d8d8'); }
-  else { bg2.addColorStop(0,'#fffff8'); bg2.addColorStop(1,'#f0ebe0'); }
-  ctx.fillStyle=bg2; ctx.beginPath(); ctx.arc(cx,cy+r*0.1,r*0.72,0,Math.PI*2); ctx.fill();
-
-  // ears
-  ctx.fillStyle=stung?'#e8ccc0':'#ede5d0';
-  [[cx-r*0.52,cy-r*0.52,-0.4],[cx+r*0.52,cy-r*0.52,0.4]].forEach(([ex,ey,rot])=>{
-    ctx.save(); ctx.translate(ex,ey); ctx.rotate(rot);
-    ctx.beginPath(); ctx.ellipse(0,0,r*0.22,r*0.3,0,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle='rgba(255,180,160,0.45)';
-    ctx.beginPath(); ctx.ellipse(0,2,r*0.12,r*0.18,0,0,Math.PI*2); ctx.fill();
-    ctx.restore(); ctx.fillStyle=stung?'#e8ccc0':'#ede5d0';
-  });
-
-  // face
-  const hr=r*0.58;
-  const hg=ctx.createRadialGradient(cx-3,cy-r*0.2,2,cx,cy-r*0.15,hr);
-  if(stung){ hg.addColorStop(0,'#fff0f0'); hg.addColorStop(1,'#f5e8e4'); }
-  else { hg.addColorStop(0,'#fffff8'); hg.addColorStop(1,'#f5f0e8'); }
-  ctx.fillStyle=hg; ctx.beginPath(); ctx.arc(cx,cy-r*0.15,hr,0,Math.PI*2); ctx.fill();
+  // face center reference (SVG head center mapped to canvas coords)
+  const fcy = cy - r*0.57; // adjusted for SVG dog head position
 
   if(stung){
-    // ── STUNG EXPRESSION — annoyed/hurt ──
+    // ── STUNG EXPRESSION overlay — annoyed/hurt ──
     // angry furrowed brows
     ctx.strokeStyle='#7a3a20'; ctx.lineWidth=3; ctx.lineCap='round';
-    // left brow angled down-inward
     ctx.beginPath();
-    ctx.moveTo(cx-r*0.44,cy-r*0.38);
-    ctx.lineTo(cx-r*0.16,cy-r*0.46);
+    ctx.moveTo(cx-r*0.44,fcy-r*0.38+r*0.15);
+    ctx.lineTo(cx-r*0.16,fcy-r*0.46+r*0.15);
     ctx.stroke();
-    // right brow angled down-inward
     ctx.beginPath();
-    ctx.moveTo(cx+r*0.16,cy-r*0.46);
-    ctx.lineTo(cx+r*0.44,cy-r*0.38);
+    ctx.moveTo(cx+r*0.16,fcy-r*0.46+r*0.15);
+    ctx.lineTo(cx+r*0.44,fcy-r*0.38+r*0.15);
     ctx.stroke();
 
     // X eyes (hurt)
     [cx-r*0.28, cx+r*0.28].forEach(ex=>{
-      const ey=cy-r*0.2;
+      const ey=fcy-r*0.05;
       ctx.strokeStyle='#5c2a10'; ctx.lineWidth=2.8; ctx.lineCap='round';
       ctx.beginPath(); ctx.moveTo(ex-r*0.12,ey-r*0.12); ctx.lineTo(ex+r*0.12,ey+r*0.12); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(ex+r*0.12,ey-r*0.12); ctx.lineTo(ex-r*0.12,ey+r*0.12); ctx.stroke();
-      // small stars around eyes
       ctx.fillStyle='rgba(255,180,50,0.8)';
       [[ex-r*0.18,ey-r*0.2],[ex+r*0.18,ey-r*0.2],[ex,ey-r*0.26]].forEach(([sx,sy])=>{
         ctx.font=`${Math.floor(r*0.2)}px system-ui`;
@@ -3360,9 +3477,9 @@ function drawDog(ctx,cx,cy,r,now){
     // wavy annoyed mouth
     ctx.strokeStyle='#8a3a20'; ctx.lineWidth=2.5; ctx.lineCap='round';
     ctx.beginPath();
-    ctx.moveTo(cx-r*0.22,cy+r*0.18);
-    ctx.bezierCurveTo(cx-r*0.1,cy+r*0.28,cx,cy+r*0.14,cx+r*0.1,cy+r*0.26);
-    ctx.bezierCurveTo(cx+r*0.18,cy+r*0.34,cx+r*0.22,cy+r*0.20,cx+r*0.28,cy+r*0.16);
+    ctx.moveTo(cx-r*0.22,fcy+r*0.18);
+    ctx.bezierCurveTo(cx-r*0.1,fcy+r*0.28,cx,fcy+r*0.14,cx+r*0.1,fcy+r*0.26);
+    ctx.bezierCurveTo(cx+r*0.18,fcy+r*0.34,cx+r*0.22,fcy+r*0.20,cx+r*0.28,fcy+r*0.16);
     ctx.stroke();
 
     // stun sparkles around head
@@ -3370,7 +3487,7 @@ function drawDog(ctx,cx,cy,r,now){
     for(let s=0;s<6;s++){
       const sa=stungA+s/6*Math.PI*2;
       const sr=r*0.9+Math.sin(stungA*3+s)*r*0.1;
-      const sx2=cx+Math.cos(sa)*sr, sy2=(cy-r*0.15)+Math.sin(sa)*sr*0.6;
+      const sx2=cx+Math.cos(sa)*sr, sy2=fcy+Math.sin(sa)*sr*0.6;
       ctx.fillStyle=`rgba(255,${160+s*15},50,${0.7+0.3*Math.sin(stungA*4+s)})`;
       ctx.font=`${Math.floor(r*0.22)}px system-ui`;
       ctx.textAlign='center'; ctx.textBaseline='middle';
@@ -3379,61 +3496,19 @@ function drawDog(ctx,cx,cy,r,now){
 
     // blush (red, embarrassed/hurt)
     ctx.fillStyle='rgba(255,80,80,0.38)';
-    ctx.beginPath(); ctx.ellipse(cx-r*0.46,cy-r*0.02,r*0.2,r*0.11,0,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.ellipse(cx+r*0.46,cy-r*0.02,r*0.2,r*0.11,0,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(cx-r*0.46,fcy+r*0.12,r*0.2,r*0.11,0,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(cx+r*0.46,fcy+r*0.12,r*0.2,r*0.11,0,0,Math.PI*2); ctx.fill();
 
     // sweat drop
     ctx.fillStyle='rgba(100,180,255,0.85)';
     ctx.beginPath();
-    ctx.arc(cx+r*0.62,cy-r*0.5,r*0.07,0,Math.PI*2); ctx.fill();
+    ctx.arc(cx+r*0.62,fcy-r*0.36,r*0.07,0,Math.PI*2); ctx.fill();
     ctx.beginPath();
-    ctx.moveTo(cx+r*0.62,cy-r*0.57);
-    ctx.bezierCurveTo(cx+r*0.68,cy-r*0.64,cx+r*0.56,cy-r*0.64,cx+r*0.62,cy-r*0.57);
+    ctx.moveTo(cx+r*0.62,fcy-r*0.43);
+    ctx.bezierCurveTo(cx+r*0.68,fcy-r*0.50,cx+r*0.56,fcy-r*0.50,cx+r*0.62,fcy-r*0.43);
     ctx.closePath();
     ctx.fillStyle='rgba(140,210,255,0.7)'; ctx.fill();
-
-  } else {
-    // ── NORMAL HAPPY EXPRESSION ──
-    [cx-r*0.28,cx+r*0.28].forEach(ex=>{
-      const ey=cy-r*0.2;
-      ctx.fillStyle='#fff';
-      ctx.beginPath(); ctx.ellipse(ex,ey,r*0.17,r*0.2,0,0,Math.PI*2); ctx.fill();
-      ctx.fillStyle='#5c3a1e';
-      ctx.beginPath(); ctx.ellipse(ex+0.5,ey+1,r*0.11,r*0.13,0,0,Math.PI*2); ctx.fill();
-      ctx.fillStyle='#1a0a00';
-      ctx.beginPath(); ctx.ellipse(ex+0.5,ey+1,r*0.07,r*0.09,0,0,Math.PI*2); ctx.fill();
-      ctx.fillStyle='#fff';
-      ctx.beginPath(); ctx.arc(ex+r*0.07,ey-r*0.06,r*0.07,0,Math.PI*2); ctx.fill();
-      ctx.beginPath(); ctx.arc(ex-r*0.03,ey+r*0.07,r*0.03,0,Math.PI*2); ctx.fill();
-      ctx.fillStyle='rgba(255,240,100,0.7)';
-      ctx.beginPath(); ctx.arc(ex+r*0.09,ey-r*0.09,r*0.025,0,Math.PI*2); ctx.fill();
-    });
-    ctx.fillStyle='rgba(255,130,130,0.38)';
-    ctx.beginPath(); ctx.ellipse(cx-r*0.46,cy-r*0.02,r*0.18,r*0.1,0,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.ellipse(cx+r*0.46,cy-r*0.02,r*0.18,r*0.1,0,0,Math.PI*2); ctx.fill();
-    ctx.strokeStyle='#8a4a30'; ctx.lineWidth=1.8; ctx.lineCap='round'; ctx.lineJoin='round';
-    ctx.beginPath();
-    ctx.moveTo(cx-r*0.18,cy+r*0.2);
-    ctx.quadraticCurveTo(cx-r*0.08,cy+r*0.3,cx,cy+r*0.22);
-    ctx.quadraticCurveTo(cx+r*0.08,cy+r*0.3,cx+r*0.18,cy+r*0.2);
-    ctx.stroke();
   }
-
-  // nose (always visible)
-  const ng=ctx.createRadialGradient(cx,cy+r*0.1,0,cx,cy+r*0.1,r*0.1);
-  ng.addColorStop(0,stung?'#d04040':'#c06040'); ng.addColorStop(1,stung?'#8a2020':'#7a3820');
-  ctx.fillStyle=ng; ctx.beginPath(); ctx.ellipse(cx,cy+r*0.1,r*0.1,r*0.07,0,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle='rgba(255,200,180,0.5)';
-  ctx.beginPath(); ctx.ellipse(cx-r*0.03,cy+r*0.07,r*0.04,r*0.025,0,0,Math.PI*2); ctx.fill();
-
-  // head shine
-  ctx.fillStyle='rgba(255,255,255,0.28)';
-  ctx.beginPath(); ctx.ellipse(cx-r*0.18,cy-r*0.44,r*0.15,r*0.09,-0.5,0,Math.PI*2); ctx.fill();
-  // fluffy chest tuft
-  ctx.fillStyle=stung?'rgba(255,240,240,0.7)':'rgba(255,255,250,0.7)';
-  ctx.beginPath(); ctx.arc(cx,cy+r*0.45,r*0.22,0,Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.arc(cx-r*0.14,cy+r*0.5,r*0.15,0,Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.arc(cx+r*0.14,cy+r*0.5,r*0.15,0,Math.PI*2); ctx.fill();
 }
 
 
@@ -4220,9 +4295,9 @@ function drawGold(ctx,W,H,now){
 }
 
 function drawGoldMiner(ctx, cx, anchorY, now){
-  const catW = 130, catH = 170;
+  const catW = 95, catH = 115;
   const catX = cx - catW / 2;
-  const catY = anchorY - catH + 18; // feet near platform, head visible
+  const catY = anchorY - catH + 14; // feet near platform, head visible
 
   // animated tail — drawn before cat image
   const tailSway = Math.sin(now * 0.0018) * 14;
@@ -4250,7 +4325,7 @@ function drawGoldMiner(ctx, cx, anchorY, now){
 
   // draw SVG cat image
   if(goldCatImg && goldCatImg.complete && goldCatImg.naturalWidth > 0){
-    ctx.drawImage(goldCatImg, catX, catY, catW, catH);
+    ctx.drawImage(goldCatImg, catX, catY, catW, catH); // 95×115
   }
 
   // rope anchor dot (on top of cat)
