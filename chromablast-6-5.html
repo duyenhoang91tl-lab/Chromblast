@@ -788,6 +788,13 @@ const TEST_UNLOCK_SCORE = 100; // 🧪 ngưỡng điểm để mở khoá map �
 
 // Mode A state
 let board, pieces, selected, score=0, best=0, linesCleared=0, level=1, combo=0;
+// Load persisted data
+(function loadSaved(){
+  try {
+    const saved = JSON.parse(localStorage.getItem('chromablast_save')||'{}');
+    if(saved.best) best = saved.best;
+  } catch(e){}
+})();
 let consecutiveBursts = 0; // counts chain explosions toward unlock
 let awaitingSecretUnlock=true;  // mở map ẩn 1 khi đạt TEST_UNLOCK_SCORE điểm từ map thường
 let secretUnlockBaseline=0;     // mốc điểm lúc bắt đầu đếm
@@ -4719,12 +4726,22 @@ GCV().addEventListener('pointerdown', e=>{
 /* ══════════════════════════════════════════
    SHARED UI
 ══════════════════════════════════════════ */
+function saveProgress(){
+  try {
+    const save = JSON.parse(localStorage.getItem('chromablast_save')||'{}');
+    save.best = best;
+    save.highScore = score > (save.highScore||0) ? score : save.highScore;
+    localStorage.setItem('chromablast_save', JSON.stringify(save));
+  } catch(e){}
+}
+
 function updateScoreUI(){
   document.getElementById('score-box').textContent=score.toLocaleString();
   document.getElementById('best-box').textContent='Kỷ lục: '+best.toLocaleString();
   document.getElementById('lines-cleared').textContent='Hàng xóa: '+linesCleared;
   document.getElementById('level-box').textContent='Cấp độ '+level;
   if(awaitingSecretUnlock && !secretMode) updateBurstCount();
+  saveProgress();
 }
 
 function updateComboUI(){
@@ -4983,6 +5000,8 @@ function initStartScreen(){
 
 initStartScreen();
 startGame();
+// Show persisted best score immediately after startGame (which resets score but not best)
+document.getElementById('best-box').textContent='Kỷ lục: '+best.toLocaleString();
 </script>
 </body>
 </html>
