@@ -35,6 +35,7 @@ body {
 #grid-wrap {
   position: relative; border-radius: 14px; overflow: hidden;
   transition: box-shadow 0.4s;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
 }
 /* Khung map ẩn: viền sparkler đơn giản */
 #grid-wrap.secret-mode {
@@ -633,6 +634,111 @@ let secretTimerEnd = 0;
 let timerRAF = null;
 let borderSparkInterval = null; // continuous outward sparks during secret mode
 
+/* ══════════════════════════════════════════════
+   SOUND ENGINE — Web Audio API synthesized sounds
+══════════════════════════════════════════════ */
+let _sfxCtx = null;
+function getSfxCtx(){
+  if(!_sfxCtx) _sfxCtx = new (window.AudioContext||window.webkitAudioContext)();
+  return _sfxCtx;
+}
+function playTone(freq, type, duration, vol=0.3, startDelay=0){
+  try{
+    const ctx=getSfxCtx();
+    const osc=ctx.createOscillator();
+    const gain=ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type=type; osc.frequency.value=freq;
+    const t=ctx.currentTime+startDelay;
+    gain.gain.setValueAtTime(vol, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t+duration);
+    osc.start(t); osc.stop(t+duration+0.01);
+  }catch(e){}
+}
+function playNoise(duration, vol=0.15){
+  try{
+    const ctx=getSfxCtx();
+    const buf=ctx.createBuffer(1,ctx.sampleRate*duration,ctx.sampleRate);
+    const d=buf.getChannelData(0);
+    for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1);
+    const src=ctx.createBufferSource();
+    const gain=ctx.createGain();
+    const filt=ctx.createBiquadFilter();
+    src.buffer=buf; filt.type='bandpass'; filt.frequency.value=3000;
+    src.connect(filt); filt.connect(gain); gain.connect(ctx.destination);
+    gain.gain.setValueAtTime(vol,ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+duration);
+    src.start(); src.stop(ctx.currentTime+duration+0.01);
+  }catch(e){}
+}
+function sfxMatch(groupSize){
+  const f = 300 + groupSize*40;
+  playTone(f,'sine',0.15, 0.25);
+  playTone(f*1.5,'sine',0.12, 0.15, 0.08);
+}
+function sfxComboUp(combo){
+  const base=440;
+  playTone(base*(1+combo*0.1),'triangle',0.2, 0.3);
+}
+function sfxStreak(streak){
+  playTone(440+streak*55,'sine',0.18, 0.28);
+}
+function sfxUltra(){
+  playTone(220,'sawtooth',0.05,0.2,0);
+  playTone(330,'sawtooth',0.05,0.2,0.05);
+  playTone(440,'sawtooth',0.05,0.25,0.1);
+  playTone(660,'sine',0.2,0.3,0.15);
+  playTone(880,'sine',0.18,0.25,0.25);
+}
+function sfxFruitSlice(){
+  playNoise(0.08, 0.18);
+  playTone(600,'sine',0.05, 0.1);
+}
+function sfxBomb(){
+  playTone(80,'sawtooth',0.3, 0.4);
+  playNoise(0.3, 0.25);
+}
+function sfxBeeKill(){
+  playTone(800,'square',0.04, 0.2);
+  playTone(400,'square',0.04, 0.15, 0.03);
+}
+function sfxDogStung(){
+  playTone(350,'sine',0.1, 0.3);
+  playTone(280,'sine',0.15, 0.25, 0.1);
+}
+function sfxDodge(){
+  playNoise(0.06, 0.12);
+}
+function sfxGoldCollect(){
+  playTone(660,'sine',0.1, 0.3);
+  playTone(880,'sine',0.1, 0.25, 0.08);
+}
+function sfxDiamondCollect(){
+  playTone(880,'sine',0.08,0.3,0);
+  playTone(1100,'sine',0.08,0.3,0.06);
+  playTone(1320,'sine',0.1,0.35,0.12);
+}
+function sfxGameOver(){
+  playTone(400,'triangle',0.3,0.3,0);
+  playTone(320,'triangle',0.3,0.3,0.15);
+  playTone(240,'triangle',0.35,0.3,0.3);
+  playTone(160,'triangle',0.5,0.25,0.5);
+}
+function sfxUnlock(){
+  playTone(523,'sine',0.1,0.3,0);
+  playTone(659,'sine',0.1,0.3,0.1);
+  playTone(784,'sine',0.1,0.3,0.2);
+  playTone(1047,'sine',0.2,0.35,0.3);
+}
+function sfxScoreMilestone(){
+  playTone(660,'triangle',0.12,0.3,0);
+  playTone(880,'triangle',0.12,0.3,0.08);
+  playTone(1100,'triangle',0.15,0.3,0.16);
+}
+function sfxPlacePiece(){
+  playTone(200,'sine',0.06, 0.15);
+}
+
 /* ══════════════════════════════════════════
    HELPERS
 ══════════════════════════════════════════ */
@@ -788,6 +894,7 @@ function placeAt(R,C){
   if(!piece||piece.used||!canPlace(piece,R,C)) return false;
   piece.shape.forEach(([dr,dc])=>{ board[R+dr][C+dc]=piece.color; });
   piece.used=true;
+  sfxPlacePiece();
   endDrag();                 // xoá chọn + ghost + preview
   renderGrid(); renderPieces();
   setTimeout(()=>processClears(), 90);
@@ -926,7 +1033,8 @@ function processClears(){
 
   combo++;
   const lineOnly=[...lineKeys].filter(k=>!colorKeys.has(k)).length;
-  const pts=lineOnly*10+colorKeys.size*20+(combo>1?combo*30:0);
+  const pts=lineOnly*12+colorKeys.size*28+(combo>1?combo*50:0);
+  sfxMatch(colorKeys.size); if(combo>1) sfxComboUp(combo);
   score+=pts; if(score>best) best=score;
   const clearedRows=new Set([...lineKeys].map(k=>k.split(',')[0]));
   linesCleared+=clearedRows.size; level=Math.floor(linesCleared/5)+1;
@@ -1150,6 +1258,7 @@ document.getElementById('unlock-btn').addEventListener('click',()=>{
 ══════════════════════════════════════════ */
 function enterSecretMode(){
   endDrag();
+  sfxUnlock();
   secretMode=true;
   secretStreak=0;
   secretMultiplier=1;
@@ -1390,7 +1499,7 @@ function onSCClick(e){
 
   // Valid blast
   const ci=secretBoard[r][c];
-  const basePoints=group.length*50;
+  const basePoints=group.length*60;
 
   // Check timer — is this within SECRET_WINDOW of last blast?
   const now=Date.now();
@@ -1398,7 +1507,8 @@ function onSCClick(e){
 
   if(withinWindow){
     secretStreak++;
-    secretMultiplier= secretUltra ? secretMultiplier*3 : Math.min(secretStreak, 9);
+    secretMultiplier= secretUltra ? secretMultiplier*3 : Math.min(secretStreak, 6);
+    sfxStreak(secretStreak);
   } else {
     secretStreak=1;
     secretMultiplier=1;
@@ -1411,11 +1521,13 @@ function onSCClick(e){
   if(secretStreak>=SECRET_ULTRA && !secretUltra){
     secretUltra=true; ultraJustTriggered=true;
     document.getElementById('grid-wrap').classList.add('ultra-glow');
-    showComboFlash(0, true, '🌟 ULTRA MODE x3!');
+    showComboFlash(0, true, '🌟 ULTRA MODE x2!');
+    sfxUltra();
   }
 
-  const finalPts=Math.round(basePoints*secretMultiplier*(secretUltra?3:1));
+  const finalPts=Math.round(basePoints*secretMultiplier*(secretUltra?2:1));
   score+=finalPts; if(score>best) best=score;
+  sfxMatch(group.length);
   secret1Gained+=finalPts;
   updateScoreUI();
   updateBurstCount();
@@ -1510,6 +1622,7 @@ function renderStreakDots(){
 ══════════════════════════════════════════ */
 let dodgeMode=false, dodgeRAF=null, dodgeLast=0, dodgeElapsed=0, dodgeSpawnTimer=0, dodgeAccum=0;
 let turtle=null, rabbit=null, carrots=[];
+let dodgeStreak=0;
 const dodgeKeys={left:false,right:false};
 let secret1Gained=0;              // điểm kiếm được trong map ẩn 1
 let pendingUnlock='secret';       // 'secret' | 'dodge' | 'fruit' | 'bee' — overlay mở khoá đang chờ
@@ -1533,6 +1646,7 @@ function triggerDodgeUnlock(){
 
 function enterDodgeMode(){
   endDrag();
+  sfxUnlock();
   secretMode=false; clearSecretTimer();
   // dọn UI map ẩn 1
   const sg=document.getElementById('secret-grid');
@@ -1588,7 +1702,7 @@ function dodgeLoop(now){
 
   // điểm sống sót
   dodgeAccum+=dt;
-  if(dodgeAccum>=1){ score+=10; if(score>best)best=score; dodgeAccum-=1; }
+  if(dodgeAccum>=1){ score+=15; if(score>best)best=score; dodgeAccum-=1; }
 
   // thỏ di chuyển + bắn
   rabbit.x+=rabbit.dir*d.rabbitSpeed*dt;
@@ -1619,7 +1733,10 @@ function dodgeLoop(now){
   for(const c of carrots) c.y+=c.vy*dt;
   carrots=carrots.filter(c=>{
     if(c.y<H+20) return true;
-    score+=5; if(score>best)best=score;   // né được 1 viên
+    score+=12; if(score>best)best=score;   // né được 1 viên
+    sfxDodge();
+    dodgeStreak++;
+    if(dodgeStreak>=3){ score+=20; if(score>best)best=score; sfxScoreMilestone(); }
     return false;
   });
   updateScoreUI();
@@ -1636,7 +1753,7 @@ function dodgeLoop(now){
 
   drawDodge(ctx,W,H);
 
-  if(hit){ dodgeGameOver(); return; }
+  if(hit){ dodgeStreak=0; dodgeGameOver(); return; }
   dodgeRAF=requestAnimationFrame(dodgeLoop);
 }
 
@@ -2019,6 +2136,7 @@ function drawCarrot(ctx,x,y,r){
 function dodgeGameOver(){
   if(dodgeRAF) cancelAnimationFrame(dodgeRAF);
   dodgeRAF=null; dodgeMode=false;
+  sfxGameOver();
   showComboFlash(0,false,'🥕 Trúng cà rốt!');
   setTimeout(exitDodgeToMain, 350);
 }
@@ -2086,18 +2204,19 @@ document.addEventListener('keyup', e=>{
 ══════════════════════════════════════════ */
 let fruitMode=false, fruitRAF=null, fruitLast=0, fruitElapsed=0, fruitSpawnTimer=0;
 let fruits=[], fruitTrail=[], fruitTimeLeft=60;
+let fruitCombo=0, fruitComboTimer=0;
 let fruitFx=[]; // slice effects: juice drops + petals + slash lines
 let fruitTrailPetals=[]; // flower petal particles that fall along the slash trail
-const TRAIL_PETAL_COLORS=['#ff88bb','#ffffff','#ffe066','#cc99ff','#ffaa66'];
+const TRAIL_PETAL_COLORS=['#ffb3cc','#ff80aa','#ffd6e7','#ff99bb','#ffe0ec','#ffaad4','#ff66a3'];
 const FRUIT_TYPES=[
-  {emoji:'🍉',r:38,pts:15,color:'#e74c3c',juice:'#ff6b6b',petals:['#ff8a80','#ff5252','#ff1744']},
-  {emoji:'🍊',r:28,pts:10,color:'#e67e22',juice:'#f39c12',petals:['#ffcc02','#ff9800','#ffa726']},
-  {emoji:'🍎',r:28,pts:10,color:'#c0392b',juice:'#e74c3c',petals:['#ef9a9a','#e53935','#b71c1c']},
-  {emoji:'🍓',r:22,pts:12,color:'#e91e63',juice:'#ff4081',petals:['#f48fb1','#ec407a','#ad1457']},
-  {emoji:'🍍',r:33,pts:18,color:'#f1c40f',juice:'#f39c12',petals:['#fff176','#ffee58','#f9a825']},
-  {emoji:'🥝',r:22,pts:12,color:'#27ae60',juice:'#2ecc71',petals:['#a5d6a7','#66bb6a','#2e7d32']},
-  {emoji:'🍋',r:24,pts:10,color:'#f1c40f',juice:'#f9e231',petals:['#fff9c4','#fff176','#f57f17']},
-  {emoji:'🍌',r:28,pts:14,color:'#f1c40f',juice:'#ffe066',petals:['#fff59d','#ffee58','#f9a825']},
+  {emoji:'🍉',r:38,pts:20,color:'#e74c3c',juice:'#ff6b6b',petals:['#ff8a80','#ff5252','#ff1744']},
+  {emoji:'🍊',r:28,pts:14,color:'#e67e22',juice:'#f39c12',petals:['#ffcc02','#ff9800','#ffa726']},
+  {emoji:'🍎',r:28,pts:14,color:'#c0392b',juice:'#e74c3c',petals:['#ef9a9a','#e53935','#b71c1c']},
+  {emoji:'🍓',r:22,pts:16,color:'#e91e63',juice:'#ff4081',petals:['#f48fb1','#ec407a','#ad1457']},
+  {emoji:'🍍',r:33,pts:22,color:'#f1c40f',juice:'#f39c12',petals:['#fff176','#ffee58','#f9a825']},
+  {emoji:'🥝',r:22,pts:16,color:'#27ae60',juice:'#2ecc71',petals:['#a5d6a7','#66bb6a','#2e7d32']},
+  {emoji:'🍋',r:24,pts:12,color:'#f1c40f',juice:'#f9e231',petals:['#fff9c4','#fff176','#f57f17']},
+  {emoji:'🍌',r:28,pts:18,color:'#f1c40f',juice:'#ffe066',petals:['#fff59d','#ffee58','#f9a825']},
 ];
 const FCV = () => document.getElementById('fruit-canvas');
 
@@ -2116,6 +2235,7 @@ function triggerFruitUnlock(){
 
 function enterFruitMode(){
   endDrag();
+  sfxUnlock();
   document.getElementById('grid').style.display='none';
   document.getElementById('pieces-area').style.display='none';
   document.getElementById('hint-bar').style.display='';
@@ -2203,8 +2323,9 @@ function fruitLoop(now){
 
   // update flower petal trail particles
   for(const p of fruitTrailPetals){
+    p.vx+=Math.sin(p.life*0.15)*0.03; // gentle swaying
     p.x+=p.vx*dt; p.y+=p.vy*dt;
-    p.vy+=150*dt; // gentle gravity
+    p.vy+=60*dt; // gentle gravity (slower fall)
     p.vx*=Math.pow(0.98,dt*60); // slight air drag
     p.rot+=p.rotSpeed*dt;
     p.life-=dt;
@@ -2219,9 +2340,15 @@ function fruitLoop(now){
       if(f.sliced) continue;
       if(distPtSeg2(f.x,f.y,a.x,a.y,b.x,b.y) < f.r+8){
         f.sliced=true;
-        if(f.isBomb){ boomed=true; spawnBoomFx(f.x,f.y); }
+        if(f.isBomb){ sfxBomb(); boomed=true; spawnBoomFx(f.x,f.y); }
         else {
-          score+=f.pts; if(score>best) best=score;
+          fruitCombo++;
+          if(fruitComboTimer) clearTimeout(fruitComboTimer);
+          fruitComboTimer=setTimeout(()=>{ fruitCombo=0; fruitComboTimer=0; },800);
+          const fmul=Math.min(1+fruitCombo*0.15,2.5);
+          const earnedPts=Math.round(f.pts*fmul);
+          score+=earnedPts; if(score>best) best=score;
+          sfxFruitSlice();
           spawnSliceFx(f.x,f.y,f.juice,f.petals,a,b);
         }
       }
@@ -2455,15 +2582,31 @@ function drawFruit(ctx,W,H,now){
     const alpha=(p.life/p.maxLife);
     if(alpha<0.02) continue;
     ctx.save();
-    ctx.globalAlpha=alpha;
     ctx.translate(p.x,p.y);
     ctx.rotate(p.rot);
-    ctx.shadowColor=p.color; ctx.shadowBlur=6;
-    ctx.fillStyle=p.color;
+    ctx.globalAlpha=p.alpha*(p.life/p.maxLife);
+
+    // Soft glow shadow
+    ctx.shadowColor=p.color;
+    ctx.shadowBlur=p.size*2.5;
+
+    // Draw petal as a curved teardrop path (more organic than ellipse)
+    const w=p.size;
+    const h=p.size*1.6;
     ctx.beginPath();
-    // petal: ellipse with width=size, height=size*0.55 (teardrop-ish ellipse)
-    ctx.ellipse(0,0,p.size,p.size*0.55,0,0,Math.PI*2);
+    ctx.moveTo(0,-h/2);
+    ctx.bezierCurveTo(w*0.8,-h/2,w*0.8,h*0.3,0,h/2);
+    ctx.bezierCurveTo(-w*0.8,h*0.3,-w*0.8,-h/2,0,-h/2);
+    ctx.fillStyle=p.color;
     ctx.fill();
+
+    // Add inner highlight for depth
+    ctx.globalAlpha=p.alpha*(p.life/p.maxLife)*0.4;
+    ctx.fillStyle='#ffffff';
+    ctx.beginPath();
+    ctx.ellipse(w*0.15,-h*0.1,w*0.25,h*0.2,-0.3,0,Math.PI*2);
+    ctx.fill();
+
     ctx.restore();
   }
 
@@ -2490,6 +2633,7 @@ function drawFruit(ctx,W,H,now){
 function fruitGameOver(success){
   if(fruitRAF) cancelAnimationFrame(fruitRAF);
   fruitRAF=null; fruitMode=false;
+  sfxGameOver();
   showComboFlash(0, success, success?'🍉 Qua màn!':'💣 Trúng bom!');
   setTimeout(exitFruitToMain, 400);
 }
@@ -2534,21 +2678,22 @@ function fruitPointerMove(e){
   const pt=fruitCanvasPt(e);
   fruitTrail.push({x:pt.x,y:pt.y,t:performance.now()});
   if(fruitTrail.length>14) fruitTrail.shift();
-  // spawn 1-2 flower petals at current pointer position
-  const count=1+Math.floor(Math.random()*2);
+  // spawn 2-3 flower petals at current pointer position
+  const count=2+Math.floor(Math.random()*2);
   for(let i=0;i<count;i++){
-    const maxLife=0.6+Math.random()*0.3; // 600–900ms
+    const maxLife=0.9+Math.random()*0.5; // 900–1400ms
     fruitTrailPetals.push({
       x: pt.x+(Math.random()-0.5)*14,
       y: pt.y+(Math.random()-0.5)*14,
-      vx: (Math.random()-0.5)*55,
-      vy: -(20+Math.random()*40),
+      vx: (Math.random()-0.5)*2,   // gentle sideways drift (-1 to +1)
+      vy: (Math.random()-0.5)*1,   // nearly horizontal (-0.5 to +0.5)
       rot: Math.random()*Math.PI*2,
-      rotSpeed: (Math.random()-0.5)*8,
+      rotSpeed: 0.01+Math.random()*0.03, // slow graceful rotation (0.01–0.04)
       color: TRAIL_PETAL_COLORS[Math.floor(Math.random()*TRAIL_PETAL_COLORS.length)],
       life: maxLife,
       maxLife: maxLife,
-      size: 5+Math.random()*5  // petal major axis half-length
+      alpha: 0.85+Math.random()*0.15,
+      size: 6+Math.random()*6  // bigger, softer (6–12)
     });
   }
 }
@@ -2568,6 +2713,7 @@ FCV().addEventListener('pointercancel', fruitPointerUp);
 let beeMode=false, beeRAF=null, beeLast=0, beeElapsed=0, beeSpawnTimer=0;
 let bees=[], fences=[], dog=null, popFx=[];
 let dogStung=false, dogStungTimer=0;
+let beeCombo=0, beeComboTimer=0;
 let drawingFence=false, lastFencePt=null;
 const FENCE_LIFETIME = 6000; // ms — dây phai sau khoảng thời gian này, buộc người chơi vẽ lại
 const BCV = () => document.getElementById('bee-canvas');
@@ -2587,6 +2733,7 @@ function triggerBeeUnlock(){
 
 function enterBeeMode(){
   endDrag();
+  sfxUnlock();
   // ẩn map chính
   document.getElementById('grid').style.display='none';
   document.getElementById('pieces-area').style.display='none';
@@ -2670,7 +2817,13 @@ function beeLoop(now){
     for(const f of fences){
       if(distPtSeg(b.x,b.y,f.x1,f.y1,f.x2,f.y2)<9){
         b.dead=true;
-        score+=8; if(score>best) best=score;
+        score+=12; if(score>best) best=score;
+        sfxBeeKill();
+        beeCombo++;
+        if(beeComboTimer) clearTimeout(beeComboTimer);
+        beeComboTimer=setTimeout(()=>{ beeCombo=0; beeComboTimer=0; },1500);
+        const beeBonus=beeCombo*5; score+=beeBonus; if(score>best)best=score;
+        if(beeCombo>=5) sfxScoreMilestone();
         popFx.push({x:b.x,y:b.y,t:0});
         break;
       }
@@ -2692,6 +2845,7 @@ function beeLoop(now){
 
   if(stung && !dogStung){
     dogStung=true; dogStungTimer=0;
+    sfxDogStung();
   }
   if(dogStung){
     dogStungTimer += dt*1000;
@@ -3119,6 +3273,7 @@ function drawDog(ctx,cx,cy,r,now){
 function beeGameOver(){
   if(beeRAF) cancelAnimationFrame(beeRAF);
   beeRAF=null; beeMode=false;
+  sfxGameOver();
   showComboFlash(0,false,'🐝 Chó bị đốt!');
   setTimeout(exitBeeToMain, 400);
 }
@@ -3367,6 +3522,7 @@ function triggerGoldUnlock(){
 
 function enterGoldMode(){
   endDrag();
+  sfxUnlock();
   document.getElementById('grid').style.display='none';
   document.getElementById('pieces-area').style.display='none';
   document.getElementById('hint-bar').style.display='';
@@ -3549,17 +3705,20 @@ function collectGoldItem(it){
     // no points, but slow down was already applied
     spawnGoldFx(gmRope.anchorX,gmRope.anchorY,'#888',false,'🪨 Đá!');
   } else if(it.type==='goldBig'){
-    score+=20; if(score>best)best=score;
+    score+=25; if(score>best)best=score;
     goldKPI.gold=Math.min(GOLD_KPI_GOLD,goldKPI.gold+1);
-    spawnGoldFx(gmRope.anchorX,gmRope.anchorY,'#f7c948',true,'🪙+20');
+    sfxGoldCollect();
+    spawnGoldFx(gmRope.anchorX,gmRope.anchorY,'#f7c948',true,'🪙+25');
   } else if(it.type==='goldSmall'){
-    score+=10; if(score>best)best=score;
+    score+=15; if(score>best)best=score;
     goldKPI.gold=Math.min(GOLD_KPI_GOLD,goldKPI.gold+1);
-    spawnGoldFx(gmRope.anchorX,gmRope.anchorY,'#ffe066',true,'🪙+10');
+    sfxGoldCollect();
+    spawnGoldFx(gmRope.anchorX,gmRope.anchorY,'#ffe066',true,'🪙+15');
   } else if(it.type==='diamond'){
-    score+=50; if(score>best)best=score;
+    score+=75; if(score>best)best=score;
     goldKPI.diamond=true;
-    spawnGoldFx(gmRope.anchorX,gmRope.anchorY,'#7df9ff',true,'💎+50');
+    sfxDiamondCollect();
+    spawnGoldFx(gmRope.anchorX,gmRope.anchorY,'#7df9ff',true,'💎+75');
   }
   updateScoreUI(); updateGoldKPIBar();
   if(goldKPI.gold>=GOLD_KPI_GOLD && goldKPI.diamond && !goldWinBanner) showGoldWin();
@@ -4048,6 +4207,11 @@ function roundRectPath(ctx,x,y,w,h,r){
 function goldGameOver(kpiMet){
   if(goldRAF) cancelAnimationFrame(goldRAF);
   goldRAF=null; goldMode=false;
+  sfxGameOver();
+  if(kpiMet){
+    const timeBonus=Math.round(goldTimeLeft*10);
+    if(timeBonus>0){ score+=timeBonus; if(score>best)best=score; updateScoreUI(); }
+  }
   showComboFlash(0,false, kpiMet?'🏆 KPI ĐẠT!':'⛏️ Không đủ KPI!');
   setTimeout(exitGoldToMain, 450);
 }
