@@ -894,6 +894,7 @@ function placeAt(R,C){
   if(!piece||piece.used||!canPlace(piece,R,C)) return false;
   piece.shape.forEach(([dr,dc])=>{ board[R+dr][C+dc]=piece.color; });
   piece.used=true;
+  sfxPlacePiece();
   endDrag();                 // xoá chọn + ghost + preview
   renderGrid(); renderPieces();
   setTimeout(()=>processClears(), 90);
@@ -1526,6 +1527,7 @@ function onSCClick(e){
 
   const finalPts=Math.round(basePoints*secretMultiplier*(secretUltra?2:1));
   score+=finalPts; if(score>best) best=score;
+  sfxMatch(group.length);
   secret1Gained+=finalPts;
   updateScoreUI();
   updateBurstCount();
