@@ -2906,6 +2906,7 @@ BCV().addEventListener('pointerleave', beePointerUp);
    KPI: 5 cục vàng + 1 kim cương trong 30 giây.
 ══════════════════════════════════════════ */
 let goldMode=false, goldRAF=null, goldLast=0, goldElapsed=0;
+let goldCatImg=null; // pre-rendered SVG cat image
 let goldItems=[], goldFx=[], goldKPI={gold:0,diamond:false};
 let awaitingGoldUnlock=false, goldUnlockBaseline=0;
 let goldTimeLeft=30, goldWave=1;
@@ -2928,6 +2929,141 @@ let gmRope = {
   anchorY: 60,        // miner's hook origin Y
 };
 
+function buildGoldCatSVG(){
+  const svgStr = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-5 -5 130 170" width="130" height="170">
+  <defs>
+    <radialGradient id="hg" cx="42%" cy="36%" r="55%">
+      <stop offset="0%" stop-color="#bdd4de"/>
+      <stop offset="60%" stop-color="#8ab0c0"/>
+      <stop offset="100%" stop-color="#5a8090"/>
+    </radialGradient>
+    <radialGradient id="bg2" cx="50%" cy="30%" r="60%">
+      <stop offset="0%" stop-color="#8ab0c0"/>
+      <stop offset="100%" stop-color="#4a7080"/>
+    </radialGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="1" dy="2" stdDeviation="2" flood-color="rgba(0,0,0,0.35)"/>
+    </filter>
+  </defs>
+
+  <!-- fishing rod (behind everything) -->
+  <line x1="92" y1="55" x2="128" y2="-4" stroke="#6B4E1A" stroke-width="3.5" stroke-linecap="round"/>
+  <line x1="92" y1="55" x2="128" y2="-4" stroke="#A07828" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="4,4"/>
+
+  <!-- tail -->
+  <path d="M74 108 C96 100,108 80,98 62 C92 48,78 50,76 56" stroke="#7a98aa" stroke-width="12" fill="none" stroke-linecap="round"/>
+  <path d="M74 108 C96 100,108 80,98 62 C92 48,78 50,76 56" stroke="#9abccc" stroke-width="7" fill="none" stroke-linecap="round"/>
+  <path d="M76 56 C73 44,64 40,67 50" stroke="#c0d8e4" stroke-width="7" fill="none" stroke-linecap="round"/>
+
+  <!-- body -->
+  <rect x="22" y="88" width="76" height="55" rx="18" fill="url(#bg2)" filter="url(#shadow)"/>
+
+  <!-- vest right panel -->
+  <path d="M98 88 C98 143,82 143,82 143 L82 88 Z" fill="#7a5428"/>
+  <!-- vest left panel -->
+  <path d="M22 88 C22 143,38 143,38 143 L38 88 Z" fill="#7a5428"/>
+  <!-- vest shading -->
+  <path d="M98 88 C98 143,82 143,82 143 L82 88 Z" fill="#4a3010" opacity="0.3"/>
+  <!-- vest lapel left -->
+  <path d="M22 88 L38 88 L50 103 L60 97 L60 143 L22 143 Z" fill="#6B4420"/>
+  <!-- vest lapel right -->
+  <path d="M98 88 L82 88 L70 103 L60 97 L60 143 L98 143 Z" fill="#6B4420"/>
+  <!-- center strip -->
+  <path d="M50 103 L60 97 L70 103 L68 143 L52 143 Z" fill="#5a8090"/>
+  <!-- vest buttons -->
+  <circle cx="60" cy="116" r="3.5" fill="#d4a840" stroke="#a07820" stroke-width="0.8"/>
+  <circle cx="60" cy="130" r="3.5" fill="#d4a840" stroke="#a07820" stroke-width="0.8"/>
+
+  <!-- bandana -->
+  <path d="M28 94 Q60 84,92 94 Q84 108,60 103 Q36 108,28 94 Z" fill="#cc1020"/>
+  <path d="M28 94 Q60 84,92 94 Q84 108,60 103 Q36 108,28 94 Z" fill="url(#bandanaG)" opacity="0.4"/>
+  <!-- bandana knot -->
+  <path d="M55 102 Q60 112,65 102 L63 98 L60 101 L57 98 Z" fill="#aa0818"/>
+  <circle cx="60" cy="102" r="5.5" fill="#ee1828"/>
+  <circle cx="58" cy="100" r="2" fill="#ff4444" opacity="0.6"/>
+
+  <!-- left arm -->
+  <ellipse cx="14" cy="107" rx="10" ry="17" transform="rotate(18,14,107)" fill="#7a9aaa"/>
+  <ellipse cx="8" cy="120" rx="8.5" ry="9" fill="#8ab0c0"/>
+
+  <!-- right arm (rod hand) -->
+  <ellipse cx="104" cy="98" rx="10" ry="16" transform="rotate(-30,104,98)" fill="#7a9aaa"/>
+  <ellipse cx="112" cy="86" rx="8" ry="8.5" transform="rotate(-30,112,86)" fill="#8ab0c0"/>
+
+  <!-- legs -->
+  <ellipse cx="43" cy="147" rx="12" ry="14" fill="#5a7a8a"/>
+  <ellipse cx="77" cy="147" rx="12" ry="14" fill="#5a7a8a"/>
+
+  <!-- boots -->
+  <path d="M28 156 Q43 165,58 158 Q54 148,43 147 Z" fill="#241408"/>
+  <path d="M92 156 Q77 165,62 158 Q66 148,77 147 Z" fill="#241408"/>
+  <path d="M28 156 Q43 163,58 158" stroke="#3a2010" stroke-width="1.2" fill="none"/>
+  <path d="M92 156 Q77 163,62 158" stroke="#3a2010" stroke-width="1.2" fill="none"/>
+
+  <!-- head -->
+  <circle cx="60" cy="50" r="36" fill="url(#hg)" filter="url(#shadow)"/>
+
+  <!-- head fur texture highlight -->
+  <ellipse cx="50" cy="40" rx="18" ry="14" fill="#cce0ea" opacity="0.3"/>
+
+  <!-- ears outer -->
+  <polygon points="33,26 24,2 50,23" fill="#6a8898"/>
+  <polygon points="87,26 96,2 70,23" fill="#6a8898"/>
+  <!-- ears inner -->
+  <polygon points="35,24 28,8 48,22" fill="#ffb0b0"/>
+  <polygon points="85,24 92,8 72,22" fill="#ffb0b0"/>
+  <!-- ear highlight -->
+  <polygon points="35,22 30,11 45,21" fill="#ffd0d0" opacity="0.5"/>
+  <polygon points="85,22 90,11 75,21" fill="#ffd0d0" opacity="0.5"/>
+
+  <!-- eyes white -->
+  <ellipse cx="46" cy="50" rx="11" ry="12.5" fill="white"/>
+  <ellipse cx="74" cy="50" rx="11" ry="12.5" fill="white"/>
+  <!-- iris green -->
+  <ellipse cx="46" cy="52" rx="8" ry="10" fill="#3a8048"/>
+  <ellipse cx="74" cy="52" rx="8" ry="10" fill="#3a8048"/>
+  <!-- iris inner -->
+  <ellipse cx="46" cy="53" rx="6" ry="8" fill="#2a6038"/>
+  <ellipse cx="74" cy="53" rx="6" ry="8" fill="#2a6038"/>
+  <!-- pupil -->
+  <ellipse cx="46" cy="54" rx="3.5" ry="7" fill="#180e04"/>
+  <ellipse cx="74" cy="54" rx="3.5" ry="7" fill="#180e04"/>
+  <!-- eye shine big -->
+  <circle cx="50" cy="46" r="3.5" fill="white"/>
+  <circle cx="78" cy="46" r="3.5" fill="white"/>
+  <!-- eye shine small -->
+  <circle cx="43" cy="51" r="1.8" fill="rgba(255,255,255,0.7)"/>
+  <circle cx="71" cy="51" r="1.8" fill="rgba(255,255,255,0.7)"/>
+  <!-- eyelid top -->
+  <path d="M35 44 Q46 38,57 44" stroke="#4a6878" stroke-width="1.8" fill="none"/>
+  <path d="M63 44 Q74 38,85 44" stroke="#4a6878" stroke-width="1.8" fill="none"/>
+
+  <!-- nose -->
+  <path d="M56 64 L60 59 L64 64 Z" fill="#ff9090"/>
+  <path d="M57 62 L59 60 L61 62 Z" fill="#ffc0c0" opacity="0.7"/>
+
+  <!-- mouth -->
+  <path d="M60 65 Q52 73,47 70" stroke="#c05050" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M60 65 Q68 73,73 70" stroke="#c05050" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+  <!-- blush -->
+  <ellipse cx="35" cy="62" rx="10" ry="6" fill="rgba(255,130,130,0.28)"/>
+  <ellipse cx="85" cy="62" rx="10" ry="6" fill="rgba(255,130,130,0.28)"/>
+
+  <!-- whiskers -->
+  <line x1="22" y1="62" x2="50" y2="66" stroke="rgba(255,255,255,0.9)" stroke-width="1.3"/>
+  <line x1="20" y1="67" x2="49" y2="68" stroke="rgba(255,255,255,0.9)" stroke-width="1.3"/>
+  <line x1="22" y1="72" x2="50" y2="70" stroke="rgba(255,255,255,0.9)" stroke-width="1.3"/>
+  <line x1="98" y1="62" x2="70" y2="66" stroke="rgba(255,255,255,0.9)" stroke-width="1.3"/>
+  <line x1="100" y1="67" x2="71" y2="68" stroke="rgba(255,255,255,0.9)" stroke-width="1.3"/>
+  <line x1="98" y1="72" x2="70" y2="70" stroke="rgba(255,255,255,0.9)" stroke-width="1.3"/>
+</svg>`;
+  const blob = new Blob([svgStr], {type:'image/svg+xml'});
+  const url = URL.createObjectURL(blob);
+  const img = new Image();
+  img.src = url;
+  goldCatImg = img;
+}
 function triggerGoldUnlock(){
   pendingUnlock='gold';
   document.getElementById('unlock-title').textContent='⛏️ MAP ẨN 5 MỞ KHÓA!';
@@ -2965,6 +3101,8 @@ function initGold(){
   goldElapsed=0; goldTimeLeft=GOLD_TIME;
   goldWinBanner=false; goldWinTimer=0;
 
+  // build cat SVG once
+  if(!goldCatImg) buildGoldCatSVG();
   // Rope/miner init
   gmRope.anchorX=W/2;
   gmRope.anchorY=72;
@@ -3468,164 +3606,41 @@ function drawGold(ctx,W,H,now){
 }
 
 function drawGoldMiner(ctx, cx, anchorY, now){
-  // Chibi cat character — gray cat with red bandana and fishing rod
-  const headR = 20;
-  const hw = 22, hh = 18;
-  const by = anchorY - hh - headR * 0.6; // body center Y
-  const hy = by - hh - headR * 0.5;      // head center Y
+  const catW = 130, catH = 170;
+  const catX = cx - catW / 2;
+  const catY = anchorY - catH + 28; // feet near platform
 
-  // ── tail (draw behind body) ──
-  const tailSway = Math.sin(now * 0.002) * 0.3;
+  // animated tail — drawn before cat image
+  const tailSway = Math.sin(now * 0.0018) * 14;
+  const tx = cx + 38, ty = anchorY - 55;
   ctx.save();
-  ctx.translate(cx + hw - 2, by + hh * 0.5);
-  ctx.rotate(tailSway);
-  ctx.strokeStyle = '#9aabb8';
-  ctx.lineWidth = 8;
-  ctx.lineCap = 'round';
-  ctx.shadowColor = 'rgba(150,180,200,0.3)'; ctx.shadowBlur = 4;
+  ctx.translate(tx, ty);
+  ctx.rotate(tailSway * Math.PI / 180);
+  ctx.strokeStyle = '#7a98aa'; ctx.lineWidth = 11; ctx.lineCap = 'round';
   ctx.beginPath();
   ctx.moveTo(0, 0);
-  ctx.bezierCurveTo(18, 10, 28, -10, 22, -28);
+  ctx.bezierCurveTo(18, -5, 26, -24, 16, -42);
   ctx.stroke();
-  // tail tip (lighter)
-  ctx.strokeStyle = '#c8d8e0';
-  ctx.lineWidth = 5;
+  ctx.strokeStyle = '#9abccc'; ctx.lineWidth = 6;
   ctx.beginPath();
-  ctx.moveTo(22, -28);
-  ctx.bezierCurveTo(24, -36, 18, -42, 14, -38);
+  ctx.moveTo(0, 0);
+  ctx.bezierCurveTo(18, -5, 26, -24, 16, -42);
   ctx.stroke();
-  ctx.shadowBlur = 0;
-  ctx.restore();
-
-  // ── body ──
-  const bodyG = ctx.createLinearGradient(cx - hw, by - hh, cx + hw, by + hh);
-  bodyG.addColorStop(0, '#7a9aaa');
-  bodyG.addColorStop(0.5, '#6a8a9a');
-  bodyG.addColorStop(1, '#4a6a7a');
-  ctx.fillStyle = bodyG;
-  ctx.beginPath(); roundRect(ctx, cx - hw, by - hh, hw * 2, hh * 2, 8); ctx.fill();
-
-  // vest (brown jacket)
-  const vestG = ctx.createLinearGradient(cx - hw + 4, by - hh, cx + hw - 4, by + hh);
-  vestG.addColorStop(0, '#8B5E3C');
-  vestG.addColorStop(1, '#5C3D1E');
-  ctx.fillStyle = vestG;
-  ctx.beginPath(); roundRect(ctx, cx - hw + 4, by - hh, (hw - 4) * 2, hh * 2, 6); ctx.fill();
-  // vest open center (show body)
-  ctx.fillStyle = '#6a8a9a';
-  ctx.beginPath(); roundRect(ctx, cx - 7, by - hh, 14, hh * 2, 3); ctx.fill();
-
-  // red bandana
-  ctx.fillStyle = '#cc2233';
+  // tail tip
+  ctx.strokeStyle = '#c0d8e4'; ctx.lineWidth = 6;
   ctx.beginPath();
-  ctx.moveTo(cx - hw + 2, by - hh + 2);
-  ctx.lineTo(cx + hw - 2, by - hh + 2);
-  ctx.lineTo(cx + hw - 8, by - hh + 12);
-  ctx.lineTo(cx, by - hh + 8);
-  ctx.lineTo(cx - hw + 8, by - hh + 12);
-  ctx.closePath();
-  ctx.fill();
-  ctx.fillStyle = '#ff3344';
-  ctx.beginPath(); ctx.arc(cx, by - hh + 8, 4, 0, Math.PI * 2); ctx.fill();
-
-  // ── fishing rod arm (right, raised) ──
-  const rodSway = Math.sin(now * 0.0015) * 0.08;
-  ctx.save();
-  ctx.translate(cx + hw, by - hh * 0.3);
-  ctx.rotate(-0.5 + rodSway);
-  // arm
-  ctx.fillStyle = '#7a9aaa';
-  ctx.beginPath(); ctx.ellipse(0, 0, 5, 12, 0.3, 0, Math.PI * 2); ctx.fill();
-  // fishing rod
-  ctx.strokeStyle = '#8B6914';
-  ctx.lineWidth = 3; ctx.lineCap = 'round';
-  ctx.beginPath(); ctx.moveTo(0, -10); ctx.lineTo(28, -48); ctx.stroke();
-  // fishing line
-  ctx.strokeStyle = '#ddd';
-  ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(28, -48); ctx.lineTo(28, anchorY - (by - hh * 0.3)); ctx.stroke();
+  ctx.moveTo(16, -42);
+  ctx.bezierCurveTo(18, -52, 10, -58, 8, -52);
+  ctx.stroke();
   ctx.restore();
 
-  // left arm (relaxed)
-  ctx.save();
-  ctx.translate(cx - hw, by);
-  ctx.rotate(0.2 + Math.sin(now * 0.002) * 0.1);
-  ctx.fillStyle = '#7a9aaa';
-  ctx.beginPath(); ctx.ellipse(0, 0, 5, 11, -0.2, 0, Math.PI * 2); ctx.fill();
-  ctx.restore();
+  // draw SVG cat image
+  if(goldCatImg && goldCatImg.complete && goldCatImg.naturalWidth > 0){
+    ctx.drawImage(goldCatImg, catX, catY, catW, catH);
+  }
 
-  // legs
-  ctx.fillStyle = '#5a7a8a';
-  ctx.beginPath(); ctx.ellipse(cx - 9, by + hh + 7, 7, 10, 0.1, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(cx + 9, by + hh + 7, 7, 10, -0.1, 0, Math.PI * 2); ctx.fill();
-  // boots (dark brown)
-  ctx.fillStyle = '#3a2010';
-  ctx.beginPath(); ctx.ellipse(cx - 10, by + hh + 16, 9, 5, 0, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(cx + 10, by + hh + 16, 9, 5, 0, 0, Math.PI * 2); ctx.fill();
-
-  // ── head ──
-  const headG = ctx.createRadialGradient(cx - 4, hy - 4, 2, cx, hy, headR);
-  headG.addColorStop(0, '#b0c8d4');
-  headG.addColorStop(0.6, '#7a9aaa');
-  headG.addColorStop(1, '#4a6a7a');
-  ctx.fillStyle = headG;
-  ctx.beginPath(); ctx.arc(cx, hy, headR, 0, Math.PI * 2); ctx.fill();
-
-  // cat ears
-  [[cx - headR * 0.6, hy - headR * 0.85], [cx + headR * 0.6, hy - headR * 0.85]].forEach(([ex, ey]) => {
-    // outer ear
-    ctx.fillStyle = '#6a8a9a';
-    ctx.beginPath();
-    ctx.moveTo(ex - 8, ey + 6);
-    ctx.lineTo(ex, ey - 16);
-    ctx.lineTo(ex + 8, ey + 6);
-    ctx.closePath(); ctx.fill();
-    // inner ear
-    ctx.fillStyle = '#ffaaaa';
-    ctx.beginPath();
-    ctx.moveTo(ex - 4, ey + 3);
-    ctx.lineTo(ex, ey - 9);
-    ctx.lineTo(ex + 4, ey + 3);
-    ctx.closePath(); ctx.fill();
-  });
-
-  // eyes (big cute)
-  [cx - 8, cx + 8].forEach(ex => {
-    // white sclera
-    ctx.fillStyle = '#fff';
-    ctx.beginPath(); ctx.ellipse(ex, hy, 6, 7, 0, 0, Math.PI * 2); ctx.fill();
-    // pupil (vertical slit)
-    ctx.fillStyle = '#1a2a10';
-    ctx.beginPath(); ctx.ellipse(ex, hy + 1, 3, 5.5, 0, 0, Math.PI * 2); ctx.fill();
-    // shine
-    ctx.fillStyle = '#fff';
-    ctx.beginPath(); ctx.arc(ex + 2, hy - 2, 1.8, 0, Math.PI * 2); ctx.fill();
-  });
-
-  // nose (small triangle)
-  ctx.fillStyle = '#ffaaaa';
-  ctx.beginPath();
-  ctx.moveTo(cx, hy + 5);
-  ctx.lineTo(cx - 3, hy + 9);
-  ctx.lineTo(cx + 3, hy + 9);
-  ctx.closePath(); ctx.fill();
-
-  // mouth
-  ctx.strokeStyle = '#ff8888'; ctx.lineWidth = 1.5; ctx.lineCap = 'round';
-  ctx.beginPath(); ctx.moveTo(cx, hy + 9); ctx.lineTo(cx - 5, hy + 13); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(cx, hy + 9); ctx.lineTo(cx + 5, hy + 13); ctx.stroke();
-
-  // whiskers
-  ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 1;
-  [[-1, -1], [-1, 0], [-1, 1], [1, -1], [1, 0], [1, 1]].forEach(([side, row]) => {
-    ctx.beginPath();
-    ctx.moveTo(cx + side * 5, hy + 8 + row * 3);
-    ctx.lineTo(cx + side * 22, hy + 7 + row * 3);
-    ctx.stroke();
-  });
-
-  // rope anchor dot
-  ctx.fillStyle = '#888';
+  // rope anchor dot (on top of cat)
+  ctx.fillStyle = '#999';
   ctx.beginPath(); ctx.arc(cx, anchorY, 4, 0, Math.PI * 2); ctx.fill();
 }
 
