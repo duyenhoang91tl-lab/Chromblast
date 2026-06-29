@@ -682,6 +682,10 @@ body {
       <div id="mode-badge">BÌNH THƯỜNG</div>
       <div style="font-size:10px;color:#555;margin-top:4px">ChromaBlast</div>
     </div>
+    <div id="game-controls" style="display:flex;gap:6px;align-items:center;">
+      <button id="mute-btn" title="Tắt/bật âm thanh" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">🔊</button>
+      <button id="pause-btn" title="Tạm dừng" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">⏸</button>
+    </div>
   </div>
 
   <div id="grid-wrap">
@@ -719,6 +723,10 @@ body {
         Đạt <b>9 lần</b> liên tiếp → bàn cờ bùng cháy x3!
       </div>
       <button id="unlock-btn">⚡ VÀO ĐẤU!</button>
+    </div>
+    <div id="pause-overlay" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.75);z-index:100;border-radius:14px;flex-direction:column;align-items:center;justify-content:center;gap:20px;">
+      <div style="font-size:28px;font-weight:900;color:#fff;text-shadow:0 0 20px #fff;">⏸ TẠM DỪNG</div>
+      <button id="resume-btn" style="background:linear-gradient(135deg,#ff6600,#ffaa00);border:none;border-radius:30px;padding:14px 40px;font-size:18px;font-weight:800;color:#1a0a00;cursor:pointer;">▶ Tiếp tục</button>
     </div>
     <div id="game-over-overlay">
       <div id="go-title">🎮 Hết lượt!</div>
@@ -810,6 +818,7 @@ let cellBurstCount = {};
 // Mode B state
 let secretBoard = [];        // 8x8 color indices
 let secretMode = false;
+let gamePaused = false;
 let secretStreak = 0;
 let secretMultiplier = 1;
 let secretTimer = null;
@@ -823,11 +832,13 @@ let fireInterval = null; // fire border particles for Map ẩn 1 combo
    SOUND ENGINE — Web Audio API synthesized sounds
 ══════════════════════════════════════════════ */
 let _sfxCtx = null;
+let sfxMuted = false;
 function getSfxCtx(){
   if(!_sfxCtx) _sfxCtx = new (window.AudioContext||window.webkitAudioContext)();
   return _sfxCtx;
 }
 function playTone(freq, type, duration, vol=0.3, startDelay=0){
+  if(sfxMuted) return;
   try{
     const ctx=getSfxCtx();
     const osc=ctx.createOscillator();
@@ -841,6 +852,7 @@ function playTone(freq, type, duration, vol=0.3, startDelay=0){
   }catch(e){}
 }
 function playNoise(duration, vol=0.15){
+  if(sfxMuted) return;
   try{
     const ctx=getSfxCtx();
     const buf=ctx.createBuffer(1,ctx.sampleRate*duration,ctx.sampleRate);
@@ -4996,6 +5008,43 @@ function initStartScreen(){
   }
   if(btn) btn.addEventListener('click', function(e){ e.stopPropagation(); hideStart(); });
   if(screen) screen.addEventListener('click', hideStart);
+}
+
+// Mute button
+document.getElementById('mute-btn').addEventListener('click', function(){
+  sfxMuted = !sfxMuted;
+  this.textContent = sfxMuted ? '🔇' : '🔊';
+  if(!sfxMuted) sfxPlacePiece();
+});
+
+// Pause button
+document.getElementById('pause-btn').addEventListener('click', togglePause);
+document.getElementById('resume-btn').addEventListener('click', togglePause);
+
+function togglePause(){
+  if(!secretMode && !dodgeMode && !fruitMode && !beeMode && !goldMode) return;
+  gamePaused = !gamePaused;
+  const overlay = document.getElementById('pause-overlay');
+  const btn = document.getElementById('pause-btn');
+  if(gamePaused){
+    overlay.style.display = 'flex';
+    btn.textContent = '▶';
+    if(dodgeRAF){ cancelAnimationFrame(dodgeRAF); dodgeRAF=null; }
+    if(fruitRAF){ cancelAnimationFrame(fruitRAF); fruitRAF=null; }
+    if(beeRAF){   cancelAnimationFrame(beeRAF);   beeRAF=null;   }
+    if(goldRAF){  cancelAnimationFrame(goldRAF);  goldRAF=null;  }
+    if(timerRAF){ cancelAnimationFrame(timerRAF); timerRAF=null; }
+    if(typeof borderSparkInterval !== 'undefined' && borderSparkInterval){ clearInterval(borderSparkInterval); }
+    if(typeof fireInterval !== 'undefined' && fireInterval){ clearInterval(fireInterval); }
+  } else {
+    overlay.style.display = 'none';
+    btn.textContent = '⏸';
+    if(dodgeMode)  { dodgeLast=0; dodgeRAF=requestAnimationFrame(dodgeLoop); }
+    if(fruitMode)  { fruitLast=0; fruitRAF=requestAnimationFrame(fruitLoop); }
+    if(beeMode)    { beeLast=0;   beeRAF=requestAnimationFrame(beeLoop);     }
+    if(goldMode)   { goldLast=0;  goldRAF=requestAnimationFrame(goldLoop);   }
+    if(secretMode) { startSecretTimer(); }
+  }
 }
 
 initStartScreen();
