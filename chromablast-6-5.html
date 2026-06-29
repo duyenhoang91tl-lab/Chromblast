@@ -36,20 +36,33 @@ body {
   position: relative; border-radius: 14px; overflow: hidden;
   transition: box-shadow 0.4s;
 }
-/* Khung map ẩn: viền vàng nhịp nhàng cơ bản */
+/* Khung map ẩn: viền neon rực rỡ */
 #grid-wrap.secret-mode {
-  box-shadow: 0 0 0 3px #f7c948, 0 0 30px rgba(247,201,72,0.25);
-  animation: scFrameGlow 2.5s ease-in-out infinite;
+  box-shadow:
+    0 0 0 4px #f7c948,
+    0 0 0 8px rgba(247,201,72,0.6),
+    0 0 0 14px rgba(247,201,72,0.25),
+    0 0 30px rgba(247,201,72,0.5),
+    0 0 70px rgba(247,201,72,0.3),
+    0 0 130px rgba(247,201,72,0.15);
+  animation: scFrameGlow 1.6s ease-in-out infinite;
 }
 @keyframes scFrameGlow {
-  0%,100% { box-shadow: 0 0 0 3px #f7c948, 0 0 20px rgba(247,201,72,0.22); }
-  50%     { box-shadow: 0 0 0 4px #ffe07a, 0 0 45px rgba(247,201,72,0.45); }
+  0%   { box-shadow: 0 0 0 4px #f7c948, 0 0 0 8px rgba(247,201,72,0.55), 0 0 0 14px rgba(247,201,72,0.22), 0 0 28px rgba(247,201,72,0.45), 0 0 65px rgba(247,201,72,0.28), 0 0 120px rgba(247,201,72,0.12); }
+  50%  { box-shadow: 0 0 0 5px #ffe566, 0 0 0 10px rgba(255,229,102,0.7), 0 0 0 18px rgba(255,229,102,0.28), 0 0 50px rgba(255,229,102,0.65), 0 0 100px rgba(255,200,50,0.4), 0 0 180px rgba(255,160,30,0.2); }
+  100% { box-shadow: 0 0 0 4px #f7c948, 0 0 0 8px rgba(247,201,72,0.55), 0 0 0 14px rgba(247,201,72,0.22), 0 0 28px rgba(247,201,72,0.45), 0 0 65px rgba(247,201,72,0.28), 0 0 120px rgba(247,201,72,0.12); }
 }
 /* Ultra mode */
 #grid-wrap.ultra-glow {
-  animation: none;
-  box-shadow: 0 0 0 4px #ff6b35, 0 0 60px rgba(255,107,53,0.6), 0 0 120px rgba(255,107,53,0.25);
+  animation: ultraFrameSpin 0.4s linear infinite !important;
   transition: box-shadow 0.3s ease;
+}
+@keyframes ultraFrameSpin {
+  0%   { box-shadow: 0 0 0 5px #ff4444, 0 0 0 10px rgba(255,68,68,0.6),  0 0 55px rgba(255,68,68,0.7),  0 0 120px rgba(255,68,68,0.3); }
+  25%  { box-shadow: 0 0 0 5px #ff9900, 0 0 0 10px rgba(255,153,0,0.6),  0 0 55px rgba(255,153,0,0.7),  0 0 120px rgba(255,153,0,0.3); }
+  50%  { box-shadow: 0 0 0 5px #00e5ff, 0 0 0 10px rgba(0,229,255,0.6),  0 0 55px rgba(0,229,255,0.7),  0 0 120px rgba(0,229,255,0.3); }
+  75%  { box-shadow: 0 0 0 5px #cc44ff, 0 0 0 10px rgba(204,68,255,0.6), 0 0 55px rgba(204,68,255,0.7), 0 0 120px rgba(204,68,255,0.3); }
+  100% { box-shadow: 0 0 0 5px #ff4444, 0 0 0 10px rgba(255,68,68,0.6),  0 0 55px rgba(255,68,68,0.7),  0 0 120px rgba(255,68,68,0.3); }
 }
 
 /* ══════════════════════════════════════════════════════
@@ -116,10 +129,10 @@ body {
   animation: cbSparkFly var(--dur,0.7s) ease-out forwards;
 }
 @keyframes cbSparkFly {
-  0%   { opacity: 0; transform: rotate(var(--ang)) translateX(0) scale(0.4); }
-  15%  { opacity: 1; }
-  75%  { opacity: 0.8; }
-  100% { opacity: 0; transform: rotate(var(--ang)) translateX(var(--dist)) scale(1); }
+  0%   { opacity: 0; transform: rotate(var(--ang)) translateX(0) scaleX(0.3); }
+  12%  { opacity: 1; }
+  60%  { opacity: 0.9; }
+  100% { opacity: 0; transform: rotate(var(--ang)) translateX(var(--dist)) scaleX(1.2); }
 }
 
 /* ── MAIN GRID (mode A) ── */
@@ -624,6 +637,7 @@ let secretTimer = null;
 let secretUltra = false;
 let secretTimerEnd = 0;
 let timerRAF = null;
+let borderSparkInterval = null; // continuous outward sparks during secret mode
 
 /* ══════════════════════════════════════════
    HELPERS
@@ -1165,6 +1179,13 @@ function enterSecretMode(){
   document.getElementById('mode-badge').classList.add('secret');
   document.getElementById('burst-count').textContent='Nhân: x1';
 
+  // start continuous outward border sparks
+  if(borderSparkInterval) clearInterval(borderSparkInterval);
+  borderSparkInterval = setInterval(()=>{
+    if(!secretMode){ clearInterval(borderSparkInterval); borderSparkInterval=null; return; }
+    spawnContinuousBorderSparks();
+  }, 180);
+
   initSecretBoard();
   renderSecretGrid();
   renderStreakDots();
@@ -1172,6 +1193,7 @@ function enterSecretMode(){
 
 function exitSecretMode(){
   secretMode=false;
+  if(borderSparkInterval){ clearInterval(borderSparkInterval); borderSparkInterval=null; }
   clearSecretTimer();
   secretStreak=0;
   secretMultiplier=1;
@@ -1261,20 +1283,21 @@ function spawnBorderFireworks(ci, big){
   fx.classList.add('active');
   const W=wrap.clientWidth, H=wrap.clientHeight;
   const base=(ci!=null && SECRET_COLORS[ci]) ? SECRET_COLORS[ci] : '#ffd24a';
-  const palette=[base, base, '#ffd24a', '#ff7a3c', '#ffffff', '#ffe9a8'];
-  const N = big ? 60 : 32;                    // ultra → bắn nhiều hơn
+  const palette=[base, base, '#ffd24a', '#ff7a3c', '#ffffff', '#ffe9a8', '#a8f0ff', '#ff88dd'];
+  const N = big ? 80 : 44;
   for(let i=0;i<N;i++){
-    const side=i%4;                           // phân bố đều quanh 4 cạnh
+    const side=i%4;
     const t=Math.random();
     let x,y,ang;
-    if(side===0){ x=t*W; y=0;     ang=90;  }  // viền trên → bắn vào trong (xuống)
-    else if(side===1){ x=W; y=t*H; ang=180; } // viền phải → bắn vào trong (trái)
-    else if(side===2){ x=t*W; y=H; ang=-90; } // viền dưới → bắn vào trong (lên)
-    else { x=0; y=t*H; ang=0; }               // viền trái → bắn vào trong (phải)
-    ang += Math.random()*60-30;               // xoè ±30°
-    const dist=(big?30:22)+Math.random()*(big?60:42); // bay vào trong, bám viền
-    const len =16+Math.random()*22;           // độ dài vệt cháy
-    const dur =500+Math.random()*380;
+    // angles now point OUTWARD from the border
+    if(side===0){ x=t*W; y=0;     ang=-90; }   // top → shoot upward
+    else if(side===1){ x=W; y=t*H; ang=0;   }   // right → shoot right
+    else if(side===2){ x=t*W; y=H; ang=90;  }   // bottom → shoot downward
+    else           { x=0;   y=t*H; ang=180; }   // left → shoot left
+    ang += Math.random()*50-25;                  // spread ±25°
+    const dist=(big?55:35)+Math.random()*(big?90:60);
+    const len =14+Math.random()*28;
+    const dur =400+Math.random()*350;
     const col =palette[(Math.random()*palette.length)|0];
     const s=document.createElement('div');
     s.className='spark';
@@ -1286,6 +1309,41 @@ function spawnBorderFireworks(ci, big){
     s.style.animationDuration=dur+'ms';
     fx.appendChild(s);
     setTimeout(()=>s.remove(), dur+60);
+  }
+}
+
+function spawnContinuousBorderSparks(){
+  const wrap=document.getElementById('grid-wrap');
+  const cbDiv=document.getElementById('combo-border-sparks');
+  if(!wrap||!cbDiv) return;
+  const W=wrap.clientWidth, H=wrap.clientHeight;
+  const streakColors=secretUltra
+    ? ['#ff4444','#ff9900','#00e5ff','#cc44ff','#44ff88','#ffe566']
+    : ['#f7c948','#ffe566','#fff0a8','#ffb830','#ffffff','#ffd24a'];
+  const n = secretUltra ? 6 : 3;
+  for(let i=0;i<n;i++){
+    const side=Math.floor(Math.random()*4);
+    const t=Math.random();
+    let x,y,ang;
+    if(side===0){      x=t*W; y=2;   ang=-90; }
+    else if(side===1){ x=W-2; y=t*H; ang=0;   }
+    else if(side===2){ x=t*W; y=H-2; ang=90;  }
+    else             { x=2;   y=t*H; ang=180; }
+    ang += Math.random()*60-30;
+    const dist=30+Math.random()*55;
+    const len=10+Math.random()*22;
+    const dur=300+Math.random()*280;
+    const col=streakColors[(Math.random()*streakColors.length)|0];
+    const s=document.createElement('div');
+    s.className='cb-spark';
+    s.style.left=x+'px'; s.style.top=y+'px';
+    s.style.setProperty('--ang', ang+'deg');
+    s.style.setProperty('--dist', dist+'px');
+    s.style.setProperty('--len', len+'px');
+    s.style.setProperty('--col', col);
+    s.style.setProperty('--dur', dur+'ms');
+    cbDiv.appendChild(s);
+    setTimeout(()=>s.remove(), dur+80);
   }
 }
 
