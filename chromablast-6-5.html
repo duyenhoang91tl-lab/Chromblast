@@ -1916,6 +1916,14 @@ function renderStreakDots(){
 ══════════════════════════════════════════ */
 let dodgeMode=false, dodgeRAF=null, dodgeLast=0, dodgeElapsed=0, dodgeSpawnTimer=0, dodgeAccum=0;
 let turtle=null, rabbit=null, carrots=[];
+let dodgePowerUps=[];
+let dodgePowerSpawnTimer=0;
+let dodgeShield=0, dodgeSlowTime=0, dodgeMagnet=0;
+const DODGE_POWERUPS=[
+  { type:'shield', emoji:'🛡️', color:'#44aaff', label:'Khiên!',      duration:4 },
+  { type:'slow',   emoji:'⏳', color:'#cc44ff', label:'Chậm!',       duration:3 },
+  { type:'magnet', emoji:'🧲', color:'#ff8800', label:'Nam châm!',   duration:4 },
+];
 let dodgeStreak=0;
 const dodgeKeys={left:false,right:false};
 let secret1Gained=0;              // điểm kiếm được trong map ẩn 1
@@ -1972,6 +1980,8 @@ function initDodge(){
   turtle={ x:W/2-24, y:H-52, w:48, h:36, target:W/2 };
   rabbit={ x:W/2-26, y:16, w:52, h:42, dir:1 };
   carrots=[];
+  dodgePowerUps=[]; dodgePowerSpawnTimer=5;
+  dodgeShield=0; dodgeSlowTime=0; dodgeMagnet=0;
   dodgeElapsed=0; dodgeSpawnTimer=0; dodgeAccum=0;
   dodgeKeys.left=dodgeKeys.right=false;
 }
@@ -2023,8 +2033,21 @@ function dodgeLoop(now){
   }
   turtle.x=Math.max(0,Math.min(W-turtle.w,turtle.x));
 
+  // power-up spawn timer
+  dodgePowerSpawnTimer-=dt;
+  if(dodgePowerSpawnTimer<=0){
+    dodgePowerSpawnTimer=8+Math.random()*7;
+    const pu=DODGE_POWERUPS[Math.floor(Math.random()*DODGE_POWERUPS.length)];
+    dodgePowerUps.push({
+      type:pu.type, emoji:pu.emoji, color:pu.color, label:pu.label, duration:pu.duration,
+      x:30+Math.random()*(W-60), y:-30, r:18,
+      speed:80+Math.random()*40
+    });
+  }
+
   // cà rốt rơi + tính điểm né
-  for(const c of carrots) c.y+=c.vy*dt;
+  const speedMult=dodgeSlowTime>0?0.35:1;
+  for(const c of carrots) c.y+=c.vy*dt*speedMult;
   carrots=carrots.filter(c=>{
     if(c.y<H+20) return true;
     score+=12; if(score>best)best=score;   // né được 1 viên
@@ -2034,6 +2057,33 @@ function dodgeLoop(now){
     return false;
   });
   updateScoreUI();
+
+  // power-up timers
+  if(dodgeShield>0) dodgeShield-=dt;
+  if(dodgeSlowTime>0) dodgeSlowTime-=dt;
+  if(dodgeMagnet>0) dodgeMagnet-=dt;
+
+  // move & collect power-ups
+  for(let i=dodgePowerUps.length-1;i>=0;i--){
+    const pu=dodgePowerUps[i];
+    pu.y+=pu.speed*dt*speedMult;
+    if(dodgeMagnet>0){
+      const mdx=(turtle.x+turtle.w/2)-pu.x;
+      pu.x+=mdx*dt*3;
+    }
+    const tx=turtle.x+turtle.w/2, ty=turtle.y+turtle.h/2;
+    const dist=Math.hypot(pu.x-tx, pu.y-ty);
+    if(dist<pu.r+20){
+      if(pu.type==='shield')  dodgeShield=pu.duration;
+      if(pu.type==='slow')    dodgeSlowTime=pu.duration;
+      if(pu.type==='magnet')  dodgeMagnet=pu.duration;
+      showComboFlash(0,false,pu.label);
+      sfxGoldCollect();
+      dodgePowerUps.splice(i,1);
+      continue;
+    }
+    if(pu.y>H+40) dodgePowerUps.splice(i,1);
+  }
 
   // va chạm (hộp rùa thu nhỏ cho công bằng)
   const tb={x:turtle.x+7,y:turtle.y+6,w:turtle.w-14,h:turtle.h-10};
@@ -2047,7 +2097,23 @@ function dodgeLoop(now){
 
   drawDodge(ctx,W,H);
 
-  if(hit){ dodgeStreak=0; dodgeGameOver(); return; }
+  if(hit){
+    if(dodgeShield>0){
+      dodgeShield=0;
+      showComboFlash(0,false,'🛡️ Khiên đỡ!');
+      sfxStreak(3);
+      // remove the carrot that hit
+      const tb2={x:turtle.x+7,y:turtle.y+6,w:turtle.w-14,h:turtle.h-10};
+      carrots=carrots.filter(c=>{
+        const nx=Math.max(tb2.x,Math.min(c.x,tb2.x+tb2.w));
+        const ny=Math.max(tb2.y,Math.min(c.y,tb2.y+tb2.h));
+        const dx=c.x-nx, dy=c.y-ny, rr=c.r*0.7;
+        return !(dx*dx+dy*dy<rr*rr);
+      });
+    } else {
+      dodgeStreak=0; dodgeGameOver(); return;
+    }
+  }
   dodgeRAF=requestAnimationFrame(dodgeLoop);
 }
 
@@ -2203,6 +2269,48 @@ function drawDodge(ctx,W,H){
 
   drawRabbit(ctx,rabbit.x,rabbit.y,rabbit.w,rabbit.h);
   for(const c of carrots) drawCarrot(ctx,c.x,c.y,c.r);
+
+  // draw power-ups
+  for(const pu of dodgePowerUps){
+    ctx.save();
+    const grad=ctx.createRadialGradient(pu.x,pu.y,0,pu.x,pu.y,pu.r);
+    grad.addColorStop(0,pu.color+'cc');
+    grad.addColorStop(1,pu.color+'22');
+    ctx.beginPath(); ctx.arc(pu.x,pu.y,pu.r,0,Math.PI*2);
+    ctx.fillStyle=grad;
+    ctx.shadowColor=pu.color; ctx.shadowBlur=15;
+    ctx.fill();
+    ctx.strokeStyle=pu.color; ctx.lineWidth=2;
+    ctx.stroke();
+    ctx.font='20px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.shadowBlur=0;
+    ctx.fillText(pu.emoji,pu.x,pu.y);
+    ctx.restore();
+  }
+
+  // shield ring on turtle
+  if(dodgeShield>0){
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(turtle.x+turtle.w/2,turtle.y+turtle.h/2,turtle.w*0.8,0,Math.PI*2);
+    ctx.strokeStyle=`rgba(68,170,255,${Math.min(1,dodgeShield)})`;
+    ctx.lineWidth=3;
+    ctx.shadowColor='#44aaff'; ctx.shadowBlur=12;
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // slow-time overlay
+  if(dodgeSlowTime>0){
+    ctx.save();
+    ctx.fillStyle=`rgba(100,0,180,${Math.min(0.12,dodgeSlowTime*0.04)})`;
+    ctx.fillRect(0,0,W,H);
+    ctx.font='bold 14px sans-serif'; ctx.fillStyle='#cc88ff';
+    ctx.textAlign='center'; ctx.shadowBlur=0;
+    ctx.fillText(`⏳ ${dodgeSlowTime.toFixed(1)}s`,W/2,30);
+    ctx.restore();
+  }
+
   drawTurtle(ctx,turtle.x,turtle.y,turtle.w,turtle.h);
 
   // HUD
