@@ -3728,75 +3728,42 @@ function drawBee(ctx,W,H,now){
 
 function buildDogSVG(){
   const svgStr = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 180" width="160" height="180">
-  <defs>
-    <radialGradient id="dHG" cx="38%" cy="30%" r="62%">
-      <stop offset="0%" stop-color="#ffffff"/>
-      <stop offset="100%" stop-color="#f0ece0"/>
-    </radialGradient>
-  </defs>
-  <!-- TAIL fluffy curl -->
-  <circle cx="132" cy="95"  r="20" fill="#f0ece0"/>
-  <circle cx="140" cy="76"  r="16" fill="#f4f0e4"/>
-  <circle cx="137" cy="57"  r="12" fill="#f8f5f0"/>
-  <circle cx="136" cy="72"  r="10" fill="white" opacity="0.5"/>
-  <!-- BODY big cloud puff -->
-  <ellipse cx="76" cy="132" rx="52" ry="42" fill="#f5f2e8"/>
-  <circle cx="24"  cy="122" r="22" fill="#f2eee0"/>
-  <circle cx="28"  cy="150" r="18" fill="#f4f0e4"/>
-  <circle cx="52"  cy="164" r="16" fill="#f0ece0"/>
-  <circle cx="76"  cy="168" r="18" fill="#f3efe4"/>
-  <circle cx="100" cy="164" r="16" fill="#f0ece0"/>
-  <circle cx="122" cy="148" r="18" fill="#f4f0e4"/>
-  <circle cx="126" cy="122" r="22" fill="#f2eee0"/>
-  <circle cx="76"  cy="110" r="26" fill="white" opacity="0.78"/>
-  <circle cx="58"  cy="118" r="18" fill="white" opacity="0.6"/>
-  <circle cx="94"  cy="118" r="18" fill="white" opacity="0.6"/>
-  <!-- PAWS -->
-  <ellipse cx="54"  cy="170" rx="20" ry="11" fill="#edeae0"/>
-  <ellipse cx="98"  cy="170" rx="20" ry="11" fill="#edeae0"/>
-  <ellipse cx="46"  cy="174" rx="5" ry="3" fill="#d8d4c6"/>
-  <ellipse cx="56"  cy="176" rx="5" ry="3" fill="#d8d4c6"/>
-  <ellipse cx="66"  cy="174" rx="5" ry="3" fill="#d8d4c6"/>
-  <ellipse cx="90"  cy="174" rx="5" ry="3" fill="#d8d4c6"/>
-  <ellipse cx="100" cy="176" rx="5" ry="3" fill="#d8d4c6"/>
-  <ellipse cx="110" cy="174" rx="5" ry="3" fill="#d8d4c6"/>
-  <!-- EARS -->
-  <ellipse cx="42" cy="28" rx="18" ry="22" transform="rotate(-16,42,28)" fill="#ede8d8"/>
-  <ellipse cx="110" cy="28" rx="18" ry="22" transform="rotate(16,110,28)" fill="#ede8d8"/>
-  <ellipse cx="42" cy="30" rx="10" ry="13" transform="rotate(-16,42,30)" fill="#ffbbbb" opacity="0.55"/>
-  <ellipse cx="110" cy="30" rx="10" ry="13" transform="rotate(16,110,30)" fill="#ffbbbb" opacity="0.55"/>
-  <circle cx="36" cy="18" r="12" fill="white" opacity="0.55"/>
-  <circle cx="116" cy="18" r="12" fill="white" opacity="0.55"/>
-  <!-- HEAD big round -->
-  <circle cx="76" cy="72" r="54" fill="url(#dHG)"/>
-  <!-- cheek side fur puffs -->
-  <circle cx="18"  cy="72" r="24" fill="#f8f5ef" opacity="0.9"/>
-  <circle cx="134" cy="72" r="24" fill="#f8f5ef" opacity="0.9"/>
-  <circle cx="16"  cy="92" r="18" fill="#f8f5ef" opacity="0.7"/>
-  <circle cx="136" cy="92" r="18" fill="#f8f5ef" opacity="0.7"/>
-  <!-- top head puffs -->
-  <circle cx="50"  cy="24" r="15" fill="white" opacity="0.5"/>
-  <circle cx="76"  cy="18" r="18" fill="white" opacity="0.45"/>
-  <circle cx="102" cy="24" r="15" fill="white" opacity="0.5"/>
-  <!-- shine -->
-  <ellipse cx="56" cy="44" rx="20" ry="11" fill="white" opacity="0.22" transform="rotate(-12,56,44)"/>
-  <!-- EYES big anime -->
-  <circle cx="56" cy="70" r="17" fill="white"/>
-  <circle cx="96" cy="70" r="17" fill="white"/>
-  <circle cx="57" cy="72" r="13" fill="#100806"/>
-  <circle cx="97" cy="72" r="13" fill="#100806"/>
-  <circle cx="64" cy="62" r="6.5" fill="white"/>
-  <circle cx="104" cy="62" r="6.5" fill="white"/>
-  <circle cx="50" cy="76" r="2.5" fill="white" opacity="0.55"/>
-  <circle cx="90" cy="76" r="2.5" fill="white" opacity="0.55"/>
+  <!-- TAIL curl -->
+  <path d="M118 120 C148 108,155 78,132 64 C118 56,110 68,122 76" stroke="#e8e4d8" stroke-width="16" fill="none" stroke-linecap="round"/>
+  <path d="M118 120 C148 108,155 78,132 64 C118 56,110 68,122 76" stroke="white" stroke-width="9" fill="none" stroke-linecap="round"/>
+  <!-- BODY -->
+  <ellipse cx="76" cy="138" rx="46" ry="36" fill="#f0ede2"/>
+  <ellipse cx="76" cy="148" rx="34" ry="22" fill="white" opacity="0.6"/>
+  <!-- FRONT PAWS -->
+  <ellipse cx="52" cy="172" rx="18" ry="10" fill="#e8e4d5"/>
+  <ellipse cx="100" cy="172" rx="18" ry="10" fill="#e8e4d5"/>
+  <!-- EARS floppy -->
+  <ellipse cx="36" cy="46" rx="22" ry="28" transform="rotate(-14,36,46)" fill="#e0dcc8"/>
+  <ellipse cx="116" cy="46" rx="22" ry="28" transform="rotate(14,116,46)" fill="#e0dcc8"/>
+  <ellipse cx="36" cy="48" rx="12" ry="17" transform="rotate(-14,36,48)" fill="#ffccd4" opacity="0.5"/>
+  <ellipse cx="116" cy="48" rx="12" ry="17" transform="rotate(14,116,48)" fill="#ffccd4" opacity="0.5"/>
+  <!-- HEAD -->
+  <circle cx="76" cy="80" r="56" fill="white"/>
+  <!-- cheek puffs -->
+  <circle cx="20" cy="84" r="20" fill="#f8f5ee"/>
+  <circle cx="132" cy="84" r="20" fill="#f8f5ee"/>
+  <!-- head shine -->
+  <ellipse cx="58" cy="50" rx="22" ry="10" fill="white" opacity="0.35" transform="rotate(-15,58,50)"/>
+  <!-- EYES -->
+  <circle cx="56" cy="76" r="14" fill="#1a1008"/>
+  <circle cx="96" cy="76" r="14" fill="#1a1008"/>
+  <circle cx="62" cy="68" r="6" fill="white"/>
+  <circle cx="102" cy="68" r="6" fill="white"/>
+  <circle cx="52" cy="80" r="2" fill="white" opacity="0.6"/>
+  <circle cx="92" cy="80" r="2" fill="white" opacity="0.6"/>
   <!-- NOSE -->
-  <ellipse cx="76" cy="89" rx="9" ry="6" fill="#bb6688"/>
-  <ellipse cx="73" cy="87" rx="4" ry="2.5" fill="#ffaabb" opacity="0.65"/>
-  <!-- MOUTH smile -->
-  <path d="M67 96 Q76 106 85 96" stroke="#bb4466" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <ellipse cx="76" cy="94" rx="8" ry="5.5" fill="#cc7799"/>
+  <ellipse cx="73" cy="92" rx="3.5" ry="2" fill="#ffbbcc" opacity="0.7"/>
+  <!-- MOUTH -->
+  <path d="M68 100 Q76 110 84 100" stroke="#aa3366" stroke-width="2.5" fill="none" stroke-linecap="round"/>
   <!-- BLUSH -->
-  <ellipse cx="34"  cy="86" rx="18" ry="11" fill="rgba(255,110,140,0.32)"/>
-  <ellipse cx="118" cy="86" rx="18" ry="11" fill="rgba(255,110,140,0.32)"/>
+  <ellipse cx="32"  cy="90" rx="16" ry="10" fill="rgba(255,130,160,0.28)"/>
+  <ellipse cx="120" cy="90" rx="16" ry="10" fill="rgba(255,130,160,0.28)"/>
 </svg>`
   const blob = new Blob([svgStr], {type:'image/svg+xml'});
   const url = URL.createObjectURL(blob);
@@ -4036,56 +4003,58 @@ let gmRope = {
 
 function buildGoldCatSVG(){
   const svgStr = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 155" width="120" height="155">
-  <!-- fishing rod -->
-  <line x1="88" y1="60" x2="118" y2="8" stroke="#6b4010" stroke-width="4" stroke-linecap="round"/>
-  <line x1="118" y1="8" x2="115" y2="50" stroke="rgba(240,240,200,0.9)" stroke-width="1.2"/>
-  <!-- tail -->
-  <path d="M80 105 C104 92,110 70,96 54" stroke="#e8a020" stroke-width="11" fill="none" stroke-linecap="round"/>
-  <path d="M80 105 C104 92,110 70,96 54" stroke="#ffd040" stroke-width="6" fill="none" stroke-linecap="round"/>
-  <circle cx="96" cy="54" r="7" fill="#ffe878"/>
-  <!-- body round puff -->
-  <ellipse cx="56" cy="115" rx="36" ry="30" fill="#f0a820"/>
-  <!-- belly -->
-  <ellipse cx="56" cy="118" rx="22" ry="20" fill="#ffe098" opacity="0.7"/>
-  <!-- arms -->
-  <ellipse cx="20" cy="114" rx="10" ry="14" fill="#e09018" transform="rotate(15,20,114)"/>
-  <circle cx="16" cy="126" r="9" fill="#f0b030"/>
-  <ellipse cx="88" cy="102" rx="10" ry="14" fill="#e09018" transform="rotate(-28,88,102)"/>
-  <circle cx="94" cy="92" r="9" fill="#f0b030"/>
-  <!-- legs/paws -->
-  <ellipse cx="42" cy="142" rx="14" ry="9" fill="#e09018"/>
-  <ellipse cx="70" cy="142" rx="14" ry="9" fill="#e09018"/>
-  <!-- ears pointy -->
-  <polygon points="36,22 26,0 52,18" fill="#e09018"/>
-  <polygon points="80,22 90,0 64,18" fill="#e09018"/>
-  <polygon points="37,20 30,5 50,18" fill="#ffb8a0"/>
-  <polygon points="79,20 86,5 66,18" fill="#ffb8a0"/>
-  <!-- head big round -->
-  <circle cx="60" cy="52" r="38" fill="#f0b828"/>
-  <!-- shine -->
-  <ellipse cx="46" cy="36" rx="15" ry="8" fill="white" opacity="0.2" transform="rotate(-10,46,36)"/>
-  <!-- eyes -->
-  <circle cx="46" cy="50" r="11" fill="#111"/>
-  <circle cx="74" cy="50" r="11" fill="#111"/>
-  <circle cx="52" cy="44" r="5" fill="white"/>
-  <circle cx="80" cy="44" r="5" fill="white"/>
-  <!-- nose -->
-  <polygon points="60,63 54,57 66,57" fill="#ff8080"/>
-  <!-- mouth -->
-  <path d="M53 66 Q60 73 67 66" stroke="#cc3030" stroke-width="2" fill="none" stroke-linecap="round"/>
-  <!-- blush -->
-  <ellipse cx="34" cy="60" rx="12" ry="8" fill="rgba(255,110,80,0.28)"/>
-  <ellipse cx="86" cy="60" rx="12" ry="8" fill="rgba(255,110,80,0.28)"/>
-  <!-- whiskers -->
-  <line x1="12" y1="58" x2="46" y2="62" stroke="rgba(255,255,200,0.9)" stroke-width="1.3"/>
-  <line x1="12" y1="64" x2="45" y2="64" stroke="rgba(255,255,200,0.9)" stroke-width="1.3"/>
-  <line x1="108" y1="58" x2="74" y2="62" stroke="rgba(255,255,200,0.9)" stroke-width="1.3"/>
-  <line x1="108" y1="64" x2="75" y2="64" stroke="rgba(255,255,200,0.9)" stroke-width="1.3"/>
-  <!-- mining hat -->
-  <ellipse cx="60" cy="18" rx="30" ry="8" fill="#b86010"/>
-  <rect x="40" y="10" width="40" height="12" rx="5" fill="#d07018"/>
-  <circle cx="60" cy="13" r="6" fill="#ffee20" opacity="0.95"/>
-  <circle cx="60" cy="13" r="3" fill="white" opacity="0.45"/>
+  <!-- mining pick tool in paw -->
+  <line x1="86" y1="98" x2="112" y2="60" stroke="#7a4810" stroke-width="5" stroke-linecap="round"/>
+  <ellipse cx="114" cy="56" rx="10" ry="5" transform="rotate(-40,114,56)" fill="#aaa"/>
+  <ellipse cx="108" cy="62" rx="10" ry="5" transform="rotate(-40,108,62)" fill="#ccc"/>
+  <!-- TAIL -->
+  <path d="M82 108 C108 96,116 72,100 54" stroke="#e8a020" stroke-width="13" fill="none" stroke-linecap="round"/>
+  <path d="M82 108 C108 96,116 72,100 54" stroke="#ffd050" stroke-width="7" fill="none" stroke-linecap="round"/>
+  <circle cx="100" cy="54" r="8" fill="#fff0a0"/>
+  <!-- BODY -->
+  <ellipse cx="54" cy="116" rx="34" ry="28" fill="#f0a820"/>
+  <ellipse cx="54" cy="120" rx="20" ry="17" fill="#ffe8a0" opacity="0.75"/>
+  <!-- ARMS -->
+  <ellipse cx="20" cy="112" rx="11" ry="16" fill="#e09018" transform="rotate(12,20,112)"/>
+  <circle cx="15" cy="126" r="10" fill="#f0b030"/>
+  <ellipse cx="86" cy="100" rx="11" ry="16" fill="#e09018" transform="rotate(-30,86,100)"/>
+  <circle cx="92" cy="88" r="10" fill="#f0b030"/>
+  <!-- LEGS/PAWS -->
+  <ellipse cx="38" cy="142" rx="15" ry="10" fill="#e09018"/>
+  <ellipse cx="68" cy="142" rx="15" ry="10" fill="#e09018"/>
+  <!-- EARS pointy -->
+  <polygon points="32,28 20,2 50,22" fill="#e09018"/>
+  <polygon points="82,28 94,2 64,22" fill="#e09018"/>
+  <polygon points="33,26 24,7 49,22" fill="#ffb8a8"/>
+  <polygon points="81,26 90,7 65,22" fill="#ffb8a8"/>
+  <!-- HEAD -->
+  <circle cx="58" cy="58" r="40" fill="#f0b828"/>
+  <!-- head shine -->
+  <ellipse cx="44" cy="40" rx="16" ry="8" fill="white" opacity="0.22" transform="rotate(-12,44,40)"/>
+  <!-- EYES big cute -->
+  <circle cx="44" cy="56" r="13" fill="#111"/>
+  <circle cx="72" cy="56" r="13" fill="#111"/>
+  <circle cx="50" cy="48" r="6" fill="white"/>
+  <circle cx="78" cy="48" r="6" fill="white"/>
+  <circle cx="40" cy="61" r="2" fill="white" opacity="0.5"/>
+  <circle cx="68" cy="61" r="2" fill="white" opacity="0.5"/>
+  <!-- NOSE -->
+  <polygon points="58,68 51,62 65,62" fill="#ff8888"/>
+  <!-- MOUTH -->
+  <path d="M50 71 Q58 79 66 71" stroke="#cc3333" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+  <!-- BLUSH -->
+  <ellipse cx="31" cy="65" rx="12" ry="8" fill="rgba(255,120,90,0.28)"/>
+  <ellipse cx="85" cy="65" rx="12" ry="8" fill="rgba(255,120,90,0.28)"/>
+  <!-- WHISKERS -->
+  <line x1="8"  y1="62" x2="44" y2="66" stroke="rgba(255,255,200,0.85)" stroke-width="1.4"/>
+  <line x1="8"  y1="68" x2="44" y2="68" stroke="rgba(255,255,200,0.85)" stroke-width="1.4"/>
+  <line x1="108" y1="62" x2="72" y2="66" stroke="rgba(255,255,200,0.85)" stroke-width="1.4"/>
+  <line x1="108" y1="68" x2="72" y2="68" stroke="rgba(255,255,200,0.85)" stroke-width="1.4"/>
+  <!-- MINING HAT -->
+  <ellipse cx="58" cy="22" rx="32" ry="9" fill="#a85010"/>
+  <rect x="36" y="12" width="44" height="14" rx="6" fill="#c86018"/>
+  <circle cx="58" cy="16" r="7" fill="#ffee22" opacity="0.95"/>
+  <circle cx="58" cy="15" r="3.5" fill="white" opacity="0.5"/>
 </svg>`
   const blob = new Blob([svgStr], {type:'image/svg+xml'});
   const url = URL.createObjectURL(blob);
@@ -4976,7 +4945,10 @@ function moleLoop(now){
         h.fallT+=dt*3;
         if(h.fallT>=1){ h.animal=null; h.nextSpawn=Math.random()*2+0.8; }
       } else {
-        h.riseT=Math.min(1,h.riseT+dt*4);
+        // Phase 1 (0→0.32): slow peek — animal barely pokes head out
+        // Phase 2 (0.32→1): fast full rise — animal fully visible & hittable
+        const speed = h.riseT < 0.32 ? 1.6 : 4.2;
+        h.riseT=Math.min(1, h.riseT+dt*speed);
         h.showT+=dt;
         if(h.showT>=h.maxShow && !h.hit){ h.fallT=0; }
       }
@@ -5006,7 +4978,7 @@ function tapMole(ex,ey){
   moleHammerX=ex; moleHammerY=ey; moleHammerVis=true; moleHammerAnim=1;
   let hit=false;
   for(const h of moleHoles){
-    if(!h.animal || h.fallT>=0 || h.hit) continue;
+    if(!h.animal || h.fallT>=0 || h.hit || h.riseT<0.85) continue; // only hittable when fully risen
     const rise=easeOut(h.riseT);
     const yOff=(1-rise)*h.r*1.8;
     const hx=h.x, hy=h.y-yOff;
@@ -5088,7 +5060,11 @@ function drawMole(ctx,W,H,now,timeLeft){
   ctx.textAlign='center'; ctx.textBaseline='middle';
   for(const h of moleHoles){
     if(!h.animal) continue;
-    const rise = h.fallT>=0 ? 1-easeOut(Math.min(h.fallT,1)) : easeOut(h.riseT);
+    // Peek phase (riseT 0→0.32): only 18% visible; Full phase (0.32→1): 18%→100%
+    const rawRise = h.fallT>=0 ? 1-easeOut(Math.min(h.fallT,1))
+      : h.riseT<0.32 ? easeOut(h.riseT/0.32)*0.18
+      : 0.18 + easeOut((h.riseT-0.32)/0.68)*0.82;
+    const rise = rawRise;
     if(rise<=0) continue;
     const yOff=(1-rise)*h.r*1.8;
     const hx=h.x, hy=h.y-yOff;
@@ -5119,6 +5095,18 @@ function drawMole(ctx,W,H,now,timeLeft){
     ctx.fillText((pts>0?'+':'')+pts, hx+h.r*0.6, hy-h.r*0.7);
 
     ctx.restore();
+
+    // hittable glow when fully risen
+    if(h.riseT>=0.85 && h.fallT<0 && !h.hit){
+      const pulse=0.55+0.45*Math.sin(now*0.008);
+      ctx.save();
+      ctx.shadowColor=h.animal.pts>0?'rgba(255,230,60,0.9)':'rgba(255,80,80,0.9)';
+      ctx.shadowBlur=14*pulse;
+      ctx.strokeStyle=h.animal.pts>0?'rgba(255,220,40,0.7)':'rgba(255,80,60,0.7)';
+      ctx.lineWidth=3;
+      ctx.beginPath(); ctx.arc(h.x, h.y-yOff, h.r+2, Math.PI, 0); ctx.stroke();
+      ctx.restore();
+    }
 
     // grass rim on top of animal
     ctx.fillStyle='#5aaa30';
