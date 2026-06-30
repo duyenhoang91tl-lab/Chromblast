@@ -424,6 +424,14 @@ body {
 /* ── MAP ẨN 16: RUNNER CANVAS ── */
 #runner-canvas { display:none; width:100%; max-width:393px; aspect-ratio:360/460; background:#87ceeb; border-radius:14px; touch-action:none; margin:0 auto; }
 #runner-canvas.active { display:block; }
+#space-canvas  { display:none; width:100%; max-width:393px; aspect-ratio:360/460; background:#000010; border-radius:14px; touch-action:none; margin:0 auto; }
+#space-canvas.active  { display:block; }
+#rhythm-canvas { display:none; width:100%; max-width:393px; aspect-ratio:360/460; background:#1a001a; border-radius:14px; touch-action:none; margin:0 auto; }
+#rhythm-canvas.active { display:block; }
+#maze-canvas   { display:none; width:100%; max-width:393px; aspect-ratio:360/460; background:#0d0d2b; border-radius:14px; touch-action:none; margin:0 auto; }
+#maze-canvas.active   { display:block; }
+#mega-canvas   { display:none; width:100%; max-width:393px; aspect-ratio:360/460; background:#100005; border-radius:14px; touch-action:none; margin:0 auto; }
+#mega-canvas.active   { display:block; }
 .sc {
   width: 44px; height: 44px; border-radius: 8px;
   cursor: pointer; transition: transform 0.08s, filter 0.08s, box-shadow 0.12s;
@@ -796,6 +804,10 @@ body {
     <canvas id="brick-canvas" width="360" height="460"></canvas>
     <!-- MODE Q: Map ẩn 16 — Infinite Runner (Chạy vô tận) -->
     <canvas id="runner-canvas" width="360" height="460"></canvas>
+    <canvas id="space-canvas"  width="360" height="460"></canvas>
+    <canvas id="rhythm-canvas" width="360" height="460"></canvas>
+    <canvas id="maze-canvas"   width="360" height="460"></canvas>
+    <canvas id="mega-canvas"   width="360" height="460"></canvas>
 
     <!-- Lớp phủ pháo hoa cho map ẩn (vệt cháy ở viền khi nổ) -->
     <div id="sc-fx"></div>
@@ -1247,6 +1259,21 @@ function sfxRunnerJump(){ if(sfxMuted)return; playTone(400,'sine',0.08,0.2); pla
 function sfxRunnerDoubleJump(){ if(sfxMuted)return; playTone(500,'sine',0.06,0.18); playTone(800,'sine',0.08,0.2,0.04); playTone(1000,'sine',0.06,0.15,0.08); }
 function sfxRunnerLand(){ if(sfxMuted)return; playNoise(0.04,0.1); playTone(120,'triangle',0.06,0.15); }
 function sfxRunnerStar(){ if(sfxMuted)return; playTone(880,'sine',0.06,0.2); playTone(1100,'sine',0.06,0.22,0.05); }
+function sfxSpaceShoot(){if(sfxMuted)return; playTone(880,'square',0.1,0.3); }
+function sfxSpaceHit(){if(sfxMuted)return; playTone(220,'sawtooth',0.15,0.4); playTone(110,'sawtooth',0.1,0.3,0.05); }
+function sfxSpaceAlienFire(){if(sfxMuted)return; playTone(440,'square',0.12,0.25); playTone(330,'square',0.1,0.2,0.06); }
+function sfxSpaceDogHit(){if(sfxMuted)return; playNoise(0.2,0.5); playTone(150,'sawtooth',0.3,0.4,0.05); }
+function sfxRhythmSpawn(){if(sfxMuted)return; playTone(523,'sine',0.08,0.2); }
+function sfxRhythmPerfect(){if(sfxMuted)return; playTone(1047,'sine',0.1,0.4); playTone(1319,'sine',0.1,0.35,0.1); playTone(1568,'sine',0.15,0.3,0.2); }
+function sfxRhythmGood(){if(sfxMuted)return; playTone(660,'sine',0.1,0.3); playTone(784,'sine',0.1,0.25,0.1); }
+function sfxRhythmMiss(){if(sfxMuted)return; playNoise(0.15,0.3); }
+function sfxMazeStep(){if(sfxMuted)return; playTone(330,'square',0.05,0.15); }
+function sfxMazeWall(){if(sfxMuted)return; playNoise(0.08,0.3); }
+function sfxMazeSolve(){if(sfxMuted)return; playTone(523,'sine',0.1,0.4); playTone(659,'sine',0.1,0.4,0.12); playTone(784,'sine',0.1,0.4,0.24); playTone(1047,'sine',0.3,0.5,0.36); }
+function sfxMegaBossRoar(){if(sfxMuted)return; playTone(55,'sawtooth',0.4,0.6); playTone(41,'sawtooth',0.4,0.5,0.1); playNoise(0.5,0.4); }
+function sfxMegaShoot(){if(sfxMuted)return; playTone(1200,'square',0.08,0.3); playTone(800,'square',0.06,0.2,0.05); }
+function sfxMegaLaser(){if(sfxMuted)return; playNoise(0.3,0.5); playTone(200,'sawtooth',0.3,0.4,0.05); }
+function sfxMegaPhaseChange(){if(sfxMuted)return; playTone(110,'square',0.2,0.5); playTone(146,'square',0.2,0.45,0.15); playTone(165,'square',0.2,0.4,0.3); playNoise(0.5,0.4); }
 
 /* ══════════════════════════════════════════
    HELPERS
@@ -1839,6 +1866,10 @@ document.getElementById('unlock-btn').addEventListener('click',()=>{
   else if(pendingUnlock==='snake')  enterSnakeMode();
   else if(pendingUnlock==='brick')  enterBrickMode();
   else if(pendingUnlock==='runner') enterRunnerMode();
+  else if(pendingUnlock==='space')  enterSpaceMode();
+  else if(pendingUnlock==='rhythm') enterRhythmMode();
+  else if(pendingUnlock==='maze')   enterMazeMode();
+  else if(pendingUnlock==='mega')   enterMegaMode();
   else enterSecretMode();
 });
 
@@ -7865,7 +7896,7 @@ function initStartScreen(){
 }
 
 function togglePause(){
-  if(!secretMode && !dodgeMode && !fruitMode && !beeMode && !goldMode && !moleMode && !memoryMode && !bubbleMode && !stackMode && !bossMode && !catchMode && !floodMode && !arenaMode && !snakeMode && !brickMode && !runnerMode) return;
+  if(!secretMode && !dodgeMode && !fruitMode && !beeMode && !goldMode && !moleMode && !memoryMode && !bubbleMode && !stackMode && !bossMode && !catchMode && !floodMode && !arenaMode && !snakeMode && !brickMode && !runnerMode && !spaceRAF && !rhythmRAF && !mazeRAF && !megaRAF) return;
   sfxClick();
   gamePaused = !gamePaused;
   const overlay = document.getElementById('pause-overlay');
@@ -7888,6 +7919,10 @@ function togglePause(){
     if(typeof snakeRAF!=='undefined'&&snakeRAF){cancelAnimationFrame(snakeRAF);snakeRAF=null;}
     if(typeof brickRAF!=='undefined'&&brickRAF){cancelAnimationFrame(brickRAF);brickRAF=null;}
     if(typeof runnerRAF!=='undefined'&&runnerRAF){cancelAnimationFrame(runnerRAF);runnerRAF=null;}
+    if(typeof spaceRAF!=='undefined'&&spaceRAF){cancelAnimationFrame(spaceRAF);spaceRAF=null;}
+    if(typeof rhythmRAF!=='undefined'&&rhythmRAF){cancelAnimationFrame(rhythmRAF);rhythmRAF=null;}
+    if(typeof mazeRAF!=='undefined'&&mazeRAF){cancelAnimationFrame(mazeRAF);mazeRAF=null;}
+    if(typeof megaRAF!=='undefined'&&megaRAF){cancelAnimationFrame(megaRAF);megaRAF=null;}
     if(timerRAF){ cancelAnimationFrame(timerRAF); timerRAF=null; }
     if(typeof borderSparkInterval !== 'undefined' && borderSparkInterval){ clearInterval(borderSparkInterval); }
     if(typeof fireInterval !== 'undefined' && fireInterval){ clearInterval(fireInterval); }
@@ -7909,6 +7944,10 @@ function togglePause(){
     if(typeof snakeMode!=='undefined'&&snakeMode)   { snakeLast=0;snakeRAF=requestAnimationFrame(snakeLoop);}
     if(typeof brickMode!=='undefined'&&brickMode)   { brickLast=0;brickRAF=requestAnimationFrame(brickLoop);}
     if(typeof runnerMode!=='undefined'&&runnerMode) { runnerLast=0;runnerRAF=requestAnimationFrame(runnerLoop);}
+    if(typeof spaceRAF!=='undefined'&&!spaceRAF&&typeof spaceState!=='undefined'&&spaceState.W) { spaceRAF=requestAnimationFrame(spaceLoop);}
+    if(typeof rhythmRAF!=='undefined'&&!rhythmRAF&&typeof rhythmState!=='undefined'&&rhythmState.W) { rhythmRAF=requestAnimationFrame(rhythmLoop);}
+    if(typeof mazeRAF!=='undefined'&&!mazeRAF&&typeof mazeState!=='undefined'&&mazeState.W) { mazeRAF=requestAnimationFrame(mazeLoop);}
+    if(typeof megaRAF!=='undefined'&&!megaRAF&&typeof megaState!=='undefined'&&megaState.W) { megaRAF=requestAnimationFrame(megaLoop);}
     if(secretMode) { startSecretTimer(); }
   }
 }
@@ -8415,7 +8454,7 @@ const RUNNER_GROUND_Y_FRAC=0.82;
 const RuCV=()=>document.getElementById('runner-canvas');
 const RUNNER_GRAVITY=800, RUNNER_JUMP_VY=-380, RUNNER_JUMP2_VY=-300;
 
-let runnerMode=false, runnerRAF=null, runnerLast=0, runnerElapsed=0;
+let runnerMode=false, runnerRAF=null, runnerLast=0, runnerElapsed=0, runnerWon=false;
 let runnerDogY=0, runnerDogVY=0, runnerJumps=0;
 let runnerObstacles=[], runnerStars=[], runnerFx=[];
 let runnerSpeed=180, runnerScore=0, runnerLives=2;
@@ -8611,6 +8650,7 @@ function drawRunner(ctx,W,H,timeLeft){
 
 function runnerDone(won){
   runnerMode=false;
+  runnerWon=won;
   if(runnerRAF){ cancelAnimationFrame(runnerRAF); runnerRAF=null; }
   if(won){
     sfxWaveWin();
@@ -8637,6 +8677,7 @@ function exitRunnerToMain(){
   document.getElementById('burst-count').textContent='Chuỗi nổ: 0/3';
   document.getElementById('hint-bar').textContent='Chạm khối → ghost hiện · Di ngón → ghost bám · Thả trên ô → đặt · Thả vùng trống → xoay';
   renderPieces(); checkGameOverA();
+  if(runnerWon) setTimeout(()=>triggerSpaceUnlock(), 1500);
 }
 
 RuCV().addEventListener('pointerdown', e=>{
@@ -8648,6 +8689,981 @@ RuCV().addEventListener('pointerdown', e=>{
     runnerJumps++;
   }
 },{passive:false});
+
+/* ═══════════════════════════════════════════════════════
+   MAP 17 — SPACE SHOOTER 🚀
+═══════════════════════════════════════════════════════ */
+const SPC=()=>document.getElementById('space-canvas');
+let spaceRAF=null, spaceWon=false;
+let spaceState={};
+
+function triggerSpaceUnlock(){
+  pendingUnlock='space';
+  document.getElementById('unlock-title').textContent='🚀 BẢN ĐỒ 17 MỞ KHÓA!';
+  document.getElementById('unlock-desc').innerHTML='<b>Space Shooter</b><br>Bay vào vũ trụ, tiêu diệt quân xâm lăng!';
+  document.getElementById('unlock-btn').textContent='CHIẾN ĐẤU!';
+  document.getElementById('unlock-overlay').classList.add('show');
+}
+
+function enterSpaceMode(){
+  document.getElementById('unlock-overlay').classList.remove('show');
+  document.querySelector('.grid')&&(document.querySelector('.grid').style.display='none');
+  document.querySelector('.pieces-area')&&(document.querySelector('.pieces-area').style.display='none');
+  document.body.classList.add('secret-mode');
+  const badge=document.getElementById('mode-badge');
+  if(badge) badge.textContent='🚀 SPACE';
+  const cv=SPC(); cv.classList.add('active');
+  spaceWon=false;
+  initSpaceGame();
+}
+
+function initSpaceGame(){
+  const cv=SPC(), W=360, H=460;
+  spaceState={
+    W,H,
+    ship:{x:180,y:400,w:40,h:30,speed:4},
+    bullets:[],
+    aliens:[],
+    alienBullets:[],
+    lives:3,
+    wave:0,
+    waveCleared:true,
+    score:0,
+    gameOver:false,
+    won:false,
+    shootCooldown:0,
+    alienShootTimer:0,
+    pointerX:180,
+    invincible:0,
+    flashTimer:0,
+    totalWaves:3
+  };
+  const s=spaceState;
+  cv.onpointermove=ev=>{
+    const rect=cv.getBoundingClientRect();
+    const scaleX=W/rect.width;
+    s.pointerX=(ev.clientX-rect.left)*scaleX;
+  };
+  cv.ontouchmove=ev=>{
+    ev.preventDefault();
+    const rect=cv.getBoundingClientRect();
+    const scaleX=W/rect.width;
+    s.pointerX=(ev.touches[0].clientX-rect.left)*scaleX;
+  };
+  cv.onclick=ev=>{
+    if(!s.gameOver && !s.won) spaceShoot();
+  };
+  cv.ontouchstart=ev=>{
+    ev.preventDefault();
+    const rect=cv.getBoundingClientRect();
+    const scaleX=W/rect.width;
+    s.pointerX=(ev.touches[0].clientX-rect.left)*scaleX;
+    if(!s.gameOver && !s.won) spaceShoot();
+  };
+  if(spaceRAF) cancelAnimationFrame(spaceRAF);
+  spaceRAF=requestAnimationFrame(spaceLoop);
+}
+
+function spawnWave(){
+  const s=spaceState;
+  s.wave++;
+  s.waveCleared=false;
+  s.aliens=[];
+  const cols=6, rows=2+(s.wave>1?1:0);
+  const speed=0.5+s.wave*0.4;
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      s.aliens.push({
+        x:40+c*50, y:50+r*48,
+        w:32, h:32,
+        hp:1, speed,
+        dir:1,
+        emoji:'👾'
+      });
+    }
+  }
+}
+
+function spaceShoot(){
+  const s=spaceState;
+  if(s.shootCooldown>0) return;
+  s.bullets.push({x:s.ship.x,y:s.ship.y-20,speed:10});
+  s.shootCooldown=12;
+  sfxSpaceShoot();
+}
+
+function spaceLoop(){
+  const s=spaceState;
+  const cv=SPC(), ctx=cv.getContext('2d');
+  const W=s.W, H=s.H;
+  if(!s.gameOver && !s.won){
+    if(s.waveCleared && s.wave<s.totalWaves){
+      spawnWave();
+    }
+    const dx=s.pointerX-s.ship.x;
+    s.ship.x+=dx*0.15;
+    s.ship.x=Math.max(20,Math.min(W-20,s.ship.x));
+    if(s.shootCooldown>0) s.shootCooldown--;
+    for(let i=s.bullets.length-1;i>=0;i--){
+      s.bullets[i].y-=s.bullets[i].speed;
+      if(s.bullets[i].y<-10) s.bullets.splice(i,1);
+    }
+    let hitWall=false;
+    for(const a of s.aliens){
+      a.x+=a.speed*a.dir;
+      if(a.x>W-20||a.x<20) hitWall=true;
+    }
+    if(hitWall){
+      for(const a of s.aliens){ a.dir*=-1; a.y+=18; }
+    }
+    s.alienShootTimer--;
+    if(s.alienShootTimer<=0 && s.aliens.length>0){
+      s.alienShootTimer=Math.max(30,80-s.wave*15);
+      const shooter=s.aliens[Math.floor(Math.random()*s.aliens.length)];
+      s.alienBullets.push({x:shooter.x,y:shooter.y+16,speed:3+s.wave});
+      sfxSpaceAlienFire();
+    }
+    for(let i=s.alienBullets.length-1;i>=0;i--){
+      s.alienBullets[i].y+=s.alienBullets[i].speed;
+      if(s.alienBullets[i].y>H+10) s.alienBullets.splice(i,1);
+    }
+    for(let bi=s.bullets.length-1;bi>=0;bi--){
+      const b=s.bullets[bi];
+      for(let ai=s.aliens.length-1;ai>=0;ai--){
+        const a=s.aliens[ai];
+        if(Math.abs(b.x-a.x)<20&&Math.abs(b.y-a.y)<20){
+          s.bullets.splice(bi,1);
+          s.aliens.splice(ai,1);
+          s.score+=10;
+          sfxSpaceHit();
+          break;
+        }
+      }
+    }
+    if(s.aliens.length===0 && !s.waveCleared){
+      s.waveCleared=true;
+      if(s.wave>=s.totalWaves){
+        s.won=true;
+        spaceWon=true;
+        sfxMazeSolve();
+      }
+    }
+    if(s.invincible<=0){
+      for(let i=s.alienBullets.length-1;i>=0;i--){
+        const b=s.alienBullets[i];
+        if(Math.abs(b.x-s.ship.x)<22&&Math.abs(b.y-s.ship.y)<18){
+          s.alienBullets.splice(i,1);
+          s.lives--;
+          s.invincible=90;
+          sfxSpaceDogHit();
+          if(s.lives<=0){ s.gameOver=true; }
+          break;
+        }
+      }
+      for(const a of s.aliens){
+        if(a.y>H-60){
+          s.lives--;
+          s.invincible=90;
+          sfxSpaceDogHit();
+          if(s.lives<=0){ s.gameOver=true; }
+          break;
+        }
+      }
+    } else {
+      s.invincible--;
+    }
+  }
+  ctx.fillStyle='#000010';
+  ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#ffffff';
+  for(let i=0;i<40;i++){
+    const sx=(i*137+s.score*0.5)%W;
+    const sy=(i*97+(Date.now()*0.02+i*13))%H;
+    ctx.fillRect(sx,sy,1,1);
+  }
+  ctx.font='28px serif';
+  ctx.textAlign='center';
+  ctx.textBaseline='middle';
+  for(const a of s.aliens){
+    ctx.fillText(a.emoji,a.x,a.y);
+  }
+  ctx.fillStyle='#00ffff';
+  for(const b of s.bullets){
+    ctx.fillRect(b.x-2,b.y-8,4,14);
+  }
+  ctx.fillStyle='#ff4444';
+  for(const b of s.alienBullets){
+    ctx.fillRect(b.x-2,b.y-6,4,12);
+  }
+  if(s.invincible<=0||Math.floor(s.invincible/5)%2===0){
+    ctx.font='36px serif';
+    ctx.fillText('🚀',s.ship.x,s.ship.y);
+  }
+  ctx.fillStyle='#ffffff';
+  ctx.font='bold 14px monospace';
+  ctx.textAlign='left';
+  ctx.fillText('❤️'.repeat(s.lives),10,20);
+  ctx.textAlign='right';
+  ctx.fillText('ĐIỂM: '+s.score,W-10,20);
+  ctx.textAlign='center';
+  ctx.fillText('SÓNG '+(Math.min(s.wave,s.totalWaves))+'/'+s.totalWaves,W/2,20);
+  if(s.waveCleared && s.wave<s.totalWaves && !s.won){
+    ctx.fillStyle='rgba(0,0,50,0.6)';
+    ctx.fillRect(0,H/2-40,W,80);
+    ctx.fillStyle='#00ffff';
+    ctx.font='bold 20px monospace';
+    ctx.textAlign='center';
+    ctx.fillText('SÓNG '+(s.wave)+' XONG!',W/2,H/2-10);
+    ctx.font='14px monospace';
+    ctx.fillText('Chuẩn bị sóng tiếp theo...',W/2,H/2+18);
+  }
+  if(s.gameOver && !s.won){
+    ctx.fillStyle='rgba(0,0,0,0.75)';
+    ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='#ff4444';
+    ctx.font='bold 28px monospace';
+    ctx.textAlign='center';
+    ctx.fillText('GAME OVER',W/2,H/2-20);
+    ctx.fillStyle='#ffffff';
+    ctx.font='16px monospace';
+    ctx.fillText('Nhấn để thử lại',W/2,H/2+20);
+    SPC().onclick=()=>{ initSpaceGame(); };
+  } else if(s.won){
+    ctx.fillStyle='rgba(0,0,20,0.8)';
+    ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='#ffd700';
+    ctx.font='bold 26px monospace';
+    ctx.textAlign='center';
+    ctx.fillText('🎖 CHIẾN THẮNG!',W/2,H/2-30);
+    ctx.fillStyle='#ffffff';
+    ctx.font='16px monospace';
+    ctx.fillText('Điểm: '+s.score,W/2,H/2+10);
+    setTimeout(()=>exitSpaceToMain(),3000);
+    s.won=false; s.gameOver=true;
+  }
+  spaceRAF=requestAnimationFrame(spaceLoop);
+}
+
+function exitSpaceToMain(){
+  if(spaceRAF){cancelAnimationFrame(spaceRAF);spaceRAF=null;}
+  const cv=SPC();
+  cv.classList.remove('active');
+  cv.onpointermove=null; cv.onclick=null; cv.ontouchmove=null; cv.ontouchstart=null;
+  document.querySelector('.grid')&&(document.querySelector('.grid').style.display='');
+  document.querySelector('.pieces-area')&&(document.querySelector('.pieces-area').style.display='');
+  document.body.classList.remove('secret-mode');
+  const badge=document.getElementById('mode-badge');
+  if(badge) badge.textContent='BÌNH THƯỜNG';
+  if(spaceWon) setTimeout(()=>triggerRhythmUnlock(),1500);
+}
+
+/* ═══════════════════════════════════════════════════════
+   MAP 18 — RHYTHM TAP 🎵
+═══════════════════════════════════════════════════════ */
+const RHY=()=>document.getElementById('rhythm-canvas');
+let rhythmRAF=null, rhythmWon=false;
+let rhythmState={};
+
+function triggerRhythmUnlock(){
+  pendingUnlock='rhythm';
+  document.getElementById('unlock-title').textContent='🎵 BẢN ĐỒ 18 MỞ KHÓA!';
+  document.getElementById('unlock-desc').innerHTML='<b>Rhythm Tap</b><br>Gõ theo nhịp điệu — PERFECT để ghi điểm cao!';
+  document.getElementById('unlock-btn').textContent='CHIẾN ĐẤU!';
+  document.getElementById('unlock-overlay').classList.add('show');
+}
+
+function enterRhythmMode(){
+  document.getElementById('unlock-overlay').classList.remove('show');
+  document.querySelector('.grid')&&(document.querySelector('.grid').style.display='none');
+  document.querySelector('.pieces-area')&&(document.querySelector('.pieces-area').style.display='none');
+  document.body.classList.add('secret-mode');
+  const badge=document.getElementById('mode-badge');
+  if(badge) badge.textContent='🎵 RHYTHM';
+  const cv=RHY(); cv.classList.add('active');
+  rhythmWon=false;
+  initRhythmGame();
+}
+
+function initRhythmGame(){
+  const cv=RHY(), W=360, H=460;
+  rhythmState={
+    W,H,
+    circles:[],
+    feedbacks:[],
+    totalCircles:20,
+    spawned:0,
+    completed:0,
+    score:0,
+    gameOver:false,
+    won:false,
+    spawnTimer:0,
+    spawnInterval:90,
+    expandSpeed:0.8,
+    maxRadius:55,
+    ringWidth:12
+  };
+  const s=rhythmState;
+  cv.onclick=ev=>{
+    if(s.gameOver||s.won) return;
+    const rect=cv.getBoundingClientRect();
+    const scaleX=W/rect.width;
+    const scaleY=H/rect.height;
+    const tx=(ev.clientX-rect.left)*scaleX;
+    const ty=(ev.clientY-rect.top)*scaleY;
+    rhythmTap(tx,ty);
+  };
+  cv.ontouchstart=ev=>{
+    ev.preventDefault();
+    if(s.gameOver||s.won) return;
+    const rect=cv.getBoundingClientRect();
+    const scaleX=W/rect.width;
+    const scaleY=H/rect.height;
+    const tx=(ev.touches[0].clientX-rect.left)*scaleX;
+    const ty=(ev.touches[0].clientY-rect.top)*scaleY;
+    rhythmTap(tx,ty);
+  };
+  if(rhythmRAF) cancelAnimationFrame(rhythmRAF);
+  rhythmRAF=requestAnimationFrame(rhythmLoop);
+}
+
+function rhythmTap(tx,ty){
+  const s=rhythmState;
+  let hit=false;
+  for(let i=s.circles.length-1;i>=0;i--){
+    const c=s.circles[i];
+    const dist=Math.hypot(tx-c.x,ty-c.y);
+    if(dist<c.baseRadius+s.ringWidth*2){
+      const diff=Math.abs(c.ringRadius-c.baseRadius);
+      let pts=0, label='';
+      if(diff<8){ pts=30; label='PERFECT!'; sfxRhythmPerfect(); }
+      else if(diff<20){ pts=15; label='GOOD'; sfxRhythmGood(); }
+      else { pts=0; label='MISS'; sfxRhythmMiss(); }
+      s.score+=pts;
+      s.feedbacks.push({x:tx,y:ty,text:label,life:60,pts});
+      s.circles.splice(i,1);
+      s.completed++;
+      hit=true;
+      break;
+    }
+  }
+  if(!hit){ sfxRhythmMiss(); s.feedbacks.push({x:tx,y:ty,text:'MISS',life:60,pts:0}); }
+}
+
+function rhythmLoop(){
+  const s=rhythmState;
+  const cv=RHY(), ctx=cv.getContext('2d');
+  const W=s.W, H=s.H;
+  if(!s.gameOver&&!s.won){
+    s.spawnTimer++;
+    if(s.spawnTimer>=s.spawnInterval && s.spawned<s.totalCircles){
+      s.spawnTimer=0;
+      const margin=60;
+      s.circles.push({
+        x:margin+Math.random()*(W-margin*2),
+        y:margin+Math.random()*(H-margin*2-60),
+        baseRadius:25,
+        ringRadius:25,
+        color:`hsl(${Math.random()*360},80%,60%)`,
+        life:180
+      });
+      s.spawned++;
+      sfxRhythmSpawn();
+    }
+    for(let i=s.circles.length-1;i>=0;i--){
+      const c=s.circles[i];
+      c.ringRadius+=s.expandSpeed;
+      c.life--;
+      if(c.ringRadius>s.maxRadius||c.life<=0){
+        s.circles.splice(i,1);
+        s.completed++;
+        sfxRhythmMiss();
+        s.feedbacks.push({x:c.x,y:c.y,text:'MISS',life:45,pts:0});
+      }
+    }
+    for(let i=s.feedbacks.length-1;i>=0;i--){
+      s.feedbacks[i].life--;
+      if(s.feedbacks[i].life<=0) s.feedbacks.splice(i,1);
+    }
+    if(s.spawned>=s.totalCircles && s.circles.length===0 && !s.won){
+      s.won=true; rhythmWon=true;
+    }
+  }
+  ctx.fillStyle='#1a001a';
+  ctx.fillRect(0,0,W,H);
+  for(const c of s.circles){
+    ctx.beginPath();
+    ctx.arc(c.x,c.y,c.baseRadius,0,Math.PI*2);
+    ctx.fillStyle=c.color+'44';
+    ctx.fill();
+    ctx.strokeStyle=c.color;
+    ctx.lineWidth=3;
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(c.x,c.y,c.ringRadius,0,Math.PI*2);
+    const alpha=Math.max(0,1-(c.ringRadius-c.baseRadius)/(s.maxRadius-c.baseRadius));
+    ctx.strokeStyle=`rgba(255,255,255,${alpha*0.8})`;
+    ctx.lineWidth=s.ringWidth;
+    ctx.stroke();
+  }
+  for(const f of s.feedbacks){
+    const alpha=f.life/60;
+    ctx.font='bold 18px monospace';
+    ctx.textAlign='center';
+    ctx.fillStyle=f.pts>=30?`rgba(255,215,0,${alpha})`:f.pts>=15?`rgba(100,255,100,${alpha})`:`rgba(255,80,80,${alpha})`;
+    ctx.fillText(f.text+(f.pts>0?' +'+f.pts:''),f.x,f.y-20+((60-f.life)*0.3));
+  }
+  ctx.fillStyle='#ff88ff';
+  ctx.font='bold 14px monospace';
+  ctx.textAlign='left';
+  ctx.fillText('ĐIỂM: '+s.score,10,20);
+  ctx.textAlign='right';
+  ctx.fillText(s.completed+'/'+s.totalCircles,W-10,20);
+  ctx.fillStyle='#330033';
+  ctx.fillRect(10,30,W-20,8);
+  ctx.fillStyle='#ff44ff';
+  ctx.fillRect(10,30,(W-20)*(s.completed/s.totalCircles),8);
+  if(s.won){
+    ctx.fillStyle='rgba(0,0,0,0.8)';
+    ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='#ffd700';
+    ctx.font='bold 26px monospace';
+    ctx.textAlign='center';
+    ctx.fillText('🎵 HOÀN THÀNH!',W/2,H/2-30);
+    ctx.fillStyle='#ffffff';
+    ctx.font='18px monospace';
+    ctx.fillText('Điểm: '+s.score+' / 600',W/2,H/2+10);
+    setTimeout(()=>exitRhythmToMain(),3000);
+    s.won=false; s.gameOver=true;
+  }
+  rhythmRAF=requestAnimationFrame(rhythmLoop);
+}
+
+function exitRhythmToMain(){
+  if(rhythmRAF){cancelAnimationFrame(rhythmRAF);rhythmRAF=null;}
+  const cv=RHY();
+  cv.classList.remove('active');
+  cv.onclick=null; cv.ontouchstart=null;
+  document.querySelector('.grid')&&(document.querySelector('.grid').style.display='');
+  document.querySelector('.pieces-area')&&(document.querySelector('.pieces-area').style.display='');
+  document.body.classList.remove('secret-mode');
+  const badge=document.getElementById('mode-badge');
+  if(badge) badge.textContent='BÌNH THƯỜNG';
+  if(rhythmWon) setTimeout(()=>triggerMazeUnlock(),1500);
+}
+
+/* ═══════════════════════════════════════════════════════
+   MAP 19 — MAZE RUNNER 🌀
+═══════════════════════════════════════════════════════ */
+const MZC=()=>document.getElementById('maze-canvas');
+let mazeRAF=null, mazeWon=false;
+let mazeState={};
+
+function triggerMazeUnlock(){
+  pendingUnlock='maze';
+  document.getElementById('unlock-title').textContent='🌀 BẢN ĐỒ 19 MỞ KHÓA!';
+  document.getElementById('unlock-desc').innerHTML='<b>Maze Runner</b><br>Tìm đường thoát khỏi mê cung trong 60 giây!';
+  document.getElementById('unlock-btn').textContent='CHIẾN ĐẤU!';
+  document.getElementById('unlock-overlay').classList.add('show');
+}
+
+function enterMazeMode(){
+  document.getElementById('unlock-overlay').classList.remove('show');
+  document.querySelector('.grid')&&(document.querySelector('.grid').style.display='none');
+  document.querySelector('.pieces-area')&&(document.querySelector('.pieces-area').style.display='none');
+  document.body.classList.add('secret-mode');
+  const badge=document.getElementById('mode-badge');
+  if(badge) badge.textContent='🌀 MAZE';
+  const cv=MZC(); cv.classList.add('active');
+  mazeWon=false;
+  initMazeGame();
+}
+
+function generateMaze(cols,rows){
+  const cells=Array.from({length:rows},()=>Array.from({length:cols},()=>({visited:false,walls:[true,true,true,true]})));
+  const DIRS=[[-1,0,0,2],[0,1,1,3],[1,0,2,0],[0,-1,3,1]];
+  function carve(r,c){
+    cells[r][c].visited=true;
+    const dirs=[...DIRS].sort(()=>Math.random()-0.5);
+    for(const [dr,dc,w1,w2] of dirs){
+      const nr=r+dr,nc=c+dc;
+      if(nr>=0&&nr<rows&&nc>=0&&nc<cols&&!cells[nr][nc].visited){
+        cells[r][c].walls[w1]=false;
+        cells[nr][nc].walls[w2]=false;
+        carve(nr,nc);
+      }
+    }
+  }
+  carve(0,0);
+  return cells;
+}
+
+function initMazeGame(){
+  const cv=MZC(), W=360, H=460;
+  const cols=15, rows=19;
+  const cells=generateMaze(cols,rows);
+  const cellW=Math.floor((W-10)/cols);
+  const cellH=Math.floor((H-50)/rows);
+  const offX=(W-cols*cellW)/2;
+  const offY=45;
+  mazeState={
+    W,H,cols,rows,cells,cellW,cellH,offX,offY,
+    dog:{r:0,c:0},
+    timeLeft:60,
+    timerTick:0,
+    won:false,
+    gameOver:false,
+    touchStartX:null,
+    touchStartY:null
+  };
+  const s=mazeState;
+  s._keyHandler=ev=>{
+    if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(ev.key)){
+      ev.preventDefault();
+      const map={ArrowUp:[-1,0],ArrowDown:[1,0],ArrowLeft:[0,-1],ArrowRight:[0,1]};
+      const [dr,dc]=map[ev.key];
+      tryMoveDog(dr,dc);
+    }
+  };
+  window.addEventListener('keydown',s._keyHandler);
+  cv.ontouchstart=ev=>{
+    ev.preventDefault();
+    s.touchStartX=ev.touches[0].clientX;
+    s.touchStartY=ev.touches[0].clientY;
+  };
+  cv.ontouchend=ev=>{
+    ev.preventDefault();
+    if(s.touchStartX===null) return;
+    const dx=ev.changedTouches[0].clientX-s.touchStartX;
+    const dy=ev.changedTouches[0].clientY-s.touchStartY;
+    if(Math.abs(dx)>Math.abs(dy)){
+      tryMoveDog(0,dx>0?1:-1);
+    } else {
+      tryMoveDog(dy>0?1:-1,0);
+    }
+    s.touchStartX=null; s.touchStartY=null;
+  };
+  if(mazeRAF) cancelAnimationFrame(mazeRAF);
+  mazeRAF=requestAnimationFrame(mazeLoop);
+}
+
+function tryMoveDog(dr,dc){
+  const s=mazeState;
+  if(s.won||s.gameOver) return;
+  const {dog,cells,rows,cols}=s;
+  const wallMap={'-10':0,'01':1,'10':2,'0-1':3};
+  const key=`${dr}${dc}`;
+  const wallIdx=wallMap[key];
+  if(wallIdx===undefined) return;
+  if(!cells[dog.r][dog.c].walls[wallIdx]){
+    dog.r+=dr; dog.c+=dc;
+    sfxMazeStep();
+    if(dog.r===rows-1&&dog.c===cols-1){
+      s.won=true; mazeWon=true;
+      sfxMazeSolve();
+    }
+  } else {
+    sfxMazeWall();
+  }
+}
+
+function mazeLoop(){
+  const s=mazeState;
+  const cv=MZC(), ctx=cv.getContext('2d');
+  const W=s.W, H=s.H;
+  if(!s.won&&!s.gameOver){
+    s.timerTick++;
+    if(s.timerTick>=60){
+      s.timerTick=0;
+      s.timeLeft--;
+      if(s.timeLeft<=0){ s.gameOver=true; }
+    }
+  }
+  ctx.fillStyle='#0d0d2b';
+  ctx.fillRect(0,0,W,H);
+  ctx.fillStyle=s.timeLeft<=10?'#ff4444':'#88aaff';
+  ctx.font='bold 16px monospace';
+  ctx.textAlign='center';
+  ctx.fillText('⏱ '+s.timeLeft+'s',W/2,28);
+  ctx.textAlign='left';
+  ctx.fillStyle='#aaaaff';
+  ctx.font='12px monospace';
+  ctx.fillText('Vuốt hoặc phím mũi tên',8,28);
+  const {cols,rows,cells,cellW,cellH,offX,offY}=s;
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      const x=offX+c*cellW, y=offY+r*cellH;
+      const w=cells[r][c].walls;
+      ctx.strokeStyle='#5555cc';
+      ctx.lineWidth=1.5;
+      if(w[0]){ ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+cellW,y); ctx.stroke(); }
+      if(w[1]){ ctx.beginPath(); ctx.moveTo(x+cellW,y); ctx.lineTo(x+cellW,y+cellH); ctx.stroke(); }
+      if(w[2]){ ctx.beginPath(); ctx.moveTo(x,y+cellH); ctx.lineTo(x+cellW,y+cellH); ctx.stroke(); }
+      if(w[3]){ ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x,y+cellH); ctx.stroke(); }
+    }
+  }
+  const ex=offX+(cols-1)*cellW+cellW/2, ey=offY+(rows-1)*cellH+cellH/2;
+  ctx.font=Math.min(cellW,cellH)*0.8+'px serif';
+  ctx.textAlign='center';
+  ctx.textBaseline='middle';
+  ctx.fillText('🚪',ex,ey);
+  const dx=offX+s.dog.c*cellW+cellW/2, dy=offY+s.dog.r*cellH+cellH/2;
+  ctx.fillText('🐕',dx,dy);
+  if(s.won){
+    ctx.fillStyle='rgba(0,0,0,0.8)';
+    ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='#ffd700';
+    ctx.font='bold 26px monospace';
+    ctx.textAlign='center';
+    ctx.textBaseline='alphabetic';
+    ctx.fillText('🌀 THOÁT KHỎI MÊ CUNG!',W/2,H/2);
+    ctx.fillStyle='#aaaaff';
+    ctx.font='16px monospace';
+    ctx.fillText('Còn '+s.timeLeft+'s',W/2,H/2+32);
+    setTimeout(()=>exitMazeToMain(),3000);
+    s.won=false; s.gameOver=true;
+  } else if(s.gameOver){
+    ctx.fillStyle='rgba(0,0,0,0.8)';
+    ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='#ff4444';
+    ctx.font='bold 26px monospace';
+    ctx.textAlign='center';
+    ctx.textBaseline='alphabetic';
+    ctx.fillText('HẾT GIỜ!',W/2,H/2);
+    ctx.fillStyle='#ffffff';
+    ctx.font='16px monospace';
+    ctx.fillText('Nhấn để thử lại',W/2,H/2+32);
+    MZC().ontouchstart=ev=>{ ev.preventDefault(); initMazeGame(); };
+    window.removeEventListener('keydown',s._keyHandler);
+    const retryKey=ev=>{ if(ev.key===' '||ev.key==='Enter'){ window.removeEventListener('keydown',retryKey); initMazeGame(); } };
+    window.addEventListener('keydown',retryKey);
+  }
+  mazeRAF=requestAnimationFrame(mazeLoop);
+}
+
+function exitMazeToMain(){
+  if(mazeRAF){cancelAnimationFrame(mazeRAF);mazeRAF=null;}
+  const s=mazeState;
+  if(s._keyHandler) window.removeEventListener('keydown',s._keyHandler);
+  const cv=MZC();
+  cv.classList.remove('active');
+  cv.ontouchstart=null; cv.ontouchend=null;
+  document.querySelector('.grid')&&(document.querySelector('.grid').style.display='');
+  document.querySelector('.pieces-area')&&(document.querySelector('.pieces-area').style.display='');
+  document.body.classList.remove('secret-mode');
+  const badge=document.getElementById('mode-badge');
+  if(badge) badge.textContent='BÌNH THƯỜNG';
+  if(mazeWon) setTimeout(()=>triggerMegaUnlock(),1500);
+}
+
+/* ═══════════════════════════════════════════════════════
+   MAP 20 — MEGA BOSS FINAL BATTLE 💀
+═══════════════════════════════════════════════════════ */
+const MGC=()=>document.getElementById('mega-canvas');
+let megaRAF=null, megaWon=false;
+let megaState={};
+
+function triggerMegaUnlock(){
+  pendingUnlock='mega';
+  document.getElementById('unlock-title').textContent='💀 BẢN ĐỒ 20 MỞ KHÓA!';
+  document.getElementById('unlock-desc').innerHTML='<b>MEGA BOSS Final Battle</b><br>Trận chiến cuối cùng! Hạ gục Rồng Huyền Thoại!';
+  document.getElementById('unlock-btn').textContent='CHIẾN ĐẤU!';
+  document.getElementById('unlock-overlay').classList.add('show');
+}
+
+function enterMegaMode(){
+  document.getElementById('unlock-overlay').classList.remove('show');
+  document.querySelector('.grid')&&(document.querySelector('.grid').style.display='none');
+  document.querySelector('.pieces-area')&&(document.querySelector('.pieces-area').style.display='none');
+  document.body.classList.add('secret-mode');
+  const badge=document.getElementById('mode-badge');
+  if(badge) badge.textContent='💀 MEGA BOSS';
+  const cv=MGC(); cv.classList.add('active');
+  megaWon=false;
+  initMegaGame();
+}
+
+function initMegaGame(){
+  const cv=MGC(), W=360, H=460;
+  megaState={
+    W,H,
+    boss:{x:180,y:100,hp:500,maxHp:500,phase:1,dir:1,speed:1.2,shootTimer:0,homingTimer:0,laserTimer:0,laserActive:false,laserAngle:0,laserSweep:0,flashTimer:0},
+    ship:{x:180,y:400,w:36,h:28},
+    bullets:[],
+    bossShots:[],
+    homingMissiles:[],
+    lives:3,
+    score:0,
+    gameOver:false,
+    won:false,
+    invincible:0,
+    shootCooldown:0,
+    pointerX:180,
+    phaseChanged:false,
+    phaseFlash:0
+  };
+  const s=megaState;
+  cv.onpointermove=ev=>{
+    const rect=cv.getBoundingClientRect();
+    s.pointerX=(ev.clientX-rect.left)*(W/rect.width);
+  };
+  cv.ontouchmove=ev=>{
+    ev.preventDefault();
+    const rect=cv.getBoundingClientRect();
+    s.pointerX=(ev.touches[0].clientX-rect.left)*(W/rect.width);
+  };
+  cv.onclick=()=>{ if(!s.gameOver&&!s.won) megaShoot(); };
+  cv.ontouchstart=ev=>{
+    ev.preventDefault();
+    const rect=cv.getBoundingClientRect();
+    s.pointerX=(ev.touches[0].clientX-rect.left)*(W/rect.width);
+    if(!s.gameOver&&!s.won) megaShoot();
+  };
+  sfxMegaBossRoar();
+  if(megaRAF) cancelAnimationFrame(megaRAF);
+  megaRAF=requestAnimationFrame(megaLoop);
+}
+
+function megaShoot(){
+  const s=megaState;
+  if(s.shootCooldown>0) return;
+  s.bullets.push({x:s.ship.x,y:s.ship.y-20,speed:10});
+  s.shootCooldown=10;
+  sfxMegaShoot();
+}
+
+function megaLoop(){
+  const s=megaState;
+  const cv=MGC(), ctx=cv.getContext('2d');
+  const W=s.W, H=s.H;
+  const boss=s.boss;
+  if(!s.gameOver&&!s.won){
+    const newPhase=boss.hp>300?1:boss.hp>150?2:3;
+    if(newPhase!==boss.phase){
+      boss.phase=newPhase;
+      sfxMegaPhaseChange();
+      s.phaseFlash=90;
+    }
+    boss.x+=boss.speed*boss.dir;
+    if(boss.x>W-60||boss.x<60) boss.dir*=-1;
+    const baseInterval=boss.phase===1?80:boss.phase===2?60:35;
+    boss.shootTimer--;
+    if(boss.shootTimer<=0){
+      boss.shootTimer=baseInterval;
+      const angles=boss.phase===1?[-0.2,0,0.2]:boss.phase===2?[-0.3,0,0.3]:[-0.4,-0.2,0,0.2,0.4];
+      for(const ang of angles){
+        s.bossShots.push({x:boss.x,y:boss.y+40,vx:Math.sin(ang)*3,vy:4+boss.phase});
+      }
+    }
+    if(boss.phase>=2){
+      boss.homingTimer--;
+      if(boss.homingTimer<=0){
+        boss.homingTimer=120;
+        s.homingMissiles.push({x:boss.x,y:boss.y+40,vx:0,vy:2,hp:3});
+      }
+    }
+    if(boss.phase===3){
+      boss.laserTimer--;
+      if(boss.laserTimer<=0&&!boss.laserActive){
+        boss.laserTimer=200;
+        boss.laserActive=true;
+        boss.laserSweep=0;
+        boss.laserAngle=-0.8;
+        sfxMegaLaser();
+      }
+      if(boss.laserActive){
+        boss.laserSweep++;
+        boss.laserAngle+=0.025;
+        if(boss.laserSweep>65) boss.laserActive=false;
+      }
+    }
+    if(s.shootCooldown>0) s.shootCooldown--;
+    for(let i=s.bullets.length-1;i>=0;i--){
+      s.bullets[i].y-=s.bullets[i].speed;
+      if(s.bullets[i].y<-10) s.bullets.splice(i,1);
+    }
+    for(let i=s.bossShots.length-1;i>=0;i--){
+      const b=s.bossShots[i];
+      b.x+=b.vx; b.y+=b.vy;
+      if(b.y>H+10||b.x<-10||b.x>W+10) s.bossShots.splice(i,1);
+    }
+    for(let i=s.homingMissiles.length-1;i>=0;i--){
+      const m=s.homingMissiles[i];
+      const dx=s.ship.x-m.x, dy=s.ship.y-m.y;
+      const dist=Math.hypot(dx,dy);
+      if(dist>1){ m.vx+=dx/dist*0.08; m.vy+=dy/dist*0.08; }
+      const spd=Math.hypot(m.vx,m.vy);
+      if(spd>3){ m.vx=m.vx/spd*3; m.vy=m.vy/spd*3; }
+      m.x+=m.vx; m.y+=m.vy;
+      if(m.y>H+10) s.homingMissiles.splice(i,1);
+    }
+    for(let i=s.bullets.length-1;i>=0;i--){
+      const b=s.bullets[i];
+      if(Math.abs(b.x-boss.x)<55&&Math.abs(b.y-boss.y)<50){
+        s.bullets.splice(i,1);
+        boss.hp--;
+        boss.flashTimer=6;
+        s.score+=2;
+        if(boss.hp<=0){
+          s.won=true; megaWon=true;
+          sfxMazeSolve();
+        }
+      }
+    }
+    if(s.invincible<=0){
+      for(let i=s.bossShots.length-1;i>=0;i--){
+        const b=s.bossShots[i];
+        if(Math.abs(b.x-s.ship.x)<22&&Math.abs(b.y-s.ship.y)<20){
+          s.bossShots.splice(i,1);
+          s.lives--; s.invincible=90;
+          sfxSpaceDogHit();
+          if(s.lives<=0) s.gameOver=true;
+          break;
+        }
+      }
+      for(let i=s.homingMissiles.length-1;i>=0;i--){
+        const m=s.homingMissiles[i];
+        if(Math.abs(m.x-s.ship.x)<24&&Math.abs(m.y-s.ship.y)<22){
+          s.homingMissiles.splice(i,1);
+          s.lives--; s.invincible=90;
+          sfxSpaceDogHit();
+          if(s.lives<=0) s.gameOver=true;
+          break;
+        }
+      }
+      if(boss.laserActive){
+        const lx=boss.x+Math.sin(boss.laserAngle)*400;
+        const ly=boss.y+Math.cos(boss.laserAngle)*400;
+        const t=((s.ship.x-boss.x)*(lx-boss.x)+(s.ship.y-boss.y)*(ly-boss.y))/((lx-boss.x)**2+(ly-boss.y)**2);
+        const ct=Math.max(0,Math.min(1,t));
+        const px=boss.x+ct*(lx-boss.x), py=boss.y+ct*(ly-boss.y);
+        if(Math.hypot(s.ship.x-px,s.ship.y-py)<18){
+          s.lives--; s.invincible=90;
+          sfxSpaceDogHit();
+          if(s.lives<=0) s.gameOver=true;
+        }
+      }
+    } else { s.invincible--; }
+    s.ship.x+=(s.pointerX-s.ship.x)*0.15;
+    s.ship.x=Math.max(20,Math.min(W-20,s.ship.x));
+    if(boss.flashTimer>0) boss.flashTimer--;
+    if(s.phaseFlash>0) s.phaseFlash--;
+  }
+  ctx.fillStyle='#100005';
+  ctx.fillRect(0,0,W,H);
+  if(s.phaseFlash>0){
+    ctx.fillStyle=`rgba(255,0,100,${s.phaseFlash/90*0.3})`;
+    ctx.fillRect(0,0,W,H);
+  }
+  const hpRatio=boss.hp/boss.maxHp;
+  ctx.fillStyle='#330000';
+  ctx.fillRect(20,12,W-40,14);
+  ctx.fillStyle=hpRatio>0.6?'#ff4444':hpRatio>0.3?'#ff8800':'#ff00ff';
+  ctx.fillRect(20,12,(W-40)*hpRatio,14);
+  ctx.strokeStyle='#ff0000';
+  ctx.lineWidth=1;
+  ctx.strokeRect(20,12,W-40,14);
+  ctx.fillStyle='#ffffff';
+  ctx.font='10px monospace';
+  ctx.textAlign='center';
+  ctx.fillText('👹 BOSS HP: '+boss.hp+'/'+boss.maxHp,W/2,23);
+  ctx.font=boss.flashTimer>0?'72px serif':'64px serif';
+  ctx.textAlign='center';
+  ctx.textBaseline='middle';
+  ctx.fillText('🐉',boss.x,boss.y);
+  ctx.font='11px monospace';
+  ctx.fillStyle=boss.phase===3?'#ff00ff':boss.phase===2?'#ff8800':'#ff4444';
+  ctx.fillText('PHASE '+boss.phase,boss.x,boss.y+52);
+  if(boss.laserActive){
+    ctx.save();
+    ctx.translate(boss.x,boss.y+20);
+    ctx.beginPath();
+    const lx2=Math.sin(boss.laserAngle)*500, ly2=Math.cos(boss.laserAngle)*500;
+    ctx.moveTo(0,0);
+    ctx.lineTo(lx2,ly2);
+    ctx.strokeStyle='rgba(255,0,0,0.85)';
+    ctx.lineWidth=8;
+    ctx.stroke();
+    ctx.strokeStyle='rgba(255,150,150,0.4)';
+    ctx.lineWidth=20;
+    ctx.stroke();
+    ctx.restore();
+  }
+  ctx.fillStyle='#ff6600';
+  for(const b of s.bossShots){
+    ctx.beginPath();
+    ctx.arc(b.x,b.y,5,0,Math.PI*2);
+    ctx.fill();
+  }
+  ctx.font='18px serif';
+  ctx.textBaseline='middle';
+  for(const m of s.homingMissiles){
+    ctx.fillText('🎯',m.x,m.y);
+  }
+  ctx.fillStyle='#00ffff';
+  for(const b of s.bullets){
+    ctx.fillRect(b.x-2,b.y-10,4,16);
+  }
+  if(s.invincible<=0||Math.floor(s.invincible/5)%2===0){
+    ctx.font='36px serif';
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
+    ctx.fillText('🚀',s.ship.x,s.ship.y);
+  }
+  ctx.fillStyle='#ffffff';
+  ctx.font='bold 13px monospace';
+  ctx.textAlign='left';
+  ctx.textBaseline='alphabetic';
+  ctx.fillText('❤️'.repeat(s.lives),10,H-10);
+  ctx.textAlign='right';
+  ctx.fillText('ĐIỂM: '+s.score,W-10,H-10);
+  if(s.won){
+    ctx.fillStyle='rgba(0,0,0,0.85)';
+    ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='#ffd700';
+    ctx.font='bold 18px monospace';
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
+    ctx.fillText('👑 RỒNG ĐÃ THẤT BẠI!',W/2,H/2-40);
+    ctx.fillStyle='#ffffff';
+    ctx.font='14px monospace';
+    ctx.fillText('Điểm: '+s.score,W/2,H/2);
+    ctx.fillStyle='#ffd700';
+    ctx.font='bold 13px monospace';
+    ctx.fillText('CHROMABLAST HUYỀN THOẠI!',W/2,H/2+32);
+    ctx.fillText('20 BẢN ĐỒ HOÀN THÀNH! 👑',W/2,H/2+52);
+    setTimeout(()=>exitMegaToMain(),5000);
+    s.won=false; s.gameOver=true;
+  } else if(s.gameOver){
+    ctx.fillStyle='rgba(0,0,0,0.8)';
+    ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='#ff4444';
+    ctx.font='bold 26px monospace';
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
+    ctx.fillText('GAME OVER',W/2,H/2-20);
+    ctx.fillStyle='#ffffff';
+    ctx.font='14px monospace';
+    ctx.fillText('Nhấn để thử lại',W/2,H/2+20);
+    MGC().onclick=()=>initMegaGame();
+    MGC().ontouchstart=ev=>{ ev.preventDefault(); initMegaGame(); };
+  }
+  megaRAF=requestAnimationFrame(megaLoop);
+}
+
+function exitMegaToMain(){
+  if(megaRAF){cancelAnimationFrame(megaRAF);megaRAF=null;}
+  const cv=MGC();
+  cv.classList.remove('active');
+  cv.onpointermove=null; cv.onclick=null; cv.ontouchmove=null; cv.ontouchstart=null;
+  document.querySelector('.grid')&&(document.querySelector('.grid').style.display='');
+  document.querySelector('.pieces-area')&&(document.querySelector('.pieces-area').style.display='');
+  document.body.classList.remove('secret-mode');
+  const badge=document.getElementById('mode-badge');
+  if(badge) badge.textContent='BÌNH THƯỜNG';
+  if(megaWon){
+    try{ showComboFlash(0,false,'👑 CHROMABLAST HUYỀN THOẠI! 20 BẢN ĐỒ HOÀN THÀNH! 👑'); }catch(e){}
+  }
+}
 </script>
 </body>
 </html>
