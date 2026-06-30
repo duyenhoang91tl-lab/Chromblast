@@ -5235,6 +5235,39 @@ function updateComboUI(){
 const PRAISE = ['GOOD','GREAT','COOL','PERFECT','SPECTRUM','SPECTACULAR','UNREAL','LEGENDARY','GODLIKE'];
 const PRAISE_COLOR = ['#5DCAA5','#378ADD','#7F77DD','#EF9F27','#D85A30','#E24B4A','#D4537E','#f7c948','#ff6b35'];
 function pIdx(level){ return Math.min(Math.max(level||1,1),PRAISE.length)-1; }
+
+/* ── Voice announcer — deep male voice via SpeechSynthesis ── */
+let _voiceReady=false, _maleVoice=null;
+function _initVoice(){
+  if(_voiceReady) return;
+  const voices=speechSynthesis.getVoices();
+  // Prefer English male voices: David, Mark, Google UK English Male, etc.
+  const pref=['david','mark','male','english','en-us','en-gb','en_us','en_gb'];
+  let best=null;
+  for(const v of voices){
+    const n=v.name.toLowerCase(), l=v.lang.toLowerCase();
+    if(!best && (l.startsWith('en'))) best=v;
+    for(const p of pref){ if(n.includes(p)||l.includes(p)){ _maleVoice=v; _voiceReady=true; return; } }
+  }
+  if(best){ _maleVoice=best; }
+  _voiceReady=true;
+}
+speechSynthesis.onvoiceschanged=()=>{ _voiceReady=false; _initVoice(); };
+let _lastSpoke=0;
+function speakPraise(word){
+  if(sfxMuted) return;
+  const now=Date.now();
+  if(now-_lastSpoke<600) return; // debounce rapid combos
+  _lastSpoke=now;
+  _initVoice();
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(word);
+  u.voice=_maleVoice||null;
+  u.pitch=0.6;   // low = masculine
+  u.rate=1.1;    // slightly punchy
+  u.volume=0.9;
+  speechSynthesis.speak(u);
+}
 function hexToRgba(hex,a){
   const n=parseInt(hex.replace('#',''),16);
   return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;
@@ -5343,6 +5376,7 @@ function showPraise(level){
   el.style.fontSize=Math.max(20, Math.min(base, fit))+'px';
   el.style.textShadow=`0 2px 14px ${hexToRgba(PRAISE_COLOR[i],0.95)}, 0 0 ${10+(level||1)*4}px ${hexToRgba(PRAISE_COLOR[i],0.85)}`;
   el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+  speakPraise(PRAISE[i]);
 }
 
 function showComboFlash(n, isColor, customText){
