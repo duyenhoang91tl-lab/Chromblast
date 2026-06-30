@@ -7944,10 +7944,10 @@ function togglePause(){
     if(typeof snakeMode!=='undefined'&&snakeMode)   { snakeLast=0;snakeRAF=requestAnimationFrame(snakeLoop);}
     if(typeof brickMode!=='undefined'&&brickMode)   { brickLast=0;brickRAF=requestAnimationFrame(brickLoop);}
     if(typeof runnerMode!=='undefined'&&runnerMode) { runnerLast=0;runnerRAF=requestAnimationFrame(runnerLoop);}
-    if(typeof spaceRAF!=='undefined'&&!spaceRAF&&typeof spaceState!=='undefined'&&spaceState.W) { spaceRAF=requestAnimationFrame(spaceLoop);}
-    if(typeof rhythmRAF!=='undefined'&&!rhythmRAF&&typeof rhythmState!=='undefined'&&rhythmState.W) { rhythmRAF=requestAnimationFrame(rhythmLoop);}
-    if(typeof mazeRAF!=='undefined'&&!mazeRAF&&typeof mazeState!=='undefined'&&mazeState.W) { mazeRAF=requestAnimationFrame(mazeLoop);}
-    if(typeof megaRAF!=='undefined'&&!megaRAF&&typeof megaState!=='undefined'&&megaState.W) { megaRAF=requestAnimationFrame(megaLoop);}
+    if(typeof spaceMode!=='undefined'&&spaceMode)   { spaceLast=0; spaceRAF=requestAnimationFrame(spaceLoop);}
+    if(typeof rhythmMode!=='undefined'&&rhythmMode) { rhythmLast=0;rhythmRAF=requestAnimationFrame(rhythmLoop);}
+    if(typeof mazeMode!=='undefined'&&mazeMode)     { mazeLast=0;  mazeRAF=requestAnimationFrame(mazeLoop);}
+    if(typeof megaMode!=='undefined'&&megaMode)     { megaLast=0;  megaRAF=requestAnimationFrame(megaLoop);}
     if(secretMode) { startSecretTimer(); }
   }
 }
