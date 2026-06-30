@@ -2778,7 +2778,9 @@ document.addEventListener('keyup', e=>{
 let fruitMode=false, fruitRAF=null, fruitLast=0, fruitElapsed=0, fruitSpawnTimer=0;
 let fruits=[], fruitTrail=[], fruitTimeLeft=60;
 let fruitCombo=0, fruitComboTimer=0;
+let fruitMissStreak=0; // số lần chém trượt (quả rơi hết màn hình mà không chém trúng) liên tiếp
 let fruitFx=[]; // slice effects: juice drops + petals + slash lines
+let fruitMissPopups=[]; // floating "-10" text khi chém trượt
 let fruitTrailPetals=[]; // flower petal particles that fall along the slash trail
 const TRAIL_PETAL_COLORS=['#ffb3cc','#ff80aa','#ffd6e7','#ff99bb','#ffe0ec','#ffaad4','#ff66a3'];
 const FRUIT_TYPES=[
@@ -2826,8 +2828,8 @@ function enterFruitMode(){
 }
 
 function initFruit(){
-  fruits=[]; fruitTrail=[]; fruitFx=[]; fruitTrailPetals=[];
-  fruitElapsed=0; fruitSpawnTimer=0; fruitTimeLeft=60;
+  fruits=[]; fruitTrail=[]; fruitFx=[]; fruitTrailPetals=[]; fruitMissPopups=[];
+  fruitElapsed=0; fruitSpawnTimer=0; fruitTimeLeft=60; fruitMissStreak=0;
 }
 
 function fruitDiff(){
@@ -2879,7 +2881,22 @@ function fruitLoop(now){
   for(const f of fruits){
     f.x+=f.vx*dt; f.y+=f.vy*dt; f.vy+=GRAV*dt; f.rot+=f.rotSpeed*dt;
   }
-  fruits=fruits.filter(f=>!f.sliced && f.y<H+60);
+  let missedDie=false;
+  fruits=fruits.filter(f=>{
+    const alive=!f.sliced && f.y<H+60;
+    if(!alive && !f.sliced && !f.isBomb){
+      // Quả rơi hết màn hình mà không chém trúng → tính là 1 lần trượt
+      fruitMissStreak++;
+      const penalty=10*fruitMissStreak; // trừ điểm tăng dần theo số lần trượt liên tiếp
+      score=Math.max(0,score-penalty);
+      sfxInvalid();
+      fruitMissPopups.push({x:f.x, y:H-60, text:'-'+penalty, life:0.9, maxLife:0.9});
+      if(fruitMissStreak>5) missedDie=true; // trượt quá 5 lần liên tiếp → thua, về map gốc
+    }
+    return alive;
+  });
+  for(const p of fruitMissPopups){ p.y-=40*dt; p.life-=dt; }
+  fruitMissPopups=fruitMissPopups.filter(p=>p.life>0);
 
   // animate fruitFx (juice drops, petals, slash)
   for(const fx of fruitFx){
@@ -2917,6 +2934,7 @@ function fruitLoop(now){
         else {
           fruitSlicedTotal++;
           if(fruitSlicedTotal===50) unlockAchievement('fruit50');
+          fruitMissStreak=0; // chém trúng → reset chuỗi trượt
           fruitCombo++;
           if(fruitComboTimer) clearTimeout(fruitComboTimer);
           fruitComboTimer=setTimeout(()=>{ fruitCombo=0; fruitComboTimer=0; document.getElementById('combo-box').textContent=''; },800);
@@ -2935,6 +2953,7 @@ function fruitLoop(now){
   drawFruit(ctx,W,H,now);
 
   if(boomed){ fruitGameOver(false); return; }
+  if(missedDie){ fruitGameOver(false, '😵 Trượt quá 5 lần liên tiếp!'); return; }
   if(fruitTimeLeft<=0 && fruits.every(f=>f.y>H+60||f.sliced)){ fruitGameOver(true); return; }
   fruitRAF=requestAnimationFrame(fruitLoop);
 }
@@ -3204,13 +3223,36 @@ function drawFruit(ctx,W,H,now){
   ctx.shadowColor='rgba(180,80,255,0.7)'; ctx.shadowBlur=10;
   ctx.fillText('⏱ '+Math.ceil(fruitTimeLeft)+'s', 12, 10);
   ctx.restore();
+
+  // ── floating "-10" popup khi chém trượt ──
+  for(const p of fruitMissPopups){
+    const a=Math.max(0,p.life/p.maxLife);
+    ctx.save();
+    ctx.globalAlpha=a;
+    ctx.fillStyle='#ff5555';
+    ctx.font='bold 22px system-ui';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.shadowColor='rgba(255,0,0,0.7)'; ctx.shadowBlur=8;
+    ctx.fillText(p.text, p.x, p.y);
+    ctx.restore();
+  }
+
+  // ── cảnh báo chuỗi trượt liên tiếp ──
+  if(fruitMissStreak>0){
+    ctx.save();
+    ctx.fillStyle = fruitMissStreak>=4 ? '#ff3333' : 'rgba(255,180,80,0.9)';
+    ctx.font='bold 14px system-ui'; ctx.textAlign='right'; ctx.textBaseline='top';
+    ctx.shadowColor='rgba(0,0,0,0.6)'; ctx.shadowBlur=6;
+    ctx.fillText('Trượt: '+fruitMissStreak+'/5', W-12, 10);
+    ctx.restore();
+  }
 }
 
-function fruitGameOver(success){
+function fruitGameOver(success, msg){
   if(fruitRAF) cancelAnimationFrame(fruitRAF);
   fruitRAF=null; fruitMode=false;
   sfxGameOver();
-  showComboFlash(0, success, success?'🍉 Qua màn!':'💣 Trúng bom!');
+  showComboFlash(0, success, msg || (success?'🍉 Qua màn!':'💣 Trúng bom!'));
   setTimeout(exitFruitToMain, 400);
 }
 
