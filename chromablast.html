@@ -4837,8 +4837,8 @@ function exitGoldToMain(){
   consecutiveBursts=0; updateBurstCount();
   document.getElementById('hint-bar').textContent='Chạm khối → ghost hiện · Di ngón → ghost bám · Thả trên ô → đặt · Thả vùng trống → xoay';
   goldWave=1;
-  // Trigger Map ẩn 6 unlock after returning from Map ẩn 5
-  awaitingMoleUnlock=true; moleUnlockBaseline=score;
+  // Trigger Map ẩn 6 unlock immediately after Map ẩn 5
+  setTimeout(()=>triggerMoleUnlock(), 400);
   // Activate thorn vine difficulty after returning from Map ẩn 5
   thornMode=true; thornPlacementCount=0; thornWave=0; thornThreshold=6;
   thornCells=new Set(); cellBurstCount={};
