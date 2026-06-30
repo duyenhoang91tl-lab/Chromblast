@@ -406,6 +406,15 @@ body {
   border-radius: 14px; touch-action: none; margin: 0 auto;
 }
 #boss-canvas.active { display: block; }
+/* ── MAP ẨN 11: CATCH CANVAS ── */
+#catch-canvas { display:none; width:100%; max-width:393px; aspect-ratio:360/460; background:#87ceeb; border-radius:14px; touch-action:none; margin:0 auto; }
+#catch-canvas.active { display:block; }
+/* ── MAP ẨN 12: FLOOD CANVAS ── */
+#flood-canvas { display:none; width:100%; max-width:393px; aspect-ratio:360/460; background:#f0f0f0; border-radius:14px; touch-action:none; margin:0 auto; }
+#flood-canvas.active { display:block; }
+/* ── MAP ẨN 13: ARENA CANVAS ── */
+#arena-canvas { display:none; width:100%; max-width:393px; aspect-ratio:360/460; background:#050010; border-radius:14px; touch-action:none; margin:0 auto; }
+#arena-canvas.active { display:block; }
 .sc {
   width: 44px; height: 44px; border-radius: 8px;
   cursor: pointer; transition: transform 0.08s, filter 0.08s, box-shadow 0.12s;
@@ -766,6 +775,12 @@ body {
     <canvas id="stack-canvas" width="360" height="460"></canvas>
     <!-- MODE K: Map ẩn 10 — Đại chiến Boss (Boss Battle) -->
     <canvas id="boss-canvas" width="360" height="460"></canvas>
+    <!-- MODE L: Map ẩn 11 — Animal Catch (Bắt thú) -->
+    <canvas id="catch-canvas" width="360" height="460"></canvas>
+    <!-- MODE M: Map ẩn 12 — Color Flood (Tràn màu) -->
+    <canvas id="flood-canvas" width="360" height="460"></canvas>
+    <!-- MODE N: Map ẩn 13 — Survival Arena (Đấu trường sinh tồn) -->
+    <canvas id="arena-canvas" width="360" height="460"></canvas>
 
     <!-- Lớp phủ pháo hoa cho map ẩn (vệt cháy ở viền khi nổ) -->
     <div id="sc-fx"></div>
@@ -1702,6 +1717,9 @@ document.getElementById('unlock-btn').addEventListener('click',()=>{
   else if(pendingUnlock==='bubble') enterBubbleMode();
   else if(pendingUnlock==='stack') enterStackMode();
   else if(pendingUnlock==='boss') enterBossMode();
+  else if(pendingUnlock==='catch') enterCatchMode();
+  else if(pendingUnlock==='flood') enterFloodMode();
+  else if(pendingUnlock==='arena') enterArenaMode();
   else enterSecretMode();
 });
 
@@ -6359,7 +6377,7 @@ function bossDone(won){
   if(won){
     sfxWaveWin();
     showComboFlash(0,false,'🏆 Boss bị tiêu diệt!');
-    setTimeout(()=>showComboFlash(0,false,'🎉 BẠN ĐÃ CHINH PHỤC TẤT CẢ BẢN ĐỒ BÍ ẨN!'), 2500);
+    setTimeout(()=>triggerCatchUnlock(), 500);
   } else {
     sfxGameOver();
     showComboFlash(0,false,'🐍 Boss chưa bị hạ! HP: '+Math.max(0,bossHP));
@@ -6390,6 +6408,842 @@ BOSCV().addEventListener('pointerdown', e=>{
   const tx=(e.clientX-rect.left)*scaleX;
   bossDogX=Math.max(30,Math.min(BOSCV().width-30,tx));
 });
+
+/* ══════════════════════════════════════════
+   MAP ẨN 11 — ANIMAL CATCH 🧺
+══════════════════════════════════════════ */
+const CATCH_TIME=50, CATCH_KPI=300;
+const CATCH_GOOD=[
+  {emoji:'🦫',pts:20,color:'#8B6914'},
+  {emoji:'🐰',pts:10,color:'#ff9ac8'},
+  {emoji:'🐢',pts:15,color:'#4a9a40'},
+  {emoji:'🐶',pts:40,color:'#e8e8e8'},
+  {emoji:'🐱',pts:25,color:'#ff9f40'},
+];
+const CATCH_BAD=[
+  {emoji:'🦔',color:'#8B4513'},
+  {emoji:'🐍',color:'#2d8a2d'},
+];
+
+let catchMode=false, catchRAF=null, catchLast=0, catchElapsed=0;
+let catchAnimals=[], catchBasketX=180, catchLives=3, catchScore=0;
+let catchFx=[], catchSpawnTimer=0;
+
+const CATCV=()=>document.getElementById('catch-canvas');
+
+function triggerCatchUnlock(){
+  pendingUnlock='catch';
+  document.getElementById('unlock-title').textContent='🧺 MAP ẨN 11 MỞ KHÓA!';
+  document.getElementById('unlock-desc').innerHTML=
+    '🧺 <b>Bắt Thú Vui!</b><br><br>'+
+    'Thú cưng đang rơi từ trên trời! Hứng rổ để bắt chúng!<br>'+
+    '🦫(+20) 🐰(+10) 🐢(+15) 🐶(+40) 🐱(+25)<br>'+
+    '⚠️ Tránh 🦔 và 🐍 — chúng sẽ lấy mạng bạn!<br>'+
+    'Ghi <b>'+CATCH_KPI+' điểm</b> trong <b>'+CATCH_TIME+'s</b> để thắng!';
+  document.getElementById('unlock-btn').textContent='🧺 BẮT THÔI!';
+  document.getElementById('unlock-overlay').classList.add('show');
+}
+
+function enterCatchMode(){
+  endDrag();
+  sfxUnlock();
+  document.getElementById('grid').style.display='none';
+  document.getElementById('pieces-area').style.display='none';
+  document.getElementById('hint-bar').style.display='';
+  document.getElementById('hint-bar').textContent='Vuốt ngang để di rổ! Bắt thú tốt, tránh thú xấu!';
+  CATCV().classList.add('active');
+  document.getElementById('grid-wrap').classList.add('secret-mode');
+  document.getElementById('mode-badge').textContent='🧺 MAP ẨN 11';
+  document.getElementById('mode-badge').classList.add('secret');
+  document.getElementById('burst-count').textContent='🧺 Điểm: 0  ❤️×3';
+  catchMode=true;
+  initCatch();
+  catchLast=performance.now();
+  catchRAF=requestAnimationFrame(catchLoop);
+}
+
+function initCatch(){
+  const cv=CATCV();
+  catchAnimals=[]; catchFx=[]; catchScore=0; catchElapsed=0;
+  catchLives=3; catchSpawnTimer=0;
+  catchBasketX=cv.width/2;
+}
+
+function spawnCatchAnimal(){
+  const cv=CATCV();
+  const isBad=Math.random()<0.25;
+  const pool=isBad?CATCH_BAD:CATCH_GOOD;
+  const tmpl=pool[Math.floor(Math.random()*pool.length)];
+  const speedBonus=Math.min(catchElapsed/CATCH_TIME,1)*80;
+  catchAnimals.push({
+    x:40+Math.random()*(cv.width-80),
+    y:-30,
+    vy:90+Math.random()*40+speedBonus,
+    emoji:tmpl.emoji,
+    pts:tmpl.pts||0,
+    color:tmpl.color,
+    isBad:isBad,
+    rot:0,
+    rotV:(Math.random()-0.5)*3
+  });
+}
+
+function catchLoop(now){
+  if(!catchMode){ catchRAF=null; return; }
+  const dt=Math.min((now-(catchLast||now))/1000,0.08);
+  catchLast=now;
+  catchElapsed+=dt;
+
+  const cv=CATCV(), W=cv.width, H=cv.height;
+  const spawnInterval=Math.max(0.5,1.2-catchElapsed/CATCH_TIME*0.7);
+  catchSpawnTimer+=dt;
+  if(catchSpawnTimer>=spawnInterval){ catchSpawnTimer=0; spawnCatchAnimal(); }
+
+  const basketY=H-50, basketW=80, basketH=30;
+
+  catchAnimals.forEach(a=>{
+    a.y+=a.vy*dt;
+    a.rot+=a.rotV*dt;
+  });
+
+  // check basket collisions
+  catchAnimals=catchAnimals.filter(a=>{
+    if(a.y>=basketY-basketH/2 && a.y<=basketY+basketH && Math.abs(a.x-catchBasketX)<basketW/2+22){
+      if(a.isBad){
+        catchLives--;
+        catchFx.push({x:a.x,y:basketY,t:0,type:'bad'});
+        sfxGameOver();
+      } else {
+        catchScore+=a.pts; score+=a.pts;
+        if(best<score) best=score;
+        updateScoreUI();
+        catchFx.push({x:a.x,y:basketY,t:0,type:'good',pts:a.pts});
+        sfxWaveWin();
+      }
+      return false;
+    }
+    if(a.y>H+30) return false;
+    return true;
+  });
+
+  catchFx.forEach(f=>f.t+=dt);
+  catchFx=catchFx.filter(f=>f.t<0.7);
+
+  const ctx=cv.getContext('2d');
+  drawCatch(ctx,W,H,basketY,basketW,basketH);
+
+  const timeLeft=Math.max(0,CATCH_TIME-catchElapsed);
+  document.getElementById('burst-count').textContent='🧺 Điểm: '+catchScore+'  ❤️×'+catchLives+'  ⏱'+Math.ceil(timeLeft)+'s';
+
+  if(catchLives<=0){ catchDone(catchScore>=CATCH_KPI); return; }
+  if(timeLeft<=0){ catchDone(catchScore>=CATCH_KPI); return; }
+  catchRAF=requestAnimationFrame(catchLoop);
+}
+
+function drawCatch(ctx,W,H,basketY,basketW,basketH){
+  ctx.clearRect(0,0,W,H);
+  // Sky background
+  const sky=ctx.createLinearGradient(0,0,0,H);
+  sky.addColorStop(0,'#87ceeb'); sky.addColorStop(1,'#c8e8ff');
+  ctx.fillStyle=sky; ctx.fillRect(0,0,W,H);
+  // Clouds
+  ctx.fillStyle='rgba(255,255,255,0.8)';
+  [[60,40,50],[200,25,40],[310,55,35],[130,80,28]].forEach(([cx,cy,r])=>{
+    ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx+r*0.6,cy+5,r*0.7,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx-r*0.5,cy+5,r*0.65,0,Math.PI*2); ctx.fill();
+  });
+  // Animals
+  catchAnimals.forEach(a=>{
+    ctx.save();
+    ctx.translate(a.x,a.y);
+    ctx.rotate(a.rot);
+    ctx.shadowColor=a.color; ctx.shadowBlur=8;
+    ctx.beginPath(); ctx.arc(0,0,22,0,Math.PI*2);
+    ctx.fillStyle=a.isBad?'rgba(200,60,60,0.3)':'rgba(255,255,255,0.35)';
+    ctx.fill();
+    ctx.shadowBlur=0;
+    ctx.font='32px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(a.emoji,0,0);
+    ctx.restore();
+  });
+  // Basket
+  ctx.fillStyle='#8B4513';
+  const bx=catchBasketX-basketW/2, by=basketY-basketH/2;
+  ctx.beginPath();
+  ctx.roundRect(bx,by,basketW,basketH,8);
+  ctx.fill();
+  ctx.fillStyle='#a0522d';
+  ctx.beginPath(); ctx.roundRect(bx+4,by+4,basketW-8,6,4); ctx.fill();
+  // FX
+  catchFx.forEach(f=>{
+    const prog=f.t/0.7;
+    ctx.globalAlpha=Math.max(0,1-prog);
+    if(f.type==='good'){
+      ctx.font='bold 18px system-ui'; ctx.textAlign='center';
+      ctx.fillStyle='#ffdd00';
+      ctx.fillText('+'+f.pts, f.x, basketY-30-prog*40);
+      ctx.font='16px system-ui';
+      ['⭐','⭐','⭐'].forEach((_,i)=>{
+        const ang=f.t*6+i*2.1;
+        ctx.fillText('⭐',f.x+Math.cos(ang)*20*prog*2,basketY+Math.sin(ang)*15*prog*2);
+      });
+    } else {
+      ctx.font='bold 20px system-ui'; ctx.textAlign='center';
+      ctx.fillStyle='#ff4444';
+      ctx.fillText('💥', f.x, basketY-prog*35);
+    }
+    ctx.globalAlpha=1;
+  });
+  // HUD
+  ctx.fillStyle='rgba(0,0,0,0.5)';
+  ctx.beginPath(); ctx.roundRect(8,8,140,28,6); ctx.fill();
+  ctx.fillStyle='#fff'; ctx.font='bold 13px system-ui'; ctx.textAlign='left';
+  ctx.fillText('🧺 '+catchScore+' / '+CATCH_KPI+' pts', 14, 27);
+  // Lives
+  ctx.textAlign='right';
+  let hx=W-10;
+  for(let i=0;i<catchLives;i++){ ctx.fillText('❤️',hx,27); hx-=24; }
+}
+
+function catchDone(won){
+  if(catchRAF){ cancelAnimationFrame(catchRAF); catchRAF=null; }
+  catchMode=false;
+  if(won){
+    sfxWaveWin();
+    showComboFlash(0,false,'🧺 Bắt thú thành công! +'+catchScore+' điểm!');
+    setTimeout(()=>triggerFloodUnlock(), 500);
+  } else {
+    sfxGameOver();
+    showComboFlash(0,false,'🧺 Chưa đủ điểm! '+catchScore+'/'+CATCH_KPI);
+  }
+  setTimeout(exitCatchToMain, 600);
+}
+
+function exitCatchToMain(){
+  catchMode=false;
+  if(catchRAF){ cancelAnimationFrame(catchRAF); catchRAF=null; }
+  CATCV().classList.remove('active');
+  document.getElementById('grid').style.display='';
+  document.getElementById('pieces-area').style.display='';
+  document.getElementById('grid-wrap').classList.remove('secret-mode','ultra-glow','combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5');
+  document.getElementById('mode-badge').textContent='BÌNH THƯỜNG';
+  document.getElementById('mode-badge').classList.remove('secret');
+  document.getElementById('burst-count').textContent='Chuỗi nổ: 0/3';
+  consecutiveBursts=0; updateBurstCount();
+  document.getElementById('hint-bar').textContent='Chạm khối → ghost hiện · Di ngón → ghost bám · Thả trên ô → đặt · Thả vùng trống → xoay';
+  renderPieces(); checkGameOverA();
+}
+
+CATCV().addEventListener('pointermove', e=>{
+  if(!catchMode) return;
+  e.preventDefault();
+  const rect=CATCV().getBoundingClientRect();
+  const scaleX=CATCV().width/rect.width;
+  catchBasketX=Math.max(40,Math.min(CATCV().width-40,(e.clientX-rect.left)*scaleX));
+});
+CATCV().addEventListener('pointerdown', e=>{
+  if(!catchMode) return;
+  e.preventDefault();
+  const rect=CATCV().getBoundingClientRect();
+  const scaleX=CATCV().width/rect.width;
+  catchBasketX=Math.max(40,Math.min(CATCV().width-40,(e.clientX-rect.left)*scaleX));
+});
+
+/* ══════════════════════════════════════════
+   MAP ẨN 12 — COLOR FLOOD 🎨
+══════════════════════════════════════════ */
+const FLOOD_COLORS=['#e84040','#4080e8','#40c040','#e8c040','#9040c8','#e88040'];
+const FLOOD_MAX_MOVES=25, FLOOD_GRID_SIZE=10;
+
+let floodMode=false, floodRAF=null;
+let floodGrid=[], floodMoves=FLOOD_MAX_MOVES, floodAnimating=false;
+let floodFx=[], floodScore=0;
+
+const FLCV=()=>document.getElementById('flood-canvas');
+
+function triggerFloodUnlock(){
+  pendingUnlock='flood';
+  document.getElementById('unlock-title').textContent='🎨 MAP ẨN 12 MỞ KHÓA!';
+  document.getElementById('unlock-desc').innerHTML=
+    '🎨 <b>Tràn Màu!</b><br><br>'+
+    'Lưới 10×10 màu sắc — nhấn nút màu để tràn từ góc trên trái!<br>'+
+    'Mục tiêu: phủ đầy <b>toàn bộ</b> bảng trong <b>'+FLOOD_MAX_MOVES+' bước</b>!<br>'+
+    'Thắng sớm nhận nhiều điểm thưởng!';
+  document.getElementById('unlock-btn').textContent='🎨 TÔ THÔI!';
+  document.getElementById('unlock-overlay').classList.add('show');
+}
+
+function enterFloodMode(){
+  endDrag();
+  sfxUnlock();
+  document.getElementById('grid').style.display='none';
+  document.getElementById('pieces-area').style.display='none';
+  document.getElementById('hint-bar').style.display='';
+  document.getElementById('hint-bar').textContent='Nhấn nút màu để tràn màu từ góc trên-trái!';
+  FLCV().classList.add('active');
+  document.getElementById('grid-wrap').classList.add('secret-mode');
+  document.getElementById('mode-badge').textContent='🎨 MAP ẨN 12';
+  document.getElementById('mode-badge').classList.add('secret');
+  floodMode=true;
+  initFlood();
+  floodRAF=requestAnimationFrame(floodLoop);
+}
+
+function initFlood(){
+  floodGrid=[];
+  for(let r=0;r<FLOOD_GRID_SIZE;r++){
+    floodGrid[r]=[];
+    for(let c=0;c<FLOOD_GRID_SIZE;c++){
+      floodGrid[r][c]=Math.floor(Math.random()*FLOOD_COLORS.length);
+    }
+  }
+  floodMoves=FLOOD_MAX_MOVES; floodAnimating=false;
+  floodFx=[]; floodScore=0;
+}
+
+function getFloodRegion(){
+  const base=floodGrid[0][0];
+  const visited=Array.from({length:FLOOD_GRID_SIZE},()=>new Array(FLOOD_GRID_SIZE).fill(false));
+  const queue=[[0,0]]; visited[0][0]=true; const cells=[];
+  while(queue.length){
+    const [r,c]=queue.shift(); cells.push([r,c]);
+    [[r-1,c],[r+1,c],[r,c-1],[r,c+1]].forEach(([nr,nc])=>{
+      if(nr>=0&&nr<FLOOD_GRID_SIZE&&nc>=0&&nc<FLOOD_GRID_SIZE&&!visited[nr][nc]&&floodGrid[nr][nc]===base){
+        visited[nr][nc]=true; queue.push([nr,nc]);
+      }
+    });
+  }
+  return cells;
+}
+
+function countFlooded(){
+  const base=floodGrid[0][0];
+  const visited=Array.from({length:FLOOD_GRID_SIZE},()=>new Array(FLOOD_GRID_SIZE).fill(false));
+  const queue=[[0,0]]; visited[0][0]=true; let count=0;
+  while(queue.length){
+    const [r,c]=queue.shift(); count++;
+    [[r-1,c],[r+1,c],[r,c-1],[r,c+1]].forEach(([nr,nc])=>{
+      if(nr>=0&&nr<FLOOD_GRID_SIZE&&nc>=0&&nc<FLOOD_GRID_SIZE&&!visited[nr][nc]&&floodGrid[nr][nc]===base){
+        visited[nr][nc]=true; queue.push([nr,nc]);
+      }
+    });
+  }
+  return count;
+}
+
+function doFlood(newColorIdx){
+  if(floodAnimating||floodMoves<=0) return;
+  const baseColor=floodGrid[0][0];
+  if(newColorIdx===baseColor) return;
+  // BFS collect current region
+  const region=getFloodRegion();
+  // Change all region cells to new color
+  region.forEach(([r,c])=>{ floodGrid[r][c]=newColorIdx; });
+  // Expand: collect adjacent cells of newColor and absorb them
+  let changed=true;
+  while(changed){
+    changed=false;
+    const regionSet=new Set(region.map(([r,c])=>r+','+c));
+    region.slice().forEach(([r,c])=>{
+      [[r-1,c],[r+1,c],[r,c-1],[r,c+1]].forEach(([nr,nc])=>{
+        const key=nr+','+nc;
+        if(nr>=0&&nr<FLOOD_GRID_SIZE&&nc>=0&&nc<FLOOD_GRID_SIZE&&!regionSet.has(key)&&floodGrid[nr][nc]===newColorIdx){
+          region.push([nr,nc]); regionSet.add(key); changed=true;
+        }
+      });
+    });
+  }
+  floodMoves--;
+  // FX
+  floodFx.push({t:0,colorIdx:newColorIdx});
+  // Check win
+  const flooded=countFlooded();
+  if(flooded>=FLOOD_GRID_SIZE*FLOOD_GRID_SIZE){
+    const bonus=200+floodMoves*20;
+    floodScore=bonus; score+=bonus;
+    if(best<score) best=score;
+    updateScoreUI();
+    floodDone(true);
+  } else if(floodMoves<=0){
+    const partial=Math.floor((flooded/100)*100);
+    floodScore=partial; score+=partial;
+    if(best<score) best=score;
+    updateScoreUI();
+    floodDone(false);
+  }
+}
+
+function floodLoop(){
+  if(!floodMode){ floodRAF=null; return; }
+  const cv=FLCV(), W=cv.width, H=cv.height;
+  const ctx=cv.getContext('2d');
+  drawFlood(ctx,W,H);
+  floodRAF=requestAnimationFrame(floodLoop);
+}
+
+function drawFlood(ctx,W,H){
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#f0f0f0'; ctx.fillRect(0,0,W,H);
+
+  const cellSize=32, gap=2, cols=FLOOD_GRID_SIZE, rows=FLOOD_GRID_SIZE;
+  const gridW=cols*cellSize+(cols-1)*gap;
+  const gridH=rows*cellSize+(rows-1)*gap;
+  const offX=(W-gridW)/2, offY=48;
+
+  // Draw grid
+  const regionSet=new Set(getFloodRegion().map(([r,c])=>r+','+c));
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      const x=offX+c*(cellSize+gap), y=offY+r*(cellSize+gap);
+      const ci=floodGrid[r][c];
+      const isFlooded=regionSet.has(r+','+c);
+      ctx.fillStyle=FLOOD_COLORS[ci];
+      if(isFlooded){
+        ctx.shadowColor=FLOOD_COLORS[ci]; ctx.shadowBlur=6;
+      }
+      ctx.fillRect(x,y,cellSize,cellSize);
+      ctx.shadowBlur=0;
+      if(isFlooded){
+        ctx.fillStyle='rgba(255,255,255,0.25)';
+        ctx.fillRect(x,y,cellSize,cellSize);
+      }
+    }
+  }
+
+  // Color buttons
+  const btnY=offY+gridH+14;
+  const btnR=20, btnSpacing=52, btnStartX=(W-(FLOOD_COLORS.length-1)*btnSpacing)/2;
+  FLOOD_COLORS.forEach((col,i)=>{
+    const bx=btnStartX+i*btnSpacing, by=btnY+btnR;
+    ctx.fillStyle=col;
+    ctx.shadowColor=col; ctx.shadowBlur=8;
+    ctx.beginPath(); ctx.arc(bx,by,btnR,0,Math.PI*2); ctx.fill();
+    ctx.shadowBlur=0;
+    if(i===floodGrid[0][0]){
+      ctx.strokeStyle='#fff'; ctx.lineWidth=3;
+      ctx.beginPath(); ctx.arc(bx,by,btnR+3,0,Math.PI*2); ctx.stroke();
+    }
+  });
+
+  // HUD
+  ctx.fillStyle='rgba(0,0,0,0.6)';
+  ctx.beginPath(); ctx.roundRect(8,8,W-16,34,8); ctx.fill();
+  ctx.fillStyle='#fff'; ctx.font='bold 14px system-ui'; ctx.textAlign='center';
+  const flooded=countFlooded();
+  ctx.fillText('🎨 Tràn: '+flooded+'/100  Bước: '+floodMoves+'/'+FLOOD_MAX_MOVES, W/2, 30);
+
+  // FX
+  floodFx.forEach(f=>{
+    f.t+=0.05;
+    const prog=Math.min(f.t,1);
+    ctx.globalAlpha=Math.max(0,1-prog);
+    ctx.fillStyle=FLOOD_COLORS[f.colorIdx];
+    ctx.font='bold 20px system-ui'; ctx.textAlign='center';
+    ctx.fillText('✨', W/2, H/2-prog*30);
+    ctx.globalAlpha=1;
+  });
+  floodFx=floodFx.filter(f=>f.t<1);
+}
+
+function floodDone(won){
+  floodMode=false;
+  if(floodRAF){ cancelAnimationFrame(floodRAF); floodRAF=null; }
+  if(won){
+    sfxWaveWin();
+    showComboFlash(0,false,'🎨 Phủ đầy bảng! +'+floodScore+' điểm!');
+    setTimeout(()=>triggerArenaUnlock(), 500);
+  } else {
+    sfxGameOver();
+    const flooded=countFlooded();
+    showComboFlash(0,false,'🎨 Hết bước! Tràn '+flooded+'/100 ô!');
+  }
+  setTimeout(exitFloodToMain, 600);
+}
+
+function exitFloodToMain(){
+  floodMode=false;
+  if(floodRAF){ cancelAnimationFrame(floodRAF); floodRAF=null; }
+  FLCV().classList.remove('active');
+  document.getElementById('grid').style.display='';
+  document.getElementById('pieces-area').style.display='';
+  document.getElementById('grid-wrap').classList.remove('secret-mode','ultra-glow','combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5');
+  document.getElementById('mode-badge').textContent='BÌNH THƯỜNG';
+  document.getElementById('mode-badge').classList.remove('secret');
+  document.getElementById('burst-count').textContent='Chuỗi nổ: 0/3';
+  consecutiveBursts=0; updateBurstCount();
+  document.getElementById('hint-bar').textContent='Chạm khối → ghost hiện · Di ngón → ghost bám · Thả trên ô → đặt · Thả vùng trống → xoay';
+  renderPieces(); checkGameOverA();
+}
+
+FLCV().addEventListener('pointerdown', e=>{
+  if(!floodMode) return;
+  e.preventDefault();
+  const cv=FLCV();
+  const rect=cv.getBoundingClientRect();
+  const scaleX=cv.width/rect.width, scaleY=cv.height/rect.height;
+  const tx=(e.clientX-rect.left)*scaleX, ty=(e.clientY-rect.top)*scaleY;
+  // Detect color button taps
+  const cellSize=32, gap=2, cols=FLOOD_GRID_SIZE;
+  const gridW=cols*cellSize+(cols-1)*gap;
+  const offY=48, gridH=FLOOD_GRID_SIZE*cellSize+(FLOOD_GRID_SIZE-1)*gap;
+  const btnY=offY+gridH+14;
+  const btnR=20, btnSpacing=52, btnStartX=(cv.width-(FLOOD_COLORS.length-1)*btnSpacing)/2;
+  FLOOD_COLORS.forEach((col,i)=>{
+    const bx=btnStartX+i*btnSpacing, by=btnY+btnR;
+    if(Math.hypot(tx-bx,ty-by)<btnR+6){ doFlood(i); }
+  });
+});
+
+/* ══════════════════════════════════════════
+   MAP ẨN 13 — SURVIVAL ARENA 🌊
+══════════════════════════════════════════ */
+const ARENA_TIME=90, ARENA_KPI=1000;
+const ARENA_WAVE_TIMES=[0,20,40,60];
+
+let arenaMode=false, arenaRAF=null, arenaLast=0, arenaElapsed=0;
+let arenaDogX=180, arenaDogY=380, arenaDogLives=5;
+let arenaInvincible=0, arenaBees=[], arenaCarrots=[], arenaSnake={x:180,y:80,hp:100,vx:80,fireTimer:0};
+let arenaVenom=[], arenaFx=[], arenaScore=0, arenaWave=0;
+let arenaSpawnTimer=0, arenaCarrotTimer=0, arenaWaveFlash=0, arenaWaveFlashText='';
+let arenaPointerX=null, arenaPointerY=null;
+
+const ARCV=()=>document.getElementById('arena-canvas');
+
+function triggerArenaUnlock(){
+  pendingUnlock='arena';
+  document.getElementById('unlock-title').textContent='🌊 MAP ẨN 13 MỞ KHÓA!';
+  document.getElementById('unlock-desc').innerHTML=
+    '🌊 <b>Đấu Trường Sinh Tồn!</b><br><br>'+
+    'Trận chiến cuối cùng — vượt qua 4 làn sóng kẻ thù!<br>'+
+    'Kéo để di chuyển chú chó 🐶 tránh đòn tấn công!<br>'+
+    'Chạm vào 🐝/🥕 để tiêu diệt (+15 điểm)!<br>'+
+    'Sống sót <b>'+ARENA_TIME+'s</b> hoặc đạt <b>'+ARENA_KPI+' điểm</b> để CHIẾN THẮNG!';
+  document.getElementById('unlock-btn').textContent='🌊 VÀO TRẬN!';
+  document.getElementById('unlock-overlay').classList.add('show');
+}
+
+function enterArenaMode(){
+  endDrag();
+  sfxUnlock();
+  document.getElementById('grid').style.display='none';
+  document.getElementById('pieces-area').style.display='none';
+  document.getElementById('hint-bar').style.display='';
+  document.getElementById('hint-bar').textContent='Kéo để di chuyển! Chạm vào ong/cà rốt để tiêu diệt!';
+  ARCV().classList.add('active');
+  document.getElementById('grid-wrap').classList.add('secret-mode');
+  document.getElementById('mode-badge').textContent='🌊 MAP ẨN 13';
+  document.getElementById('mode-badge').classList.add('secret');
+  arenaMode=true;
+  initArena();
+  arenaLast=performance.now();
+  arenaRAF=requestAnimationFrame(arenaLoop);
+}
+
+function initArena(){
+  const cv=ARCV();
+  arenaDogX=cv.width/2; arenaDogY=cv.height-80;
+  arenaDogLives=5; arenaInvincible=0;
+  arenaBees=[]; arenaCarrots=[]; arenaVenom=[]; arenaFx=[];
+  arenaScore=0; arenaElapsed=0; arenaWave=0;
+  arenaSpawnTimer=0; arenaCarrotTimer=0;
+  arenaWaveFlash=0; arenaWaveFlashText='';
+  arenaSnake={x:cv.width/2,y:80,hp:100,vx:80,fireTimer:0};
+  arenaPointerX=null; arenaPointerY=null;
+}
+
+const ARENA_WAVE_LABELS=['SÓNG 1: ONG TẤN CÔNG!','SÓNG 2: CÀ RỐT ĐỔ BỘ!','SÓNG 3: RẮN BOSS!','SÓNG 4: TẤT CẢ KẺ THÙ!'];
+
+function arenaLoop(now){
+  if(!arenaMode){ arenaRAF=null; return; }
+  const dt=Math.min((now-(arenaLast||now))/1000,0.08);
+  arenaLast=now;
+  arenaElapsed+=dt;
+
+  const cv=ARCV(), W=cv.width, H=cv.height;
+
+  // Wave transitions
+  let newWave=0;
+  for(let i=ARENA_WAVE_TIMES.length-1;i>=0;i--){ if(arenaElapsed>=ARENA_WAVE_TIMES[i]){ newWave=i; break; } }
+  if(newWave!==arenaWave){
+    arenaWave=newWave;
+    arenaWaveFlash=2; arenaWaveFlashText=ARENA_WAVE_LABELS[arenaWave]||'';
+    if(arenaWave===2){ arenaSnake={x:W/2,y:80,hp:100,vx:80,fireTimer:0}; }
+    if(arenaWave===3){ if(!arenaSnake||arenaSnake.hp<=0) arenaSnake={x:W/2,y:80,hp:100,vx:80,fireTimer:0}; }
+  }
+  arenaWaveFlash=Math.max(0,arenaWaveFlash-dt);
+
+  // Score per second
+  arenaScore+=10*dt; score+=10*dt;
+  if(best<score) best=score;
+
+  // Invincibility countdown
+  arenaInvincible=Math.max(0,arenaInvincible-dt);
+
+  // Move dog toward pointer
+  if(arenaPointerX!==null){
+    const dx=arenaPointerX-arenaDogX, dy=arenaPointerY-arenaDogY;
+    const spd=300*dt;
+    const dist=Math.hypot(dx,dy);
+    if(dist>spd){ arenaDogX+=dx/dist*spd; arenaDogY+=dy/dist*spd; }
+    else { arenaDogX=arenaPointerX; arenaDogY=arenaPointerY; }
+  }
+  arenaDogX=Math.max(25,Math.min(W-25,arenaDogX));
+  arenaDogY=Math.max(25,Math.min(H-25,arenaDogY));
+
+  // Wave 1 & 4: Bees chase dog
+  if(arenaWave===0||arenaWave===3){
+    arenaSpawnTimer+=dt;
+    if(arenaSpawnTimer>=2.0){ arenaSpawnTimer=0;
+      const side=Math.floor(Math.random()*4);
+      let bx,by;
+      if(side===0){bx=Math.random()*W;by=-20;}
+      else if(side===1){bx=W+20;by=Math.random()*H;}
+      else if(side===2){bx=Math.random()*W;by=H+20;}
+      else{bx=-20;by=Math.random()*H;}
+      arenaBees.push({x:bx,y:by,t:0});
+    }
+  }
+  arenaBees.forEach(b=>{
+    b.t+=dt;
+    const dx=arenaDogX-b.x, dy=arenaDogY-b.y, d=Math.hypot(dx,dy)||1;
+    b.x+=dx/d*90*dt; b.y+=dy/d*90*dt;
+  });
+
+  // Wave 2 & 4: Carrots fall
+  if(arenaWave===1||arenaWave===3){
+    arenaCarrotTimer+=dt;
+    if(arenaCarrotTimer>=0.8){ arenaCarrotTimer=0;
+      arenaCarrots.push({x:30+Math.random()*(W-60),y:-20,vy:130+Math.random()*50});
+    }
+  }
+  arenaCarrots.forEach(c=>c.y+=c.vy*dt);
+  arenaCarrots=arenaCarrots.filter(c=>c.y<H+30);
+
+  // Wave 3 & 4: Snake boss
+  if((arenaWave===2||arenaWave===3)&&arenaSnake&&arenaSnake.hp>0){
+    arenaSnake.x+=arenaSnake.vx*dt;
+    if(arenaSnake.x>W-40){arenaSnake.x=W-40;arenaSnake.vx=-Math.abs(arenaSnake.vx);}
+    if(arenaSnake.x<40){arenaSnake.x=40;arenaSnake.vx=Math.abs(arenaSnake.vx);}
+    arenaSnake.fireTimer+=dt;
+    if(arenaSnake.fireTimer>=1.5){ arenaSnake.fireTimer=0;
+      arenaVenom.push({x:arenaSnake.x+(Math.random()-0.5)*40,y:arenaSnake.y+40,vy:140+Math.random()*40});
+    }
+    // Dog can hit snake by tapping (handled in pointerdown)
+  }
+  arenaVenom.forEach(v=>v.y+=v.vy*dt);
+  arenaVenom=arenaVenom.filter(v=>v.y<H+30);
+
+  // Collision: bees hit dog
+  if(arenaInvincible<=0){
+    arenaBees=arenaBees.filter(b=>{
+      if(Math.hypot(b.x-arenaDogX,b.y-arenaDogY)<28){
+        arenaDogLives--; arenaInvincible=2;
+        arenaFx.push({x:arenaDogX,y:arenaDogY,t:0,type:'dmg'});
+        sfxGameOver(); return false;
+      }
+      return true;
+    });
+    // Carrots hit dog
+    if(arenaInvincible<=0){
+      arenaCarrots=arenaCarrots.filter(c=>{
+        if(Math.hypot(c.x-arenaDogX,c.y-arenaDogY)<28){
+          arenaDogLives--; arenaInvincible=2;
+          arenaFx.push({x:arenaDogX,y:arenaDogY,t:0,type:'dmg'});
+          sfxGameOver(); return false;
+        }
+        return true;
+      });
+    }
+    // Venom hits dog
+    if(arenaInvincible<=0){
+      arenaVenom=arenaVenom.filter(v=>{
+        if(Math.hypot(v.x-arenaDogX,v.y-arenaDogY)<24){
+          arenaDogLives--; arenaInvincible=2;
+          arenaFx.push({x:arenaDogX,y:arenaDogY,t:0,type:'dmg'});
+          sfxGameOver(); return false;
+        }
+        return true;
+      });
+    }
+  }
+
+  arenaFx.forEach(f=>f.t+=dt);
+  arenaFx=arenaFx.filter(f=>f.t<0.6);
+
+  const ctx=cv.getContext('2d');
+  drawArena(ctx,W,H);
+
+  const timeLeft=Math.max(0,ARENA_TIME-arenaElapsed);
+  document.getElementById('burst-count').textContent='🌊 '+Math.floor(arenaScore)+' pts  ❤️×'+arenaDogLives+'  ⏱'+Math.ceil(timeLeft)+'s';
+  updateScoreUI();
+
+  if(arenaDogLives<=0){ arenaDone(false); return; }
+  if(timeLeft<=0||arenaScore>=ARENA_KPI){ arenaDone(true); return; }
+  arenaRAF=requestAnimationFrame(arenaLoop);
+}
+
+function drawArena(ctx,W,H){
+  ctx.clearRect(0,0,W,H);
+  // Dark arena
+  ctx.fillStyle='#050010'; ctx.fillRect(0,0,W,H);
+  // Ring patterns
+  const rings=[[W/2,H/2,80],[W/2,H/2,140],[W/2,H/2,210],[W/2,H/2,290]];
+  rings.forEach(([cx,cy,r],i)=>{
+    ctx.strokeStyle=`rgba(${[60,100,150,200][i]},${[40,80,120,60][i]},${[200,160,80,200][i]},0.12)`;
+    ctx.lineWidth=2; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.stroke();
+  });
+
+  // Bees
+  arenaBees.forEach(b=>{
+    ctx.shadowColor='#ffdd00'; ctx.shadowBlur=10;
+    ctx.font='28px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('🐝',b.x,b.y);
+    ctx.shadowBlur=0;
+  });
+
+  // Carrots
+  arenaCarrots.forEach(c=>{
+    ctx.shadowColor='#ff8800'; ctx.shadowBlur=8;
+    ctx.font='28px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('🥕',c.x,c.y);
+    ctx.shadowBlur=0;
+  });
+
+  // Snake boss
+  if((arenaWave===2||arenaWave===3)&&arenaSnake&&arenaSnake.hp>0){
+    ctx.font='60px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('🐍',arenaSnake.x,arenaSnake.y);
+    // HP bar
+    const hpPct=arenaSnake.hp/100;
+    ctx.fillStyle='rgba(200,0,0,0.4)'; ctx.fillRect(arenaSnake.x-40,arenaSnake.y-50,80,8);
+    ctx.fillStyle='#ff4444'; ctx.fillRect(arenaSnake.x-40,arenaSnake.y-50,80*hpPct,8);
+  }
+
+  // Venom
+  arenaVenom.forEach(v=>{
+    ctx.fillStyle='rgba(0,200,0,0.8)';
+    ctx.beginPath(); ctx.arc(v.x,v.y,8,0,Math.PI*2); ctx.fill();
+  });
+
+  // Dog (with invincibility blink)
+  if(arenaInvincible<=0||Math.floor(arenaInvincible*8)%2===0){
+    ctx.font='44px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('🐶',arenaDogX,arenaDogY);
+  }
+
+  // FX
+  arenaFx.forEach(f=>{
+    const prog=f.t/0.6;
+    ctx.globalAlpha=Math.max(0,1-prog);
+    ctx.font='bold 28px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('💥',f.x,f.y-prog*40);
+    ctx.globalAlpha=1;
+  });
+
+  // Wave flash
+  if(arenaWaveFlash>0){
+    const alpha=Math.min(1,arenaWaveFlash);
+    ctx.globalAlpha=alpha;
+    ctx.fillStyle='rgba(255,200,0,0.15)'; ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='#fff';
+    ctx.font='bold 22px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.shadowColor='#ff8800'; ctx.shadowBlur=20;
+    ctx.fillText(arenaWaveFlashText,W/2,H/2);
+    ctx.shadowBlur=0;
+    ctx.globalAlpha=1;
+  }
+
+  // Wave progress bar
+  const wavePct=Math.min(arenaElapsed/ARENA_TIME,1);
+  ctx.fillStyle='rgba(255,255,255,0.1)'; ctx.fillRect(0,0,W,6);
+  const wg=ctx.createLinearGradient(0,0,W,0);
+  wg.addColorStop(0,'#4080ff'); wg.addColorStop(0.5,'#ff40ff'); wg.addColorStop(1,'#ff8040');
+  ctx.fillStyle=wg; ctx.fillRect(0,0,W*wavePct,6);
+
+  // HUD
+  ctx.fillStyle='rgba(0,0,0,0.55)';
+  ctx.beginPath(); ctx.roundRect(8,10,W-16,28,6); ctx.fill();
+  ctx.fillStyle='#fff'; ctx.font='bold 12px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  const wLabel=['Sóng 1: Ong','Sóng 2: Cà Rốt','Sóng 3: Rắn Boss','Sóng 4: Tất cả!'][arenaWave]||'';
+  ctx.fillText('🌊 '+wLabel+'  ❤️×'+arenaDogLives+'  '+Math.floor(arenaScore)+' pts',W/2,24);
+}
+
+function arenaDone(won){
+  arenaMode=false;
+  if(arenaRAF){ cancelAnimationFrame(arenaRAF); arenaRAF=null; }
+  if(won){
+    sfxWaveWin();
+    showComboFlash(0,false,'🏆 BẠN ĐÃ CHINH PHỤC TẤT CẢ 13 BẢN ĐỒ BÍ ẨN! THẦN ĐỒNG CHROMABLAST!');
+  } else {
+    sfxGameOver();
+    showComboFlash(0,false,'🌊 Đã bị hạ gục! '+Math.floor(arenaScore)+' điểm!');
+  }
+  setTimeout(exitArenaToMain, 800);
+}
+
+function exitArenaToMain(){
+  arenaMode=false;
+  if(arenaRAF){ cancelAnimationFrame(arenaRAF); arenaRAF=null; }
+  ARCV().classList.remove('active');
+  document.getElementById('grid').style.display='';
+  document.getElementById('pieces-area').style.display='';
+  document.getElementById('grid-wrap').classList.remove('secret-mode','ultra-glow','combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5');
+  document.getElementById('mode-badge').textContent='BÌNH THƯỜNG';
+  document.getElementById('mode-badge').classList.remove('secret');
+  document.getElementById('burst-count').textContent='Chuỗi nổ: 0/3';
+  consecutiveBursts=0; updateBurstCount();
+  document.getElementById('hint-bar').textContent='Chạm khối → ghost hiện · Di ngón → ghost bám · Thả trên ô → đặt · Thả vùng trống → xoay';
+  renderPieces(); checkGameOverA();
+}
+
+ARCV().addEventListener('pointermove', e=>{
+  if(!arenaMode) return;
+  e.preventDefault();
+  const cv=ARCV(), rect=cv.getBoundingClientRect();
+  arenaPointerX=(e.clientX-rect.left)*(cv.width/rect.width);
+  arenaPointerY=(e.clientY-rect.top)*(cv.height/rect.height);
+});
+ARCV().addEventListener('pointerdown', e=>{
+  if(!arenaMode) return;
+  e.preventDefault();
+  const cv=ARCV(), rect=cv.getBoundingClientRect();
+  const tx=(e.clientX-rect.left)*(cv.width/rect.width);
+  const ty=(e.clientY-rect.top)*(cv.height/rect.height);
+  arenaPointerX=tx; arenaPointerY=ty;
+  // Tap bees to kill
+  arenaBees=arenaBees.filter(b=>{
+    if(Math.hypot(b.x-tx,b.y-ty)<28){
+      arenaScore+=15; score+=15; if(best<score) best=score;
+      arenaFx.push({x:b.x,y:b.y,t:0,type:'kill'});
+      sfxWaveWin(); return false;
+    }
+    return true;
+  });
+  // Tap carrots to kill
+  arenaCarrots=arenaCarrots.filter(c=>{
+    if(Math.hypot(c.x-tx,c.y-ty)<28){
+      arenaScore+=15; score+=15; if(best<score) best=score;
+      arenaFx.push({x:c.x,y:c.y,t:0,type:'kill'});
+      sfxWaveWin(); return false;
+    }
+    return true;
+  });
+  // Tap snake boss
+  if((arenaWave===2||arenaWave===3)&&arenaSnake&&arenaSnake.hp>0){
+    if(Math.hypot(arenaSnake.x-tx,arenaSnake.y-ty)<40){
+      arenaSnake.hp-=20; arenaScore+=10; score+=10; if(best<score) best=score;
+      arenaFx.push({x:arenaSnake.x,y:arenaSnake.y,t:0,type:'hit'});
+      if(arenaSnake.hp<=0){
+        arenaScore+=50; score+=50; if(best<score) best=score;
+        arenaFx.push({x:arenaSnake.x,y:arenaSnake.y,t:0,type:'kill'});
+      }
+      sfxWaveWin();
+    }
+  }
+  updateScoreUI();
+});
+ARCV().addEventListener('pointerup', ()=>{ if(!arenaMode) return; arenaPointerX=null; arenaPointerY=null; });
 
 /* ══════════════════════════════════════════
    SHARED UI
@@ -6643,6 +7497,9 @@ function startGame(){
   bubbleMode=false; if(typeof bubbleRAF!=='undefined'&&bubbleRAF){cancelAnimationFrame(bubbleRAF);bubbleRAF=null;}
   stackMode=false; if(typeof stackRAF!=='undefined'&&stackRAF){cancelAnimationFrame(stackRAF);stackRAF=null;}
   bossMode=false; if(typeof bossRAF!=='undefined'&&bossRAF){cancelAnimationFrame(bossRAF);bossRAF=null;}
+  catchMode=false; if(typeof catchRAF!=='undefined'&&catchRAF){cancelAnimationFrame(catchRAF);catchRAF=null;}
+  floodMode=false; if(typeof floodRAF!=='undefined'&&floodRAF){cancelAnimationFrame(floodRAF);floodRAF=null;}
+  arenaMode=false; if(typeof arenaRAF!=='undefined'&&arenaRAF){cancelAnimationFrame(arenaRAF);arenaRAF=null;}
   goldWave=1;
   clearSecretTimer();
   endDrag();
@@ -6744,6 +7601,39 @@ function startGame(){
     document.getElementById('mode-badge').textContent='BÌNH THƯỜNG';
     document.getElementById('mode-badge').classList.remove('secret');
   }
+  // Force-exit map ẩn 11 nếu đang chơi
+  if(typeof catchMode!=='undefined'&&(catchMode||catchRAF)){
+    catchMode=false;
+    if(typeof catchRAF!=='undefined'&&catchRAF){cancelAnimationFrame(catchRAF);catchRAF=null;}
+    const catcv=document.getElementById('catch-canvas'); if(catcv) catcv.classList.remove('active');
+    document.getElementById('grid-wrap').classList.remove('secret-mode','ultra-glow','combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5');
+    document.getElementById('grid').style.display='';
+    document.getElementById('pieces-area').style.display='';
+    document.getElementById('mode-badge').textContent='BÌNH THƯỜNG';
+    document.getElementById('mode-badge').classList.remove('secret');
+  }
+  // Force-exit map ẩn 12 nếu đang chơi
+  if(typeof floodMode!=='undefined'&&(floodMode||floodRAF)){
+    floodMode=false;
+    if(typeof floodRAF!=='undefined'&&floodRAF){cancelAnimationFrame(floodRAF);floodRAF=null;}
+    const flcv=document.getElementById('flood-canvas'); if(flcv) flcv.classList.remove('active');
+    document.getElementById('grid-wrap').classList.remove('secret-mode','ultra-glow','combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5');
+    document.getElementById('grid').style.display='';
+    document.getElementById('pieces-area').style.display='';
+    document.getElementById('mode-badge').textContent='BÌNH THƯỜNG';
+    document.getElementById('mode-badge').classList.remove('secret');
+  }
+  // Force-exit map ẩn 13 nếu đang chơi
+  if(typeof arenaMode!=='undefined'&&(arenaMode||arenaRAF)){
+    arenaMode=false;
+    if(typeof arenaRAF!=='undefined'&&arenaRAF){cancelAnimationFrame(arenaRAF);arenaRAF=null;}
+    const arcv=document.getElementById('arena-canvas'); if(arcv) arcv.classList.remove('active');
+    document.getElementById('grid-wrap').classList.remove('secret-mode','ultra-glow','combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5');
+    document.getElementById('grid').style.display='';
+    document.getElementById('pieces-area').style.display='';
+    document.getElementById('mode-badge').textContent='BÌNH THƯỜNG';
+    document.getElementById('mode-badge').classList.remove('secret');
+  }
 
   document.getElementById('game-over-overlay').classList.remove('show');
   document.getElementById('unlock-overlay').classList.remove('show');
@@ -6782,7 +7672,7 @@ function initStartScreen(){
 }
 
 function togglePause(){
-  if(!secretMode && !dodgeMode && !fruitMode && !beeMode && !goldMode && !moleMode && !memoryMode && !bubbleMode && !stackMode && !bossMode) return;
+  if(!secretMode && !dodgeMode && !fruitMode && !beeMode && !goldMode && !moleMode && !memoryMode && !bubbleMode && !stackMode && !bossMode && !catchMode && !floodMode && !arenaMode) return;
   sfxClick();
   gamePaused = !gamePaused;
   const overlay = document.getElementById('pause-overlay');
@@ -6799,6 +7689,9 @@ function togglePause(){
     if(typeof bubbleRAF!=='undefined'&&bubbleRAF){cancelAnimationFrame(bubbleRAF);bubbleRAF=null;}
     if(typeof stackRAF!=='undefined'&&stackRAF){cancelAnimationFrame(stackRAF);stackRAF=null;}
     if(typeof bossRAF!=='undefined'&&bossRAF){cancelAnimationFrame(bossRAF);bossRAF=null;}
+    if(typeof catchRAF!=='undefined'&&catchRAF){cancelAnimationFrame(catchRAF);catchRAF=null;}
+    if(typeof floodRAF!=='undefined'&&floodRAF){cancelAnimationFrame(floodRAF);floodRAF=null;}
+    if(typeof arenaRAF!=='undefined'&&arenaRAF){cancelAnimationFrame(arenaRAF);arenaRAF=null;}
     if(timerRAF){ cancelAnimationFrame(timerRAF); timerRAF=null; }
     if(typeof borderSparkInterval !== 'undefined' && borderSparkInterval){ clearInterval(borderSparkInterval); }
     if(typeof fireInterval !== 'undefined' && fireInterval){ clearInterval(fireInterval); }
@@ -6814,6 +7707,9 @@ function togglePause(){
     if(typeof bubbleMode!=='undefined'&&bubbleMode) { bubbleLast=0;bubbleRAF=requestAnimationFrame(bubbleLoop);}
     if(typeof stackMode!=='undefined'&&stackMode)   { stackLast=0;stackRAF=requestAnimationFrame(stackLoop);}
     if(typeof bossMode!=='undefined'&&bossMode)     { bossLast=0;bossRAF=requestAnimationFrame(bossLoop);}
+    if(typeof catchMode!=='undefined'&&catchMode)   { catchLast=0;catchRAF=requestAnimationFrame(catchLoop);}
+    if(typeof floodMode!=='undefined'&&floodMode)   { floodRAF=requestAnimationFrame(floodLoop);}
+    if(typeof arenaMode!=='undefined'&&arenaMode)   { arenaLast=0;arenaRAF=requestAnimationFrame(arenaLoop);}
     if(secretMode) { startSecretTimer(); }
   }
 }
