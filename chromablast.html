@@ -415,6 +415,15 @@ body {
 /* ── MAP ẨN 13: ARENA CANVAS ── */
 #arena-canvas { display:none; width:100%; max-width:393px; aspect-ratio:360/460; background:#050010; border-radius:14px; touch-action:none; margin:0 auto; }
 #arena-canvas.active { display:block; }
+/* ── MAP ẨN 14: SNAKE CANVAS ── */
+#snake-canvas  { display:none; width:100%; max-width:393px; aspect-ratio:360/460; background:#0a1a0a; border-radius:14px; touch-action:none; margin:0 auto; }
+#snake-canvas.active  { display:block; }
+/* ── MAP ẨN 15: BRICK CANVAS ── */
+#brick-canvas  { display:none; width:100%; max-width:393px; aspect-ratio:360/460; background:#050015; border-radius:14px; touch-action:none; margin:0 auto; }
+#brick-canvas.active  { display:block; }
+/* ── MAP ẨN 16: RUNNER CANVAS ── */
+#runner-canvas { display:none; width:100%; max-width:393px; aspect-ratio:360/460; background:#87ceeb; border-radius:14px; touch-action:none; margin:0 auto; }
+#runner-canvas.active { display:block; }
 .sc {
   width: 44px; height: 44px; border-radius: 8px;
   cursor: pointer; transition: transform 0.08s, filter 0.08s, box-shadow 0.12s;
@@ -781,6 +790,12 @@ body {
     <canvas id="flood-canvas" width="360" height="460"></canvas>
     <!-- MODE N: Map ẩn 13 — Survival Arena (Đấu trường sinh tồn) -->
     <canvas id="arena-canvas" width="360" height="460"></canvas>
+    <!-- MODE O: Map ẩn 14 — Snake (Rắn) -->
+    <canvas id="snake-canvas" width="360" height="460"></canvas>
+    <!-- MODE P: Map ẩn 15 — Brick Breaker (Bắn gạch) -->
+    <canvas id="brick-canvas" width="360" height="460"></canvas>
+    <!-- MODE Q: Map ẩn 16 — Infinite Runner (Chạy vô tận) -->
+    <canvas id="runner-canvas" width="360" height="460"></canvas>
 
     <!-- Lớp phủ pháo hoa cho map ẩn (vệt cháy ở viền khi nổ) -->
     <div id="sc-fx"></div>
@@ -1720,6 +1735,9 @@ document.getElementById('unlock-btn').addEventListener('click',()=>{
   else if(pendingUnlock==='catch') enterCatchMode();
   else if(pendingUnlock==='flood') enterFloodMode();
   else if(pendingUnlock==='arena') enterArenaMode();
+  else if(pendingUnlock==='snake')  enterSnakeMode();
+  else if(pendingUnlock==='brick')  enterBrickMode();
+  else if(pendingUnlock==='runner') enterRunnerMode();
   else enterSecretMode();
 });
 
@@ -7174,12 +7192,13 @@ function arenaDone(won){
   if(arenaRAF){ cancelAnimationFrame(arenaRAF); arenaRAF=null; }
   if(won){
     sfxWaveWin();
-    showComboFlash(0,false,'🏆 BẠN ĐÃ CHINH PHỤC TẤT CẢ 13 BẢN ĐỒ BÍ ẨN! THẦN ĐỒNG CHROMABLAST!');
+    showComboFlash(0,false,'🏆 CHINH PHỤC ĐẤUTRƯỜNG! MAP ẨN 14 MỞ KHÓA!');
+    setTimeout(()=>triggerSnakeUnlock(), 1500);
   } else {
     sfxGameOver();
     showComboFlash(0,false,'🌊 Đã bị hạ gục! '+Math.floor(arenaScore)+' điểm!');
+    setTimeout(exitArenaToMain, 800);
   }
-  setTimeout(exitArenaToMain, 800);
 }
 
 function exitArenaToMain(){
@@ -7278,27 +7297,27 @@ const PRAISE = ['NOT BAD','COOL','GOOD','GREAT','PERFECT','SPECTACULAR','UNREAL'
 const PRAISE_COLOR = ['#9ab8b0','#5DCAA5','#378ADD','#7F77DD','#EF9F27','#E24B4A','#D4537E','#f7c948','#ff6b35'];
 function pIdx(level){ return Math.min(Math.max(level||1,1),PRAISE.length)-1; }
 
-/* ── Voice announcer — warm male voice via SpeechSynthesis ── */
-let _voiceReady=false, _maleVoice=null;
+/* ── Voice announcer — cute kid voice via SpeechSynthesis ── */
+let _voiceReady=false, _kidVoice=null;
 function _initVoice(){
   if(_voiceReady) return;
   const voices=speechSynthesis.getVoices();
-  if(!voices.length) return; // not loaded yet
-  // Priority: Google US/UK English Male > any Google English > any English > first available
+  if(!voices.length) return;
+  // Priority: female/child Google voices → any Google English → any English
   const rank=(v)=>{
     const n=v.name.toLowerCase(), l=(v.lang||'').toLowerCase();
-    if(n.includes('google') && n.includes('us') && l.startsWith('en')) return 0;
-    if(n.includes('google') && l.startsWith('en')) return 1;
-    if((n.includes('male')||n.includes('david')||n.includes('mark')) && l.startsWith('en')) return 2;
-    if(l.startsWith('en')) return 3;
+    if((n.includes('samantha')||n.includes('zira')||n.includes('victoria')||n.includes('karen')||n.includes('moira')||n.includes('tessa')||n.includes('fiona')||n.includes('amelie')) && l.startsWith('en')) return 0;
+    if(n.includes('google') && n.includes('female') && l.startsWith('en')) return 1;
+    if(n.includes('google') && l.startsWith('en')) return 2;
+    if(n.includes('female') && l.startsWith('en')) return 3;
+    if(l.startsWith('en')) return 4;
     return 9;
   };
   const sorted=[...voices].sort((a,b)=>rank(a)-rank(b));
-  _maleVoice=sorted[0]||null;
+  _kidVoice=sorted[0]||null;
   _voiceReady=true;
 }
 speechSynthesis.onvoiceschanged=()=>{ _voiceReady=false; _initVoice(); };
-// Pre-load voices early
 if(speechSynthesis.getVoices().length) _initVoice();
 
 let _lastSpoke=0;
@@ -7310,12 +7329,12 @@ function speakPraise(word, idx){
   if(!_voiceReady) _initVoice();
   speechSynthesis.cancel();
   const u=new SpeechSynthesisUtterance(word);
-  u.voice=_maleVoice||null;
+  u.voice=_kidVoice||null;
   u.lang='en-US';
-  // Scale: NOT BAD(0) calm → GODLIKE(8) commanding
-  u.pitch  = Math.max(0.3, 0.9 - idx*0.075); // 0.90 → 0.30  (trầm dần)
-  u.rate   = 0.88 + idx*0.035;                // 0.88 → 1.16  (dứt khoát hơn)
-  u.volume = Math.min(1, 0.72 + idx*0.035);   // 0.72 → 1.00
+  // Cute kid voice: high pitch, fast & bouncy, escalates with combo
+  u.pitch  = Math.min(2, 1.6 + idx*0.05);  // 1.60 → 2.00 (cao trong trẻo)
+  u.rate   = 1.1 + idx*0.04;               // 1.10 → 1.42 (nhanh nhảu hơn)
+  u.volume = Math.min(1, 0.8 + idx*0.025); // 0.80 → 1.00
   speechSynthesis.speak(u);
 }
 function hexToRgba(hex,a){
@@ -7500,6 +7519,9 @@ function startGame(){
   catchMode=false; if(typeof catchRAF!=='undefined'&&catchRAF){cancelAnimationFrame(catchRAF);catchRAF=null;}
   floodMode=false; if(typeof floodRAF!=='undefined'&&floodRAF){cancelAnimationFrame(floodRAF);floodRAF=null;}
   arenaMode=false; if(typeof arenaRAF!=='undefined'&&arenaRAF){cancelAnimationFrame(arenaRAF);arenaRAF=null;}
+  snakeMode=false; if(typeof snakeRAF!=='undefined'&&snakeRAF){cancelAnimationFrame(snakeRAF);snakeRAF=null;}
+  brickMode=false; if(typeof brickRAF!=='undefined'&&brickRAF){cancelAnimationFrame(brickRAF);brickRAF=null;}
+  runnerMode=false; if(typeof runnerRAF!=='undefined'&&runnerRAF){cancelAnimationFrame(runnerRAF);runnerRAF=null;}
   goldWave=1;
   clearSecretTimer();
   endDrag();
@@ -7634,6 +7656,39 @@ function startGame(){
     document.getElementById('mode-badge').textContent='BÌNH THƯỜNG';
     document.getElementById('mode-badge').classList.remove('secret');
   }
+  // Force-exit map ẩn 14 nếu đang chơi
+  if(typeof snakeMode!=='undefined'&&(snakeMode||snakeRAF)){
+    snakeMode=false;
+    if(typeof snakeRAF!=='undefined'&&snakeRAF){cancelAnimationFrame(snakeRAF);snakeRAF=null;}
+    const sncv=document.getElementById('snake-canvas'); if(sncv) sncv.classList.remove('active');
+    document.getElementById('grid-wrap').classList.remove('secret-mode','ultra-glow','combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5');
+    document.getElementById('grid').style.display='';
+    document.getElementById('pieces-area').style.display='';
+    document.getElementById('mode-badge').textContent='BÌNH THƯỜNG';
+    document.getElementById('mode-badge').classList.remove('secret');
+  }
+  // Force-exit map ẩn 15 nếu đang chơi
+  if(typeof brickMode!=='undefined'&&(brickMode||brickRAF)){
+    brickMode=false;
+    if(typeof brickRAF!=='undefined'&&brickRAF){cancelAnimationFrame(brickRAF);brickRAF=null;}
+    const brcv=document.getElementById('brick-canvas'); if(brcv) brcv.classList.remove('active');
+    document.getElementById('grid-wrap').classList.remove('secret-mode','ultra-glow','combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5');
+    document.getElementById('grid').style.display='';
+    document.getElementById('pieces-area').style.display='';
+    document.getElementById('mode-badge').textContent='BÌNH THƯỜNG';
+    document.getElementById('mode-badge').classList.remove('secret');
+  }
+  // Force-exit map ẩn 16 nếu đang chơi
+  if(typeof runnerMode!=='undefined'&&(runnerMode||runnerRAF)){
+    runnerMode=false;
+    if(typeof runnerRAF!=='undefined'&&runnerRAF){cancelAnimationFrame(runnerRAF);runnerRAF=null;}
+    const rncv=document.getElementById('runner-canvas'); if(rncv) rncv.classList.remove('active');
+    document.getElementById('grid-wrap').classList.remove('secret-mode','ultra-glow','combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5');
+    document.getElementById('grid').style.display='';
+    document.getElementById('pieces-area').style.display='';
+    document.getElementById('mode-badge').textContent='BÌNH THƯỜNG';
+    document.getElementById('mode-badge').classList.remove('secret');
+  }
 
   document.getElementById('game-over-overlay').classList.remove('show');
   document.getElementById('unlock-overlay').classList.remove('show');
@@ -7672,7 +7727,7 @@ function initStartScreen(){
 }
 
 function togglePause(){
-  if(!secretMode && !dodgeMode && !fruitMode && !beeMode && !goldMode && !moleMode && !memoryMode && !bubbleMode && !stackMode && !bossMode && !catchMode && !floodMode && !arenaMode) return;
+  if(!secretMode && !dodgeMode && !fruitMode && !beeMode && !goldMode && !moleMode && !memoryMode && !bubbleMode && !stackMode && !bossMode && !catchMode && !floodMode && !arenaMode && !snakeMode && !brickMode && !runnerMode) return;
   sfxClick();
   gamePaused = !gamePaused;
   const overlay = document.getElementById('pause-overlay');
@@ -7692,6 +7747,9 @@ function togglePause(){
     if(typeof catchRAF!=='undefined'&&catchRAF){cancelAnimationFrame(catchRAF);catchRAF=null;}
     if(typeof floodRAF!=='undefined'&&floodRAF){cancelAnimationFrame(floodRAF);floodRAF=null;}
     if(typeof arenaRAF!=='undefined'&&arenaRAF){cancelAnimationFrame(arenaRAF);arenaRAF=null;}
+    if(typeof snakeRAF!=='undefined'&&snakeRAF){cancelAnimationFrame(snakeRAF);snakeRAF=null;}
+    if(typeof brickRAF!=='undefined'&&brickRAF){cancelAnimationFrame(brickRAF);brickRAF=null;}
+    if(typeof runnerRAF!=='undefined'&&runnerRAF){cancelAnimationFrame(runnerRAF);runnerRAF=null;}
     if(timerRAF){ cancelAnimationFrame(timerRAF); timerRAF=null; }
     if(typeof borderSparkInterval !== 'undefined' && borderSparkInterval){ clearInterval(borderSparkInterval); }
     if(typeof fireInterval !== 'undefined' && fireInterval){ clearInterval(fireInterval); }
@@ -7710,6 +7768,9 @@ function togglePause(){
     if(typeof catchMode!=='undefined'&&catchMode)   { catchLast=0;catchRAF=requestAnimationFrame(catchLoop);}
     if(typeof floodMode!=='undefined'&&floodMode)   { floodRAF=requestAnimationFrame(floodLoop);}
     if(typeof arenaMode!=='undefined'&&arenaMode)   { arenaLast=0;arenaRAF=requestAnimationFrame(arenaLoop);}
+    if(typeof snakeMode!=='undefined'&&snakeMode)   { snakeLast=0;snakeRAF=requestAnimationFrame(snakeLoop);}
+    if(typeof brickMode!=='undefined'&&brickMode)   { brickLast=0;brickRAF=requestAnimationFrame(brickLoop);}
+    if(typeof runnerMode!=='undefined'&&runnerMode) { runnerLast=0;runnerRAF=requestAnimationFrame(runnerLoop);}
     if(secretMode) { startSecretTimer(); }
   }
 }
