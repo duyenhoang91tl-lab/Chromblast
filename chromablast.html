@@ -1002,7 +1002,13 @@ function sfxScoreMilestone(){
   playTone(1100,'triangle',0.15,0.3,0.16);
 }
 function sfxPlacePiece(){
-  playTone(200,'sine',0.06, 0.15);
+  playTone(1200,'sine',0.07,0.06);
+  playTone(900,'sine',0.04,0.05,0.03);
+}
+function sfxBeeBuzz(){
+  // ngắn, lặp lại tạo tiếng vo ve
+  playTone(180,'sawtooth',0.04,0.08);
+  playTone(220,'sawtooth',0.03,0.06,0.02);
 }
 function sfxSelect(){
   playTone(440,'sine',0.04,0.12);
@@ -3253,7 +3259,7 @@ FCV().addEventListener('pointercancel', fruitPointerUp);
    Ong chạm chó (không bị dây chặn) → chó bị đốt, thua, về map thường.
 ══════════════════════════════════════════ */
 let beeMode=false, beeRAF=null, beeLast=0, beeElapsed=0, beeSpawnTimer=0;
-let bees=[], fences=[], dog=null, popFx=[];
+let bees=[], fences=[], dog=null, popFx=[], beeBuzzTimer=0;
 let dogStung=false, dogStungTimer=0;
 let dogImg=null; // pre-rendered SVG chibi Samoyed
 const dogSVGW=140, dogSVGH=160;
@@ -3353,10 +3359,18 @@ function beeLoop(now){
     spawnBees(d.burst,W,H);
   }
 
-  // di chuyển ong + va chạm dây
+  // tiếng vo ve định kỳ
+  beeBuzzTimer+=dt*1000;
+  if(beeBuzzTimer>320 && bees.length>0){ beeBuzzTimer=0; if(!sfxMuted) sfxBeeBuzz(); }
+
+  // di chuyển ong — chủ động bay về phía chó
   for(const b of bees){
     if(b.dead) continue;
     b.wob+=dt*6;
+    // steer toward dog each frame
+    const targetAngle=Math.atan2(dog.y-b.y, dog.x-b.x);
+    const da=((targetAngle-b.angle+Math.PI*3)%(Math.PI*2))-Math.PI;
+    b.angle+=Math.sign(da)*Math.min(Math.abs(da), 3.5*dt);
     const vx=Math.cos(b.angle)*d.speed, vy=Math.sin(b.angle)*d.speed;
     b.x+=vx*dt; b.y+=vy*dt;
     for(const f of fences){
@@ -3567,15 +3581,9 @@ function drawBee(ctx,W,H,now){
     ctx.save();
     ctx.translate(b.x,b.y+Math.sin(b.wob)*4);
     ctx.rotate(b.angle+Math.PI/2);
-    // bee motion blur trail
-    ctx.shadowColor='rgba(255,200,0,0.5)'; ctx.shadowBlur=14;
-    // bee body glow ring
-    ctx.strokeStyle='rgba(255,220,50,0.35)'; ctx.lineWidth=8;
-    ctx.beginPath(); ctx.arc(0,0,12,0,Math.PI*2); ctx.stroke();
     ctx.font='22px system-ui';
-    ctx.shadowColor='rgba(255,230,0,0.8)'; ctx.shadowBlur=12;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.fillText('🐝', 0, 0);
-    ctx.shadowBlur=0;
     ctx.restore();
   }
 
@@ -3618,122 +3626,39 @@ function drawBee(ctx,W,H,now){
 
 function buildDogSVG(){
   const svgStr = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 160" width="140" height="160">
-  <defs>
-    <radialGradient id="dogBodyG" cx="45%" cy="35%" r="62%">
-      <stop offset="0%" stop-color="#ffffff"/>
-      <stop offset="70%" stop-color="#f5f2ea"/>
-      <stop offset="100%" stop-color="#e8e0d0"/>
-    </radialGradient>
-    <radialGradient id="dogHeadG" cx="40%" cy="32%" r="60%">
-      <stop offset="0%" stop-color="#ffffff"/>
-      <stop offset="65%" stop-color="#f8f5ef"/>
-      <stop offset="100%" stop-color="#ede5d8"/>
-    </radialGradient>
-    <filter id="dogDs">
-      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="rgba(0,0,0,0.2)"/>
-    </filter>
-    <filter id="dogSoft">
-      <feGaussianBlur stdDeviation="1.5"/>
-    </filter>
-  </defs>
-
-  <!-- TAIL — big fluffy curl at back right -->
-  <circle cx="108" cy="108" r="18" fill="#f0ece0" filter="url(#dogDs)"/>
-  <circle cx="117" cy="98" r="14" fill="#f3efe5"/>
-  <circle cx="120" cy="88" r="11" fill="#f5f1e8"/>
-  <circle cx="118" cy="79" r="9" fill="#f7f4ec"/>
-  <circle cx="113" cy="72" r="8" fill="#f9f6f0"/>
-  <circle cx="107" cy="70" r="7" fill="#faf8f4"/>
-  <!-- tail fluff overlay -->
-  <circle cx="112" cy="96" r="10" fill="white" opacity="0.6"/>
-  <circle cx="118" cy="84" r="7" fill="white" opacity="0.5"/>
-  <circle cx="116" cy="74" r="6" fill="white" opacity="0.5"/>
-
-  <!-- BODY — big round fluffy -->
-  <ellipse cx="68" cy="108" rx="44" ry="40" fill="url(#dogBodyG)" filter="url(#dogDs)"/>
-  <!-- body fur puffs -->
-  <circle cx="32" cy="105" r="16" fill="#f5f2ea" opacity="0.8"/>
-  <circle cx="38" cy="120" r="13" fill="#f7f4ee" opacity="0.7"/>
-  <circle cx="104" cy="105" r="16" fill="#f5f2ea" opacity="0.8"/>
-  <circle cx="98" cy="120" r="13" fill="#f7f4ee" opacity="0.7"/>
-  <circle cx="68" cy="140" r="14" fill="#f5f2ea" opacity="0.7"/>
-  <circle cx="54" cy="138" r="11" fill="#f7f4ee" opacity="0.65"/>
-  <circle cx="82" cy="138" r="11" fill="#f7f4ee" opacity="0.65"/>
-  <!-- chest tuft -->
-  <circle cx="68" cy="92" r="18" fill="white" opacity="0.75"/>
-  <circle cx="58" cy="96" r="13" fill="white" opacity="0.6"/>
-  <circle cx="78" cy="96" r="13" fill="white" opacity="0.6"/>
-
-  <!-- PAWS -->
-  <ellipse cx="46" cy="148" rx="16" ry="10" fill="#f0ece2" filter="url(#dogDs)"/>
-  <ellipse cx="90" cy="148" rx="16" ry="10" fill="#f0ece2" filter="url(#dogDs)"/>
-  <!-- paw toes -->
-  <circle cx="38" cy="151" r="5" fill="#e8e2d4"/>
-  <circle cx="46" cy="154" r="5" fill="#e8e2d4"/>
-  <circle cx="54" cy="151" r="5" fill="#e8e2d4"/>
-  <circle cx="82" cy="151" r="5" fill="#e8e2d4"/>
-  <circle cx="90" cy="154" r="5" fill="#e8e2d4"/>
-  <circle cx="98" cy="151" r="5" fill="#e8e2d4"/>
-
-  <!-- HEAD — big round chibi -->
-  <circle cx="68" cy="55" r="38" fill="url(#dogHeadG)" filter="url(#dogDs)"/>
-
-  <!-- FLUFFY FUR around face -->
-  <circle cx="30" cy="48" r="16" fill="#f8f5ef" opacity="0.9"/>
-  <circle cx="28" cy="62" r="14" fill="#f9f6f1" opacity="0.85"/>
-  <circle cx="106" cy="48" r="16" fill="#f8f5ef" opacity="0.9"/>
-  <circle cx="108" cy="62" r="14" fill="#f9f6f1" opacity="0.85"/>
-  <circle cx="40" cy="30" r="13" fill="#faf7f2" opacity="0.8"/>
-  <circle cx="96" cy="30" r="13" fill="#faf7f2" opacity="0.8"/>
-  <circle cx="58" cy="22" r="12" fill="#faf8f4" opacity="0.75"/>
-  <circle cx="78" cy="22" r="12" fill="#faf8f4" opacity="0.75"/>
-  <circle cx="68" cy="18" r="11" fill="#ffffff" opacity="0.7"/>
-
-  <!-- EARS — fluffy rounded triangles -->
-  <ellipse cx="38" cy="22" rx="16" ry="20" transform="rotate(-20,38,22)" fill="#f5f1e8" filter="url(#dogDs)"/>
-  <ellipse cx="98" cy="22" rx="16" ry="20" transform="rotate(20,98,22)" fill="#f5f1e8" filter="url(#dogDs)"/>
-  <!-- ear inner pink -->
-  <ellipse cx="38" cy="24" rx="9" ry="12" transform="rotate(-20,38,24)" fill="#ffc8c8" opacity="0.55"/>
-  <ellipse cx="98" cy="24" rx="9" ry="12" transform="rotate(20,98,24)" fill="#ffc8c8" opacity="0.55"/>
-  <!-- ear fur puffs -->
-  <circle cx="33" cy="16" r="8" fill="white" opacity="0.6"/>
-  <circle cx="103" cy="16" r="8" fill="white" opacity="0.6"/>
-
-  <!-- EYES — big round black with warm iris -->
-  <circle cx="52" cy="52" r="13" fill="white"/>
-  <circle cx="84" cy="52" r="13" fill="white"/>
-  <!-- iris warm brown -->
-  <circle cx="52" cy="53" r="10" fill="#6b3d1a"/>
-  <circle cx="84" cy="53" r="10" fill="#6b3d1a"/>
-  <!-- pupil -->
-  <circle cx="52" cy="54" r="7" fill="#0d0805"/>
-  <circle cx="84" cy="54" r="7" fill="#0d0805"/>
-  <!-- big shine -->
-  <circle cx="57" cy="47" r="4.5" fill="white"/>
-  <circle cx="89" cy="47" r="4.5" fill="white"/>
-  <!-- small shine -->
-  <circle cx="46" cy="55" r="2" fill="rgba(255,255,255,0.7)"/>
-  <circle cx="78" cy="55" r="2" fill="rgba(255,255,255,0.7)"/>
-  <!-- eye ring -->
-  <circle cx="52" cy="52" r="13" fill="none" stroke="#c8a888" stroke-width="1.2" opacity="0.4"/>
-  <circle cx="84" cy="52" r="13" fill="none" stroke="#c8a888" stroke-width="1.2" opacity="0.4"/>
-
-  <!-- NOSE — small pink oval -->
-  <ellipse cx="68" cy="67" rx="7" ry="4.5" fill="#ff9eb5"/>
-  <ellipse cx="66" cy="65.5" rx="3" ry="1.8" fill="#ffccd8" opacity="0.75"/>
-  <!-- nose shine -->
-  <ellipse cx="65" cy="66" rx="2.5" ry="1.5" fill="white" opacity="0.4"/>
-
-  <!-- MOUTH — cute smile arc -->
-  <path d="M62 71 Q68 77 74 71" stroke="#e07090" stroke-width="2" fill="none" stroke-linecap="round"/>
-
-  <!-- CHEEKS — rosy blush -->
-  <ellipse cx="42" cy="63" rx="13" ry="8" fill="rgba(255,150,170,0.28)"/>
-  <ellipse cx="94" cy="63" rx="13" ry="8" fill="rgba(255,150,170,0.28)"/>
-
-  <!-- head top shine -->
-  <ellipse cx="56" cy="36" rx="18" ry="11" fill="white" opacity="0.22" transform="rotate(-15,56,36)"/>
-</svg>`;
+  <!-- tail curl -->
+  <circle cx="112" cy="100" r="18" fill="#ece7da"/>
+  <circle cx="118" cy="84" r="14" fill="#f0ece2"/>
+  <circle cx="115" cy="70" r="10" fill="#f5f2ea"/>
+  <!-- body — big white puff -->
+  <ellipse cx="68" cy="118" rx="46" ry="38" fill="#f5f2ea"/>
+  <!-- paws -->
+  <ellipse cx="46" cy="152" rx="18" ry="10" fill="#ece7da"/>
+  <ellipse cx="90" cy="152" rx="18" ry="10" fill="#ece7da"/>
+  <!-- ears -->
+  <ellipse cx="36" cy="24" rx="16" ry="20" transform="rotate(-15,36,24)" fill="#ede8d8"/>
+  <ellipse cx="100" cy="24" rx="16" ry="20" transform="rotate(15,100,24)" fill="#ede8d8"/>
+  <ellipse cx="36" cy="26" rx="9" ry="12" transform="rotate(-15,36,26)" fill="#ffb8b8" opacity="0.6"/>
+  <ellipse cx="100" cy="26" rx="9" ry="12" transform="rotate(15,100,26)" fill="#ffb8b8" opacity="0.6"/>
+  <!-- head — biggest circle -->
+  <circle cx="68" cy="60" r="42" fill="#ffffff"/>
+  <!-- face fur side puffs -->
+  <circle cx="24" cy="60" r="18" fill="#f5f2ea"/>
+  <circle cx="112" cy="60" r="18" fill="#f5f2ea"/>
+  <!-- eyes -->
+  <circle cx="50" cy="57" r="11" fill="#111"/>
+  <circle cx="86" cy="57" r="11" fill="#111"/>
+  <circle cx="55" cy="51" r="4.5" fill="white"/>
+  <circle cx="91" cy="51" r="4.5" fill="white"/>
+  <!-- nose -->
+  <ellipse cx="68" cy="72" rx="8" ry="5" fill="#222"/>
+  <ellipse cx="65" cy="70" rx="3" ry="2" fill="white" opacity="0.35"/>
+  <!-- smile -->
+  <path d="M60 78 Q68 86 76 78" stroke="#e07090" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- blush -->
+  <ellipse cx="36" cy="68" rx="14" ry="9" fill="rgba(255,120,150,0.32)"/>
+  <ellipse cx="100" cy="68" rx="14" ry="9" fill="rgba(255,120,150,0.32)"/>
+</svg>`
   const blob = new Blob([svgStr], {type:'image/svg+xml'});
   const url = URL.createObjectURL(blob);
   const img = new Image();
@@ -3970,146 +3895,57 @@ let gmRope = {
 
 function buildGoldCatSVG(){
   const svgStr = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 155" width="120" height="155">
-  <defs>
-    <radialGradient id="hg" cx="40%" cy="34%" r="58%">
-      <stop offset="0%" stop-color="#d0e8f4"/>
-      <stop offset="55%" stop-color="#96bece"/>
-      <stop offset="100%" stop-color="#5a8898"/>
-    </radialGradient>
-    <radialGradient id="bodyG" cx="50%" cy="25%" r="65%">
-      <stop offset="0%" stop-color="#a8c8d8"/>
-      <stop offset="100%" stop-color="#527888"/>
-    </radialGradient>
-    <filter id="ds">
-      <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="rgba(0,0,0,0.4)"/>
-    </filter>
-  </defs>
-
-  <!-- fishing rod behind everything -->
-  <line x1="88" y1="62" x2="119" y2="5" stroke="#5a3808" stroke-width="3.5" stroke-linecap="round"/>
-  <line x1="88" y1="62" x2="119" y2="5" stroke="#9a6820" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="5,4" opacity="0.7"/>
-  <!-- fishing line -->
-  <line x1="119" y1="5" x2="116" y2="52" stroke="rgba(220,220,220,0.85)" stroke-width="1.2"/>
-
-  <!-- tail (behind body) -->
-  <path d="M72 106 C92 98,104 78,94 60 C88 47,76 50,74 56" stroke="#6a8898" stroke-width="13" fill="none" stroke-linecap="round"/>
-  <path d="M72 106 C92 98,104 78,94 60 C88 47,76 50,74 56" stroke="#96bece" stroke-width="8" fill="none" stroke-linecap="round"/>
-  <path d="M74 56 C71 44,62 40,65 50" stroke="#c4dce8" stroke-width="8" fill="none" stroke-linecap="round"/>
-
-  <!-- body -->
-  <rect x="26" y="88" width="68" height="50" rx="16" fill="url(#bodyG)" filter="url(#ds)"/>
-
-  <!-- vest sides -->
-  <path d="M26 90 L38 90 L48 101 L60 96 L60 138 L26 138 Z" fill="#7a5428"/>
-  <path d="M94 90 L82 90 L72 101 L60 96 L60 138 L94 138 Z" fill="#7a5428"/>
-  <!-- vest shading -->
-  <path d="M26 90 L38 90 L48 101 L60 96 L60 138 L26 138 Z" fill="#3a1808" opacity="0.25"/>
-  <path d="M94 90 L82 90 L72 101 L60 96 L60 138 L94 138 Z" fill="#3a1808" opacity="0.18"/>
-  <!-- center body strip -->
-  <path d="M48 101 L60 96 L72 101 L70 138 L50 138 Z" fill="#7a9aaa"/>
-  <!-- vest buttons -->
-  <circle cx="60" cy="114" r="3.5" fill="#e8c040" stroke="#a08010" stroke-width="0.8" filter="url(#ds)"/>
-  <circle cx="60" cy="128" r="3.5" fill="#e8c040" stroke="#a08010" stroke-width="0.8"/>
-  <!-- vest collar highlight -->
-  <path d="M38 90 L48 101" stroke="#a07840" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-  <path d="M82 90 L72 101" stroke="#a07840" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-
-  <!-- bandana -->
-  <path d="M30 92 Q60 82,90 92 Q82 106,60 101 Q38 106,30 92 Z" fill="#cc1020"/>
-  <path d="M30 92 Q60 82,90 92 Q80 98,60 96 Q40 98,30 92 Z" fill="#ee2030" opacity="0.5"/>
-  <!-- bandana knot -->
-  <path d="M55 100 Q60 111,65 100 L63 96 L60 99 L57 96 Z" fill="#aa0818"/>
-  <circle cx="60" cy="101" r="5.5" fill="#ee1828" filter="url(#ds)"/>
-  <circle cx="58" cy="99" r="2.2" fill="#ff5560" opacity="0.7"/>
-
-  <!-- left arm -->
-  <ellipse cx="16" cy="108" rx="9.5" ry="16" transform="rotate(16,16,108)" fill="#8ab0c0"/>
-  <ellipse cx="10" cy="121" rx="8" ry="8.5" fill="#96bece"/>
-  <!-- paw left -->
-  <circle cx="10" cy="128" r="6" fill="#a0c8d8"/>
-  <line x1="7" y1="131" x2="7" y2="135" stroke="#7a9aaa" stroke-width="1.5" stroke-linecap="round"/>
-  <line x1="10" y1="132" x2="10" y2="136" stroke="#7a9aaa" stroke-width="1.5" stroke-linecap="round"/>
-  <line x1="13" y1="131" x2="13" y2="135" stroke="#7a9aaa" stroke-width="1.5" stroke-linecap="round"/>
-
-  <!-- right arm (holding rod) -->
-  <ellipse cx="102" cy="100" rx="9.5" ry="15" transform="rotate(-28,102,100)" fill="#8ab0c0"/>
-  <ellipse cx="110" cy="88" rx="8" ry="8" transform="rotate(-28,110,88)" fill="#96bece"/>
-  <!-- paw right -->
-  <circle cx="114" cy="82" r="6" fill="#a0c8d8" transform="rotate(-28,114,82)"/>
-
-  <!-- legs -->
-  <ellipse cx="43" cy="143" rx="11.5" ry="14" fill="#527888"/>
-  <ellipse cx="77" cy="143" rx="11.5" ry="14" fill="#527888"/>
-
-  <!-- boots -->
-  <path d="M28 151 Q43 160,57 153 Q54 143,43 143 Z" fill="#221408" filter="url(#ds)"/>
-  <path d="M92 151 Q77 160,63 153 Q66 143,77 143 Z" fill="#221408" filter="url(#ds)"/>
-  <path d="M29 152 Q43 159,57 153" stroke="#40280a" stroke-width="1.2" fill="none"/>
-  <path d="M91 152 Q77 159,63 153" stroke="#40280a" stroke-width="1.2" fill="none"/>
-
-  <!-- HEAD — large round chibi -->
-  <circle cx="60" cy="44" r="38" fill="url(#hg)" filter="url(#ds)"/>
-  <!-- fur sheen -->
-  <ellipse cx="48" cy="34" rx="22" ry="16" fill="white" opacity="0.2"/>
-  <!-- cheek fur puffs -->
-  <circle cx="24" cy="54" r="11" fill="#a0c4d4" opacity="0.55"/>
-  <circle cx="96" cy="54" r="11" fill="#a0c4d4" opacity="0.55"/>
-
-  <!-- ears outer -->
-  <polygon points="30,22 21,-2 48,19" fill="#6a8898" filter="url(#ds)"/>
-  <polygon points="90,22 99,-2 72,19" fill="#6a8898" filter="url(#ds)"/>
-  <!-- ears inner -->
-  <polygon points="32,20 25,4 46,18" fill="#ffb0b0"/>
-  <polygon points="88,20 95,4 74,18" fill="#ffb0b0"/>
-  <!-- ear highlight -->
-  <polygon points="33,18 28,9 43,17" fill="#ffd0d0" opacity="0.6"/>
-  <polygon points="87,18 92,9 77,17" fill="#ffd0d0" opacity="0.6"/>
-
-  <!-- eyes white (big, round, cute) -->
-  <ellipse cx="45" cy="44" rx="12" ry="13.5" fill="white"/>
-  <ellipse cx="75" cy="44" rx="12" ry="13.5" fill="white"/>
-  <!-- iris (warm amber-green) -->
-  <ellipse cx="45" cy="46" rx="9" ry="11" fill="#4a8850"/>
-  <ellipse cx="75" cy="46" rx="9" ry="11" fill="#4a8850"/>
-  <!-- iris inner -->
-  <ellipse cx="45" cy="47" rx="7" ry="8.5" fill="#2a5e30"/>
-  <ellipse cx="75" cy="47" rx="7" ry="8.5" fill="#2a5e30"/>
-  <!-- pupil -->
-  <ellipse cx="45" cy="48" rx="4" ry="7.5" fill="#100c04"/>
-  <ellipse cx="75" cy="48" rx="4" ry="7.5" fill="#100c04"/>
-  <!-- big sparkle highlight -->
-  <circle cx="50" cy="40" r="4" fill="white"/>
-  <circle cx="80" cy="40" r="4" fill="white"/>
-  <!-- small secondary highlight -->
-  <circle cx="41" cy="46" r="2" fill="rgba(255,255,255,0.65)"/>
-  <circle cx="71" cy="46" r="2" fill="rgba(255,255,255,0.65)"/>
-  <!-- eyelid line -->
-  <path d="M33 38 Q45 31,57 38" stroke="#4a6878" stroke-width="1.8" fill="none" stroke-linecap="round"/>
-  <path d="M63 38 Q75 31,87 38" stroke="#4a6878" stroke-width="1.8" fill="none" stroke-linecap="round"/>
-
+  <!-- fishing rod -->
+  <line x1="88" y1="60" x2="118" y2="8" stroke="#6b4010" stroke-width="4" stroke-linecap="round"/>
+  <line x1="118" y1="8" x2="115" y2="50" stroke="rgba(240,240,200,0.9)" stroke-width="1.2"/>
+  <!-- tail -->
+  <path d="M80 105 C104 92,110 70,96 54" stroke="#e8a020" stroke-width="11" fill="none" stroke-linecap="round"/>
+  <path d="M80 105 C104 92,110 70,96 54" stroke="#ffd040" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <circle cx="96" cy="54" r="7" fill="#ffe878"/>
+  <!-- body round puff -->
+  <ellipse cx="56" cy="115" rx="36" ry="30" fill="#f0a820"/>
+  <!-- belly -->
+  <ellipse cx="56" cy="118" rx="22" ry="20" fill="#ffe098" opacity="0.7"/>
+  <!-- arms -->
+  <ellipse cx="20" cy="114" rx="10" ry="14" fill="#e09018" transform="rotate(15,20,114)"/>
+  <circle cx="16" cy="126" r="9" fill="#f0b030"/>
+  <ellipse cx="88" cy="102" rx="10" ry="14" fill="#e09018" transform="rotate(-28,88,102)"/>
+  <circle cx="94" cy="92" r="9" fill="#f0b030"/>
+  <!-- legs/paws -->
+  <ellipse cx="42" cy="142" rx="14" ry="9" fill="#e09018"/>
+  <ellipse cx="70" cy="142" rx="14" ry="9" fill="#e09018"/>
+  <!-- ears pointy -->
+  <polygon points="36,22 26,0 52,18" fill="#e09018"/>
+  <polygon points="80,22 90,0 64,18" fill="#e09018"/>
+  <polygon points="37,20 30,5 50,18" fill="#ffb8a0"/>
+  <polygon points="79,20 86,5 66,18" fill="#ffb8a0"/>
+  <!-- head big round -->
+  <circle cx="60" cy="52" r="38" fill="#f0b828"/>
+  <!-- shine -->
+  <ellipse cx="46" cy="36" rx="15" ry="8" fill="white" opacity="0.2" transform="rotate(-10,46,36)"/>
+  <!-- eyes -->
+  <circle cx="46" cy="50" r="11" fill="#111"/>
+  <circle cx="74" cy="50" r="11" fill="#111"/>
+  <circle cx="52" cy="44" r="5" fill="white"/>
+  <circle cx="80" cy="44" r="5" fill="white"/>
   <!-- nose -->
-  <path d="M56 58 L60 53 L64 58 Z" fill="#ff9090"/>
-  <ellipse cx="58.5" cy="56" rx="2" ry="1.3" fill="#ffd0d0" opacity="0.7"/>
-
-  <!-- mouth happy -->
-  <path d="M60 60 Q52 68,47 65" stroke="#c05050" stroke-width="2.2" fill="none" stroke-linecap="round"/>
-  <path d="M60 60 Q68 68,73 65" stroke="#c05050" stroke-width="2.2" fill="none" stroke-linecap="round"/>
-  <!-- tongue peek -->
-  <ellipse cx="60" cy="66" rx="5" ry="3.5" fill="#ff8888" opacity="0.7"/>
-
+  <polygon points="60,63 54,57 66,57" fill="#ff8080"/>
+  <!-- mouth -->
+  <path d="M53 66 Q60 73 67 66" stroke="#cc3030" stroke-width="2" fill="none" stroke-linecap="round"/>
   <!-- blush -->
-  <ellipse cx="34" cy="56" rx="11" ry="7" fill="rgba(255,120,120,0.28)"/>
-  <ellipse cx="86" cy="56" rx="11" ry="7" fill="rgba(255,120,120,0.28)"/>
-
-  <!-- whiskers left -->
-  <line x1="16" y1="56" x2="48" y2="60" stroke="rgba(255,255,255,0.9)" stroke-width="1.4"/>
-  <line x1="14" y1="61" x2="47" y2="62" stroke="rgba(255,255,255,0.9)" stroke-width="1.4"/>
-  <line x1="16" y1="66" x2="48" y2="64" stroke="rgba(255,255,255,0.9)" stroke-width="1.4"/>
-  <!-- whiskers right -->
-  <line x1="104" y1="56" x2="72" y2="60" stroke="rgba(255,255,255,0.9)" stroke-width="1.4"/>
-  <line x1="106" y1="61" x2="73" y2="62" stroke="rgba(255,255,255,0.9)" stroke-width="1.4"/>
-  <line x1="104" y1="66" x2="72" y2="64" stroke="rgba(255,255,255,0.9)" stroke-width="1.4"/>
-</svg>`;
+  <ellipse cx="34" cy="60" rx="12" ry="8" fill="rgba(255,110,80,0.28)"/>
+  <ellipse cx="86" cy="60" rx="12" ry="8" fill="rgba(255,110,80,0.28)"/>
+  <!-- whiskers -->
+  <line x1="12" y1="58" x2="46" y2="62" stroke="rgba(255,255,200,0.9)" stroke-width="1.3"/>
+  <line x1="12" y1="64" x2="45" y2="64" stroke="rgba(255,255,200,0.9)" stroke-width="1.3"/>
+  <line x1="108" y1="58" x2="74" y2="62" stroke="rgba(255,255,200,0.9)" stroke-width="1.3"/>
+  <line x1="108" y1="64" x2="75" y2="64" stroke="rgba(255,255,200,0.9)" stroke-width="1.3"/>
+  <!-- mining hat -->
+  <ellipse cx="60" cy="18" rx="30" ry="8" fill="#b86010"/>
+  <rect x="40" y="10" width="40" height="12" rx="5" fill="#d07018"/>
+  <circle cx="60" cy="13" r="6" fill="#ffee20" opacity="0.95"/>
+  <circle cx="60" cy="13" r="3" fill="white" opacity="0.45"/>
+</svg>`
   const blob = new Blob([svgStr], {type:'image/svg+xml'});
   const url = URL.createObjectURL(blob);
   const img = new Image();
