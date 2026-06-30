@@ -3352,7 +3352,7 @@ let beeMode=false, beeRAF=null, beeLast=0, beeElapsed=0, beeSpawnTimer=0;
 let bees=[], fences=[], dog=null, popFx=[], beeBuzzTimer=0;
 let dogStung=false, dogStungTimer=0;
 let dogImg=null; // pre-rendered SVG chibi Samoyed
-const dogSVGW=140, dogSVGH=160;
+const dogSVGW=160, dogSVGH=180;
 let beeCombo=0, beeComboTimer=0;
 let drawingFence=false, lastFencePt=null;
 const FENCE_LIFETIME = 6000; // ms — dây phai sau khoảng thời gian này, buộc người chơi vẽ lại
@@ -3715,39 +3715,76 @@ function drawBee(ctx,W,H,now){
 }
 
 function buildDogSVG(){
-  const svgStr = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 160" width="140" height="160">
-  <!-- tail curl -->
-  <circle cx="112" cy="100" r="18" fill="#ece7da"/>
-  <circle cx="118" cy="84" r="14" fill="#f0ece2"/>
-  <circle cx="115" cy="70" r="10" fill="#f5f2ea"/>
-  <!-- body — big white puff -->
-  <ellipse cx="68" cy="118" rx="46" ry="38" fill="#f5f2ea"/>
-  <!-- paws -->
-  <ellipse cx="46" cy="152" rx="18" ry="10" fill="#ece7da"/>
-  <ellipse cx="90" cy="152" rx="18" ry="10" fill="#ece7da"/>
-  <!-- ears -->
-  <ellipse cx="36" cy="24" rx="16" ry="20" transform="rotate(-15,36,24)" fill="#ede8d8"/>
-  <ellipse cx="100" cy="24" rx="16" ry="20" transform="rotate(15,100,24)" fill="#ede8d8"/>
-  <ellipse cx="36" cy="26" rx="9" ry="12" transform="rotate(-15,36,26)" fill="#ffb8b8" opacity="0.6"/>
-  <ellipse cx="100" cy="26" rx="9" ry="12" transform="rotate(15,100,26)" fill="#ffb8b8" opacity="0.6"/>
-  <!-- head — biggest circle -->
-  <circle cx="68" cy="60" r="42" fill="#ffffff"/>
-  <!-- face fur side puffs -->
-  <circle cx="24" cy="60" r="18" fill="#f5f2ea"/>
-  <circle cx="112" cy="60" r="18" fill="#f5f2ea"/>
-  <!-- eyes -->
-  <circle cx="50" cy="57" r="11" fill="#111"/>
-  <circle cx="86" cy="57" r="11" fill="#111"/>
-  <circle cx="55" cy="51" r="4.5" fill="white"/>
-  <circle cx="91" cy="51" r="4.5" fill="white"/>
-  <!-- nose -->
-  <ellipse cx="68" cy="72" rx="8" ry="5" fill="#222"/>
-  <ellipse cx="65" cy="70" rx="3" ry="2" fill="white" opacity="0.35"/>
-  <!-- smile -->
-  <path d="M60 78 Q68 86 76 78" stroke="#e07090" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-  <!-- blush -->
-  <ellipse cx="36" cy="68" rx="14" ry="9" fill="rgba(255,120,150,0.32)"/>
-  <ellipse cx="100" cy="68" rx="14" ry="9" fill="rgba(255,120,150,0.32)"/>
+  const svgStr = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 180" width="160" height="180">
+  <defs>
+    <radialGradient id="dHG" cx="38%" cy="30%" r="62%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#f0ece0"/>
+    </radialGradient>
+  </defs>
+  <!-- TAIL fluffy curl -->
+  <circle cx="132" cy="95"  r="20" fill="#f0ece0"/>
+  <circle cx="140" cy="76"  r="16" fill="#f4f0e4"/>
+  <circle cx="137" cy="57"  r="12" fill="#f8f5f0"/>
+  <circle cx="136" cy="72"  r="10" fill="white" opacity="0.5"/>
+  <!-- BODY big cloud puff -->
+  <ellipse cx="76" cy="132" rx="52" ry="42" fill="#f5f2e8"/>
+  <circle cx="24"  cy="122" r="22" fill="#f2eee0"/>
+  <circle cx="28"  cy="150" r="18" fill="#f4f0e4"/>
+  <circle cx="52"  cy="164" r="16" fill="#f0ece0"/>
+  <circle cx="76"  cy="168" r="18" fill="#f3efe4"/>
+  <circle cx="100" cy="164" r="16" fill="#f0ece0"/>
+  <circle cx="122" cy="148" r="18" fill="#f4f0e4"/>
+  <circle cx="126" cy="122" r="22" fill="#f2eee0"/>
+  <circle cx="76"  cy="110" r="26" fill="white" opacity="0.78"/>
+  <circle cx="58"  cy="118" r="18" fill="white" opacity="0.6"/>
+  <circle cx="94"  cy="118" r="18" fill="white" opacity="0.6"/>
+  <!-- PAWS -->
+  <ellipse cx="54"  cy="170" rx="20" ry="11" fill="#edeae0"/>
+  <ellipse cx="98"  cy="170" rx="20" ry="11" fill="#edeae0"/>
+  <ellipse cx="46"  cy="174" rx="5" ry="3" fill="#d8d4c6"/>
+  <ellipse cx="56"  cy="176" rx="5" ry="3" fill="#d8d4c6"/>
+  <ellipse cx="66"  cy="174" rx="5" ry="3" fill="#d8d4c6"/>
+  <ellipse cx="90"  cy="174" rx="5" ry="3" fill="#d8d4c6"/>
+  <ellipse cx="100" cy="176" rx="5" ry="3" fill="#d8d4c6"/>
+  <ellipse cx="110" cy="174" rx="5" ry="3" fill="#d8d4c6"/>
+  <!-- EARS -->
+  <ellipse cx="42" cy="28" rx="18" ry="22" transform="rotate(-16,42,28)" fill="#ede8d8"/>
+  <ellipse cx="110" cy="28" rx="18" ry="22" transform="rotate(16,110,28)" fill="#ede8d8"/>
+  <ellipse cx="42" cy="30" rx="10" ry="13" transform="rotate(-16,42,30)" fill="#ffbbbb" opacity="0.55"/>
+  <ellipse cx="110" cy="30" rx="10" ry="13" transform="rotate(16,110,30)" fill="#ffbbbb" opacity="0.55"/>
+  <circle cx="36" cy="18" r="12" fill="white" opacity="0.55"/>
+  <circle cx="116" cy="18" r="12" fill="white" opacity="0.55"/>
+  <!-- HEAD big round -->
+  <circle cx="76" cy="72" r="54" fill="url(#dHG)"/>
+  <!-- cheek side fur puffs -->
+  <circle cx="18"  cy="72" r="24" fill="#f8f5ef" opacity="0.9"/>
+  <circle cx="134" cy="72" r="24" fill="#f8f5ef" opacity="0.9"/>
+  <circle cx="16"  cy="92" r="18" fill="#f8f5ef" opacity="0.7"/>
+  <circle cx="136" cy="92" r="18" fill="#f8f5ef" opacity="0.7"/>
+  <!-- top head puffs -->
+  <circle cx="50"  cy="24" r="15" fill="white" opacity="0.5"/>
+  <circle cx="76"  cy="18" r="18" fill="white" opacity="0.45"/>
+  <circle cx="102" cy="24" r="15" fill="white" opacity="0.5"/>
+  <!-- shine -->
+  <ellipse cx="56" cy="44" rx="20" ry="11" fill="white" opacity="0.22" transform="rotate(-12,56,44)"/>
+  <!-- EYES big anime -->
+  <circle cx="56" cy="70" r="17" fill="white"/>
+  <circle cx="96" cy="70" r="17" fill="white"/>
+  <circle cx="57" cy="72" r="13" fill="#100806"/>
+  <circle cx="97" cy="72" r="13" fill="#100806"/>
+  <circle cx="64" cy="62" r="6.5" fill="white"/>
+  <circle cx="104" cy="62" r="6.5" fill="white"/>
+  <circle cx="50" cy="76" r="2.5" fill="white" opacity="0.55"/>
+  <circle cx="90" cy="76" r="2.5" fill="white" opacity="0.55"/>
+  <!-- NOSE -->
+  <ellipse cx="76" cy="89" rx="9" ry="6" fill="#bb6688"/>
+  <ellipse cx="73" cy="87" rx="4" ry="2.5" fill="#ffaabb" opacity="0.65"/>
+  <!-- MOUTH smile -->
+  <path d="M67 96 Q76 106 85 96" stroke="#bb4466" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- BLUSH -->
+  <ellipse cx="34"  cy="86" rx="18" ry="11" fill="rgba(255,110,140,0.32)"/>
+  <ellipse cx="118" cy="86" rx="18" ry="11" fill="rgba(255,110,140,0.32)"/>
 </svg>`
   const blob = new Blob([svgStr], {type:'image/svg+xml'});
   const url = URL.createObjectURL(blob);
