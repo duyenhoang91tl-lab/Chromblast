@@ -8694,7 +8694,7 @@ RuCV().addEventListener('pointerdown', e=>{
    MAP 17 — SPACE SHOOTER 🚀
 ═══════════════════════════════════════════════════════ */
 const SPC=()=>document.getElementById('space-canvas');
-let spaceRAF=null, spaceWon=false;
+let spaceMode=false, spaceRAF=null, spaceWon=false;
 let spaceState={};
 
 function triggerSpaceUnlock(){
@@ -8706,14 +8706,15 @@ function triggerSpaceUnlock(){
 }
 
 function enterSpaceMode(){
-  document.getElementById('unlock-overlay').classList.remove('show');
-  document.querySelector('.grid')&&(document.querySelector('.grid').style.display='none');
-  document.querySelector('.pieces-area')&&(document.querySelector('.pieces-area').style.display='none');
-  document.body.classList.add('secret-mode');
-  const badge=document.getElementById('mode-badge');
-  if(badge) badge.textContent='🚀 SPACE';
-  const cv=SPC(); cv.classList.add('active');
-  spaceWon=false;
+  endDrag(); sfxUnlock();
+  document.getElementById('grid').style.display='none';
+  document.getElementById('pieces-area').style.display='none';
+  document.getElementById('hint-bar').textContent='Di chuyển ngón tay → tàu theo! Tự động bắn!';
+  document.getElementById('grid-wrap').classList.add('secret-mode');
+  document.getElementById('mode-badge').textContent='🚀 MAP ẨN 17';
+  document.getElementById('mode-badge').classList.add('secret');
+  SPC().classList.add('active');
+  spaceMode=true; spaceWon=false;
   initSpaceGame();
 }
 
@@ -8793,6 +8794,7 @@ function spaceShoot(){
 }
 
 function spaceLoop(){
+  if(!spaceMode){ spaceRAF=null; return; }
   const s=spaceState;
   const cv=SPC(), ctx=cv.getContext('2d');
   const W=s.W, H=s.H;
@@ -8945,15 +8947,17 @@ function spaceLoop(){
 }
 
 function exitSpaceToMain(){
+  spaceMode=false;
   if(spaceRAF){cancelAnimationFrame(spaceRAF);spaceRAF=null;}
-  const cv=SPC();
-  cv.classList.remove('active');
-  cv.onpointermove=null; cv.onclick=null; cv.ontouchmove=null; cv.ontouchstart=null;
-  document.querySelector('.grid')&&(document.querySelector('.grid').style.display='');
-  document.querySelector('.pieces-area')&&(document.querySelector('.pieces-area').style.display='');
-  document.body.classList.remove('secret-mode');
-  const badge=document.getElementById('mode-badge');
-  if(badge) badge.textContent='BÌNH THƯỜNG';
+  SPC().classList.remove('active');
+  document.getElementById('grid').style.display='';
+  document.getElementById('pieces-area').style.display='';
+  document.getElementById('grid-wrap').classList.remove('secret-mode','ultra-glow','combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5');
+  document.getElementById('mode-badge').textContent='BÌNH THƯỜNG';
+  document.getElementById('mode-badge').classList.remove('secret');
+  document.getElementById('burst-count').textContent='Chuỗi nổ: 0/3';
+  document.getElementById('hint-bar').textContent='Chạm khối → ghost hiện · Di ngón → ghost bám · Thả trên ô → đặt · Thả vùng trống → xoay';
+  renderPieces(); checkGameOverA();
   if(spaceWon) setTimeout(()=>triggerRhythmUnlock(),1500);
 }
 
@@ -8961,7 +8965,7 @@ function exitSpaceToMain(){
    MAP 18 — RHYTHM TAP 🎵
 ═══════════════════════════════════════════════════════ */
 const RHY=()=>document.getElementById('rhythm-canvas');
-let rhythmRAF=null, rhythmWon=false;
+let rhythmMode=false, rhythmRAF=null, rhythmWon=false;
 let rhythmState={};
 
 function triggerRhythmUnlock(){
@@ -8973,14 +8977,15 @@ function triggerRhythmUnlock(){
 }
 
 function enterRhythmMode(){
-  document.getElementById('unlock-overlay').classList.remove('show');
-  document.querySelector('.grid')&&(document.querySelector('.grid').style.display='none');
-  document.querySelector('.pieces-area')&&(document.querySelector('.pieces-area').style.display='none');
-  document.body.classList.add('secret-mode');
-  const badge=document.getElementById('mode-badge');
-  if(badge) badge.textContent='🎵 RHYTHM';
-  const cv=RHY(); cv.classList.add('active');
-  rhythmWon=false;
+  endDrag(); sfxUnlock();
+  document.getElementById('grid').style.display='none';
+  document.getElementById('pieces-area').style.display='none';
+  document.getElementById('hint-bar').textContent='Tap vào tâm khi vòng ngoài chạm đúng nhịp!';
+  document.getElementById('grid-wrap').classList.add('secret-mode');
+  document.getElementById('mode-badge').textContent='🎵 MAP ẨN 18';
+  document.getElementById('mode-badge').classList.add('secret');
+  RHY().classList.add('active');
+  rhythmMode=true; rhythmWon=false;
   initRhythmGame();
 }
 
@@ -9050,6 +9055,7 @@ function rhythmTap(tx,ty){
 }
 
 function rhythmLoop(){
+  if(!rhythmMode){ rhythmRAF=null; return; }
   const s=rhythmState;
   const cv=RHY(), ctx=cv.getContext('2d');
   const W=s.W, H=s.H;
@@ -9139,15 +9145,17 @@ function rhythmLoop(){
 }
 
 function exitRhythmToMain(){
+  rhythmMode=false;
   if(rhythmRAF){cancelAnimationFrame(rhythmRAF);rhythmRAF=null;}
-  const cv=RHY();
-  cv.classList.remove('active');
-  cv.onclick=null; cv.ontouchstart=null;
-  document.querySelector('.grid')&&(document.querySelector('.grid').style.display='');
-  document.querySelector('.pieces-area')&&(document.querySelector('.pieces-area').style.display='');
-  document.body.classList.remove('secret-mode');
-  const badge=document.getElementById('mode-badge');
-  if(badge) badge.textContent='BÌNH THƯỜNG';
+  RHY().classList.remove('active');
+  document.getElementById('grid').style.display='';
+  document.getElementById('pieces-area').style.display='';
+  document.getElementById('grid-wrap').classList.remove('secret-mode','ultra-glow','combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5');
+  document.getElementById('mode-badge').textContent='BÌNH THƯỜNG';
+  document.getElementById('mode-badge').classList.remove('secret');
+  document.getElementById('burst-count').textContent='Chuỗi nổ: 0/3';
+  document.getElementById('hint-bar').textContent='Chạm khối → ghost hiện · Di ngón → ghost bám · Thả trên ô → đặt · Thả vùng trống → xoay';
+  renderPieces(); checkGameOverA();
   if(rhythmWon) setTimeout(()=>triggerMazeUnlock(),1500);
 }
 
@@ -9155,7 +9163,7 @@ function exitRhythmToMain(){
    MAP 19 — MAZE RUNNER 🌀
 ═══════════════════════════════════════════════════════ */
 const MZC=()=>document.getElementById('maze-canvas');
-let mazeRAF=null, mazeWon=false;
+let mazeMode=false, mazeRAF=null, mazeWon=false;
 let mazeState={};
 
 function triggerMazeUnlock(){
@@ -9167,14 +9175,15 @@ function triggerMazeUnlock(){
 }
 
 function enterMazeMode(){
-  document.getElementById('unlock-overlay').classList.remove('show');
-  document.querySelector('.grid')&&(document.querySelector('.grid').style.display='none');
-  document.querySelector('.pieces-area')&&(document.querySelector('.pieces-area').style.display='none');
-  document.body.classList.add('secret-mode');
-  const badge=document.getElementById('mode-badge');
-  if(badge) badge.textContent='🌀 MAZE';
-  const cv=MZC(); cv.classList.add('active');
-  mazeWon=false;
+  endDrag(); sfxUnlock();
+  document.getElementById('grid').style.display='none';
+  document.getElementById('pieces-area').style.display='none';
+  document.getElementById('hint-bar').textContent='Vuốt hoặc phím mũi tên để di chuyển qua mê cung!';
+  document.getElementById('grid-wrap').classList.add('secret-mode');
+  document.getElementById('mode-badge').textContent='🌀 MAP ẨN 19';
+  document.getElementById('mode-badge').classList.add('secret');
+  MZC().classList.add('active');
+  mazeMode=true; mazeWon=false;
   initMazeGame();
 }
 
@@ -9267,6 +9276,7 @@ function tryMoveDog(dr,dc){
 }
 
 function mazeLoop(){
+  if(!mazeMode){ mazeRAF=null; return; }
   const s=mazeState;
   const cv=MZC(), ctx=cv.getContext('2d');
   const W=s.W, H=s.H;
@@ -9341,17 +9351,17 @@ function mazeLoop(){
 }
 
 function exitMazeToMain(){
+  mazeMode=false;
   if(mazeRAF){cancelAnimationFrame(mazeRAF);mazeRAF=null;}
-  const s=mazeState;
-  if(s._keyHandler) window.removeEventListener('keydown',s._keyHandler);
-  const cv=MZC();
-  cv.classList.remove('active');
-  cv.ontouchstart=null; cv.ontouchend=null;
-  document.querySelector('.grid')&&(document.querySelector('.grid').style.display='');
-  document.querySelector('.pieces-area')&&(document.querySelector('.pieces-area').style.display='');
-  document.body.classList.remove('secret-mode');
-  const badge=document.getElementById('mode-badge');
-  if(badge) badge.textContent='BÌNH THƯỜNG';
+  MZC().classList.remove('active');
+  document.getElementById('grid').style.display='';
+  document.getElementById('pieces-area').style.display='';
+  document.getElementById('grid-wrap').classList.remove('secret-mode','ultra-glow','combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5');
+  document.getElementById('mode-badge').textContent='BÌNH THƯỜNG';
+  document.getElementById('mode-badge').classList.remove('secret');
+  document.getElementById('burst-count').textContent='Chuỗi nổ: 0/3';
+  document.getElementById('hint-bar').textContent='Chạm khối → ghost hiện · Di ngón → ghost bám · Thả trên ô → đặt · Thả vùng trống → xoay';
+  renderPieces(); checkGameOverA();
   if(mazeWon) setTimeout(()=>triggerMegaUnlock(),1500);
 }
 
@@ -9359,7 +9369,7 @@ function exitMazeToMain(){
    MAP 20 — MEGA BOSS FINAL BATTLE 💀
 ═══════════════════════════════════════════════════════ */
 const MGC=()=>document.getElementById('mega-canvas');
-let megaRAF=null, megaWon=false;
+let megaMode=false, megaRAF=null, megaWon=false;
 let megaState={};
 
 function triggerMegaUnlock(){
@@ -9371,14 +9381,15 @@ function triggerMegaUnlock(){
 }
 
 function enterMegaMode(){
-  document.getElementById('unlock-overlay').classList.remove('show');
-  document.querySelector('.grid')&&(document.querySelector('.grid').style.display='none');
-  document.querySelector('.pieces-area')&&(document.querySelector('.pieces-area').style.display='none');
-  document.body.classList.add('secret-mode');
-  const badge=document.getElementById('mode-badge');
-  if(badge) badge.textContent='💀 MEGA BOSS';
-  const cv=MGC(); cv.classList.add('active');
-  megaWon=false;
+  endDrag(); sfxUnlock();
+  document.getElementById('grid').style.display='none';
+  document.getElementById('pieces-area').style.display='none';
+  document.getElementById('hint-bar').textContent='Di chuyển ngón → né đạn! Tự bắn! Hạ gục Rồng!';
+  document.getElementById('grid-wrap').classList.add('secret-mode');
+  document.getElementById('mode-badge').textContent='💀 MAP ẨN 20';
+  document.getElementById('mode-badge').classList.add('secret');
+  MGC().classList.add('active');
+  megaMode=true; megaWon=false;
   initMegaGame();
 }
 
@@ -9432,6 +9443,7 @@ function megaShoot(){
 }
 
 function megaLoop(){
+  if(!megaMode){ megaRAF=null; return; }
   const s=megaState;
   const cv=MGC(), ctx=cv.getContext('2d');
   const W=s.W, H=s.H;
@@ -9651,18 +9663,17 @@ function megaLoop(){
 }
 
 function exitMegaToMain(){
+  megaMode=false;
   if(megaRAF){cancelAnimationFrame(megaRAF);megaRAF=null;}
-  const cv=MGC();
-  cv.classList.remove('active');
-  cv.onpointermove=null; cv.onclick=null; cv.ontouchmove=null; cv.ontouchstart=null;
-  document.querySelector('.grid')&&(document.querySelector('.grid').style.display='');
-  document.querySelector('.pieces-area')&&(document.querySelector('.pieces-area').style.display='');
-  document.body.classList.remove('secret-mode');
-  const badge=document.getElementById('mode-badge');
-  if(badge) badge.textContent='BÌNH THƯỜNG';
-  if(megaWon){
-    try{ showComboFlash(0,false,'👑 CHROMABLAST HUYỀN THOẠI! 20 BẢN ĐỒ HOÀN THÀNH! 👑'); }catch(e){}
-  }
+  MGC().classList.remove('active');
+  document.getElementById('grid').style.display='';
+  document.getElementById('pieces-area').style.display='';
+  document.getElementById('grid-wrap').classList.remove('secret-mode','ultra-glow','combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5');
+  document.getElementById('mode-badge').textContent='BÌNH THƯỜNG';
+  document.getElementById('mode-badge').classList.remove('secret');
+  document.getElementById('burst-count').textContent='Chuỗi nổ: 0/3';
+  document.getElementById('hint-bar').textContent='Chạm khối → ghost hiện · Di ngón → ghost bám · Thả trên ô → đặt · Thả vùng trống → xoay';
+  renderPieces(); checkGameOverA();
 }
 </script>
 </body>
