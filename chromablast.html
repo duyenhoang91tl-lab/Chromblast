@@ -371,6 +371,41 @@ body {
   border-radius: 14px; touch-action: none; margin: 0 auto;
 }
 #gold-canvas.active { display: block; }
+/* ── MAP ẨN 6: MOLE CANVAS ── */
+#mole-canvas {
+  display: none; width: 100%; max-width: 393px;
+  aspect-ratio: 360 / 460; background: #111a0d;
+  border-radius: 14px; touch-action: none; margin: 0 auto;
+}
+#mole-canvas.active { display: block; }
+/* ── MAP ẨN 7: MEMORY CANVAS ── */
+#memory-canvas {
+  display: none; width: 100%; max-width: 393px;
+  aspect-ratio: 360 / 460; background: #aee4f8;
+  border-radius: 14px; touch-action: none; margin: 0 auto;
+}
+#memory-canvas.active { display: block; }
+/* ── MAP ẨN 8: BUBBLE CANVAS ── */
+#bubble-canvas {
+  display: none; width: 100%; max-width: 393px;
+  aspect-ratio: 360 / 460; background: #020015;
+  border-radius: 14px; touch-action: none; margin: 0 auto;
+}
+#bubble-canvas.active { display: block; }
+/* ── MAP ẨN 9: STACK CANVAS ── */
+#stack-canvas {
+  display: none; width: 100%; max-width: 393px;
+  aspect-ratio: 360 / 460; background: #87ceeb;
+  border-radius: 14px; touch-action: none; margin: 0 auto;
+}
+#stack-canvas.active { display: block; }
+/* ── MAP ẨN 10: BOSS CANVAS ── */
+#boss-canvas {
+  display: none; width: 100%; max-width: 393px;
+  aspect-ratio: 360 / 460; background: #1a0030;
+  border-radius: 14px; touch-action: none; margin: 0 auto;
+}
+#boss-canvas.active { display: block; }
 .sc {
   width: 44px; height: 44px; border-radius: 8px;
   cursor: pointer; transition: transform 0.08s, filter 0.08s, box-shadow 0.12s;
@@ -724,6 +759,13 @@ body {
 
     <!-- MODE H: Map ẩn 7 — Lật thẻ ký ức (Memory Match) -->
     <canvas id="memory-canvas" width="360" height="460"></canvas>
+
+    <!-- MODE I: Map ẩn 8 — Bắn bong bóng (Bubble Pop) -->
+    <canvas id="bubble-canvas" width="360" height="460"></canvas>
+    <!-- MODE J: Map ẩn 9 — Xếp tháp (Stack Tower) -->
+    <canvas id="stack-canvas" width="360" height="460"></canvas>
+    <!-- MODE K: Map ẩn 10 — Đại chiến Boss (Boss Battle) -->
+    <canvas id="boss-canvas" width="360" height="460"></canvas>
 
     <!-- Lớp phủ pháo hoa cho map ẩn (vệt cháy ở viền khi nổ) -->
     <div id="sc-fx"></div>
@@ -1657,6 +1699,9 @@ document.getElementById('unlock-btn').addEventListener('click',()=>{
   else if(pendingUnlock==='gold') enterGoldMode();
   else if(pendingUnlock==='mole') enterMoleMode();
   else if(pendingUnlock==='memory') enterMemoryMode();
+  else if(pendingUnlock==='bubble') enterBubbleMode();
+  else if(pendingUnlock==='stack') enterStackMode();
+  else if(pendingUnlock==='boss') enterBossMode();
   else enterSecretMode();
 });
 
@@ -5477,6 +5522,7 @@ function memoryDone(){
     showComboFlash(0,false,'🃏 '+memoryMatched+'/6 cặp — Chưa đủ!');
   }
   setTimeout(exitMemoryToMain, 600);
+  if(won) setTimeout(()=>triggerBubbleUnlock(), 500);
 }
 
 function exitMemoryToMain(){
@@ -5501,6 +5547,799 @@ MMCV().addEventListener('pointerdown', e=>{
   const rect=MMCV().getBoundingClientRect();
   const scaleX=MMCV().width/rect.width, scaleY=MMCV().height/rect.height;
   tapMemory((e.clientX-rect.left)*scaleX, (e.clientY-rect.top)*scaleY);
+});
+
+/* ══════════════════════════════════════════
+   MAP ẨN 8 — BUBBLE POP
+══════════════════════════════════════════ */
+const BUBBLE_TIME=60, BUBBLE_KPI=500;
+const BUBBLE_COLS=8, BUBBLE_ROWS=10;
+const BUBBLE_COLORS=['#e84040','#4080e8','#40c040','#e8c040','#9040c8','#e88040'];
+const BUBBLE_R=18; // radius of each bubble
+
+let bubbleMode=false, bubbleRAF=null, bubbleLast=0, bubbleElapsed=0;
+let bubbleGrid=[], bubbleShooter={color:'#e84040',angle:-Math.PI/2};
+let bubbleFlying=null, bubbleScore=0, bubbleFx=[];
+let bubbleFallTimer=0;
+
+const BBCV=()=>document.getElementById('bubble-canvas');
+
+function triggerBubbleUnlock(){
+  pendingUnlock='bubble';
+  document.getElementById('unlock-title').textContent='🫧 MAP ẨN 8 MỞ KHÓA!';
+  document.getElementById('unlock-desc').innerHTML=
+    '🫧 <b>Bắn Bong Bóng!</b><br><br>'+
+    'Lưới bong bóng màu sắc trên nền không gian đầy sao.<br>'+
+    'Chạm → bắn bong bóng về hướng đó! 3+ bong bóng cùng màu → Nổ!<br>'+
+    'Gom <b>500 điểm</b> trong <b>'+BUBBLE_TIME+'s</b> hoặc dọn sạch bảng để thắng!<br>'+
+    'Cứ 8 giây bong bóng lại rơi xuống 1 hàng — cẩn thận!';
+  document.getElementById('unlock-btn').textContent='🫧 BẮN THÔI!';
+  document.getElementById('unlock-overlay').classList.add('show');
+}
+
+function enterBubbleMode(){
+  endDrag();
+  sfxUnlock();
+  document.getElementById('grid').style.display='none';
+  document.getElementById('pieces-area').style.display='none';
+  document.getElementById('hint-bar').style.display='';
+  document.getElementById('hint-bar').textContent='Chạm vào màn hình để nhắm và bắn bong bóng!';
+  BBCV().classList.add('active');
+  document.getElementById('grid-wrap').classList.add('secret-mode');
+  document.getElementById('mode-badge').textContent='🫧 MAP ẨN 8';
+  document.getElementById('mode-badge').classList.add('secret');
+  document.getElementById('burst-count').textContent='🫧 0đ / '+BUBBLE_KPI+'đ';
+  bubbleMode=true;
+  initBubble();
+  bubbleLast=performance.now();
+  bubbleRAF=requestAnimationFrame(bubbleLoop);
+}
+
+function initBubble(){
+  bubbleScore=0; bubbleElapsed=0; bubbleFlying=null; bubbleFx=[];
+  bubbleFallTimer=0;
+  // fill top 5 rows with bubbles
+  bubbleGrid=[];
+  for(let r=0;r<BUBBLE_ROWS;r++){
+    const row=[];
+    for(let c=0;c<BUBBLE_COLS;c++){
+      if(r<5) row.push(BUBBLE_COLORS[Math.floor(Math.random()*BUBBLE_COLORS.length)]);
+      else row.push(null);
+    }
+    bubbleGrid.push(row);
+  }
+  bubbleShooter={color:BUBBLE_COLORS[Math.floor(Math.random()*BUBBLE_COLORS.length)], angle:-Math.PI/2};
+}
+
+function bubbleLoop(now){
+  if(!bubbleMode){ bubbleRAF=null; return; }
+  const dt=Math.min((now-(bubbleLast||now))/1000,0.08);
+  bubbleLast=now;
+  bubbleElapsed+=dt;
+  bubbleFallTimer+=dt;
+
+  // move flying bubble
+  if(bubbleFlying){
+    bubbleFlying.x+=bubbleFlying.vx*dt;
+    bubbleFlying.y+=bubbleFlying.vy*dt;
+    const cv=BBCV(), W=cv.width;
+    // bounce off walls
+    if(bubbleFlying.x-BUBBLE_R<0){ bubbleFlying.x=BUBBLE_R; bubbleFlying.vx*=-1; }
+    if(bubbleFlying.x+BUBBLE_R>W){ bubbleFlying.x=W-BUBBLE_R; bubbleFlying.vx*=-1; }
+    // check grid collision
+    const landRow=bubbleLandRow(bubbleFlying.x, bubbleFlying.y);
+    if(landRow!==null){
+      const col=Math.round((bubbleFlying.x - BUBBLE_R) / (BUBBLE_R*2));
+      const safeCol=Math.max(0,Math.min(BUBBLE_COLS-1,col));
+      if(landRow>=0 && landRow<BUBBLE_ROWS && bubbleGrid[landRow][safeCol]===null){
+        bubbleGrid[landRow][safeCol]=bubbleFlying.color;
+        checkBubblePop(landRow,safeCol);
+      }
+      bubbleFlying=null;
+      bubbleShooter.color=BUBBLE_COLORS[Math.floor(Math.random()*BUBBLE_COLORS.length)];
+    }
+    // reached top
+    if(bubbleFlying && bubbleFlying.y-BUBBLE_R<0){
+      const col=Math.round((bubbleFlying.x - BUBBLE_R) / (BUBBLE_R*2));
+      const safeCol=Math.max(0,Math.min(BUBBLE_COLS-1,col));
+      if(bubbleGrid[0][safeCol]===null) bubbleGrid[0][safeCol]=bubbleFlying.color;
+      bubbleFlying=null;
+      bubbleShooter.color=BUBBLE_COLORS[Math.floor(Math.random()*BUBBLE_COLORS.length)];
+    }
+  }
+
+  // pressure: fall every 8 seconds
+  if(bubbleFallTimer>=8){
+    bubbleFallTimer=0;
+    bubbleGrid.pop(); // remove bottom row
+    bubbleGrid.unshift(Array(BUBBLE_COLS).fill(null).map(()=>BUBBLE_COLORS[Math.floor(Math.random()*BUBBLE_COLORS.length)]));
+  }
+
+  // update fx
+  bubbleFx.forEach(f=>f.t+=dt);
+  bubbleFx=bubbleFx.filter(f=>f.t<0.6);
+
+  const cv=BBCV(), W=cv.width, H=cv.height;
+  const ctx=cv.getContext('2d');
+  drawBubble(ctx,W,H);
+
+  const timeLeft=Math.max(0,BUBBLE_TIME-bubbleElapsed);
+  document.getElementById('burst-count').textContent='🫧 '+bubbleScore+'đ / '+BUBBLE_KPI+'đ  ⏱'+timeLeft.toFixed(0)+'s';
+
+  // check win/lose
+  const allClear=bubbleGrid.every(r=>r.every(c=>c===null));
+  const bottomFull=bubbleGrid[BUBBLE_ROWS-1].some(c=>c!==null);
+  if(timeLeft<=0 || bottomFull || (allClear && bubbleScore>0) || bubbleScore>=BUBBLE_KPI){
+    bubbleDone(bubbleScore>=BUBBLE_KPI||allClear); return;
+  }
+  bubbleRAF=requestAnimationFrame(bubbleLoop);
+}
+
+function bubbleLandRow(fx,fy){
+  const cv=BBCV(), W=cv.width, H=cv.height;
+  const cellH=(H-80)/(BUBBLE_ROWS);
+  // check if bubble overlaps any filled cell or hits row 0
+  for(let r=0;r<BUBBLE_ROWS;r++){
+    const rowY=40+r*cellH+BUBBLE_R;
+    if(Math.abs(fy-rowY)<BUBBLE_R*1.8){
+      // potential landing at row r-1 or r
+      return Math.max(0,r-1);
+    }
+  }
+  return null;
+}
+
+function checkBubblePop(row,col){
+  const color=bubbleGrid[row][col];
+  if(!color) return;
+  // BFS flood fill same-color neighbors
+  const visited=new Set();
+  const queue=[[row,col]];
+  visited.add(row+','+col);
+  while(queue.length){
+    const [r,c]=queue.shift();
+    const neighbors=[[r-1,c],[r+1,c],[r,c-1],[r,c+1],[r-1,c+(r%2?1:0)],[r-1,c-(r%2?0:1)]];
+    for(const [nr,nc] of neighbors){
+      if(nr>=0&&nr<BUBBLE_ROWS&&nc>=0&&nc<BUBBLE_COLS&&!visited.has(nr+','+nc)&&bubbleGrid[nr][nc]===color){
+        visited.add(nr+','+nc);
+        queue.push([nr,nc]);
+      }
+    }
+  }
+  if(visited.size>=3){
+    const cv=BBCV(), W=cv.width, H=cv.height;
+    const cellH=(H-80)/BUBBLE_ROWS;
+    visited.forEach(key=>{
+      const [r,c]=key.split(',').map(Number);
+      const fx=BUBBLE_R+c*BUBBLE_R*2;
+      const fy=40+r*cellH+BUBBLE_R;
+      bubbleFx.push({x:fx,y:fy,color,t:0,type:'pop'});
+      bubbleGrid[r][c]=null;
+    });
+    const pts=visited.size*10;
+    bubbleScore+=pts;
+    score+=pts;
+    if(best<score){best=score;}
+    updateScoreUI();
+    sfxWaveWin();
+  }
+}
+
+function drawBubble(ctx,W,H){
+  ctx.clearRect(0,0,W,H);
+  // Dark space background
+  const bg=ctx.createLinearGradient(0,0,0,H);
+  bg.addColorStop(0,'#020015'); bg.addColorStop(1,'#0a0030');
+  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+  // stars
+  ctx.fillStyle='rgba(255,255,255,0.7)';
+  for(let i=0;i<40;i++){
+    const sx=((i*137+17)%W), sy=((i*79+31)%H);
+    ctx.beginPath(); ctx.arc(sx,sy,0.8,0,Math.PI*2); ctx.fill();
+  }
+
+  const cellH=(H-80)/BUBBLE_ROWS;
+  // draw grid bubbles
+  for(let r=0;r<BUBBLE_ROWS;r++){
+    for(let c=0;c<BUBBLE_COLS;c++){
+      const col=bubbleGrid[r][c];
+      if(!col) continue;
+      const bx=BUBBLE_R+c*BUBBLE_R*2;
+      const by=40+r*cellH+BUBBLE_R;
+      drawBubbleCircle(ctx,bx,by,BUBBLE_R-1,col);
+    }
+  }
+
+  // flying bubble
+  if(bubbleFlying){
+    drawBubbleCircle(ctx,bubbleFlying.x,bubbleFlying.y,BUBBLE_R,bubbleFlying.color);
+    // trail
+    ctx.fillStyle='rgba(255,255,255,0.15)';
+    ctx.beginPath(); ctx.arc(bubbleFlying.x-bubbleFlying.vx*0.03, bubbleFlying.y-bubbleFlying.vy*0.03, BUBBLE_R*0.6,0,Math.PI*2); ctx.fill();
+  }
+
+  // shooter / cannon at bottom
+  const shooterX=W/2, shooterY=H-30;
+  // aim line
+  ctx.setLineDash([4,6]);
+  ctx.strokeStyle='rgba(255,255,255,0.2)';
+  ctx.lineWidth=1;
+  ctx.beginPath();
+  ctx.moveTo(shooterX, shooterY);
+  ctx.lineTo(shooterX+Math.cos(bubbleShooter.angle)*60, shooterY+Math.sin(bubbleShooter.angle)*60);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  // cannon body
+  ctx.fillStyle='#555';
+  ctx.beginPath();
+  ctx.arc(shooterX,shooterY,20,0,Math.PI*2);
+  ctx.fill();
+  // next bubble in cannon
+  drawBubbleCircle(ctx,shooterX,shooterY,14,bubbleShooter.color);
+
+  // fx
+  bubbleFx.forEach(f=>{
+    const prog=f.t/0.6;
+    if(f.type==='pop'){
+      ctx.strokeStyle=f.color;
+      ctx.lineWidth=2*(1-prog);
+      ctx.globalAlpha=1-prog;
+      ctx.beginPath(); ctx.arc(f.x,f.y,BUBBLE_R*(1+prog*2),0,Math.PI*2); ctx.stroke();
+      ctx.globalAlpha=1;
+    }
+  });
+}
+
+function drawBubbleCircle(ctx,x,y,r,color){
+  const grad=ctx.createRadialGradient(x-r*0.3,y-r*0.3,r*0.1,x,y,r);
+  grad.addColorStop(0,'rgba(255,255,255,0.7)');
+  grad.addColorStop(0.4,color);
+  grad.addColorStop(1,'rgba(0,0,0,0.5)');
+  ctx.fillStyle=grad;
+  ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,0.3)';
+  ctx.lineWidth=1;
+  ctx.stroke();
+}
+
+function bubbleDone(won){
+  if(bubbleRAF){ cancelAnimationFrame(bubbleRAF); bubbleRAF=null; }
+  bubbleMode=false;
+  if(won){
+    sfxWaveWin();
+    showComboFlash(0,false,'🏆 '+bubbleScore+'đ! Bóng nổ tung!');
+  } else {
+    sfxGameOver();
+    showComboFlash(0,false,'🫧 '+bubbleScore+'đ — Chưa đủ!');
+  }
+  setTimeout(exitBubbleToMain, 600);
+  if(won) setTimeout(()=>triggerStackUnlock(), 500);
+}
+
+function exitBubbleToMain(){
+  bubbleMode=false;
+  if(bubbleRAF){ cancelAnimationFrame(bubbleRAF); bubbleRAF=null; }
+  BBCV().classList.remove('active');
+  document.getElementById('grid').style.display='';
+  document.getElementById('pieces-area').style.display='';
+  document.getElementById('grid-wrap').classList.remove('secret-mode','ultra-glow','combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5');
+  document.getElementById('mode-badge').textContent='BÌNH THƯỜNG';
+  document.getElementById('mode-badge').classList.remove('secret');
+  document.getElementById('burst-count').textContent='Chuỗi nổ: 0/3';
+  consecutiveBursts=0; updateBurstCount();
+  document.getElementById('hint-bar').textContent='Chạm khối → ghost hiện · Di ngón → ghost bám · Thả trên ô → đặt · Thả vùng trống → xoay';
+  renderPieces(); checkGameOverA();
+}
+
+BBCV().addEventListener('pointerdown', e=>{
+  if(!bubbleMode) return;
+  e.preventDefault();
+  const rect=BBCV().getBoundingClientRect();
+  const scaleX=BBCV().width/rect.width, scaleY=BBCV().height/rect.height;
+  const tx=(e.clientX-rect.left)*scaleX;
+  const ty=(e.clientY-rect.top)*scaleY;
+  const cv=BBCV(), W=cv.width, H=cv.height;
+  const shooterX=W/2, shooterY=H-30;
+  const dx=tx-shooterX, dy=ty-shooterY;
+  if(dx===0&&dy===0) return;
+  bubbleShooter.angle=Math.atan2(dy,dx);
+  // clamp to upper hemisphere
+  if(bubbleShooter.angle>-0.2) bubbleShooter.angle=-0.2;
+  if(bubbleShooter.angle<-Math.PI+0.2) bubbleShooter.angle=-Math.PI+0.2;
+  if(!bubbleFlying){
+    const spd=320;
+    bubbleFlying={
+      x:shooterX, y:shooterY,
+      vx:Math.cos(bubbleShooter.angle)*spd,
+      vy:Math.sin(bubbleShooter.angle)*spd,
+      color:bubbleShooter.color
+    };
+  }
+});
+
+/* ══════════════════════════════════════════
+   MAP ẨN 9 — STACK TOWER
+══════════════════════════════════════════ */
+const STACK_TIME=90, STACK_KPI=15;
+const STACK_COLORS=['#e84040','#e88040','#e8c040','#40c040','#4080e8','#9040c8','#e84080','#40c8c8'];
+const BLOCK_H=28, BLOCK_BASE_W=180;
+
+let stackMode=false, stackRAF=null, stackLast=0, stackElapsed=0;
+let stackBlocks=[], stackMoving={x:0,w:0,color:'#e84040'};
+let stackDir=1, stackSpeed=80, stackScore=0, stackCount=0;
+let stackCameraY=0, stackFx=[];
+
+const STCV=()=>document.getElementById('stack-canvas');
+
+function triggerStackUnlock(){
+  pendingUnlock='stack';
+  document.getElementById('unlock-title').textContent='🏗️ MAP ẨN 9 MỞ KHÓA!';
+  document.getElementById('unlock-desc').innerHTML=
+    '🏗️ <b>Xếp Tháp!</b><br><br>'+
+    'Một khối đang di chuyển qua lại. Chạm → thả xuống!<br>'+
+    'Phần thừa bị cắt đi. Trượt hết → game over!<br>'+
+    'Xếp <b>'+STACK_KPI+' tầng</b> trong <b>'+STACK_TIME+'s</b> để thắng!<br>'+
+    'Căn giữa hoàn hảo → Thưởng điểm PERFECT!';
+  document.getElementById('unlock-btn').textContent='🏗️ XẾP THÔI!';
+  document.getElementById('unlock-overlay').classList.add('show');
+}
+
+function enterStackMode(){
+  endDrag();
+  sfxUnlock();
+  document.getElementById('grid').style.display='none';
+  document.getElementById('pieces-area').style.display='none';
+  document.getElementById('hint-bar').style.display='';
+  document.getElementById('hint-bar').textContent='Chạm vào màn hình để thả khối xuống!';
+  STCV().classList.add('active');
+  document.getElementById('grid-wrap').classList.add('secret-mode');
+  document.getElementById('mode-badge').textContent='🏗️ MAP ẨN 9';
+  document.getElementById('mode-badge').classList.add('secret');
+  document.getElementById('burst-count').textContent='🏗️ 0/'+STACK_KPI+' tầng';
+  stackMode=true;
+  initStack();
+  stackLast=performance.now();
+  stackRAF=requestAnimationFrame(stackLoop);
+}
+
+function initStack(){
+  const cv=STCV(), W=cv.width, H=cv.height;
+  stackScore=0; stackCount=0; stackElapsed=0; stackFx=[]; stackCameraY=0;
+  stackDir=1; stackSpeed=80;
+  // base block at bottom
+  stackBlocks=[{x:(W-BLOCK_BASE_W)/2, y:H-BLOCK_H, w:BLOCK_BASE_W, color:'#888'}];
+  stackMoving={x:0, w:BLOCK_BASE_W, color:STACK_COLORS[0]};
+}
+
+function stackLoop(now){
+  if(!stackMode){ stackRAF=null; return; }
+  const dt=Math.min((now-(stackLast||now))/1000,0.08);
+  stackLast=now;
+  stackElapsed+=dt;
+
+  const cv=STCV(), W=cv.width;
+  // move the platform
+  stackMoving.x+=stackDir*stackSpeed*dt;
+  if(stackMoving.x+stackMoving.w>W){ stackMoving.x=W-stackMoving.w; stackDir=-1; }
+  if(stackMoving.x<0){ stackMoving.x=0; stackDir=1; }
+
+  // update fx
+  stackFx.forEach(f=>{ f.t+=dt; f.y+=f.vy*dt; f.vy+=200*dt; });
+  stackFx=stackFx.filter(f=>f.t<1.2);
+
+  const ctx=cv.getContext('2d');
+  drawStack(ctx,W,cv.height);
+
+  const timeLeft=Math.max(0,STACK_TIME-stackElapsed);
+  document.getElementById('burst-count').textContent='🏗️ '+stackCount+'/'+STACK_KPI+'  ⏱'+timeLeft.toFixed(0)+'s';
+
+  if(timeLeft<=0 || stackCount>=STACK_KPI){
+    stackDone(stackCount>=STACK_KPI); return;
+  }
+  stackRAF=requestAnimationFrame(stackLoop);
+}
+
+function dropStack(){
+  if(!stackMode||stackMoving.w<=0) return;
+  const cv=STCV(), W=cv.width, H=cv.height;
+  // top block
+  const top=stackBlocks[stackBlocks.length-1];
+  const overlapL=Math.max(stackMoving.x, top.x);
+  const overlapR=Math.min(stackMoving.x+stackMoving.w, top.x+top.w);
+  const overlapW=overlapR-overlapL;
+  if(overlapW<=0){
+    // missed completely
+    stackDone(false); return;
+  }
+  const newY=top.y-BLOCK_H;
+  // camera scroll
+  if(newY-stackCameraY<H*0.4) stackCameraY=newY-H*0.4;
+
+  // check perfect alignment
+  const center1=stackMoving.x+stackMoving.w/2;
+  const center2=top.x+top.w/2;
+  const isPerfect=Math.abs(center1-center2)<5;
+
+  const newBlock={x:overlapL, y:newY, w:overlapW, color:STACK_COLORS[stackCount%STACK_COLORS.length]};
+  stackBlocks.push(newBlock);
+  stackCount++;
+  stackSpeed=80+stackCount*5; // increase speed
+
+  let pts=10;
+  if(isPerfect){
+    pts+=20;
+    stackFx.push({x:overlapL+overlapW/2,y:newY,t:0,type:'perfect',vy:-80});
+    showComboFlash(0,false,'✨ PERFECT!');
+  }
+  stackScore+=pts;
+  score+=pts;
+  if(best<score){ best=score; }
+  updateScoreUI();
+  sfxWaveWin();
+
+  // cut piece falls off
+  if(stackMoving.x<top.x){
+    stackFx.push({x:stackMoving.x, y:newY, w:top.x-stackMoving.x, color:newBlock.color, t:0, type:'cut', vy:-20});
+  }
+  if(stackMoving.x+stackMoving.w>top.x+top.w){
+    const cx=top.x+top.w;
+    stackFx.push({x:cx, y:newY, w:(stackMoving.x+stackMoving.w)-cx, color:newBlock.color, t:0, type:'cut', vy:-20});
+  }
+
+  // next moving block same width as new block
+  stackMoving={x:0, w:overlapW, color:STACK_COLORS[stackCount%STACK_COLORS.length]};
+}
+
+function drawStack(ctx,W,H){
+  ctx.clearRect(0,0,W,H);
+  // Sky gradient background
+  const bg=ctx.createLinearGradient(0,0,0,H);
+  bg.addColorStop(0,'#87ceeb'); bg.addColorStop(1,'#e0f0ff');
+  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+  // City silhouette
+  ctx.fillStyle='rgba(30,30,80,0.3)';
+  [[10,380,40,80],[60,360,30,100],[100,370,50,90],[160,350,35,110],[210,380,40,80],[260,355,45,105],[310,370,30,90]].forEach(([bx,by,bw,bh])=>{
+    ctx.fillRect(bx,by,bw,bh);
+  });
+
+  const camOff=stackCameraY;
+
+  // draw stacked blocks
+  stackBlocks.forEach(b=>{
+    const by=b.y-camOff;
+    // 3D bevel
+    ctx.fillStyle=b.color;
+    ctx.fillRect(b.x,by,b.w,BLOCK_H);
+    ctx.fillStyle='rgba(255,255,255,0.25)';
+    ctx.fillRect(b.x,by,b.w,4);
+    ctx.fillStyle='rgba(0,0,0,0.2)';
+    ctx.fillRect(b.x,by+BLOCK_H-4,b.w,4);
+  });
+
+  // draw moving block with glow
+  const mb=stackMoving;
+  const mby=stackBlocks[stackBlocks.length-1].y-BLOCK_H*1.5-camOff;
+  ctx.shadowColor=mb.color; ctx.shadowBlur=10;
+  ctx.fillStyle=mb.color;
+  ctx.fillRect(mb.x,mby,mb.w,BLOCK_H);
+  ctx.shadowBlur=0;
+  ctx.fillStyle='rgba(255,255,255,0.3)';
+  ctx.fillRect(mb.x,mby,mb.w,4);
+
+  // fx
+  stackFx.forEach(f=>{
+    if(f.type==='cut'){
+      ctx.globalAlpha=Math.max(0,1-f.t);
+      ctx.fillStyle=f.color;
+      ctx.fillRect(f.x,f.y-camOff,f.w,BLOCK_H);
+      ctx.globalAlpha=1;
+    } else if(f.type==='perfect'){
+      ctx.globalAlpha=Math.max(0,1-f.t*1.5);
+      ctx.fillStyle='#ffe060';
+      ctx.font='bold 20px system-ui';
+      ctx.textAlign='center';
+      ctx.fillText('✨',f.x,f.y-camOff);
+      ctx.globalAlpha=1;
+    }
+  });
+}
+
+function stackDone(won){
+  if(stackRAF){ cancelAnimationFrame(stackRAF); stackRAF=null; }
+  stackMode=false;
+  if(won){
+    sfxWaveWin();
+    showComboFlash(0,false,'🏆 '+stackCount+' tầng! Tháp hoàn thành!');
+  } else {
+    sfxGameOver();
+    showComboFlash(0,false,'🏗️ '+stackCount+'/'+STACK_KPI+' tầng!');
+  }
+  setTimeout(exitStackToMain, 600);
+  if(won) setTimeout(()=>triggerBossUnlock(), 500);
+}
+
+function exitStackToMain(){
+  stackMode=false;
+  if(stackRAF){ cancelAnimationFrame(stackRAF); stackRAF=null; }
+  STCV().classList.remove('active');
+  document.getElementById('grid').style.display='';
+  document.getElementById('pieces-area').style.display='';
+  document.getElementById('grid-wrap').classList.remove('secret-mode','ultra-glow','combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5');
+  document.getElementById('mode-badge').textContent='BÌNH THƯỜNG';
+  document.getElementById('mode-badge').classList.remove('secret');
+  document.getElementById('burst-count').textContent='Chuỗi nổ: 0/3';
+  consecutiveBursts=0; updateBurstCount();
+  document.getElementById('hint-bar').textContent='Chạm khối → ghost hiện · Di ngón → ghost bám · Thả trên ô → đặt · Thả vùng trống → xoay';
+  renderPieces(); checkGameOverA();
+}
+
+STCV().addEventListener('pointerdown', e=>{
+  if(!stackMode) return;
+  e.preventDefault();
+  dropStack();
+});
+
+/* ══════════════════════════════════════════
+   MAP ẨN 10 — BOSS BATTLE
+══════════════════════════════════════════ */
+const BOSS_TIME=90, BOSS_HP_MAX=200;
+const BOSS_PROJ_COLORS=['#ff4444','#ff9900','#ffdd00','#44ff88','#44aaff','#cc44ff'];
+
+let bossMode=false, bossRAF=null, bossLast=0, bossElapsed=0;
+let bossHP=BOSS_HP_MAX, bossX=180, bossVX=60, bossY=60;
+let bossProjectiles=[], bossVenom=[], bossDogX=180, bossDogLives=3;
+let bossFx=[], bossScore=0, bossFireTimer=0, bossVenomTimer=0;
+let bossProjColorIdx=0;
+
+const BOSCV=()=>document.getElementById('boss-canvas');
+
+function triggerBossUnlock(){
+  pendingUnlock='boss';
+  document.getElementById('unlock-title').textContent='🐍 MAP ẨN 10 MỞ KHÓA!';
+  document.getElementById('unlock-desc').innerHTML=
+    '🐍 <b>Đại Chiến Boss!</b><br><br>'+
+    'Chú chó Samoyed đối đầu con rắn khổng lồ!<br>'+
+    'Chạm vào màn hình → bắn đạn lên! Tiêu diệt Boss (200 HP)!<br>'+
+    'Né giọt nọc độc rơi xuống — bạn có <b>3 mạng ❤️</b>!<br>'+
+    'Hạ gục Boss trước <b>'+BOSS_TIME+'s</b> để chiến thắng!';
+  document.getElementById('unlock-btn').textContent='🐍 CHIẾN ĐẤU!';
+  document.getElementById('unlock-overlay').classList.add('show');
+}
+
+function enterBossMode(){
+  endDrag();
+  sfxUnlock();
+  document.getElementById('grid').style.display='none';
+  document.getElementById('pieces-area').style.display='none';
+  document.getElementById('hint-bar').style.display='';
+  document.getElementById('hint-bar').textContent='Chạm để bắn! Chú chó tự né độc!';
+  BOSCV().classList.add('active');
+  document.getElementById('grid-wrap').classList.add('secret-mode');
+  document.getElementById('mode-badge').textContent='🐍 MAP ẨN 10';
+  document.getElementById('mode-badge').classList.add('secret');
+  document.getElementById('burst-count').textContent='🐍 Boss HP: '+BOSS_HP_MAX;
+  bossMode=true;
+  initBoss();
+  bossLast=performance.now();
+  bossRAF=requestAnimationFrame(bossLoop);
+}
+
+function initBoss(){
+  bossHP=BOSS_HP_MAX; bossX=180; bossVX=60; bossY=70;
+  bossProjectiles=[]; bossVenom=[]; bossDogLives=3;
+  bossFx=[]; bossScore=0; bossElapsed=0;
+  bossFireTimer=0; bossVenomTimer=0; bossProjColorIdx=0;
+  const cv=BOSCV(); bossDogX=cv.width/2;
+}
+
+function bossLoop(now){
+  if(!bossMode){ bossRAF=null; return; }
+  const dt=Math.min((now-(bossLast||now))/1000,0.08);
+  bossLast=now;
+  bossElapsed+=dt;
+
+  const cv=BOSCV(), W=cv.width, H=cv.height;
+  const speedMult=1+Math.floor((BOSS_HP_MAX-bossHP)/30)*0.3;
+
+  // move boss
+  bossX+=bossVX*speedMult*dt;
+  if(bossX>W-50){ bossX=W-50; bossVX=-Math.abs(bossVX); }
+  if(bossX<50){ bossX=50; bossVX=Math.abs(bossVX); }
+  // boss slowly descends
+  bossY+=5*dt;
+  if(bossY>H*0.35) bossY=H*0.35;
+
+  // boss fires venom
+  const venomInterval=Math.max(1.2, 2.5-Math.floor((BOSS_HP_MAX-bossHP)/30)*0.3);
+  bossVenomTimer+=dt;
+  if(bossVenomTimer>=venomInterval){
+    bossVenomTimer=0;
+    bossVenom.push({x:bossX+(Math.random()-0.5)*40, y:bossY+40, vy:120+Math.random()*40});
+  }
+
+  // player fires projectiles (auto-fire every 0.4s)
+  bossFireTimer+=dt;
+  if(bossFireTimer>=0.4){
+    bossFireTimer=0;
+    bossProjectiles.push({x:bossDogX, y:H-60, vy:-300, color:BOSS_PROJ_COLORS[bossProjColorIdx%BOSS_PROJ_COLORS.length]});
+    bossProjColorIdx++;
+  }
+
+  // move projectiles
+  bossProjectiles.forEach(p=>p.y+=p.vy*dt);
+  bossProjectiles=bossProjectiles.filter(p=>p.y>0);
+
+  // check projectile hits boss
+  bossProjectiles=bossProjectiles.filter(p=>{
+    if(Math.abs(p.x-bossX)<50 && Math.abs(p.y-bossY)<50){
+      bossHP-=10;
+      bossScore+=10; score+=10;
+      if(best<score){ best=score; }
+      updateScoreUI();
+      bossFx.push({x:bossX,y:bossY,t:0,type:'hit'});
+      return false;
+    }
+    return true;
+  });
+
+  // move venom
+  bossVenom.forEach(v=>v.y+=v.vy*dt);
+  bossVenom=bossVenom.filter(v=>v.y<H);
+
+  // dog auto-dodge
+  const closestVenom=bossVenom.filter(v=>v.y>H*0.5).sort((a,b)=>Math.abs(a.x-bossDogX)-Math.abs(b.x-bossDogX))[0];
+  if(closestVenom && Math.abs(closestVenom.x-bossDogX)<80){
+    const dodgeDir=closestVenom.x>bossDogX?-1:1;
+    bossDogX+=dodgeDir*120*dt;
+    bossDogX=Math.max(30,Math.min(W-30,bossDogX));
+  }
+
+  // check venom hits dog
+  bossVenom=bossVenom.filter(v=>{
+    if(v.y>H-80 && Math.abs(v.x-bossDogX)<30){
+      bossDogLives--;
+      bossFx.push({x:bossDogX,y:H-60,t:0,type:'dmg'});
+      sfxGameOver();
+      return false;
+    }
+    return true;
+  });
+
+  // update fx
+  bossFx.forEach(f=>f.t+=dt);
+  bossFx=bossFx.filter(f=>f.t<0.5);
+
+  const ctx=cv.getContext('2d');
+  drawBoss(ctx,W,H);
+
+  const timeLeft=Math.max(0,BOSS_TIME-bossElapsed);
+  document.getElementById('burst-count').textContent='🐍 Boss HP: '+Math.max(0,bossHP)+'  ❤️×'+bossDogLives;
+
+  // win/lose conditions
+  if(bossHP<=0){
+    bossDone(true); return;
+  }
+  if(bossDogLives<=0 || bossY>=H-100){
+    bossDone(false); return;
+  }
+  if(timeLeft<=0){
+    bossDone(false); return;
+  }
+  bossRAF=requestAnimationFrame(bossLoop);
+}
+
+function drawBoss(ctx,W,H){
+  ctx.clearRect(0,0,W,H);
+  // Epic dark arena
+  const bg=ctx.createLinearGradient(0,0,0,H);
+  bg.addColorStop(0,'#1a0030'); bg.addColorStop(0.5,'#2a0020'); bg.addColorStop(1,'#0d0010');
+  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+  // arena lines
+  ctx.strokeStyle='rgba(150,0,80,0.15)';
+  ctx.lineWidth=1;
+  for(let i=0;i<H;i+=40){ ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(W,i); ctx.stroke(); }
+
+  // HP bar background
+  ctx.fillStyle='rgba(255,0,0,0.2)';
+  ctx.fillRect(20,12,W-40,14);
+  // HP bar fill
+  const hpPct=Math.max(0,bossHP/BOSS_HP_MAX);
+  const hpGrad=ctx.createLinearGradient(20,0,W-20,0);
+  hpGrad.addColorStop(0,'#ff4444'); hpGrad.addColorStop(1,'#ff9900');
+  ctx.fillStyle=hpGrad;
+  ctx.fillRect(20,12,(W-40)*hpPct,14);
+  ctx.strokeStyle='#ff4444';
+  ctx.lineWidth=1;
+  ctx.strokeRect(20,12,W-40,14);
+  ctx.fillStyle='#fff';
+  ctx.font='bold 10px system-ui';
+  ctx.textAlign='center';
+  ctx.fillText('BOSS HP '+Math.max(0,bossHP)+'/'+BOSS_HP_MAX, W/2, 23);
+
+  // Boss snake emoji
+  ctx.font='80px system-ui';
+  ctx.textAlign='center';
+  ctx.fillText('🐍', bossX, bossY+40);
+
+  // projectiles
+  bossProjectiles.forEach(p=>{
+    ctx.shadowColor=p.color; ctx.shadowBlur=12;
+    ctx.fillStyle=p.color;
+    ctx.beginPath(); ctx.arc(p.x,p.y,6,0,Math.PI*2); ctx.fill();
+    ctx.shadowBlur=0;
+  });
+
+  // venom drops
+  bossVenom.forEach(v=>{
+    ctx.fillStyle='rgba(0,200,0,0.7)';
+    ctx.beginPath(); ctx.arc(v.x,v.y,8,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='rgba(0,200,0,0.3)';
+    ctx.beginPath(); ctx.arc(v.x,v.y-8,4,0,Math.PI*2); ctx.fill();
+  });
+
+  // Draw dog at bottom
+  ctx.font='48px system-ui';
+  ctx.textAlign='center';
+  ctx.fillText('🐕', bossDogX, H-20);
+
+  // lives
+  ctx.font='20px system-ui';
+  ctx.textAlign='left';
+  for(let i=0;i<bossDogLives;i++) ctx.fillText('❤️', 10+i*26, H-10);
+
+  // fx
+  bossFx.forEach(f=>{
+    const prog=f.t/0.5;
+    ctx.globalAlpha=Math.max(0,1-prog);
+    if(f.type==='hit'){
+      ctx.strokeStyle='#ffdd00'; ctx.lineWidth=3;
+      ctx.beginPath(); ctx.arc(f.x,f.y,20*(1+prog),0,Math.PI*2); ctx.stroke();
+    } else if(f.type==='dmg'){
+      ctx.fillStyle='#ff4444';
+      ctx.font='bold 24px system-ui';
+      ctx.textAlign='center';
+      ctx.fillText('💥', f.x, f.y-prog*30);
+    }
+    ctx.globalAlpha=1;
+  });
+}
+
+function bossDone(won){
+  if(bossRAF){ cancelAnimationFrame(bossRAF); bossRAF=null; }
+  bossMode=false;
+  if(won){
+    sfxWaveWin();
+    showComboFlash(0,false,'🏆 Boss bị tiêu diệt!');
+    setTimeout(()=>showComboFlash(0,false,'🎉 BẠN ĐÃ CHINH PHỤC TẤT CẢ BẢN ĐỒ BÍ ẨN!'), 2500);
+  } else {
+    sfxGameOver();
+    showComboFlash(0,false,'🐍 Boss chưa bị hạ! HP: '+Math.max(0,bossHP));
+  }
+  setTimeout(exitBossToMain, 600);
+}
+
+function exitBossToMain(){
+  bossMode=false;
+  if(bossRAF){ cancelAnimationFrame(bossRAF); bossRAF=null; }
+  BOSCV().classList.remove('active');
+  document.getElementById('grid').style.display='';
+  document.getElementById('pieces-area').style.display='';
+  document.getElementById('grid-wrap').classList.remove('secret-mode','ultra-glow','combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5');
+  document.getElementById('mode-badge').textContent='BÌNH THƯỜNG';
+  document.getElementById('mode-badge').classList.remove('secret');
+  document.getElementById('burst-count').textContent='Chuỗi nổ: 0/3';
+  consecutiveBursts=0; updateBurstCount();
+  document.getElementById('hint-bar').textContent='Chạm khối → ghost hiện · Di ngón → ghost bám · Thả trên ô → đặt · Thả vùng trống → xoay';
+  renderPieces(); checkGameOverA();
+}
+
+BOSCV().addEventListener('pointerdown', e=>{
+  if(!bossMode) return;
+  e.preventDefault();
+  const rect=BOSCV().getBoundingClientRect();
+  const scaleX=BOSCV().width/rect.width;
+  const tx=(e.clientX-rect.left)*scaleX;
+  bossDogX=Math.max(30,Math.min(BOSCV().width-30,tx));
 });
 
 /* ══════════════════════════════════════════
@@ -5752,6 +6591,9 @@ function startGame(){
   awaitingGoldUnlock=false; goldUnlockBaseline=0;
   awaitingMoleUnlock=false; moleUnlockBaseline=0;
   memoryMode=false; if(memoryRAF){cancelAnimationFrame(memoryRAF);memoryRAF=null;}
+  bubbleMode=false; if(typeof bubbleRAF!=='undefined'&&bubbleRAF){cancelAnimationFrame(bubbleRAF);bubbleRAF=null;}
+  stackMode=false; if(typeof stackRAF!=='undefined'&&stackRAF){cancelAnimationFrame(stackRAF);stackRAF=null;}
+  bossMode=false; if(typeof bossRAF!=='undefined'&&bossRAF){cancelAnimationFrame(bossRAF);bossRAF=null;}
   goldWave=1;
   clearSecretTimer();
   endDrag();
@@ -5818,6 +6660,40 @@ function startGame(){
     document.getElementById('grid').style.display='';
     document.getElementById('pieces-area').style.display='';
     document.getElementById('hint-bar').style.display='';
+  }
+
+  // Force-exit map ẩn 8 nếu đang chơi
+  if(typeof bubbleMode!=='undefined'&&(bubbleMode||bubbleRAF)){
+    bubbleMode=false;
+    if(typeof bubbleRAF!=='undefined'&&bubbleRAF){cancelAnimationFrame(bubbleRAF);bubbleRAF=null;}
+    const bcv=document.getElementById('bubble-canvas'); if(bcv) bcv.classList.remove('active');
+    document.getElementById('grid-wrap').classList.remove('secret-mode','ultra-glow','combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5');
+    document.getElementById('grid').style.display='';
+    document.getElementById('pieces-area').style.display='';
+    document.getElementById('mode-badge').textContent='BÌNH THƯỜNG';
+    document.getElementById('mode-badge').classList.remove('secret');
+  }
+  // Force-exit map ẩn 9 nếu đang chơi
+  if(typeof stackMode!=='undefined'&&(stackMode||stackRAF)){
+    stackMode=false;
+    if(typeof stackRAF!=='undefined'&&stackRAF){cancelAnimationFrame(stackRAF);stackRAF=null;}
+    const scv=document.getElementById('stack-canvas'); if(scv) scv.classList.remove('active');
+    document.getElementById('grid-wrap').classList.remove('secret-mode','ultra-glow','combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5');
+    document.getElementById('grid').style.display='';
+    document.getElementById('pieces-area').style.display='';
+    document.getElementById('mode-badge').textContent='BÌNH THƯỜNG';
+    document.getElementById('mode-badge').classList.remove('secret');
+  }
+  // Force-exit map ẩn 10 nếu đang chơi
+  if(typeof bossMode!=='undefined'&&(bossMode||bossRAF)){
+    bossMode=false;
+    if(typeof bossRAF!=='undefined'&&bossRAF){cancelAnimationFrame(bossRAF);bossRAF=null;}
+    const boscv=document.getElementById('boss-canvas'); if(boscv) boscv.classList.remove('active');
+    document.getElementById('grid-wrap').classList.remove('secret-mode','ultra-glow','combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5');
+    document.getElementById('grid').style.display='';
+    document.getElementById('pieces-area').style.display='';
+    document.getElementById('mode-badge').textContent='BÌNH THƯỜNG';
+    document.getElementById('mode-badge').classList.remove('secret');
   }
 
   document.getElementById('game-over-overlay').classList.remove('show');
@@ -5895,7 +6771,7 @@ document.getElementById('pause-btn').addEventListener('click', togglePause);
 document.getElementById('resume-btn').addEventListener('click', togglePause);
 
 function togglePause(){
-  if(!secretMode && !dodgeMode && !fruitMode && !beeMode && !goldMode && !moleMode && !memoryMode) return;
+  if(!secretMode && !dodgeMode && !fruitMode && !beeMode && !goldMode && !moleMode && !memoryMode && !bubbleMode && !stackMode && !bossMode) return;
   sfxClick();
   gamePaused = !gamePaused;
   const overlay = document.getElementById('pause-overlay');
@@ -5909,6 +6785,9 @@ function togglePause(){
     if(goldRAF){  cancelAnimationFrame(goldRAF);  goldRAF=null;  }
     if(moleRAF){  cancelAnimationFrame(moleRAF);  moleRAF=null;  }
     if(memoryRAF){cancelAnimationFrame(memoryRAF);memoryRAF=null;}
+    if(typeof bubbleRAF!=='undefined'&&bubbleRAF){cancelAnimationFrame(bubbleRAF);bubbleRAF=null;}
+    if(typeof stackRAF!=='undefined'&&stackRAF){cancelAnimationFrame(stackRAF);stackRAF=null;}
+    if(typeof bossRAF!=='undefined'&&bossRAF){cancelAnimationFrame(bossRAF);bossRAF=null;}
     if(timerRAF){ cancelAnimationFrame(timerRAF); timerRAF=null; }
     if(typeof borderSparkInterval !== 'undefined' && borderSparkInterval){ clearInterval(borderSparkInterval); }
     if(typeof fireInterval !== 'undefined' && fireInterval){ clearInterval(fireInterval); }
@@ -5921,6 +6800,9 @@ function togglePause(){
     if(goldMode)   { goldLast=0;  goldRAF=requestAnimationFrame(goldLoop);   }
     if(moleMode)   { moleLast=0;  moleRAF=requestAnimationFrame(moleLoop);   }
     if(memoryMode) { memoryLast=0;memoryRAF=requestAnimationFrame(memoryLoop);}
+    if(typeof bubbleMode!=='undefined'&&bubbleMode) { bubbleLast=0;bubbleRAF=requestAnimationFrame(bubbleLoop);}
+    if(typeof stackMode!=='undefined'&&stackMode)   { stackLast=0;stackRAF=requestAnimationFrame(stackLoop);}
+    if(typeof bossMode!=='undefined'&&bossMode)     { bossLast=0;bossRAF=requestAnimationFrame(bossLoop);}
     if(secretMode) { startSecretTimer(); }
   }
 }
