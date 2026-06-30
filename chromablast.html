@@ -1233,6 +1233,20 @@ function sfxInvincEnd(){
   if(sfxMuted) return;
   playTone(800,'sine',0.06,0.15);
 }
+// Maps 14-16 SFX
+function sfxSnakeEat(){ if(sfxMuted)return; playTone(500,'sine',0.06,0.2); playTone(700,'sine',0.05,0.18,0.04); }
+function sfxSnakeSpecial(){ if(sfxMuted)return; playTone(660,'sine',0.08,0.25); playTone(880,'sine',0.08,0.25,0.06); playTone(1100,'sine',0.1,0.3,0.12); }
+function sfxSnakeDie(){ if(sfxMuted)return; playTone(200,'triangle',0.2,0.3); playTone(150,'triangle',0.2,0.25,0.12); }
+function sfxSnakeTurn(){ if(sfxMuted)return; playTone(350,'sine',0.02,0.06); }
+function sfxBallPaddle(){ if(sfxMuted)return; playTone(300,'sine',0.06,0.2); }
+function sfxBallBrick(){ if(sfxMuted)return; playTone(500,'square',0.04,0.18); playNoise(0.04,0.08); }
+function sfxBrickBreak(){ if(sfxMuted)return; playNoise(0.1,0.18); playTone(400,'sawtooth',0.08,0.2); }
+function sfxBallWall(){ if(sfxMuted)return; playTone(200,'sine',0.03,0.1); }
+function sfxPowerUp(){ if(sfxMuted)return; playTone(660,'sine',0.08,0.25); playTone(880,'sine',0.08,0.28,0.07); }
+function sfxRunnerJump(){ if(sfxMuted)return; playTone(400,'sine',0.08,0.2); playTone(600,'sine',0.06,0.15,0.04); }
+function sfxRunnerDoubleJump(){ if(sfxMuted)return; playTone(500,'sine',0.06,0.18); playTone(800,'sine',0.08,0.2,0.04); playTone(1000,'sine',0.06,0.15,0.08); }
+function sfxRunnerLand(){ if(sfxMuted)return; playNoise(0.04,0.1); playTone(120,'triangle',0.06,0.15); }
+function sfxRunnerStar(){ if(sfxMuted)return; playTone(880,'sine',0.06,0.2); playTone(1100,'sine',0.06,0.22,0.05); }
 
 /* ══════════════════════════════════════════
    HELPERS
@@ -7891,6 +7905,730 @@ document.getElementById('resume-btn').addEventListener('click', togglePause);
 startGame();
 // Show persisted best score immediately after startGame (which resets score but not best)
 document.getElementById('best-box').textContent='Kỷ lục: '+best.toLocaleString();
+
+/* ══ MAP ẨN 14 — SNAKE ══ */
+const SNAKE_COLS=18, SNAKE_ROWS=22, SNAKE_CELL=20;
+const SCV=()=>document.getElementById('snake-canvas');
+
+let snakeMode=false, snakeRAF=null, snakeLast=0;
+let snakeCells=[], snakeDir={x:1,y:0}, snakeNextDir={x:1,y:0};
+let snakeFood={x:5,y:5,emoji:'🍎',special:false};
+let snakeLives=3, snakeScore=0, snakeFx=[];
+let snakeMoveTimer=0, snakeSpeed=8;
+let snakeFoodCount=0;
+let snakePointerStart=null;
+
+function triggerSnakeUnlock(){
+  pendingUnlock='snake';
+  document.getElementById('unlock-title').textContent='🐍 MAP ẨN 14 MỞ KHÓA!';
+  document.getElementById('unlock-desc').innerHTML='Rắn cổ điển! Ăn trái cây để lớn dần.<br>Vuốt/chạm để đổi hướng. Tránh tường & đuôi!<br>KPI: đạt độ dài <b>20</b>. 3 mạng ❤️❤️❤️';
+  document.getElementById('unlock-btn').textContent='🐍 CHƠI THÔI!';
+  document.getElementById('unlock-overlay').classList.add('show');
+  sfxUnlock();
+}
+
+function placeSnakeFood(){
+  const occupied=new Set(snakeCells.map(c=>c.x+','+c.y));
+  let x,y,attempts=0;
+  do { x=Math.floor(Math.random()*SNAKE_COLS); y=Math.floor(Math.random()*SNAKE_ROWS); attempts++; }
+  while(occupied.has(x+','+y) && attempts<200);
+  const isSpecial=(snakeFoodCount>0 && snakeFoodCount%5===0);
+  const emojis=['🍎','🍊','🍋','🍇','🍓'];
+  snakeFood={x,y,emoji:isSpecial?'🌟':emojis[Math.floor(Math.random()*emojis.length)],special:isSpecial};
+}
+
+function enterSnakeMode(){
+  endDrag();
+  sfxUnlock();
+  document.getElementById('grid').style.display='none';
+  document.getElementById('pieces-area').style.display='none';
+  SCV().classList.add('active');
+  document.getElementById('mode-badge').textContent='🐍 MAP ẨN 14';
+  document.getElementById('mode-badge').classList.add('secret');
+  document.getElementById('burst-count').textContent='🐍 Dài: 3/20';
+  document.getElementById('hint-bar').textContent='Vuốt để đổi hướng · Chạm góc để rẽ';
+  document.getElementById('grid-wrap').classList.add('secret-mode');
+  snakeCells=[{x:9,y:11},{x:8,y:11},{x:7,y:11}];
+  snakeDir={x:1,y:0}; snakeNextDir={x:1,y:0};
+  snakeLives=3; snakeScore=0; snakeFx=[]; snakeFoodCount=0;
+  snakeMoveTimer=0; snakeSpeed=8;
+  placeSnakeFood();
+  snakeMode=true;
+  snakeLast=performance.now();
+  snakeRAF=requestAnimationFrame(snakeLoop);
+}
+
+function setSnakeDir(x,y){ snakeNextDir={x,y}; sfxSnakeTurn(); }
+
+function snakeLoop(now){
+  if(!snakeMode){ snakeRAF=null; return; }
+  const dt=Math.min((now-(snakeLast||now))/1000, 0.08);
+  snakeLast=now;
+  const cv=SCV(), W=cv.width, H=cv.height;
+  const ctx=cv.getContext('2d');
+
+  snakeMoveTimer+=dt;
+  if(snakeMoveTimer>=1/snakeSpeed){
+    snakeMoveTimer=0;
+    // apply direction (no reversing)
+    if(!(snakeNextDir.x===-snakeDir.x && snakeNextDir.y===-snakeDir.y)){
+      snakeDir={x:snakeNextDir.x, y:snakeNextDir.y};
+    }
+    const head=snakeCells[0];
+    const nx=head.x+snakeDir.x, ny=head.y+snakeDir.y;
+    // wall collision
+    if(nx<0||nx>=SNAKE_COLS||ny<0||ny>=SNAKE_ROWS){ snakeDie(); return; }
+    // self collision
+    if(snakeCells.some(c=>c.x===nx&&c.y===ny)){ snakeDie(); return; }
+    snakeCells.unshift({x:nx,y:ny});
+    // check food
+    if(nx===snakeFood.x&&ny===snakeFood.y){
+      snakeFoodCount++;
+      const pts=snakeFood.special?30:10;
+      snakeScore+=pts;
+      score+=pts; if(best<score) best=score;
+      snakeFx.push({x:nx*SNAKE_CELL+SNAKE_CELL/2+16, y:ny*SNAKE_CELL+30, t:0, text:'+'+pts, special:snakeFood.special});
+      if(snakeFood.special) sfxSnakeSpecial(); else sfxSnakeEat();
+      snakeSpeed=Math.min(16, 8+snakeFoodCount*0.3);
+      document.getElementById('burst-count').textContent='🐍 Dài: '+snakeCells.length+'/20';
+      updateScoreUI();
+      if(snakeCells.length>=20){ snakeDone(true); return; }
+      placeSnakeFood();
+    } else {
+      snakeCells.pop();
+    }
+  }
+
+  // update fx
+  snakeFx=snakeFx.filter(f=>{ f.t+=dt; return f.t<1; });
+
+  drawSnake(ctx, W, H);
+  snakeRAF=requestAnimationFrame(snakeLoop);
+}
+
+function drawSnake(ctx, W, H){
+  const OX=16, OY=30; // offset so grid is centered with room for top bar
+  // Background
+  ctx.fillStyle='#0a1a0a';
+  ctx.fillRect(0,0,W,H);
+  // Grid lines
+  ctx.strokeStyle='rgba(255,255,255,0.05)';
+  ctx.lineWidth=0.5;
+  for(let c=0;c<=SNAKE_COLS;c++){ ctx.beginPath(); ctx.moveTo(OX+c*SNAKE_CELL,OY); ctx.lineTo(OX+c*SNAKE_CELL,OY+SNAKE_ROWS*SNAKE_CELL); ctx.stroke(); }
+  for(let r=0;r<=SNAKE_ROWS;r++){ ctx.beginPath(); ctx.moveTo(OX,OY+r*SNAKE_CELL); ctx.lineTo(OX+SNAKE_COLS*SNAKE_CELL,OY+r*SNAKE_CELL); ctx.stroke(); }
+
+  // Draw snake
+  snakeCells.forEach((c,i)=>{
+    const x=OX+c.x*SNAKE_CELL, y=OY+c.y*SNAKE_CELL;
+    const r=i===0?9:8;
+    if(i===0){
+      const g=ctx.createLinearGradient(x,y,x+SNAKE_CELL,y+SNAKE_CELL);
+      g.addColorStop(0,'#88ff44'); g.addColorStop(1,'#44cc00');
+      ctx.fillStyle=g;
+    } else {
+      const ratio=i/snakeCells.length;
+      const g=ctx.createLinearGradient(x,y,x+SNAKE_CELL,y+SNAKE_CELL);
+      g.addColorStop(0,`hsl(${100+ratio*20},80%,${45-ratio*10}%)`);
+      g.addColorStop(1,`hsl(${120+ratio*20},80%,${35-ratio*10}%)`);
+      ctx.fillStyle=g;
+    }
+    ctx.beginPath();
+    ctx.roundRect(x+1,y+1,SNAKE_CELL-2,SNAKE_CELL-2,r);
+    ctx.fill();
+    if(i===0){
+      // eyes
+      const eyeOX=snakeDir.x===1?5:(snakeDir.x===-1?SNAKE_CELL-7:(snakeDir.y===0?4:4));
+      const eyeOY=snakeDir.y===1?5:(snakeDir.y===-1?SNAKE_CELL-7:(snakeDir.x===0?4:4));
+      const e1x=snakeDir.y!==0?x+4:x+SNAKE_CELL/2-3, e1y=snakeDir.x!==0?y+4:y+SNAKE_CELL/2-3;
+      const e2x=snakeDir.y!==0?x+SNAKE_CELL-5:x+SNAKE_CELL/2+3, e2y=snakeDir.x!==0?y+SNAKE_CELL-5:y+SNAKE_CELL/2+3;
+      ctx.fillStyle='#fff';
+      ctx.beginPath(); ctx.arc(e1x,e1y,2.5,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(e2x,e2y,2.5,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='#000';
+      ctx.beginPath(); ctx.arc(e1x+snakeDir.x,e1y+snakeDir.y,1.2,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(e2x+snakeDir.x,e2y+snakeDir.y,1.2,0,Math.PI*2); ctx.fill();
+    }
+  });
+
+  // Food
+  ctx.font='16px serif';
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText(snakeFood.emoji, OX+snakeFood.x*SNAKE_CELL+SNAKE_CELL/2, OY+snakeFood.y*SNAKE_CELL+SNAKE_CELL/2);
+
+  // Top bar
+  ctx.fillStyle='rgba(0,0,0,0.7)';
+  ctx.fillRect(0,0,W,26);
+  ctx.fillStyle='#fff'; ctx.font='bold 13px system-ui'; ctx.textAlign='left'; ctx.textBaseline='middle';
+  let livesStr=''; for(let i=0;i<snakeLives;i++) livesStr+='❤️';
+  ctx.fillText(livesStr, 6, 13);
+  ctx.textAlign='right';
+  ctx.fillText('⭐ '+snakeScore, W-6, 13);
+
+  // Fx
+  snakeFx.forEach(f=>{
+    const alpha=1-f.t;
+    ctx.globalAlpha=alpha;
+    ctx.fillStyle=f.special?'#ffcc00':'#88ff44';
+    ctx.font='bold 14px system-ui';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(f.text, f.x, f.y-f.t*30);
+    ctx.globalAlpha=1;
+  });
+}
+
+function snakeDie(){
+  sfxSnakeDie();
+  snakeLives--;
+  if(snakeLives<=0){ snakeDone(false); return; }
+  // reset snake, keep score
+  snakeCells=[{x:9,y:11},{x:8,y:11},{x:7,y:11}];
+  snakeDir={x:1,y:0}; snakeNextDir={x:1,y:0};
+  snakeMoveTimer=0;
+  snakeFx.push({x:180, y:230, t:0, text:'💔 -1 Mạng!', special:false});
+}
+
+function snakeDone(won){
+  snakeMode=false;
+  if(snakeRAF){ cancelAnimationFrame(snakeRAF); snakeRAF=null; }
+  if(won){
+    sfxWaveWin();
+    updateScoreUI();
+    showComboFlash(0,false,'🎉 ĐỘ DÀI 20 ĐẠT!');
+    setTimeout(()=>triggerBrickUnlock(),1500);
+  } else {
+    sfxGameOver();
+    showComboFlash(0,false,'💀 Rắn đã chết!');
+    setTimeout(exitSnakeToMain, 800);
+  }
+}
+
+function exitSnakeToMain(){
+  snakeMode=false;
+  if(snakeRAF){ cancelAnimationFrame(snakeRAF); snakeRAF=null; }
+  SCV().classList.remove('active');
+  document.getElementById('grid').style.display='';
+  document.getElementById('pieces-area').style.display='';
+  document.getElementById('grid-wrap').classList.remove('secret-mode','ultra-glow','combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5');
+  document.getElementById('mode-badge').textContent='BÌNH THƯỜNG';
+  document.getElementById('mode-badge').classList.remove('secret');
+  document.getElementById('burst-count').textContent='Chuỗi nổ: 0/3';
+  document.getElementById('hint-bar').textContent='Chạm khối → ghost hiện · Di ngón → ghost bám · Thả trên ô → đặt · Thả vùng trống → xoay';
+  renderPieces(); checkGameOverA();
+}
+
+SCV().addEventListener('pointerdown', e=>{
+  if(!snakeMode) return;
+  const r=SCV().getBoundingClientRect();
+  snakePointerStart={x:e.clientX-r.left, y:e.clientY-r.top};
+});
+SCV().addEventListener('pointerup', e=>{
+  if(!snakeMode||!snakePointerStart) return;
+  const r=SCV().getBoundingClientRect();
+  const dx=(e.clientX-r.left)-snakePointerStart.x;
+  const dy=(e.clientY-r.top)-snakePointerStart.y;
+  snakePointerStart=null;
+  if(Math.abs(dx)<15&&Math.abs(dy)<15){
+    const cx=SCV().width/2, cy=SCV().height/2;
+    const tx=(e.clientX-r.left)*(SCV().width/r.width);
+    const ty=(e.clientY-r.top)*(SCV().height/r.height);
+    if(Math.abs(tx-cx)>Math.abs(ty-cy)){
+      if(tx>cx&&snakeDir.x===0) setSnakeDir(1,0);
+      else if(tx<cx&&snakeDir.x===0) setSnakeDir(-1,0);
+    } else {
+      if(ty>cy&&snakeDir.y===0) setSnakeDir(0,1);
+      else if(ty<cy&&snakeDir.y===0) setSnakeDir(0,-1);
+    }
+  } else {
+    if(Math.abs(dx)>Math.abs(dy)){
+      if(dx>0&&snakeDir.x===0) setSnakeDir(1,0);
+      else if(dx<0&&snakeDir.x===0) setSnakeDir(-1,0);
+    } else {
+      if(dy>0&&snakeDir.y===0) setSnakeDir(0,1);
+      else if(dy<0&&snakeDir.y===0) setSnakeDir(0,-1);
+    }
+  }
+});
+
+/* ══ MAP ẨN 15 — BRICK BREAKER ══ */
+const BRICK_COLS=8, BRICK_ROWS=3;
+const BrCV=()=>document.getElementById('brick-canvas');
+
+let brickMode=false, brickRAF=null, brickLast=0;
+let brickBall={x:180,y:360,vx:180,vy:-220,launched:false,r:8};
+let brickPaddleX=180, brickPaddleW=80, brickPaddleH=14;
+let brickBricks=[], brickLives=3, brickScore=0, brickFx=[];
+let brickWidePaddleTimer=0;
+let brickPointerActive=false;
+
+function triggerBrickUnlock(){
+  pendingUnlock='brick';
+  document.getElementById('unlock-title').textContent='🧱 MAP ẨN 15 MỞ KHÓA!';
+  document.getElementById('unlock-desc').innerHTML='Phá gạch kiểu Arkanoid! Bóng nảy phá 24 viên gạch. 3 mạng ❤️❤️❤️';
+  document.getElementById('unlock-btn').textContent='🧱 PHÁ THÔI!';
+  document.getElementById('unlock-overlay').classList.add('show');
+  sfxUnlock();
+}
+
+function initBricks(){
+  brickBricks=[];
+  const bw=38, bh=22, gap=4;
+  const startX=(360-(BRICK_COLS*bw+(BRICK_COLS-1)*gap))/2;
+  const colors=['#e84040','#f7c948','#4080e8'];
+  const hps=[1,2,1];
+  for(let row=0;row<BRICK_ROWS;row++){
+    for(let col=0;col<BRICK_COLS;col++){
+      brickBricks.push({
+        x:startX+col*(bw+gap), y:65+row*30,
+        w:bw, h:bh, hp:hps[row], maxHp:hps[row],
+        color:colors[row], alive:true
+      });
+    }
+  }
+}
+
+function enterBrickMode(){
+  endDrag();
+  sfxUnlock();
+  document.getElementById('grid').style.display='none';
+  document.getElementById('pieces-area').style.display='none';
+  BrCV().classList.add('active');
+  document.getElementById('mode-badge').textContent='🧱 MAP ẨN 15';
+  document.getElementById('mode-badge').classList.add('secret');
+  document.getElementById('burst-count').textContent='🧱 Gạch: 24/24';
+  document.getElementById('hint-bar').textContent='Chạm/kéo để điều khiển vợt · Chạm để bắt đầu';
+  document.getElementById('grid-wrap').classList.add('secret-mode');
+  initBricks();
+  brickBall={x:180,y:360,vx:180,vy:-220,launched:false,r:8};
+  brickPaddleX=180; brickPaddleW=80; brickLives=3; brickScore=0; brickFx=[];
+  brickWidePaddleTimer=0;
+  brickMode=true;
+  brickLast=performance.now();
+  brickRAF=requestAnimationFrame(brickLoop);
+}
+
+function brickLoop(now){
+  if(!brickMode){ brickRAF=null; return; }
+  const dt=Math.min((now-(brickLast||now))/1000,0.05);
+  brickLast=now;
+  const cv=BrCV(), W=cv.width, H=cv.height;
+  const ctx=cv.getContext('2d');
+
+  brickWidePaddleTimer=Math.max(0,brickWidePaddleTimer-dt);
+  const pw=brickWidePaddleTimer>0?110:brickPaddleW;
+  const paddleY=H-50;
+
+  if(brickBall.launched){
+    brickBall.x+=brickBall.vx*dt;
+    brickBall.y+=brickBall.vy*dt;
+    // wall bounces
+    if(brickBall.x<=brickBall.r){ brickBall.x=brickBall.r; brickBall.vx=Math.abs(brickBall.vx); sfxBallWall(); }
+    if(brickBall.x>=W-brickBall.r){ brickBall.x=W-brickBall.r; brickBall.vx=-Math.abs(brickBall.vx); sfxBallWall(); }
+    if(brickBall.y<=brickBall.r){ brickBall.y=brickBall.r; brickBall.vy=Math.abs(brickBall.vy); sfxBallWall(); }
+    // paddle collision
+    const halfPW=pw/2;
+    if(brickBall.y+brickBall.r>=paddleY && brickBall.y+brickBall.r<=paddleY+brickPaddleH+5 &&
+       brickBall.x>=brickPaddleX-halfPW && brickBall.x<=brickPaddleX+halfPW && brickBall.vy>0){
+      brickBall.vy=-Math.abs(brickBall.vy);
+      brickBall.vx+=(brickBall.x-brickPaddleX)*3;
+      const spd=Math.hypot(brickBall.vx,brickBall.vy);
+      const norm=280/spd;
+      brickBall.vx*=norm; brickBall.vy*=norm;
+      brickBall.y=paddleY-brickBall.r-1;
+      sfxBallPaddle();
+    }
+    // brick collisions
+    for(let b of brickBricks){
+      if(!b.alive) continue;
+      if(brickBall.x+brickBall.r>b.x && brickBall.x-brickBall.r<b.x+b.w &&
+         brickBall.y+brickBall.r>b.y && brickBall.y-brickBall.r<b.y+b.h){
+        // figure out bounce direction
+        const overlapL=brickBall.x+brickBall.r-b.x;
+        const overlapR=b.x+b.w-brickBall.x+brickBall.r;
+        const overlapT=brickBall.y+brickBall.r-b.y;
+        const overlapB=b.y+b.h-brickBall.y+brickBall.r;
+        const minH=Math.min(overlapL,overlapR);
+        const minV=Math.min(overlapT,overlapB);
+        if(minH<minV) brickBall.vx=-brickBall.vx;
+        else brickBall.vy=-brickBall.vy;
+        b.hp--;
+        if(b.hp<=0){
+          b.alive=false;
+          const pts=b.maxHp===2?30:10;
+          brickScore+=pts; score+=pts; if(best<score) best=score;
+          brickFx.push({x:b.x+b.w/2,y:b.y+b.h/2,t:0,text:'+'+pts});
+          sfxBrickBreak();
+        } else {
+          brickScore+=10; score+=10; if(best<score) best=score;
+          sfxBallBrick();
+        }
+        updateScoreUI();
+        const alive=brickBricks.filter(b=>b.alive).length;
+        document.getElementById('burst-count').textContent='🧱 Gạch: '+alive+'/'+(BRICK_COLS*BRICK_ROWS);
+        break;
+      }
+    }
+    // ball falls off bottom
+    if(brickBall.y>H+10){
+      brickLives--;
+      if(brickLives<=0){ brickDone(false); return; }
+      sfxPenalty();
+      brickBall={x:brickPaddleX,y:paddleY-brickBall.r-2,vx:180+(Math.random()-0.5)*60,vy:-220,launched:false,r:8};
+    }
+    // win check
+    if(brickBricks.every(b=>!b.alive)){ brickDone(true); return; }
+  } else {
+    brickBall.x=brickPaddleX;
+    brickBall.y=paddleY-brickBall.r-2;
+  }
+
+  brickFx=brickFx.filter(f=>{ f.t+=dt; return f.t<1; });
+  drawBrick(ctx,W,H,pw,paddleY);
+  brickRAF=requestAnimationFrame(brickLoop);
+}
+
+function drawBrick(ctx,W,H,pw,paddleY){
+  // Space background
+  ctx.fillStyle='#050015';
+  ctx.fillRect(0,0,W,H);
+  // Stars
+  ctx.fillStyle='rgba(255,255,255,0.6)';
+  for(let i=0;i<40;i++){
+    const sx=((i*137+79)%360), sy=((i*97+43)%460);
+    ctx.fillRect(sx,sy,i%3===0?2:1,i%3===0?2:1);
+  }
+  // Bricks
+  brickBricks.forEach(b=>{
+    if(!b.alive) return;
+    const g=ctx.createLinearGradient(b.x,b.y,b.x,b.y+b.h);
+    g.addColorStop(0,b.color+'ff');
+    g.addColorStop(1,b.color+'99');
+    ctx.fillStyle=g;
+    ctx.beginPath();
+    ctx.roundRect(b.x+1,b.y+1,b.w-2,b.h-2,5);
+    ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,0.3)';
+    ctx.lineWidth=1;
+    ctx.stroke();
+    if(b.maxHp===2&&b.hp===2){
+      ctx.fillStyle='rgba(255,255,255,0.85)';
+      ctx.font='bold 11px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText('2',b.x+b.w/2,b.y+b.h/2);
+    }
+  });
+  // Ball
+  ctx.shadowBlur=12; ctx.shadowColor='#fff';
+  ctx.fillStyle='#ffffff';
+  ctx.beginPath();
+  ctx.arc(brickBall.x,brickBall.y,brickBall.r,0,Math.PI*2);
+  ctx.fill();
+  ctx.shadowBlur=0;
+  // Paddle
+  const halfPW=pw/2;
+  const pg=ctx.createLinearGradient(brickPaddleX-halfPW,paddleY,brickPaddleX+halfPW,paddleY+brickPaddleH);
+  pg.addColorStop(0,'#4488ff'); pg.addColorStop(1,'#aaccff');
+  ctx.fillStyle=pg;
+  ctx.beginPath();
+  ctx.roundRect(brickPaddleX-halfPW,paddleY,pw,brickPaddleH,7);
+  ctx.fill();
+  // Top bar
+  ctx.fillStyle='rgba(0,0,0,0.6)';
+  ctx.fillRect(0,0,W,26);
+  ctx.fillStyle='#fff'; ctx.font='bold 13px system-ui'; ctx.textAlign='left'; ctx.textBaseline='middle';
+  let ls=''; for(let i=0;i<brickLives;i++) ls+='❤️';
+  ctx.fillText(ls,6,13);
+  ctx.textAlign='right';
+  ctx.fillText('⭐ '+brickScore,W-6,13);
+  // Fx
+  brickFx.forEach(f=>{
+    ctx.globalAlpha=1-f.t;
+    ctx.fillStyle='#ffcc00'; ctx.font='bold 14px system-ui';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(f.text,f.x,f.y-f.t*30);
+    ctx.globalAlpha=1;
+  });
+}
+
+function brickDone(won){
+  brickMode=false;
+  if(brickRAF){ cancelAnimationFrame(brickRAF); brickRAF=null; }
+  if(won){
+    sfxWaveWin();
+    updateScoreUI();
+    showComboFlash(0,false,'🧱 ALL CLEAR!');
+    setTimeout(()=>triggerRunnerUnlock(),1500);
+  } else {
+    sfxGameOver();
+    showComboFlash(0,false,'💀 Hết mạng!');
+    setTimeout(exitBrickToMain, 800);
+  }
+}
+
+function exitBrickToMain(){
+  brickMode=false;
+  if(brickRAF){ cancelAnimationFrame(brickRAF); brickRAF=null; }
+  BrCV().classList.remove('active');
+  document.getElementById('grid').style.display='';
+  document.getElementById('pieces-area').style.display='';
+  document.getElementById('grid-wrap').classList.remove('secret-mode','ultra-glow','combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5');
+  document.getElementById('mode-badge').textContent='BÌNH THƯỜNG';
+  document.getElementById('mode-badge').classList.remove('secret');
+  document.getElementById('burst-count').textContent='Chuỗi nổ: 0/3';
+  document.getElementById('hint-bar').textContent='Chạm khối → ghost hiện · Di ngón → ghost bám · Thả trên ô → đặt · Thả vùng trống → xoay';
+  renderPieces(); checkGameOverA();
+}
+
+BrCV().addEventListener('pointermove', e=>{
+  if(!brickMode) return;
+  const r=BrCV().getBoundingClientRect();
+  brickPaddleX=(e.clientX-r.left)*(360/r.width);
+  brickPaddleX=Math.max(brickPaddleW/2+4, Math.min(360-brickPaddleW/2-4, brickPaddleX));
+});
+BrCV().addEventListener('pointerdown', e=>{
+  if(!brickMode) return;
+  const r=BrCV().getBoundingClientRect();
+  brickPaddleX=(e.clientX-r.left)*(360/r.width);
+  brickPaddleX=Math.max(brickPaddleW/2+4, Math.min(360-brickPaddleW/2-4, brickPaddleX));
+  if(!brickBall.launched){ brickBall.launched=true; }
+});
+
+/* ══ MAP ẨN 16 — INFINITE RUNNER ══ */
+const RUNNER_GROUND_Y_FRAC=0.82;
+const RuCV=()=>document.getElementById('runner-canvas');
+const RUNNER_GRAVITY=800, RUNNER_JUMP_VY=-380, RUNNER_JUMP2_VY=-300;
+
+let runnerMode=false, runnerRAF=null, runnerLast=0, runnerElapsed=0;
+let runnerDogY=0, runnerDogVY=0, runnerJumps=0;
+let runnerObstacles=[], runnerStars=[], runnerFx=[];
+let runnerSpeed=180, runnerScore=0, runnerLives=2;
+let runnerSpawnTimer=0, runnerInvincible=0;
+let runnerScrollX=0;
+let runnerStarSpawnTimer=0;
+
+function triggerRunnerUnlock(){
+  pendingUnlock='runner';
+  document.getElementById('unlock-title').textContent='🏃 MAP ẨN 16 MỞ KHÓA!';
+  document.getElementById('unlock-desc').innerHTML='Chạy vô tận! Chó tự chạy, chạm để nhảy né chướng ngại vật.<br>Nhảy đôi: chạm 2 lần! Sống sót <b>60 giây</b>!';
+  document.getElementById('unlock-btn').textContent='🏃 CHẠY THÔI!';
+  document.getElementById('unlock-overlay').classList.add('show');
+  sfxUnlock();
+}
+
+function enterRunnerMode(){
+  endDrag();
+  sfxUnlock();
+  document.getElementById('grid').style.display='none';
+  document.getElementById('pieces-area').style.display='none';
+  RuCV().classList.add('active');
+  document.getElementById('mode-badge').textContent='🏃 MAP ẨN 16';
+  document.getElementById('mode-badge').classList.add('secret');
+  document.getElementById('burst-count').textContent='⏱ 60s';
+  document.getElementById('hint-bar').textContent='Chạm để nhảy · Chạm 2 lần = nhảy đôi';
+  document.getElementById('grid-wrap').classList.add('secret-mode');
+  const cv=RuCV();
+  const H=cv.height;
+  runnerElapsed=0; runnerScore=0; runnerLives=2; runnerSpeed=180;
+  runnerDogY=H*RUNNER_GROUND_Y_FRAC-36;
+  runnerDogVY=0; runnerJumps=0;
+  runnerObstacles=[]; runnerStars=[]; runnerFx=[];
+  runnerSpawnTimer=1.5;
+  runnerStarSpawnTimer=1.0;
+  runnerInvincible=0;
+  runnerScrollX=0;
+  runnerMode=true;
+  runnerLast=performance.now();
+  runnerRAF=requestAnimationFrame(runnerLoop);
+}
+
+function runnerLoop(now){
+  if(!runnerMode){ runnerRAF=null; return; }
+  const dt=Math.min((now-(runnerLast||now))/1000,0.05);
+  runnerLast=now;
+  const cv=RuCV(), W=cv.width, H=cv.height;
+  const ctx=cv.getContext('2d');
+  const GROUND=H*RUNNER_GROUND_Y_FRAC-36;
+
+  runnerElapsed+=dt;
+  const timeLeft=Math.max(0,60-runnerElapsed);
+  runnerScore+=dt*10;
+  runnerSpeed=Math.min(400, 180+runnerElapsed*2);
+  runnerScrollX+=runnerSpeed*dt;
+
+  // Physics
+  runnerDogVY+=RUNNER_GRAVITY*dt;
+  runnerDogY+=runnerDogVY*dt;
+  if(runnerDogY>=GROUND){
+    if(runnerDogVY>50) sfxRunnerLand();
+    runnerDogY=GROUND; runnerDogVY=0; runnerJumps=0;
+  }
+
+  // Spawn obstacles
+  runnerSpawnTimer-=dt;
+  if(runnerSpawnTimer<=0){
+    const types=['🌵','🪨','🌵','🪨','🌵'];
+    runnerObstacles.push({x:W+20, y:H*RUNNER_GROUND_Y_FRAC, emoji:types[Math.floor(Math.random()*types.length)]});
+    runnerSpawnTimer=(0.8+Math.random()*0.8)/(runnerSpeed/180);
+  }
+  // Spawn stars
+  runnerStarSpawnTimer-=dt;
+  if(runnerStarSpawnTimer<=0){
+    runnerStars.push({x:W+10, y:20+Math.random()*(H*RUNNER_GROUND_Y_FRAC*0.6)});
+    runnerStarSpawnTimer=0.4+Math.random()*0.8;
+  }
+
+  // Move obstacles
+  runnerObstacles=runnerObstacles.filter(o=>{ o.x-=runnerSpeed*dt; return o.x>-40; });
+  runnerStars=runnerStars.filter(s=>{
+    s.x-=runnerSpeed*0.6*dt;
+    if(Math.abs(s.x-80)<20 && Math.abs(s.y-runnerDogY)<24){
+      const pts=5; runnerScore+=pts; score+=pts; if(best<score) best=score;
+      runnerFx.push({x:s.x,y:s.y,t:0,text:'+'+pts});
+      sfxRunnerStar(); updateScoreUI(); return false;
+    }
+    return s.x>-20;
+  });
+
+  // Invincible timer
+  const wasInvinc=runnerInvincible>0;
+  runnerInvincible=Math.max(0,runnerInvincible-dt);
+  if(wasInvinc && runnerInvincible<=0) sfxInvincEnd();
+
+  // Collision
+  const dogHB={x:80-14, y:runnerDogY, w:28, h:30};
+  for(let o of runnerObstacles){
+    const ob={x:o.x-14, y:o.y-28, w:28, h:28};
+    if(dogHB.x<ob.x+ob.w && dogHB.x+dogHB.w>ob.x &&
+       dogHB.y<ob.y+ob.h && dogHB.y+dogHB.h>ob.y){
+      if(runnerInvincible<=0){
+        runnerLives--;
+        runnerInvincible=2;
+        sfxPenalty();
+        runnerFx.push({x:80,y:runnerDogY,t:0,text:'💔 -1'});
+        if(runnerLives<=0){ runnerDone(false); return; }
+      }
+    }
+  }
+
+  // Update fx
+  runnerFx=runnerFx.filter(f=>{ f.t+=dt; return f.t<1; });
+
+  // Win
+  if(timeLeft<=0){ runnerDone(true); return; }
+
+  document.getElementById('burst-count').textContent='⏱ '+Math.ceil(timeLeft)+'s';
+
+  drawRunner(ctx,W,H,timeLeft);
+  runnerRAF=requestAnimationFrame(runnerLoop);
+}
+
+function drawRunner(ctx,W,H,timeLeft){
+  const GROUND_Y=H*RUNNER_GROUND_Y_FRAC;
+
+  // Sky
+  const sky=ctx.createLinearGradient(0,0,0,GROUND_Y);
+  sky.addColorStop(0,'#87ceeb'); sky.addColorStop(1,'#c9e8f5');
+  ctx.fillStyle=sky; ctx.fillRect(0,0,W,GROUND_Y);
+
+  // Far mountains (parallax 0.3x)
+  ctx.fillStyle='#a0a8b0';
+  for(let i=0;i<6;i++){
+    const mx=((i*120 - (runnerScrollX*0.3)%720 + 720) % 720);
+    ctx.beginPath();
+    ctx.moveTo(mx-60,GROUND_Y); ctx.lineTo(mx,GROUND_Y-70); ctx.lineTo(mx+60,GROUND_Y);
+    ctx.fill();
+  }
+  // Near mountains (0.5x)
+  ctx.fillStyle='#708090';
+  for(let i=0;i<8;i++){
+    const mx=((i*90 - (runnerScrollX*0.5)%720 + 720) % 720);
+    ctx.beginPath();
+    ctx.moveTo(mx-45,GROUND_Y); ctx.lineTo(mx,GROUND_Y-45); ctx.lineTo(mx+45,GROUND_Y);
+    ctx.fill();
+  }
+
+  // Ground
+  ctx.fillStyle='#5aaa30';
+  ctx.fillRect(0,GROUND_Y,W,H-GROUND_Y);
+  ctx.fillStyle='#3d8020';
+  ctx.fillRect(0,GROUND_Y,W,6);
+
+  // Stars
+  ctx.font='20px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  runnerStars.forEach(s=> ctx.fillText('⭐',s.x,s.y));
+
+  // Obstacles
+  ctx.font='28px serif';
+  runnerObstacles.forEach(o=> ctx.fillText(o.emoji,o.x,o.y));
+
+  // Dog (invincible: flicker)
+  if(runnerInvincible<=0 || Math.floor(runnerInvincible*8)%2===0){
+    ctx.font='36px serif'; ctx.textAlign='center'; ctx.textBaseline='bottom';
+    ctx.fillText('🐶',80,runnerDogY+36);
+  }
+
+  // Timer bar
+  const barW=(timeLeft/60)*W;
+  ctx.fillStyle='rgba(0,0,0,0.5)';
+  ctx.fillRect(0,0,W,20);
+  ctx.fillStyle=timeLeft>20?'#44cc44':timeLeft>10?'#ffcc00':'#ff4444';
+  ctx.fillRect(0,0,barW,20);
+  ctx.fillStyle='#fff'; ctx.font='bold 12px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('⏱ '+Math.ceil(timeLeft)+'s',W/2,10);
+
+  // Lives and score
+  ctx.textAlign='left'; ctx.font='13px system-ui'; ctx.textBaseline='middle';
+  let ls=''; for(let i=0;i<runnerLives;i++) ls+='❤️';
+  ctx.fillStyle='rgba(0,0,0,0.5)'; ctx.fillRect(0,22,120,20);
+  ctx.fillStyle='#fff'; ctx.fillText(ls+' ⭐'+Math.floor(runnerScore),4,32);
+
+  // Fx
+  runnerFx.forEach(f=>{
+    ctx.globalAlpha=1-f.t;
+    ctx.fillStyle='#ff4444'; ctx.font='bold 14px system-ui';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(f.text,f.x,f.y-f.t*40);
+    ctx.globalAlpha=1;
+  });
+}
+
+function runnerDone(won){
+  runnerMode=false;
+  if(runnerRAF){ cancelAnimationFrame(runnerRAF); runnerRAF=null; }
+  if(won){
+    sfxWaveWin();
+    score+=Math.floor(runnerScore); if(best<score) best=score;
+    updateScoreUI();
+    showComboFlash(0,false,'🏃 60s CHINH PHỤC! 🏆 TRUYỀN THUYẾT!');
+    setTimeout(exitRunnerToMain, 2000);
+  } else {
+    sfxGameOver();
+    showComboFlash(0,false,'💀 Vấp ngã rồi!');
+    setTimeout(exitRunnerToMain, 800);
+  }
+}
+
+function exitRunnerToMain(){
+  runnerMode=false;
+  if(runnerRAF){ cancelAnimationFrame(runnerRAF); runnerRAF=null; }
+  RuCV().classList.remove('active');
+  document.getElementById('grid').style.display='';
+  document.getElementById('pieces-area').style.display='';
+  document.getElementById('grid-wrap').classList.remove('secret-mode','ultra-glow','combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5');
+  document.getElementById('mode-badge').textContent='BÌNH THƯỜNG';
+  document.getElementById('mode-badge').classList.remove('secret');
+  document.getElementById('burst-count').textContent='Chuỗi nổ: 0/3';
+  document.getElementById('hint-bar').textContent='Chạm khối → ghost hiện · Di ngón → ghost bám · Thả trên ô → đặt · Thả vùng trống → xoay';
+  renderPieces(); checkGameOverA();
+}
+
+RuCV().addEventListener('pointerdown', e=>{
+  if(!runnerMode) return;
+  e.preventDefault();
+  if(runnerJumps<2){
+    if(runnerJumps===0){ runnerDogVY=RUNNER_JUMP_VY; sfxRunnerJump(); }
+    else { runnerDogVY=RUNNER_JUMP2_VY; sfxRunnerDoubleJump(); }
+    runnerJumps++;
+  }
+},{passive:false});
 </script>
 </body>
 </html>
