@@ -136,7 +136,7 @@ body {
 }
 
 #grid-wrap {
-  position: relative; border-radius: 14px; overflow: hidden;
+  position: relative; border-radius: 14px; overflow: visible;
   transition: box-shadow 0.4s;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
 }
@@ -5722,6 +5722,55 @@ function checkBubblePop(row,col){
     if(best<score){best=score;}
     updateScoreUI();
     sfxWaveWin();
+    // Drop disconnected (orphaned) bubbles not connected to top row
+    dropOrphanedBubbles();
+  }
+}
+
+function dropOrphanedBubbles(){
+  // BFS from all filled cells in top row to find all connected bubbles
+  const connected=new Set();
+  const queue=[];
+  for(let c=0;c<BUBBLE_COLS;c++){
+    if(bubbleGrid[0][c]!==null){
+      const key='0,'+c;
+      connected.add(key);
+      queue.push([0,c]);
+    }
+  }
+  while(queue.length){
+    const [r,c]=queue.shift();
+    const neighbors=[[r-1,c],[r+1,c],[r,c-1],[r,c+1]];
+    for(const [nr,nc] of neighbors){
+      if(nr>=0&&nr<BUBBLE_ROWS&&nc>=0&&nc<BUBBLE_COLS){
+        const key=nr+','+nc;
+        if(!connected.has(key)&&bubbleGrid[nr][nc]!==null){
+          connected.add(key);
+          queue.push([nr,nc]);
+        }
+      }
+    }
+  }
+  // Remove orphaned bubbles and add score
+  const cv=BBCV(), H=cv.height;
+  const cellH=(H-80)/BUBBLE_ROWS;
+  let orphanCount=0;
+  for(let r=0;r<BUBBLE_ROWS;r++){
+    for(let c=0;c<BUBBLE_COLS;c++){
+      if(bubbleGrid[r][c]!==null&&!connected.has(r+','+c)){
+        const fx=BUBBLE_R+c*BUBBLE_R*2;
+        const fy=40+r*cellH+BUBBLE_R;
+        bubbleFx.push({x:fx,y:fy,color:bubbleGrid[r][c],t:0,type:'pop'});
+        bubbleGrid[r][c]=null;
+        orphanCount++;
+      }
+    }
+  }
+  if(orphanCount>0){
+    const pts=orphanCount*5;
+    bubbleScore+=pts; score+=pts;
+    if(best<score){best=score;}
+    updateScoreUI();
   }
 }
 
@@ -6704,33 +6753,6 @@ function startGame(){
 
 document.getElementById('restart-btn').addEventListener('click', ()=>{ sfxClick(); startGame(); });
 
-function togglePause(){
-  const hasActiveMap = secretMode||dodgeMode||fruitMode||beeMode||goldMode;
-  if(!hasActiveMap) return;
-  gamePaused = !gamePaused;
-  const overlay = document.getElementById('pause-overlay');
-  const btn = document.getElementById('pause-btn');
-  if(gamePaused){
-    if(overlay) overlay.style.display='flex';
-    if(btn) btn.textContent='▶';
-    if(typeof dodgeRAF!=='undefined'&&dodgeRAF){cancelAnimationFrame(dodgeRAF);dodgeRAF=null;}
-    if(typeof fruitRAF!=='undefined'&&fruitRAF){cancelAnimationFrame(fruitRAF);fruitRAF=null;}
-    if(typeof beeRAF!=='undefined'&&beeRAF){cancelAnimationFrame(beeRAF);beeRAF=null;}
-    if(typeof goldRAF!=='undefined'&&goldRAF){cancelAnimationFrame(goldRAF);goldRAF=null;}
-    if(typeof timerRAF!=='undefined'&&timerRAF){cancelAnimationFrame(timerRAF);timerRAF=null;}
-    if(borderSparkInterval){clearInterval(borderSparkInterval);}
-    if(fireInterval){clearInterval(fireInterval);}
-  } else {
-    if(overlay) overlay.style.display='none';
-    if(btn) btn.textContent='⏸';
-    if(dodgeMode){ dodgeLast=0; dodgeRAF=requestAnimationFrame(dodgeLoop); }
-    if(fruitMode){ fruitLast=0; fruitRAF=requestAnimationFrame(fruitLoop); }
-    if(beeMode){   beeLast=0;   beeRAF=requestAnimationFrame(beeLoop);    }
-    if(goldMode){  goldLast=0;  goldRAF=requestAnimationFrame(goldLoop);   }
-    if(secretMode){ animateTimerBar(); updateFireBorder(); }
-  }
-}
-
 function initStartScreen(){
   // Generate twinkling stars
   const starDiv = document.getElementById('start-stars');
@@ -6758,17 +6780,6 @@ function initStartScreen(){
   if(btn) btn.addEventListener('click', function(e){ e.stopPropagation(); sfxClick(); hideStart(); });
   if(screen) screen.addEventListener('click', ()=>{ sfxClick(); hideStart(); });
 }
-
-// Mute button
-document.getElementById('mute-btn').addEventListener('click', function(){
-  sfxMuted = !sfxMuted;
-  this.textContent = sfxMuted ? '🔇' : '🔊';
-  if(!sfxMuted) sfxPlacePiece();
-});
-
-// Pause button
-document.getElementById('pause-btn').addEventListener('click', togglePause);
-document.getElementById('resume-btn').addEventListener('click', togglePause);
 
 function togglePause(){
   if(!secretMode && !dodgeMode && !fruitMode && !beeMode && !goldMode && !moleMode && !memoryMode && !bubbleMode && !stackMode && !bossMode) return;
