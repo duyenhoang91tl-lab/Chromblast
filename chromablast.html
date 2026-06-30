@@ -2799,7 +2799,7 @@ function fruitDiff(){
   const t=fruitElapsed/1000;
   return {
     spawnInterval: Math.max(260, 850 - t*20),       // bay ra rất dày, nhanh ngay từ đầu
-    burst: Math.min(9, 3 + Math.floor(t/8)),         // số quả mỗi đợt — tăng từ 3 lên tối đa 9
+    burst: Math.min(9, 3 + Math.floor(t/6.7)),       // số quả mỗi đợt — tăng từ 3 lên tối đa 9 (~40s)
     bombChance: Math.min(0.28, 0.08 + t*0.0035),    // tỉ lệ ra bom tăng dần
   };
 }
@@ -2884,7 +2884,8 @@ function fruitLoop(now){
           if(fruitSlicedTotal===50) unlockAchievement('fruit50');
           fruitCombo++;
           if(fruitComboTimer) clearTimeout(fruitComboTimer);
-          fruitComboTimer=setTimeout(()=>{ fruitCombo=0; fruitComboTimer=0; },800);
+          fruitComboTimer=setTimeout(()=>{ fruitCombo=0; fruitComboTimer=0; document.getElementById('combo-box').textContent=''; },800);
+          document.getElementById('combo-box').textContent=fruitCombo>1?'🍉 x'+fruitCombo:'';
           const fmul=Math.min(1+fruitCombo*0.15,2.5);
           const earnedPts=Math.round(f.pts*fmul);
           score+=earnedPts; if(score>best) best=score;
@@ -3188,6 +3189,7 @@ function exitFruitToMain(){
   document.getElementById('mode-badge').textContent='BÌNH THƯỜNG';
   document.getElementById('mode-badge').classList.remove('secret');
   document.getElementById('burst-count').textContent='Chuỗi nổ: 0/3';
+  document.getElementById('combo-box').textContent='';
   consecutiveBursts=0; updateBurstCount();
   document.getElementById('hint-bar').textContent='Chạm khối → ghost hiện · Di ngón → ghost bám · Thả trên ô → đặt · Thả vùng trống → xoay';
   // TEST: luôn mở khoá Map ẩn 4 ngay khi rời map ẩn 3
@@ -4156,42 +4158,57 @@ function initGold(){
   if(!goldCatImg) buildGoldCatSVG();
   // Rope/miner init
   gmRope.anchorX=W/2;
-  gmRope.anchorY=145;
+  gmRope.anchorY=115;
   gmRope.angle=0;
   gmRope.swingDir=1;
   gmRope.swingSpeed=1.2+goldWave*0.08;
-  gmRope.maxLen=Math.hypot(W,H)*0.95;
+  gmRope.maxLen=Math.hypot(W,H)*0.98;
   gmRope.len=0;
   gmRope.state='swinging';
   gmRope.hookedItem=null;
 
-  // Scatter static gold/rock items across the cave
-  const rows=3, cols=4;
-  const types=['goldBig','goldBig','goldSmall','goldSmall','goldSmall','diamond','rock','rock'];
-  const shuffled=[...types].sort(()=>Math.random()-0.5);
-  let idx=0;
-  for(let row=0;row<rows;row++){
-    for(let col=0;col<cols;col++){
-      if(idx>=shuffled.length) break;
-      const type=shuffled[idx++];
-      const x=W*0.1 + col*(W*0.8/cols) + (Math.random()-0.5)*W*0.1;
-      const y=H*0.38 + row*(H*0.45/rows) + (Math.random()-0.5)*H*0.06;
-      const isBig=type==='goldBig';
+  // Scatter items across 4 depth zones — wide like Gold Miner
+  // Zone 1 (shallow): small gold & rocks, near center
+  // Zone 2 (mid): mix, wider spread
+  // Zone 3 (deep): big gold, full width
+  // Zone 4 (far): big gold + diamond at edges
+  const zones = [
+    // zone 1 — shallow H*0.32~0.44, narrow W*0.2~0.8
+    { yMin:0.32, yMax:0.44, xMin:0.22, xMax:0.78,
+      types:['goldSmall','goldSmall','rock','rock'], bigR:false },
+    // zone 2 — mid H*0.44~0.60, wider W*0.1~0.9
+    { yMin:0.44, yMax:0.60, xMin:0.10, xMax:0.90,
+      types:['goldSmall','goldBig','goldSmall','rock','rock'], bigR:false },
+    // zone 3 — deep H*0.60~0.76, full width W*0.05~0.95
+    { yMin:0.60, yMax:0.76, xMin:0.05, xMax:0.95,
+      types:['goldBig','goldBig','goldSmall','diamond','rock'], bigR:true },
+    // zone 4 — far H*0.76~0.90, full width W*0.05~0.95
+    { yMin:0.76, yMax:0.90, xMin:0.05, xMax:0.95,
+      types:['goldBig','goldBig','rock'], bigR:true },
+  ];
+
+  for(const zone of zones){
+    const shuffled=[...zone.types].sort(()=>Math.random()-0.5);
+    const n=shuffled.length;
+    shuffled.forEach((type,i)=>{
+      const xRange = zone.xMax - zone.xMin;
+      const x = W*(zone.xMin + (i+0.5)*(xRange/n)) + (Math.random()-0.5)*W*(xRange/n)*0.7;
+      const y = H*(zone.yMin + Math.random()*(zone.yMax-zone.yMin));
+      const bigBonus = zone.bigR ? 4 : 0;
       goldItems.push({
-        type,
-        x, y,
-        r: type==='diamond'?16 : type==='goldBig'?24 : type==='rock'?20 : 14,
-        rot: Math.random()*Math.PI*2,
-        wobble: Math.random()*Math.PI*2,
-        hit: false,
-        weight: type==='rock'?3 : type==='goldBig'?2 : 1,  // heavier → retract slower
+        type, x, y,
+        r: type==='diamond'?17 : type==='goldBig'?(26+bigBonus) : type==='rock'?20 : (13+bigBonus/2),
+        rot:Math.random()*Math.PI*2, wobble:Math.random()*Math.PI*2,
+        hit:false,
+        weight: type==='rock'?3 : type==='goldBig'?2 : 1,
       });
-    }
+    });
   }
+
   // Guarantee at least 1 diamond if not rolled
   if(!goldItems.some(it=>it.type==='diamond')){
     const spare=goldItems.find(it=>it.type==='rock');
-    if(spare) spare.type='diamond', spare.r=16;
+    if(spare) spare.type='diamond', spare.r=17;
   }
 }
 
@@ -4299,14 +4316,15 @@ function goldLoop(now){
 }
 
 function refillGoldItems(W,H){
-  const types=['goldBig','goldSmall','goldSmall','rock','diamond'];
+  const types=['goldBig','goldBig','goldSmall','goldSmall','rock','diamond'];
   const shuffled=[...types].sort(()=>Math.random()-0.5);
   shuffled.forEach((type,i)=>{
-    const x=W*0.1+Math.random()*W*0.8;
-    const y=H*0.4+Math.random()*H*0.45;
+    const deep = i >= shuffled.length/2; // half go deep
+    const x = W*(0.05 + Math.random()*0.9);
+    const y = deep ? H*(0.62+Math.random()*0.28) : H*(0.34+Math.random()*0.28);
     goldItems.push({
       type, x, y,
-      r: type==='diamond'?16 : type==='goldBig'?24 : type==='rock'?20 : 14,
+      r: type==='diamond'?17 : type==='goldBig'?26 : type==='rock'?20 : 14,
       rot:Math.random()*Math.PI*2, wobble:Math.random()*Math.PI*2,
       hit:false, weight: type==='rock'?3:type==='goldBig'?2:1,
     });
@@ -4667,9 +4685,9 @@ function drawGold(ctx,W,H,now){
 }
 
 function drawGoldMiner(ctx, cx, anchorY, now){
-  const catW = 95, catH = 115;
+  const catW = 68, catH = 82;
   const catX = cx - catW / 2;
-  const catY = anchorY - catH + 14; // feet near platform, head visible
+  const catY = anchorY - catH + 10; // feet near platform, head visible
 
   // animated tail — drawn before cat image
   const tailSway = Math.sin(now * 0.0018) * 14;
@@ -4697,7 +4715,7 @@ function drawGoldMiner(ctx, cx, anchorY, now){
 
   // draw SVG cat image
   if(goldCatImg && goldCatImg.complete && goldCatImg.naturalWidth > 0){
-    ctx.drawImage(goldCatImg, catX, catY, catW, catH); // 95×115
+    ctx.drawImage(goldCatImg, catX, catY, catW, catH); // 68×82
   }
 
   // rope anchor dot (on top of cat)
