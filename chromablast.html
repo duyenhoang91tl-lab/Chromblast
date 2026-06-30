@@ -4367,10 +4367,8 @@ function showGoldWin(){
 }
 
 function goldNextWave(){
-  goldWave++;
-  initGold();
-  goldLast=performance.now();
-  goldWinBanner=false;
+  // KPI met — exit gold mode and trigger mole map
+  goldGameOver(true, '🏆 KPI ĐẠT! SANG MAP ẨN 6!');
 }
 
 function drawGold(ctx,W,H,now){
@@ -5249,37 +5247,44 @@ const PRAISE = ['NOT BAD','COOL','GOOD','GREAT','PERFECT','SPECTACULAR','UNREAL'
 const PRAISE_COLOR = ['#9ab8b0','#5DCAA5','#378ADD','#7F77DD','#EF9F27','#E24B4A','#D4537E','#f7c948','#ff6b35'];
 function pIdx(level){ return Math.min(Math.max(level||1,1),PRAISE.length)-1; }
 
-/* ── Voice announcer — deep male voice via SpeechSynthesis ── */
+/* ── Voice announcer — warm male voice via SpeechSynthesis ── */
 let _voiceReady=false, _maleVoice=null;
 function _initVoice(){
   if(_voiceReady) return;
   const voices=speechSynthesis.getVoices();
-  // Prefer English male voices: David, Mark, Google UK English Male, etc.
-  const pref=['david','mark','male','english','en-us','en-gb','en_us','en_gb'];
-  let best=null;
-  for(const v of voices){
-    const n=v.name.toLowerCase(), l=v.lang.toLowerCase();
-    if(!best && (l.startsWith('en'))) best=v;
-    for(const p of pref){ if(n.includes(p)||l.includes(p)){ _maleVoice=v; _voiceReady=true; return; } }
-  }
-  if(best){ _maleVoice=best; }
+  if(!voices.length) return; // not loaded yet
+  // Priority: Google US/UK English Male > any Google English > any English > first available
+  const rank=(v)=>{
+    const n=v.name.toLowerCase(), l=(v.lang||'').toLowerCase();
+    if(n.includes('google') && n.includes('us') && l.startsWith('en')) return 0;
+    if(n.includes('google') && l.startsWith('en')) return 1;
+    if((n.includes('male')||n.includes('david')||n.includes('mark')) && l.startsWith('en')) return 2;
+    if(l.startsWith('en')) return 3;
+    return 9;
+  };
+  const sorted=[...voices].sort((a,b)=>rank(a)-rank(b));
+  _maleVoice=sorted[0]||null;
   _voiceReady=true;
 }
 speechSynthesis.onvoiceschanged=()=>{ _voiceReady=false; _initVoice(); };
+// Pre-load voices early
+if(speechSynthesis.getVoices().length) _initVoice();
+
 let _lastSpoke=0;
 function speakPraise(word, idx){
   if(sfxMuted) return;
   const now=Date.now();
-  if(now-_lastSpoke<600) return;
+  if(now-_lastSpoke<700) return;
   _lastSpoke=now;
-  _initVoice();
+  if(!_voiceReady) _initVoice();
   speechSynthesis.cancel();
   const u=new SpeechSynthesisUtterance(word);
   u.voice=_maleVoice||null;
-  // NOT BAD(0): soft & normal; escalate to GODLIKE(8): ultra-deep & punchy
-  u.pitch  = Math.max(0.2, 0.85 - idx*0.08);  // 0.85 → 0.21
-  u.rate   = 0.95 + idx*0.04;                  // 0.95 → 1.27  (snappier at top)
-  u.volume = Math.min(1, 0.7 + idx*0.04);      // 0.70 → 1.00
+  u.lang='en-US';
+  // Scale: NOT BAD(0) calm → GODLIKE(8) commanding
+  u.pitch  = Math.max(0.3, 0.9 - idx*0.075); // 0.90 → 0.30  (trầm dần)
+  u.rate   = 0.88 + idx*0.035;                // 0.88 → 1.16  (dứt khoát hơn)
+  u.volume = Math.min(1, 0.72 + idx*0.035);   // 0.72 → 1.00
   speechSynthesis.speak(u);
 }
 function hexToRgba(hex,a){
