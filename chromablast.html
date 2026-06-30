@@ -1146,6 +1146,93 @@ function sfxDogBurned(){
   playTone(150,'sawtooth',0.4, 0.25, 0);
   playTone(90,'sawtooth',0.45, 0.2, 0.15);
 }
+// Map 7 — Memory Match
+function sfxMemoryFlip(){
+  if(sfxMuted) return;
+  playTone(800,'sine',0.06,0.12); playTone(1200,'sine',0.04,0.08,0.04);
+}
+function sfxMemoryMatch(){
+  if(sfxMuted) return;
+  playTone(660,'sine',0.1,0.25); playTone(880,'sine',0.1,0.25,0.08); playTone(1100,'sine',0.12,0.3,0.16);
+}
+function sfxMemoryMiss(){
+  if(sfxMuted) return;
+  playTone(200,'triangle',0.15,0.2); playTone(150,'triangle',0.15,0.18,0.08);
+}
+// Map 8 — Bubble Pop
+function sfxBubbleShoot(){
+  if(sfxMuted) return;
+  playTone(400,'sine',0.05,0.12); playTone(600,'sine',0.04,0.1,0.03);
+}
+function sfxBubblePop(){
+  if(sfxMuted) return;
+  playNoise(0.08,0.15); playTone(500,'sine',0.06,0.2); playTone(700,'sine',0.05,0.15,0.04);
+}
+function sfxBubbleBounce(){
+  if(sfxMuted) return;
+  playTone(300,'sine',0.03,0.08);
+}
+function sfxBubblePressure(){
+  if(sfxMuted) return;
+  playTone(150,'sawtooth',0.1,0.15); playTone(120,'sawtooth',0.08,0.12,0.06);
+}
+// Map 9 — Stack Tower
+function sfxStackDrop(){
+  if(sfxMuted) return;
+  playTone(180,'triangle',0.12,0.3); playNoise(0.08,0.1);
+}
+function sfxStackPerfect(){
+  if(sfxMuted) return;
+  playTone(880,'sine',0.08,0.3); playTone(1100,'sine',0.08,0.3,0.06); playTone(1320,'sine',0.1,0.35,0.12);
+}
+function sfxStackCut(){
+  if(sfxMuted) return;
+  playTone(200,'sawtooth',0.08,0.2); playNoise(0.06,0.12);
+}
+// Map 10 — Boss Battle
+function sfxBossShoot(){
+  if(sfxMuted) return;
+  playTone(600,'square',0.03,0.1); playTone(900,'square',0.02,0.08,0.02);
+}
+function sfxBossHit(){
+  if(sfxMuted) return;
+  playTone(300,'sawtooth',0.08,0.25); playNoise(0.05,0.1);
+}
+function sfxVenomFire(){
+  if(sfxMuted) return;
+  playTone(100,'sawtooth',0.12,0.2); playTone(80,'sawtooth',0.1,0.18,0.06);
+}
+// Map 11 — Animal Catch
+function sfxCatchGood(){
+  if(sfxMuted) return;
+  playTone(660,'sine',0.08,0.25); playTone(880,'sine',0.08,0.25,0.06);
+}
+function sfxCatchMiss(){
+  if(sfxMuted) return;
+  playNoise(0.06,0.08);
+}
+// Map 12 — Color Flood
+function sfxFloodMove(){
+  if(sfxMuted) return;
+  playTone(440,'sine',0.04,0.15); playTone(550,'sine',0.03,0.1,0.03);
+}
+function sfxFloodBig(){
+  if(sfxMuted) return;
+  playTone(330,'triangle',0.1,0.25); playTone(440,'triangle',0.1,0.25,0.06); playTone(550,'triangle',0.12,0.3,0.12);
+}
+// Map 13 — Survival Arena
+function sfxWaveStart(){
+  if(sfxMuted) return;
+  playTone(440,'triangle',0.15,0.3,0); playTone(550,'triangle',0.15,0.3,0.1); playTone(660,'sine',0.2,0.35,0.2);
+}
+function sfxArenaKill(){
+  if(sfxMuted) return;
+  playTone(500,'square',0.05,0.18); playNoise(0.06,0.1);
+}
+function sfxInvincEnd(){
+  if(sfxMuted) return;
+  playTone(800,'sine',0.06,0.15);
+}
 
 /* ══════════════════════════════════════════
    HELPERS
@@ -5516,6 +5603,7 @@ function tapMemory(ex,ey){
     const cy=startY+c.row*(cardH+gapY);
     if(ex>=cx && ex<=cx+cardW && ey>=cy && ey<=cy+cardH){
       c.faceUp=true;
+      if(!sfxMuted) sfxMemoryFlip();
       const openCards=memoryCards.filter(x=>x.faceUp&&!x.matched);
       if(openCards.length===2){
         memoryFlipLock=true;
@@ -5529,7 +5617,7 @@ function tapMemory(ex,ey){
             const pts=50+bonus;
             memoryScore+=pts;
             score+=pts; if(score>best)best=score; updateScoreUI();
-            sfxWaveWin();
+            if(!sfxMuted) sfxMemoryMatch();
             showComboFlash(0,false,'✅ +'+pts+'đ');
             memoryFlipLock=false;
           },300);
@@ -5537,6 +5625,7 @@ function tapMemory(ex,ey){
           // Mismatch - flip back after 0.8s
           setTimeout(()=>{
             openCards.forEach(x=>{ x.faceUp=false; });
+            if(!sfxMuted) sfxMemoryMiss();
             memoryFlipLock=false;
           },800);
         }
@@ -5660,8 +5749,8 @@ function bubbleLoop(now){
     bubbleFlying.y+=bubbleFlying.vy*dt;
     const cv=BBCV(), W=cv.width;
     // bounce off walls
-    if(bubbleFlying.x-BUBBLE_R<0){ bubbleFlying.x=BUBBLE_R; bubbleFlying.vx*=-1; }
-    if(bubbleFlying.x+BUBBLE_R>W){ bubbleFlying.x=W-BUBBLE_R; bubbleFlying.vx*=-1; }
+    if(bubbleFlying.x-BUBBLE_R<0){ bubbleFlying.x=BUBBLE_R; bubbleFlying.vx*=-1; if(!sfxMuted) sfxBubbleBounce(); }
+    if(bubbleFlying.x+BUBBLE_R>W){ bubbleFlying.x=W-BUBBLE_R; bubbleFlying.vx*=-1; if(!sfxMuted) sfxBubbleBounce(); }
     // check grid collision
     const landRow=bubbleLandRow(bubbleFlying.x, bubbleFlying.y);
     if(landRow!==null){
@@ -5689,6 +5778,7 @@ function bubbleLoop(now){
     bubbleFallTimer=0;
     bubbleGrid.pop(); // remove bottom row
     bubbleGrid.unshift(Array(BUBBLE_COLS).fill(null).map(()=>BUBBLE_COLORS[Math.floor(Math.random()*BUBBLE_COLORS.length)]));
+    if(!sfxMuted) sfxBubblePressure();
   }
 
   // update fx
@@ -5757,6 +5847,7 @@ function checkBubblePop(row,col){
     score+=pts;
     if(best<score){best=score;}
     updateScoreUI();
+    if(!sfxMuted) sfxBubblePop();
     sfxWaveWin();
     // Drop disconnected (orphaned) bubbles not connected to top row
     dropOrphanedBubbles();
@@ -5939,6 +6030,7 @@ BBCV().addEventListener('pointerdown', e=>{
       vy:Math.sin(bubbleShooter.angle)*spd,
       color:bubbleShooter.color
     };
+    if(!sfxMuted) sfxBubbleShoot();
   }
 });
 
@@ -6055,6 +6147,9 @@ function dropStack(){
     pts+=20;
     stackFx.push({x:overlapL+overlapW/2,y:newY,t:0,type:'perfect',vy:-80});
     showComboFlash(0,false,'✨ PERFECT!');
+    if(!sfxMuted) sfxStackPerfect();
+  } else {
+    if(!sfxMuted) sfxStackDrop();
   }
   stackScore+=pts;
   score+=pts;
@@ -6063,6 +6158,8 @@ function dropStack(){
   sfxWaveWin();
 
   // cut piece falls off
+  const hasCut=(stackMoving.x<top.x)||(stackMoving.x+stackMoving.w>top.x+top.w);
+  if(hasCut && !isPerfect && !sfxMuted) sfxStackCut();
   if(stackMoving.x<top.x){
     stackFx.push({x:stackMoving.x, y:newY, w:top.x-stackMoving.x, color:newBlock.color, t:0, type:'cut', vy:-20});
   }
@@ -6240,6 +6337,7 @@ function bossLoop(now){
   if(bossVenomTimer>=venomInterval){
     bossVenomTimer=0;
     bossVenom.push({x:bossX+(Math.random()-0.5)*40, y:bossY+40, vy:120+Math.random()*40});
+    if(!sfxMuted) sfxVenomFire();
   }
 
   // player fires projectiles (auto-fire every 0.4s)
@@ -6248,6 +6346,7 @@ function bossLoop(now){
     bossFireTimer=0;
     bossProjectiles.push({x:bossDogX, y:H-60, vy:-300, color:BOSS_PROJ_COLORS[bossProjColorIdx%BOSS_PROJ_COLORS.length]});
     bossProjColorIdx++;
+    if(!sfxMuted) sfxBossShoot();
   }
 
   // move projectiles
@@ -6262,6 +6361,7 @@ function bossLoop(now){
       if(best<score){ best=score; }
       updateScoreUI();
       bossFx.push({x:bossX,y:bossY,t:0,type:'hit'});
+      if(!sfxMuted) sfxBossHit();
       return false;
     }
     return true;
@@ -6284,7 +6384,7 @@ function bossLoop(now){
     if(v.y>H-80 && Math.abs(v.x-bossDogX)<30){
       bossDogLives--;
       bossFx.push({x:bossDogX,y:H-60,t:0,type:'dmg'});
-      sfxGameOver();
+      sfxDogStung();
       return false;
     }
     return true;
@@ -6530,17 +6630,18 @@ function catchLoop(now){
       if(a.isBad){
         catchLives--;
         catchFx.push({x:a.x,y:basketY,t:0,type:'bad'});
-        sfxGameOver();
+        sfxPenalty();
+        if(!sfxMuted) sfxDogStung();
       } else {
         catchScore+=a.pts; score+=a.pts;
         if(best<score) best=score;
         updateScoreUI();
         catchFx.push({x:a.x,y:basketY,t:0,type:'good',pts:a.pts});
-        sfxWaveWin();
+        if(!sfxMuted) sfxCatchGood();
       }
       return false;
     }
-    if(a.y>H+30) return false;
+    if(a.y>H+30){ if(!sfxMuted) sfxCatchMiss(); return false; }
     return true;
   });
 
@@ -6775,6 +6876,7 @@ function doFlood(newColorIdx){
   floodMoves--;
   // FX
   floodFx.push({t:0,colorIdx:newColorIdx});
+  if(!sfxMuted){ if(region.length>20) sfxFloodBig(); else sfxFloodMove(); }
   // Check win
   const flooded=countFlooded();
   if(flooded>=FLOOD_GRID_SIZE*FLOOD_GRID_SIZE){
@@ -6988,6 +7090,7 @@ function arenaLoop(now){
     arenaWaveFlash=2; arenaWaveFlashText=ARENA_WAVE_LABELS[arenaWave]||'';
     if(arenaWave===2){ arenaSnake={x:W/2,y:80,hp:100,vx:80,fireTimer:0}; }
     if(arenaWave===3){ if(!arenaSnake||arenaSnake.hp<=0) arenaSnake={x:W/2,y:80,hp:100,vx:80,fireTimer:0}; }
+    if(!sfxMuted) sfxWaveStart();
   }
   arenaWaveFlash=Math.max(0,arenaWaveFlash-dt);
 
@@ -6996,7 +7099,9 @@ function arenaLoop(now){
   if(best<score) best=score;
 
   // Invincibility countdown
+  const _prevInvinc=arenaInvincible;
   arenaInvincible=Math.max(0,arenaInvincible-dt);
+  if(_prevInvinc>0 && arenaInvincible===0 && !sfxMuted) sfxInvincEnd();
 
   // Move dog toward pointer
   if(arenaPointerX!==null){
@@ -7058,7 +7163,7 @@ function arenaLoop(now){
       if(Math.hypot(b.x-arenaDogX,b.y-arenaDogY)<28){
         arenaDogLives--; arenaInvincible=2;
         arenaFx.push({x:arenaDogX,y:arenaDogY,t:0,type:'dmg'});
-        sfxGameOver(); return false;
+        sfxDogStung(); return false;
       }
       return true;
     });
@@ -7068,7 +7173,7 @@ function arenaLoop(now){
         if(Math.hypot(c.x-arenaDogX,c.y-arenaDogY)<28){
           arenaDogLives--; arenaInvincible=2;
           arenaFx.push({x:arenaDogX,y:arenaDogY,t:0,type:'dmg'});
-          sfxGameOver(); return false;
+          sfxDogStung(); return false;
         }
         return true;
       });
@@ -7079,7 +7184,7 @@ function arenaLoop(now){
         if(Math.hypot(v.x-arenaDogX,v.y-arenaDogY)<24){
           arenaDogLives--; arenaInvincible=2;
           arenaFx.push({x:arenaDogX,y:arenaDogY,t:0,type:'dmg'});
-          sfxGameOver(); return false;
+          sfxDogStung(); return false;
         }
         return true;
       });
@@ -7235,7 +7340,7 @@ ARCV().addEventListener('pointerdown', e=>{
     if(Math.hypot(b.x-tx,b.y-ty)<28){
       arenaScore+=15; score+=15; if(best<score) best=score;
       arenaFx.push({x:b.x,y:b.y,t:0,type:'kill'});
-      sfxWaveWin(); return false;
+      if(!sfxMuted) sfxArenaKill(); return false;
     }
     return true;
   });
@@ -7244,7 +7349,7 @@ ARCV().addEventListener('pointerdown', e=>{
     if(Math.hypot(c.x-tx,c.y-ty)<28){
       arenaScore+=15; score+=15; if(best<score) best=score;
       arenaFx.push({x:c.x,y:c.y,t:0,type:'kill'});
-      sfxWaveWin(); return false;
+      if(!sfxMuted) sfxArenaKill(); return false;
     }
     return true;
   });
@@ -7257,7 +7362,7 @@ ARCV().addEventListener('pointerdown', e=>{
         arenaScore+=50; score+=50; if(best<score) best=score;
         arenaFx.push({x:arenaSnake.x,y:arenaSnake.y,t:0,type:'kill'});
       }
-      sfxWaveWin();
+      if(!sfxMuted) sfxArenaKill();
     }
   }
   updateScoreUI();
