@@ -3946,6 +3946,7 @@ let goldItems=[], goldFx=[], goldKPI={gold:0,diamond:false};
 let awaitingGoldUnlock=false, goldUnlockBaseline=0;
 let goldTimeLeft=30, goldWave=1;
 let goldWinBanner=false, goldWinTimer=0;
+let goldMissStreak=0; // số lần đào trượt (móc không trúng gì) liên tiếp
 const GCV = () => document.getElementById('gold-canvas');
 const GOLD_KPI_GOLD=5, GOLD_TIME=30;
 
@@ -4059,7 +4060,7 @@ function initGold(){
   const cv=GCV(), W=cv.width, H=cv.height;
   goldItems=[]; goldFx=[]; goldKPI={gold:0,diamond:false};
   goldElapsed=0; goldTimeLeft=GOLD_TIME;
-  goldWinBanner=false; goldWinTimer=0;
+  goldWinBanner=false; goldWinTimer=0; goldMissStreak=0;
 
   // build cat SVG once
   if(!goldCatImg) buildGoldCatSVG();
@@ -4135,6 +4136,7 @@ function goldLoop(now){
   goldTimeLeft=Math.max(0,GOLD_TIME-goldElapsed/1000);
   const cv=GCV(), ctx=cv.getContext('2d'), W=cv.width, H=cv.height;
   const d=goldWaveDiff();
+  let goldMissedDie=false;
 
   if(!goldWinBanner){
     // ── Rope physics ──
@@ -4164,9 +4166,15 @@ function goldLoop(now){
           break;
         }
       }
-      // hit wall → retract empty
+      // hit wall → retract empty (đào trượt)
       if(gmRope.state==='extending' && (gmRope.len>=gmRope.maxLen || ty>=H-20)){
         gmRope.state='retracting';
+        goldMissStreak++;
+        score=Math.max(0,score-10);
+        updateScoreUI();
+        sfxInvalid();
+        spawnGoldFx(tx,Math.min(ty,H-20),'#ff5555',false,'-10');
+        if(goldMissStreak>=3) goldMissedDie=true; // trượt 3 lần liên tiếp → thua
       }
     } else if(gmRope.state==='retracting'){
       const speed=gmRope.hookedItem
@@ -4218,6 +4226,8 @@ function goldLoop(now){
     else { goldGameOver(false); return; }
   }
 
+  if(goldMissedDie){ goldGameOver(false, '😵 Trượt 3 lần liên tiếp!'); return; }
+
   drawGold(ctx,W,H,now);
   goldRAF=requestAnimationFrame(goldLoop);
 }
@@ -4239,24 +4249,26 @@ function refillGoldItems(W,H){
 }
 
 function collectGoldItem(it){
+  goldMissStreak=0; // đào trúng bất kỳ vật gì (kể cả đá) → reset chuỗi trượt
   if(it.type==='rock'){
-    // no points, but slow down was already applied
+    // không có điểm, lại còn kéo chậm hơn (do weight cao ở bước retracting)
     spawnGoldFx(gmRope.anchorX,gmRope.anchorY,'#888',false,'🪨 Đá!');
-  } else if(it.type==='goldBig'){
-    score+=25; if(score>best)best=score;
+  } else if(it.type==='goldBig' || it.type==='goldSmall'){
+    // điểm theo kích thước viên vàng: r càng lớn càng nhiều điểm, trải đều 1-30
+    const RMIN=13, RMAX=30;
+    const t=Math.max(0,Math.min(1,(it.r-RMIN)/(RMAX-RMIN)));
+    const pts=Math.round(1+t*29);
+    score+=pts; if(score>best)best=score;
     goldKPI.gold=Math.min(GOLD_KPI_GOLD,goldKPI.gold+1);
     sfxGoldCollect();
-    spawnGoldFx(gmRope.anchorX,gmRope.anchorY,'#f7c948',true,'🪙+25');
-  } else if(it.type==='goldSmall'){
-    score+=15; if(score>best)best=score;
-    goldKPI.gold=Math.min(GOLD_KPI_GOLD,goldKPI.gold+1);
-    sfxGoldCollect();
-    spawnGoldFx(gmRope.anchorX,gmRope.anchorY,'#ffe066',true,'🪙+15');
+    spawnGoldFx(gmRope.anchorX,gmRope.anchorY,it.type==='goldBig'?'#f7c948':'#ffe066',true,'🪙+'+pts);
   } else if(it.type==='diamond'){
-    score+=75; if(score>best)best=score;
+    // kim cương: điểm gấp 6 lần mức tối đa của vàng
+    const pts=30*6;
+    score+=pts; if(score>best)best=score;
     goldKPI.diamond=true;
     sfxDiamondCollect();
-    spawnGoldFx(gmRope.anchorX,gmRope.anchorY,'#7df9ff',true,'💎+75');
+    spawnGoldFx(gmRope.anchorX,gmRope.anchorY,'#7df9ff',true,'💎+'+pts);
   }
   updateScoreUI(); updateGoldKPIBar();
   if(goldKPI.gold>=GOLD_KPI_GOLD && goldKPI.diamond && !goldWinBanner) showGoldWin();
@@ -4743,7 +4755,7 @@ function roundRectPath(ctx,x,y,w,h,r){
   ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
 }
 
-function goldGameOver(kpiMet){
+function goldGameOver(kpiMet, msg){
   if(goldRAF) cancelAnimationFrame(goldRAF);
   goldRAF=null; goldMode=false;
   sfxGameOver();
@@ -4751,7 +4763,7 @@ function goldGameOver(kpiMet){
     const timeBonus=Math.round(goldTimeLeft*10);
     if(timeBonus>0){ score+=timeBonus; if(score>best)best=score; updateScoreUI(); }
   }
-  showComboFlash(0,false, kpiMet?'🏆 KPI ĐẠT!':'⛏️ Không đủ KPI!');
+  showComboFlash(0,false, msg || (kpiMet?'🏆 KPI ĐẠT!':'⛏️ Không đủ KPI!'));
   setTimeout(exitGoldToMain, 450);
 }
 
