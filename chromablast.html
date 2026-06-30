@@ -2977,9 +2977,28 @@ DCV().addEventListener('pointermove', e=>{ if(e.pressure>0||e.buttons||e.pointer
 })();
 
 document.addEventListener('keydown', e=>{
-  if(!dodgeMode) return;
-  if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A') dodgeKeys.left=true;
-  if(e.key==='ArrowRight'||e.key==='d'||e.key==='D') dodgeKeys.right=true;
+  if(dodgeMode){
+    if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A') dodgeKeys.left=true;
+    if(e.key==='ArrowRight'||e.key==='d'||e.key==='D') dodgeKeys.right=true;
+  }
+  if(typeof snakeMode!=='undefined'&&snakeMode){
+    if(e.key==='ArrowUp'||e.key==='w'||e.key==='W'){ e.preventDefault(); setSnakeDir(0,-1); }
+    else if(e.key==='ArrowDown'||e.key==='s'||e.key==='S'){ e.preventDefault(); setSnakeDir(0,1); }
+    else if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A'){ e.preventDefault(); setSnakeDir(-1,0); }
+    else if(e.key==='ArrowRight'||e.key==='d'||e.key==='D'){ e.preventDefault(); setSnakeDir(1,0); }
+  }
+  if(typeof brickMode!=='undefined'&&brickMode){
+    if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A'){ e.preventDefault(); brickPaddleX=Math.max(brickPaddleW/2,brickPaddleX-30); }
+    else if(e.key==='ArrowRight'||e.key==='d'||e.key==='D'){ const cv=BrCV(); e.preventDefault(); brickPaddleX=Math.min(cv.width-brickPaddleW/2,brickPaddleX+30); }
+    else if(e.key===' '){ e.preventDefault(); brickBall.launched=true; }
+  }
+  if(typeof runnerMode!=='undefined'&&runnerMode){
+    if(e.key===' '||e.key==='ArrowUp'||e.key==='w'||e.key==='W'){
+      e.preventDefault();
+      if(runnerJumps===0){ runnerDogVY=RUNNER_JUMP_VY; runnerJumps=1; sfxRunnerJump(); }
+      else if(runnerJumps===1){ runnerDogVY=RUNNER_JUMP2_VY; runnerJumps=2; sfxRunnerDoubleJump(); }
+    }
+  }
 });
 document.addEventListener('keyup', e=>{
   if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A') dodgeKeys.left=false;
@@ -8597,8 +8616,8 @@ function runnerDone(won){
     sfxWaveWin();
     score+=Math.floor(runnerScore); if(best<score) best=score;
     updateScoreUI();
-    showComboFlash(0,false,'🏃 60s CHINH PHỤC! 🏆 TRUYỀN THUYẾT!');
-    setTimeout(exitRunnerToMain, 2000);
+    showComboFlash(0,false,'🏆 TRUYỀN THUYẾT CHROMABLAST! 16 BẢN ĐỒ!');
+    setTimeout(exitRunnerToMain, 3500);
   } else {
     sfxGameOver();
     showComboFlash(0,false,'💀 Vấp ngã rồi!');
