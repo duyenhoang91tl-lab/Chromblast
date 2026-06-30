@@ -455,7 +455,7 @@ body {
   position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
   font-size: 30px; font-weight: 900; color: #fff; pointer-events: none;
   opacity: 0; text-shadow: 0 2px 20px rgba(255,200,0,0.9); z-index: 30;
-  white-space: nowrap;
+  white-space: nowrap; letter-spacing: 2px; text-transform: uppercase;
 }
 #combo-flash.show { animation: flashAnim 0.9s ease forwards; }
 @keyframes flashAnim {
@@ -721,6 +721,9 @@ body {
 
     <!-- MODE G: Map ẩn 6 — Đập động vật (Whack-a-Mole) -->
     <canvas id="mole-canvas" width="360" height="460"></canvas>
+
+    <!-- MODE H: Map ẩn 7 — Lật thẻ ký ức (Memory Match) -->
+    <canvas id="memory-canvas" width="360" height="460"></canvas>
 
     <!-- Lớp phủ pháo hoa cho map ẩn (vệt cháy ở viền khi nổ) -->
     <div id="sc-fx"></div>
@@ -3990,11 +3993,11 @@ const GOLD_KPI_GOLD=5, GOLD_TIME=30;
 let gmRope = {
   angle: 0,           // swing angle (radians, 0=down)
   swingDir: 1,        // swing direction
-  swingSpeed: 1.2,    // rad/s
+  swingSpeed: 1.4,    // rad/s
   state: 'swinging',  // 'swinging' | 'extending' | 'retracting'
   len: 0,             // current rope length
   maxLen: 0,          // canvas diagonal (set in initGold)
-  retractSpeed: 200,  // px/s retract speed (faster when carrying nothing)
+  retractSpeed: 240,  // px/s retract speed (faster when carrying nothing)
   extendSpeed: 280,   // px/s
   hookedItem: null,   // reference to caught goldItem (or null)
   anchorX: 0,         // set from canvas width
@@ -4107,7 +4110,7 @@ function initGold(){
   gmRope.anchorY=115;
   gmRope.angle=0;
   gmRope.swingDir=1;
-  gmRope.swingSpeed=1.2+goldWave*0.08;
+  gmRope.swingSpeed=1.4+goldWave*0.08;
   gmRope.maxLen=Math.hypot(W,H)*0.98;
   gmRope.len=0;
   gmRope.state='swinging';
@@ -4160,9 +4163,9 @@ function initGold(){
 
 function goldWaveDiff(){
   return {
-    swingSpeed: 1.2 + goldWave*0.1,
+    swingSpeed: 1.4 + goldWave*0.1,
     extendSpeed: 280 + goldWave*20,
-    retractSpeed: 200 + goldWave*15,
+    retractSpeed: 240 + goldWave*15,
   };
 }
 
@@ -4819,6 +4822,7 @@ function exitGoldToMain(){
   // Trigger Map ẩn 6 unlock immediately after Map ẩn 5
   setTimeout(()=>triggerMoleUnlock(), 400);
   // Activate thorn vine difficulty after returning from Map ẩn 5
+  if(!thornCells) thornCells=new Set();
   thornMode=true; thornPlacementCount=0; thornWave=0; thornThreshold=6;
   thornCells=new Set(); cellBurstCount={};
   setTimeout(()=>showComboFlash(0,false,'🌿 Chế độ khó: Dây gai xuất hiện!'), 600);
@@ -4852,10 +4856,11 @@ const MOLE_ANIMALS = [
   {emoji:'🐍', name:'Rắn',      pts:-40, color:'#2d8a2d'},
 ];
 const MOLE_COLS=4, MOLE_ROWS=2, MOLE_HOLES=8;
-const MOLE_TIME=45, MOLE_KPI=200;
+const MOLE_TIME=45, MOLE_KPI=160;
 
 let moleMode=false, moleRAF=null, moleLast=0, moleElapsed=0;
 let moleHoles=[], moleFx=[], moleScore=0;
+let moleComboCount=0, moleLastHitTime=0;
 let moleHammerX=0, moleHammerY=0, moleHammerVis=false, moleHammerAnim=0;
 const MCV=()=>document.getElementById('mole-canvas');
 
@@ -4891,7 +4896,7 @@ function enterMoleMode(){
 
 function initMole(){
   const cv=MCV(), W=cv.width, H=cv.height;
-  moleScore=0; moleFx=[]; moleElapsed=0;
+  moleScore=0; moleFx=[]; moleElapsed=0; moleComboCount=0; moleLastHitTime=0;
   // 8 holes in a 4×2 grid in lower 2/3 of canvas
   moleHoles=[];
   const hx0=W*0.14, hxStep=W*0.24;
@@ -4929,14 +4934,14 @@ function moleLoop(now){
         const difficulty=Math.min(1, moleElapsed/30000);
         // more snakes/hedgehogs as time goes
         const pool=[...MOLE_ANIMALS];
-        const weights=pool.map((a,i)=> i>=5 ? 0.05+difficulty*0.15 : 0.2-difficulty*0.03);
+        const weights=pool.map((a,i)=> i>=5 ? 0.04+difficulty*0.14 : 0.2-difficulty*0.03);
         const tot=weights.reduce((s,w)=>s+w,0);
         let rnd=Math.random()*tot;
         let chosen=pool[0];
         for(let i=0;i<pool.length;i++){ rnd-=weights[i]; if(rnd<=0){chosen=pool[i];break;} }
         h.animal=chosen;
         h.showT=0;
-        h.maxShow=Math.max(0.9, 2.2-moleElapsed/25000);
+        h.maxShow=Math.max(0.85, 2.6-moleElapsed/22000);
         h.riseT=0; h.fallT=-1; h.hit=false;
         if(!sfxMuted) sfxMoleAppear();
       }
@@ -4989,6 +4994,16 @@ function tapMole(ex,ey){
       if(pts>0){ sfxHammer(); } else { sfxPenalty(); }
       const col=pts>0?'#f7c948':'#ff4444';
       moleFx.push({x:hx,y:hy,t:0,label:(pts>0?'+':'')+pts,color:col,emoji:h.animal.emoji});
+      if(pts>0){
+        const now2=performance.now();
+        if(now2-moleLastHitTime<2000){ moleComboCount++; } else { moleComboCount=1; }
+        moleLastHitTime=now2;
+        if(moleComboCount>=3){
+          moleScore+=15;
+          showComboFlash(0,false,'COMBO! x'+moleComboCount);
+          moleComboCount=0;
+        }
+      } else { moleComboCount=0; }
       hit=true;
       break;
     }
@@ -5040,6 +5055,14 @@ function drawMole(ctx,W,H,now,timeLeft){
     ctx.fillStyle='#3a8a10';
     ctx.beginPath(); ctx.moveTo(fx,fy+5); ctx.quadraticCurveTo(fx-8,fy+14,fx-4,fy+20); ctx.lineWidth=2; ctx.strokeStyle='#3a8a10'; ctx.stroke();
   });
+
+  // butterflies fluttering across the sky
+  ctx.font='14px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  const bt=moleElapsed/1000;
+  [[W*0.15+Math.sin(bt*1.1)*W*0.3, H*0.22+Math.sin(bt*2.3)*18],
+   [W*0.55+Math.sin(bt*0.9+1)*W*0.28, H*0.16+Math.sin(bt*2.1+2)*14],
+   [W*0.78+Math.sin(bt*1.3+3)*W*0.18, H*0.26+Math.sin(bt*1.9+1)*16]
+  ].forEach(([bx,by])=>{ ctx.fillText('🦋',bx,by); });
 
   // draw holes (behind animals)
   for(const h of moleHoles){
@@ -5166,7 +5189,7 @@ function moleDone(){
     sfxGameOver();
     showComboFlash(0,false,'🔨 '+moleScore+'/'+MOLE_KPI+' — Chưa đủ!');
   }
-  setTimeout(exitMoleToMain, 500);
+  setTimeout(()=>{ exitMoleToMain(); setTimeout(()=>triggerMemoryUnlock(), 500); }, 500);
 }
 
 function exitMoleToMain(){
@@ -5302,7 +5325,8 @@ function showScorePop(points, x, y, level){
   d.style.left=x+'px'; d.style.top=y+'px';
   d.style.fontSize=(20+i*4)+'px';  // 20 → 52px
   d.style.color=i>=2?PRAISE_COLOR[i]:'#fff';
-  if(i>=5) d.style.textShadow=`0 0 ${10+i*4}px ${PRAISE_COLOR[i]}`;
+  d.style.textShadow='0 2px 8px rgba(0,0,0,0.7)';
+  if(i>=5) d.style.textShadow=`0 2px 8px rgba(0,0,0,0.7), 0 0 ${10+i*4}px ${PRAISE_COLOR[i]}`;
   document.getElementById('game-root').appendChild(d);
   setTimeout(()=>d.remove(), 950);
 }
