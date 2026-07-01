@@ -533,7 +533,7 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
 /* ── MAP ẨN 8: BUBBLE CANVAS ── */
 #bubble-canvas {
   display: none; width: 100%; max-width: 393px;
-  aspect-ratio: 360 / 460; background: #020015;
+  aspect-ratio: 360 / 460; background: #dff1fb;
   border-radius: 14px; touch-action: none; margin: 0 auto;
 }
 #bubble-canvas.active { display: block; }
@@ -5795,8 +5795,9 @@ MMCV().addEventListener('pointerdown', e=>{
 ══════════════════════════════════════════ */
 const BUBBLE_TIME=60, BUBBLE_KPI=50;
 const BUBBLE_COLS=8, BUBBLE_ROWS=10;
-const BUBBLE_COLORS=['#e84040','#4080e8','#40c040','#e8c040','#9040c8','#e88040'];
+const BUBBLE_COLORS=['#ff8a8a','#7ec8f5','#8fe0a8','#ffd97a','#c9a0f0','#ffb47a'];
 const BUBBLE_R=18; // radius of each bubble
+const BUBBLE_OX=(360-BUBBLE_COLS*BUBBLE_R*2)/2; // căn giữa lưới bong bóng theo chiều ngang
 
 let bubbleMode=false, bubbleRAF=null, bubbleLast=0, bubbleElapsed=0;
 let bubbleGrid=[], bubbleShooter={color:'#e84040',angle:-Math.PI/2};
@@ -5810,9 +5811,9 @@ function triggerBubbleUnlock(){
   document.getElementById('unlock-title').textContent='🫧 MAP ẨN 8 MỞ KHÓA!';
   document.getElementById('unlock-desc').innerHTML=
     '🫧 <b>Bắn Bong Bóng!</b><br><br>'+
-    'Lưới bong bóng màu sắc trên nền không gian đầy sao.<br>'+
+    'Lưới bong bóng màu sắc trên nền sáng nhẹ nhàng.<br>'+
     'Chạm → bắn bong bóng về hướng đó! 3+ bong bóng cùng màu → Nổ!<br>'+
-    'Gom <b>500 điểm</b> trong <b>'+BUBBLE_TIME+'s</b> hoặc dọn sạch bảng để thắng!<br>'+
+    'Gom <b>'+BUBBLE_KPI+' điểm</b> trong <b>'+BUBBLE_TIME+'s</b> hoặc dọn sạch bảng để thắng!<br>'+
     'Cứ 8 giây bong bóng lại rơi xuống 1 hàng — cẩn thận!';
   document.getElementById('unlock-btn').textContent='🫧 BẮN THÔI!';
   document.getElementById('unlock-overlay').classList.add('show');
@@ -5870,7 +5871,7 @@ function bubbleLoop(now){
     // check grid collision
     const landRow=bubbleLandRow(bubbleFlying.x, bubbleFlying.y);
     if(landRow!==null){
-      const col=Math.round((bubbleFlying.x - BUBBLE_R) / (BUBBLE_R*2));
+      const col=Math.round((bubbleFlying.x - BUBBLE_OX - BUBBLE_R) / (BUBBLE_R*2));
       const safeCol=Math.max(0,Math.min(BUBBLE_COLS-1,col));
       if(landRow>=0 && landRow<BUBBLE_ROWS && bubbleGrid[landRow][safeCol]===null){
         bubbleGrid[landRow][safeCol]=bubbleFlying.color;
@@ -5881,7 +5882,7 @@ function bubbleLoop(now){
     }
     // reached top
     if(bubbleFlying && bubbleFlying.y-BUBBLE_R<0){
-      const col=Math.round((bubbleFlying.x - BUBBLE_R) / (BUBBLE_R*2));
+      const col=Math.round((bubbleFlying.x - BUBBLE_OX - BUBBLE_R) / (BUBBLE_R*2));
       const safeCol=Math.max(0,Math.min(BUBBLE_COLS-1,col));
       if(bubbleGrid[0][safeCol]===null) bubbleGrid[0][safeCol]=bubbleFlying.color;
       bubbleFlying=null;
@@ -5920,7 +5921,7 @@ function bubbleLoop(now){
 function bubbleLandRow(fx,fy){
   const cv=BBCV(), H=cv.height;
   const cellH=(H-80)/BUBBLE_ROWS;
-  const col=Math.round((fx - BUBBLE_R) / (BUBBLE_R*2));
+  const col=Math.round((fx - BUBBLE_OX - BUBBLE_R) / (BUBBLE_R*2));
   const safeCol=Math.max(0,Math.min(BUBBLE_COLS-1,col));
   let row=Math.floor((fy-40)/cellH);
   if(row<0) row=0;
@@ -5960,7 +5961,7 @@ function checkBubblePop(row,col){
     const cellH=(H-80)/BUBBLE_ROWS;
     visited.forEach(key=>{
       const [r,c]=key.split(',').map(Number);
-      const fx=BUBBLE_R+c*BUBBLE_R*2;
+      const fx=BUBBLE_OX+BUBBLE_R+c*BUBBLE_R*2;
       const fy=40+r*cellH+BUBBLE_R;
       bubbleFx.push({x:fx,y:fy,color,t:0,type:'pop'});
       bubbleGrid[r][c]=null;
@@ -6012,7 +6013,7 @@ function dropOrphanedBubbles(){
   for(let r=0;r<BUBBLE_ROWS;r++){
     for(let c=0;c<BUBBLE_COLS;c++){
       if(bubbleGrid[r][c]!==null&&!connected.has(r+','+c)){
-        const fx=BUBBLE_R+c*BUBBLE_R*2;
+        const fx=BUBBLE_OX+BUBBLE_R+c*BUBBLE_R*2;
         const fy=40+r*cellH+BUBBLE_R;
         bubbleFx.push({x:fx,y:fy,color:bubbleGrid[r][c],t:0,type:'pop'});
         bubbleGrid[r][c]=null;
@@ -6030,15 +6031,23 @@ function dropOrphanedBubbles(){
 
 function drawBubble(ctx,W,H){
   ctx.clearRect(0,0,W,H);
-  // Dark space background
+  // Nền sáng nhẹ nhàng — bầu trời pastel
   const bg=ctx.createLinearGradient(0,0,0,H);
-  bg.addColorStop(0,'#020015'); bg.addColorStop(1,'#0a0030');
+  bg.addColorStop(0,'#eaf7ff'); bg.addColorStop(0.55,'#dff1fb'); bg.addColorStop(1,'#cfe9f7');
   ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
-  // stars
-  ctx.fillStyle='rgba(255,255,255,0.7)';
-  for(let i=0;i<40;i++){
+  // mây bồng bềnh nhẹ nhàng
+  ctx.fillStyle='rgba(255,255,255,0.55)';
+  const clouds=[[40,50,1.0],[300,80,0.7],[110,130,0.55],[250,180,0.8]];
+  clouds.forEach(([cx,cy,s])=>{
+    [[0,0,14],[-11,3,9],[11,3,9],[0,-5,9]].forEach(([dx,dy,r])=>{
+      ctx.beginPath(); ctx.arc(cx+dx*s,cy+dy*s,r*s,0,Math.PI*2); ctx.fill();
+    });
+  });
+  // lấp lánh nhẹ rải rác
+  ctx.fillStyle='rgba(255,255,255,0.8)';
+  for(let i=0;i<24;i++){
     const sx=((i*137+17)%W), sy=((i*79+31)%H);
-    ctx.beginPath(); ctx.arc(sx,sy,0.8,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(sx,sy,1,0,Math.PI*2); ctx.fill();
   }
 
   const cellH=(H-80)/BUBBLE_ROWS;
@@ -6047,7 +6056,7 @@ function drawBubble(ctx,W,H){
     for(let c=0;c<BUBBLE_COLS;c++){
       const col=bubbleGrid[r][c];
       if(!col) continue;
-      const bx=BUBBLE_R+c*BUBBLE_R*2;
+      const bx=BUBBLE_OX+BUBBLE_R+c*BUBBLE_R*2;
       const by=40+r*cellH+BUBBLE_R;
       drawBubbleCircle(ctx,bx,by,BUBBLE_R-1,col);
     }
@@ -6065,8 +6074,8 @@ function drawBubble(ctx,W,H){
   const shooterX=W/2, shooterY=H-30;
   // aim line
   ctx.setLineDash([4,6]);
-  ctx.strokeStyle='rgba(255,255,255,0.2)';
-  ctx.lineWidth=1;
+  ctx.strokeStyle='rgba(60,80,110,0.35)';
+  ctx.lineWidth=1.5;
   ctx.beginPath();
   ctx.moveTo(shooterX, shooterY);
   ctx.lineTo(shooterX+Math.cos(bubbleShooter.angle)*60, shooterY+Math.sin(bubbleShooter.angle)*60);
@@ -6094,14 +6103,17 @@ function drawBubble(ctx,W,H){
 }
 
 function drawBubbleCircle(ctx,x,y,r,color){
+  ctx.save();
+  ctx.shadowColor='rgba(60,90,120,0.25)'; ctx.shadowBlur=5; ctx.shadowOffsetY=2;
   const grad=ctx.createRadialGradient(x-r*0.3,y-r*0.3,r*0.1,x,y,r);
-  grad.addColorStop(0,'rgba(255,255,255,0.7)');
-  grad.addColorStop(0.4,color);
-  grad.addColorStop(1,'rgba(0,0,0,0.5)');
+  grad.addColorStop(0,'rgba(255,255,255,0.85)');
+  grad.addColorStop(0.45,color);
+  grad.addColorStop(1,'rgba(0,0,0,0.18)');
   ctx.fillStyle=grad;
   ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
-  ctx.strokeStyle='rgba(255,255,255,0.3)';
-  ctx.lineWidth=1;
+  ctx.restore();
+  ctx.strokeStyle='rgba(255,255,255,0.6)';
+  ctx.lineWidth=1.2;
   ctx.stroke();
 }
 
