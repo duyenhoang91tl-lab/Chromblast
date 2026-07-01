@@ -7669,6 +7669,8 @@ function showHint(msg){
 /* ══════════════════════════════════════════
    START / RESTART
 ══════════════════════════════════════════ */
+let snakeMode, brickMode, runnerMode, spaceMode, rhythmMode, mazeMode, megaMode;
+let snakeRAF, brickRAF, runnerRAF, spaceRAF, rhythmRAF, mazeRAF, megaRAF;
 function startGame(){
   // Reset achievements for new game session
   Object.values(ACHIEVEMENTS).forEach(a=>{ a.done=false; });
@@ -7968,7 +7970,7 @@ document.getElementById('best-box').textContent='Kỷ lục: '+best.toLocaleStri
 const SNAKE_COLS=18, SNAKE_ROWS=22, SNAKE_CELL=20;
 const SCV=()=>document.getElementById('snake-canvas');
 
-let snakeMode=false, snakeRAF=null, snakeLast=0;
+snakeMode=false; snakeRAF=null; let snakeLast=0;
 let snakeCells=[], snakeDir={x:1,y:0}, snakeNextDir={x:1,y:0};
 let snakeFood={x:5,y:5,emoji:'🍎',special:false};
 let snakeLives=3, snakeScore=0, snakeFx=[];
@@ -8211,7 +8213,7 @@ SCV().addEventListener('pointerup', e=>{
 const BRICK_COLS=8, BRICK_ROWS=3;
 const BrCV=()=>document.getElementById('brick-canvas');
 
-let brickMode=false, brickRAF=null, brickLast=0;
+brickMode=false; brickRAF=null; let brickLast=0;
 let brickBall={x:180,y:360,vx:180,vy:-220,launched:false,r:8};
 let brickPaddleX=180, brickPaddleW=80, brickPaddleH=14;
 let brickBricks=[], brickLives=3, brickScore=0, brickFx=[];
@@ -8454,7 +8456,7 @@ const RUNNER_GROUND_Y_FRAC=0.82;
 const RuCV=()=>document.getElementById('runner-canvas');
 const RUNNER_GRAVITY=800, RUNNER_JUMP_VY=-380, RUNNER_JUMP2_VY=-300;
 
-let runnerMode=false, runnerRAF=null, runnerLast=0, runnerElapsed=0, runnerWon=false;
+runnerMode=false; runnerRAF=null; let runnerLast=0, runnerElapsed=0, runnerWon=false;
 let runnerDogY=0, runnerDogVY=0, runnerJumps=0;
 let runnerObstacles=[], runnerStars=[], runnerFx=[];
 let runnerSpeed=180, runnerScore=0, runnerLives=2;
@@ -8694,7 +8696,7 @@ RuCV().addEventListener('pointerdown', e=>{
    MAP 17 — SPACE SHOOTER 🚀
 ═══════════════════════════════════════════════════════ */
 const SPC=()=>document.getElementById('space-canvas');
-let spaceMode=false, spaceRAF=null, spaceWon=false;
+spaceMode=false; spaceRAF=null; let spaceWon=false;
 let spaceState={};
 
 function triggerSpaceUnlock(){
@@ -8965,7 +8967,7 @@ function exitSpaceToMain(){
    MAP 18 — RHYTHM TAP 🎵
 ═══════════════════════════════════════════════════════ */
 const RHY=()=>document.getElementById('rhythm-canvas');
-let rhythmMode=false, rhythmRAF=null, rhythmWon=false;
+rhythmMode=false; rhythmRAF=null; let rhythmWon=false;
 let rhythmState={};
 
 function triggerRhythmUnlock(){
@@ -9163,7 +9165,7 @@ function exitRhythmToMain(){
    MAP 19 — MAZE RUNNER 🌀
 ═══════════════════════════════════════════════════════ */
 const MZC=()=>document.getElementById('maze-canvas');
-let mazeMode=false, mazeRAF=null, mazeWon=false;
+mazeMode=false; mazeRAF=null; let mazeWon=false;
 let mazeState={};
 
 function triggerMazeUnlock(){
@@ -9369,7 +9371,7 @@ function exitMazeToMain(){
    MAP 20 — MEGA BOSS FINAL BATTLE 💀
 ═══════════════════════════════════════════════════════ */
 const MGC=()=>document.getElementById('mega-canvas');
-let megaMode=false, megaRAF=null, megaWon=false;
+megaMode=false; megaRAF=null; let megaWon=false;
 let megaState={};
 
 function triggerMegaUnlock(){
