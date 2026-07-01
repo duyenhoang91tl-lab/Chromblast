@@ -648,20 +648,20 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
 
 /* ── PIECES AREA ── */
 #pieces-area {
-  margin-top: 12px; display: flex; gap: 12px;
-  justify-content: center; align-items: flex-end;
+  margin-top: 22px; display: flex; gap: 12px;
+  justify-content: space-evenly; align-items: flex-end;
 }
 .piece-slot {
-  background: #16213e; border: 1px solid #2a2a4a; border-radius: 12px;
+  background: transparent; border: 1px solid transparent; border-radius: 12px;
   padding: 10px; cursor: grab; user-select: none; touch-action: none;
-  transition: opacity 0.2s, transform 0.1s, border-color 0.1s;
+  transition: opacity 0.2s, transform 0.1s, border-color 0.1s, background 0.1s;
   display: flex; flex-direction: column; align-items: center; gap: 4px;
   min-width: 76px; min-height: 76px; justify-content: center;
 }
 .piece-slot.dragging-src { cursor: grabbing; }
-.piece-slot:hover { border-color: #444; }
+.piece-slot:hover { border-color: rgba(255,255,255,0.15); }
 .piece-slot.used { opacity: 0.15; pointer-events: none; }
-.piece-slot.selected { border: 2px solid #378ADD; background: #0d1f3c; opacity: 0.45; }
+.piece-slot.selected { border: 2px solid #378ADD; background: rgba(55,138,221,0.12); opacity: 0.45; }
 .p-cell { width: 14px; height: 14px; border-radius: 3px; }
 
 /* ── DRAG GHOST ── */
@@ -686,15 +686,37 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
 
 /* ── COMBO FLASH ── */
 #combo-flash {
-  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
-  font-size: 30px; font-weight: 900; color: #fff; pointer-events: none;
-  opacity: 0; text-shadow: 0 2px 20px rgba(255,200,0,0.9); z-index: 30;
-  white-space: nowrap; letter-spacing: 2px; text-transform: uppercase;
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%) skewX(-6deg);
+  font-family: 'Nunito', system-ui, sans-serif;
+  font-size: 30px; font-weight: 900; font-style: italic; color: #fff; pointer-events: none;
+  opacity: 0; z-index: 30;
+  text-shadow:
+    0 0 6px #7fe8ff, 0 0 14px #38c6f0, 0 0 26px rgba(56,198,240,0.8),
+    0 3px 0 rgba(20,90,130,0.9), 0 4px 10px rgba(0,0,0,0.4);
+  -webkit-text-stroke: 1.5px #1aa8d8;
+  white-space: nowrap; letter-spacing: 1px;
 }
 #combo-flash.show { animation: flashAnim 0.9s ease forwards; }
 @keyframes flashAnim {
-  0%  { opacity:1; transform:translate(-50%,-55%) scale(1.4); }
-  100%{ opacity:0; transform:translate(-50%,-100%) scale(0.9); }
+  0%  { opacity:1; transform:translate(-50%,-55%) skewX(-6deg) scale(1.4); }
+  100%{ opacity:0; transform:translate(-50%,-100%) skewX(-6deg) scale(0.9); }
+}
+#combo-count-flash {
+  position: absolute; top: 32%; left: 50%; transform: translate(-50%,-50%) skewX(-6deg);
+  font-family: 'Nunito', system-ui, sans-serif;
+  font-size: 34px; font-weight: 900; font-style: italic; color: #fff; pointer-events: none;
+  opacity: 0; z-index: 31;
+  text-shadow:
+    0 0 6px #7fe8ff, 0 0 14px #38c6f0, 0 0 26px rgba(56,198,240,0.8),
+    0 3px 0 rgba(20,90,130,0.9), 0 4px 10px rgba(0,0,0,0.4);
+  -webkit-text-stroke: 1.5px #1aa8d8;
+  white-space: nowrap; letter-spacing: 1px;
+}
+#combo-count-flash.show { animation: comboCountAnim 0.8s cubic-bezier(.2,.8,.2,1) forwards; }
+@keyframes comboCountAnim {
+  0%   { opacity:0; transform:translate(-50%,-30%) skewX(-6deg) scale(0.6); }
+  20%  { opacity:1; transform:translate(-50%,-55%) skewX(-6deg) scale(1.25); }
+  100% { opacity:0; transform:translate(-50%,-70%) skewX(-6deg) scale(1); }
 }
 
 /* ── SCORE POPUP + SHOCKWAVE GLOW ── */
@@ -1089,6 +1111,7 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
     <!-- MODE Q: Map ẩn 16 — Infinite Runner (Chạy vô tận) -->
     <canvas id="runner-canvas" width="360" height="460"></canvas>
     <canvas id="space-canvas"  width="360" height="460"></canvas>
+    <button id="space-autofire-btn" style="display:none;position:absolute;left:8px;bottom:8px;z-index:20;background:rgba(0,0,0,0.55);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;">🔫 Tự bắn: TẮT</button>
     <canvas id="rhythm-canvas" width="360" height="460"></canvas>
     <canvas id="maze-canvas"   width="360" height="460"></canvas>
     <canvas id="mega-canvas"   width="360" height="460"></canvas>
@@ -1099,6 +1122,7 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
     <div id="combo-border-sparks"></div>
 
     <div id="combo-flash"></div>
+    <div id="combo-count-flash"></div>
     <div id="unlock-overlay">
       <div id="unlock-title">🔥 NHIỆM VỤ ẨN MỞ KHÓA!</div>
       <div id="unlock-desc">
@@ -1831,6 +1855,8 @@ function placeAt(R,C){
   piece.shape.forEach(([dr,dc])=>{ board[R+dr][C+dc]=piece.color; });
   piece.used=true;
   sfxPlacePiece();
+  // Đặt khối lên bàn cờ cũng được cộng điểm — bằng đúng số ô của khối vừa đặt
+  score+=piece.shape.length; if(score>best) best=score; updateScoreUI();
   endDrag();                 // xoá chọn + ghost + preview
   if(thornMode){
     thornPlacementCount++;
@@ -2009,6 +2035,7 @@ function processClears(){
   showScorePop(pts, _ctr.x, _ctr.y, consecutiveBursts);
   showShockwave(_ctr.x, _ctr.y, consecutiveBursts);
   showPraise(consecutiveBursts);
+  showComboCountFlash(combo);
   updateComboBorderGlow(consecutiveBursts); // viền sáng theo combo map thường
   // 🎆 Pháo hoa viền + tia lấp lánh cho map thường
   mainBurstFX([...totalKeys].map(k=>k.split(',').map(Number)), consecutiveBursts);
@@ -2664,6 +2691,7 @@ function onSCClick(e){
 
   const finalPts=Math.round(basePoints*secretMultiplier*(secretUltra?2:1));
   score+=finalPts; if(score>best) best=score;
+  showComboCountFlash(secretStreak);
   sfxMatch(group.length);
   secret1Gained+=finalPts;
   updateScoreUI();
@@ -7958,6 +7986,14 @@ function showPraise(level){
   }
 }
 
+// Chữ "Combo xN" phong cách Woodoku — hiện riêng, không đè lên câu khen (showPraise)
+function showComboCountFlash(n){
+  if(n<2) return;
+  const el=document.getElementById('combo-count-flash');
+  el.textContent='Combo x'+n;
+  el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+}
+
 function showComboFlash(n, isColor, customText){
   const el=document.getElementById('combo-flash');
   el.style.color=''; el.style.fontSize=''; el.style.textShadow='';   // reset về kiểu mặc định
@@ -8646,7 +8682,7 @@ const SCV=()=>document.getElementById('snake-canvas');
 let snakeCells=[], snakeDir={x:1,y:0}, snakeNextDir={x:1,y:0};
 let snakeFood={x:5,y:5,emoji:'🍎',special:false};
 let snakeLives=3, snakeScore=0, snakeFx=[];
-let snakeMoveTimer=0, snakeSpeed=8;
+let snakeMoveTimer=0, snakeSpeed=4;
 let snakeFoodCount=0;
 let snakePointerStart=null;
 
@@ -8684,7 +8720,7 @@ function enterSnakeMode(){
   snakeCells=[{x:9,y:11},{x:8,y:11},{x:7,y:11}];
   snakeDir={x:1,y:0}; snakeNextDir={x:1,y:0};
   snakeLives=3; snakeScore=0; snakeFx=[]; snakeFoodCount=0;
-  snakeMoveTimer=0; snakeSpeed=8;
+  snakeMoveTimer=0; snakeSpeed=4;
   placeSnakeFood();
   snakeMode=true;
   snakeLast=performance.now();
@@ -8722,7 +8758,7 @@ function snakeLoop(now){
       score+=pts; if(best<score) best=score;
       snakeFx.push({x:SNAKE_OX+nx*SNAKE_CELL+SNAKE_CELL/2, y:SNAKE_OY+ny*SNAKE_CELL, t:0, text:'+'+pts, special:snakeFood.special});
       if(snakeFood.special) sfxSnakeSpecial(); else sfxSnakeEat();
-      snakeSpeed=Math.min(16, 8+snakeFoodCount*0.3);
+      snakeSpeed=Math.min(11, 4+snakeFoodCount*0.35); // bắt đầu chậm, tăng tốc dần theo số mồi ăn được
       document.getElementById('burst-count').textContent='🐍 Dài: '+snakeCells.length+'/20';
       updateScoreUI();
       if(snakeCells.length>=20){ snakeDone(true); return; }
@@ -9535,11 +9571,12 @@ function enterSpaceMode(){
   endDrag(); sfxUnlock();
   document.getElementById('grid').style.display='none';
   document.getElementById('pieces-area').style.display='none';
-  document.getElementById('hint-bar').textContent='Di chuyển ngón tay → tàu theo! Tự động bắn!';
+  document.getElementById('hint-bar').textContent='Di chuyển ngón tay → tàu theo! Chạm để bắn, hoặc bật Tự bắn ở góc trái!';
   document.getElementById('grid-wrap').classList.add('secret-mode');
   document.getElementById('mode-badge').textContent='🚀 MAP ẨN 17';
   document.getElementById('mode-badge').classList.add('secret');
   SPC().classList.add('active');
+  const afBtn0=document.getElementById('space-autofire-btn'); if(afBtn0) afBtn0.style.display='block';
   spaceMode=true; spaceWon=false;
   initSpaceGame();
 }
@@ -9563,7 +9600,8 @@ function initSpaceGame(){
     pointerX:180,
     invincible:0,
     flashTimer:0,
-    totalWaves:3
+    totalWaves:3,
+    autoFire:false
   };
   const s=spaceState;
   cv.onpointermove=ev=>{
@@ -9587,6 +9625,15 @@ function initSpaceGame(){
     s.pointerX=(ev.touches[0].clientX-rect.left)*scaleX;
     if(!s.gameOver && !s.won) spaceShoot();
   };
+  const afBtn=document.getElementById('space-autofire-btn');
+  if(afBtn){
+    afBtn.textContent='🔫 Tự bắn: TẮT';
+    afBtn.onclick=()=>{
+      s.autoFire=!s.autoFire;
+      afBtn.textContent='🔫 Tự bắn: '+(s.autoFire?'BẬT':'TẮT');
+      sfxClick();
+    };
+  }
   if(spaceRAF) cancelAnimationFrame(spaceRAF);
   spaceRAF=requestAnimationFrame(spaceLoop);
 }
@@ -9662,6 +9709,7 @@ function spaceLoop(){
     s.ship.x+=dx*0.15;
     s.ship.x=Math.max(20,Math.min(W-20,s.ship.x));
     if(s.shootCooldown>0) s.shootCooldown--;
+    if(s.autoFire && s.shootCooldown<=0) spaceShoot();
     for(let i=s.bullets.length-1;i>=0;i--){
       s.bullets[i].y-=s.bullets[i].speed;
       if(s.bullets[i].y<-10) s.bullets.splice(i,1);
@@ -9756,6 +9804,14 @@ function spaceLoop(){
     ctx.font='36px serif';
     ctx.fillText('🚀',s.ship.x,s.ship.y);
   }
+  // Thanh sẵn sàng bắn bên trái — đầy = bắn được ngay ("hiện nốt bắn" để tiện canh bắn)
+  const readyPct=1-(s.shootCooldown/12);
+  ctx.fillStyle='rgba(255,255,255,0.15)';
+  ctx.fillRect(4,H*0.35,8,H*0.3);
+  ctx.fillStyle=readyPct>=1?'#5cff8a':'#ffcc55';
+  ctx.fillRect(4,H*0.35+H*0.3*(1-readyPct),8,H*0.3*readyPct);
+  ctx.strokeStyle='rgba(255,255,255,0.4)'; ctx.lineWidth=1;
+  ctx.strokeRect(4,H*0.35,8,H*0.3);
   ctx.fillStyle='#ffffff';
   ctx.font='bold 14px monospace';
   ctx.textAlign='left';
@@ -9804,7 +9860,9 @@ function spaceLoop(){
 function exitSpaceToMain(){
   spaceMode=false;
   if(spaceRAF){cancelAnimationFrame(spaceRAF);spaceRAF=null;}
-  if(spaceWon && spaceState.score){ score+=spaceState.score; if(score>best) best=score; updateScoreUI(); }
+  if(!spaceWon) forfeitHiddenMapScore();
+  else if(spaceState.score){ score+=spaceState.score; if(score>best) best=score; updateScoreUI(); }
+  const afBtn1=document.getElementById('space-autofire-btn'); if(afBtn1) afBtn1.style.display='none';
   SPC().classList.remove('active');
   document.getElementById('grid').style.display='';
   document.getElementById('pieces-area').style.display='';
@@ -10123,15 +10181,32 @@ function initMazeGame(){
   const cellH=Math.floor((H-50)/rows);
   const offX=(W-cols*cellW)/2;
   const offY=45;
+  // Vật phẩm thu thập: ⏱️ cộng thêm giờ, 💰 cộng điểm — giúp người chơi có cơ hội qua màn hợp lý hơn
+  const pickups=[];
+  const usedKeys=new Set(['0,0',(rows-1)+','+(cols-1)]);
+  for(let i=0;i<7;i++){
+    let r,c,key;
+    do{ r=Math.floor(Math.random()*rows); c=Math.floor(Math.random()*cols); key=r+','+c; } while(usedKeys.has(key));
+    usedKeys.add(key);
+    pickups.push({r,c,type:'time',taken:false});
+  }
+  for(let i=0;i<10;i++){
+    let r,c,key;
+    do{ r=Math.floor(Math.random()*rows); c=Math.floor(Math.random()*cols); key=r+','+c; } while(usedKeys.has(key));
+    usedKeys.add(key);
+    pickups.push({r,c,type:'coin',taken:false});
+  }
   mazeState={
     W,H,cols,rows,cells,cellW,cellH,offX,offY,
     dog:{r:0,c:0},
-    timeLeft:60,
+    timeLeft:90, // tăng thời gian hợp lý hơn để có cơ hội phá đảo mê cung 15x19
     timerTick:0,
     won:false,
     gameOver:false,
     touchStartX:null,
-    touchStartY:null
+    touchStartY:null,
+    pickups,
+    score:0
   };
   const s=mazeState;
   s._keyHandler=ev=>{
@@ -10175,6 +10250,13 @@ function tryMoveDog(dr,dc){
   if(!cells[dog.r][dog.c].walls[wallIdx]){
     dog.r+=dr; dog.c+=dc;
     sfxMazeStep();
+    const pk=s.pickups.find(p=>!p.taken&&p.r===dog.r&&p.c===dog.c);
+    if(pk){
+      pk.taken=true;
+      if(pk.type==='time'){ s.timeLeft+=5; }
+      else { s.score+=10; score+=10; if(score>best) best=score; updateScoreUI(); }
+      sfxRhythmSpawn();
+    }
     if(dog.r===rows-1&&dog.c===cols-1){
       s.won=true; mazeWon=true;
       sfxMazeSolve();
@@ -10243,6 +10325,13 @@ function mazeLoop(){
   ctx.textAlign='center';
   ctx.textBaseline='middle';
   ctx.fillText('🚪',ex,ey);
+  ctx.font=Math.min(cellW,cellH)*0.6+'px serif';
+  s.pickups.forEach(p=>{
+    if(p.taken) return;
+    const px=offX+p.c*cellW+cellW/2, py=offY+p.r*cellH+cellH/2;
+    ctx.fillText(p.type==='time'?'⏱️':'💰',px,py);
+  });
+  ctx.font=Math.min(cellW,cellH)*0.8+'px serif';
   const dx=offX+s.dog.c*cellW+cellW/2, dy=offY+s.dog.r*cellH+cellH/2;
   ctx.fillText('🐕',dx,dy);
   if(s.won){
@@ -10259,6 +10348,7 @@ function mazeLoop(){
     setTimeout(()=>exitMazeToMain(),3000);
     s.won=false; s.gameOver=true;
   } else if(s.gameOver){
+    if(!s._forfeited){ s._forfeited=true; forfeitHiddenMapScore(); }
     ctx.fillStyle='rgba(0,0,0,0.8)';
     ctx.fillRect(0,0,W,H);
     ctx.fillStyle='#ff4444';
