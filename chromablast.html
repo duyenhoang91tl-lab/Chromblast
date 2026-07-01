@@ -3820,10 +3820,11 @@ FCV().addEventListener('pointercancel', fruitPointerUp);
 
 
 /* ══════════════════════════════════════════
-   MAP ẨN 4 — ONG VÒ VẼ vs CHÓ SAMOYED
-   Kéo ngón tay/chuột để DI CHUYỂN chó né bầy ong.
-   Ăn 🍖 rơi trên sân để lên cấp kỹ năng, học đòn đánh trả ong.
-   Bị ong đốt khi hết máu → thua, về map thường.
+   MAP ẨN 4 — CHÓ TRỐN ONG (VƯỜN HOA)
+   Chó Samoyed tự động né ong khi chúng lại gần.
+   Kéo ngón tay/chuột để chỉ đường chạy cho chó.
+   Chạm trúng ong để đập bay chúng — ghi điểm + chuỗi combo.
+   Ong chạm chó → mất 1 tim. Hết tim → thua, về map thường.
 ══════════════════════════════════════════ */
 let beeMode=false, beeRAF=null, beeLast=0, beeElapsed=0, beeSpawnTimer=0;
 let bees=[], dog=null, popFx=[], beeBuzzTimer=0;
@@ -3831,26 +3832,10 @@ let dogStung=false, dogStungTimer=0;
 let dogImg=null; // pre-rendered SVG chibi Samoyed
 const dogSVGW=160, dogSVGH=180;
 let beeCombo=0, beeComboTimer=0;
+let gdHearts=5, gdMaxHearts=5, gdWave=1, gdWaveTimer=0, gdWaveDuration=13;
+let gdPointerDown=false;
+const FLEE_RADIUS=90, PANIC_RADIUS=45;
 const BCV = () => document.getElementById('bee-canvas');
-
-// ── di chuyển chó (kéo để né ong) ──
-let dogTX=0, dogTY=0;           // vị trí đích khi đang kéo
-let dogDragging=false;
-const DOG_MAX_SPEED = 360;      // px/s — tốc độ tối đa chó có thể chạy
-
-// ── máu chó (thay cho thua ngay khi bị chạm) ──
-let dogHP=3, dogMaxHP=3;
-let dogInvuln=false, dogInvulnTimer=0;
-const DOG_INVULN_MS = 1000;     // bất tử tạm thời sau khi bị đốt
-
-// ── cho chó ăn để lên kỹ năng đánh trả ong ──
-let foods=[], foodSpawnTimer=0;
-const FOOD_LIFETIME = 7000;
-let foodEaten=0, skillLevel=0;
-const FOOD_PER_LEVEL = 3;       // ăn đủ số này thì lên 1 cấp kỹ năng (tối đa 3)
-let biteTimer=0, barkTimer=0;
-let skillFx=[];                 // hiệu ứng đòn đánh (cắn/sủa)
-let levelFlashT=-1;             // thời điểm vừa lên cấp (để hiện chữ)
 
 function triggerBeeUnlock(){
   pendingUnlock='bee';
@@ -3858,10 +3843,10 @@ function triggerBeeUnlock(){
   document.getElementById('unlock-desc').innerHTML=
     'Bạn đã ghi thêm <b>'+TEST_UNLOCK_SCORE+' điểm</b> ở map thường!<br><br>'+
     '🐶 Một bầy <b>ong vò vẽ</b> đang lao tới bé Samoyed!<br>'+
-    'Kéo ngón tay/chuột để <b>di chuyển chó né ong</b>.<br>'+
-    'Nhặt 🍖 rơi trên sân để lên cấp, học <b>đòn đánh trả ong</b>!<br>'+
-    'Chó có <b>3 mạng</b> — bị ong đốt hết mạng → <b>thua, về map thường</b>.';
-  document.getElementById('unlock-btn').textContent='🐝 GIẢI CỨU CHÓ!';
+    'Kéo ngón tay/chuột để <b>chỉ đường chạy</b> cho chó né ong.<br>'+
+    'Chạm trúng ong để <b>đập bay</b> chúng, ghi điểm combo!<br>'+
+    'Để ong chạm chó quá nhiều lần → <b>thua, về map thường</b>.';
+  document.getElementById('unlock-btn').textContent='🐝 BẢO VỆ CHÓ!';
   document.getElementById('unlock-overlay').classList.add('show');
 }
 
@@ -3872,12 +3857,11 @@ function enterBeeMode(){
   document.getElementById('grid').style.display='none';
   document.getElementById('pieces-area').style.display='none';
   document.getElementById('hint-bar').style.display='';
-  document.getElementById('hint-bar').textContent='Kéo để dẫn chó né ong · Ăn 🍖 để lên cấp kỹ năng đánh trả!';
+  document.getElementById('hint-bar').textContent='Kéo ngón tay để chỉ đường chạy · Chạm ong để đập bay!';
   BCV().classList.add('active');
   document.getElementById('grid-wrap').classList.add('secret-mode');
   document.getElementById('mode-badge').textContent='🐝 MAP ẨN 4';
   document.getElementById('mode-badge').classList.add('secret');
-  document.getElementById('burst-count').textContent='🐝 Bảo vệ chó';
 
   beeMode=true;
   initBee();
@@ -3887,69 +3871,98 @@ function enterBeeMode(){
 
 function initBee(){
   const cv=BCV(), W=cv.width, H=cv.height;
-  dog={x:W/2, y:H/2, r:32};
-  dogTX=dog.x; dogTY=dog.y; dogDragging=false;
-  bees=[]; popFx=[]; foods=[]; skillFx=[];
-  beeElapsed=0; beeSpawnTimer=0; foodSpawnTimer=0;
+  dog={
+    x:W/2, y:H*0.72, r:32, vx:0, vy:0,
+    targetX:null, targetY:null,
+    speed:110, stamina:100, maxStamina:100,
+    staminaDrain:25, staminaRegen:14,
+    facing:1, panicLevel:0,
+  };
+  bees=[]; popFx=[];
+  beeElapsed=0; beeSpawnTimer=0;
   dogStung=false; dogStungTimer=0;
-  dogHP=dogMaxHP; dogInvuln=false; dogInvulnTimer=0;
-  foodEaten=0; skillLevel=0; biteTimer=0; barkTimer=0; levelFlashT=-1;
+  beeCombo=0; beeComboTimer=0;
+  gdHearts=gdMaxHearts; gdWave=1; gdWaveTimer=0;
+  gdPointerDown=false;
+  updateBeeHUD();
   if(!dogImg) buildDogSVG();
 }
 
+function updateBeeHUD(){
+  document.getElementById('burst-count').textContent =
+    '❤️'.repeat(Math.max(0,gdHearts))+'🖤'.repeat(gdMaxHearts-gdHearts)+'  ·  Đợt '+gdWave;
+}
+
 function beeDiff(){
-  const t=beeElapsed/1000;
+  const t=gdWave;
   return {
-    speed: 65 + t*4.2,                              // px/s — ong nhanh dần
-    spawnInterval: Math.max(420, 1700 - t*42),       // ms — bay ra dày dần
-    burst: Math.min(4, 1 + Math.floor(t/14)),        // số ong mỗi đợt — nhiều dần
+    speed: 45 + t*6,                                 // px/s — ong nhanh dần theo đợt
+    spawnInterval: Math.max(0.35, 1.8 - t*0.12),      // s — bay ra dày dần
+    burst: 1 + (t>=3?1:0) + (t>=6?1:0),               // số ong mỗi đợt — nhiều dần
   };
 }
 
 function spawnBees(n,W,H){
-  const cx=W/2, cy=H/2;
+  const cx=dog.x, cy=dog.y;
   for(let i=0;i<n;i++){
-    const ang=Math.random()*Math.PI*2;
-    const rad=Math.max(W,H)*0.62;
-    const x=cx+Math.cos(ang)*rad, y=cy+Math.sin(ang)*rad;
-    const jitter=(Math.random()*0.5-0.25);
-    const aim=Math.atan2(cy-y,cx-x)+jitter;
+    const side=Math.floor(Math.random()*4);
+    let x,y;
+    if(side===0){ x=-20; y=40+Math.random()*(H*0.5); }
+    else if(side===1){ x=W+20; y=40+Math.random()*(H*0.5); }
+    else if(side===2){ x=Math.random()*W; y=-20; }
+    else { x=Math.random()*W; y=H+20; }
+    const aim=Math.atan2(cy-y,cx-x);
     bees.push({x,y,angle:aim,wob:Math.random()*10});
   }
 }
 
-function killBee(b){
-  b.dead=true;
-  score+=12; if(score>best) best=score;
-  sfxBeeKill();
-  beeCombo++;
-  if(beeComboTimer) clearTimeout(beeComboTimer);
-  beeComboTimer=setTimeout(()=>{ beeCombo=0; beeComboTimer=0; },1500);
-  const beeBonus=beeCombo*5; score+=beeBonus; if(score>best)best=score;
-  if(beeCombo>=5) sfxScoreMilestone();
-  popFx.push({x:b.x,y:b.y,t:0});
-}
-
-function spawnFood(W,H){
-  const margin=40;
-  foods.push({
-    x: margin+Math.random()*(W-margin*2),
-    y: margin+Math.random()*(H*0.7-margin)+H*0.1,
-    born: performance.now(),
-    bob: Math.random()*10
+// chó tự né ong gần nhất + người chơi chỉ đường
+function updateDog(dt,W,H){
+  let ax=0, ay=0, fleeing=false;
+  let nearestDist=Infinity, nearestBee=null;
+  bees.forEach(b=>{
+    const d=Math.hypot(b.x-dog.x,b.y-dog.y);
+    if(d<nearestDist){ nearestDist=d; nearestBee=b; }
   });
-}
 
-function gainSkillXP(n){
-  foodEaten+=n;
-  while(foodEaten>=FOOD_PER_LEVEL && skillLevel<3){
-    foodEaten-=FOOD_PER_LEVEL;
-    skillLevel++;
-    levelFlashT=0;
-    sfxScoreMilestone();
-    const names=['','🦴 Cắn phản đòn!','🐾 Cắn nhanh hơn!','📢 Sủa chấn động!'];
-    showComboFlash(0,true,names[skillLevel]||'');
+  if(nearestBee && nearestDist<FLEE_RADIUS){
+    fleeing=true;
+    const dx=dog.x-nearestBee.x, dy=dog.y-nearestBee.y;
+    const dist=Math.max(1,nearestDist);
+    const strength=1-(dist/FLEE_RADIUS);
+    const fleeForce=180+strength*220;
+    ax+=(dx/dist)*fleeForce; ay+=(dy/dist)*fleeForce;
+    dog.panicLevel=Math.min(1,Math.max(0,1-(dist-PANIC_RADIUS)/(FLEE_RADIUS-PANIC_RADIUS)));
+  } else {
+    dog.panicLevel=Math.max(0,dog.panicLevel-dt*3);
   }
+
+  if(dog.targetX!==null && dog.stamina>0){
+    const tdx=dog.targetX-dog.x, tdy=dog.targetY-dog.y;
+    const tdist=Math.hypot(tdx,tdy);
+    if(tdist>5){
+      ax+=(tdx/tdist)*240; ay+=(tdy/tdist)*240;
+      dog.stamina=Math.max(0,dog.stamina-dog.staminaDrain*dt);
+    } else {
+      dog.targetX=null; dog.targetY=null;
+    }
+  } else {
+    dog.stamina=Math.min(dog.maxStamina,dog.stamina+dog.staminaRegen*dt);
+  }
+
+  if(!fleeing && dog.targetX===null){ ax-=dog.vx*5; ay-=dog.vy*5; }
+
+  const maxSpeed=fleeing?dog.speed*1.3:dog.speed;
+  dog.vx+=ax*dt; dog.vy+=ay*dt;
+  const spd=Math.hypot(dog.vx,dog.vy);
+  if(spd>maxSpeed){ dog.vx=(dog.vx/spd)*maxSpeed; dog.vy=(dog.vy/spd)*maxSpeed; }
+  dog.vx*=(1-3*dt); dog.vy*=(1-3*dt);
+  dog.x+=dog.vx*dt; dog.y+=dog.vy*dt;
+
+  const minX=dog.r+4, maxX=W-dog.r-4, minY=H*0.3, maxY=H-dog.r-14;
+  dog.x=Math.max(minX,Math.min(maxX,dog.x));
+  dog.y=Math.max(minY,Math.min(maxY,dog.y));
+  if(Math.abs(dog.vx)>5) dog.facing=dog.vx>0?1:-1;
 }
 
 function beeLoop(now){
@@ -3959,122 +3972,51 @@ function beeLoop(now){
   const cv=BCV(), ctx=cv.getContext('2d'), W=cv.width, H=cv.height;
   const d=beeDiff();
 
-  // ── chó di chuyển về phía điểm kéo (né ong) ──
-  if(dogDragging){
-    const ddx=dogTX-dog.x, ddy=dogTY-dog.y;
-    const dist=Math.hypot(ddx,ddy);
-    const step=DOG_MAX_SPEED*dt;
-    if(dist<=step){ dog.x=dogTX; dog.y=dogTY; }
-    else { dog.x+=ddx/dist*step; dog.y+=ddy/dist*step; }
-  }
-  dog.x=Math.max(dog.r*0.7,Math.min(W-dog.r*0.7,dog.x));
-  dog.y=Math.max(dog.r*0.9,Math.min(H-dog.r*0.5,dog.y));
+  gdWaveTimer+=dt;
+  if(gdWaveTimer>=gdWaveDuration){ gdWaveTimer=0; gdWave++; updateBeeHUD(); }
 
-  // ── thức ăn: rơi ra định kỳ, chó chạy tới ăn để lên kỹ năng ──
-  foodSpawnTimer+=dt*1000;
-  if(foodSpawnTimer>=2600 && foods.length<3){
-    foodSpawnTimer=0;
-    spawnFood(W,H);
-  }
-  foods=foods.filter(f=>now-f.born<FOOD_LIFETIME);
-  for(const f of foods){
-    if(!f.eaten && Math.hypot(f.x-dog.x,f.y-dog.y)<dog.r+14){
-      f.eaten=true;
-      score+=6; if(score>best) best=score;
-      sfxBeeKill();
-      gainSkillXP(1);
-    }
-  }
-  foods=foods.filter(f=>!f.eaten);
-
-  // bay ong ra
-  beeSpawnTimer+=dt*1000;
+  beeSpawnTimer+=dt;
   if(beeSpawnTimer>=d.spawnInterval){
     beeSpawnTimer=0;
     spawnBees(d.burst,W,H);
   }
 
-  // tiếng vo ve định kỳ
   beeBuzzTimer+=dt*1000;
   if(beeBuzzTimer>320 && bees.length>0){ beeBuzzTimer=0; if(!sfxMuted) sfxBeeBuzz(); }
+
+  updateDog(dt,W,H);
 
   // di chuyển ong — chủ động bay về phía chó
   for(const b of bees){
     if(b.dead) continue;
     b.wob+=dt*6;
-    // steer toward dog each frame
     const targetAngle=Math.atan2(dog.y-b.y, dog.x-b.x);
     const da=((targetAngle-b.angle+Math.PI*3)%(Math.PI*2))-Math.PI;
     b.angle+=Math.sign(da)*Math.min(Math.abs(da), 3.5*dt);
     const vx=Math.cos(b.angle)*d.speed, vy=Math.sin(b.angle)*d.speed;
     b.x+=vx*dt; b.y+=vy*dt;
-  }
-
-  // ── kỹ năng đánh trả: cắn gần (cấp 1-2) ──
-  if(skillLevel>=1){
-    biteTimer+=dt*1000;
-    const biteInterval = skillLevel>=2 ? 900 : 1500;
-    const biteRadius = dog.r*(skillLevel>=2 ? 2.1 : 1.7);
-    const biteKills = skillLevel>=2 ? 2 : 1;
-    if(biteTimer>=biteInterval){
-      const near=bees.filter(b=>!b.dead && Math.hypot(b.x-dog.x,b.y-dog.y)<biteRadius)
-                      .sort((a,b2)=>Math.hypot(a.x-dog.x,a.y-dog.y)-Math.hypot(b2.x-dog.x,b2.y-dog.y));
-      if(near.length){
-        biteTimer=0;
-        skillFx.push({type:'bite',x:dog.x,y:dog.y,r:biteRadius,t:0});
-        near.slice(0,biteKills).forEach(b=>killBee(b));
-      }
+    if(Math.hypot(b.x-dog.x,b.y-dog.y) < dog.r+6){
+      b.dead=true; b.stungHit=true;
     }
   }
-  // ── kỹ năng đánh trả: sủa chấn động diện rộng (cấp 3) ──
-  if(skillLevel>=3){
-    barkTimer+=dt*1000;
-    if(barkTimer>=3000){
-      barkTimer=0;
-      const barkRadius=dog.r*3.4;
-      const hit=bees.filter(b=>!b.dead && Math.hypot(b.x-dog.x,b.y-dog.y)<barkRadius);
-      if(hit.length){
-        skillFx.push({type:'bark',x:dog.x,y:dog.y,r:barkRadius,t:0});
-        hit.forEach(b=>killBee(b));
-      }
-    }
-  }
-
-  bees=bees.filter(b=>!b.dead);
-  updateScoreUI();
-
-  // ── ong chạm chó → mất 1 mạng (trừ khi đang bất tử tạm thời) ──
-  if(dogInvuln){
-    dogInvulnTimer+=dt*1000;
-    if(dogInvulnTimer>=DOG_INVULN_MS){ dogInvuln=false; dogStung=false; }
-  } else {
-    let hitBee=null;
-    for(const b of bees){
-      if(Math.hypot(b.x-dog.x,b.y-dog.y) < dog.r+6){ hitBee=b; break; }
-    }
-    if(hitBee){
-      hitBee.dead=true;
-      dogHP=Math.max(0,dogHP-1);
-      dogInvuln=true; dogInvulnTimer=0;
-      dogStung=true; dogStungTimer=0;
-      sfxDogStung();
-      if(dogHP<=0){
-        bees=bees.filter(b=>!b.dead);
-        popFx.forEach(p=>p.t+=dt); popFx=popFx.filter(p=>p.t<0.35);
-        drawBee(ctx,W,H,now);
-        beeGameOver();
-        return;
-      }
-    }
-  }
+  const stungBees=bees.filter(b=>b.stungHit);
   bees=bees.filter(b=>!b.dead);
 
-  if(dogStung){ dogStungTimer += dt*1000; if(dogStungTimer>500) dogStung=false; }
+  if(stungBees.length>0 && !dogStung){
+    dogStung=true; dogStungTimer=0;
+    gdHearts=Math.max(0,gdHearts-1);
+    updateBeeHUD();
+    sfxDogStung();
+    if(gdHearts<=0){ popFx.push({x:dog.x,y:dog.y,t:0}); beeGameOver(); return; }
+  }
+  if(beeComboTimer>0){ beeComboTimer-=dt; if(beeComboTimer<=0){ beeComboTimer=0; beeCombo=0; } }
+  if(dogStung){
+    dogStungTimer += dt*1000;
+    if(dogStungTimer > 700) dogStung=false;
+  }
 
   popFx.forEach(p=>p.t+=dt);
   popFx=popFx.filter(p=>p.t<0.35);
-  skillFx.forEach(p=>p.t+=dt);
-  skillFx=skillFx.filter(p=>p.t<0.5);
 
   drawBee(ctx,W,H,now);
 
@@ -4217,18 +4159,14 @@ function drawBee(ctx,W,H,now){
   }
   ctx.restore();
 
-  // ── 🍖 thức ăn rơi trên sân ──
-  ctx.textAlign='center'; ctx.textBaseline='middle';
-  for(const f of foods){
-    const age=(now-f.born)/FOOD_LIFETIME;
-    const bob=Math.sin(now*0.004+f.bob)*3;
-    const warn = age>0.7 ? (0.4+0.6*Math.abs(Math.sin(now*0.01))) : 1;
-    ctx.save();
-    ctx.globalAlpha=warn;
-    ctx.shadowColor='rgba(255,220,120,0.8)'; ctx.shadowBlur=10;
-    ctx.font='26px system-ui';
-    ctx.fillText('🍖', f.x, f.y+bob);
-    ctx.restore();
+  // ── điểm đích chỉ đường (nếu có) ──
+  if(dog.targetX!==null && dog.stamina>0){
+    ctx.beginPath(); ctx.arc(dog.targetX,dog.targetY,8+Math.sin(now*0.006)*2,0,Math.PI*2);
+    ctx.strokeStyle='rgba(255,255,255,0.4)'; ctx.lineWidth=1.5; ctx.stroke();
+    ctx.beginPath(); ctx.arc(dog.targetX,dog.targetY,3,0,Math.PI*2);
+    ctx.fillStyle='rgba(255,255,255,0.45)'; ctx.fill();
+    ctx.beginPath(); ctx.moveTo(dog.x,dog.y); ctx.lineTo(dog.targetX,dog.targetY);
+    ctx.strokeStyle='rgba(255,255,255,0.15)'; ctx.lineWidth=1; ctx.setLineDash([3,5]); ctx.stroke(); ctx.setLineDash([]);
   }
 
   drawDog(ctx,dog.x,dog.y,dog.r,now);
@@ -4243,17 +4181,6 @@ function drawBee(ctx,W,H,now){
     ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.fillText('🐝', 0, 0);
     ctx.restore();
-  }
-
-  // ── hiệu ứng kỹ năng đánh trả (cắn/sủa) ──
-  for(const p of skillFx){
-    const a=1-p.t/0.5, r=p.r*(0.4+0.6*(p.t/0.5));
-    ctx.strokeStyle = p.type==='bark' ? `rgba(140,220,255,${a})` : `rgba(255,180,90,${a})`;
-    ctx.lineWidth = p.type==='bark' ? 4 : 3;
-    ctx.shadowColor = p.type==='bark' ? 'rgba(120,200,255,0.8)' : 'rgba(255,160,60,0.8)';
-    ctx.shadowBlur=12*a;
-    ctx.beginPath(); ctx.arc(p.x,p.y,r,0,Math.PI*2); ctx.stroke();
-    ctx.shadowBlur=0;
   }
 
   // ── pop fx ──
@@ -4284,44 +4211,18 @@ function drawBee(ctx,W,H,now){
     }
   }
 
-  // HUD
+  // HUD — đợt + thanh sức chạy
   ctx.save();
   ctx.fillStyle='rgba(200,255,160,0.95)';
   ctx.font='bold 15px system-ui'; ctx.textAlign='left'; ctx.textBaseline='top';
   ctx.shadowColor='rgba(80,200,80,0.7)'; ctx.shadowBlur=8;
-  ctx.fillText('⏱ '+(beeElapsed/1000).toFixed(1)+'s', 12, 10);
+  ctx.fillText('Đợt '+gdWave, 12, 10);
+  ctx.shadowBlur=0;
   ctx.restore();
 
-  // hearts (mạng)
-  ctx.save();
-  ctx.font='18px system-ui'; ctx.textAlign='right'; ctx.textBaseline='top';
-  let heartsStr=''; for(let i=0;i<dogMaxHP;i++) heartsStr+= i<dogHP ? '❤️' : '🤍';
-  ctx.fillText(heartsStr, W-10, 10);
-  ctx.restore();
-
-  // thanh kỹ năng + cấp
-  ctx.save();
-  const skillNames=['','🦴 Cắn','🦴 Cắn nhanh','📢 Sủa'];
-  ctx.font='bold 13px system-ui'; ctx.textAlign='left'; ctx.textBaseline='top';
-  ctx.fillStyle='rgba(255,220,150,0.95)';
-  ctx.shadowColor='rgba(200,120,20,0.7)'; ctx.shadowBlur=6;
-  const skillTxt = skillLevel>=3 ? '⭐ '+skillNames[3]+' MAX' : skillNames[skillLevel]?('Lv'+skillLevel+' '+skillNames[skillLevel]):'Chưa có kỹ năng';
-  ctx.fillText('🍖'+foodEaten+'/'+FOOD_PER_LEVEL+'  '+skillTxt, 12, 32);
-  ctx.restore();
-
-  // chữ lên cấp lóe sáng
-  if(levelFlashT>=0){
-    levelFlashT+=1;
-    if(levelFlashT<40){
-      const a=1-levelFlashT/40;
-      ctx.save();
-      ctx.globalAlpha=a;
-      ctx.font='bold 22px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
-      ctx.fillStyle='#fff4b0'; ctx.shadowColor='rgba(255,200,0,0.9)'; ctx.shadowBlur=14;
-      ctx.fillText('🎉 CHÓ LÊN CẤP KỸ NĂNG!', W/2, H*0.16-levelFlashT*0.6);
-      ctx.restore();
-    } else levelFlashT=-1;
-  }
+  const barW=110, barX=W/2-barW/2, barY=H-14;
+  ctx.fillStyle='rgba(0,0,0,0.3)'; ctx.fillRect(barX,barY,barW,7);
+  ctx.fillStyle='#4FC3F7'; ctx.fillRect(barX,barY,barW*(dog.stamina/dog.maxStamina),7);
 }
 
 function buildDogSVG(){
@@ -4363,7 +4264,8 @@ function buildDogSVG(){
   <ellipse cx="32"  cy="90" rx="16" ry="10" fill="rgba(255,130,160,0.28)"/>
   <ellipse cx="120" cy="90" rx="16" ry="10" fill="rgba(255,130,160,0.28)"/>
 </svg>`
-  const url = 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svgStr);
+  const blob = new Blob([svgStr], {type:'image/svg+xml'});
+  const url = URL.createObjectURL(blob);
   const img = new Image();
   img.src = url;
   dogImg = img;
@@ -4429,83 +4331,20 @@ function drawDog(ctx,cx,cy,r,now){
   if(!dogImg) buildDogSVG();
   const dogDrawW = r * 2.4, dogDrawH = r * 2.75;
   if(dogImg && dogImg.complete && dogImg.naturalWidth > 0){
-    if(stung){
-      ctx.save(); ctx.globalAlpha=0.88;
-      ctx.filter='saturate(0.5) hue-rotate(-10deg)';
-      ctx.drawImage(dogImg, cx - dogDrawW/2, cy - dogDrawH*0.55, dogDrawW, dogDrawH);
-      ctx.restore();
-    } else {
-      ctx.drawImage(dogImg, cx - dogDrawW/2, cy - dogDrawH*0.55, dogDrawW, dogDrawH);
-    }
+    ctx.save();
+    ctx.scale(dog.facing, 1);
+    ctx.drawImage(dogImg, (cx*dog.facing)-dogDrawW/2, cy-dogDrawH*0.62, dogDrawW, dogDrawH);
+    ctx.restore();
   }
 
-  // face center reference (SVG head center mapped to canvas coords)
-  const fcy = cy - r*0.57; // adjusted for SVG dog head position
-
-  if(stung){
-    // ── STUNG EXPRESSION overlay — annoyed/hurt ──
-    // angry furrowed brows
-    ctx.strokeStyle='#7a3a20'; ctx.lineWidth=3; ctx.lineCap='round';
-    ctx.beginPath();
-    ctx.moveTo(cx-r*0.44,fcy-r*0.38+r*0.15);
-    ctx.lineTo(cx-r*0.16,fcy-r*0.46+r*0.15);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(cx+r*0.16,fcy-r*0.46+r*0.15);
-    ctx.lineTo(cx+r*0.44,fcy-r*0.38+r*0.15);
-    ctx.stroke();
-
-    // X eyes (hurt)
-    [cx-r*0.28, cx+r*0.28].forEach(ex=>{
-      const ey=fcy-r*0.05;
-      ctx.strokeStyle='#5c2a10'; ctx.lineWidth=2.8; ctx.lineCap='round';
-      ctx.beginPath(); ctx.moveTo(ex-r*0.12,ey-r*0.12); ctx.lineTo(ex+r*0.12,ey+r*0.12); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(ex+r*0.12,ey-r*0.12); ctx.lineTo(ex-r*0.12,ey+r*0.12); ctx.stroke();
-      ctx.fillStyle='rgba(255,180,50,0.8)';
-      [[ex-r*0.18,ey-r*0.2],[ex+r*0.18,ey-r*0.2],[ex,ey-r*0.26]].forEach(([sx,sy])=>{
-        ctx.font=`${Math.floor(r*0.2)}px system-ui`;
-        ctx.textAlign='center'; ctx.textBaseline='middle';
-        ctx.fillText('★',sx,sy);
-      });
-    });
-
-    // wavy annoyed mouth
-    ctx.strokeStyle='#8a3a20'; ctx.lineWidth=2.5; ctx.lineCap='round';
-    ctx.beginPath();
-    ctx.moveTo(cx-r*0.22,fcy+r*0.18);
-    ctx.bezierCurveTo(cx-r*0.1,fcy+r*0.28,cx,fcy+r*0.14,cx+r*0.1,fcy+r*0.26);
-    ctx.bezierCurveTo(cx+r*0.18,fcy+r*0.34,cx+r*0.22,fcy+r*0.20,cx+r*0.28,fcy+r*0.16);
-    ctx.stroke();
-
-    // stun sparkles around head
-    const stungA=dogStungTimer*0.006;
-    for(let s=0;s<6;s++){
-      const sa=stungA+s/6*Math.PI*2;
-      const sr=r*0.9+Math.sin(stungA*3+s)*r*0.1;
-      const sx2=cx+Math.cos(sa)*sr, sy2=fcy+Math.sin(sa)*sr*0.6;
-      ctx.fillStyle=`rgba(255,${160+s*15},50,${0.7+0.3*Math.sin(stungA*4+s)})`;
-      ctx.font=`${Math.floor(r*0.22)}px system-ui`;
-      ctx.textAlign='center'; ctx.textBaseline='middle';
-      ctx.fillText('✦',sx2,sy2);
-    }
-
-    // blush (red, embarrassed/hurt)
-    ctx.fillStyle='rgba(255,80,80,0.38)';
-    ctx.beginPath(); ctx.ellipse(cx-r*0.46,fcy+r*0.12,r*0.2,r*0.11,0,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.ellipse(cx+r*0.46,fcy+r*0.12,r*0.2,r*0.11,0,0,Math.PI*2); ctx.fill();
-
-    // sweat drop
-    ctx.fillStyle='rgba(100,180,255,0.85)';
-    ctx.beginPath();
-    ctx.arc(cx+r*0.62,fcy-r*0.36,r*0.07,0,Math.PI*2); ctx.fill();
-    ctx.beginPath();
-    ctx.moveTo(cx+r*0.62,fcy-r*0.43);
-    ctx.bezierCurveTo(cx+r*0.68,fcy-r*0.50,cx+r*0.56,fcy-r*0.50,cx+r*0.62,fcy-r*0.43);
-    ctx.closePath();
-    ctx.fillStyle='rgba(140,210,255,0.7)'; ctx.fill();
+  // ── panic sweat drops ──
+  if(dog.panicLevel > 0.4){
+    ctx.font='bold 12px sans-serif'; ctx.textAlign='center';
+    ctx.fillStyle=`rgba(120,200,255,${dog.panicLevel})`;
+    const sy = cy - r*1.6 + Math.sin(now*0.01)*2;
+    ctx.fillText('💦', cx + r*0.6, sy);
   }
 }
-
 
 function beeGameOver(){
   if(beeRAF) cancelAnimationFrame(beeRAF);
@@ -4534,7 +4373,7 @@ function exitBeeToMain(){
   setTimeout(()=>triggerGoldUnlock(), 400);
 }
 
-/* ── điều khiển di chuyển chó map ẩn 4 ── */
+/* ── điều khiển: chạm đập ong / kéo chỉ đường map ẩn 4 ── */
 function beeCanvasPt(e){
   const cv=BCV(), rect=cv.getBoundingClientRect();
   return {
@@ -4542,20 +4381,41 @@ function beeCanvasPt(e){
     y:(e.clientY-rect.top)*(cv.height/rect.height)
   };
 }
+function beeSwatAt(pt){
+  let hit=null, hitDist=Infinity;
+  for(const b of bees){
+    const d=Math.hypot(b.x-pt.x,b.y-pt.y);
+    if(d<26 && d<hitDist){ hit=b; hitDist=d; }
+  }
+  if(hit){
+    hit.dead=true;
+    beeCombo++;
+    beeComboTimer=1.5;
+    const pts=12*Math.min(beeCombo,10);
+    score+=pts; if(score>best) best=score;
+    if(beeCombo>=5) sfxScoreMilestone(); else sfxBeeKill();
+    popFx.push({x:hit.x,y:hit.y,t:0});
+    updateScoreUI();
+    return true;
+  }
+  return false;
+}
 function beePointerDown(e){
   if(!beeMode) return;
   e.preventDefault();
-  dogDragging=true;
+  gdPointerDown=true;
   const pt=beeCanvasPt(e);
-  dogTX=pt.x; dogTY=pt.y;
+  if(!beeSwatAt(pt)){
+    dog.targetX=pt.x; dog.targetY=pt.y;
+  }
 }
 function beePointerMove(e){
-  if(!beeMode||!dogDragging) return;
+  if(!beeMode||!gdPointerDown) return;
   e.preventDefault();
   const pt=beeCanvasPt(e);
-  dogTX=pt.x; dogTY=pt.y;
+  dog.targetX=pt.x; dog.targetY=pt.y;
 }
-function beePointerUp(){ dogDragging=false; }
+function beePointerUp(){ gdPointerDown=false; }
 BCV().addEventListener('pointerdown', beePointerDown);
 BCV().addEventListener('pointermove', beePointerMove);
 BCV().addEventListener('pointerup', beePointerUp);
