@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#1a1a2e">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2051,7 +2051,7 @@ function updateBurstCount(){
   }
   bc.classList.remove('unlock-pending');
   if(awaitingSecretUnlock && !secretMode){
-    const earned=Math.min(score-secretUnlockBaseline, TEST_UNLOCK_SCORE);
+    const earned=Math.min(Math.round(score-secretUnlockBaseline), TEST_UNLOCK_SCORE);
     bc.textContent=
       earned>=TEST_UNLOCK_SCORE?'🔥 Mở khóa sẵn sàng!':
       `Tiến độ: ${earned}/${TEST_UNLOCK_SCORE}đ`;
@@ -3394,6 +3394,7 @@ document.addEventListener('keydown', e=>{
   if(typeof runnerMode!=='undefined'&&runnerMode){
     if(e.key===' '||e.key==='ArrowUp'||e.key==='w'||e.key==='W'){
       e.preventDefault();
+      if(e.repeat) return;
       if(runnerJumps===0){ runnerDogVY=RUNNER_JUMP_VY; runnerJumps=1; sfxRunnerJump(); }
       else if(runnerJumps===1){ runnerDogVY=RUNNER_JUMP2_VY; runnerJumps=2; sfxRunnerDoubleJump(); }
     }
@@ -7262,7 +7263,7 @@ const ARENA_WAVE_TIMES=[0,20,40,60];
 let arenaMode=false, arenaRAF=null, arenaLast=0, arenaElapsed=0;
 let arenaDogX=180, arenaDogY=380, arenaDogLives=5;
 let arenaInvincible=0, arenaBees=[], arenaCarrots=[], arenaSnake={x:180,y:80,hp:100,vx:80,fireTimer:0};
-let arenaVenom=[], arenaFx=[], arenaScore=0, arenaWave=0, arenaKillStreak=0;
+let arenaVenom=[], arenaFx=[], arenaScore=0, arenaWave=0, arenaKillStreak=0, arenaScoreAccum=0;
 let arenaSpawnTimer=0, arenaCarrotTimer=0, arenaWaveFlash=0, arenaWaveFlashText='';
 let arenaPointerX=null, arenaPointerY=null;
 let arenaPetals=[];
@@ -7304,7 +7305,7 @@ function initArena(){
   arenaDogX=cv.width/2; arenaDogY=cv.height-80;
   arenaDogLives=5; arenaInvincible=0;
   arenaBees=[]; arenaCarrots=[]; arenaVenom=[]; arenaFx=[];
-  arenaScore=0; arenaElapsed=0; arenaWave=0; arenaKillStreak=0;
+  arenaScore=0; arenaElapsed=0; arenaWave=0; arenaKillStreak=0; arenaScoreAccum=0;
   arenaSpawnTimer=0; arenaCarrotTimer=0;
   arenaWaveFlash=0; arenaWaveFlashText='';
   arenaSnake={x:cv.width/2,y:80,hp:100,vx:80,fireTimer:0};
@@ -7354,9 +7355,13 @@ function arenaLoop(now){
   }
   arenaWaveFlash=Math.max(0,arenaWaveFlash-dt);
 
-  // Score per second
-  arenaScore+=1*dt; score+=1*dt; // 1 điểm/giây sống sót
-  if(best<score) best=score;
+  // Score per second — dùng bộ đệm để cộng điểm nguyên, tránh số thập phân dài
+  arenaScoreAccum+=dt;
+  if(arenaScoreAccum>=1){
+    arenaScoreAccum-=1;
+    arenaScore+=1; score+=1;
+    if(best<score) best=score;
+  }
 
   // Invincibility countdown
   const _prevInvinc=arenaInvincible;
@@ -7497,21 +7502,12 @@ function drawArena(ctx,W,H){
   // Cánh hoa anh đào rơi
   arenaPetals.forEach(p=>drawArenaPetal(ctx,p));
 
-  // Bees
-  arenaBees.forEach(b=>{
-    ctx.shadowColor='#ffdd00'; ctx.shadowBlur=10;
-    ctx.font='28px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText('🐝',b.x,b.y);
-    ctx.shadowBlur=0;
-  });
+  // Bees — bỏ shadowBlur (rất tốn hiệu năng khi có nhiều con cùng lúc → giật máy)
+  ctx.font='28px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  arenaBees.forEach(b=>{ ctx.fillText('🐝',b.x,b.y); });
 
   // Carrots
-  arenaCarrots.forEach(c=>{
-    ctx.shadowColor='#ff8800'; ctx.shadowBlur=8;
-    ctx.font='28px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText('🥕',c.x,c.y);
-    ctx.shadowBlur=0;
-  });
+  arenaCarrots.forEach(c=>{ ctx.fillText('🥕',c.x,c.y); });
 
   // Snake boss
   if((arenaWave===2||arenaWave===3)&&arenaSnake&&arenaSnake.hp>0){
@@ -7675,8 +7671,8 @@ function saveProgress(force){
 }
 
 function updateScoreUI(){
-  document.getElementById('score-box').textContent=score.toLocaleString();
-  document.getElementById('best-box').textContent='Kỷ lục: '+best.toLocaleString();
+  document.getElementById('score-box').textContent=Math.round(score).toLocaleString();
+  document.getElementById('best-box').textContent='Kỷ lục: '+Math.round(best).toLocaleString();
   document.getElementById('lines-cleared').textContent='Hàng xóa: '+linesCleared;
   document.getElementById('level-box').textContent='Cấp độ '+level;
   if(awaitingSecretUnlock && !secretMode) updateBurstCount();
