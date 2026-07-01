@@ -6104,17 +6104,22 @@ function drawBubble(ctx,W,H){
 
 function drawBubbleCircle(ctx,x,y,r,color){
   ctx.save();
-  ctx.shadowColor='rgba(60,90,120,0.25)'; ctx.shadowBlur=5; ctx.shadowOffsetY=2;
-  const grad=ctx.createRadialGradient(x-r*0.3,y-r*0.3,r*0.1,x,y,r);
-  grad.addColorStop(0,'rgba(255,255,255,0.85)');
-  grad.addColorStop(0.45,color);
-  grad.addColorStop(1,'rgba(0,0,0,0.18)');
+  ctx.shadowColor='rgba(60,90,120,0.3)'; ctx.shadowBlur=6; ctx.shadowOffsetY=3;
+  const grad=ctx.createRadialGradient(x-r*0.35,y-r*0.4,r*0.05,x,y,r*1.05);
+  grad.addColorStop(0,'rgba(255,255,255,0.95)');
+  grad.addColorStop(0.32,color);
+  grad.addColorStop(0.85,color);
+  grad.addColorStop(1,'rgba(0,0,0,0.15)');
   ctx.fillStyle=grad;
   ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
   ctx.restore();
-  ctx.strokeStyle='rgba(255,255,255,0.6)';
-  ctx.lineWidth=1.2;
+  // viền sáng mềm
+  ctx.strokeStyle='rgba(255,255,255,0.7)';
+  ctx.lineWidth=1.3;
   ctx.stroke();
+  // chấm phản chiếu nhỏ tạo cảm giác bóng tròn 3D
+  ctx.fillStyle='rgba(255,255,255,0.75)';
+  ctx.beginPath(); ctx.ellipse(x-r*0.35,y-r*0.4,r*0.22,r*0.14,-0.5,0,Math.PI*2); ctx.fill();
 }
 
 function bubbleDone(won){
@@ -8286,6 +8291,13 @@ function hardResetAllModes(){
   const pauseOverlay=document.getElementById('pause-overlay');
   if(pauseOverlay) pauseOverlay.style.display='none';
   gamePaused=false;
+
+  // Ẩn các lớp HUD riêng của Map ẩn 4 (tim/điểm/đợt/sức chịu) — trước đây bị sót lại
+  // đè lên các map khác khi chuyển map trực tiếp qua admin panel.
+  const burstCount=document.getElementById('burst-count'); if(burstCount) burstCount.style.display='';
+  ['bee-hearts','bee-scoreUI','bee-waveUI','bee-stamina-label','bee-stamina-wrap'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.style.display='none';
+  });
 }
 
 function initAdminPanel(){
