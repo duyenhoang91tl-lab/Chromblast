@@ -2432,12 +2432,7 @@ function enterSecretMode(){
   document.getElementById('mode-badge').classList.add('secret');
   document.getElementById('burst-count').textContent='Nhân: x1';
 
-  // start continuous outward border sparks
-  if(borderSparkInterval) clearInterval(borderSparkInterval);
-  borderSparkInterval = setInterval(()=>{
-    if(!secretMode){ clearInterval(borderSparkInterval); borderSparkInterval=null; return; }
-    spawnContinuousBorderSparks();
-  }, 60);
+  // (đã bỏ vòng lặp lấp lánh viền liên tục 60ms — tốn hiệu năng, gây giật máy ở Map ẩn 1)
 
   // reset fire on enter
   if(fireInterval){ clearInterval(fireInterval); fireInterval=null; }
@@ -2479,7 +2474,6 @@ function exitSecretMode(){
   document.getElementById('burst-count').textContent='Chuỗi nổ: 0/3';
   updateBurstCount();
 
-  showComboFlash(0, false, '⬅ Về map thường!');
   renderPieces();
 }
 
@@ -2557,7 +2551,7 @@ function spawnBorderFireworks(ci, big){
   const W=wrap.clientWidth, H=wrap.clientHeight;
   const base=(ci!=null && SECRET_COLORS[ci]) ? SECRET_COLORS[ci] : '#ffd24a';
   const palette=[base, base, '#ffd24a', '#ff7a3c', '#ffffff', '#ffe9a8', '#a8f0ff', '#ff88dd'];
-  const N = big ? 80 : 44;
+  const N = big ? 40 : 22; // giảm còn một nửa để đỡ giật máy
   for(let i=0;i<N;i++){
     const side=i%4;
     const t=Math.random();
@@ -2628,7 +2622,7 @@ function spawnFireBorder(ultra){
   const lowCols  = ['#ff4400','#ff6600','#ff8800','#ffaa00','#ff2200'];
   const highCols = ['#ffffff','#ffff88','#ffee00','#ffcc00','#ff9900','#fffde0'];
   const cols = ultra ? highCols : lowCols;
-  const count = ultra ? 14 : 7;
+  const count = ultra ? 8 : 4; // giảm số hạt để đỡ giật máy
   for(let i = 0; i < count; i++){
     const side = Math.floor(Math.random() * 4);
     const t = Math.random();
@@ -2676,13 +2670,13 @@ function updateFireBorder(){
     if(!wasHigh){
       wrap.classList.remove('fire-low'); wrap.classList.add('fire-high');
       if(fireInterval){ clearInterval(fireInterval); fireInterval=null; }
-      fireInterval = setInterval(()=>{ if(secretMode) spawnFireBorder(true); }, 80);
+      fireInterval = setInterval(()=>{ if(secretMode) spawnFireBorder(true); }, 130);
     }
   } else if(secretStreak >= 1){
     if(!wasLow){
       wrap.classList.remove('fire-high'); wrap.classList.add('fire-low');
       if(fireInterval){ clearInterval(fireInterval); fireInterval=null; }
-      fireInterval = setInterval(()=>{ if(secretMode) spawnFireBorder(false); }, 140);
+      fireInterval = setInterval(()=>{ if(secretMode) spawnFireBorder(false); }, 220);
     }
   } else {
     wrap.classList.remove('fire-low','fire-high');
@@ -2695,7 +2689,7 @@ function secretSparkleBurst(group, ci){
   const root=document.getElementById('game-root'); if(!root) return;
   const rr=root.getBoundingClientRect();
   const col=(ci!=null && SECRET_COLORS[ci])?SECRET_COLORS[ci]:'#fff';
-  let budget=42;                                   // trần tổng số tia (giữ mượt)
+  let budget=22;                                   // trần tổng số tia (giữ mượt)
   const per = group.length>14 ? 1 : (group.length>7 ? 2 : 3);
   for(const [gr,gc] of group){
     if(budget<=0) break;
@@ -2741,7 +2735,6 @@ function onSCClick(e){
       secretLives--;
       renderSecretHearts();
       sfxPenalty();
-      showComboFlash(0,false,'💔 Bấm sai liên tiếp!');
       if(secretLives<=0){
         forfeitHiddenMapScore();
         setTimeout(()=>exitSecretMode(),400);
@@ -2775,7 +2768,6 @@ function onSCClick(e){
     secretUltra=true; ultraJustTriggered=true;
     document.getElementById('grid-wrap').classList.add('ultra-glow');
     unlockAchievement('ultra');
-    showComboFlash(0, true, '🌟 ULTRA MODE x2!');
     sfxUltra();
   }
 
@@ -2841,7 +2833,6 @@ function resetSecretTimer(){
       // Không bấm kịp trong cửa sổ rút ngắn → tắt lửa, quay về bình thường (không thua, chơi tiếp)
       secretUltra=false;
       document.getElementById('grid-wrap').classList.remove('ultra-glow');
-      showComboFlash(0,false,'🔥 Hết lửa!');
       resetSecretTimer();
       return;
     }
