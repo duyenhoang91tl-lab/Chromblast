@@ -9457,6 +9457,39 @@ function exitSpaceToMain(){
 const RHY=()=>document.getElementById('rhythm-canvas');
 // (đã chuyển khai báo biến mode lên đầu file để tránh lỗi TDZ)
 let rhythmState={};
+let rhythmStars=[], rhythmNotes=[];
+
+function updateRhythmBg(W,H){
+  rhythmStars.forEach(s=>{ s.phase+=0.03*s.speed; });
+  rhythmNotes.forEach(n=>{
+    n.phase+=0.02;
+    n.y-=n.speed/60;
+    n.x+=Math.sin(n.phase)*n.drift/60;
+    if(n.y<-20){ n.y=H+20; n.x=Math.random()*W; }
+  });
+}
+
+function drawRhythmBg(ctx,W,H){
+  const bg=ctx.createLinearGradient(0,0,0,H);
+  bg.addColorStop(0,'#1b0a3a'); bg.addColorStop(0.5,'#2a0f4f'); bg.addColorStop(1,'#3a1060');
+  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+
+  rhythmStars.forEach(s=>{
+    const tw=0.5+0.5*Math.sin(s.phase);
+    ctx.fillStyle=`rgba(255,255,255,${0.25+tw*0.5})`;
+    ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2); ctx.fill();
+  });
+
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  rhythmNotes.forEach(n=>{
+    ctx.save();
+    ctx.globalAlpha=0.55;
+    ctx.fillStyle=n.hue;
+    ctx.font='bold '+n.size+'px system-ui';
+    ctx.fillText(n.glyph,n.x,n.y);
+    ctx.restore();
+  });
+}
 
 function triggerRhythmUnlock(){
   pendingUnlock='rhythm';
@@ -9497,6 +9530,20 @@ function initRhythmGame(){
     maxRadius:55,
     ringWidth:12
   };
+  rhythmStars=[];
+  for(let i=0;i<40;i++){
+    rhythmStars.push({x:Math.random()*W,y:Math.random()*H,r:0.6+Math.random()*1.6,phase:Math.random()*Math.PI*2,speed:1+Math.random()*2});
+  }
+  rhythmNotes=[];
+  for(let i=0;i<10;i++){
+    rhythmNotes.push({
+      x:Math.random()*W, y:Math.random()*H,
+      speed:18+Math.random()*20, drift:8+Math.random()*14,
+      phase:Math.random()*Math.PI*2, size:12+Math.random()*8,
+      glyph:['♪','♫','♬'][Math.floor(Math.random()*3)],
+      hue:`hsl(${280+Math.random()*80},85%,${70+Math.random()*15}%)`,
+    });
+  }
   const s=rhythmState;
   cv.onclick=ev=>{
     if(s.gameOver||s.won) return;
@@ -9584,8 +9631,8 @@ function rhythmLoop(){
       s.won=true; rhythmWon=true;
     }
   }
-  ctx.fillStyle='#1a001a';
-  ctx.fillRect(0,0,W,H);
+  updateRhythmBg(W,H);
+  drawRhythmBg(ctx,W,H);
   for(const c of s.circles){
     ctx.beginPath();
     ctx.arc(c.x,c.y,c.baseRadius,0,Math.PI*2);
