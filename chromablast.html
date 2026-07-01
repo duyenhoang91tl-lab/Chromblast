@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ChromaBlast</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&display=swap" rel="stylesheet">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
@@ -107,7 +110,8 @@ body {
 .start-btn {
   background: linear-gradient(135deg, #ff6600, #ffaa00, #ffdd00);
   border: none; border-radius: 50px; padding: 18px 48px;
-  font-size: 20px; font-weight: 800; color: #1a0a00; cursor: pointer;
+  font-family: 'Baloo 2', system-ui, sans-serif;
+  font-size: 21px; font-weight: 800; color: #1a0a00; cursor: pointer;
   letter-spacing: 1px;
   box-shadow: 0 0 30px rgba(255,160,0,0.6), 0 4px 20px rgba(0,0,0,0.4);
   animation: fadeUp 0.6s 0.8s both ease-out, btnPulse 2s 1.4s ease-in-out infinite;
@@ -177,11 +181,13 @@ body {
 }
 .auth-submit-btn {
   width: 100%; background: linear-gradient(135deg, #ff6600, #ffaa00, #ffdd00);
-  border: none; border-radius: 50px; padding: 13px; font-size: 15px;
-  font-weight: 800; color: #1a0a00; cursor: pointer; letter-spacing: .5px;
+  border: none; border-radius: 50px; padding: 14px; font-size: 16px;
+  font-family: 'Baloo 2', system-ui, sans-serif;
+  font-weight: 800; color: #1a0a00; cursor: pointer; letter-spacing: .8px;
   box-shadow: 0 4px 18px rgba(255,160,0,0.4);
-  transition: transform 0.1s;
+  transition: transform 0.1s, box-shadow 0.1s;
 }
+.auth-submit-btn:hover { box-shadow: 0 6px 24px rgba(255,180,0,0.55); }
 .auth-submit-btn:active { transform: scale(0.97); }
 .auth-switch {
   text-align:center; margin-top: 16px; font-size: 12.5px; color: rgba(255,255,255,0.55);
@@ -245,11 +251,16 @@ body {
   margin-bottom: 12px;
 }
 .logout-btn {
-  width:100%; background: rgba(255,80,80,0.15); border:1px solid rgba(255,80,80,0.4);
-  color:#ff8080; border-radius: 12px; padding: 12px; font-size: 14px; font-weight:700;
+  width:100%; background: linear-gradient(135deg,#c62828,#ff5252);
+  border:none; color:#fff; border-radius: 12px; padding: 13px; font-size: 15px;
+  font-family: 'Baloo 2', system-ui, sans-serif;
+  font-weight: 800; letter-spacing:.6px;
   cursor:pointer; margin-top: 6px;
+  box-shadow: 0 4px 16px rgba(198,40,40,0.45);
+  transition: transform 0.1s, box-shadow 0.1s;
 }
-.logout-btn:active { transform: scale(0.98); }
+.logout-btn:hover { box-shadow: 0 6px 22px rgba(255,82,82,0.6); }
+.logout-btn:active { transform: scale(0.97); }
 .account-msg { min-height:16px; font-size:12px; text-align:center; margin-bottom:10px; }
 .account-msg.err { color:#ff6b6b; }
 .account-msg.ok  { color:#7fe08a; }
@@ -706,6 +717,13 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
   border:none; border-radius:10px; padding:11px 28px;
   font-size:15px; font-weight:800; cursor:pointer; margin-top:4px;
 }
+#unlock-later-btn {
+  background: transparent; color:#ccc;
+  border:1.5px solid rgba(255,255,255,0.35); border-radius:10px; padding:9px 22px;
+  font-size:13px; font-weight:700; cursor:pointer; margin-top:2px;
+}
+#unlock-later-btn:hover { background: rgba(255,255,255,0.08); color:#fff; }
+#burst-count.unlock-pending { cursor:pointer; text-decoration:underline; }
 
 /* ── GAME OVER ── */
 #game-over-overlay {
@@ -870,6 +888,8 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
   <div class="auth-card">
     <div class="auth-logo"><span class="logo-chroma">CHROMA</span><span class="logo-blast">BLAST</span></div>
     <div class="auth-sub">🔐 Đăng nhập để bắt đầu chơi</div>
+    <button type="button" id="guest-play-btn" class="auth-submit-btn" style="background:linear-gradient(135deg,#56AB2F,#A8E063);margin-bottom:16px;">▶ CHƠI NGAY (KHÔNG CẦN ĐĂNG NHẬP)</button>
+    <div class="auth-switch" style="margin-bottom:10px;">— hoặc —</div>
 
     <form id="login-form" class="auth-form active">
       <div class="auth-field">
@@ -1047,6 +1067,7 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
         Đạt <b>9 lần</b> liên tiếp → bàn cờ bùng cháy x3!
       </div>
       <button id="unlock-btn">⚡ VÀO ĐẤU!</button>
+      <button id="unlock-later-btn">🔙 Quay lại map thường</button>
     </div>
     <div id="pause-overlay" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.75);z-index:100;border-radius:14px;flex-direction:column;align-items:center;justify-content:center;gap:20px;">
       <div style="font-size:28px;font-weight:900;color:#fff;text-shadow:0 0 20px #fff;">⏸ TẠM DỪNG</div>
@@ -1995,14 +2016,23 @@ function mainBurstFX(cells, streak){
   }
 }
 
+let unlockDeferred=false; // true khi người chơi chọn "quay lại map thường" thay vì vào map ẩn ngay
+
 function updateBurstCount(){
+  const bc=document.getElementById('burst-count');
+  if(unlockDeferred){
+    bc.textContent='🔓 Map ẩn đang chờ — nhấn để chơi!';
+    bc.classList.add('unlock-pending');
+    return;
+  }
+  bc.classList.remove('unlock-pending');
   if(awaitingSecretUnlock && !secretMode){
     const earned=Math.min(score-secretUnlockBaseline, TEST_UNLOCK_SCORE);
-    document.getElementById('burst-count').textContent=
+    bc.textContent=
       earned>=TEST_UNLOCK_SCORE?'🔥 Mở khóa sẵn sàng!':
       `Tiến độ: ${earned}/${TEST_UNLOCK_SCORE}đ`;
   } else {
-    document.getElementById('burst-count').textContent=
+    bc.textContent=
       consecutiveBursts>=3?'🔥 Mở khóa sẵn sàng!':`Chuỗi nổ: ${consecutiveBursts}/3`;
   }
 }
@@ -2125,6 +2155,20 @@ document.getElementById('unlock-btn').addEventListener('click',()=>{
   else if(pendingUnlock==='maze')   enterMazeMode();
   else if(pendingUnlock==='mega')   enterMegaMode();
   else enterSecretMode();
+});
+
+document.getElementById('unlock-later-btn').addEventListener('click',()=>{
+  sfxClick();
+  document.getElementById('unlock-overlay').classList.remove('show');
+  unlockDeferred=true;
+  updateBurstCount();
+});
+
+document.getElementById('burst-count').addEventListener('click',()=>{
+  if(!unlockDeferred) return;
+  sfxClick();
+  unlockDeferred=false;
+  document.getElementById('unlock-overlay').classList.add('show');
 });
 
 /* ══════════════════════════════════════════
@@ -8108,6 +8152,13 @@ function initAuthScreen(){
   const registerForm = document.getElementById('register-form');
   const showRegister = document.getElementById('show-register');
   const showLogin = document.getElementById('show-login');
+  const guestBtn = document.getElementById('guest-play-btn');
+
+  guestBtn.addEventListener('click', ()=>{
+    sfxClick();
+    currentUser = null;
+    hideAuthScreen();
+  });
 
   showRegister.addEventListener('click', ()=>{
     loginForm.classList.remove('active');
