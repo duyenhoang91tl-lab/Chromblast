@@ -4699,7 +4699,7 @@ BCV().addEventListener('pointerleave', beePointerUp);
    KPI: đạt đủ điểm trong 30 giây.
 ══════════════════════════════════════════ */
 let goldMode=false, goldRAF=null, goldLast=0, goldElapsed=0;
-let goldTimeLeft=30, goldWave=1;
+let goldTimeLeft=30, goldWave=1, goldSessionScore=0;
 let awaitingGoldUnlock=false, goldUnlockBaseline=0;
 let awaitingMoleUnlock=false, moleUnlockBaseline=0;
 const GCV = () => document.getElementById('gold-canvas');
@@ -4766,7 +4766,7 @@ function enterGoldMode(){
 function initGold(){
   const cv=GCV(), W=cv.width, H=cv.height;
   gmCW=W/GM_COLS; gmCH=(H-GM_GT)/GM_ROWS;
-  goldElapsed=0; goldTimeLeft=GOLD_TIME;
+  goldElapsed=0; goldTimeLeft=GOLD_TIME; goldSessionScore=0;
   gmPts=[];
   gmCatX=W/2; gmCatY=GM_GT+gmCH*1.5; gmCatTX=gmCatX; gmCatTY=gmCatY;
   gmDigging=false; gmDigTimer=0; gmDigCol=-1; gmDigRow=-1;
@@ -4777,7 +4777,7 @@ function initGold(){
 }
 
 function updateGoldHUD(){
-  document.getElementById('burst-count').textContent='⛏️ '+score+'/'+GOLD_KPI_SCORE;
+  document.getElementById('burst-count').textContent='⛏️ '+goldSessionScore+'/'+GOLD_KPI_SCORE;
 }
 
 function gmSpawnDigFx(x,y,color){
@@ -4827,7 +4827,7 @@ function goldLoop(now){
   goldTimeLeft=Math.max(0,GOLD_TIME-goldElapsed/1000);
   const cv=GCV(), ctx=cv.getContext('2d'), W=cv.width, H=cv.height;
 
-  if(goldTimeLeft<=0){ goldGameOver(score>=GOLD_KPI_SCORE); return; }
+  if(goldTimeLeft<=0){ goldGameOver(goldSessionScore>=GOLD_KPI_SCORE); return; }
 
   // mèo di chuyển về đích
   const dx=gmCatTX-gmCatX, dy=gmCatTY-gmCatY, ds=Math.sqrt(dx*dx+dy*dy);
@@ -4843,7 +4843,7 @@ function goldLoop(now){
         cl.dug=true; cl.reveal=0;
         const v=gmValues[cl.tp]||0;
         if(v>0){
-          score+=v; if(score>best) best=score;
+          score+=v; if(score>best) best=score; goldSessionScore+=v;
           updateScoreUI(); updateGoldHUD();
           const px=gmDigCol*gmCW+gmCW/2, py=GM_GT+gmDigRow*gmCH+gmCH/2, color=gmColors[cl.tp]||'#FFD700';
           gmSpawnDigFx(px,py,color);
@@ -4925,7 +4925,7 @@ function drawGold(ctx,W,H,t){
   ctx.fillStyle='rgba(255,220,120,0.95)';
   ctx.font='bold 14px system-ui'; ctx.textAlign='left'; ctx.textBaseline='middle';
   ctx.shadowColor='rgba(255,180,0,0.6)'; ctx.shadowBlur=6;
-  ctx.fillText('💎 '+score, 10, GM_GT/2);
+  ctx.fillText('💎 '+goldSessionScore, 10, GM_GT/2);
   ctx.textAlign='right';
   ctx.fillText('⏱ '+Math.ceil(goldTimeLeft)+'s', W-10, GM_GT/2);
   ctx.restore();
@@ -5148,7 +5148,7 @@ GCV().addEventListener('pointerdown', e=>{
     const md=Math.hypot(gmMouse.x-pt.x,gmMouse.y-pt.y);
     if(md<25){
       gmMouse.on=false; gmMouse.caught=true; gmMouse.catchAlpha=1;
-      score+=5; if(score>best) best=score; updateScoreUI(); updateGoldHUD();
+      score+=5; if(score>best) best=score; goldSessionScore+=5; updateScoreUI(); updateGoldHUD();
       gmSpawnCatchFx(gmMouse.x,gmMouse.y);
       gmFloatText(gmMouse.x,gmMouse.y,'+5','#4FC3F7',24);
       sfxDiamondCollect();
