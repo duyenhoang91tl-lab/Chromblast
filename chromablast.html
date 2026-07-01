@@ -7076,7 +7076,19 @@ function floodLoop(){
 
 function drawFlood(ctx,W,H){
   ctx.clearRect(0,0,W,H);
-  ctx.fillStyle='#f0f0f0'; ctx.fillRect(0,0,W,H);
+  const fT=Date.now()*0.0003;
+  const bg=ctx.createLinearGradient(0,0,W,H);
+  bg.addColorStop(0,'#fff6e8'); bg.addColorStop(0.5,'#f5eef8'); bg.addColorStop(1,'#eaf3fb');
+  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+  // giọt màu bồng bềnh trang trí kiểu bảng vẽ nghệ thuật
+  FLOOD_COLORS.forEach((col,i)=>{
+    const dx=(Math.sin(fT*0.7+i*1.7)*0.5+0.5)*W;
+    const dy=(Math.cos(fT*0.5+i*2.3)*0.5+0.5)*H*0.28+H*0.02;
+    ctx.save(); ctx.globalAlpha=0.12;
+    ctx.fillStyle=col;
+    ctx.beginPath(); ctx.arc(dx,dy,16+Math.sin(fT*2+i)*4,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  });
 
   const cellSize=32, gap=2, cols=FLOOD_GRID_SIZE, rows=FLOOD_GRID_SIZE;
   const gridW=cols*cellSize+(cols-1)*gap;
@@ -9390,6 +9402,36 @@ function spaceShoot(){
   sfxSpaceShoot();
 }
 
+function drawSpaceBg(ctx,W,H){
+  const t=Date.now()*0.0004;
+  const bg=ctx.createLinearGradient(0,0,0,H);
+  bg.addColorStop(0,'#050015'); bg.addColorStop(0.5,'#0a0a2a'); bg.addColorStop(1,'#000010');
+  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+  // tinh vân mờ ảo
+  [[W*0.2,H*0.2,90,'rgba(90,30,140,0.18)'],[W*0.8,H*0.55,110,'rgba(20,60,150,0.16)'],[W*0.45,H*0.85,80,'rgba(150,20,90,0.14)']].forEach(([nx,ny,nr,nc])=>{
+    const g=ctx.createRadialGradient(nx,ny,0,nx,ny,nr);
+    g.addColorStop(0,nc); g.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(nx,ny,nr,0,Math.PI*2); ctx.fill();
+  });
+  // hành tinh nhỏ góc trên
+  ctx.save();
+  const px=W*0.85, py=H*0.12, pr=22;
+  const pg=ctx.createRadialGradient(px-pr*0.3,py-pr*0.3,2,px,py,pr);
+  pg.addColorStop(0,'#ffd9a0'); pg.addColorStop(1,'#c86a2a');
+  ctx.fillStyle=pg; ctx.beginPath(); ctx.arc(px,py,pr,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle='rgba(255,220,180,0.4)'; ctx.lineWidth=3;
+  ctx.beginPath(); ctx.ellipse(px,py,pr*1.6,pr*0.35,-0.3,0,Math.PI*2); ctx.stroke();
+  ctx.restore();
+  // sao lấp lánh nhiều lớp
+  for(let i=0;i<35;i++){
+    const sx=(Math.sin(i*137.5)*0.5+0.5)*W;
+    const sy=(Math.cos(i*97.3+t*0.5)*0.5+0.5)*H;
+    const tw=0.4+0.5*Math.sin(t*3+i);
+    ctx.fillStyle=`rgba(200,220,255,${tw})`;
+    ctx.beginPath(); ctx.arc(sx,sy,0.9+tw,0,Math.PI*2); ctx.fill();
+  }
+}
+
 function spaceLoop(){
   if(!spaceMode){ spaceRAF=null; return; }
   const s=spaceState;
@@ -9472,8 +9514,7 @@ function spaceLoop(){
       s.invincible--;
     }
   }
-  ctx.fillStyle='#000010';
-  ctx.fillRect(0,0,W,H);
+  drawSpaceBg(ctx,W,H);
   ctx.fillStyle='#ffffff';
   for(let i=0;i<40;i++){
     const sx=(i*137+s.score*0.5)%W;
@@ -9937,8 +9978,18 @@ function mazeLoop(){
       if(s.timeLeft<=0){ s.gameOver=true; }
     }
   }
-  ctx.fillStyle='#0d0d2b';
-  ctx.fillRect(0,0,W,H);
+  const mzT=Date.now()*0.0005;
+  const bg=ctx.createRadialGradient(W/2,H*0.4,20,W/2,H*0.4,W*0.9);
+  bg.addColorStop(0,'#181850'); bg.addColorStop(0.6,'#0f0f38'); bg.addColorStop(1,'#08081e');
+  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+  // hạt sáng huyền ảo trôi nổi
+  for(let i=0;i<26;i++){
+    const fx=(Math.sin(i*91.7+mzT*0.6)*0.5+0.5)*W;
+    const fy=(Math.cos(i*63.1+mzT*0.8)*0.5+0.5)*H;
+    const fa=0.15+0.2*Math.sin(mzT*2+i);
+    ctx.fillStyle=`rgba(150,170,255,${fa})`;
+    ctx.beginPath(); ctx.arc(fx,fy,1.2,0,Math.PI*2); ctx.fill();
+  }
   ctx.fillStyle=s.timeLeft<=10?'#ff4444':'#88aaff';
   ctx.font='bold 16px monospace';
   ctx.textAlign='center';
@@ -9948,11 +9999,13 @@ function mazeLoop(){
   ctx.font='12px monospace';
   ctx.fillText('Vuốt hoặc phím mũi tên',8,28);
   const {cols,rows,cells,cellW,cellH,offX,offY}=s;
+  ctx.save();
+  ctx.shadowColor='rgba(120,150,255,0.6)'; ctx.shadowBlur=4;
   for(let r=0;r<rows;r++){
     for(let c=0;c<cols;c++){
       const x=offX+c*cellW, y=offY+r*cellH;
       const w=cells[r][c].walls;
-      ctx.strokeStyle='#5555cc';
+      ctx.strokeStyle='#7a8ae8';
       ctx.lineWidth=1.5;
       if(w[0]){ ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+cellW,y); ctx.stroke(); }
       if(w[1]){ ctx.beginPath(); ctx.moveTo(x+cellW,y); ctx.lineTo(x+cellW,y+cellH); ctx.stroke(); }
@@ -9960,7 +10013,13 @@ function mazeLoop(){
       if(w[3]){ ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x,y+cellH); ctx.stroke(); }
     }
   }
+  ctx.restore();
+  // quầng sáng cổng ra
   const ex=offX+(cols-1)*cellW+cellW/2, ey=offY+(rows-1)*cellH+cellH/2;
+  const glowPulse=0.5+0.5*Math.sin(mzT*3);
+  const eg=ctx.createRadialGradient(ex,ey,2,ex,ey,cellW*0.9);
+  eg.addColorStop(0,`rgba(255,220,80,${0.3+glowPulse*0.25})`); eg.addColorStop(1,'rgba(255,220,80,0)');
+  ctx.fillStyle=eg; ctx.beginPath(); ctx.arc(ex,ey,cellW*0.9,0,Math.PI*2); ctx.fill();
   ctx.font=Math.min(cellW,cellH)*0.8+'px serif';
   ctx.textAlign='center';
   ctx.textBaseline='middle';
