@@ -1212,6 +1212,7 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
   </div>
 
   <!-- Mode B timer + streak -->
+  <div id="secret-hearts" style="display:none;text-align:center;font-size:18px;margin-bottom:4px;letter-spacing:3px;"></div>
   <div id="timer-bar-wrap"><div id="timer-bar"></div></div>
   <div id="secret-streak-bar">
     <span style="font-size:11px;color:#888;">Chuỗi:</span>
@@ -1454,6 +1455,8 @@ let secretTimer = null;
 let secretUltra = false;
 let secretTimerEnd = 0;
 let timerRAF = null;
+let secretLives = 3;       // 3 tim — bấm sai liên tiếp 3 lần mất 1 tim, hết tim thì thua về map thường
+let secretMissStreak = 0;  // đếm số lần bấm sai liên tiếp
 let borderSparkInterval = null; // continuous outward sparks during secret mode
 let fireInterval = null; // fire border particles for Map ẩn 1 combo
 
@@ -2393,6 +2396,12 @@ document.getElementById('burst-count').addEventListener('click',()=>{
 /* ══════════════════════════════════════════
    MODE B — SECRET COLOR MATCH
 ══════════════════════════════════════════ */
+function renderSecretHearts(){
+  const el=document.getElementById('secret-hearts');
+  if(!el) return;
+  el.textContent='❤️'.repeat(Math.max(0,secretLives))+'🖤'.repeat(Math.max(0,3-secretLives));
+}
+
 function enterSecretMode(){
   unlockAchievement('secret1');
   endDrag();
@@ -2402,6 +2411,9 @@ function enterSecretMode(){
   secretMultiplier=1;
   secretUltra=false;
   secret1Gained=0;
+  secretLives=3; secretMissStreak=0;
+  document.getElementById('secret-hearts').style.display='block';
+  renderSecretHearts();
   awaitingSecretUnlock=false; // đã vào rồi → không trigger lại
 
   // Hide mode A UI
@@ -2438,6 +2450,7 @@ function enterSecretMode(){
 
 function exitSecretMode(){
   secretMode=false;
+  document.getElementById('secret-hearts').style.display='none';
   if(borderSparkInterval){ clearInterval(borderSparkInterval); borderSparkInterval=null; }
   if(fireInterval){ clearInterval(fireInterval); fireInterval=null; }
   document.getElementById('grid-wrap').classList.remove('fire-low','fire-high');
@@ -2721,8 +2734,22 @@ function onSCClick(e){
     // Shake visual
     const cell=getSC(r,c);
     if(cell){ cell.style.animation='none'; void cell.offsetWidth; cell.style.animation=''; }
+    // Bấm sai liên tiếp 3 lần → mất 1 tim; hết tim → thua, về map thường
+    secretMissStreak++;
+    if(secretMissStreak>=3){
+      secretMissStreak=0;
+      secretLives--;
+      renderSecretHearts();
+      sfxPenalty();
+      showComboFlash(0,false,'💔 Bấm sai liên tiếp!');
+      if(secretLives<=0){
+        forfeitHiddenMapScore();
+        setTimeout(()=>exitSecretMode(),400);
+      }
+    }
     return;
   }
+  secretMissStreak=0;
 
   // Valid blast — 1 điểm/ô, đồng bộ quy tắc map thường
   const ci=secretBoard[r][c];
@@ -2804,15 +2831,25 @@ function dropSecretTiles(){
 // Timer management
 function resetSecretTimer(){
   clearSecretTimer();
-  secretTimerEnd=Date.now()+SECRET_WINDOW;
+  // Đang ở chế độ lửa (ultra) → cửa sổ giữ lửa chỉ còn 1/2, phải bấm chuẩn liên tục mới duy trì
+  const windowMs = secretUltra ? SECRET_WINDOW/2 : SECRET_WINDOW;
+  secretTimerEnd=Date.now()+windowMs;
   animateTimerBar();
 
   secretTimer=setTimeout(()=>{
+    if(secretUltra){
+      // Không bấm kịp trong cửa sổ rút ngắn → tắt lửa, quay về bình thường (không thua, chơi tiếp)
+      secretUltra=false;
+      document.getElementById('grid-wrap').classList.remove('ultra-glow');
+      showComboFlash(0,false,'🔥 Hết lửa!');
+      resetSecretTimer();
+      return;
+    }
     // Hết giờ map ẩn 1 → TEST: luôn mở khoá MAP ẨN 2 ngay (không cần về map thường)
     // Production sau: nếu đạt điểm mới unlock, không đạt → exitSecretMode()
     secretMode=false; clearSecretTimer();
     startUnlockGate(0);
-  }, SECRET_WINDOW);
+  }, windowMs);
 }
 
 function clearSecretTimer(){
@@ -2824,10 +2861,11 @@ function clearSecretTimer(){
 
 function animateTimerBar(){
   const bar=document.getElementById('timer-bar');
+  const windowMs = secretUltra ? SECRET_WINDOW/2 : SECRET_WINDOW;
   function frame(){
     const now=Date.now();
     const remaining=Math.max(0, secretTimerEnd-now);
-    const pct=remaining/SECRET_WINDOW;
+    const pct=remaining/windowMs;
     bar.style.transform=`scaleX(${pct})`;
     bar.classList.toggle('danger', pct<0.3);
     if(remaining>0) timerRAF=requestAnimationFrame(frame);
@@ -7905,9 +7943,9 @@ function updateComboUI(){
 /* ══════════════════════════════════════════
    ĐIỂM BAY + CÂU KHEN + HIỆU ỨNG PHÁT SÁNG
 ══════════════════════════════════════════ */
-const PRAISE = ['NOT BAD','COOL','GOOD','GREAT','PERFECT','SPECTACULAR','UNREAL','LEGENDARY','GODLIKE'];
+const PRAISE = ['NOT BAD','COOL','GOOD','GREAT','IMPRESSIVE','AMAZING','PERFECT','SPECTACULAR','UNREAL','LEGENDARY','GODLIKE'];
 // Colors escalate: muted → teal → blue → purple → gold → red → pink → blaze → fire
-const PRAISE_COLOR = ['#9ab8b0','#5DCAA5','#378ADD','#7F77DD','#EF9F27','#E24B4A','#D4537E','#f7c948','#ff6b35'];
+const PRAISE_COLOR = ['#9ab8b0','#5DCAA5','#378ADD','#7F77DD','#4dd0e1','#ab47bc','#EF9F27','#E24B4A','#D4537E','#f7c948','#ff6b35'];
 function pIdx(level){ return Math.min(Math.max(level||1,1),PRAISE.length)-1; }
 
 function hexToRgba(hex,a){
