@@ -135,6 +135,126 @@ body {
   to   { opacity:0; transform: scale(1.05); pointer-events:none; }
 }
 
+/* ══════════════════ AUTH SCREEN (Đăng nhập / Đăng ký) ══════════════════ */
+#auth-screen {
+  position: fixed; inset: 0; z-index: 10000;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; font-family: inherit;
+}
+#auth-screen.hide { animation: startFadeOut 0.5s ease-in forwards; }
+.auth-card {
+  position: relative; z-index: 2;
+  width: 100%; max-width: 340px; margin: 16px;
+  background: rgba(20,10,40,0.85);
+  border: 1px solid rgba(255,200,0,0.25);
+  border-radius: 20px; padding: 28px 24px;
+  box-shadow: 0 0 40px rgba(255,160,0,0.15), 0 10px 40px rgba(0,0,0,0.5);
+  backdrop-filter: blur(6px);
+  animation: fadeUp 0.5s ease-out both;
+}
+.auth-logo {
+  text-align:center; font-size: 30px; font-weight: 900; letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+.auth-sub {
+  text-align:center; color: rgba(255,255,255,0.55); font-size: 12px;
+  margin-bottom: 22px; letter-spacing: .5px;
+}
+.auth-field { margin-bottom: 14px; }
+.auth-field label {
+  display:block; font-size: 11px; color: rgba(255,255,255,0.55);
+  margin-bottom: 6px; letter-spacing: .5px;
+}
+.auth-field input {
+  width: 100%; padding: 12px 14px; border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.06);
+  color: #fff; font-size: 15px; outline: none; transition: border-color .2s, background .2s;
+}
+.auth-field input:focus { border-color: #ffaa00; background: rgba(255,255,255,0.1); }
+.auth-error {
+  min-height: 16px; color: #ff6b6b; font-size: 12px; text-align:center;
+  margin-bottom: 10px;
+}
+.auth-submit-btn {
+  width: 100%; background: linear-gradient(135deg, #ff6600, #ffaa00, #ffdd00);
+  border: none; border-radius: 50px; padding: 13px; font-size: 15px;
+  font-weight: 800; color: #1a0a00; cursor: pointer; letter-spacing: .5px;
+  box-shadow: 0 4px 18px rgba(255,160,0,0.4);
+  transition: transform 0.1s;
+}
+.auth-submit-btn:active { transform: scale(0.97); }
+.auth-switch {
+  text-align:center; margin-top: 16px; font-size: 12.5px; color: rgba(255,255,255,0.55);
+}
+.auth-switch a { color: #ffcc55; text-decoration: none; font-weight: 700; cursor:pointer; }
+.auth-form { display: none; }
+.auth-form.active { display: block; }
+
+/* ══════════════════ ADMIN PANEL ══════════════════ */
+#admin-btn {
+  background: linear-gradient(135deg,#ff6b35,#f7c948); color:#1a0a00;
+  border:none; border-radius: 8px; font-size: 11px; font-weight:800;
+  padding: 6px 10px; cursor:pointer; letter-spacing:.3px;
+}
+#admin-panel {
+  position: fixed; inset:0; z-index: 10001; display:none;
+  align-items:center; justify-content:center; background: rgba(0,0,0,0.7);
+  padding: 20px;
+}
+#admin-panel.show { display:flex; }
+.admin-card {
+  width:100%; max-width: 380px; max-height: 82vh; overflow-y:auto;
+  background: #17102b; border: 1px solid rgba(255,200,0,0.25);
+  border-radius: 18px; padding: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+}
+.admin-title {
+  font-size: 17px; font-weight: 900; color:#f7c948; margin-bottom: 4px;
+  display:flex; justify-content:space-between; align-items:center;
+}
+.admin-close {
+  background:none; border:none; color:#aaa; font-size:20px; cursor:pointer; line-height:1;
+}
+.admin-sub { font-size: 11.5px; color: rgba(255,255,255,0.5); margin-bottom:14px; }
+.admin-map-btn {
+  width:100%; text-align:left; background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1); color:#fff; border-radius: 10px;
+  padding: 10px 12px; margin-bottom: 8px; font-size: 13.5px; cursor:pointer;
+  transition: background .15s, border-color .15s;
+}
+.admin-map-btn:hover { background: rgba(255,180,0,0.15); border-color: rgba(255,180,0,0.4); }
+.admin-map-btn b { color:#ffcc55; }
+
+/* ══════════════════ ACCOUNT / LOGOUT ══════════════════ */
+#account-btn {
+  background: rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2);
+  border-radius: 8px; color:#fff; font-size: 15px; width:32px; height:32px;
+  cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0;
+}
+#account-panel {
+  position: fixed; inset:0; z-index: 10001; display:none;
+  align-items:center; justify-content:center; background: rgba(0,0,0,0.7);
+  padding: 20px;
+}
+#account-panel.show { display:flex; }
+.account-user {
+  font-size: 12.5px; color: rgba(255,255,255,0.6); margin-bottom: 18px;
+}
+.account-user b { color:#ffcc55; }
+.account-section-title {
+  font-size: 12px; font-weight:800; color:#f7c948; letter-spacing:.5px;
+  margin-bottom: 12px;
+}
+.logout-btn {
+  width:100%; background: rgba(255,80,80,0.15); border:1px solid rgba(255,80,80,0.4);
+  color:#ff8080; border-radius: 12px; padding: 12px; font-size: 14px; font-weight:700;
+  cursor:pointer; margin-top: 6px;
+}
+.logout-btn:active { transform: scale(0.98); }
+.account-msg { min-height:16px; font-size:12px; text-align:center; margin-bottom:10px; }
+.account-msg.err { color:#ff6b6b; }
+.account-msg.ok  { color:#7fe08a; }
+hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); margin:18px 0; }
+
 #grid-wrap {
   position: relative; border-radius: 14px; overflow: visible;
   transition: box-shadow 0.4s;
@@ -725,6 +845,45 @@ body {
 </style>
 </head>
 <body>
+<div id="auth-screen">
+  <div class="start-bg"></div>
+  <div class="auth-card">
+    <div class="auth-logo"><span class="logo-chroma">CHROMA</span><span class="logo-blast">BLAST</span></div>
+    <div class="auth-sub">🔐 Đăng nhập để bắt đầu chơi</div>
+
+    <form id="login-form" class="auth-form active">
+      <div class="auth-field">
+        <label>Tên đăng nhập</label>
+        <input type="text" id="login-username" autocomplete="username" required>
+      </div>
+      <div class="auth-field">
+        <label>Mật khẩu</label>
+        <input type="password" id="login-password" autocomplete="current-password" required>
+      </div>
+      <div class="auth-error" id="login-error"></div>
+      <button type="submit" class="auth-submit-btn">ĐĂNG NHẬP</button>
+      <div class="auth-switch">Chưa có tài khoản? <a id="show-register">Đăng ký ngay</a></div>
+    </form>
+
+    <form id="register-form" class="auth-form">
+      <div class="auth-field">
+        <label>Tên đăng nhập</label>
+        <input type="text" id="register-username" autocomplete="username" required>
+      </div>
+      <div class="auth-field">
+        <label>Mật khẩu</label>
+        <input type="password" id="register-password" autocomplete="new-password" required>
+      </div>
+      <div class="auth-field">
+        <label>Nhập lại mật khẩu</label>
+        <input type="password" id="register-password2" autocomplete="new-password" required>
+      </div>
+      <div class="auth-error" id="register-error"></div>
+      <button type="submit" class="auth-submit-btn">ĐĂNG KÝ</button>
+      <div class="auth-switch">Đã có tài khoản? <a id="show-login">Đăng nhập</a></div>
+    </form>
+  </div>
+</div>
 <div id="start-screen">
   <div class="start-bg"></div>
   <div class="start-stars" id="start-stars"></div>
@@ -756,8 +915,46 @@ body {
       <div style="font-size:10px;color:#555;margin-top:4px">ChromaBlast</div>
     </div>
     <div id="game-controls" style="display:flex;gap:6px;align-items:center;">
+      <button id="admin-btn" title="Bảng admin - chọn map ẩn" style="display:none;">🛠️ ADMIN</button>
+      <button id="account-btn" title="Tài khoản">👤</button>
       <button id="mute-btn" title="Tắt/bật âm thanh" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">🔊</button>
       <button id="pause-btn" title="Tạm dừng" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">⏸</button>
+    </div>
+  </div>
+
+  <div id="account-panel">
+    <div class="admin-card">
+      <div class="admin-title"><span>👤 Tài khoản</span><button class="admin-close" id="account-close-btn">✕</button></div>
+      <div class="account-user">Đang đăng nhập: <b id="account-username-box">—</b></div>
+
+      <div class="account-section-title">🔑 Đổi mật khẩu</div>
+      <form id="change-password-form">
+        <div class="auth-field">
+          <label>Mật khẩu hiện tại</label>
+          <input type="password" id="cp-old" autocomplete="current-password" required>
+        </div>
+        <div class="auth-field">
+          <label>Mật khẩu mới</label>
+          <input type="password" id="cp-new" autocomplete="new-password" required>
+        </div>
+        <div class="auth-field">
+          <label>Nhập lại mật khẩu mới</label>
+          <input type="password" id="cp-new2" autocomplete="new-password" required>
+        </div>
+        <div class="account-msg" id="cp-msg"></div>
+        <button type="submit" class="auth-submit-btn">CẬP NHẬT MẬT KHẨU</button>
+      </form>
+
+      <hr class="account-divider">
+      <button class="logout-btn" id="logout-btn">🚪 Đăng xuất</button>
+    </div>
+  </div>
+
+  <div id="admin-panel">
+    <div class="admin-card">
+      <div class="admin-title"><span>🛠️ Chọn map ẩn để test</span><button class="admin-close" id="admin-close-btn">✕</button></div>
+      <div class="admin-sub">Chỉ tài khoản admin mới thấy bảng này. Bấm vào map để vào chơi thử ngay lập tức.</div>
+      <div id="admin-map-list"></div>
     </div>
   </div>
 
@@ -849,12 +1046,17 @@ body {
   <div id="hint-bar">Chạm khối → ghost hiện · Di ngón → ghost bám · Thả trên ô → đặt · Thả vùng trống → xoay</div>
 
   <!-- Nút xoay khối — hiện khi đã chọn 1 khối -->
-  <div id="rotate-bar" style="display:none;justify-content:center;margin-top:6px;">
+  <div id="rotate-bar" style="display:none;justify-content:center;gap:10px;margin-top:6px;">
     <button id="rotate-btn" style="
       background:linear-gradient(135deg,#378ADD,#7F77DD);color:#fff;border:none;
       border-radius:12px;padding:8px 28px;font-size:14px;font-weight:700;cursor:pointer;
       box-shadow:0 2px 10px rgba(55,138,221,0.4);letter-spacing:0.5px;
     ">🔄 Xoay</button>
+    <button id="rotate-confirm-btn" title="Khoá xoay, kéo khối vào bàn" style="
+      background:linear-gradient(135deg,#2ecc71,#27ae60);color:#fff;border:none;
+      border-radius:12px;padding:8px 20px;font-size:14px;font-weight:700;cursor:pointer;
+      box-shadow:0 2px 10px rgba(46,204,113,0.4);letter-spacing:0.5px;
+    ">✓</button>
   </div>
 
   <!-- Mode B timer + streak -->
@@ -989,6 +1191,16 @@ let cellBurstCount = {};
 // Mode B state
 let secretBoard = [];        // 8x8 color indices
 let secretMode = false;
+// (Khai báo sớm các biến mode bị dùng trong startGame() trước khi đoạn code khai báo gốc của chúng chạy tới —
+//  nếu không sẽ bị lỗi "Cannot access before initialization" (TDZ) làm crash startGame() ngay từ đầu,
+//  khiến bàn cờ và các viên gạch không bao giờ được vẽ ra.)
+let snakeMode=false, snakeRAF=null, snakeLast=0;
+let brickMode=false, brickRAF=null, brickLast=0;
+let runnerMode=false, runnerRAF=null, runnerLast=0, runnerElapsed=0, runnerWon=false;
+let spaceMode=false, spaceRAF=null, spaceWon=false;
+let rhythmMode=false, rhythmRAF=null, rhythmWon=false;
+let mazeMode=false, mazeRAF=null, mazeWon=false;
+let megaMode=false, megaRAF=null, megaWon=false;
 let gamePaused = false;
 let secretStreak = 0;
 let secretMultiplier = 1;
@@ -1355,6 +1567,7 @@ let slotEls = [];                 // các ô khối hiện tại dưới khay
 let hoverMode = false;            // đã chọn bằng chạm → ghost bám theo chuột (desktop)
 let lastMouseX=0, lastMouseY=0;   // vị trí con trỏ cuối — dùng khi xoay để update preview
 const drag = { active:false, moved:false, sx:0, sy:0, wasSelected:false, pointerType:'mouse' };
+let rotateLocked=false;           // true sau khi bấm ✓ — chạm nền lưới sẽ KHÔNG xoay nhầm nữa
 
 // Hình học lưới theo toạ độ viewport (đọc trực tiếp để đúng cả khi cuộn/zoom)
 function gridGeom(){
@@ -1381,12 +1594,16 @@ function pieceBox(piece){
 
 // Quy đổi vị trí con trỏ → ô gốc (góc trên-trái khung bao của khối).
 function originFromPointer(x,y,piece,forceType){
-  const {g,bbW,bbH}=pieceBox(piece);
+  const {g,bbW,bbH,maxR,maxC}=pieceBox(piece);
   const [ax,ay]=ghostAnchor(x,y,bbH,forceType);
-  const ox=ax-bbW/2, oy=ay-bbH/2;             // góc trên-trái khối trong viewport
-  const C=Math.round((ox-g.x0)/g.stepX);
-  const R=Math.round((oy-g.y0)/g.stepY);
-  if(R<-1||C<-1||R>ROWS||C>COLS) return null; // con trỏ ở xa lưới
+  const ox=ax-bbW/2, oy=ay-bbH/2;             // góc trên-trái khung bao của khối trong viewport
+  let C=Math.round((ox-g.x0)/g.stepX);
+  let R=Math.round((oy-g.y0)/g.stepY);
+  if(R<-1-maxR||C<-1-maxC||R>ROWS+maxR||C>COLS+maxC) return null; // con trỏ ở xa lưới
+  // Ghim khối vào trong biên lưới gần nhất — quan trọng sau khi XOAY, vì bao của khối
+  // đổi chiều (ngang↔dọc) nên tâm con trỏ cũ có thể đẩy khối ra ngoài mép dù vẫn còn chỗ đặt.
+  R=Math.max(0,Math.min(ROWS-1-maxR,R));
+  C=Math.max(0,Math.min(COLS-1-maxC,C));
   return { R, C };
 }
 
@@ -1466,7 +1683,7 @@ function placeAt(R,C){
 
 // Reset toàn bộ trạng thái kéo/chọn.
 function endDrag(){
-  drag.active=false; hoverMode=false; selected=null;
+  drag.active=false; hoverMode=false; selected=null; rotateLocked=false;
   hideGhost(); clearPreview(); highlightSlot(null);
   showRotateBar(false);
 }
@@ -1483,6 +1700,7 @@ function onSlotPointerDown(e, idx){
   drag.pointerType=e.pointerType||'mouse';
   drag.wasSelected=(selected===idx);
   selected=idx;
+  rotateLocked=false;
   if(!drag.wasSelected) sfxSelect();
   // Touch: chọn ngay + ghost hiện ngay (không cần giữ/kéo)
   hoverMode=isTouch;
@@ -1527,10 +1745,21 @@ function onDocPointerCancel(){ if(drag.active||hoverMode) endDrag(); }
 // Rotate button (vẫn giữ cho mouse/desktop)
 document.getElementById('rotate-btn').addEventListener('click', ()=>{ rotatePiece(selected); });
 
+// Nút ✓ — khoá xoay lại: giữ khối đang chọn + ghost, chỉ ẩn thanh xoay và tắt
+// việc "chạm nền lưới → xoay" để kéo-thả vào bàn không bị xoay nhầm nữa.
+document.getElementById('rotate-confirm-btn').addEventListener('click', (e)=>{
+  e.stopPropagation();
+  if(selected===null) return;
+  rotateLocked=true;
+  showRotateBar(false);
+  showHint('✅ Đã khoá xoay — kéo khối vào bàn để đặt!');
+});
+
 // Tap trên nền lưới (không phải ô cụ thể) khi đang giữ khối → xoay
+// (bỏ qua nếu đã bấm ✓ khoá xoay, để không cản trở thao tác kéo-thả)
 document.getElementById('grid').addEventListener('pointerdown', e=>{
   if(e.target.classList.contains('cell')) return;
-  if(selected!==null && !secretMode){ e.stopPropagation(); rotatePiece(selected); }
+  if(selected!==null && !secretMode && !rotateLocked){ e.stopPropagation(); rotatePiece(selected); }
 });
 
 function showRotateBar(show){
@@ -3591,11 +3820,10 @@ FCV().addEventListener('pointercancel', fruitPointerUp);
 
 
 /* ══════════════════════════════════════════
-   MAP ẨN 4 — CHÓ TRỐN ONG (VƯỜN HOA)
-   Chó Samoyed tự động né ong khi chúng lại gần.
-   Kéo ngón tay/chuột để chỉ đường chạy cho chó.
-   Chạm trúng ong để đập bay chúng — ghi điểm + chuỗi combo.
-   Ong chạm chó → mất 1 tim. Hết tim → thua, về map thường.
+   MAP ẨN 4 — ONG VÒ VẼ vs CHÓ SAMOYED
+   Kéo ngón tay/chuột để DI CHUYỂN chó né bầy ong.
+   Ăn 🍖 rơi trên sân để lên cấp kỹ năng, học đòn đánh trả ong.
+   Bị ong đốt khi hết máu → thua, về map thường.
 ══════════════════════════════════════════ */
 let beeMode=false, beeRAF=null, beeLast=0, beeElapsed=0, beeSpawnTimer=0;
 let bees=[], dog=null, popFx=[], beeBuzzTimer=0;
@@ -3603,10 +3831,26 @@ let dogStung=false, dogStungTimer=0;
 let dogImg=null; // pre-rendered SVG chibi Samoyed
 const dogSVGW=160, dogSVGH=180;
 let beeCombo=0, beeComboTimer=0;
-let gdHearts=5, gdMaxHearts=5, gdWave=1, gdWaveTimer=0, gdWaveDuration=13;
-let gdPointerDown=false;
-const FLEE_RADIUS=90, PANIC_RADIUS=45;
 const BCV = () => document.getElementById('bee-canvas');
+
+// ── di chuyển chó (kéo để né ong) ──
+let dogTX=0, dogTY=0;           // vị trí đích khi đang kéo
+let dogDragging=false;
+const DOG_MAX_SPEED = 360;      // px/s — tốc độ tối đa chó có thể chạy
+
+// ── máu chó (thay cho thua ngay khi bị chạm) ──
+let dogHP=3, dogMaxHP=3;
+let dogInvuln=false, dogInvulnTimer=0;
+const DOG_INVULN_MS = 1000;     // bất tử tạm thời sau khi bị đốt
+
+// ── cho chó ăn để lên kỹ năng đánh trả ong ──
+let foods=[], foodSpawnTimer=0;
+const FOOD_LIFETIME = 7000;
+let foodEaten=0, skillLevel=0;
+const FOOD_PER_LEVEL = 3;       // ăn đủ số này thì lên 1 cấp kỹ năng (tối đa 3)
+let biteTimer=0, barkTimer=0;
+let skillFx=[];                 // hiệu ứng đòn đánh (cắn/sủa)
+let levelFlashT=-1;             // thời điểm vừa lên cấp (để hiện chữ)
 
 function triggerBeeUnlock(){
   pendingUnlock='bee';
@@ -3614,10 +3858,10 @@ function triggerBeeUnlock(){
   document.getElementById('unlock-desc').innerHTML=
     'Bạn đã ghi thêm <b>'+TEST_UNLOCK_SCORE+' điểm</b> ở map thường!<br><br>'+
     '🐶 Một bầy <b>ong vò vẽ</b> đang lao tới bé Samoyed!<br>'+
-    'Kéo ngón tay/chuột để <b>chỉ đường chạy</b> cho chó né ong.<br>'+
-    'Chạm trúng ong để <b>đập bay</b> chúng, ghi điểm combo!<br>'+
-    'Để ong chạm chó quá nhiều lần → <b>thua, về map thường</b>.';
-  document.getElementById('unlock-btn').textContent='🐝 BẢO VỆ CHÓ!';
+    'Kéo ngón tay/chuột để <b>di chuyển chó né ong</b>.<br>'+
+    'Nhặt 🍖 rơi trên sân để lên cấp, học <b>đòn đánh trả ong</b>!<br>'+
+    'Chó có <b>3 mạng</b> — bị ong đốt hết mạng → <b>thua, về map thường</b>.';
+  document.getElementById('unlock-btn').textContent='🐝 GIẢI CỨU CHÓ!';
   document.getElementById('unlock-overlay').classList.add('show');
 }
 
@@ -3628,7 +3872,7 @@ function enterBeeMode(){
   document.getElementById('grid').style.display='none';
   document.getElementById('pieces-area').style.display='none';
   document.getElementById('hint-bar').style.display='';
-  document.getElementById('hint-bar').textContent='Kéo ngón tay để chỉ đường chạy · Chạm ong để đập bay!';
+  document.getElementById('hint-bar').textContent='Kéo để dẫn chó né ong · Ăn 🍖 để lên cấp kỹ năng đánh trả!';
   BCV().classList.add('active');
   document.getElementById('grid-wrap').classList.add('secret-mode');
   document.getElementById('mode-badge').textContent='🐝 MAP ẨN 4';
@@ -3642,20 +3886,13 @@ function enterBeeMode(){
 
 function initBee(){
   const cv=BCV(), W=cv.width, H=cv.height;
-  dog={
-    x:W/2, y:H*0.72, r:32, vx:0, vy:0,
-    targetX:null, targetY:null,
-    speed:110, stamina:100, maxStamina:100,
-    staminaDrain:25, staminaRegen:14,
-    facing:1, panicLevel:0,
-  };
-  bees=[]; popFx=[];
-  beeElapsed=0; beeSpawnTimer=0;
+  dog={x:W/2, y:H/2, r:32};
+  dogTX=dog.x; dogTY=dog.y; dogDragging=false;
+  bees=[]; popFx=[]; foods=[]; skillFx=[];
+  beeElapsed=0; beeSpawnTimer=0; foodSpawnTimer=0;
   dogStung=false; dogStungTimer=0;
-  beeCombo=0; beeComboTimer=0;
-  gdHearts=gdMaxHearts; gdWave=1; gdWaveTimer=0;
-  gdPointerDown=false;
-  updateBeeHUD();
+  dogHP=dogMaxHP; dogInvuln=false; dogInvulnTimer=0;
+  foodEaten=0; skillLevel=0; biteTimer=0; barkTimer=0; levelFlashT=-1;
   if(!dogImg) buildDogSVG();
 }
 
@@ -3687,53 +3924,38 @@ function spawnBees(n,W,H){
   }
 }
 
-// chó tự né ong gần nhất + người chơi chỉ đường
-function updateDog(dt,W,H){
-  let ax=0, ay=0, fleeing=false;
-  let nearestDist=Infinity, nearestBee=null;
-  bees.forEach(b=>{
-    const d=Math.hypot(b.x-dog.x,b.y-dog.y);
-    if(d<nearestDist){ nearestDist=d; nearestBee=b; }
+function killBee(b){
+  b.dead=true;
+  score+=12; if(score>best) best=score;
+  sfxBeeKill();
+  beeCombo++;
+  if(beeComboTimer) clearTimeout(beeComboTimer);
+  beeComboTimer=setTimeout(()=>{ beeCombo=0; beeComboTimer=0; },1500);
+  const beeBonus=beeCombo*5; score+=beeBonus; if(score>best)best=score;
+  if(beeCombo>=5) sfxScoreMilestone();
+  popFx.push({x:b.x,y:b.y,t:0});
+}
+
+function spawnFood(W,H){
+  const margin=40;
+  foods.push({
+    x: margin+Math.random()*(W-margin*2),
+    y: margin+Math.random()*(H*0.7-margin)+H*0.1,
+    born: performance.now(),
+    bob: Math.random()*10
   });
+}
 
-  if(nearestBee && nearestDist<FLEE_RADIUS){
-    fleeing=true;
-    const dx=dog.x-nearestBee.x, dy=dog.y-nearestBee.y;
-    const dist=Math.max(1,nearestDist);
-    const strength=1-(dist/FLEE_RADIUS);
-    const fleeForce=180+strength*220;
-    ax+=(dx/dist)*fleeForce; ay+=(dy/dist)*fleeForce;
-    dog.panicLevel=Math.min(1,Math.max(0,1-(dist-PANIC_RADIUS)/(FLEE_RADIUS-PANIC_RADIUS)));
-  } else {
-    dog.panicLevel=Math.max(0,dog.panicLevel-dt*3);
+function gainSkillXP(n){
+  foodEaten+=n;
+  while(foodEaten>=FOOD_PER_LEVEL && skillLevel<3){
+    foodEaten-=FOOD_PER_LEVEL;
+    skillLevel++;
+    levelFlashT=0;
+    sfxScoreMilestone();
+    const names=['','🦴 Cắn phản đòn!','🐾 Cắn nhanh hơn!','📢 Sủa chấn động!'];
+    showComboFlash(0,true,names[skillLevel]||'');
   }
-
-  if(dog.targetX!==null && dog.stamina>0){
-    const tdx=dog.targetX-dog.x, tdy=dog.targetY-dog.y;
-    const tdist=Math.hypot(tdx,tdy);
-    if(tdist>5){
-      ax+=(tdx/tdist)*240; ay+=(tdy/tdist)*240;
-      dog.stamina=Math.max(0,dog.stamina-dog.staminaDrain*dt);
-    } else {
-      dog.targetX=null; dog.targetY=null;
-    }
-  } else {
-    dog.stamina=Math.min(dog.maxStamina,dog.stamina+dog.staminaRegen*dt);
-  }
-
-  if(!fleeing && dog.targetX===null){ ax-=dog.vx*5; ay-=dog.vy*5; }
-
-  const maxSpeed=fleeing?dog.speed*1.3:dog.speed;
-  dog.vx+=ax*dt; dog.vy+=ay*dt;
-  const spd=Math.hypot(dog.vx,dog.vy);
-  if(spd>maxSpeed){ dog.vx=(dog.vx/spd)*maxSpeed; dog.vy=(dog.vy/spd)*maxSpeed; }
-  dog.vx*=(1-3*dt); dog.vy*=(1-3*dt);
-  dog.x+=dog.vx*dt; dog.y+=dog.vy*dt;
-
-  const minX=dog.r+4, maxX=W-dog.r-4, minY=H*0.3, maxY=H-dog.r-14;
-  dog.x=Math.max(minX,Math.min(maxX,dog.x));
-  dog.y=Math.max(minY,Math.min(maxY,dog.y));
-  if(Math.abs(dog.vx)>5) dog.facing=dog.vx>0?1:-1;
 }
 
 function beeLoop(now){
@@ -3743,8 +3965,33 @@ function beeLoop(now){
   const cv=BCV(), ctx=cv.getContext('2d'), W=cv.width, H=cv.height;
   const d=beeDiff();
 
-  gdWaveTimer+=dt;
-  if(gdWaveTimer>=gdWaveDuration){ gdWaveTimer=0; gdWave++; updateBeeHUD(); }
+  // ── chó di chuyển về phía điểm kéo (né ong) ──
+  if(dogDragging){
+    const ddx=dogTX-dog.x, ddy=dogTY-dog.y;
+    const dist=Math.hypot(ddx,ddy);
+    const step=DOG_MAX_SPEED*dt;
+    if(dist<=step){ dog.x=dogTX; dog.y=dogTY; }
+    else { dog.x+=ddx/dist*step; dog.y+=ddy/dist*step; }
+  }
+  dog.x=Math.max(dog.r*0.7,Math.min(W-dog.r*0.7,dog.x));
+  dog.y=Math.max(dog.r*0.9,Math.min(H-dog.r*0.5,dog.y));
+
+  // ── thức ăn: rơi ra định kỳ, chó chạy tới ăn để lên kỹ năng ──
+  foodSpawnTimer+=dt*1000;
+  if(foodSpawnTimer>=2600 && foods.length<3){
+    foodSpawnTimer=0;
+    spawnFood(W,H);
+  }
+  foods=foods.filter(f=>now-f.born<FOOD_LIFETIME);
+  for(const f of foods){
+    if(!f.eaten && Math.hypot(f.x-dog.x,f.y-dog.y)<dog.r+14){
+      f.eaten=true;
+      score+=6; if(score>best) best=score;
+      sfxBeeKill();
+      gainSkillXP(1);
+    }
+  }
+  foods=foods.filter(f=>!f.eaten);
 
   beeSpawnTimer+=dt;
   if(beeSpawnTimer>=d.spawnInterval){
@@ -3766,28 +4013,74 @@ function beeLoop(now){
     b.angle+=Math.sign(da)*Math.min(Math.abs(da), 3.5*dt);
     const vx=Math.cos(b.angle)*d.speed, vy=Math.sin(b.angle)*d.speed;
     b.x+=vx*dt; b.y+=vy*dt;
-    if(Math.hypot(b.x-dog.x,b.y-dog.y) < dog.r+6){
-      b.dead=true; b.stungHit=true;
+  }
+
+  // ── kỹ năng đánh trả: cắn gần (cấp 1-2) ──
+  if(skillLevel>=1){
+    biteTimer+=dt*1000;
+    const biteInterval = skillLevel>=2 ? 900 : 1500;
+    const biteRadius = dog.r*(skillLevel>=2 ? 2.1 : 1.7);
+    const biteKills = skillLevel>=2 ? 2 : 1;
+    if(biteTimer>=biteInterval){
+      const near=bees.filter(b=>!b.dead && Math.hypot(b.x-dog.x,b.y-dog.y)<biteRadius)
+                      .sort((a,b2)=>Math.hypot(a.x-dog.x,a.y-dog.y)-Math.hypot(b2.x-dog.x,b2.y-dog.y));
+      if(near.length){
+        biteTimer=0;
+        skillFx.push({type:'bite',x:dog.x,y:dog.y,r:biteRadius,t:0});
+        near.slice(0,biteKills).forEach(b=>killBee(b));
+      }
+    }
+  }
+  // ── kỹ năng đánh trả: sủa chấn động diện rộng (cấp 3) ──
+  if(skillLevel>=3){
+    barkTimer+=dt*1000;
+    if(barkTimer>=3000){
+      barkTimer=0;
+      const barkRadius=dog.r*3.4;
+      const hit=bees.filter(b=>!b.dead && Math.hypot(b.x-dog.x,b.y-dog.y)<barkRadius);
+      if(hit.length){
+        skillFx.push({type:'bark',x:dog.x,y:dog.y,r:barkRadius,t:0});
+        hit.forEach(b=>killBee(b));
+      }
+    }
+  }
+
+  bees=bees.filter(b=>!b.dead);
+  updateScoreUI();
+
+  // ── ong chạm chó → mất 1 mạng (trừ khi đang bất tử tạm thời) ──
+  if(dogInvuln){
+    dogInvulnTimer+=dt*1000;
+    if(dogInvulnTimer>=DOG_INVULN_MS){ dogInvuln=false; dogStung=false; }
+  } else {
+    let hitBee=null;
+    for(const b of bees){
+      if(Math.hypot(b.x-dog.x,b.y-dog.y) < dog.r+6){ hitBee=b; break; }
+    }
+    if(hitBee){
+      hitBee.dead=true;
+      dogHP=Math.max(0,dogHP-1);
+      dogInvuln=true; dogInvulnTimer=0;
+      dogStung=true; dogStungTimer=0;
+      sfxDogStung();
+      if(dogHP<=0){
+        bees=bees.filter(b=>!b.dead);
+        popFx.forEach(p=>p.t+=dt); popFx=popFx.filter(p=>p.t<0.35);
+        drawBee(ctx,W,H,now);
+        beeGameOver();
+        return;
+      }
     }
   }
   const stungBees=bees.filter(b=>b.stungHit);
   bees=bees.filter(b=>!b.dead);
 
-  if(stungBees.length>0 && !dogStung){
-    dogStung=true; dogStungTimer=0;
-    gdHearts=Math.max(0,gdHearts-1);
-    updateBeeHUD();
-    sfxDogStung();
-    if(gdHearts<=0){ popFx.push({x:dog.x,y:dog.y,t:0}); beeGameOver(); return; }
-  }
-  if(beeComboTimer>0){ beeComboTimer-=dt; if(beeComboTimer<=0){ beeComboTimer=0; beeCombo=0; } }
-  if(dogStung){
-    dogStungTimer += dt*1000;
-    if(dogStungTimer > 700) dogStung=false;
-  }
+  if(dogStung){ dogStungTimer += dt*1000; if(dogStungTimer>500) dogStung=false; }
 
   popFx.forEach(p=>p.t+=dt);
   popFx=popFx.filter(p=>p.t<0.35);
+  skillFx.forEach(p=>p.t+=dt);
+  skillFx=skillFx.filter(p=>p.t<0.5);
 
   drawBee(ctx,W,H,now);
 
@@ -3930,14 +4223,18 @@ function drawBee(ctx,W,H,now){
   }
   ctx.restore();
 
-  // ── điểm đích chỉ đường (nếu có) ──
-  if(dog.targetX!==null && dog.stamina>0){
-    ctx.beginPath(); ctx.arc(dog.targetX,dog.targetY,8+Math.sin(now*0.006)*2,0,Math.PI*2);
-    ctx.strokeStyle='rgba(255,255,255,0.4)'; ctx.lineWidth=1.5; ctx.stroke();
-    ctx.beginPath(); ctx.arc(dog.targetX,dog.targetY,3,0,Math.PI*2);
-    ctx.fillStyle='rgba(255,255,255,0.45)'; ctx.fill();
-    ctx.beginPath(); ctx.moveTo(dog.x,dog.y); ctx.lineTo(dog.targetX,dog.targetY);
-    ctx.strokeStyle='rgba(255,255,255,0.15)'; ctx.lineWidth=1; ctx.setLineDash([3,5]); ctx.stroke(); ctx.setLineDash([]);
+  // ── 🍖 thức ăn rơi trên sân ──
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  for(const f of foods){
+    const age=(now-f.born)/FOOD_LIFETIME;
+    const bob=Math.sin(now*0.004+f.bob)*3;
+    const warn = age>0.7 ? (0.4+0.6*Math.abs(Math.sin(now*0.01))) : 1;
+    ctx.save();
+    ctx.globalAlpha=warn;
+    ctx.shadowColor='rgba(255,220,120,0.8)'; ctx.shadowBlur=10;
+    ctx.font='26px system-ui';
+    ctx.fillText('🍖', f.x, f.y+bob);
+    ctx.restore();
   }
 
   drawDog(ctx,dog.x,dog.y,dog.r,now);
@@ -3952,6 +4249,17 @@ function drawBee(ctx,W,H,now){
     ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.fillText('🐝', 0, 0);
     ctx.restore();
+  }
+
+  // ── hiệu ứng kỹ năng đánh trả (cắn/sủa) ──
+  for(const p of skillFx){
+    const a=1-p.t/0.5, r=p.r*(0.4+0.6*(p.t/0.5));
+    ctx.strokeStyle = p.type==='bark' ? `rgba(140,220,255,${a})` : `rgba(255,180,90,${a})`;
+    ctx.lineWidth = p.type==='bark' ? 4 : 3;
+    ctx.shadowColor = p.type==='bark' ? 'rgba(120,200,255,0.8)' : 'rgba(255,160,60,0.8)';
+    ctx.shadowBlur=12*a;
+    ctx.beginPath(); ctx.arc(p.x,p.y,r,0,Math.PI*2); ctx.stroke();
+    ctx.shadowBlur=0;
   }
 
   // ── pop fx ──
@@ -3991,9 +4299,36 @@ function drawBee(ctx,W,H,now){
   ctx.shadowBlur=0;
   ctx.restore();
 
-  const barW=110, barX=W/2-barW/2, barY=H-14;
-  ctx.fillStyle='rgba(0,0,0,0.3)'; ctx.fillRect(barX,barY,barW,7);
-  ctx.fillStyle='#4FC3F7'; ctx.fillRect(barX,barY,barW*(dog.stamina/dog.maxStamina),7);
+  // hearts (mạng)
+  ctx.save();
+  ctx.font='18px system-ui'; ctx.textAlign='right'; ctx.textBaseline='top';
+  let heartsStr=''; for(let i=0;i<dogMaxHP;i++) heartsStr+= i<dogHP ? '❤️' : '🤍';
+  ctx.fillText(heartsStr, W-10, 10);
+  ctx.restore();
+
+  // thanh kỹ năng + cấp
+  ctx.save();
+  const skillNames=['','🦴 Cắn','🦴 Cắn nhanh','📢 Sủa'];
+  ctx.font='bold 13px system-ui'; ctx.textAlign='left'; ctx.textBaseline='top';
+  ctx.fillStyle='rgba(255,220,150,0.95)';
+  ctx.shadowColor='rgba(200,120,20,0.7)'; ctx.shadowBlur=6;
+  const skillTxt = skillLevel>=3 ? '⭐ '+skillNames[3]+' MAX' : skillNames[skillLevel]?('Lv'+skillLevel+' '+skillNames[skillLevel]):'Chưa có kỹ năng';
+  ctx.fillText('🍖'+foodEaten+'/'+FOOD_PER_LEVEL+'  '+skillTxt, 12, 32);
+  ctx.restore();
+
+  // chữ lên cấp lóe sáng
+  if(levelFlashT>=0){
+    levelFlashT+=1;
+    if(levelFlashT<40){
+      const a=1-levelFlashT/40;
+      ctx.save();
+      ctx.globalAlpha=a;
+      ctx.font='bold 22px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillStyle='#fff4b0'; ctx.shadowColor='rgba(255,200,0,0.9)'; ctx.shadowBlur=14;
+      ctx.fillText('🎉 CHÓ LÊN CẤP KỸ NĂNG!', W/2, H*0.16-levelFlashT*0.6);
+      ctx.restore();
+    } else levelFlashT=-1;
+  }
 }
 
 function buildDogSVG(){
@@ -4035,8 +4370,7 @@ function buildDogSVG(){
   <ellipse cx="32"  cy="90" rx="16" ry="10" fill="rgba(255,130,160,0.28)"/>
   <ellipse cx="120" cy="90" rx="16" ry="10" fill="rgba(255,130,160,0.28)"/>
 </svg>`
-  const blob = new Blob([svgStr], {type:'image/svg+xml'});
-  const url = URL.createObjectURL(blob);
+  const url = 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svgStr);
   const img = new Image();
   img.src = url;
   dogImg = img;
@@ -4207,7 +4541,7 @@ function exitBeeToMain(){
   setTimeout(()=>triggerGoldUnlock(), 400);
 }
 
-/* ── điều khiển: chạm đập ong / kéo chỉ đường map ẩn 4 ── */
+/* ── điều khiển di chuyển chó map ẩn 4 ── */
 function beeCanvasPt(e){
   const cv=BCV(), rect=cv.getBoundingClientRect();
   return {
@@ -4237,19 +4571,17 @@ function beeSwatAt(pt){
 function beePointerDown(e){
   if(!beeMode) return;
   e.preventDefault();
-  gdPointerDown=true;
+  dogDragging=true;
   const pt=beeCanvasPt(e);
-  if(!beeSwatAt(pt)){
-    dog.targetX=pt.x; dog.targetY=pt.y;
-  }
+  dogTX=pt.x; dogTY=pt.y;
 }
 function beePointerMove(e){
-  if(!beeMode||!gdPointerDown) return;
+  if(!beeMode||!dogDragging) return;
   e.preventDefault();
   const pt=beeCanvasPt(e);
-  dog.targetX=pt.x; dog.targetY=pt.y;
+  dogTX=pt.x; dogTY=pt.y;
 }
-function beePointerUp(){ gdPointerDown=false; }
+function beePointerUp(){ dogDragging=false; }
 BCV().addEventListener('pointerdown', beePointerDown);
 BCV().addEventListener('pointermove', beePointerMove);
 BCV().addEventListener('pointerup', beePointerUp);
@@ -4344,8 +4676,7 @@ function buildGoldCatSVG(){
   <circle cx="58" cy="16" r="7" fill="#ffee22" opacity="0.95"/>
   <circle cx="58" cy="15" r="3.5" fill="white" opacity="0.5"/>
 </svg>`
-  const blob = new Blob([svgStr], {type:'image/svg+xml'});
-  const url = URL.createObjectURL(blob);
+  const url = 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svgStr);
   const img = new Image();
   img.src = url;
   goldCatImg = img;
@@ -4932,30 +5263,6 @@ function drawGoldMiner(ctx, cx, anchorY, now){
   const catX = cx - catW / 2;
   const catY = anchorY - catH + 10; // feet near platform, head visible
 
-  // animated tail — drawn before cat image
-  const tailSway = Math.sin(now * 0.0018) * 14;
-  const tx = cx + 38, ty = anchorY - 55;
-  ctx.save();
-  ctx.translate(tx, ty);
-  ctx.rotate(tailSway * Math.PI / 180);
-  ctx.strokeStyle = '#7a98aa'; ctx.lineWidth = 11; ctx.lineCap = 'round';
-  ctx.beginPath();
-  ctx.moveTo(0, 0);
-  ctx.bezierCurveTo(18, -5, 26, -24, 16, -42);
-  ctx.stroke();
-  ctx.strokeStyle = '#9abccc'; ctx.lineWidth = 6;
-  ctx.beginPath();
-  ctx.moveTo(0, 0);
-  ctx.bezierCurveTo(18, -5, 26, -24, 16, -42);
-  ctx.stroke();
-  // tail tip
-  ctx.strokeStyle = '#c0d8e4'; ctx.lineWidth = 6;
-  ctx.beginPath();
-  ctx.moveTo(16, -42);
-  ctx.bezierCurveTo(18, -52, 10, -58, 8, -52);
-  ctx.stroke();
-  ctx.restore();
-
   // draw SVG cat image
   if(goldCatImg && goldCatImg.complete && goldCatImg.naturalWidth > 0){
     ctx.drawImage(goldCatImg, catX, catY, catW, catH); // 68×82
@@ -5226,7 +5533,7 @@ function moleLoop(now){
         for(let i=0;i<pool.length;i++){ rnd-=weights[i]; if(rnd<=0){chosen=pool[i];break;} }
         h.animal=chosen;
         h.showT=0;
-        h.maxShow=Math.max(0.85, 2.6-moleElapsed/22000);
+        h.maxShow=Math.max(1.1, 2.8-moleElapsed/22000);
         h.riseT=0; h.fallT=-1; h.hit=false;
         if(!sfxMuted) sfxMoleAppear();
       }
@@ -5235,9 +5542,10 @@ function moleLoop(now){
         h.fallT+=dt*3;
         if(h.fallT>=1){ h.animal=null; h.nextSpawn=Math.random()*2+0.8; }
       } else {
-        // Phase 1 (0→0.32): slow peek — animal barely pokes head out
-        // Phase 2 (0.32→1): fast full rise — animal fully visible & hittable
-        const speed = h.riseT < 0.32 ? 1.6 : 4.2;
+        // Phase 1 (0→0.3): tease peek — pokes head out a little
+        // Phase 2 (0.3→0.5): hụp xuống — ducks back fully out of sight
+        // Phase 3 (0.5→1): bay lên — launches fully up to 100%, only now hittable
+        const speed = h.riseT < 0.3 ? 1.2 : h.riseT < 0.5 ? 3.0 : 2.0;
         h.riseT=Math.min(1, h.riseT+dt*speed);
         h.showT+=dt;
         if(h.showT>=h.maxShow && !h.hit){ h.fallT=0; }
@@ -5263,13 +5571,24 @@ function moleLoop(now){
   moleRAF=requestAnimationFrame(moleLoop);
 }
 
+function moleRise(h){
+  // Peek (0→0.3): pokes up a little as a tease
+  // Hụp xuống (0.3→0.5): ducks back down out of sight completely
+  // Bay lên (0.5→1): launches fully up to 100% — only this state is hittable
+  if(h.fallT>=0) return 1-easeOut(Math.min(h.fallT,1));
+  const t=h.riseT;
+  if(t<0.3) return easeOut(t/0.3)*0.18;
+  if(t<0.5) return 0.18*(1-easeOut((t-0.3)/0.2));
+  return easeOut((t-0.5)/0.5);
+}
+
 function tapMole(ex,ey){
   if(!moleMode) return;
   moleHammerX=ex; moleHammerY=ey; moleHammerVis=true; moleHammerAnim=1;
   let hit=false;
   for(const h of moleHoles){
-    if(!h.animal || h.fallT>=0 || h.hit || h.riseT<0.85) continue; // only hittable when fully risen
-    const rise=easeOut(h.riseT);
+    if(!h.animal || h.fallT>=0 || h.hit || h.riseT<1) continue; // only hittable once fully risen (100%)
+    const rise=moleRise(h);
     const yOff=(1-rise)*h.r*1.8;
     const hx=h.x, hy=h.y-yOff;
     if(Math.hypot(ex-hx, ey-hy)<h.r+12){
@@ -5368,11 +5687,8 @@ function drawMole(ctx,W,H,now,timeLeft){
   ctx.textAlign='center'; ctx.textBaseline='middle';
   for(const h of moleHoles){
     if(!h.animal) continue;
-    // Peek phase (riseT 0→0.32): only 18% visible; Full phase (0.32→1): 18%→100%
-    const rawRise = h.fallT>=0 ? 1-easeOut(Math.min(h.fallT,1))
-      : h.riseT<0.32 ? easeOut(h.riseT/0.32)*0.18
-      : 0.18 + easeOut((h.riseT-0.32)/0.68)*0.82;
-    const rise = rawRise;
+    // Peek → hụp xuống → bay lên: chỉ 0% hoặc 100%, không dừng lửng ở giữa
+    const rise = moleRise(h);
     if(rise<=0) continue;
     const yOff=(1-rise)*h.r*1.8;
     const hx=h.x, hy=h.y-yOff;
@@ -5404,8 +5720,8 @@ function drawMole(ctx,W,H,now,timeLeft){
 
     ctx.restore();
 
-    // hittable glow when fully risen
-    if(h.riseT>=0.85 && h.fallT<0 && !h.hit){
+    // hittable glow only once truly fully risen (100%) — not a premature 85% cue
+    if(h.riseT>=1 && h.fallT<0 && !h.hit){
       const pulse=0.55+0.45*Math.sin(now*0.008);
       ctx.save();
       ctx.shadowColor=h.animal.pts>0?'rgba(255,230,60,0.9)':'rgba(255,80,80,0.9)';
@@ -5762,8 +6078,10 @@ function memoryDone(){
     sfxGameOver();
     showComboFlash(0,false,'🃏 '+memoryMatched+'/6 cặp — Chưa đủ!');
   }
-  setTimeout(exitMemoryToMain, 600);
-  if(won) setTimeout(()=>triggerBubbleUnlock(), 500);
+  setTimeout(()=>{
+    exitMemoryToMain();
+    if(won) setTimeout(()=>triggerBubbleUnlock(), 400);
+  }, 600);
 }
 
 function exitMemoryToMain(){
@@ -5918,17 +6236,24 @@ function bubbleLoop(now){
 }
 
 function bubbleLandRow(fx,fy){
-  const cv=BBCV(), W=cv.width, H=cv.height;
-  const cellH=(H-80)/(BUBBLE_ROWS);
-  // check if bubble overlaps any filled cell or hits row 0
-  for(let r=0;r<BUBBLE_ROWS;r++){
-    const rowY=40+r*cellH+BUBBLE_R;
-    if(Math.abs(fy-rowY)<BUBBLE_R*1.8){
-      // potential landing at row r-1 or r
-      return Math.max(0,r-1);
-    }
+  const cv=BBCV(), H=cv.height;
+  const cellH=(H-80)/BUBBLE_ROWS;
+  const col=Math.round((fx - BUBBLE_R) / (BUBBLE_R*2));
+  const safeCol=Math.max(0,Math.min(BUBBLE_COLS-1,col));
+  let row=Math.floor((fy-40)/cellH);
+  if(row<0) row=0;
+  if(row>=BUBBLE_ROWS) return null; // still in flight, hasn't reached grid yet
+  // Đụng trực diện 1 ô đã có bóng → dán ngay phía dưới ô đó (tìm hàng trống gần nhất nếu cần)
+  if(bubbleGrid[row][safeCol]!==null){
+    let target=row+1;
+    while(target<BUBBLE_ROWS && bubbleGrid[target][safeCol]!==null) target++;
+    return target<BUBBLE_ROWS ? target : null;
   }
-  return null;
+  // Hàng ngay phía dưới đã có bóng → dừng lại, dán lên trên nó
+  if(row+1<BUBBLE_ROWS && bubbleGrid[row+1][safeCol]!==null) return row;
+  // Chạm tường trên cùng mà cột này còn trống hoàn toàn → dán vào hàng 0
+  if(fy-BUBBLE_R<=40) return 0;
+  return null; // chưa có gì để dán, tiếp tục bay
 }
 
 function checkBubblePop(row,col){
@@ -5940,7 +6265,7 @@ function checkBubblePop(row,col){
   visited.add(row+','+col);
   while(queue.length){
     const [r,c]=queue.shift();
-    const neighbors=[[r-1,c],[r+1,c],[r,c-1],[r,c+1],[r-1,c+(r%2?1:0)],[r-1,c-(r%2?0:1)]];
+    const neighbors=[[r-1,c],[r+1,c],[r,c-1],[r,c+1]];
     for(const [nr,nc] of neighbors){
       if(nr>=0&&nr<BUBBLE_ROWS&&nc>=0&&nc<BUBBLE_COLS&&!visited.has(nr+','+nc)&&bubbleGrid[nr][nc]===color){
         visited.add(nr+','+nc);
@@ -6742,7 +7067,7 @@ function catchLoop(now){
 
   // check basket collisions
   catchAnimals=catchAnimals.filter(a=>{
-    if(a.y>=basketY-basketH/2 && a.y<=basketY+basketH && Math.abs(a.x-catchBasketX)<basketW/2+22){
+    if(a.y>=basketY-basketH/2 && a.y<=basketY+basketH && Math.abs(a.x-catchBasketX)<basketW/2+26){
       if(a.isBad){
         catchLives--;
         catchFx.push({x:a.x,y:basketY,t:0,type:'bad'});
@@ -6792,14 +7117,23 @@ function drawCatch(ctx,W,H,basketY,basketW,basketH){
   catchAnimals.forEach(a=>{
     ctx.save();
     ctx.translate(a.x,a.y);
+    // Nền tròn xoay nhẹ theo cảm giác rơi, nhưng icon con vật luôn đứng thẳng để dễ nhận biết
+    ctx.save();
     ctx.rotate(a.rot);
-    ctx.shadowColor=a.color; ctx.shadowBlur=8;
-    ctx.beginPath(); ctx.arc(0,0,22,0,Math.PI*2);
-    ctx.fillStyle=a.isBad?'rgba(200,60,60,0.3)':'rgba(255,255,255,0.35)';
+    ctx.shadowColor=a.color; ctx.shadowBlur=10;
+    ctx.beginPath(); ctx.arc(0,0,26,0,Math.PI*2);
+    ctx.fillStyle=a.isBad?'rgba(220,50,50,0.45)':'rgba(255,255,255,0.55)';
     ctx.fill();
+    ctx.lineWidth=2;
+    ctx.strokeStyle=a.isBad?'rgba(255,120,120,0.9)':'rgba(255,255,255,0.95)';
+    ctx.stroke();
+    ctx.restore();
     ctx.shadowBlur=0;
-    ctx.font='32px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    // Icon con vật giữ nguyên hướng, kích thước lớn hơn để nhìn rõ
+    ctx.font='40px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.shadowColor='rgba(0,0,0,0.35)'; ctx.shadowBlur=4; ctx.shadowOffsetY=1;
     ctx.fillText(a.emoji,0,0);
+    ctx.shadowBlur=0; ctx.shadowOffsetY=0;
     ctx.restore();
   });
   // Basket
@@ -7411,6 +7745,7 @@ function drawArena(ctx,W,H){
 function arenaDone(won){
   arenaMode=false;
   if(arenaRAF){ cancelAnimationFrame(arenaRAF); arenaRAF=null; }
+  saveProgress(true);
   if(won){
     sfxWaveWin();
     showComboFlash(0,false,'🏆 CHINH PHỤC ĐẤUTRƯỜNG! MAP ẨN 14 MỞ KHÓA!');
@@ -7488,7 +7823,11 @@ ARCV().addEventListener('pointerup', ()=>{ if(!arenaMode) return; arenaPointerX=
 /* ══════════════════════════════════════════
    SHARED UI
 ══════════════════════════════════════════ */
-function saveProgress(){
+let _lastSaveAt=0;
+function saveProgress(force){
+  const now=performance.now();
+  if(!force && now-_lastSaveAt<500) return; // tránh ghi localStorage liên tục mỗi frame gây giật
+  _lastSaveAt=now;
   try {
     const save = JSON.parse(localStorage.getItem('chromablast_save')||'{}');
     save.best = best;
@@ -7518,46 +7857,6 @@ const PRAISE = ['NOT BAD','COOL','GOOD','GREAT','PERFECT','SPECTACULAR','UNREAL'
 const PRAISE_COLOR = ['#9ab8b0','#5DCAA5','#378ADD','#7F77DD','#EF9F27','#E24B4A','#D4537E','#f7c948','#ff6b35'];
 function pIdx(level){ return Math.min(Math.max(level||1,1),PRAISE.length)-1; }
 
-/* ── Voice announcer — cute kid voice via SpeechSynthesis ── */
-let _voiceReady=false, _kidVoice=null;
-function _initVoice(){
-  if(_voiceReady) return;
-  const voices=speechSynthesis.getVoices();
-  if(!voices.length) return;
-  // Priority: female/child Google voices → any Google English → any English
-  const rank=(v)=>{
-    const n=v.name.toLowerCase(), l=(v.lang||'').toLowerCase();
-    if((n.includes('samantha')||n.includes('zira')||n.includes('victoria')||n.includes('karen')||n.includes('moira')||n.includes('tessa')||n.includes('fiona')||n.includes('amelie')) && l.startsWith('en')) return 0;
-    if(n.includes('google') && n.includes('female') && l.startsWith('en')) return 1;
-    if(n.includes('google') && l.startsWith('en')) return 2;
-    if(n.includes('female') && l.startsWith('en')) return 3;
-    if(l.startsWith('en')) return 4;
-    return 9;
-  };
-  const sorted=[...voices].sort((a,b)=>rank(a)-rank(b));
-  _kidVoice=sorted[0]||null;
-  _voiceReady=true;
-}
-speechSynthesis.onvoiceschanged=()=>{ _voiceReady=false; _initVoice(); };
-if(speechSynthesis.getVoices().length) _initVoice();
-
-let _lastSpoke=0;
-function speakPraise(word, idx){
-  if(sfxMuted) return;
-  const now=Date.now();
-  if(now-_lastSpoke<700) return;
-  _lastSpoke=now;
-  if(!_voiceReady) _initVoice();
-  speechSynthesis.cancel();
-  const u=new SpeechSynthesisUtterance(word);
-  u.voice=_kidVoice||null;
-  u.lang='en-US';
-  // Cute kid voice: high pitch, fast & bouncy, escalates with combo
-  u.pitch  = Math.min(2, 1.6 + idx*0.05);  // 1.60 → 2.00 (cao trong trẻo)
-  u.rate   = 1.1 + idx*0.04;               // 1.10 → 1.42 (nhanh nhảu hơn)
-  u.volume = Math.min(1, 0.8 + idx*0.025); // 0.80 → 1.00
-  speechSynthesis.speak(u);
-}
 function hexToRgba(hex,a){
   const n=parseInt(hex.replace('#',''),16);
   return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;
@@ -7695,8 +7994,6 @@ function showPraise(level){
     root.classList.add('screen-shake');
     setTimeout(()=>root.classList.remove('screen-shake'), 500);
   }
-
-  speakPraise(PRAISE[i], i);
 }
 
 function showComboFlash(n, isColor, customText){
@@ -8002,10 +8299,315 @@ function togglePause(){
     if(typeof rhythmMode!=='undefined'&&rhythmMode) { rhythmLast=0;rhythmRAF=requestAnimationFrame(rhythmLoop);}
     if(typeof mazeMode!=='undefined'&&mazeMode)     { mazeLast=0;  mazeRAF=requestAnimationFrame(mazeLoop);}
     if(typeof megaMode!=='undefined'&&megaMode)     { megaLast=0;  megaRAF=requestAnimationFrame(megaLoop);}
-    if(secretMode) { startSecretTimer(); }
+    if(secretMode) { resetSecretTimer(); }
   }
 }
 
+/* ══════════════════════════════════════════
+   AUTH — Đăng nhập / Đăng ký / Admin
+══════════════════════════════════════════ */
+// Lớp bọc an toàn cho localStorage: một số trình duyệt/khung xem trước (vd:
+// xem trực tiếp trong khung chat) chặn localStorage và ném lỗi. Khi đó ta
+// tự chuyển sang lưu tạm trong bộ nhớ để đăng nhập vẫn hoạt động được
+// trong phiên hiện tại (chỉ mất khi tải lại trang).
+const memoryStore = {};
+let storageBlocked = false;
+function safeGet(key){
+  try { return localStorage.getItem(key); }
+  catch(e){ storageBlocked = true; return (key in memoryStore) ? memoryStore[key] : null; }
+}
+function safeSet(key, value){
+  try { localStorage.setItem(key, value); }
+  catch(e){ storageBlocked = true; memoryStore[key] = value; }
+}
+function safeRemove(key){
+  try { localStorage.removeItem(key); }
+  catch(e){ storageBlocked = true; delete memoryStore[key]; }
+}
+
+const AUTH_USERS_KEY = 'chromablast_users';
+const AUTH_SESSION_KEY = 'chromablast_session';
+
+// Danh sách 20 map ẩn: {key, label, run}
+const ADMIN_MAPS = [
+  { key:'secret1', label:'Map ẩn 1 — Đấu màu bí ẩn',        run: enterSecretMode },
+  { key:'dodge',   label:'Map ẩn 2 — Rùa né cà rốt',         run: enterDodgeMode },
+  { key:'fruit',   label:'Map ẩn 3 — Chém hoa quả',          run: enterFruitMode },
+  { key:'bee',     label:'Map ẩn 4 — Bảo vệ chó khỏi ong',   run: enterBeeMode },
+  { key:'gold',    label:'Map ẩn 5 — Đào vàng (Gold Miner)', run: enterGoldMode },
+  { key:'mole',    label:'Map ẩn 6 — Đập thú (Whack-a-Mole)',run: enterMoleMode },
+  { key:'memory',  label:'Map ẩn 7 — Lật thẻ ký ức',         run: enterMemoryMode },
+  { key:'bubble',  label:'Map ẩn 8 — Bắn bong bóng',         run: enterBubbleMode },
+  { key:'stack',   label:'Map ẩn 9 — Xếp tháp',              run: enterStackMode },
+  { key:'boss',    label:'Map ẩn 10 — Đại chiến Boss',       run: enterBossMode },
+  { key:'catch',   label:'Map ẩn 11 — Bắt thú',              run: enterCatchMode },
+  { key:'flood',   label:'Map ẩn 12 — Tràn màu (Color Flood)',run: enterFloodMode },
+  { key:'arena',   label:'Map ẩn 13 — Đấu trường sinh tồn',  run: enterArenaMode },
+  { key:'snake',   label:'Map ẩn 14 — Rắn (Snake)',          run: enterSnakeMode },
+  { key:'brick',   label:'Map ẩn 15 — Bắn gạch (Brick Breaker)',run: enterBrickMode },
+  { key:'runner',  label:'Map ẩn 16 — Chạy vô tận (Runner)', run: enterRunnerMode },
+  { key:'space',   label:'Map ẩn 17 — Space Shooter',        run: enterSpaceMode },
+  { key:'rhythm',  label:'Map ẩn 18 — Rhythm Tap',           run: enterRhythmMode },
+  { key:'maze',    label:'Map ẩn 19 — Mê cung (Maze)',       run: enterMazeMode },
+  { key:'mega',    label:'Map ẩn 20 — MEGA BOSS cuối cùng',  run: enterMegaMode },
+];
+
+function loadUsers(){
+  let users;
+  try { users = JSON.parse(safeGet(AUTH_USERS_KEY) || 'null'); } catch(e){ users = null; }
+  if(!users || typeof users !== 'object'){ users = {}; }
+  // Đảm bảo luôn có tài khoản admin mặc định: admin / admin
+  if(!users['admin']){
+    users['admin'] = { password: 'admin', role: 'admin' };
+    saveUsers(users);
+  }
+  return users;
+}
+function saveUsers(users){ safeSet(AUTH_USERS_KEY, JSON.stringify(users)); }
+
+function setSession(username){ safeSet(AUTH_SESSION_KEY, username); }
+function getSession(){ return safeGet(AUTH_SESSION_KEY); }
+function clearSession(){ safeRemove(AUTH_SESSION_KEY); }
+
+let currentUser = null; // { username, role }
+
+function applyLoggedInUser(username){
+  const users = loadUsers();
+  const u = users[username];
+  if(!u) return false;
+  currentUser = { username, role: u.role || 'user' };
+  setSession(username);
+  document.getElementById('admin-btn').style.display = (currentUser.role === 'admin') ? 'flex' : 'none';
+  const nameBox = document.getElementById('account-username-box');
+  if(nameBox) nameBox.textContent = username + (currentUser.role === 'admin' ? ' (admin)' : '');
+  return true;
+}
+
+function doLogin(username, password){
+  const errBox = document.getElementById('login-error');
+  errBox.textContent = '';
+  if(!username || !password){ errBox.textContent = 'Vui lòng nhập đầy đủ thông tin.'; return; }
+  const users = loadUsers();
+  const u = users[username];
+  if(!u || u.password !== password){
+    errBox.textContent = 'Sai tên đăng nhập hoặc mật khẩu.';
+    return;
+  }
+  applyLoggedInUser(username);
+  hideAuthScreen();
+}
+
+function doRegister(username, password, password2){
+  const errBox = document.getElementById('register-error');
+  errBox.textContent = '';
+  if(!username || !password || !password2){ errBox.textContent = 'Vui lòng nhập đầy đủ thông tin.'; return; }
+  if(username.length < 3){ errBox.textContent = 'Tên đăng nhập cần tối thiểu 3 ký tự.'; return; }
+  if(password.length < 4){ errBox.textContent = 'Mật khẩu cần tối thiểu 4 ký tự.'; return; }
+  if(password !== password2){ errBox.textContent = 'Mật khẩu nhập lại không khớp.'; return; }
+  const users = loadUsers();
+  if(users[username]){ errBox.textContent = 'Tên đăng nhập đã tồn tại.'; return; }
+  users[username] = { password, role: 'user' };
+  saveUsers(users);
+  applyLoggedInUser(username);
+  hideAuthScreen();
+}
+
+function hideAuthScreen(){
+  const authScreen = document.getElementById('auth-screen');
+  authScreen.classList.add('hide');
+  setTimeout(()=>{ authScreen.style.display='none'; }, 500);
+}
+
+function initAuthScreen(){
+  loadUsers(); // seed tài khoản admin/admin mặc định nếu chưa có
+
+  if(storageBlocked){
+    const sub = document.querySelector('.auth-sub');
+    if(sub) sub.insertAdjacentHTML('afterend',
+      '<div style="text-align:center;color:#ffcc55;font-size:11px;margin:-14px 0 18px;">'
+      +'⚠️ Trình duyệt đang chặn lưu trữ — tài khoản chỉ tồn tại trong phiên này.<br>Tải file về và mở trực tiếp để lưu vĩnh viễn.</div>');
+  }
+
+  const loginForm = document.getElementById('login-form');
+  const registerForm = document.getElementById('register-form');
+  const showRegister = document.getElementById('show-register');
+  const showLogin = document.getElementById('show-login');
+
+  showRegister.addEventListener('click', ()=>{
+    loginForm.classList.remove('active');
+    registerForm.classList.add('active');
+  });
+  showLogin.addEventListener('click', ()=>{
+    registerForm.classList.remove('active');
+    loginForm.classList.add('active');
+  });
+
+  loginForm.addEventListener('submit', (e)=>{
+    e.preventDefault();
+    doLogin(
+      document.getElementById('login-username').value.trim(),
+      document.getElementById('login-password').value
+    );
+  });
+  registerForm.addEventListener('submit', (e)=>{
+    e.preventDefault();
+    doRegister(
+      document.getElementById('register-username').value.trim(),
+      document.getElementById('register-password').value,
+      document.getElementById('register-password2').value
+    );
+  });
+
+  // Nếu đã đăng nhập trước đó (còn phiên) → bỏ qua màn hình đăng nhập
+  const savedSession = getSession();
+  if(savedSession && loadUsers()[savedSession]){
+    applyLoggedInUser(savedSession);
+    document.getElementById('auth-screen').style.display = 'none';
+  } else {
+    document.getElementById('login-username').focus();
+  }
+}
+
+// Dọn dẹp TRIỆT ĐỂ mọi map ẩn đang chạy (kể cả các map startGame() gốc bỏ sót:
+// Mole, Memory, Space, Rhythm, Maze, Mega) — tránh 2 map chạy song song gây đơ
+// khi admin chuyển map liên tục.
+function hardResetAllModes(){
+  const cancel = (raf)=>{ try{ if(raf) cancelAnimationFrame(raf); }catch(e){} };
+
+  cancel(dodgeRAF);  dodgeRAF=null;  dodgeMode=false;
+  cancel(fruitRAF);  fruitRAF=null;  fruitMode=false;
+  cancel(beeRAF);    beeRAF=null;    beeMode=false;
+  cancel(goldRAF);   goldRAF=null;   goldMode=false;
+  cancel(moleRAF);   moleRAF=null;   moleMode=false;
+  cancel(memoryRAF); memoryRAF=null; memoryMode=false;
+  cancel(spaceRAF);  spaceRAF=null;  spaceMode=false;
+  cancel(rhythmRAF); rhythmRAF=null; rhythmMode=false;
+  cancel(mazeRAF);   mazeRAF=null;   mazeMode=false;
+  cancel(megaRAF);   megaRAF=null;   megaMode=false;
+  if(typeof bubbleRAF!=='undefined'){ cancel(bubbleRAF); bubbleRAF=null; bubbleMode=false; }
+  if(typeof stackRAF!=='undefined'){  cancel(stackRAF);  stackRAF=null;  stackMode=false; }
+  if(typeof bossRAF!=='undefined'){   cancel(bossRAF);   bossRAF=null;   bossMode=false; }
+  if(typeof catchRAF!=='undefined'){  cancel(catchRAF);  catchRAF=null;  catchMode=false; }
+  if(typeof floodRAF!=='undefined'){  cancel(floodRAF);  floodRAF=null;  floodMode=false; }
+  if(typeof arenaRAF!=='undefined'){  cancel(arenaRAF);  arenaRAF=null;  arenaMode=false; }
+  if(typeof snakeRAF!=='undefined'){  cancel(snakeRAF);  snakeRAF=null;  snakeMode=false; }
+  if(typeof brickRAF!=='undefined'){  cancel(brickRAF);  brickRAF=null;  brickMode=false; }
+  if(typeof runnerRAF!=='undefined'){ cancel(runnerRAF); runnerRAF=null; runnerMode=false; }
+
+  secretMode=false;
+  try{ clearSecretTimer(); }catch(e){}
+  if(typeof borderSparkInterval!=='undefined' && borderSparkInterval){ clearInterval(borderSparkInterval); borderSparkInterval=null; }
+  if(typeof fireInterval!=='undefined' && fireInterval){ clearInterval(fireInterval); fireInterval=null; }
+  try{ endDrag(); }catch(e){}
+
+  // Ẩn hết mọi canvas/khung của map ẩn
+  ['secret-grid','dodge-canvas','bee-canvas','fruit-canvas','gold-canvas','mole-canvas',
+   'memory-canvas','bubble-canvas','stack-canvas','boss-canvas','catch-canvas','flood-canvas',
+   'arena-canvas','snake-canvas','brick-canvas','runner-canvas','space-canvas','rhythm-canvas',
+   'maze-canvas','mega-canvas'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.classList.remove('active');
+  });
+  const dc=document.getElementById('dodge-controls');       if(dc)  dc.classList.remove('active');
+  const tbw=document.getElementById('timer-bar-wrap');      if(tbw) tbw.classList.remove('active');
+  const ssb=document.getElementById('secret-streak-bar');   if(ssb) ssb.classList.remove('active');
+  const sg=document.getElementById('secret-grid');          if(sg){ sg.innerHTML=''; }
+  secretCells=null;
+
+  // Trả UI chính về trạng thái mặc định
+  const grid=document.getElementById('grid');             if(grid)   grid.style.display='';
+  const pieces=document.getElementById('pieces-area');    if(pieces) pieces.style.display='';
+  const hint=document.getElementById('hint-bar');         if(hint)   hint.style.display='';
+  document.getElementById('grid-wrap').classList.remove('secret-mode','ultra-glow',
+    'combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5','fire-low','fire-high');
+  document.getElementById('mode-badge').textContent='BÌNH THƯỜNG';
+  document.getElementById('mode-badge').classList.remove('secret');
+  document.getElementById('unlock-overlay').classList.remove('show');
+  const pauseOverlay=document.getElementById('pause-overlay');
+  if(pauseOverlay) pauseOverlay.style.display='none';
+  gamePaused=false;
+}
+
+function initAdminPanel(){
+  const list = document.getElementById('admin-map-list');
+  ADMIN_MAPS.forEach(m=>{
+    const btn = document.createElement('button');
+    btn.className = 'admin-map-btn';
+    btn.innerHTML = '<b>'+m.label.split(' — ')[0]+'</b> — '+m.label.split(' — ')[1];
+    btn.addEventListener('click', ()=>{
+      document.getElementById('admin-panel').classList.remove('show');
+      const startScreen = document.getElementById('start-screen');
+      startScreen.classList.add('hide');
+      setTimeout(()=>{ startScreen.style.display='none'; }, 500);
+      sfxClick();
+      hardResetAllModes();  // dọn sạch map cũ (kể cả map startGame() gốc bỏ sót) trước khi chuyển
+      startGame();          // reset trạng thái game về sạch
+      m.run();               // vào thẳng map ẩn được chọn
+    });
+    list.appendChild(btn);
+  });
+
+  document.getElementById('admin-btn').addEventListener('click', ()=>{
+    sfxClick();
+    document.getElementById('admin-panel').classList.add('show');
+  });
+  document.getElementById('admin-close-btn').addEventListener('click', ()=>{
+    document.getElementById('admin-panel').classList.remove('show');
+  });
+}
+
+function doChangePassword(oldPass, newPass, newPass2){
+  const msg = document.getElementById('cp-msg');
+  msg.className = 'account-msg';
+  msg.textContent = '';
+  if(!currentUser){ msg.classList.add('err'); msg.textContent = 'Bạn chưa đăng nhập.'; return; }
+  if(!oldPass || !newPass || !newPass2){ msg.classList.add('err'); msg.textContent = 'Vui lòng nhập đầy đủ thông tin.'; return; }
+  const users = loadUsers();
+  const u = users[currentUser.username];
+  if(!u || u.password !== oldPass){ msg.classList.add('err'); msg.textContent = 'Mật khẩu hiện tại không đúng.'; return; }
+  if(newPass.length < 4){ msg.classList.add('err'); msg.textContent = 'Mật khẩu mới cần tối thiểu 4 ký tự.'; return; }
+  if(newPass !== newPass2){ msg.classList.add('err'); msg.textContent = 'Mật khẩu mới nhập lại không khớp.'; return; }
+  u.password = newPass;
+  saveUsers(users);
+  msg.classList.add('ok');
+  msg.textContent = 'Đổi mật khẩu thành công!';
+  document.getElementById('change-password-form').reset();
+}
+
+function doLogout(){
+  clearSession();
+  currentUser = null;
+  location.reload(); // tải lại trang để đưa về màn hình đăng nhập, dọn sạch trạng thái game
+}
+
+function initAccountPanel(){
+  const accountBtn = document.getElementById('account-btn');
+  const panel = document.getElementById('account-panel');
+  accountBtn.addEventListener('click', ()=>{
+    sfxClick();
+    document.getElementById('cp-msg').textContent = '';
+    document.getElementById('cp-msg').className = 'account-msg';
+    panel.classList.add('show');
+  });
+  document.getElementById('account-close-btn').addEventListener('click', ()=>{
+    panel.classList.remove('show');
+  });
+  document.getElementById('change-password-form').addEventListener('submit', (e)=>{
+    e.preventDefault();
+    doChangePassword(
+      document.getElementById('cp-old').value,
+      document.getElementById('cp-new').value,
+      document.getElementById('cp-new2').value
+    );
+  });
+  document.getElementById('logout-btn').addEventListener('click', ()=>{
+    doLogout();
+  });
+}
+
+initAuthScreen();
+initAdminPanel();
+initAccountPanel();
 initStartScreen();
 document.getElementById('mute-btn').addEventListener('click',function(){
   sfxMuted=!sfxMuted;
@@ -8019,10 +8621,11 @@ startGame();
 document.getElementById('best-box').textContent='Kỷ lục: '+best.toLocaleString();
 
 /* ══ MAP ẨN 14 — SNAKE ══ */
-const SNAKE_COLS=18, SNAKE_ROWS=22, SNAKE_CELL=20;
+const SNAKE_COLS=18, SNAKE_ROWS=22, SNAKE_CELL=18;
+const SNAKE_OX=Math.round((360-SNAKE_COLS*SNAKE_CELL)/2), SNAKE_OY=40; // canh giữa lưới, tránh tràn viền canvas
 const SCV=()=>document.getElementById('snake-canvas');
 
-snakeMode=false; snakeRAF=null; let snakeLast=0;
+// (đã chuyển khai báo biến mode lên đầu file để tránh lỗi TDZ)
 let snakeCells=[], snakeDir={x:1,y:0}, snakeNextDir={x:1,y:0};
 let snakeFood={x:5,y:5,emoji:'🍎',special:false};
 let snakeLives=3, snakeScore=0, snakeFx=[];
@@ -8099,7 +8702,7 @@ function snakeLoop(now){
       const pts=snakeFood.special?30:10;
       snakeScore+=pts;
       score+=pts; if(best<score) best=score;
-      snakeFx.push({x:nx*SNAKE_CELL+SNAKE_CELL/2+16, y:ny*SNAKE_CELL+30, t:0, text:'+'+pts, special:snakeFood.special});
+      snakeFx.push({x:SNAKE_OX+nx*SNAKE_CELL+SNAKE_CELL/2, y:SNAKE_OY+ny*SNAKE_CELL, t:0, text:'+'+pts, special:snakeFood.special});
       if(snakeFood.special) sfxSnakeSpecial(); else sfxSnakeEat();
       snakeSpeed=Math.min(16, 8+snakeFoodCount*0.3);
       document.getElementById('burst-count').textContent='🐍 Dài: '+snakeCells.length+'/20';
@@ -8114,61 +8717,135 @@ function snakeLoop(now){
   // update fx
   snakeFx=snakeFx.filter(f=>{ f.t+=dt; return f.t<1; });
 
-  drawSnake(ctx, W, H);
+  drawSnake(ctx, W, H, now);
   snakeRAF=requestAnimationFrame(snakeLoop);
 }
 
-function drawSnake(ctx, W, H){
-  const OX=16, OY=30; // offset so grid is centered with room for top bar
-  // Background
-  ctx.fillStyle='#0a1a0a';
-  ctx.fillRect(0,0,W,H);
-  // Grid lines
-  ctx.strokeStyle='rgba(255,255,255,0.05)';
-  ctx.lineWidth=0.5;
-  for(let c=0;c<=SNAKE_COLS;c++){ ctx.beginPath(); ctx.moveTo(OX+c*SNAKE_CELL,OY); ctx.lineTo(OX+c*SNAKE_CELL,OY+SNAKE_ROWS*SNAKE_CELL); ctx.stroke(); }
-  for(let r=0;r<=SNAKE_ROWS;r++){ ctx.beginPath(); ctx.moveTo(OX,OY+r*SNAKE_CELL); ctx.lineTo(OX+SNAKE_COLS*SNAKE_CELL,OY+r*SNAKE_CELL); ctx.stroke(); }
+const SNAKE_FLOWER_BORDER=[
+  // cột hoa bên trái (x=7, ngoài lưới bắt đầu từ x=18)
+  [7,55,'#ff88cc'],[7,110,'#ffee44'],[7,165,'#ff7799'],[7,220,'#ffffff'],
+  [7,275,'#ffaa44'],[7,330,'#cc88ff'],[7,385,'#88ffcc'],
+  // cột hoa bên phải (x=353, ngoài lưới kết thúc ở x=342)
+  [353,55,'#cc88ff'],[353,110,'#88ffcc'],[353,165,'#ffcc44'],[353,220,'#ff88cc'],
+  [353,275,'#ffee44'],[353,330,'#ff7799'],[353,385,'#ffffff'],
+  // hàng hoa dưới cùng (y=445, dưới khung lưới kết thúc ở y=440)
+  [45,445,'#ffaa44'],[100,445,'#cc88ff'],[160,445,'#ff88cc'],
+  [200,445,'#ffee44'],[260,445,'#88ffcc'],[315,445,'#ff7799'],
+];
+function drawSnakeFlower(ctx,fx,fy,fc,sway){
+  ctx.save();
+  ctx.translate(fx,fy+sway);
+  for(let k=0;k<5;k++){
+    const fa=k/5*Math.PI*2;
+    ctx.fillStyle=fc;
+    ctx.beginPath(); ctx.ellipse(Math.cos(fa)*4.5,Math.sin(fa)*4.5,3.6,2.2,fa,0,Math.PI*2); ctx.fill();
+  }
+  ctx.fillStyle='#ffee88';
+  ctx.beginPath(); ctx.arc(0,0,3,0,Math.PI*2); ctx.fill();
+  // lá nhỏ
+  ctx.fillStyle='rgba(80,170,60,0.8)';
+  ctx.beginPath(); ctx.ellipse(-1,7,2.6,4.5,0.5,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+}
 
-  // Draw snake
+function drawSnake(ctx, W, H, now){
+  const OX=SNAKE_OX, OY=SNAKE_OY;
+  const gridW=SNAKE_COLS*SNAKE_CELL, gridH=SNAKE_ROWS*SNAKE_CELL;
+  const t=(now||0)*0.0012;
+
+  // ── nền vườn hoa đáng yêu ──
+  const bg=ctx.createLinearGradient(0,0,0,H);
+  bg.addColorStop(0,'#dff6e0'); bg.addColorStop(0.5,'#c8ecc4'); bg.addColorStop(1,'#a8dba0');
+  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+
+  // hoa trang trí quanh viền, đung đưa nhẹ
+  SNAKE_FLOWER_BORDER.forEach(([fx,fy,fc],fi)=>{
+    const sway=Math.sin(t*1.3+fi*1.4)*2;
+    drawSnakeFlower(ctx,fx,fy,fc,sway);
+  });
+
+  // khung sân chơi kiểu luống đất trong vườn, bo góc mềm mại
+  ctx.save();
+  ctx.shadowColor='rgba(0,0,0,0.2)'; ctx.shadowBlur=10; ctx.shadowOffsetY=3;
+  ctx.fillStyle='#2f5d2a';
+  ctx.beginPath(); ctx.roundRect(OX-4,OY-4,gridW+8,gridH+8,14); ctx.fill();
+  ctx.restore();
+  // caro cỏ 2 tông nhẹ nhàng bên trong khung
+  for(let r=0;r<SNAKE_ROWS;r++){
+    for(let c=0;c<SNAKE_COLS;c++){
+      ctx.fillStyle=(r+c)%2===0?'#3a7a34':'#356e30';
+      ctx.fillRect(OX+c*SNAKE_CELL,OY+r*SNAKE_CELL,SNAKE_CELL,SNAKE_CELL);
+    }
+  }
+  // viền khung hoa văn (hàng rào vườn nhỏ)
+  ctx.strokeStyle='rgba(255,255,255,0.5)'; ctx.lineWidth=3;
+  ctx.beginPath(); ctx.roundRect(OX-4,OY-4,gridW+8,gridH+8,14); ctx.stroke();
+
+  // Draw snake — xinh xắn, bo tròn, màu pastel
   snakeCells.forEach((c,i)=>{
     const x=OX+c.x*SNAKE_CELL, y=OY+c.y*SNAKE_CELL;
     const r=i===0?9:8;
     if(i===0){
       const g=ctx.createLinearGradient(x,y,x+SNAKE_CELL,y+SNAKE_CELL);
-      g.addColorStop(0,'#88ff44'); g.addColorStop(1,'#44cc00');
+      g.addColorStop(0,'#baffc9'); g.addColorStop(1,'#5fd88a');
       ctx.fillStyle=g;
     } else {
       const ratio=i/snakeCells.length;
       const g=ctx.createLinearGradient(x,y,x+SNAKE_CELL,y+SNAKE_CELL);
-      g.addColorStop(0,`hsl(${100+ratio*20},80%,${45-ratio*10}%)`);
-      g.addColorStop(1,`hsl(${120+ratio*20},80%,${35-ratio*10}%)`);
+      g.addColorStop(0,`hsl(${140+ratio*30},70%,${78-ratio*18}%)`);
+      g.addColorStop(1,`hsl(${150+ratio*30},65%,${62-ratio*18}%)`);
       ctx.fillStyle=g;
     }
+    ctx.save();
+    ctx.shadowColor='rgba(0,0,0,0.15)'; ctx.shadowBlur=3; ctx.shadowOffsetY=1;
     ctx.beginPath();
     ctx.roundRect(x+1,y+1,SNAKE_CELL-2,SNAKE_CELL-2,r);
     ctx.fill();
+    ctx.restore();
+    // đốm nhỏ dễ thương trên thân
+    if(i>0 && i%2===0){
+      ctx.fillStyle='rgba(255,255,255,0.35)';
+      ctx.beginPath(); ctx.arc(x+SNAKE_CELL/2,y+SNAKE_CELL/2,2,0,Math.PI*2); ctx.fill();
+    }
     if(i===0){
-      // eyes
-      const eyeOX=snakeDir.x===1?5:(snakeDir.x===-1?SNAKE_CELL-7:(snakeDir.y===0?4:4));
-      const eyeOY=snakeDir.y===1?5:(snakeDir.y===-1?SNAKE_CELL-7:(snakeDir.x===0?4:4));
-      const e1x=snakeDir.y!==0?x+4:x+SNAKE_CELL/2-3, e1y=snakeDir.x!==0?y+4:y+SNAKE_CELL/2-3;
-      const e2x=snakeDir.y!==0?x+SNAKE_CELL-5:x+SNAKE_CELL/2+3, e2y=snakeDir.x!==0?y+SNAKE_CELL-5:y+SNAKE_CELL/2+3;
+      // má hồng
+      const cheekY=y+SNAKE_CELL/2+3;
+      ctx.fillStyle='rgba(255,150,180,0.55)';
+      ctx.beginPath(); ctx.ellipse(x+4,cheekY,2.6,1.8,0,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(x+SNAKE_CELL-4,cheekY,2.6,1.8,0,0,Math.PI*2); ctx.fill();
+      // lưỡi thè ra thi thoảng, nhìn đáng yêu hơn là dữ tợn
+      if(Math.sin(t*3)>0.55){
+        ctx.strokeStyle='#ff5577'; ctx.lineWidth=1.6; ctx.lineCap='round';
+        const tx=x+SNAKE_CELL/2+snakeDir.x*(SNAKE_CELL/2+5), ty=y+SNAKE_CELL/2+snakeDir.y*(SNAKE_CELL/2+5);
+        const mx=x+SNAKE_CELL/2+snakeDir.x*(SNAKE_CELL/2+2), my=y+SNAKE_CELL/2+snakeDir.y*(SNAKE_CELL/2+2);
+        ctx.beginPath(); ctx.moveTo(x+SNAKE_CELL/2,y+SNAKE_CELL/2); ctx.lineTo(mx,my); ctx.stroke();
+        const fork=3;
+        ctx.beginPath(); ctx.moveTo(mx,my); ctx.lineTo(tx+(snakeDir.y!==0?fork:0),ty+(snakeDir.x!==0?fork:0)); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(mx,my); ctx.lineTo(tx-(snakeDir.y!==0?fork:0),ty-(snakeDir.x!==0?fork:0)); ctx.stroke();
+      }
+      // mắt to tròn, lấp lánh
+      const e1x=snakeDir.y!==0?x+4.5:x+SNAKE_CELL/2-3.5, e1y=snakeDir.x!==0?y+4.5:y+SNAKE_CELL/2-3.5;
+      const e2x=snakeDir.y!==0?x+SNAKE_CELL-5.5:x+SNAKE_CELL/2+3.5, e2y=snakeDir.x!==0?y+SNAKE_CELL-5.5:y+SNAKE_CELL/2+3.5;
       ctx.fillStyle='#fff';
-      ctx.beginPath(); ctx.arc(e1x,e1y,2.5,0,Math.PI*2); ctx.fill();
-      ctx.beginPath(); ctx.arc(e2x,e2y,2.5,0,Math.PI*2); ctx.fill();
-      ctx.fillStyle='#000';
-      ctx.beginPath(); ctx.arc(e1x+snakeDir.x,e1y+snakeDir.y,1.2,0,Math.PI*2); ctx.fill();
-      ctx.beginPath(); ctx.arc(e2x+snakeDir.x,e2y+snakeDir.y,1.2,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(e1x,e1y,3.2,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(e2x,e2y,3.2,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='#20301f';
+      ctx.beginPath(); ctx.arc(e1x+snakeDir.x*0.8,e1y+snakeDir.y*0.8,1.7,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(e2x+snakeDir.x*0.8,e2y+snakeDir.y*0.8,1.7,0,Math.PI*2); ctx.fill();
+      // tia sáng lấp lánh trong mắt
+      ctx.fillStyle='rgba(255,255,255,0.9)';
+      ctx.beginPath(); ctx.arc(e1x-0.8,e1y-0.8,0.7,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(e2x-0.8,e2y-0.8,0.7,0,Math.PI*2); ctx.fill();
     }
   });
 
   // Food
-  ctx.font='16px serif';
+  ctx.font=(SNAKE_CELL-2)+'px serif';
   ctx.textAlign='center'; ctx.textBaseline='middle';
   ctx.fillText(snakeFood.emoji, OX+snakeFood.x*SNAKE_CELL+SNAKE_CELL/2, OY+snakeFood.y*SNAKE_CELL+SNAKE_CELL/2);
 
   // Top bar
-  ctx.fillStyle='rgba(0,0,0,0.7)';
+  ctx.fillStyle='rgba(0,0,0,0.55)';
   ctx.fillRect(0,0,W,26);
   ctx.fillStyle='#fff'; ctx.font='bold 13px system-ui'; ctx.textAlign='left'; ctx.textBaseline='middle';
   let livesStr=''; for(let i=0;i<snakeLives;i++) livesStr+='❤️';
@@ -8180,7 +8857,7 @@ function drawSnake(ctx, W, H){
   snakeFx.forEach(f=>{
     const alpha=1-f.t;
     ctx.globalAlpha=alpha;
-    ctx.fillStyle=f.special?'#ffcc00':'#88ff44';
+    ctx.fillStyle=f.special?'#ffcc00':'#2f5d2a';
     ctx.font='bold 14px system-ui';
     ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.fillText(f.text, f.x, f.y-f.t*30);
@@ -8265,11 +8942,12 @@ SCV().addEventListener('pointerup', e=>{
 const BRICK_COLS=8, BRICK_ROWS=3;
 const BrCV=()=>document.getElementById('brick-canvas');
 
-brickMode=false; brickRAF=null; let brickLast=0;
+// (đã chuyển khai báo biến mode lên đầu file để tránh lỗi TDZ)
 let brickBall={x:180,y:360,vx:180,vy:-220,launched:false,r:8};
 let brickPaddleX=180, brickPaddleW=80, brickPaddleH=14;
 let brickBricks=[], brickLives=3, brickScore=0, brickFx=[];
 let brickWidePaddleTimer=0;
+let brickCombo=0, brickComboTimer=0;
 let brickPointerActive=false;
 
 function triggerBrickUnlock(){
@@ -8313,6 +8991,8 @@ function enterBrickMode(){
   brickBall={x:180,y:360,vx:180,vy:-220,launched:false,r:8};
   brickPaddleX=180; brickPaddleW=80; brickLives=3; brickScore=0; brickFx=[];
   brickWidePaddleTimer=0;
+  brickCombo=0; if(brickComboTimer){clearTimeout(brickComboTimer); brickComboTimer=0;}
+  document.getElementById('combo-box').textContent='';
   brickMode=true;
   brickLast=performance.now();
   brickRAF=requestAnimationFrame(brickLoop);
@@ -8365,9 +9045,17 @@ function brickLoop(now){
         b.hp--;
         if(b.hp<=0){
           b.alive=false;
-          const pts=b.maxHp===2?30:10;
+          brickCombo++;
+          if(brickComboTimer) clearTimeout(brickComboTimer);
+          brickComboTimer=setTimeout(()=>{ brickCombo=0; brickComboTimer=0; document.getElementById('combo-box').textContent=''; },1000);
+          const basePts=b.maxHp===2?30:10;
+          const mul=Math.min(1+(brickCombo-1)*0.2, 3);
+          const pts=Math.round(basePts*mul);
           brickScore+=pts; score+=pts; if(best<score) best=score;
-          brickFx.push({x:b.x+b.w/2,y:b.y+b.h/2,t:0,text:'+'+pts});
+          brickFx.push({x:b.x+b.w/2,y:b.y+b.h/2,t:0,text:'+'+pts+(brickCombo>1?' x'+brickCombo:'')});
+          document.getElementById('combo-box').textContent=brickCombo>1?'🧱 x'+brickCombo:'';
+          if(!sfxMuted) sfxComboUp(brickCombo);
+          if(brickCombo>=3) showComboFlash(0,false,'💥 COMBO x'+brickCombo+'!');
           sfxBrickBreak();
         } else {
           brickScore+=10; score+=10; if(best<score) best=score;
@@ -8382,6 +9070,7 @@ function brickLoop(now){
     // ball falls off bottom
     if(brickBall.y>H+10){
       brickLives--;
+      brickCombo=0; if(brickComboTimer){clearTimeout(brickComboTimer); brickComboTimer=0;} document.getElementById('combo-box').textContent='';
       if(brickLives<=0){ brickDone(false); return; }
       sfxPenalty();
       brickBall={x:brickPaddleX,y:paddleY-brickBall.r-2,vx:180+(Math.random()-0.5)*60,vy:-220,launched:false,r:8};
@@ -8477,6 +9166,7 @@ function brickDone(won){
 
 function exitBrickToMain(){
   brickMode=false;
+  brickCombo=0; if(brickComboTimer){clearTimeout(brickComboTimer); brickComboTimer=0;}
   if(brickRAF){ cancelAnimationFrame(brickRAF); brickRAF=null; }
   BrCV().classList.remove('active');
   document.getElementById('grid').style.display='';
@@ -8486,6 +9176,7 @@ function exitBrickToMain(){
   document.getElementById('mode-badge').classList.remove('secret');
   document.getElementById('burst-count').textContent='Chuỗi nổ: 0/3';
   document.getElementById('hint-bar').textContent='Chạm khối → ghost hiện · Di ngón → ghost bám · Thả trên ô → đặt · Thả vùng trống → xoay';
+  document.getElementById('combo-box').textContent='';
   renderPieces(); checkGameOverA();
 }
 
@@ -8508,7 +9199,7 @@ const RUNNER_GROUND_Y_FRAC=0.82;
 const RuCV=()=>document.getElementById('runner-canvas');
 const RUNNER_GRAVITY=800, RUNNER_JUMP_VY=-380, RUNNER_JUMP2_VY=-300;
 
-runnerMode=false; runnerRAF=null; let runnerLast=0, runnerElapsed=0, runnerWon=false;
+// (đã chuyển khai báo biến mode lên đầu file để tránh lỗi TDZ)
 let runnerDogY=0, runnerDogVY=0, runnerJumps=0;
 let runnerObstacles=[], runnerStars=[], runnerFx=[];
 let runnerSpeed=180, runnerScore=0, runnerLives=2;
@@ -8748,7 +9439,7 @@ RuCV().addEventListener('pointerdown', e=>{
    MAP 17 — SPACE SHOOTER 🚀
 ═══════════════════════════════════════════════════════ */
 const SPC=()=>document.getElementById('space-canvas');
-spaceMode=false; spaceRAF=null; let spaceWon=false;
+// (đã chuyển khai báo biến mode lên đầu file để tránh lỗi TDZ)
 let spaceState={};
 
 function triggerSpaceUnlock(){
@@ -9019,7 +9710,7 @@ function exitSpaceToMain(){
    MAP 18 — RHYTHM TAP 🎵
 ═══════════════════════════════════════════════════════ */
 const RHY=()=>document.getElementById('rhythm-canvas');
-rhythmMode=false; rhythmRAF=null; let rhythmWon=false;
+// (đã chuyển khai báo biến mode lên đầu file để tránh lỗi TDZ)
 let rhythmState={};
 
 function triggerRhythmUnlock(){
@@ -9217,7 +9908,7 @@ function exitRhythmToMain(){
    MAP 19 — MAZE RUNNER 🌀
 ═══════════════════════════════════════════════════════ */
 const MZC=()=>document.getElementById('maze-canvas');
-mazeMode=false; mazeRAF=null; let mazeWon=false;
+// (đã chuyển khai báo biến mode lên đầu file để tránh lỗi TDZ)
 let mazeState={};
 
 function triggerMazeUnlock(){
@@ -9423,7 +10114,7 @@ function exitMazeToMain(){
    MAP 20 — MEGA BOSS FINAL BATTLE 💀
 ═══════════════════════════════════════════════════════ */
 const MGC=()=>document.getElementById('mega-canvas');
-megaMode=false; megaRAF=null; let megaWon=false;
+// (đã chuyển khai báo biến mode lên đầu file để tránh lỗi TDZ)
 let megaState={};
 
 function triggerMegaUnlock(){
