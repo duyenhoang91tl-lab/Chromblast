@@ -18,13 +18,16 @@ body {
   display: flex; justify-content: center; align-items: flex-start;
   padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
   min-height: 100vh; min-height: 100dvh;
-  overflow-x: hidden;
+  overflow-x: hidden; overflow-y: auto;
   -webkit-user-select: none; user-select: none;
   -webkit-tap-highlight-color: transparent;
 }
 input, textarea { -webkit-user-select: text; user-select: text; }
 ::selection { background: transparent; }
-#game-root { max-width: 420px; width: 100%; position: relative; }
+#game-root { max-width: 420px; width: 100%; position: relative; transform-origin: top center; }
+@media (orientation: landscape) {
+  body { align-items: center; padding-top: max(8px, env(safe-area-inset-top)); padding-bottom: max(8px, env(safe-area-inset-bottom)); }
+}
 
 /* ── HEADER ── */
 #header {
@@ -219,6 +222,14 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   padding: 20px;
 }
 #admin-panel.show { display:flex; }
+.admin-panel-like {
+  position: fixed; inset:0; z-index: 10001; display:none;
+  align-items:center; justify-content:center; background: rgba(0,0,0,0.7);
+  padding: 20px;
+}
+.admin-panel-like.show { display:flex; }
+.admin-map-btn.locked { opacity:0.4; cursor:not-allowed; }
+.admin-map-btn.locked:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); }
 .admin-card {
   width:100%; max-width: 380px; max-height: 82vh; overflow-y:auto;
   background: #17102b; border: 1px solid rgba(255,200,0,0.25);
@@ -740,6 +751,11 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
   font-size:14px; font-weight:700; letter-spacing:.3px; cursor:pointer; margin-top:2px;
 }
 #unlock-later-btn:hover { background: rgba(255,255,255,0.08); color:#fff; }
+#unlock-autoskip-label {
+  display:flex; align-items:center; gap:8px; margin-top:6px;
+  font-size:12px; color:#999; cursor:pointer; user-select:none;
+}
+#unlock-autoskip-label input { width:15px; height:15px; cursor:pointer; accent-color:#f7c948; }
 #burst-count.unlock-pending { cursor:pointer; text-decoration:underline; }
 
 /* ── GAME OVER ── */
@@ -973,6 +989,7 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
     </div>
     <div id="game-controls" style="display:flex;gap:6px;align-items:center;">
       <button id="admin-btn" title="Bảng admin - chọn map ẩn" style="display:none;">🛠️ ADMIN</button>
+      <button id="hiddenmap-menu-btn" title="Chọn map ẩn đã chơi qua" style="display:none;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;align-items:center;justify-content:center;padding:0;">🗺️</button>
       <button id="account-btn" title="Tài khoản">👤</button>
       <button id="mute-btn" title="Tắt/bật âm thanh" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">🔊</button>
       <button id="pause-btn" title="Tạm dừng" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">⏸</button>
@@ -1012,6 +1029,14 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
       <div class="admin-title"><span>🛠️ Chọn map ẩn để test</span><button class="admin-close" id="admin-close-btn">✕</button></div>
       <div class="admin-sub">Chỉ tài khoản admin mới thấy bảng này. Bấm vào map để vào chơi thử ngay lập tức.</div>
       <div id="admin-map-list"></div>
+    </div>
+  </div>
+
+  <div id="hiddenmap-menu-panel" class="admin-panel-like">
+    <div class="admin-card">
+      <div class="admin-title"><span>🗺️ Map ẩn đã chơi qua</span><button class="admin-close" id="hiddenmap-menu-close-btn">✕</button></div>
+      <div class="admin-sub">Chọn lại map ẩn bạn đã từng vượt qua để chơi lại.</div>
+      <div id="hiddenmap-menu-list"></div>
     </div>
   </div>
 
@@ -1085,6 +1110,9 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
       </div>
       <button id="unlock-btn">⚡ VÀO ĐẤU!</button>
       <button id="unlock-later-btn">🔙 Quay lại map thường</button>
+      <label id="unlock-autoskip-label">
+        <input type="checkbox" id="unlock-autoskip-chk"> Tự động bỏ qua (không hỏi lại map ẩn nữa)
+      </label>
     </div>
     <div id="pause-overlay" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.75);z-index:100;border-radius:14px;flex-direction:column;align-items:center;justify-content:center;gap:20px;">
       <div style="font-size:28px;font-weight:900;color:#fff;text-shadow:0 0 20px #fff;">⏸ TẠM DỪNG</div>
@@ -1138,6 +1166,25 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
 <div id="drag-ghost"></div>
 
 <script>
+/* Tự co giãn toàn bộ khung game để vừa màn hình khi xoay ngang (landscape) —
+   tránh bị cắt mất một phần khung do chiều cao viewport quá thấp so với nội dung. */
+(function(){
+  const root=document.getElementById('game-root');
+  function fitGameRoot(){
+    root.style.transform='none';
+    const availH=window.innerHeight-16;
+    const contentH=root.scrollHeight;
+    if(contentH>availH && availH>0){
+      const scale=Math.max(0.55, availH/contentH);
+      root.style.transform='scale('+scale+')';
+    }
+  }
+  window.addEventListener('resize', fitGameRoot);
+  window.addEventListener('orientationchange', ()=>setTimeout(fitGameRoot,150));
+  window.addEventListener('load', fitGameRoot);
+  document.addEventListener('DOMContentLoaded', fitGameRoot);
+  setInterval(fitGameRoot, 1000);
+})();
 /* ══════════════════════════════════════════
    CONSTANTS & STATE
 ══════════════════════════════════════════ */
@@ -1160,6 +1207,55 @@ const COLOR_BURST_MIN = 9;   // min cells in a CONNECTED same-colour group to cl
 const SECRET_WINDOW = 2500;  // ms — khoảng thời gian giữa 2 lần nổ trong map ẩn (ấn chậm hơn sẽ thoát)
 const SECRET_ULTRA  = 9;     // streak to trigger ultra
 const TEST_UNLOCK_SCORE = 100; // 🧪 ngưỡng điểm để mở khoá map ẩn — ĐANG GIẢM ĐỂ TEST (bình thường là 1000)
+
+/* ══════════════════════════════════════════════════════
+   HỆ THỐNG MỞ KHÓA MAP ẨN THEO MỐC ĐIỂM TĂNG DẦN
+   Map thường 100đ → Map ẩn 1. Thắng map ẩn N → về map thường
+   đạt thêm 100*(N+1) đ (tính từ mốc lúc vừa thắng) → mở map ẩn N+1.
+══════════════════════════════════════════════════════ */
+let hiddenMapEntryScore=0; // mốc điểm map thường lúc VỪA VÀO map ẩn — thua map ẩn sẽ mất hết điểm kiếm được trong ván đó
+function forfeitHiddenMapScore(){
+  score=hiddenMapEntryScore;
+  if(typeof updateScoreUI==='function') updateScoreUI();
+}
+const UNLOCK_STAGE_ORDER = ['secret','dodge','fruit','bee','gold','mole','memory','bubble','stack','boss','catch','flood','arena','snake','brick','runner','space','rhythm','maze','mega'];
+function unlockThresholdForStage(stageNum){ return 100*stageNum; } // stageNum 1-indexed (map ẩn thứ mấy)
+let unlockGateStageIndex = 0;   // index (0-based) trong UNLOCK_STAGE_ORDER của map ẩn TIẾP THEO cần mở
+let unlockGateBaseline = 0;     // mốc điểm map thường lúc bắt đầu chờ
+let unlockGateActive = true;    // đang tích điểm map thường để mở map ẩn tiếp theo?
+function triggerStageUnlock(stageKey){
+  switch(stageKey){
+    case 'secret': return triggerUnlock();
+    case 'dodge': return triggerDodgeUnlock();
+    case 'fruit': return triggerFruitUnlock();
+    case 'bee': return triggerBeeUnlock();
+    case 'gold': return triggerGoldUnlock();
+    case 'mole': return triggerMoleUnlock();
+    case 'memory': return triggerMemoryUnlock();
+    case 'bubble': return triggerBubbleUnlock();
+    case 'stack': return triggerStackUnlock();
+    case 'boss': return triggerBossUnlock();
+    case 'catch': return triggerCatchUnlock();
+    case 'flood': return triggerFloodUnlock();
+    case 'arena': return triggerArenaUnlock();
+    case 'snake': return triggerSnakeUnlock();
+    case 'brick': return triggerBrickUnlock();
+    case 'runner': return triggerRunnerUnlock();
+    case 'space': return triggerSpaceUnlock();
+    case 'rhythm': return triggerRhythmUnlock();
+    case 'maze': return triggerMazeUnlock();
+    case 'mega': return triggerMegaUnlock();
+  }
+}
+// Gọi khi vừa THẮNG map ẩn ở vị trí clearedIdx (0-based) trong UNLOCK_STAGE_ORDER —
+// bắt đầu đếm điểm map thường để mở map ẩn kế tiếp.
+function startUnlockGate(clearedIdx){
+  markMapCleared(UNLOCK_STAGE_ORDER[clearedIdx]);
+  unlockGateStageIndex = clearedIdx+1;
+  unlockGateBaseline = score;
+  unlockGateActive = (unlockGateStageIndex < UNLOCK_STAGE_ORDER.length);
+  consecutiveBursts=0; updateBurstCount();
+}
 
 // Mode A state
 let board, pieces, selected, score=0, best=0, linesCleared=0, level=1, combo=0;
@@ -2050,11 +2146,12 @@ function updateBurstCount(){
     return;
   }
   bc.classList.remove('unlock-pending');
-  if(awaitingSecretUnlock && !secretMode){
-    const earned=Math.min(Math.round(score-secretUnlockBaseline), TEST_UNLOCK_SCORE);
+  if(unlockGateActive && !secretMode){
+    const need=unlockThresholdForStage(unlockGateStageIndex+1);
+    const earned=Math.min(Math.round(score-unlockGateBaseline), need);
     bc.textContent=
-      earned>=TEST_UNLOCK_SCORE?'🔥 Mở khóa sẵn sàng!':
-      `Tiến độ: ${earned}/${TEST_UNLOCK_SCORE}đ`;
+      earned>=need?'🔥 Mở khóa sẵn sàng!':
+      `Tiến độ: ${earned}/${need}đ`;
   } else {
     bc.textContent=
       consecutiveBursts>=3?'🔥 Mở khóa sẵn sàng!':`Chuỗi nổ: ${consecutiveBursts}/3`;
@@ -2067,25 +2164,14 @@ function afterPlace(){
     refillPieces(); renderPieces();
   }
 
-  // Đạt TEST_UNLOCK_SCORE từ map thường → mở map ẩn 1
-  if(awaitingSecretUnlock && !secretMode && score-secretUnlockBaseline>=TEST_UNLOCK_SCORE){
-    awaitingSecretUnlock=false;
+  // Đạt đủ điểm map thường (mốc tăng dần 100đ mỗi map ẩn) → mở map ẩn tiếp theo
+  if(unlockGateActive && !secretMode && unlockGateStageIndex<UNLOCK_STAGE_ORDER.length &&
+     score-unlockGateBaseline>=unlockThresholdForStage(unlockGateStageIndex+1)){
+    unlockGateActive=false;
     consecutiveBursts=0; updateBurstCount();
-    setTimeout(()=>triggerUnlock(), 250);
+    const stageKey=UNLOCK_STAGE_ORDER[unlockGateStageIndex];
+    setTimeout(()=>triggerStageUnlock(stageKey), 250);
     return;
-  }
-  if(awaitingFruitUnlock && score-fruitUnlockBaseline>=TEST_UNLOCK_SCORE){
-    awaitingFruitUnlock=false;
-    setTimeout(()=>triggerFruitUnlock(), 250);
-  } else if(awaitingBeeUnlock && score-beeUnlockBaseline>=TEST_UNLOCK_SCORE){
-    awaitingBeeUnlock=false;
-    setTimeout(()=>triggerBeeUnlock(), 250);
-  } else if(awaitingGoldUnlock && score-goldUnlockBaseline>=TEST_UNLOCK_SCORE){
-    awaitingGoldUnlock=false;
-    setTimeout(()=>triggerGoldUnlock(), 250);
-  } else if(awaitingMoleUnlock && score-moleUnlockBaseline>=TEST_UNLOCK_SCORE){
-    awaitingMoleUnlock=false;
-    setTimeout(()=>triggerMoleUnlock(), 250);
   }
   if(pieces.every(p=>p.used)){
     consecutiveBursts=0; updateBurstCount();
@@ -2143,6 +2229,22 @@ function renderPieces(){
 /* ══════════════════════════════════════════
    UNLOCK TRANSITION
 ══════════════════════════════════════════ */
+let autoSkipHiddenMaps = localStorage.getItem('autoSkipHiddenMaps')==='1';
+function showUnlockOverlay(){
+  const chk=document.getElementById('unlock-autoskip-chk');
+  if(chk) chk.checked=autoSkipHiddenMaps;
+  if(autoSkipHiddenMaps){
+    // Người chơi đã chọn tự động bỏ qua — không hiện popup nữa, chỉ để chờ mở qua "Map ẩn đang chờ"
+    unlockDeferred=true;
+    updateBurstCount();
+    return;
+  }
+  document.getElementById('unlock-overlay').classList.add('show');
+}
+document.getElementById('unlock-autoskip-chk').addEventListener('change', e=>{
+  autoSkipHiddenMaps=e.target.checked;
+  localStorage.setItem('autoSkipHiddenMaps', autoSkipHiddenMaps?'1':'0');
+});
 function triggerUnlock(){
   pendingUnlock='secret';
   document.getElementById('unlock-title').textContent='🔥 NHIỆM VỤ ẨN MỞ KHÓA!';
@@ -2153,12 +2255,13 @@ function triggerUnlock(){
     'Nổ liên tiếp trong <b>2.5 giây</b> sẽ nhân điểm.<br>'+
     'Đạt <b>'+TEST_UNLOCK_SCORE+' điểm</b> ở đây → mở khoá <b>Map ẩn 2</b>!';
   document.getElementById('unlock-btn').textContent='⚡ VÀO ĐẤU!';
-  document.getElementById('unlock-overlay').classList.add('show');
+  showUnlockOverlay();
 }
 
 document.getElementById('unlock-btn').addEventListener('click',()=>{
   sfxClick();
   document.getElementById('unlock-overlay').classList.remove('show');
+  hiddenMapEntryScore=score; // ghi nhớ mốc điểm — thua map ẩn này sẽ mất hết điểm kiếm thêm trong ván
   if(pendingUnlock==='dodge') enterDodgeMode();
   else if(pendingUnlock==='fruit') enterFruitMode();
   else if(pendingUnlock==='bee') enterBeeMode();
@@ -2183,6 +2286,8 @@ document.getElementById('unlock-btn').addEventListener('click',()=>{
 
 document.getElementById('unlock-later-btn').addEventListener('click',()=>{
   sfxClick();
+  const chk=document.getElementById('unlock-autoskip-chk');
+  if(chk){ autoSkipHiddenMaps=chk.checked; localStorage.setItem('autoSkipHiddenMaps', autoSkipHiddenMaps?'1':'0'); }
   document.getElementById('unlock-overlay').classList.remove('show');
   unlockDeferred=true;
   updateBurstCount();
@@ -2192,7 +2297,7 @@ document.getElementById('burst-count').addEventListener('click',()=>{
   if(!unlockDeferred) return;
   sfxClick();
   unlockDeferred=false;
-  document.getElementById('unlock-overlay').classList.add('show');
+  showUnlockOverlay();
 });
 
 /* ══════════════════════════════════════════
@@ -2615,7 +2720,7 @@ function resetSecretTimer(){
     // Hết giờ map ẩn 1 → TEST: luôn mở khoá MAP ẨN 2 ngay (không cần về map thường)
     // Production sau: nếu đạt điểm mới unlock, không đạt → exitSecretMode()
     secretMode=false; clearSecretTimer();
-    triggerDodgeUnlock();
+    startUnlockGate(0);
   }, SECRET_WINDOW);
 }
 
@@ -2675,6 +2780,7 @@ let beeUnlockBaseline=0;          // điểm mốc lúc vừa rời map ẩn 3
 const DCV = () => document.getElementById('dodge-canvas');
 
 function triggerDodgeUnlock(){
+  markMapCleared('secret');
   pendingUnlock='dodge';
   document.getElementById('unlock-title').textContent='🐢 MAP ẨN 2 MỞ KHÓA!';
   document.getElementById('unlock-desc').innerHTML=
@@ -2683,7 +2789,7 @@ function triggerDodgeUnlock(){
     'Kéo trái/phải trên màn hình hoặc bấm ◀ ▶.<br>'+
     'Đạn càng lúc càng <b>nhanh & nhiều</b> — sống càng lâu điểm càng cao!';
   document.getElementById('unlock-btn').textContent='🐢 BẮT ĐẦU NÉ!';
-  document.getElementById('unlock-overlay').classList.add('show');
+  showUnlockOverlay();
 }
 
 function enterDodgeMode(){
@@ -3325,6 +3431,7 @@ function drawCarrot(ctx,x,y,r){
 function dodgeGameOver(){
   if(dodgeRAF) cancelAnimationFrame(dodgeRAF);
   dodgeRAF=null; dodgeMode=false;
+  forfeitHiddenMapScore(); // thua map ẩn → mất hết điểm kiếm được trong ván này
   sfxGameOver();
   showComboFlash(0,false,'🥕 Trúng cà rốt!');
   setTimeout(exitDodgeToMain, 350);
@@ -3347,7 +3454,7 @@ function exitDodgeToMain(){
   awaitingFruitUnlock=false;
   renderPieces();
   checkGameOverA();
-  setTimeout(()=>triggerFruitUnlock(), 400);
+  setTimeout(()=>startUnlockGate(1), 400);
 }
 
 /* ── điều khiển map ẩn 2 ── */
@@ -3432,6 +3539,7 @@ const FRUIT_TYPES=[
 const FCV = () => document.getElementById('fruit-canvas');
 
 function triggerFruitUnlock(){
+  markMapCleared('dodge');
   pendingUnlock='fruit';
   document.getElementById('unlock-title').textContent='🍉 MAP ẨN 3 MỞ KHÓA!';
   document.getElementById('unlock-desc').innerHTML=
@@ -3441,7 +3549,7 @@ function triggerFruitUnlock(){
     'Cẩn thận <b>💣 BOM</b> — chém trúng bom là <b>thua ngay</b>!<br>'+
     'Qua được 60s (hoặc dính bom) → về map thường, ghi thêm điểm để mở <b>Map ẩn 4</b>!';
   document.getElementById('unlock-btn').textContent='🍉 CHÉM THÔI!';
-  document.getElementById('unlock-overlay').classList.add('show');
+  showUnlockOverlay();
 }
 
 function enterFruitMode(){
@@ -3886,6 +3994,7 @@ function drawFruit(ctx,W,H,now){
 function fruitGameOver(success, msg){
   if(fruitRAF) cancelAnimationFrame(fruitRAF);
   fruitRAF=null; fruitMode=false;
+  if(!success) forfeitHiddenMapScore();
   sfxGameOver();
   showComboFlash(0, success, msg || (success?'🍉 Qua màn!':'💣 Trúng bom!'));
   setTimeout(exitFruitToMain, 400);
@@ -3908,7 +4017,7 @@ function exitFruitToMain(){
   awaitingBeeUnlock=false;
   renderPieces();
   checkGameOverA();
-  setTimeout(()=>triggerBeeUnlock(), 400);
+  setTimeout(()=>startUnlockGate(2), 400);
 }
 
 /* ── điều khiển vuốt chém map ẩn 3 ── */
@@ -3974,6 +4083,7 @@ let dog=null;
 const BCV = () => document.getElementById('bee-canvas');
 
 function triggerBeeUnlock(){
+  markMapCleared('fruit');
   pendingUnlock='bee';
   document.getElementById('unlock-title').textContent='🐝 MAP ẨN 4 MỞ KHÓA!';
   document.getElementById('unlock-desc').innerHTML=
@@ -3983,7 +4093,7 @@ function triggerBeeUnlock(){
     'Chạm vào ong để <b>đập bay</b> chúng, ghi điểm combo!<br>'+
     'Ong chọc chó quá nhiều lần → <b>thua, về map thường</b>.';
   document.getElementById('unlock-btn').textContent='🐕 CHƠI NGAY!';
-  document.getElementById('unlock-overlay').classList.add('show');
+  showUnlockOverlay();
 }
 
 function enterBeeMode(){
@@ -4597,6 +4707,7 @@ function beeLoop(now){
 function beeGameOver(){
   if(beeRAF) cancelAnimationFrame(beeRAF);
   beeRAF=null; beeMode=false;
+  forfeitHiddenMapScore();
   sfxDogBurned();
   showComboFlash(0,false,'🐝 Chó bị đốt!');
   setTimeout(exitBeeToMain, 400);
@@ -4623,7 +4734,7 @@ function exitBeeToMain(){
   awaitingGoldUnlock=false;
   renderPieces();
   checkGameOverA();
-  setTimeout(()=>triggerGoldUnlock(), 400);
+  setTimeout(()=>startUnlockGate(3), 400);
 }
 
 /* ── điều khiển: chạm ong → đập bay / chạm nơi khác → chỉ đường ── */
@@ -4740,6 +4851,7 @@ function initGoldGrid(){
 }
 
 function triggerGoldUnlock(){
+  markMapCleared('bee');
   pendingUnlock='gold';
   document.getElementById('unlock-title').textContent='⛏️ MAP ẨN 5 MỞ KHÓA!';
   document.getElementById('unlock-desc').innerHTML=
@@ -4749,7 +4861,7 @@ function triggerGoldUnlock(){
     '🐭 Bắt được <b>chuột mang kim cương</b> chạy qua → thưởng lớn +150!<br>'+
     'Cần đạt <b>'+GOLD_KPI_SCORE+' điểm</b> để qua màn!';
   document.getElementById('unlock-btn').textContent='⛏️ ĐÀO THÔI!';
-  document.getElementById('unlock-overlay').classList.add('show');
+  showUnlockOverlay();
 }
 
 function enterGoldMode(){
@@ -5108,6 +5220,8 @@ function goldGameOver(kpiMet, msg){
   if(kpiMet){
     const timeBonus=Math.round(goldTimeLeft*10);
     if(timeBonus>0){ score+=timeBonus; if(score>best)best=score; updateScoreUI(); }
+  } else {
+    forfeitHiddenMapScore();
   }
   showComboFlash(0,false, msg || (kpiMet?'🏆 KPI ĐẠT!':'⛏️ Không đủ KPI!'));
   setTimeout(exitGoldToMain, 450);
@@ -5128,7 +5242,7 @@ function exitGoldToMain(){
   goldWave=1;
   awaitingGoldUnlock=false;
   // Trigger Map ẩn 6 unlock immediately after Map ẩn 5
-  setTimeout(()=>triggerMoleUnlock(), 400);
+  setTimeout(()=>startUnlockGate(4), 400);
   // Activate thorn vine difficulty after returning from Map ẩn 5
   if(!thornCells) thornCells=new Set();
   thornMode=true; thornPlacementCount=0; thornWave=0; thornThreshold=6;
@@ -5207,6 +5321,7 @@ let moleHammerX=0, moleHammerY=0, moleHammerVis=false, moleHammerAnim=0;
 const MCV=()=>document.getElementById('mole-canvas');
 
 function triggerMoleUnlock(){
+  markMapCleared('gold');
   pendingUnlock='mole';
   document.getElementById('unlock-title').textContent='🔨 MAP ẨN 6 MỞ KHÓA!';
   document.getElementById('unlock-desc').innerHTML=
@@ -5215,7 +5330,7 @@ function triggerMoleUnlock(){
     '🦫+20 🐰+5 🐢+10 🐶+30 🐱+15 🦔-20 🐍-40<br>'+
     '⚠️ Đập nhím hoặc rắn bị <b>trừ điểm</b>! Cần <b>'+MOLE_KPI+' điểm</b> trong '+MOLE_TIME+'s!';
   document.getElementById('unlock-btn').textContent='🔨 ĐẬP THÔI!';
-  document.getElementById('unlock-overlay').classList.add('show');
+  showUnlockOverlay();
 }
 
 function enterMoleMode(){
@@ -5538,7 +5653,7 @@ function moleDone(){
     sfxGameOver();
     showComboFlash(0,false,'🔨 '+moleScore+'/'+MOLE_KPI+' — Chưa đủ!');
   }
-  setTimeout(()=>{ exitMoleToMain(); setTimeout(()=>triggerMemoryUnlock(), 500); }, 500);
+  setTimeout(()=>{ exitMoleToMain(); setTimeout(()=>startUnlockGate(5), 500); }, 500);
 }
 
 function exitMoleToMain(){
@@ -5595,6 +5710,7 @@ let memoryCards=[], memoryFlipped=[], memoryMatched=0, memoryScore=0, memoryStre
 const MMCV=()=>document.getElementById('memory-canvas');
 
 function triggerMemoryUnlock(){
+  markMapCleared('mole');
   pendingUnlock='memory';
   document.getElementById('unlock-title').textContent='🃏 MAP ẨN 7 MỞ KHÓA!';
   document.getElementById('unlock-desc').innerHTML=
@@ -5604,7 +5720,7 @@ function triggerMemoryUnlock(){
     'Ghép đủ <b>6 cặp</b> trong <b>'+MEMORY_TIME+'s</b> để thắng!<br>'+
     'Mỗi cặp = 50đ + (giây còn lại × 3)đ thưởng thời gian!';
   document.getElementById('unlock-btn').textContent='🃏 LẬT THẺ THÔI!';
-  document.getElementById('unlock-overlay').classList.add('show');
+  showUnlockOverlay();
 }
 
 function enterMemoryMode(){
@@ -5829,7 +5945,7 @@ function memoryDone(){
   }
   setTimeout(()=>{
     exitMemoryToMain();
-    if(won) setTimeout(()=>triggerBubbleUnlock(), 400);
+    if(won) setTimeout(()=>startUnlockGate(6), 400);
   }, 600);
 }
 
@@ -5874,6 +5990,7 @@ let bubbleFallTimer=0;
 const BBCV=()=>document.getElementById('bubble-canvas');
 
 function triggerBubbleUnlock(){
+  markMapCleared('memory');
   pendingUnlock='bubble';
   document.getElementById('unlock-title').textContent='🫧 MAP ẨN 8 MỞ KHÓA!';
   document.getElementById('unlock-desc').innerHTML=
@@ -5883,7 +6000,7 @@ function triggerBubbleUnlock(){
     'Gom <b>'+BUBBLE_KPI+' điểm</b> trong <b>'+BUBBLE_TIME+'s</b> hoặc dọn sạch bảng để thắng!<br>'+
     'Cứ 8 giây bong bóng lại rơi xuống 1 hàng — cẩn thận!';
   document.getElementById('unlock-btn').textContent='🫧 BẮN THÔI!';
-  document.getElementById('unlock-overlay').classList.add('show');
+  showUnlockOverlay();
 }
 
 function enterBubbleMode(){
@@ -6196,11 +6313,12 @@ function bubbleDone(won){
     sfxWaveWin();
     showComboFlash(0,false,'🏆 '+bubbleScore+'đ! Bóng nổ tung!');
   } else {
+    forfeitHiddenMapScore();
     sfxGameOver();
     showComboFlash(0,false,'🫧 '+bubbleScore+'đ — Chưa đủ!');
   }
   setTimeout(exitBubbleToMain, 600);
-  if(won) setTimeout(()=>triggerStackUnlock(), 500);
+  if(won) setTimeout(()=>startUnlockGate(7), 500);
 }
 
 function exitBubbleToMain(){
@@ -6260,6 +6378,7 @@ let stackCameraY=0, stackFx=[];
 const STCV=()=>document.getElementById('stack-canvas');
 
 function triggerStackUnlock(){
+  markMapCleared('bubble');
   pendingUnlock='stack';
   document.getElementById('unlock-title').textContent='🏗️ MAP ẨN 9 MỞ KHÓA!';
   document.getElementById('unlock-desc').innerHTML=
@@ -6269,7 +6388,7 @@ function triggerStackUnlock(){
     'Xếp <b>'+STACK_KPI+' tầng</b> trong <b>'+STACK_TIME+'s</b> để thắng!<br>'+
     'Căn giữa hoàn hảo → Thưởng điểm PERFECT!';
   document.getElementById('unlock-btn').textContent='🏗️ XẾP THÔI!';
-  document.getElementById('unlock-overlay').classList.add('show');
+  showUnlockOverlay();
 }
 
 function enterStackMode(){
@@ -6447,11 +6566,12 @@ function stackDone(won){
     sfxWaveWin();
     showComboFlash(0,false,'🏆 '+stackCount+' tầng! Tháp hoàn thành!');
   } else {
+    forfeitHiddenMapScore();
     sfxGameOver();
     showComboFlash(0,false,'🏗️ '+stackCount+'/'+STACK_KPI+' tầng!');
   }
   setTimeout(exitStackToMain, 600);
-  if(won) setTimeout(()=>triggerBossUnlock(), 500);
+  if(won) setTimeout(()=>startUnlockGate(8), 500);
 }
 
 function exitStackToMain(){
@@ -6490,6 +6610,7 @@ let bossProjColorIdx=0;
 const BOSCV=()=>document.getElementById('boss-canvas');
 
 function triggerBossUnlock(){
+  markMapCleared('stack');
   pendingUnlock='boss';
   document.getElementById('unlock-title').textContent='🐍 MAP ẨN 10 MỞ KHÓA!';
   document.getElementById('unlock-desc').innerHTML=
@@ -6499,7 +6620,7 @@ function triggerBossUnlock(){
     'Né giọt nọc độc rơi xuống — bạn có <b>3 mạng ❤️</b>!<br>'+
     'Hạ gục Boss trước <b>'+BOSS_TIME+'s</b> để chiến thắng!';
   document.getElementById('unlock-btn').textContent='🐍 CHIẾN ĐẤU!';
-  document.getElementById('unlock-overlay').classList.add('show');
+  showUnlockOverlay();
 }
 
 function enterBossMode(){
@@ -6709,8 +6830,9 @@ function bossDone(won){
   if(won){
     sfxWaveWin();
     showComboFlash(0,false,'🏆 Boss bị tiêu diệt!');
-    setTimeout(()=>triggerCatchUnlock(), 500);
+    setTimeout(()=>startUnlockGate(9), 500);
   } else {
+    forfeitHiddenMapScore();
     sfxGameOver();
     showComboFlash(0,false,'🐍 Boss chưa bị hạ! HP: '+Math.max(0,bossHP));
   }
@@ -6764,6 +6886,7 @@ let catchFx=[], catchSpawnTimer=0;
 const CATCV=()=>document.getElementById('catch-canvas');
 
 function triggerCatchUnlock(){
+  markMapCleared('boss');
   pendingUnlock='catch';
   document.getElementById('unlock-title').textContent='🧺 MAP ẨN 11 MỞ KHÓA!';
   document.getElementById('unlock-desc').innerHTML=
@@ -6773,7 +6896,7 @@ function triggerCatchUnlock(){
     '⚠️ Tránh 🦔 và 🐍 — chúng sẽ lấy mạng bạn!<br>'+
     'Ghi <b>'+CATCH_KPI+' điểm</b> trong <b>'+CATCH_TIME+'s</b> để thắng!';
   document.getElementById('unlock-btn').textContent='🧺 BẮT THÔI!';
-  document.getElementById('unlock-overlay').classList.add('show');
+  showUnlockOverlay();
 }
 
 function enterCatchMode(){
@@ -6958,8 +7081,9 @@ function catchDone(won){
   if(won){
     sfxWaveWin();
     showComboFlash(0,false,'🧺 Bắt thú thành công! +'+catchScore+' điểm!');
-    setTimeout(()=>triggerFloodUnlock(), 500);
+    setTimeout(()=>startUnlockGate(10), 500);
   } else {
+    forfeitHiddenMapScore();
     sfxGameOver();
     showComboFlash(0,false,'🧺 Chưa đủ điểm! '+catchScore+'/'+CATCH_KPI);
   }
@@ -7009,6 +7133,7 @@ let floodFx=[], floodScore=0;
 const FLCV=()=>document.getElementById('flood-canvas');
 
 function triggerFloodUnlock(){
+  markMapCleared('catch');
   pendingUnlock='flood';
   document.getElementById('unlock-title').textContent='🎨 MAP ẨN 12 MỞ KHÓA!';
   document.getElementById('unlock-desc').innerHTML=
@@ -7017,7 +7142,7 @@ function triggerFloodUnlock(){
     'Mục tiêu: phủ đầy <b>toàn bộ</b> bảng trong <b>'+FLOOD_MAX_MOVES+' bước</b>!<br>'+
     'Thắng sớm nhận nhiều điểm thưởng!';
   document.getElementById('unlock-btn').textContent='🎨 TÔ THÔI!';
-  document.getElementById('unlock-overlay').classList.add('show');
+  showUnlockOverlay();
 }
 
 function enterFloodMode(){
@@ -7211,8 +7336,9 @@ function floodDone(won){
   if(won){
     sfxWaveWin();
     showComboFlash(0,false,'🎨 Phủ đầy bảng! +'+floodScore+' điểm!');
-    setTimeout(()=>triggerArenaUnlock(), 500);
+    setTimeout(()=>startUnlockGate(11), 500);
   } else {
+    forfeitHiddenMapScore();
     sfxGameOver();
     const flooded=countFlooded();
     showComboFlash(0,false,'🎨 Hết bước! Tràn '+flooded+'/100 ô!');
@@ -7271,6 +7397,7 @@ let arenaPetals=[];
 const ARCV=()=>document.getElementById('arena-canvas');
 
 function triggerArenaUnlock(){
+  markMapCleared('flood');
   pendingUnlock='arena';
   document.getElementById('unlock-title').textContent='🌊 MAP ẨN 13 MỞ KHÓA!';
   document.getElementById('unlock-desc').innerHTML=
@@ -7280,7 +7407,7 @@ function triggerArenaUnlock(){
     'Chạm vào 🐝/🥕 để tiêu diệt (+15 điểm)!<br>'+
     'Sống sót <b>'+ARENA_TIME+'s</b> hoặc đạt <b>'+ARENA_KPI+' điểm</b> để CHIẾN THẮNG!';
   document.getElementById('unlock-btn').textContent='🌊 VÀO TRẬN!';
-  document.getElementById('unlock-overlay').classList.add('show');
+  showUnlockOverlay();
 }
 
 function enterArenaMode(){
@@ -7575,8 +7702,9 @@ function arenaDone(won){
   if(won){
     sfxWaveWin();
     showComboFlash(0,false,'🏆 CHINH PHỤC ĐẤUTRƯỜNG! MAP ẨN 14 MỞ KHÓA!');
-    setTimeout(()=>triggerSnakeUnlock(), 1500);
+    setTimeout(()=>startUnlockGate(12), 1500);
   } else {
+    forfeitHiddenMapScore();
     sfxGameOver();
     showComboFlash(0,false,'🌊 Đã bị hạ gục! '+Math.floor(arenaScore)+' điểm!');
     setTimeout(exitArenaToMain, 800);
@@ -7675,7 +7803,7 @@ function updateScoreUI(){
   document.getElementById('best-box').textContent='Kỷ lục: '+Math.round(best).toLocaleString();
   document.getElementById('lines-cleared').textContent='Hàng xóa: '+linesCleared;
   document.getElementById('level-box').textContent='Cấp độ '+level;
-  if(awaitingSecretUnlock && !secretMode) updateBurstCount();
+  if(unlockGateActive && !secretMode) updateBurstCount();
   saveProgress();
 }
 
@@ -7857,13 +7985,10 @@ function startGame(){
   Object.values(ACHIEVEMENTS).forEach(a=>{ a.done=false; });
   fruitSlicedTotal=0; survive60Unlocked=false;
   score=0; linesCleared=0; level=1; combo=0; consecutiveBursts=0;
+  hiddenMapEntryScore=0;
   secretStreak=0; secretMultiplier=1; secretUltra=false;
   secret1Gained=0; pendingUnlock='secret';
-  awaitingSecretUnlock=true; secretUnlockBaseline=0;
-  awaitingFruitUnlock=false; fruitUnlockBaseline=0;
-  awaitingBeeUnlock=false; beeUnlockBaseline=0;
-  awaitingGoldUnlock=false; goldUnlockBaseline=0;
-  awaitingMoleUnlock=false; moleUnlockBaseline=0;
+  unlockGateStageIndex=0; unlockGateBaseline=0; unlockGateActive=true;
   memoryMode=false; if(memoryRAF){cancelAnimationFrame(memoryRAF);memoryRAF=null;}
   bubbleMode=false; if(typeof bubbleRAF!=='undefined'&&bubbleRAF){cancelAnimationFrame(bubbleRAF);bubbleRAF=null;}
   stackMode=false; if(typeof stackRAF!=='undefined'&&stackRAF){cancelAnimationFrame(stackRAF);stackRAF=null;}
@@ -8183,6 +8308,42 @@ const ADMIN_MAPS = [
   { key:'maze',    label:'Map ẩn 19 — Mê cung (Maze)',       run: enterMazeMode },
   { key:'mega',    label:'Map ẩn 20 — MEGA BOSS cuối cùng',  run: enterMegaMode },
 ];
+const CLEARED_MAPS_ALIAS = { secret:'secret1' }; // 'secret' (khoá nội bộ) === 'secret1' (khoá trong ADMIN_MAPS)
+let clearedHiddenMaps = new Set();
+try { clearedHiddenMaps = new Set(JSON.parse(localStorage.getItem('chromablast_cleared_maps')||'[]')); } catch(e){}
+function markMapCleared(key){
+  const aliased = CLEARED_MAPS_ALIAS[key]||key;
+  if(clearedHiddenMaps.has(aliased)) return;
+  clearedHiddenMaps.add(aliased);
+  localStorage.setItem('chromablast_cleared_maps', JSON.stringify([...clearedHiddenMaps]));
+  renderHiddenMapMenu();
+}
+function renderHiddenMapMenu(){
+  const btn=document.getElementById('hiddenmap-menu-btn');
+  const list=document.getElementById('hiddenmap-menu-list');
+  if(!btn||!list) return;
+  btn.style.display = clearedHiddenMaps.size>0 ? 'flex' : 'none';
+  list.innerHTML='';
+  ADMIN_MAPS.forEach(m=>{
+    const cleared = clearedHiddenMaps.has(m.key);
+    const item = document.createElement('button');
+    item.className = 'admin-map-btn'+(cleared?'':' locked');
+    item.innerHTML = (cleared?'':'🔒 ')+'<b>'+m.label.split(' — ')[0]+'</b> — '+m.label.split(' — ')[1];
+    if(cleared){
+      item.addEventListener('click', ()=>{
+        document.getElementById('hiddenmap-menu-panel').classList.remove('show');
+        const startScreen = document.getElementById('start-screen');
+        startScreen.classList.add('hide');
+        setTimeout(()=>{ startScreen.style.display='none'; }, 500);
+        sfxClick();
+        hardResetAllModes();
+        startGame();
+        m.run();
+      });
+    }
+    list.appendChild(item);
+  });
+}
 
 function loadUsers(){
   let users;
@@ -8400,6 +8561,16 @@ function initAdminPanel(){
   document.getElementById('admin-close-btn').addEventListener('click', ()=>{
     document.getElementById('admin-panel').classList.remove('show');
   });
+
+  document.getElementById('hiddenmap-menu-btn').addEventListener('click', ()=>{
+    sfxClick();
+    renderHiddenMapMenu();
+    document.getElementById('hiddenmap-menu-panel').classList.add('show');
+  });
+  document.getElementById('hiddenmap-menu-close-btn').addEventListener('click', ()=>{
+    document.getElementById('hiddenmap-menu-panel').classList.remove('show');
+  });
+  renderHiddenMapMenu();
 }
 
 function doChangePassword(oldPass, newPass, newPass2){
@@ -8480,11 +8651,12 @@ let snakeFoodCount=0;
 let snakePointerStart=null;
 
 function triggerSnakeUnlock(){
+  markMapCleared('arena');
   pendingUnlock='snake';
   document.getElementById('unlock-title').textContent='🐍 MAP ẨN 14 MỞ KHÓA!';
   document.getElementById('unlock-desc').innerHTML='Rắn cổ điển! Ăn trái cây để lớn dần.<br>Vuốt/chạm để đổi hướng. Tránh tường & đuôi!<br>KPI: đạt độ dài <b>20</b>. 3 mạng ❤️❤️❤️';
   document.getElementById('unlock-btn').textContent='🐍 CHƠI THÔI!';
-  document.getElementById('unlock-overlay').classList.add('show');
+  showUnlockOverlay();
   sfxUnlock();
 }
 
@@ -8798,8 +8970,9 @@ function snakeDone(won){
     sfxWaveWin();
     updateScoreUI();
     showComboFlash(0,false,'🎉 ĐỘ DÀI 20 ĐẠT!');
-    setTimeout(()=>triggerBrickUnlock(),1500);
+    setTimeout(()=>startUnlockGate(13),1500);
   } else {
+    forfeitHiddenMapScore();
     sfxGameOver();
     showComboFlash(0,false,'💀 Rắn đã chết!');
     setTimeout(exitSnakeToMain, 800);
@@ -8831,25 +9004,14 @@ SCV().addEventListener('pointerup', e=>{
   const dx=(e.clientX-r.left)-snakePointerStart.x;
   const dy=(e.clientY-r.top)-snakePointerStart.y;
   snakePointerStart=null;
-  if(Math.abs(dx)<15&&Math.abs(dy)<15){
-    const cx=SCV().width/2, cy=SCV().height/2;
-    const tx=(e.clientX-r.left)*(SCV().width/r.width);
-    const ty=(e.clientY-r.top)*(SCV().height/r.height);
-    if(Math.abs(tx-cx)>Math.abs(ty-cy)){
-      if(tx>cx&&snakeDir.x===0) setSnakeDir(1,0);
-      else if(tx<cx&&snakeDir.x===0) setSnakeDir(-1,0);
-    } else {
-      if(ty>cy&&snakeDir.y===0) setSnakeDir(0,1);
-      else if(ty<cy&&snakeDir.y===0) setSnakeDir(0,-1);
-    }
+  // Luôn chạy theo hướng vuốt (dx,dy) thực tế — không dùng vị trí chạm so với tâm màn hình nữa
+  if(Math.abs(dx)<6&&Math.abs(dy)<6) return; // vuốt quá ngắn, bỏ qua tránh nhiễu
+  if(Math.abs(dx)>Math.abs(dy)){
+    if(dx>0&&snakeDir.x===0) setSnakeDir(1,0);
+    else if(dx<0&&snakeDir.x===0) setSnakeDir(-1,0);
   } else {
-    if(Math.abs(dx)>Math.abs(dy)){
-      if(dx>0&&snakeDir.x===0) setSnakeDir(1,0);
-      else if(dx<0&&snakeDir.x===0) setSnakeDir(-1,0);
-    } else {
-      if(dy>0&&snakeDir.y===0) setSnakeDir(0,1);
-      else if(dy<0&&snakeDir.y===0) setSnakeDir(0,-1);
-    }
+    if(dy>0&&snakeDir.y===0) setSnakeDir(0,1);
+    else if(dy<0&&snakeDir.y===0) setSnakeDir(0,-1);
   }
 });
 
@@ -8866,11 +9028,12 @@ let brickCombo=0, brickComboTimer=0;
 let brickPointerActive=false;
 
 function triggerBrickUnlock(){
+  markMapCleared('snake');
   pendingUnlock='brick';
   document.getElementById('unlock-title').textContent='🧱 MAP ẨN 15 MỞ KHÓA!';
   document.getElementById('unlock-desc').innerHTML='Phá gạch kiểu Arkanoid! Bóng nảy phá 24 viên gạch. 3 mạng ❤️❤️❤️';
   document.getElementById('unlock-btn').textContent='🧱 PHÁ THÔI!';
-  document.getElementById('unlock-overlay').classList.add('show');
+  showUnlockOverlay();
   sfxUnlock();
 }
 
@@ -9070,8 +9233,9 @@ function brickDone(won){
     sfxWaveWin();
     updateScoreUI();
     showComboFlash(0,false,'🧱 ALL CLEAR!');
-    setTimeout(()=>triggerRunnerUnlock(),1500);
+    setTimeout(()=>startUnlockGate(14),1500);
   } else {
+    forfeitHiddenMapScore();
     sfxGameOver();
     showComboFlash(0,false,'💀 Hết mạng!');
     setTimeout(exitBrickToMain, 800);
@@ -9122,11 +9286,12 @@ let runnerScrollX=0;
 let runnerStarSpawnTimer=0;
 
 function triggerRunnerUnlock(){
+  markMapCleared('brick');
   pendingUnlock='runner';
   document.getElementById('unlock-title').textContent='🏃 MAP ẨN 16 MỞ KHÓA!';
   document.getElementById('unlock-desc').innerHTML='Chạy vô tận! Chó tự chạy, chạm để nhảy né chướng ngại vật.<br>Nhảy đôi: chạm 2 lần! Sống sót <b>60 giây</b>!';
   document.getElementById('unlock-btn').textContent='🏃 CHẠY THÔI!';
-  document.getElementById('unlock-overlay').classList.add('show');
+  showUnlockOverlay();
   sfxUnlock();
 }
 
@@ -9318,6 +9483,7 @@ function runnerDone(won){
     showComboFlash(0,false,'🏆 TRUYỀN THUYẾT CHROMABLAST! 16 BẢN ĐỒ!');
     setTimeout(exitRunnerToMain, 3500);
   } else {
+    forfeitHiddenMapScore();
     sfxGameOver();
     showComboFlash(0,false,'💀 Vấp ngã rồi!');
     setTimeout(exitRunnerToMain, 800);
@@ -9336,7 +9502,7 @@ function exitRunnerToMain(){
   document.getElementById('burst-count').textContent='Chuỗi nổ: 0/3';
   document.getElementById('hint-bar').textContent='Chạm khối → ghost hiện · Di ngón → ghost bám · Thả trên ô → đặt · Thả vùng trống → xoay';
   renderPieces(); checkGameOverA();
-  if(runnerWon) setTimeout(()=>triggerSpaceUnlock(), 1500);
+  if(runnerWon) setTimeout(()=>startUnlockGate(15), 1500);
 }
 
 RuCV().addEventListener('pointerdown', e=>{
@@ -9357,11 +9523,12 @@ const SPC=()=>document.getElementById('space-canvas');
 let spaceState={};
 
 function triggerSpaceUnlock(){
+  markMapCleared('runner');
   pendingUnlock='space';
   document.getElementById('unlock-title').textContent='🚀 BẢN ĐỒ 17 MỞ KHÓA!';
   document.getElementById('unlock-desc').innerHTML='<b>Space Shooter</b><br>Bay vào vũ trụ, tiêu diệt quân xâm lăng!';
   document.getElementById('unlock-btn').textContent='CHIẾN ĐẤU!';
-  document.getElementById('unlock-overlay').classList.add('show');
+  showUnlockOverlay();
 }
 
 function enterSpaceMode(){
@@ -9637,7 +9804,7 @@ function spaceLoop(){
 function exitSpaceToMain(){
   spaceMode=false;
   if(spaceRAF){cancelAnimationFrame(spaceRAF);spaceRAF=null;}
-  if(spaceState.score){ score+=spaceState.score; if(score>best) best=score; updateScoreUI(); }
+  if(spaceWon && spaceState.score){ score+=spaceState.score; if(score>best) best=score; updateScoreUI(); }
   SPC().classList.remove('active');
   document.getElementById('grid').style.display='';
   document.getElementById('pieces-area').style.display='';
@@ -9647,7 +9814,7 @@ function exitSpaceToMain(){
   document.getElementById('burst-count').textContent='Chuỗi nổ: 0/3';
   document.getElementById('hint-bar').textContent='Chạm khối → ghost hiện · Di ngón → ghost bám · Thả trên ô → đặt · Thả vùng trống → xoay';
   renderPieces(); checkGameOverA();
-  if(spaceWon) setTimeout(()=>triggerRhythmUnlock(),1500);
+  if(spaceWon) setTimeout(()=>startUnlockGate(16),1500);
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -9691,11 +9858,12 @@ function drawRhythmBg(ctx,W,H){
 }
 
 function triggerRhythmUnlock(){
+  markMapCleared('space');
   pendingUnlock='rhythm';
   document.getElementById('unlock-title').textContent='🎵 BẢN ĐỒ 18 MỞ KHÓA!';
   document.getElementById('unlock-desc').innerHTML='<b>Rhythm Tap</b><br>Gõ theo nhịp điệu — PERFECT để ghi điểm cao!';
   document.getElementById('unlock-btn').textContent='CHIẾN ĐẤU!';
-  document.getElementById('unlock-overlay').classList.add('show');
+  showUnlockOverlay();
 }
 
 function enterRhythmMode(){
@@ -9724,9 +9892,9 @@ function initRhythmGame(){
     gameOver:false,
     won:false,
     spawnTimer:0,
-    spawnInterval:90,
-    expandSpeed:0.8,
-    maxRadius:55,
+    spawnInterval:110,
+    expandSpeed:0.45,
+    maxRadius:70,
     ringWidth:12,
     streak:0
   };
@@ -9789,7 +9957,7 @@ function rhythmTap(tx,ty){
       break;
     }
   }
-  if(!hit){ sfxRhythmMiss(); s.feedbacks.push({x:tx,y:ty,text:'MISS',life:60,pts:0}); }
+  // Chạm vào chỗ trống không tính là miss — tránh hiện 2 chữ MISS liền (1 do nốt hết giờ, 1 do chạm hụt)
 }
 
 function rhythmLoop(){
@@ -9896,7 +10064,7 @@ function exitRhythmToMain(){
   document.getElementById('burst-count').textContent='Chuỗi nổ: 0/3';
   document.getElementById('hint-bar').textContent='Chạm khối → ghost hiện · Di ngón → ghost bám · Thả trên ô → đặt · Thả vùng trống → xoay';
   renderPieces(); checkGameOverA();
-  if(rhythmWon) setTimeout(()=>triggerMazeUnlock(),1500);
+  if(rhythmWon) setTimeout(()=>startUnlockGate(17),1500);
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -9907,11 +10075,12 @@ const MZC=()=>document.getElementById('maze-canvas');
 let mazeState={};
 
 function triggerMazeUnlock(){
+  markMapCleared('rhythm');
   pendingUnlock='maze';
   document.getElementById('unlock-title').textContent='🌀 BẢN ĐỒ 19 MỞ KHÓA!';
   document.getElementById('unlock-desc').innerHTML='<b>Maze Runner</b><br>Tìm đường thoát khỏi mê cung trong 60 giây!';
   document.getElementById('unlock-btn').textContent='CHIẾN ĐẤU!';
-  document.getElementById('unlock-overlay').classList.add('show');
+  showUnlockOverlay();
 }
 
 function enterMazeMode(){
@@ -10120,7 +10289,7 @@ function exitMazeToMain(){
   document.getElementById('burst-count').textContent='Chuỗi nổ: 0/3';
   document.getElementById('hint-bar').textContent='Chạm khối → ghost hiện · Di ngón → ghost bám · Thả trên ô → đặt · Thả vùng trống → xoay';
   renderPieces(); checkGameOverA();
-  if(mazeWon) setTimeout(()=>triggerMegaUnlock(),1500);
+  if(mazeWon) setTimeout(()=>startUnlockGate(18),1500);
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -10169,11 +10338,12 @@ function drawMegaBg(ctx,W,H,now){
 }
 
 function triggerMegaUnlock(){
+  markMapCleared('maze');
   pendingUnlock='mega';
   document.getElementById('unlock-title').textContent='💀 BẢN ĐỒ 20 MỞ KHÓA!';
   document.getElementById('unlock-desc').innerHTML='<b>MEGA BOSS Final Battle</b><br>Trận chiến cuối cùng! Hạ gục Rồng Huyền Thoại!';
   document.getElementById('unlock-btn').textContent='CHIẾN ĐẤU!';
-  document.getElementById('unlock-overlay').classList.add('show');
+  showUnlockOverlay();
 }
 
 function enterMegaMode(){
@@ -10462,7 +10632,7 @@ function megaLoop(){
 function exitMegaToMain(){
   megaMode=false;
   if(megaRAF){cancelAnimationFrame(megaRAF);megaRAF=null;}
-  if(megaState.score){ score+=megaState.score; if(score>best) best=score; updateScoreUI(); }
+  if(megaWon){ markMapCleared('mega'); if(megaState.score){ score+=megaState.score; if(score>best) best=score; updateScoreUI(); } }
   MGC().classList.remove('active');
   document.getElementById('grid').style.display='';
   document.getElementById('pieces-area').style.display='';
