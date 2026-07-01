@@ -5356,7 +5356,7 @@ function drawMole(ctx,W,H,now,timeLeft){
 
     ctx.restore();
 
-    // hittable glow only once truly fully risen (100%) — not a premature 85% cue
+    // chỉ hiện viền sáng có thể đập khi đã bay lên đúng 100%
     if(h.riseT>=1 && h.fallT<0 && !h.hit){
       const pulse=0.55+0.45*Math.sin(now*0.008);
       ctx.save();
