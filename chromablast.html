@@ -1502,9 +1502,13 @@ function sfxMatch(groupSize){
   playTone(f,'sine',0.15, 0.25);
   playTone(f*1.5,'sine',0.12, 0.15, 0.08);
 }
-function sfxComboUp(combo){
+function sfxComboUp(combo, praiseLevel){
+  // Âm thanh tăng dần theo độ dài combo VÀ theo mức khen (cool→...→god like) — càng cao càng vang, càng chói
+  const lvl = praiseLevel||0;
   const base=440;
-  playTone(base*(1+combo*0.1),'triangle',0.2, 0.3);
+  const vol=Math.min(0.55, 0.28+lvl*0.035);
+  playTone(base*(1+combo*0.1)*(1+lvl*0.06),'triangle',0.2+lvl*0.015, vol);
+  if(lvl>=3) playTone(base*1.5*(1+lvl*0.06),'sine',0.15,vol*0.6,0.05);
 }
 function sfxStreak(streak){
   playTone(440+streak*55,'sine',0.18, 0.28);
@@ -2062,7 +2066,8 @@ function processClears(){
   const totalKeys=new Set([...lineKeys,...colorKeys]);
 
   if(totalKeys.size===0){
-    combo=0; updateComboUI();
+    // Đặt khối mà không nổ → đứt chuỗi combo, phải tính lại từ đầu (không khen liên tiếp nữa)
+    combo=0; consecutiveBursts=0; updateComboUI(); updateBurstCount();
     const wrap=document.getElementById('grid-wrap');
     wrap.classList.remove('combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5');
     afterPlace();
@@ -2079,7 +2084,7 @@ function processClears(){
   // Quy tắc: phá 1 ô = 1 điểm. Phá liên tiếp (combo) từ lần thứ 3 → x2 điểm, từ lần thứ 6 → x3 điểm.
   const scoreMult=comboScoreMultiplier(combo);
   const pts=totalKeys.size*scoreMult;
-  sfxMatch(colorKeys.size); if(combo>1) sfxComboUp(combo);
+  sfxMatch(colorKeys.size); if(combo>1) sfxComboUp(combo, pIdx(consecutiveBursts));
   score+=pts; if(score>best) best=score;
   if(score>=1000 && score-pts<1000) unlockAchievement('score1000');
   if(score>=5000 && score-pts<5000) unlockAchievement('score5000');
