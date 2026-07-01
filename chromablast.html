@@ -8382,15 +8382,67 @@ function drawSnakeFlower(ctx,fx,fy,fc,sway){
   ctx.restore();
 }
 
+function drawSnakeSky(ctx,W,H,t){
+  const sky=ctx.createLinearGradient(0,0,0,H*0.4);
+  sky.addColorStop(0,'#8fd8f0'); sky.addColorStop(0.6,'#bfe8ee'); sky.addColorStop(1,'#dff6e0');
+  ctx.fillStyle=sky; ctx.fillRect(0,0,W,H*0.4);
+
+  // mặt trời góc trên
+  const sx=W-42, sy=48;
+  const glow=ctx.createRadialGradient(sx,sy,6,sx,sy,55);
+  glow.addColorStop(0,'rgba(255,240,150,0.55)'); glow.addColorStop(1,'rgba(255,220,80,0)');
+  ctx.fillStyle=glow; ctx.beginPath(); ctx.arc(sx,sy,55,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(sx,sy,15,0,Math.PI*2); ctx.fillStyle='#FFE566'; ctx.fill();
+  ctx.beginPath(); ctx.arc(sx,sy,11,0,Math.PI*2); ctx.fillStyle='#FFF3B0'; ctx.fill();
+
+  // mây trôi nhẹ
+  const clouds=[[60,40,0.7],[150,65,0.5],[250,35,0.55]];
+  clouds.forEach(([cx0,cy0,s],ci)=>{
+    const cx=cx0+Math.sin(t*0.15+ci*2)*10;
+    ctx.save(); ctx.translate(cx,cy0); ctx.scale(s,s);
+    ctx.fillStyle='rgba(255,255,255,0.85)';
+    [[0,0,14],[-12,3,10],[12,3,10],[0,-6,10]].forEach(([dx,dy,r])=>{
+      ctx.beginPath(); ctx.arc(dx,dy,r,0,Math.PI*2); ctx.fill();
+    });
+    ctx.restore();
+  });
+
+  // đồi xa mờ
+  ctx.fillStyle='rgba(120,190,110,0.55)';
+  ctx.beginPath();
+  ctx.moveTo(0,H*0.32);
+  ctx.quadraticCurveTo(W*0.2,H*0.22,W*0.42,H*0.3);
+  ctx.quadraticCurveTo(W*0.65,H*0.2,W*0.85,H*0.28);
+  ctx.quadraticCurveTo(W*0.95,H*0.24,W,H*0.27);
+  ctx.lineTo(W,H*0.4); ctx.lineTo(0,H*0.4); ctx.closePath();
+  ctx.fill();
+
+  // bướm bay lượn ngoài khung
+  for(let i=0;i<3;i++){
+    const bx=30+i*140+Math.sin(t*0.6+i*2)*18;
+    const by=(i%2===0?H*0.06:H*0.1)+Math.cos(t*0.8+i)*8;
+    const wf=Math.sin(t*9+i)*0.6;
+    ctx.save(); ctx.translate(bx,by); ctx.globalAlpha=0.8;
+    const bc=['#ff9ac8','#ffd166','#8fd0ff'][i%3];
+    ctx.save(); ctx.scale(Math.cos(wf),1);
+    ctx.beginPath(); ctx.ellipse(-3,-1,4,3,-0.2,0,Math.PI*2); ctx.fillStyle=bc; ctx.fill(); ctx.restore();
+    ctx.save(); ctx.scale(-Math.cos(wf),1);
+    ctx.beginPath(); ctx.ellipse(-3,-1,4,3,-0.2,0,Math.PI*2); ctx.fillStyle=bc; ctx.fill(); ctx.restore();
+    ctx.globalAlpha=1;
+    ctx.restore();
+  }
+}
+
 function drawSnake(ctx, W, H, now){
   const OX=SNAKE_OX, OY=SNAKE_OY;
   const gridW=SNAKE_COLS*SNAKE_CELL, gridH=SNAKE_ROWS*SNAKE_CELL;
   const t=(now||0)*0.0012;
 
-  // ── nền vườn hoa đáng yêu ──
+  // ── nền vườn hoa đáng yêu: trời + nắng + mây + đồi ──
   const bg=ctx.createLinearGradient(0,0,0,H);
-  bg.addColorStop(0,'#dff6e0'); bg.addColorStop(0.5,'#c8ecc4'); bg.addColorStop(1,'#a8dba0');
+  bg.addColorStop(0,'#dff6e0'); bg.addColorStop(0.35,'#c8ecc4'); bg.addColorStop(1,'#a8dba0');
   ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+  drawSnakeSky(ctx,W,H,t);
 
   // hoa trang trí quanh viền, đung đưa nhẹ
   SNAKE_FLOWER_BORDER.forEach(([fx,fy,fc],fi)=>{
@@ -8404,79 +8456,96 @@ function drawSnake(ctx, W, H, now){
   ctx.fillStyle='#2f5d2a';
   ctx.beginPath(); ctx.roundRect(OX-4,OY-4,gridW+8,gridH+8,14); ctx.fill();
   ctx.restore();
-  // caro cỏ 2 tông nhẹ nhàng bên trong khung
+  // cỏ trong khung — gradient mềm mại + đốm cỏ nhỏ thay vì caro phẳng
+  const grassG=ctx.createLinearGradient(OX,OY,OX,OY+gridH);
+  grassG.addColorStop(0,'#4CAF50'); grassG.addColorStop(0.5,'#3d8b3a'); grassG.addColorStop(1,'#2f6e2c');
+  ctx.fillStyle=grassG; ctx.fillRect(OX,OY,gridW,gridH);
   for(let r=0;r<SNAKE_ROWS;r++){
     for(let c=0;c<SNAKE_COLS;c++){
-      ctx.fillStyle=(r+c)%2===0?'#3a7a34':'#356e30';
-      ctx.fillRect(OX+c*SNAKE_CELL,OY+r*SNAKE_CELL,SNAKE_CELL,SNAKE_CELL);
+      if((r*SNAKE_COLS+c)%3===0){
+        const sd=r*SNAKE_COLS+c;
+        ctx.fillStyle='rgba(255,255,255,0.05)';
+        ctx.beginPath(); ctx.arc(OX+c*SNAKE_CELL+((sd*7)%(SNAKE_CELL-4))+2, OY+r*SNAKE_CELL+((sd*13)%(SNAKE_CELL-4))+2, 1.4, 0, Math.PI*2); ctx.fill();
+      }
     }
   }
   // viền khung hoa văn (hàng rào vườn nhỏ)
   ctx.strokeStyle='rgba(255,255,255,0.5)'; ctx.lineWidth=3;
   ctx.beginPath(); ctx.roundRect(OX-4,OY-4,gridW+8,gridH+8,14); ctx.stroke();
 
-  // Draw snake — xinh xắn, bo tròn, màu pastel
-  snakeCells.forEach((c,i)=>{
-    const x=OX+c.x*SNAKE_CELL, y=OY+c.y*SNAKE_CELL;
-    const r=i===0?9:8;
-    if(i===0){
-      const g=ctx.createLinearGradient(x,y,x+SNAKE_CELL,y+SNAKE_CELL);
-      g.addColorStop(0,'#baffc9'); g.addColorStop(1,'#5fd88a');
-      ctx.fillStyle=g;
-    } else {
-      const ratio=i/snakeCells.length;
-      const g=ctx.createLinearGradient(x,y,x+SNAKE_CELL,y+SNAKE_CELL);
-      g.addColorStop(0,`hsl(${140+ratio*30},70%,${78-ratio*18}%)`);
-      g.addColorStop(1,`hsl(${150+ratio*30},65%,${62-ratio*18}%)`);
-      ctx.fillStyle=g;
-    }
+  // Draw snake — thân ống mượt mà, nối liền từng đốt
+  const headR=10, tailR=5;
+  for(let i=snakeCells.length-2;i>=0;i--){
+    const a=snakeCells[i], b=snakeCells[i+1];
+    const ax=OX+a.x*SNAKE_CELL+SNAKE_CELL/2, ay=OY+a.y*SNAKE_CELL+SNAKE_CELL/2;
+    const bx=OX+b.x*SNAKE_CELL+SNAKE_CELL/2, by=OY+b.y*SNAKE_CELL+SNAKE_CELL/2;
+    const ratio=i/Math.max(1,snakeCells.length-1);
+    const rr=headR-(headR-tailR)*ratio;
     ctx.save();
     ctx.shadowColor='rgba(0,0,0,0.15)'; ctx.shadowBlur=3; ctx.shadowOffsetY=1;
-    ctx.beginPath();
-    ctx.roundRect(x+1,y+1,SNAKE_CELL-2,SNAKE_CELL-2,r);
-    ctx.fill();
+    ctx.strokeStyle=`hsl(${140+ratio*28},68%,${74-ratio*22}%)`;
+    ctx.lineWidth=rr*2; ctx.lineCap='round'; ctx.lineJoin='round';
+    ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,by); ctx.stroke();
     ctx.restore();
-    // đốm nhỏ dễ thương trên thân
-    if(i>0 && i%2===0){
-      ctx.fillStyle='rgba(255,255,255,0.35)';
-      ctx.beginPath(); ctx.arc(x+SNAKE_CELL/2,y+SNAKE_CELL/2,2,0,Math.PI*2); ctx.fill();
+    // đốm vảy nhỏ dễ thương giữa mỗi đốt
+    if(i%2===0){
+      ctx.fillStyle='rgba(255,255,255,0.3)';
+      ctx.beginPath(); ctx.arc((ax+bx)/2,(ay+by)/2,rr*0.28,0,Math.PI*2); ctx.fill();
     }
-    if(i===0){
-      // má hồng
-      const cheekY=y+SNAKE_CELL/2+3;
-      ctx.fillStyle='rgba(255,150,180,0.55)';
-      ctx.beginPath(); ctx.ellipse(x+4,cheekY,2.6,1.8,0,0,Math.PI*2); ctx.fill();
-      ctx.beginPath(); ctx.ellipse(x+SNAKE_CELL-4,cheekY,2.6,1.8,0,0,Math.PI*2); ctx.fill();
-      // lưỡi thè ra thi thoảng, nhìn đáng yêu hơn là dữ tợn
-      if(Math.sin(t*3)>0.55){
-        ctx.strokeStyle='#ff5577'; ctx.lineWidth=1.6; ctx.lineCap='round';
-        const tx=x+SNAKE_CELL/2+snakeDir.x*(SNAKE_CELL/2+5), ty=y+SNAKE_CELL/2+snakeDir.y*(SNAKE_CELL/2+5);
-        const mx=x+SNAKE_CELL/2+snakeDir.x*(SNAKE_CELL/2+2), my=y+SNAKE_CELL/2+snakeDir.y*(SNAKE_CELL/2+2);
-        ctx.beginPath(); ctx.moveTo(x+SNAKE_CELL/2,y+SNAKE_CELL/2); ctx.lineTo(mx,my); ctx.stroke();
-        const fork=3;
-        ctx.beginPath(); ctx.moveTo(mx,my); ctx.lineTo(tx+(snakeDir.y!==0?fork:0),ty+(snakeDir.x!==0?fork:0)); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(mx,my); ctx.lineTo(tx-(snakeDir.y!==0?fork:0),ty-(snakeDir.x!==0?fork:0)); ctx.stroke();
-      }
-      // mắt to tròn, lấp lánh
-      const e1x=snakeDir.y!==0?x+4.5:x+SNAKE_CELL/2-3.5, e1y=snakeDir.x!==0?y+4.5:y+SNAKE_CELL/2-3.5;
-      const e2x=snakeDir.y!==0?x+SNAKE_CELL-5.5:x+SNAKE_CELL/2+3.5, e2y=snakeDir.x!==0?y+SNAKE_CELL-5.5:y+SNAKE_CELL/2+3.5;
-      ctx.fillStyle='#fff';
-      ctx.beginPath(); ctx.arc(e1x,e1y,3.2,0,Math.PI*2); ctx.fill();
-      ctx.beginPath(); ctx.arc(e2x,e2y,3.2,0,Math.PI*2); ctx.fill();
-      ctx.fillStyle='#20301f';
-      ctx.beginPath(); ctx.arc(e1x+snakeDir.x*0.8,e1y+snakeDir.y*0.8,1.7,0,Math.PI*2); ctx.fill();
-      ctx.beginPath(); ctx.arc(e2x+snakeDir.x*0.8,e2y+snakeDir.y*0.8,1.7,0,Math.PI*2); ctx.fill();
-      // tia sáng lấp lánh trong mắt
-      ctx.fillStyle='rgba(255,255,255,0.9)';
-      ctx.beginPath(); ctx.arc(e1x-0.8,e1y-0.8,0.7,0,Math.PI*2); ctx.fill();
-      ctx.beginPath(); ctx.arc(e2x-0.8,e2y-0.8,0.7,0,Math.PI*2); ctx.fill();
+  }
+  // đầu rắn — tròn, nổi bật, có mặt dễ thương
+  {
+    const c=snakeCells[0];
+    const x=OX+c.x*SNAKE_CELL, y=OY+c.y*SNAKE_CELL;
+    const hg=ctx.createRadialGradient(x+SNAKE_CELL*0.35,y+SNAKE_CELL*0.3,1,x+SNAKE_CELL/2,y+SNAKE_CELL/2,headR);
+    hg.addColorStop(0,'#c8ffd6'); hg.addColorStop(1,'#5fd88a');
+    ctx.save();
+    ctx.shadowColor='rgba(0,0,0,0.2)'; ctx.shadowBlur=4; ctx.shadowOffsetY=1;
+    ctx.fillStyle=hg;
+    ctx.beginPath(); ctx.arc(x+SNAKE_CELL/2,y+SNAKE_CELL/2,headR,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+    // má hồng
+    const cheekY=y+SNAKE_CELL/2+3;
+    ctx.fillStyle='rgba(255,150,180,0.55)';
+    ctx.beginPath(); ctx.ellipse(x+4,cheekY,2.6,1.8,0,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(x+SNAKE_CELL-4,cheekY,2.6,1.8,0,0,Math.PI*2); ctx.fill();
+    // lưỡi thè ra thi thoảng, nhìn đáng yêu hơn là dữ tợn
+    if(Math.sin(t*3)>0.55){
+      ctx.strokeStyle='#ff5577'; ctx.lineWidth=1.6; ctx.lineCap='round';
+      const tx=x+SNAKE_CELL/2+snakeDir.x*(SNAKE_CELL/2+5), ty=y+SNAKE_CELL/2+snakeDir.y*(SNAKE_CELL/2+5);
+      const mx=x+SNAKE_CELL/2+snakeDir.x*(SNAKE_CELL/2+2), my=y+SNAKE_CELL/2+snakeDir.y*(SNAKE_CELL/2+2);
+      ctx.beginPath(); ctx.moveTo(x+SNAKE_CELL/2,y+SNAKE_CELL/2); ctx.lineTo(mx,my); ctx.stroke();
+      const fork=3;
+      ctx.beginPath(); ctx.moveTo(mx,my); ctx.lineTo(tx+(snakeDir.y!==0?fork:0),ty+(snakeDir.x!==0?fork:0)); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(mx,my); ctx.lineTo(tx-(snakeDir.y!==0?fork:0),ty-(snakeDir.x!==0?fork:0)); ctx.stroke();
     }
-  });
+    // mắt to tròn, lấp lánh
+    const e1x=snakeDir.y!==0?x+4.5:x+SNAKE_CELL/2-3.5, e1y=snakeDir.x!==0?y+4.5:y+SNAKE_CELL/2-3.5;
+    const e2x=snakeDir.y!==0?x+SNAKE_CELL-5.5:x+SNAKE_CELL/2+3.5, e2y=snakeDir.x!==0?y+SNAKE_CELL-5.5:y+SNAKE_CELL/2+3.5;
+    ctx.fillStyle='#fff';
+    ctx.beginPath(); ctx.arc(e1x,e1y,3.2,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(e2x,e2y,3.2,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#20301f';
+    ctx.beginPath(); ctx.arc(e1x+snakeDir.x*0.8,e1y+snakeDir.y*0.8,1.7,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(e2x+snakeDir.x*0.8,e2y+snakeDir.y*0.8,1.7,0,Math.PI*2); ctx.fill();
+    // tia sáng lấp lánh trong mắt
+    ctx.fillStyle='rgba(255,255,255,0.9)';
+    ctx.beginPath(); ctx.arc(e1x-0.8,e1y-0.8,0.7,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(e2x-0.8,e2y-0.8,0.7,0,Math.PI*2); ctx.fill();
+  }
 
-  // Food
-  ctx.font=(SNAKE_CELL-2)+'px serif';
-  ctx.textAlign='center'; ctx.textBaseline='middle';
-  ctx.fillText(snakeFood.emoji, OX+snakeFood.x*SNAKE_CELL+SNAKE_CELL/2, OY+snakeFood.y*SNAKE_CELL+SNAKE_CELL/2);
+  // Food — có quầng sáng và nhấp nhô nhẹ
+  {
+    const fx=OX+snakeFood.x*SNAKE_CELL+SNAKE_CELL/2, fy=OY+snakeFood.y*SNAKE_CELL+SNAKE_CELL/2+Math.sin(t*4)*2;
+    const glowR=SNAKE_CELL*0.9;
+    const fg=ctx.createRadialGradient(fx,fy,1,fx,fy,glowR);
+    fg.addColorStop(0, snakeFood.special?'rgba(255,220,80,0.55)':'rgba(255,255,180,0.35)');
+    fg.addColorStop(1,'rgba(255,255,180,0)');
+    ctx.fillStyle=fg; ctx.beginPath(); ctx.arc(fx,fy,glowR,0,Math.PI*2); ctx.fill();
+    ctx.font=(SNAKE_CELL-2)+'px serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(snakeFood.emoji, fx, fy);
+  }
 
   // Top bar
   ctx.fillStyle='rgba(0,0,0,0.55)';
