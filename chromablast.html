@@ -2648,6 +2648,7 @@ function renderStreakDots(){
 ══════════════════════════════════════════ */
 let dodgeMode=false, dodgeRAF=null, dodgeLast=0, dodgeElapsed=0, dodgeSpawnTimer=0, dodgeAccum=0;
 let turtle=null, rabbit=null, carrots=[];
+let turtlePanicLevel=0;
 let dodgePowerUps=[];
 let dodgePowerSpawnTimer=0;
 let dodgeShield=0, dodgeSlowTime=0, dodgeMagnet=0;
@@ -2756,6 +2757,7 @@ function dodgeLoop(now){
   }
 
   // rùa di chuyển
+  const turtlePrevX=turtle.x;
   if(dodgeKeys.left||dodgeKeys.right){
     const dir=(dodgeKeys.right?1:0)-(dodgeKeys.left?1:0);
     turtle.x+=dir*d.turtleSpeed*dt; turtle.target=turtle.x+turtle.w/2;
@@ -2765,6 +2767,20 @@ function dodgeLoop(now){
     else turtle.x+=Math.sign(diff)*step;
   }
   turtle.x=Math.max(0,Math.min(W-turtle.w,turtle.x));
+  turtle.vx = dt>0 ? (turtle.x-turtlePrevX)/dt : 0;
+
+  // mức độ hoảng loạn: dựa vào cà rốt gần nhất phía trên rùa
+  {
+    const tcx=turtle.x+turtle.w/2, tcy=turtle.y+turtle.h/2;
+    let nearestD=Infinity;
+    for(const c of carrots){
+      const dd=Math.hypot(c.x-tcx,c.y-tcy);
+      if(dd<nearestD) nearestD=dd;
+    }
+    const PANIC_R=90, SAFE_R=200;
+    const target=nearestD<SAFE_R ? Math.max(0,Math.min(1,1-(nearestD-PANIC_R)/(SAFE_R-PANIC_R))) : 0;
+    turtlePanicLevel += (target-turtlePanicLevel)*Math.min(1,dt*6);
+  }
 
   // power-up spawn timer
   dodgePowerSpawnTimer-=dt;
@@ -3000,7 +3016,7 @@ function drawDodge(ctx,W,H){
   ctx.lineTo(W,H); ctx.closePath(); ctx.fill();
   ctx.restore();
 
-  drawRabbit(ctx,rabbit.x,rabbit.y,rabbit.w,rabbit.h);
+  drawRabbit(ctx,rabbit.x,rabbit.y,rabbit.w,rabbit.h,dodgeElapsed*0.001);
   for(const c of carrots) drawCarrot(ctx,c.x,c.y,c.r);
 
   // draw power-ups
@@ -3044,7 +3060,7 @@ function drawDodge(ctx,W,H){
     ctx.restore();
   }
 
-  drawTurtle(ctx,turtle.x,turtle.y,turtle.w,turtle.h);
+  drawTurtle(ctx,turtle.x,turtle.y,turtle.w,turtle.h,dodgeElapsed*0.001,turtle.vx||0,turtlePanicLevel);
 
   // HUD
   ctx.save();
@@ -3066,21 +3082,27 @@ function roundRect(ctx,x,y,w,h,r){
   ctx.closePath();
 }
 
-function drawTurtle(ctx,x,y,w,h){
+function drawTurtle(ctx,x,y,w,h,t=0,vx=0,panicLevel=0){
   const cx=x+w/2, cy=y+h/2;
+  const isMoving=Math.abs(vx)>15;
+  const legWiggle=isMoving?Math.sin(t*16)*3:0;
+  const bob=isMoving?Math.abs(Math.sin(t*16))*2:Math.sin(t*1.6)*0.8;
+
+  ctx.save();
+  ctx.translate(0,-bob);
 
   // shadow
   ctx.fillStyle='rgba(0,0,0,0.15)';
-  ctx.beginPath(); ctx.ellipse(cx,y+h+4,w*0.38,5,0,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(cx,y+h+4,w*0.38*(isMoving?0.92:1),5,0,0,Math.PI*2); ctx.fill();
 
-  // === 4 chân tròn mũm mĩm ===
+  // === 4 chân tròn mũm mĩm (vẫy khi di chuyển) ===
   const legColor='#3dba85';
   ctx.fillStyle=legColor;
   const legs=[
-    [cx-w*0.32, cy+h*0.28, 9, 6],   // chân trước trái
-    [cx+w*0.16, cy+h*0.28, 9, 6],   // chân trước phải
-    [cx-w*0.38, cy+h*0.1,  7, 5],   // chân sau trái
-    [cx+w*0.22, cy+h*0.1,  7, 5],   // chân sau phải
+    [cx-w*0.32, cy+h*0.28+legWiggle, 9, 6],   // chân trước trái
+    [cx+w*0.16, cy+h*0.28-legWiggle, 9, 6],   // chân trước phải
+    [cx-w*0.38, cy+h*0.1-legWiggle,  7, 5],   // chân sau trái
+    [cx+w*0.22, cy+h*0.1+legWiggle,  7, 5],   // chân sau phải
   ];
   legs.forEach(([lx,ly,rx,ry])=>{
     ctx.beginPath(); ctx.ellipse(lx,ly,rx,ry,0,0,Math.PI*2); ctx.fill();
@@ -3142,21 +3164,38 @@ function drawTurtle(ctx,x,y,w,h){
   ctx.strokeStyle='rgba(15,90,50,0.3)'; ctx.lineWidth=1.2;
   ctx.beginPath(); ctx.arc(headX, headY, hr, 0, Math.PI*2); ctx.stroke();
 
-  // mắt to chibi
+  // mắt to chibi — chớp mắt định kỳ, mở to hơn khi hoảng loạn
+  const blink=Math.sin(t*0.7)>0.94 && panicLevel<0.5;
+  const eyeScale=1+panicLevel*0.35;
   [headX-hr*0.35, headX+hr*0.35].forEach(ex=>{
     const ey=headY+hr*0.08;
+    if(blink){
+      ctx.strokeStyle='#1a3a28'; ctx.lineWidth=1.6; ctx.lineCap='round';
+      ctx.beginPath(); ctx.arc(ex, ey, hr*0.2, 0.15, Math.PI-0.15); ctx.stroke();
+      return;
+    }
     // tròng trắng
     ctx.fillStyle='#fff';
-    ctx.beginPath(); ctx.ellipse(ex, ey, hr*0.23, hr*0.27, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(ex, ey, hr*0.23*eyeScale, hr*0.27*eyeScale, 0, 0, Math.PI*2); ctx.fill();
     // con ngươi
     ctx.fillStyle='#1a3a28';
-    ctx.beginPath(); ctx.ellipse(ex+0.8, ey+1, hr*0.14, hr*0.18, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(ex+0.8, ey+1, hr*0.14*eyeScale, hr*0.18*eyeScale, 0, 0, Math.PI*2); ctx.fill();
     // ánh sáng mắt chính
     ctx.fillStyle='#fff';
     ctx.beginPath(); ctx.arc(ex+hr*0.07, ey-hr*0.07, hr*0.07, 0, Math.PI*2); ctx.fill();
     // ánh sáng mắt phụ
     ctx.beginPath(); ctx.arc(ex-hr*0.05, ey+hr*0.08, hr*0.03, 0, Math.PI*2); ctx.fill();
   });
+  // giọt mồ hôi hoảng loạn khi cà rốt tới gần
+  if(panicLevel>0.4){
+    ctx.fillStyle=`rgba(120,200,255,${panicLevel})`;
+    const sy=headY-hr*1.1+Math.sin(t*8)*2;
+    ctx.beginPath();
+    ctx.moveTo(headX+hr*0.7,sy);
+    ctx.quadraticCurveTo(headX+hr*0.85,sy+hr*0.35,headX+hr*0.7,sy+hr*0.5);
+    ctx.quadraticCurveTo(headX+hr*0.55,sy+hr*0.35,headX+hr*0.7,sy);
+    ctx.fill();
+  }
 
   // má hồng blush
   ctx.fillStyle='rgba(255,130,130,0.38)';
@@ -3174,9 +3213,10 @@ function drawTurtle(ctx,x,y,w,h){
   // shine đầu
   ctx.fillStyle='rgba(255,255,255,0.32)';
   ctx.beginPath(); ctx.ellipse(headX-hr*0.2, headY-hr*0.28, hr*0.14, hr*0.09, -0.5, 0, Math.PI*2); ctx.fill();
+  ctx.restore();
 }
 
-function drawRabbit(ctx,x,y,w,h){
+function drawRabbit(ctx,x,y,w,h,t=0){
   const cx=x+w/2, cy=y+h/2;
   // shadow
   ctx.fillStyle='rgba(0,0,0,0.15)';
@@ -3187,14 +3227,15 @@ function drawRabbit(ctx,x,y,w,h){
     const g=ctx.createLinearGradient(ex,y-18,ex,y+10);
     g.addColorStop(0,'#fff8ff'); g.addColorStop(1,'#f0e8ff'); return g;
   };
-  // ears — chubby rounded
+  // ears — chubby rounded, đung đưa nhẹ
+  const earWiggle=Math.sin(t*2.4)*0.06;
   ctx.fillStyle='#f5eeff';
-  ctx.beginPath(); ctx.ellipse(cx-14,y-8,8,20,-0.15,0,Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(cx+14,y-8,8,20,0.15,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(cx-14,y-8,8,20,-0.15-earWiggle,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(cx+14,y-8,8,20,0.15+earWiggle,0,Math.PI*2); ctx.fill();
   // ear inner pink
   ctx.fillStyle='#ffb6d9';
-  ctx.beginPath(); ctx.ellipse(cx-14,y-8,4.5,14,-0.15,0,Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(cx+14,y-8,4.5,14,0.15,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(cx-14,y-8,4.5,14,-0.15-earWiggle,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(cx+14,y-8,4.5,14,0.15+earWiggle,0,Math.PI*2); ctx.fill();
 
   // body — chubby gradient
   const bg=ctx.createRadialGradient(cx-4,cy-4,3,cx,cy+4,w*0.44);
@@ -3210,9 +3251,15 @@ function drawRabbit(ctx,x,y,w,h){
   ctx.fillStyle=hg;
   ctx.beginPath(); ctx.arc(cx,headY,hr,0,Math.PI*2); ctx.fill();
 
-  // big chibi eyes
+  // big chibi eyes — chớp mắt định kỳ
+  const rBlink=Math.sin(t*0.8+2)>0.94;
   [cx-hr*0.36, cx+hr*0.36].forEach(ex=>{
     const ey=headY+hr*0.05;
+    if(rBlink){
+      ctx.strokeStyle='#2a1a3a'; ctx.lineWidth=1.5; ctx.lineCap='round';
+      ctx.beginPath(); ctx.arc(ex,ey,hr*0.2,0.15,Math.PI-0.15); ctx.stroke();
+      return;
+    }
     ctx.fillStyle='#fff';
     ctx.beginPath(); ctx.ellipse(ex,ey,hr*0.22,hr*0.25,0,0,Math.PI*2); ctx.fill();
     ctx.fillStyle='#2a1a3a';
