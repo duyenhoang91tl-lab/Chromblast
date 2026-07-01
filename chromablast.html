@@ -4563,107 +4563,54 @@ BCV().addEventListener('pointercancel', beePointerUp);
 BCV().addEventListener('pointerleave', beePointerUp);
 
 /* ══════════════════════════════════════════
-   MAP ẨN 5 — ĐÀO VÀNG (GOLD MINER STYLE)
-   Dây câu swing tự động từ trái → phải.
-   Bấm/chạm: thả móc xuống theo góc dây.
-   Móc kéo về: nếu trúng vàng/đá mang lên.
-   KPI: 5 cục vàng + 1 kim cương trong 30 giây.
+   MAP ẨN 5 — MÈO ĐÀO VÀNG
+   Chạm ô đất kề bên mèo để đào lấy vàng/đá quý.
+   Chạm xa hơn để dẫn mèo di chuyển tới gần.
+   Chuột chạy qua mang theo kim cương — chạm trúng để bắt, +150 điểm!
+   KPI: đạt đủ điểm trong 30 giây.
 ══════════════════════════════════════════ */
 let goldMode=false, goldRAF=null, goldLast=0, goldElapsed=0;
-let goldCatImg=null; // pre-rendered SVG cat image
-let goldItems=[], goldFx=[], goldKPI={gold:0,diamond:false};
+let goldTimeLeft=30, goldWave=1;
 let awaitingGoldUnlock=false, goldUnlockBaseline=0;
 let awaitingMoleUnlock=false, moleUnlockBaseline=0;
-let goldTimeLeft=30, goldWave=1;
-let goldWinBanner=false, goldWinTimer=0;
-let goldMissStreak=0; // số lần đào trượt (móc không trúng gì) liên tiếp
 const GCV = () => document.getElementById('gold-canvas');
-const GOLD_KPI_GOLD=5, GOLD_TIME=30;
+const GOLD_TIME=30, GOLD_KPI_SCORE=280;
 
-// Gold Miner rope state
-let gmRope = {
-  angle: 0,           // swing angle (radians, 0=down)
-  swingDir: 1,        // swing direction
-  swingSpeed: 1.4,    // rad/s
-  state: 'swinging',  // 'swinging' | 'extending' | 'retracting'
-  len: 0,             // current rope length
-  maxLen: 0,          // canvas diagonal (set in initGold)
-  retractSpeed: 240,  // px/s retract speed (faster when carrying nothing)
-  extendSpeed: 280,   // px/s
-  hookedItem: null,   // reference to caught goldItem (or null)
-  anchorX: 0,         // set from canvas width
-  anchorY: 60,        // miner's hook origin Y
-};
+const GM_COLS=8, GM_ROWS=10, GM_GT=40;
+let gmCW=45, gmCH=42;
+let gmGrid=[], gmPts=[];
+let gmCatX=180, gmCatY=40+42*1.5, gmCatTX=180, gmCatTY=40+42*1.5;
+let gmDigging=false, gmDigTimer=0, gmDigCol=-1, gmDigRow=-1;
+let gmMouse={x:-60,y:200,vx:60,on:false,timer:0,interval:7,caught:false,catchAlpha:0};
+let gmMouseY0=0, gmMouseY1=0;
+const gmValues={dirt:0,gs:10,gb:30,gem:50,dia:100,chest:200};
+const gmColors={gs:'#FFD700',gb:'#FFA000',gem:'#E040FB',dia:'#4FC3F7',chest:'#FF6D00'};
 
-function buildGoldCatSVG(){
-  const svgStr = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 155" width="120" height="155">
-  <!-- mining pick tool in paw -->
-  <line x1="86" y1="98" x2="112" y2="60" stroke="#7a4810" stroke-width="5" stroke-linecap="round"/>
-  <ellipse cx="114" cy="56" rx="10" ry="5" transform="rotate(-40,114,56)" fill="#aaa"/>
-  <ellipse cx="108" cy="62" rx="10" ry="5" transform="rotate(-40,108,62)" fill="#ccc"/>
-  <!-- TAIL -->
-  <path d="M82 108 C108 96,116 72,100 54" stroke="#e8a020" stroke-width="13" fill="none" stroke-linecap="round"/>
-  <path d="M82 108 C108 96,116 72,100 54" stroke="#ffd050" stroke-width="7" fill="none" stroke-linecap="round"/>
-  <circle cx="100" cy="54" r="8" fill="#fff0a0"/>
-  <!-- BODY -->
-  <ellipse cx="54" cy="116" rx="34" ry="28" fill="#f0a820"/>
-  <ellipse cx="54" cy="120" rx="20" ry="17" fill="#ffe8a0" opacity="0.75"/>
-  <!-- ARMS -->
-  <ellipse cx="20" cy="112" rx="11" ry="16" fill="#e09018" transform="rotate(12,20,112)"/>
-  <circle cx="15" cy="126" r="10" fill="#f0b030"/>
-  <ellipse cx="86" cy="100" rx="11" ry="16" fill="#e09018" transform="rotate(-30,86,100)"/>
-  <circle cx="92" cy="88" r="10" fill="#f0b030"/>
-  <!-- LEGS/PAWS -->
-  <ellipse cx="38" cy="142" rx="15" ry="10" fill="#e09018"/>
-  <ellipse cx="68" cy="142" rx="15" ry="10" fill="#e09018"/>
-  <!-- EARS pointy -->
-  <polygon points="32,28 20,2 50,22" fill="#e09018"/>
-  <polygon points="82,28 94,2 64,22" fill="#e09018"/>
-  <polygon points="33,26 24,7 49,22" fill="#ffb8a8"/>
-  <polygon points="81,26 90,7 65,22" fill="#ffb8a8"/>
-  <!-- HEAD -->
-  <circle cx="58" cy="58" r="40" fill="#f0b828"/>
-  <!-- head shine -->
-  <ellipse cx="44" cy="40" rx="16" ry="8" fill="white" opacity="0.22" transform="rotate(-12,44,40)"/>
-  <!-- EYES big cute -->
-  <circle cx="44" cy="56" r="13" fill="#111"/>
-  <circle cx="72" cy="56" r="13" fill="#111"/>
-  <circle cx="50" cy="48" r="6" fill="white"/>
-  <circle cx="78" cy="48" r="6" fill="white"/>
-  <circle cx="40" cy="61" r="2" fill="white" opacity="0.5"/>
-  <circle cx="68" cy="61" r="2" fill="white" opacity="0.5"/>
-  <!-- NOSE -->
-  <polygon points="58,68 51,62 65,62" fill="#ff8888"/>
-  <!-- MOUTH -->
-  <path d="M50 71 Q58 79 66 71" stroke="#cc3333" stroke-width="2.2" fill="none" stroke-linecap="round"/>
-  <!-- BLUSH -->
-  <ellipse cx="31" cy="65" rx="12" ry="8" fill="rgba(255,120,90,0.28)"/>
-  <ellipse cx="85" cy="65" rx="12" ry="8" fill="rgba(255,120,90,0.28)"/>
-  <!-- WHISKERS -->
-  <line x1="8"  y1="62" x2="44" y2="66" stroke="rgba(255,255,200,0.85)" stroke-width="1.4"/>
-  <line x1="8"  y1="68" x2="44" y2="68" stroke="rgba(255,255,200,0.85)" stroke-width="1.4"/>
-  <line x1="108" y1="62" x2="72" y2="66" stroke="rgba(255,255,200,0.85)" stroke-width="1.4"/>
-  <line x1="108" y1="68" x2="72" y2="68" stroke="rgba(255,255,200,0.85)" stroke-width="1.4"/>
-  <!-- MINING HAT -->
-  <ellipse cx="58" cy="22" rx="32" ry="9" fill="#a85010"/>
-  <rect x="36" y="12" width="44" height="14" rx="6" fill="#c86018"/>
-  <circle cx="58" cy="16" r="7" fill="#ffee22" opacity="0.95"/>
-  <circle cx="58" cy="15" r="3.5" fill="white" opacity="0.5"/>
-</svg>`
-  const url = 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svgStr);
-  const img = new Image();
-  img.src = url;
-  goldCatImg = img;
+function initGoldGrid(){
+  gmGrid=[];
+  for(let r=0;r<GM_ROWS;r++){
+    gmGrid[r]=[];
+    for(let c=0;c<GM_COLS;c++){
+      let tp='dirt';
+      const d=r/GM_ROWS, rn=Math.random();
+      if(d<0.2){ if(rn<0.06) tp='gs'; else if(rn<0.08) tp='gem'; }
+      else if(d<0.5){ if(rn<0.1) tp='gs'; else if(rn<0.17) tp='gb'; else if(rn<0.21) tp='gem'; else if(rn<0.24) tp='dia'; }
+      else if(d<0.8){ if(rn<0.1) tp='gs'; else if(rn<0.2) tp='gb'; else if(rn<0.27) tp='gem'; else if(rn<0.33) tp='dia'; else if(rn<0.36) tp='chest'; }
+      else{ if(rn<0.08) tp='gs'; else if(rn<0.2) tp='gb'; else if(rn<0.28) tp='gem'; else if(rn<0.36) tp='dia'; else if(rn<0.4) tp='chest'; }
+      gmGrid[r][c]={tp, dug:r<2, reveal:r<2?1:0};
+    }
+  }
 }
+
 function triggerGoldUnlock(){
   pendingUnlock='gold';
   document.getElementById('unlock-title').textContent='⛏️ MAP ẨN 5 MỞ KHÓA!';
   document.getElementById('unlock-desc').innerHTML=
     'Bạn đã bảo vệ chó xong! Phần thưởng: mỏ vàng bí ẩn!<br><br>'+
-    '⛏️ <b>Dây câu Gold Miner — đào vàng 30 giây!</b><br>'+
-    'Dây câu tự swing trái-phải. <b>Bấm/chạm bất cứ đâu</b> để thả móc!<br>'+
-    'Móc trúng 🪙 vàng → kéo về đổi điểm. Trúng 💎 kim cương → bonus lớn!<br>'+
-    '⚠️ Trúng đá → chậm lại & không có điểm. Cần <b>5🪙 + 1💎</b> để qua màn!';
+    '🐱 <b>Mèo đào vàng — đào 30 giây!</b><br>'+
+    'Chạm ô đất gần mèo để <b>đào</b> lấy vàng/đá quý. Chạm xa hơn để dẫn mèo di chuyển.<br>'+
+    '🐭 Bắt được <b>chuột mang kim cương</b> chạy qua → thưởng lớn +150!<br>'+
+    'Cần đạt <b>'+GOLD_KPI_SCORE+' điểm</b> để qua màn!';
   document.getElementById('unlock-btn').textContent='⛏️ ĐÀO THÔI!';
   document.getElementById('unlock-overlay').classList.add('show');
 }
@@ -4674,12 +4621,12 @@ function enterGoldMode(){
   document.getElementById('grid').style.display='none';
   document.getElementById('pieces-area').style.display='none';
   document.getElementById('hint-bar').style.display='';
-  document.getElementById('hint-bar').textContent='Bấm/chạm để thả móc! Trúng vàng → kéo về! Cần 5🪙+1💎';
+  document.getElementById('hint-bar').textContent='Chạm đất gần mèo để đào! Bắt chuột mang kim cương +150!';
   GCV().classList.add('active');
   document.getElementById('grid-wrap').classList.add('secret-mode');
   document.getElementById('mode-badge').textContent='⛏️ MAP ẨN 5';
   document.getElementById('mode-badge').classList.add('secret');
-  document.getElementById('burst-count').textContent='⛏️ 0/5🪙 0/1💎';
+  document.getElementById('burst-count').textContent='⛏️ 0/'+GOLD_KPI_SCORE;
 
   goldMode=true;
   initGold();
@@ -4689,675 +4636,332 @@ function enterGoldMode(){
 
 function initGold(){
   const cv=GCV(), W=cv.width, H=cv.height;
-  goldItems=[]; goldFx=[]; goldKPI={gold:0,diamond:false};
+  gmCW=W/GM_COLS; gmCH=(H-GM_GT)/GM_ROWS;
   goldElapsed=0; goldTimeLeft=GOLD_TIME;
-  goldWinBanner=false; goldWinTimer=0; goldMissStreak=0;
-
-  // build cat SVG once
-  if(!goldCatImg) buildGoldCatSVG();
-  // Rope/miner init
-  gmRope.anchorX=W/2;
-  gmRope.anchorY=115;
-  gmRope.angle=0;
-  gmRope.swingDir=1;
-  gmRope.swingSpeed=1.4+goldWave*0.08;
-  gmRope.maxLen=Math.hypot(W,H)*0.98;
-  gmRope.len=0;
-  gmRope.state='swinging';
-  gmRope.hookedItem=null;
-
-  // Scatter items across 4 depth zones — wide like Gold Miner
-  // Zone 1 (shallow): small gold & rocks, near center
-  // Zone 2 (mid): mix, wider spread
-  // Zone 3 (deep): big gold, full width
-  // Zone 4 (far): big gold + diamond at edges
-  const zones = [
-    // zone 1 — shallow H*0.32~0.44, narrow W*0.2~0.8
-    { yMin:0.32, yMax:0.44, xMin:0.22, xMax:0.78,
-      types:['goldSmall','goldSmall','rock','rock'], bigR:false },
-    // zone 2 — mid H*0.44~0.60, wider W*0.1~0.9
-    { yMin:0.44, yMax:0.60, xMin:0.10, xMax:0.90,
-      types:['goldSmall','goldBig','goldSmall','rock','rock'], bigR:false },
-    // zone 3 — deep H*0.60~0.76, full width W*0.05~0.95
-    { yMin:0.60, yMax:0.76, xMin:0.05, xMax:0.95,
-      types:['goldBig','goldBig','goldSmall','diamond','rock'], bigR:true },
-    // zone 4 — far H*0.76~0.90, full width W*0.05~0.95
-    { yMin:0.76, yMax:0.90, xMin:0.05, xMax:0.95,
-      types:['goldBig','goldBig','rock'], bigR:true },
-  ];
-
-  for(const zone of zones){
-    const shuffled=[...zone.types].sort(()=>Math.random()-0.5);
-    const n=shuffled.length;
-    shuffled.forEach((type,i)=>{
-      const xRange = zone.xMax - zone.xMin;
-      const x = W*(zone.xMin + (i+0.5)*(xRange/n)) + (Math.random()-0.5)*W*(xRange/n)*0.7;
-      const y = H*(zone.yMin + Math.random()*(zone.yMax-zone.yMin));
-      const bigBonus = zone.bigR ? 4 : 0;
-      goldItems.push({
-        type, x, y,
-        r: type==='diamond'?17 : type==='goldBig'?(26+bigBonus) : type==='rock'?20 : (13+bigBonus/2),
-        rot:Math.random()*Math.PI*2, wobble:Math.random()*Math.PI*2,
-        hit:false,
-        weight: type==='rock'?3 : type==='goldBig'?2 : 1,
-      });
-    });
-  }
-
-  // Guarantee at least 1 diamond if not rolled
-  if(!goldItems.some(it=>it.type==='diamond')){
-    const spare=goldItems.find(it=>it.type==='rock');
-    if(spare) spare.type='diamond', spare.r=17;
-  }
+  gmPts=[];
+  gmCatX=W/2; gmCatY=GM_GT+gmCH*1.5; gmCatTX=gmCatX; gmCatTY=gmCatY;
+  gmDigging=false; gmDigTimer=0; gmDigCol=-1; gmDigRow=-1;
+  gmMouse={x:-60,y:200,vx:60,on:false,timer:5,interval:7,caught:false,catchAlpha:0};
+  gmMouseY0=GM_GT+gmCH*2; gmMouseY1=GM_GT+gmCH*7;
+  initGoldGrid();
+  updateGoldHUD();
 }
 
-function goldWaveDiff(){
-  return {
-    swingSpeed: 1.4 + goldWave*0.1,
-    extendSpeed: 280 + goldWave*20,
-    retractSpeed: 240 + goldWave*15,
-  };
+function updateGoldHUD(){
+  document.getElementById('burst-count').textContent='⛏️ '+score+'/'+GOLD_KPI_SCORE;
+}
+
+function gmSpawnDigFx(x,y,color){
+  for(let i=0;i<8;i++){
+    const a=i/8*Math.PI*2+Math.random()*0.5, s=40+Math.random()*60;
+    gmPts.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-20,l:0.5,ml:0.5,size:2+Math.random()*2,color,type:'d'});
+  }
+}
+function gmSpawnCatchFx(x,y){
+  const cs=['#4FC3F7','#81D4FA','#E1F5FE','#FFF','#B3E5FC'];
+  for(let i=0;i<16;i++){
+    const a=i/16*Math.PI*2, s=60+Math.random()*80;
+    gmPts.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-30,l:0.7,ml:0.7,size:2+Math.random()*3,color:cs[i%5],type:'s'});
+  }
+  gmPts.push({x,y,vx:0,vy:0,l:0.5,ml:0.5,size:10,color:'#4FC3F7',type:'r'});
+}
+function gmFloatText(x,y,txt,color,size){
+  const el=document.createElement('div');
+  el.className='fl'; el.textContent=txt;
+  el.style.position='absolute'; el.style.left=(x/GCV().width*100)+'%'; el.style.top=((GM_GT>0?y:y)/GCV().height*100)+'%';
+  el.style.color=color||'#FFD700'; el.style.fontSize=(size||16)+'px'; el.style.fontWeight='900';
+  el.style.pointerEvents='none'; el.style.zIndex=8; el.style.textShadow='0 1px 6px rgba(0,0,0,0.6)';
+  el.style.transition='transform .9s ease-out, opacity .9s ease-out';
+  document.getElementById('wrap')?document.getElementById('wrap').appendChild(el):document.body.appendChild(el);
+  requestAnimationFrame(()=>{ el.style.transform='translateY(-50px) scale(0.8)'; el.style.opacity='0'; });
+  setTimeout(()=>el.remove(),900);
+}
+function gmMouseAlert(){
+  const old=document.querySelector('.gm-mouse-alert'); if(old) old.remove();
+  const el=document.createElement('div');
+  el.className='gm-mouse-alert';
+  el.textContent='🐭 Chuột cắp kim cương!';
+  el.style.position='absolute'; el.style.top='50px'; el.style.left='50%'; el.style.transform='translateX(-50%)';
+  el.style.zIndex=6; el.style.background='rgba(100,50,200,0.85)'; el.style.color='#fff';
+  el.style.padding='5px 16px'; el.style.borderRadius='20px'; el.style.fontSize='12px'; el.style.fontWeight='700';
+  el.style.pointerEvents='none'; el.style.whiteSpace='nowrap';
+  const wrapEl=document.getElementById('wrap')||document.body;
+  wrapEl.style.position=wrapEl.style.position||'relative';
+  wrapEl.appendChild(el);
+  setTimeout(()=>el.remove(),2000);
 }
 
 function goldLoop(now){
   if(!goldMode) return;
   const dt=Math.min(0.05,(now-goldLast)/1000);
-  goldLast=now;
-  if(!goldWinBanner) goldElapsed+=dt*1000;
+  goldLast=now; goldElapsed+=dt*1000;
   goldTimeLeft=Math.max(0,GOLD_TIME-goldElapsed/1000);
   const cv=GCV(), ctx=cv.getContext('2d'), W=cv.width, H=cv.height;
-  const d=goldWaveDiff();
-  let goldMissedDie=false;
 
-  if(!goldWinBanner){
-    // ── Rope physics ──
-    const tipX=gmRope.anchorX+Math.sin(gmRope.angle)*gmRope.len;
-    const tipY=gmRope.anchorY+Math.cos(gmRope.angle)*gmRope.len;
+  if(goldTimeLeft<=0){ goldGameOver(score>=GOLD_KPI_SCORE); return; }
 
-    if(gmRope.state==='swinging'){
-      // swing back and forth
-      const swing=d.swingSpeed*1.1;
-      const maxAngle=Math.PI*0.48;
-      gmRope.angle+=gmRope.swingDir*swing*dt;
-      if(gmRope.angle>maxAngle){ gmRope.angle=maxAngle; gmRope.swingDir=-1; }
-      if(gmRope.angle<-maxAngle){ gmRope.angle=-maxAngle; gmRope.swingDir=1; }
-    } else if(gmRope.state==='extending'){
-      gmRope.len+=d.extendSpeed*dt;
-      // check collision with items
-      const tx=gmRope.anchorX+Math.sin(gmRope.angle)*gmRope.len;
-      const ty=gmRope.anchorY+Math.cos(gmRope.angle)*gmRope.len;
-      for(const it of goldItems){
-        if(it.hit) continue;
-        if(Math.hypot(it.x-tx, it.y-ty) < it.r+10){
-          gmRope.hookedItem=it;
-          it.hit=true;
-          gmRope.state='retracting';
-          gmRope.pullSoundT=0;
-          sfxRopePull();
-          break;
+  // mèo di chuyển về đích
+  const dx=gmCatTX-gmCatX, dy=gmCatTY-gmCatY, ds=Math.sqrt(dx*dx+dy*dy);
+  if(ds>2){ const sp=Math.min(200,ds*6); gmCatX+=dx/ds*sp*dt; gmCatY+=dy/ds*sp*dt; }
+
+  // đào
+  if(gmDigging){
+    gmDigTimer-=dt;
+    if(gmDigTimer<=0){
+      gmDigging=false;
+      const cl=gmGrid[gmDigRow] && gmGrid[gmDigRow][gmDigCol];
+      if(cl && !cl.dug){
+        cl.dug=true; cl.reveal=0;
+        const v=gmValues[cl.tp]||0;
+        if(v>0){
+          score+=v; if(score>best) best=score;
+          updateScoreUI(); updateGoldHUD();
+          const px=gmDigCol*gmCW+gmCW/2, py=GM_GT+gmDigRow*gmCH+gmCH/2, color=gmColors[cl.tp]||'#FFD700';
+          gmSpawnDigFx(px,py,color);
+          gmFloatText(px,py,'+'+v,color,v>=100?22:16);
+          if(cl.tp==='dia'||cl.tp==='chest'){ gmSpawnCatchFx(px,py); sfxDiamondCollect(); }
+          else sfxGoldCollect();
+        } else {
+          sfxHammer();
         }
       }
-      // hit wall → retract empty (đào trượt)
-      if(gmRope.state==='extending' && (gmRope.len>=gmRope.maxLen || ty>=H-20)){
-        gmRope.state='retracting';
-        goldMissStreak++;
-        score=Math.max(0,score-10);
-        updateScoreUI();
-        sfxInvalid();
-        spawnGoldFx(tx,Math.min(ty,H-20),'#ff5555',false,'-10');
-        if(goldMissStreak>=3) goldMissedDie=true; // trượt 3 lần liên tiếp → thua
-      }
-    } else if(gmRope.state==='retracting'){
-      const speed=gmRope.hookedItem
-        ? d.retractSpeed/(gmRope.hookedItem.weight||1)
-        : d.retractSpeed*1.8;
-      gmRope.len-=speed*dt;
-      // drag hooked item along rope tip
-      if(gmRope.hookedItem){
-        gmRope.hookedItem.x=gmRope.anchorX+Math.sin(gmRope.angle)*gmRope.len;
-        gmRope.hookedItem.y=gmRope.anchorY+Math.cos(gmRope.angle)*gmRope.len;
-        // tiếng kéo lê vật nặng, lặp lại theo nhịp khi đang thu dây
-        gmRope.pullSoundT=(gmRope.pullSoundT||0)+dt;
-        const pullInterval=0.16*(gmRope.hookedItem.weight||1);
-        if(gmRope.pullSoundT>=pullInterval){ gmRope.pullSoundT=0; sfxRopePull(); }
-      }
-      if(gmRope.len<=0){
-        gmRope.len=0;
-        // deliver item
-        if(gmRope.hookedItem){
-          collectGoldItem(gmRope.hookedItem);
-          goldItems=goldItems.filter(it=>it!==gmRope.hookedItem);
-          gmRope.hookedItem=null;
-        }
-        gmRope.state='swinging';
-        // Refill items if all gone
-        if(goldItems.filter(it=>!it.hit).length===0) refillGoldItems(W,H);
-      }
     }
-
-    // update fx
-    for(const fx of goldFx){
-      fx.t+=dt;
-      for(const p of fx.particles){ p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy+=400*dt; p.life-=dt; }
-      fx.particles=fx.particles.filter(p=>p.life>0);
-    }
-    goldFx=goldFx.filter(fx=>fx.t<0.8);
   }
 
-  // win banner timer
-  if(goldWinBanner){
-    goldWinTimer+=dt;
-    if(goldWinTimer>2.2){ goldNextWave(); return; }
+  // reveal animation
+  for(let r=0;r<GM_ROWS;r++) for(let c=0;c<GM_COLS;c++){
+    const cl=gmGrid[r][c];
+    if(cl.dug && cl.reveal<1) cl.reveal=Math.min(1,cl.reveal+dt*4);
   }
 
-  // check time up
-  if(goldTimeLeft<=0 && !goldWinBanner){
-    const kpiMet=goldKPI.gold>=GOLD_KPI_GOLD && goldKPI.diamond;
-    if(kpiMet){ showGoldWin(); }
-    else { goldGameOver(false); return; }
+  // chuột
+  gmMouse.timer+=dt;
+  if(!gmMouse.on && !gmMouse.caught && gmMouse.timer>=gmMouse.interval){
+    gmMouse.timer=0; gmMouse.on=true; gmMouse.caught=false; gmMouse.catchAlpha=0;
+    const fromLeft=Math.random()<0.5;
+    gmMouse.x=fromLeft?-30:W+30;
+    gmMouse.vx=fromLeft?(60+Math.random()*40):-(60+Math.random()*40);
+    gmMouse.y=gmMouseY0+Math.random()*(gmMouseY1-gmMouseY0);
+    gmMouseAlert();
+  }
+  if(gmMouse.on){
+    gmMouse.x+=gmMouse.vx*dt;
+    if((gmMouse.vx>0 && gmMouse.x>W+40) || (gmMouse.vx<0 && gmMouse.x<-40)) gmMouse.on=false;
+  }
+  if(gmMouse.caught){
+    gmMouse.catchAlpha-=dt*2;
+    if(gmMouse.catchAlpha<=0){ gmMouse.caught=false; gmMouse.catchAlpha=0; }
   }
 
-  if(goldMissedDie){ goldGameOver(false, '😵 Trượt 3 lần liên tiếp!'); return; }
-
-  drawGold(ctx,W,H,now);
+  drawGold(ctx,W,H,now/1000);
   goldRAF=requestAnimationFrame(goldLoop);
 }
 
-function refillGoldItems(W,H){
-  const types=['goldBig','goldBig','goldSmall','goldSmall','rock','diamond'];
-  const shuffled=[...types].sort(()=>Math.random()-0.5);
-  shuffled.forEach((type,i)=>{
-    const deep = i >= shuffled.length/2; // half go deep
-    const x = W*(0.05 + Math.random()*0.9);
-    const y = deep ? H*(0.62+Math.random()*0.28) : H*(0.34+Math.random()*0.28);
-    goldItems.push({
-      type, x, y,
-      r: type==='diamond'?17 : type==='goldBig'?26 : type==='rock'?20 : 14,
-      rot:Math.random()*Math.PI*2, wobble:Math.random()*Math.PI*2,
-      hit:false, weight: type==='rock'?3:type==='goldBig'?2:1,
-    });
-  });
-}
-
-function collectGoldItem(it){
-  goldMissStreak=0; // đào trúng bất kỳ vật gì (kể cả đá) → reset chuỗi trượt
-  if(it.type==='rock'){
-    // không có điểm, lại còn kéo chậm hơn (do weight cao ở bước retracting)
-    spawnGoldFx(gmRope.anchorX,gmRope.anchorY,'#888',false,'🪨 Đá!');
-  } else if(it.type==='goldBig' || it.type==='goldSmall'){
-    // điểm theo kích thước viên vàng: r càng lớn càng nhiều điểm, trải đều 1-30
-    const RMIN=13, RMAX=30;
-    const t=Math.max(0,Math.min(1,(it.r-RMIN)/(RMAX-RMIN)));
-    const pts=Math.round(1+t*29);
-    score+=pts; if(score>best)best=score;
-    goldKPI.gold=Math.min(GOLD_KPI_GOLD,goldKPI.gold+1);
-    sfxGoldCollect();
-    spawnGoldFx(gmRope.anchorX,gmRope.anchorY,it.type==='goldBig'?'#f7c948':'#ffe066',true,'🪙+'+pts);
-  } else if(it.type==='diamond'){
-    // kim cương: điểm gấp 6 lần mức tối đa của vàng
-    const pts=30*6;
-    score+=pts; if(score>best)best=score;
-    goldKPI.diamond=true;
-    sfxDiamondCollect();
-    spawnGoldFx(gmRope.anchorX,gmRope.anchorY,'#7df9ff',true,'💎+'+pts);
-  }
-  updateScoreUI(); updateGoldKPIBar();
-  if(goldKPI.gold>=GOLD_KPI_GOLD && goldKPI.diamond && !goldWinBanner) showGoldWin();
-}
-
-function updateGoldKPIBar(){
-  const g=Math.min(goldKPI.gold,GOLD_KPI_GOLD);
-  const d=goldKPI.diamond?'✅':'❌';
-  document.getElementById('burst-count').textContent=`⛏️ ${g}/${GOLD_KPI_GOLD}🪙 ${d}💎`;
-}
-
-function spawnGoldFx(x,y,color,sparkle,label){
-  const particles=[];
-  const n=sparkle?16:8;
-  for(let i=0;i<n;i++){
-    const ang=Math.random()*Math.PI*2, spd=80+Math.random()*180;
-    particles.push({x,y,vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd-60,
-      r:2+Math.random()*4,color,life:0.5+Math.random()*0.25});
-  }
-  goldFx.push({t:0,particles,label,labelX:x,labelY:y,color,sparkle});
-}
-
-function showGoldWin(){
-  sfxWaveWin();
-  goldWinBanner=true; goldWinTimer=0;
-  showComboFlash(0,false,'🏆 ĐỦ KPI! SANG MÀN TIẾP!');
-}
-
-function goldNextWave(){
-  // KPI met — exit gold mode and trigger mole map
-  goldGameOver(true, '🏆 KPI ĐẠT! SANG MAP ẨN 6!');
-}
-
-function drawGold(ctx,W,H,now){
+function drawGold(ctx,W,H,t){
   ctx.clearRect(0,0,W,H);
-
-  // ── magnificent golden cave background ──
-  const bg=ctx.createLinearGradient(0,0,0,H);
-  bg.addColorStop(0,'#0a0500'); bg.addColorStop(0.15,'#1a0e00'); bg.addColorStop(0.4,'#2a1800'); bg.addColorStop(0.65,'#1e1100'); bg.addColorStop(0.85,'#120a00'); bg.addColorStop(1,'#070400');
-  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
-
-  // ambient golden glow from below (rising warmth)
-  const ambientGlow=ctx.createRadialGradient(W/2,H,0,W/2,H,H*0.85);
-  ambientGlow.addColorStop(0,'rgba(255,160,0,0.18)'); ambientGlow.addColorStop(0.5,'rgba(200,100,0,0.08)'); ambientGlow.addColorStop(1,'rgba(0,0,0,0)');
-  ctx.fillStyle=ambientGlow; ctx.fillRect(0,0,W,H);
-
-  // ── cave wall texture (left) ──
-  const leftWall=ctx.createLinearGradient(0,0,W*0.18,0);
-  leftWall.addColorStop(0,'rgba(12,7,0,0.95)'); leftWall.addColorStop(0.7,'rgba(6,3,0,0.4)'); leftWall.addColorStop(1,'rgba(0,0,0,0)');
-  ctx.fillStyle=leftWall; ctx.fillRect(0,0,W*0.18,H);
-  const rightWall=ctx.createLinearGradient(W*0.82,0,W,0);
-  rightWall.addColorStop(0,'rgba(0,0,0,0)'); rightWall.addColorStop(0.3,'rgba(6,3,0,0.4)'); rightWall.addColorStop(1,'rgba(12,7,0,0.95)');
-  ctx.fillStyle=rightWall; ctx.fillRect(W*0.82,0,W*0.18,H);
-
-  // ── ceiling rocky arch ──
-  ctx.save();
-  ctx.fillStyle='rgba(10,6,0,0.85)';
-  ctx.beginPath();
-  ctx.moveTo(0,0); ctx.lineTo(W,0); ctx.lineTo(W,H*0.08);
-  ctx.quadraticCurveTo(W*0.75,H*0.14, W*0.5,H*0.12);
-  ctx.quadraticCurveTo(W*0.25,H*0.1, 0,H*0.08);
-  ctx.closePath(); ctx.fill();
-  // ceiling stalactites
-  ctx.fillStyle='#1c1000';
-  [[W*0.15,H*0.08,14,22],[W*0.3,H*0.09,10,18],[W*0.55,H*0.08,16,28],[W*0.7,H*0.1,11,19],[W*0.85,H*0.07,13,24]].forEach(([sx,sy,sw,sh])=>{
-    ctx.beginPath(); ctx.moveTo(sx-sw/2,sy); ctx.lineTo(sx+sw/2,sy); ctx.lineTo(sx,sy+sh); ctx.closePath(); ctx.fill();
-    // gold tip on stalactite
-    ctx.fillStyle='rgba(220,160,0,0.5)';
-    ctx.beginPath(); ctx.arc(sx,sy+sh-3,3,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle='#1c1000';
-  });
-  ctx.restore();
-
-  // ── rich gold vein network on walls ──
-  ctx.save();
-  // thick glowing gold veins
-  [[W*0.04,H*0.2, W*0.12,H*0.5, W*0.08,H*0.75],
-   [W*0.92,H*0.25, W*0.88,H*0.55, W*0.93,H*0.8],
-   [W*0.02,H*0.45, W*0.10,H*0.62],
-   [W*0.95,H*0.4, W*0.90,H*0.68]].forEach((pts,gi)=>{
-    for(let pass=0;pass<2;pass++){
-      ctx.strokeStyle = pass===0 ? 'rgba(255,180,0,0.12)' : 'rgba(255,210,0,0.35)';
-      ctx.lineWidth = pass===0 ? 6 : 2;
-      ctx.shadowColor = 'rgba(255,180,0,0.5)';
-      ctx.shadowBlur = pass===0 ? 8 : 4;
-      ctx.beginPath();
-      ctx.moveTo(pts[0],pts[1]);
-      for(let i=2;i<pts.length;i+=2) ctx.lineTo(pts[i],pts[i+1]);
-      ctx.stroke();
-    }
-  });
-  ctx.shadowBlur=0;
-
-  // embedded gem clusters on walls
-  [[W*0.06,H*0.32,'#4af'],[W*0.06,H*0.55,'#f4a'],[W*0.94,H*0.42,'#4fa'],[W*0.92,H*0.65,'#a4f']].forEach(([gx,gy,gc])=>{
-    ctx.shadowColor=gc; ctx.shadowBlur=12;
-    ctx.fillStyle=gc;
-    [[-5,-8],[0,-12],[5,-7],[8,-2],[3,4],[-4,3]].forEach(([dx,dy])=>{
-      ctx.beginPath(); ctx.ellipse(gx+dx,gy+dy,3,5,Math.random()*0.8,0,Math.PI*2); ctx.fill();
-    });
-  });
-  ctx.shadowBlur=0;
-  ctx.restore();
-
-  // ── cave floor — layered stone ──
-  const floorY=H-30;
-  // deep shadow under floor
-  ctx.fillStyle='rgba(0,0,0,0.6)';
-  ctx.fillRect(0,floorY-8,W,8);
-  // floor gradient
-  const floor=ctx.createLinearGradient(0,floorY,0,H);
-  floor.addColorStop(0,'#3a2200'); floor.addColorStop(0.4,'#2a1800'); floor.addColorStop(1,'#0d0800');
-  ctx.fillStyle=floor; ctx.fillRect(0,floorY,W,H-floorY);
-  // floor gold dust flecks
-  ctx.fillStyle='rgba(255,200,0,0.25)';
-  for(let i=0;i<18;i++){
-    const rx=(Math.sin(i*137.5)*0.5+0.5)*W*0.88+W*0.06;
-    const ry=floorY+5+Math.abs(Math.cos(i*97))*12;
-    ctx.beginPath(); ctx.ellipse(rx,ry,3+Math.sin(i)*2,1.5,Math.sin(i*0.7),0,Math.PI*2); ctx.fill();
+  // sky/header
+  const g=ctx.createLinearGradient(0,0,0,GM_GT);
+  g.addColorStop(0,'#0a0a2e'); g.addColorStop(1,'#1a1040');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,GM_GT);
+  for(let i=0;i<15;i++){
+    const sx=(i*47+13)%W, sy=(i*19+7)%(GM_GT-5);
+    ctx.beginPath(); ctx.arc(sx,sy,0.8+(i%3)*0.4,0,Math.PI*2);
+    ctx.fillStyle='rgba(255,255,255,'+(0.3+(i%4)*0.15)+')'; ctx.fill();
   }
 
-  // ── wooden platform where cat stands ──
-  const platW=W*0.38, platH=18, platX=(W-platW)/2, platY=gmRope.anchorY+26;
-  // platform shadow
-  ctx.fillStyle='rgba(0,0,0,0.4)';
-  ctx.beginPath(); roundRect(ctx, platX+4, platY+6, platW, platH, 4); ctx.fill();
-  // platform wood
-  const woodG=ctx.createLinearGradient(platX,platY,platX,platY+platH);
-  woodG.addColorStop(0,'#8B5E3C'); woodG.addColorStop(0.5,'#6B4220'); woodG.addColorStop(1,'#4a2e10');
-  ctx.fillStyle=woodG;
-  ctx.beginPath(); roundRect(ctx, platX, platY, platW, platH, 4); ctx.fill();
-  // wood grain lines
-  ctx.strokeStyle='rgba(0,0,0,0.2)'; ctx.lineWidth=1;
-  for(let wx=platX+12;wx<platX+platW-8;wx+=18){
-    ctx.beginPath(); ctx.moveTo(wx,platY+2); ctx.lineTo(wx,platY+platH-2); ctx.stroke();
-  }
-  // platform metal bolts
-  ctx.fillStyle='#bbb';
-  [[platX+8,platY+platH/2],[platX+platW-8,platY+platH/2]].forEach(([bx,by])=>{
-    ctx.beginPath(); ctx.arc(bx,by,3,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle='#ddd'; ctx.beginPath(); ctx.arc(bx-1,by-1,1.2,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle='#bbb';
-  });
-  // rope supports from ceiling to platform
-  ctx.strokeStyle='rgba(140,100,40,0.5)'; ctx.lineWidth=2;
-  [[platX+10, platY],[platX+platW-10, platY]].forEach(([rx,ry])=>{
-    ctx.beginPath(); ctx.moveTo(rx,0); ctx.lineTo(rx,ry); ctx.stroke();
-  });
-
-  // ── floating gold dust particles ──
-  ctx.save();
-  const dustCount=10;
-  for(let i=0;i<dustCount;i++){
-    const px=((Math.sin(now*0.0004+i*137)*0.5+0.5)*W*0.8+W*0.1);
-    const py=((Math.sin(now*0.0003+i*97)*0.5+0.5)*H*0.6+H*0.2);
-    const alpha=0.15+0.15*Math.sin(now*0.002+i);
-    ctx.fillStyle=`rgba(255,200,50,${alpha})`;
-    ctx.shadowColor='rgba(255,180,0,0.6)'; ctx.shadowBlur=6;
-    ctx.beginPath(); ctx.arc(px,py,1.5+Math.sin(now*0.001+i)*0.5,0,Math.PI*2); ctx.fill();
-  }
-  ctx.shadowBlur=0;
-  ctx.restore();
-
-  // ── torch lights on walls ──
-  [[W*0.1, H*0.22],[W*0.9, H*0.22],[W*0.08,H*0.55],[W*0.92,H*0.55]].forEach(([tx,ty])=>{
-    const flicker=0.7+0.3*Math.sin(now*0.007+tx);
-    // glow halo
-    const torchG=ctx.createRadialGradient(tx,ty,0,tx,ty,55*flicker);
-    torchG.addColorStop(0,`rgba(255,160,20,${0.22*flicker})`);
-    torchG.addColorStop(0.5,`rgba(255,100,0,${0.08*flicker})`);
-    torchG.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.fillStyle=torchG; ctx.beginPath(); ctx.arc(tx,ty,55*flicker,0,Math.PI*2); ctx.fill();
-    // torch stick
-    ctx.fillStyle='#6B4220'; ctx.fillRect(tx-2,ty,5,14);
-    // flame
-    ctx.fillStyle=`rgba(255,${120+80*flicker|0},0,0.9)`;
-    ctx.beginPath(); ctx.ellipse(tx+1,ty-5,4*flicker,7*flicker,0,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle=`rgba(255,220,50,${0.8*flicker})`;
-    ctx.beginPath(); ctx.ellipse(tx+1,ty-6,2*flicker,4*flicker,0,0,Math.PI*2); ctx.fill();
-  });
-
-  // ── draw gold items ──
-  for(const it of goldItems){
-    if(it.hit && it!==gmRope.hookedItem) continue;
-    ctx.save();
-    ctx.translate(it.x, it.y);
-    if(it.type==='goldBig' || it.type==='goldSmall'){
-      ctx.rotate(it.rot||0);
-      ctx.shadowColor='rgba(255,200,30,0.9)'; ctx.shadowBlur=18;
-      drawGoldNugget(ctx,0,0,it.r,it.type==='goldBig'?'#f7c948':'#ffe066',it.type==='goldBig'?'#c87800':'#b06000');
-    } else if(it.type==='diamond'){
-      ctx.rotate(it.rot||0);
-      ctx.shadowColor='rgba(100,230,255,1)'; ctx.shadowBlur=22;
-      drawDiamond(ctx,0,0,it.r);
-      // pulse ring
-      const pulse=0.5+0.5*Math.sin(now*0.005);
-      ctx.strokeStyle=`rgba(150,240,255,${pulse*0.6})`; ctx.lineWidth=2;
-      ctx.beginPath(); ctx.arc(0,0,it.r+8+pulse*6,0,Math.PI*2); ctx.stroke();
-    } else { // rock
-      ctx.shadowBlur=0;
-      drawFakeRock(ctx,0,0,it.r,Math.sin(it.wobble));
-    }
-    ctx.shadowBlur=0;
-    ctx.restore();
-  }
-
-  // ── draw rope + hook (always visible) ──
-  const ROPE_SWING_LEN = 60; // short visible rope segment while swinging
-  const ropeLen = gmRope.state === 'swinging' ? ROPE_SWING_LEN : gmRope.len;
-  const tipX = gmRope.anchorX + Math.sin(gmRope.angle) * ropeLen;
-  const tipY = gmRope.anchorY + Math.cos(gmRope.angle) * ropeLen;
-
-  ctx.save();
-  // rope body
-  ctx.strokeStyle='#c8a060'; ctx.lineWidth=3; ctx.lineCap='round';
-  ctx.shadowColor='rgba(200,150,60,0.3)'; ctx.shadowBlur=4;
-  ctx.beginPath(); ctx.moveTo(gmRope.anchorX, gmRope.anchorY); ctx.lineTo(tipX, tipY); ctx.stroke();
-  ctx.shadowBlur=0;
-  // hook — J-shape at tip
-  const hkDir = gmRope.angle; // angle of rope
-  const perpX = Math.cos(hkDir); // perpendicular (left)
-  const perpY = -Math.sin(hkDir);
-  ctx.strokeStyle='#e0e0e0'; ctx.lineWidth=2.5; ctx.lineCap='round';
-  ctx.shadowColor='rgba(220,220,255,0.5)'; ctx.shadowBlur=6;
-  ctx.beginPath();
-  // shaft down
-  ctx.moveTo(tipX, tipY);
-  ctx.lineTo(tipX + Math.sin(hkDir)*10, tipY + Math.cos(hkDir)*10);
-  // curve of hook
-  const hkCx = tipX + Math.sin(hkDir)*10 + perpX*7;
-  const hkCy = tipY + Math.cos(hkDir)*10 + perpY*7;
-  ctx.arcTo(hkCx+perpX*4, hkCy+perpY*4, hkCx+perpX*4-Math.sin(hkDir)*6, hkCy+perpY*4-Math.cos(hkDir)*6, 6);
-  ctx.stroke();
-  ctx.shadowBlur=0;
-  ctx.restore();
-
-  // ── draw miner at top center ──
-  drawGoldMiner(ctx, gmRope.anchorX, gmRope.anchorY, now);
-
-  // ── draw gold FX labels ──
-  for(const fx of goldFx){
-    for(const p of fx.particles){
-      const a=Math.max(0,p.life/0.6);
-      ctx.save(); ctx.globalAlpha=a;
-      if(fx.sparkle){
-        ctx.fillStyle=p.color; ctx.shadowColor=p.color; ctx.shadowBlur=8;
-        const sr=p.r;
-        ctx.beginPath();
-        for(let i=0;i<5;i++){
-          const a1=i/5*Math.PI*2-Math.PI/2, a2=(i+0.5)/5*Math.PI*2-Math.PI/2;
-          i===0?ctx.moveTo(p.x+Math.cos(a1)*sr,p.y+Math.sin(a1)*sr):ctx.lineTo(p.x+Math.cos(a1)*sr,p.y+Math.sin(a1)*sr);
-          ctx.lineTo(p.x+Math.cos(a2)*sr*0.4,p.y+Math.sin(a2)*sr*0.4);
+  for(let r=0;r<GM_ROWS;r++){
+    for(let c=0;c<GM_COLS;c++){
+      const x=c*gmCW, y=GM_GT+r*gmCH, cl=gmGrid[r][c];
+      if(!cl.dug){
+        gmDrawDirt(ctx,x,y,gmCW,gmCH,r,c);
+        if(gmDigging && gmDigCol===c && gmDigRow===r){
+          const pr=1-(gmDigTimer/0.3);
+          ctx.save(); ctx.globalAlpha=pr*0.5; ctx.strokeStyle='#5D4037'; ctx.lineWidth=1;
+          for(let i=0;i<3;i++){ ctx.beginPath(); ctx.moveTo(x+gmCW*0.2+i*gmCW*0.2,y); ctx.lineTo(x+gmCW*0.3+i*gmCW*0.15,y+gmCH); ctx.stroke(); }
+          ctx.restore();
         }
-        ctx.closePath(); ctx.fill(); ctx.shadowBlur=0;
       } else {
-        ctx.fillStyle=p.color; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill();
+        gmDrawDug(ctx,x,y,gmCW,gmCH);
+        if(cl.tp!=='dirt' && cl.reveal>0) gmDrawTreasure(ctx,cl,x,y,gmCW,gmCH,t);
       }
-      ctx.restore();
-    }
-    if(fx.label && fx.t<0.7){
-      const alpha=1-fx.t/0.7;
-      ctx.save(); ctx.globalAlpha=alpha;
-      ctx.shadowColor=fx.color; ctx.shadowBlur=14;
-      ctx.fillStyle=fx.color; ctx.font='bold 17px system-ui';
-      ctx.textAlign='center'; ctx.textBaseline='middle';
-      ctx.fillText(fx.label, fx.labelX, fx.labelY-fx.t*65);
-      ctx.shadowBlur=0; ctx.restore();
     }
   }
 
-  // ── KPI bar ──
-  const barW=W-40, barH=14, barX=20, barY=H-52;
-  ctx.fillStyle='rgba(0,0,0,0.7)'; roundRectPath(ctx,barX,barY,barW,barH,7); ctx.fill();
-  ctx.strokeStyle='rgba(180,120,0,0.6)'; ctx.lineWidth=1.5;
-  roundRectPath(ctx,barX,barY,barW,barH,7); ctx.stroke();
-  const pct=Math.min(1,goldKPI.gold/GOLD_KPI_GOLD);
-  if(pct>0){
-    const grad=ctx.createLinearGradient(barX,0,barX+barW,0);
-    grad.addColorStop(0,'#c87800'); grad.addColorStop(0.5,'#f7c948'); grad.addColorStop(1,'#ff9800');
-    ctx.fillStyle=grad; ctx.shadowColor='rgba(255,200,30,0.8)'; ctx.shadowBlur=12;
-    roundRectPath(ctx,barX,barY,barW*pct,barH,7); ctx.fill();
-    ctx.shadowBlur=0;
-    ctx.fillStyle='rgba(255,255,255,0.18)';
-    roundRectPath(ctx,barX,barY,barW*pct,barH*0.45,7); ctx.fill();
-  }
-  ctx.font='15px system-ui'; ctx.textAlign='right'; ctx.textBaseline='middle';
-  ctx.shadowColor=goldKPI.diamond?'rgba(100,230,255,0.9)':'none'; ctx.shadowBlur=goldKPI.diamond?12:0;
-  ctx.fillStyle=goldKPI.diamond?'#7df9ff':'#aaa';
-  ctx.fillText('💎'+(goldKPI.diamond?'✓':'?'), W-6, barY+7);
-  ctx.shadowBlur=0;
+  gmDrawCat(ctx,t);
+  gmDrawMouse(ctx,t);
+  gmDrawParticles(ctx,1/60);
 
   // HUD
   ctx.save();
-  ctx.fillStyle='rgba(255,220,80,0.98)';
-  ctx.font='bold 16px system-ui'; ctx.textAlign='left'; ctx.textBaseline='top';
-  ctx.shadowColor='rgba(200,140,0,0.8)'; ctx.shadowBlur=10;
-  ctx.fillText(`⏱ ${Math.ceil(goldTimeLeft)}s`, 12, 10);
-  ctx.shadowBlur=0;
-  ctx.fillStyle='rgba(255,200,90,0.75)'; ctx.font='12px system-ui';
-  ctx.fillText(`⚡ Wave ${goldWave}`, 12, 32);
-  ctx.fillStyle='rgba(255,220,120,0.85)'; ctx.font='12px system-ui';
-  ctx.fillText(`🪙 ${goldKPI.gold}/${GOLD_KPI_GOLD}`, 12, 50);
-  // state hint
-  const stateText=gmRope.state==='swinging'?'Bấm để thả móc!':gmRope.state==='extending'?'🔽 Móc xuống...':'🔼 Kéo lên...';
-  ctx.fillStyle='rgba(255,240,180,0.7)'; ctx.textAlign='right';
-  ctx.fillText(stateText, W-10, 10);
+  ctx.fillStyle='rgba(255,220,120,0.95)';
+  ctx.font='bold 14px system-ui'; ctx.textAlign='left'; ctx.textBaseline='middle';
+  ctx.shadowColor='rgba(255,180,0,0.6)'; ctx.shadowBlur=6;
+  ctx.fillText('💎 '+score, 10, GM_GT/2);
+  ctx.textAlign='right';
+  ctx.fillText('⏱ '+Math.ceil(goldTimeLeft)+'s', W-10, GM_GT/2);
   ctx.restore();
+}
 
-  // win banner
-  if(goldWinBanner){
-    ctx.save();
-    ctx.fillStyle='rgba(0,0,0,0.7)'; ctx.fillRect(0,0,W,H);
-    const t=goldWinTimer;
-    const scale=1+Math.sin(t*10)*0.06;
-    ctx.translate(W/2,H/2); ctx.scale(scale,scale);
-    ctx.textAlign='center'; ctx.textBaseline='middle';
-    for(let i=0;i<16;i++){
-      const a=i/16*Math.PI*2+t*2, rr=65+Math.sin(t*5+i)*18;
-      const coinAlpha=0.5+Math.sin(t*4+i)*0.35;
-      ctx.fillStyle=`rgba(255,215,30,${coinAlpha})`; ctx.shadowColor='rgba(255,200,0,0.8)'; ctx.shadowBlur=8;
-      ctx.beginPath(); ctx.ellipse(Math.cos(a)*rr,Math.sin(a)*rr,5,3,a,0,Math.PI*2); ctx.fill();
+function gmDrawDirt(ctx,x,y,w,h,r,c){
+  const d=r/GM_ROWS, bR=(120-d*40)|0, bG=(80-d*25)|0, bB=(40-d*15)|0;
+  const g=ctx.createLinearGradient(x,y,x,y+h);
+  g.addColorStop(0,'rgb('+(bR+15)+','+(bG+10)+','+(bB+5)+')');
+  g.addColorStop(1,'rgb('+bR+','+bG+','+bB+')');
+  ctx.fillStyle=g; ctx.fillRect(x,y,w,h);
+  ctx.strokeStyle='rgba(0,0,0,0.15)'; ctx.lineWidth=0.5; ctx.strokeRect(x,y,w,h);
+  ctx.fillStyle='rgba(0,0,0,0.08)';
+  const sd=r*GM_COLS+c;
+  for(let i=0;i<4;i++){ ctx.beginPath(); ctx.arc(x+((sd*7+i*31)%(w-4))+2,y+((sd*13+i*17)%(h-4))+2,1+(i%2),0,Math.PI*2); ctx.fill(); }
+}
+function gmDrawDug(ctx,x,y,w,h){
+  const g=ctx.createLinearGradient(x,y,x,y+h);
+  g.addColorStop(0,'#1a0e05'); g.addColorStop(1,'#120a03');
+  ctx.fillStyle=g; ctx.fillRect(x,y,w,h);
+  ctx.strokeStyle='rgba(80,50,20,0.3)'; ctx.lineWidth=1; ctx.strokeRect(x+1,y+1,w-2,h-2);
+}
+function gmDrawTreasure(ctx,cl,x,y,w,h,t){
+  const cx2=x+w/2, cy2=y+h/2, s=Math.min(1,cl.reveal*3), sp=Math.sin(t*4+x*0.1)*0.3+0.7;
+  ctx.save(); ctx.translate(cx2,cy2); ctx.scale(s,s);
+  if(cl.tp==='gs') gmDrawGS(ctx,sp);
+  else if(cl.tp==='gb') gmDrawGB(ctx,sp);
+  else if(cl.tp==='gem') gmDrawGem(ctx,sp);
+  else if(cl.tp==='dia') gmDrawDia(ctx,sp,t);
+  else if(cl.tp==='chest') gmDrawChest(ctx,sp,t);
+  ctx.restore();
+}
+function gmDrawGS(ctx,sp){
+  ctx.beginPath(); ctx.arc(0,0,8,0,Math.PI*2);
+  const g=ctx.createRadialGradient(-2,-2,1,0,0,8);
+  g.addColorStop(0,'#FFF3B0'); g.addColorStop(0.5,'#FFD700'); g.addColorStop(1,'#B8860B');
+  ctx.fillStyle=g; ctx.fill(); ctx.strokeStyle='#996515'; ctx.lineWidth=1; ctx.stroke();
+  ctx.beginPath(); ctx.arc(-2,-3,3,0,Math.PI*2); ctx.fillStyle='rgba(255,255,255,'+sp*0.5+')'; ctx.fill();
+}
+function gmDrawGB(ctx,sp){
+  ctx.save(); ctx.rotate(-0.3);
+  const g=ctx.createLinearGradient(-12,-5,12,5);
+  g.addColorStop(0,'#B8860B'); g.addColorStop(0.3,'#FFD700'); g.addColorStop(0.7,'#FFF3B0'); g.addColorStop(1,'#B8860B');
+  ctx.fillStyle=g; ctx.fillRect(-14,-5,28,10); ctx.strokeStyle='#8B6914'; ctx.lineWidth=0.8; ctx.strokeRect(-14,-5,28,10);
+  ctx.fillStyle='rgba(255,255,255,'+sp*0.4+')'; ctx.fillRect(-10,-4,8,3);
+  ctx.restore();
+}
+function gmDrawGem(ctx,sp){
+  ctx.beginPath(); ctx.moveTo(0,-10); ctx.lineTo(8,0); ctx.lineTo(0,10); ctx.lineTo(-8,0); ctx.closePath();
+  const g=ctx.createLinearGradient(-8,-10,8,10);
+  g.addColorStop(0,'#F48FB1'); g.addColorStop(0.5,'#E040FB'); g.addColorStop(1,'#7B1FA2');
+  ctx.fillStyle=g; ctx.fill(); ctx.strokeStyle='#6A1B9A'; ctx.lineWidth=0.8; ctx.stroke();
+  ctx.beginPath(); ctx.arc(-2,-4,2,0,Math.PI*2); ctx.fillStyle='rgba(255,255,255,'+sp*0.7+')'; ctx.fill();
+}
+function gmDrawDia(ctx,sp,t){
+  ctx.beginPath(); ctx.moveTo(0,-12); ctx.lineTo(10,-2); ctx.lineTo(6,10); ctx.lineTo(-6,10); ctx.lineTo(-10,-2); ctx.closePath();
+  const g=ctx.createLinearGradient(-10,-12,10,10);
+  g.addColorStop(0,'#E1F5FE'); g.addColorStop(0.3,'#4FC3F7'); g.addColorStop(0.7,'#81D4FA'); g.addColorStop(1,'#B3E5FC');
+  ctx.fillStyle=g; ctx.fill(); ctx.strokeStyle='#0288D1'; ctx.lineWidth=1; ctx.stroke();
+  ctx.save(); ctx.rotate(t*2);
+  for(let i=0;i<4;i++){ ctx.rotate(Math.PI/2); ctx.beginPath(); ctx.moveTo(0,-6); ctx.lineTo(1.5,-14); ctx.lineTo(0,-12); ctx.lineTo(-1.5,-14); ctx.closePath(); ctx.fillStyle='rgba(255,255,255,'+sp*0.4+')'; ctx.fill(); }
+  ctx.restore();
+}
+function gmDrawChest(ctx,sp,t){
+  ctx.fillStyle='#8D6E63'; ctx.fillRect(-12,-4,24,14); ctx.strokeStyle='#5D4037'; ctx.lineWidth=1; ctx.strokeRect(-12,-4,24,14);
+  ctx.fillStyle='#A1887F'; ctx.beginPath(); ctx.moveTo(-13,-4); ctx.quadraticCurveTo(0,-14,13,-4); ctx.lineTo(-13,-4); ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.arc(0,0,3,0,Math.PI*2); ctx.fillStyle='#FFD700'; ctx.fill(); ctx.strokeStyle='#B8860B'; ctx.lineWidth=0.8; ctx.stroke();
+  const gl=ctx.createRadialGradient(0,-2,2,0,-2,18);
+  gl.addColorStop(0,'rgba(255,215,0,'+sp*0.3+')'); gl.addColorStop(1,'rgba(255,215,0,0)');
+  ctx.fillStyle=gl; ctx.beginPath(); ctx.arc(0,-2,18,0,Math.PI*2); ctx.fill();
+}
+
+function gmDrawCat(ctx,t){
+  const isD=gmDigging, bob=isD?Math.sin(t*18)*3:Math.sin(t*2)*1;
+  const blk=Math.sin(t*0.8)>0.94, tw=Math.sin(t*(isD?10:3))*0.3;
+  ctx.save(); ctx.translate(gmCatX,gmCatY+bob);
+  ctx.beginPath(); ctx.ellipse(0,16,14,4,0,0,Math.PI*2); ctx.fillStyle='rgba(0,0,0,0.12)'; ctx.fill();
+  ctx.save(); ctx.translate(10,2); ctx.rotate(0.5+tw);
+  ctx.beginPath(); ctx.moveTo(0,0); ctx.quadraticCurveTo(12,-8,10+Math.sin(t*4)*4,-16);
+  ctx.quadraticCurveTo(8,-20,14+Math.sin(t*4)*4,-18); ctx.quadraticCurveTo(10,-14,8,-8); ctx.quadraticCurveTo(6,-2,0,0);
+  ctx.fillStyle='#FF9800'; ctx.fill(); ctx.restore();
+  ctx.beginPath(); ctx.ellipse(0,4,13,10,0,0,Math.PI*2); ctx.fillStyle='#FF9800'; ctx.fill();
+  ctx.beginPath(); ctx.ellipse(0,7,8,6,0,0,Math.PI*2); ctx.fillStyle='#FFF3E0'; ctx.fill();
+  const lo=isD?Math.sin(t*16)*2:0;
+  [[-6-lo,12],[6+lo,12]].forEach(([lx,ly])=>{
+    ctx.beginPath(); ctx.ellipse(lx,ly,4,3,0,0,Math.PI*2); ctx.fillStyle='#FF9800'; ctx.fill();
+    ctx.beginPath(); ctx.ellipse(lx,ly+2.5,4.5,2,0,0,Math.PI*2); ctx.fillStyle='#FFE0B2'; ctx.fill();
+  });
+  ctx.beginPath(); ctx.arc(0,-12,12,0,Math.PI*2); ctx.fillStyle='#FF9800'; ctx.fill();
+  ctx.beginPath(); ctx.ellipse(-6,-9,5,4,0,0,Math.PI*2); ctx.fillStyle='#FFF3E0'; ctx.fill();
+  ctx.beginPath(); ctx.ellipse(6,-9,5,4,0,0,Math.PI*2); ctx.fill();
+  ctx.save(); ctx.rotate(-0.2); ctx.beginPath(); ctx.moveTo(-9,-20); ctx.lineTo(-14,-32); ctx.lineTo(-2,-22); ctx.closePath(); ctx.fillStyle='#FF9800'; ctx.fill();
+  ctx.beginPath(); ctx.moveTo(-8,-21); ctx.lineTo(-12,-29); ctx.lineTo(-4,-22); ctx.closePath(); ctx.fillStyle='#FFB74D'; ctx.fill(); ctx.restore();
+  ctx.save(); ctx.rotate(0.2); ctx.beginPath(); ctx.moveTo(9,-20); ctx.lineTo(14,-32); ctx.lineTo(2,-22); ctx.closePath(); ctx.fillStyle='#FF9800'; ctx.fill();
+  ctx.beginPath(); ctx.moveTo(8,-21); ctx.lineTo(12,-29); ctx.lineTo(4,-22); ctx.closePath(); ctx.fillStyle='#FFB74D'; ctx.fill(); ctx.restore();
+  if(!blk){
+    [-4,4].forEach(ex=>{
+      ctx.beginPath(); ctx.ellipse(ex,-13,4.5,5,0,0,Math.PI*2); ctx.fillStyle='#FFF'; ctx.fill();
+      ctx.beginPath(); ctx.ellipse(ex+0.5,-12.5,3,3.5,0,0,Math.PI*2); ctx.fillStyle='#1a1a1a'; ctx.fill();
+      ctx.beginPath(); ctx.arc(ex+2,-14.5,1.5,0,Math.PI*2); ctx.fillStyle='#FFF'; ctx.fill();
+    });
+  } else {
+    ctx.lineWidth=1.5; ctx.lineCap='round'; ctx.strokeStyle='#1a1a1a';
+    ctx.beginPath(); ctx.arc(-4,-12,3,0.2,Math.PI-0.2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(4,-12,3,0.2,Math.PI-0.2); ctx.stroke();
+  }
+  ctx.beginPath(); ctx.moveTo(0,-8.5); ctx.lineTo(-2,-6.5); ctx.lineTo(2,-6.5); ctx.closePath(); ctx.fillStyle='#FF8A80'; ctx.fill();
+  if(isD){ ctx.beginPath(); ctx.ellipse(0,-5,3,2.5,0,0,Math.PI*2); ctx.fillStyle='#E57373'; ctx.fill(); }
+  else{ ctx.beginPath(); ctx.moveTo(-2,-6.5); ctx.quadraticCurveTo(-1,-4.5,0,-5); ctx.quadraticCurveTo(1,-4.5,2,-6.5); ctx.strokeStyle='#5D4037'; ctx.lineWidth=0.8; ctx.lineCap='round'; ctx.stroke(); }
+  ctx.strokeStyle='rgba(0,0,0,0.2)'; ctx.lineWidth=0.6;
+  for(let k=-1;k<=1;k+=2){ ctx.beginPath(); ctx.moveTo(k>0?6:-6,-7); ctx.quadraticCurveTo((k>0?16:-16),-8+k*3,(k>0?20:-20),-6+k*2); ctx.stroke(); }
+  ctx.beginPath(); ctx.ellipse(-8,-9,2.5,1.5,0,0,Math.PI*2); ctx.fillStyle='rgba(255,120,120,0.3)'; ctx.fill();
+  ctx.beginPath(); ctx.ellipse(8,-9,2.5,1.5,0,0,Math.PI*2); ctx.fill();
+  const pA=isD?Math.sin(t*18)*0.5-0.3:-0.2;
+  ctx.save(); ctx.translate(13,0); ctx.rotate(pA);
+  ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(14,-12); ctx.strokeStyle='#8D6E63'; ctx.lineWidth=2.5; ctx.lineCap='round'; ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(12,-11); ctx.lineTo(20,-16); ctx.lineTo(16,-18); ctx.lineTo(8,-13); ctx.closePath(); ctx.fillStyle='#78909C'; ctx.fill(); ctx.strokeStyle='#546E7A'; ctx.lineWidth=0.8; ctx.stroke();
+  ctx.restore();
+  if(isD){ for(let di=0;di<4;di++){ ctx.beginPath(); ctx.arc(-8+Math.random()*16,14+Math.random()*4,1.5+Math.random()*2,0,Math.PI*2); ctx.fillStyle='rgba(160,120,60,'+(0.2+Math.random()*0.2)+')'; ctx.fill(); } }
+  ctx.restore();
+}
+
+function gmDrawMouse(ctx,t){
+  if(!gmMouse.on && !gmMouse.caught) return;
+  const fc=gmMouse.vx>=0?1:-1, rb=Math.sin(t*16)*2;
+  ctx.save(); ctx.translate(gmMouse.x,gmMouse.y+rb);
+  if(gmMouse.caught){ ctx.globalAlpha=gmMouse.catchAlpha; const cs=1+(1-gmMouse.catchAlpha)*0.5; ctx.scale(cs,cs); }
+  ctx.scale(fc,1);
+  ctx.beginPath(); ctx.ellipse(0,0,9,7,0,0,Math.PI*2); ctx.fillStyle='#B0BEC5'; ctx.fill();
+  ctx.beginPath(); ctx.ellipse(1,2,5,4.5,0,0,Math.PI*2); ctx.fillStyle='#ECEFF1'; ctx.fill();
+  ctx.beginPath(); ctx.ellipse(8,-3,7,6.5,0.1,0,Math.PI*2); ctx.fillStyle='#B0BEC5'; ctx.fill();
+  ctx.beginPath(); ctx.ellipse(5,-12,4,6,-0.3,0,Math.PI*2); ctx.fillStyle='#B0BEC5'; ctx.fill();
+  ctx.beginPath(); ctx.ellipse(11,-11,4,6,0.3,0,Math.PI*2); ctx.fillStyle='#B0BEC5'; ctx.fill();
+  [7,11].forEach(ex=>{ ctx.beginPath(); ctx.ellipse(ex,-4,2.5,3,0,0,Math.PI*2); ctx.fillStyle='#1a1a1a'; ctx.fill(); });
+  ctx.beginPath(); ctx.arc(14,-2.5,1.5,0,Math.PI*2); ctx.fillStyle='#F48FB1'; ctx.fill();
+  // kim cương trên tay
+  ctx.save(); ctx.translate(6,2); ctx.rotate(Math.sin(t*3)*0.15);
+  const ds=4;
+  ctx.beginPath(); ctx.moveTo(0,-ds); ctx.lineTo(ds*0.8,0); ctx.lineTo(ds*0.5,ds); ctx.lineTo(-ds*0.5,ds); ctx.lineTo(-ds*0.8,0); ctx.closePath();
+  const dg=ctx.createLinearGradient(-ds,-ds,ds,ds); dg.addColorStop(0,'#E1F5FE'); dg.addColorStop(0.5,'#4FC3F7'); dg.addColorStop(1,'#B3E5FC');
+  ctx.fillStyle=dg; ctx.fill(); ctx.strokeStyle='#0288D1'; ctx.lineWidth=0.6; ctx.stroke();
+  ctx.restore();
+  ctx.restore();
+}
+
+function gmDrawParticles(ctx,dt){
+  for(let i=gmPts.length-1;i>=0;i--){
+    const p=gmPts[i]; p.l-=dt;
+    if(p.l<=0){ gmPts.splice(i,1); continue; }
+    if(p.type==='d' || p.type==='s'){
+      p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy+=100*dt;
+      const al=p.l/p.ml;
+      ctx.save(); ctx.translate(p.x,p.y); ctx.globalAlpha=al;
+      if(p.type==='s'){
+        ctx.rotate(p.l*6); ctx.beginPath();
+        for(let j=0;j<8;j++){ const r=j%2===0?p.size:p.size*0.4, a2=j/8*Math.PI*2-Math.PI/2; if(j===0) ctx.moveTo(Math.cos(a2)*r,Math.sin(a2)*r); else ctx.lineTo(Math.cos(a2)*r,Math.sin(a2)*r); }
+        ctx.closePath();
+      } else { ctx.beginPath(); ctx.arc(0,0,p.size,0,Math.PI*2); }
+      ctx.fillStyle=p.color; ctx.fill(); ctx.globalAlpha=1; ctx.restore();
+    } else if(p.type==='r'){
+      const al2=p.l/p.ml, r2=(1-al2)*50+5;
+      ctx.beginPath(); ctx.arc(p.x,p.y,r2,0,Math.PI*2);
+      ctx.strokeStyle=p.color; ctx.globalAlpha=al2*0.5; ctx.lineWidth=2; ctx.stroke(); ctx.globalAlpha=1;
     }
-    ctx.shadowBlur=0;
-    ctx.font='bold 40px system-ui'; ctx.shadowColor='#ffd700'; ctx.shadowBlur=40;
-    ctx.fillStyle='#ffd700'; ctx.fillText('🏆 KPI ĐẠT!', 0, -34);
-    ctx.shadowBlur=0;
-    ctx.font='20px system-ui'; ctx.fillStyle='rgba(255,230,120,0.95)';
-    ctx.fillText('✨ Sang màn vàng tiếp... ✨', 0, 24);
-    ctx.restore();
   }
-}
-
-function drawGoldMiner(ctx, cx, anchorY, now){
-  const catW = 68, catH = 82;
-  const catX = cx - catW / 2;
-  const catY = anchorY - catH + 10; // feet near platform, head visible
-
-  // draw SVG cat image
-  if(goldCatImg && goldCatImg.complete && goldCatImg.naturalWidth > 0){
-    ctx.drawImage(goldCatImg, catX, catY, catW, catH); // 68×82
-  }
-
-  // rope anchor dot (on top of cat)
-  ctx.fillStyle = '#999';
-  ctx.beginPath(); ctx.arc(cx, anchorY, 4, 0, Math.PI * 2); ctx.fill();
-}
-
-
-function drawGoldNugget(ctx,x,y,r,fill,shade){
-  // ── 3D gold nugget with multiple light layers ──
-  // drop shadow
-  ctx.fillStyle='rgba(0,0,0,0.35)';
-  ctx.beginPath(); ctx.ellipse(x+3,y+4,r*0.8,r*0.55,0.2,0,Math.PI*2); ctx.fill();
-
-  // base lumpy shape — irregular outline for realism
-  ctx.beginPath();
-  ctx.moveTo(x-r*0.55,y-r*0.15);
-  ctx.bezierCurveTo(x-r*0.7,y-r*0.75, x-r*0.1,y-r*1.0, x+r*0.4,y-r*0.72);
-  ctx.bezierCurveTo(x+r*0.9,y-r*0.4, x+r*1.0,y+r*0.1, x+r*0.65,y+r*0.6);
-  ctx.bezierCurveTo(x+r*0.3,y+r*0.9, x-r*0.25,y+r*0.88, x-r*0.65,y+r*0.5);
-  ctx.bezierCurveTo(x-r*0.95,y+r*0.15, x-r*0.9,y+r*0.05, x-r*0.55,y-r*0.15);
-  ctx.closePath();
-
-  // deep shadow fill first
-  ctx.fillStyle=shade;
-  ctx.fill();
-
-  // main gradient: 3-stop radial for 3D sphere illusion
-  const mainG=ctx.createRadialGradient(x-r*0.28,y-r*0.32,r*0.04,x+r*0.1,y+r*0.15,r*1.05);
-  mainG.addColorStop(0,'#fff8d0');     // specular highlight
-  mainG.addColorStop(0.18,'#ffe880');   // bright lit face
-  mainG.addColorStop(0.45,fill);        // mid tone
-  mainG.addColorStop(0.75,shade);       // shadow transition
-  mainG.addColorStop(1,'#3a2000');      // deep shadow edge
-  ctx.fillStyle=mainG;
-  ctx.beginPath();
-  ctx.moveTo(x-r*0.55,y-r*0.15);
-  ctx.bezierCurveTo(x-r*0.7,y-r*0.75, x-r*0.1,y-r*1.0, x+r*0.4,y-r*0.72);
-  ctx.bezierCurveTo(x+r*0.9,y-r*0.4, x+r*1.0,y+r*0.1, x+r*0.65,y+r*0.6);
-  ctx.bezierCurveTo(x+r*0.3,y+r*0.9, x-r*0.25,y+r*0.88, x-r*0.65,y+r*0.5);
-  ctx.bezierCurveTo(x-r*0.95,y+r*0.15, x-r*0.9,y+r*0.05, x-r*0.55,y-r*0.15);
-  ctx.closePath();
-  ctx.fill();
-
-  // rim light on right-bottom edge (secondary light source)
-  const rimG=ctx.createRadialGradient(x+r*0.7,y+r*0.6,0,x+r*0.55,y+r*0.45,r*0.6);
-  rimG.addColorStop(0,'rgba(255,180,30,0.5)');
-  rimG.addColorStop(1,'rgba(255,180,30,0)');
-  ctx.fillStyle=rimG;
-  ctx.beginPath();
-  ctx.moveTo(x-r*0.55,y-r*0.15);
-  ctx.bezierCurveTo(x-r*0.7,y-r*0.75, x-r*0.1,y-r*1.0, x+r*0.4,y-r*0.72);
-  ctx.bezierCurveTo(x+r*0.9,y-r*0.4, x+r*1.0,y+r*0.1, x+r*0.65,y+r*0.6);
-  ctx.bezierCurveTo(x+r*0.3,y+r*0.9, x-r*0.25,y+r*0.88, x-r*0.65,y+r*0.5);
-  ctx.bezierCurveTo(x-r*0.95,y+r*0.15, x-r*0.9,y+r*0.05, x-r*0.55,y-r*0.15);
-  ctx.closePath();
-  ctx.fill();
-
-  // facet lines (nugget surface texture)
-  ctx.save();
-  ctx.strokeStyle='rgba(120,70,0,0.3)'; ctx.lineWidth=0.8; ctx.lineCap='round';
-  ctx.beginPath();
-  ctx.moveTo(x-r*0.1,y-r*0.7); ctx.quadraticCurveTo(x+r*0.3,y-r*0.2,x+r*0.55,y+r*0.25);
-  ctx.moveTo(x-r*0.5,y-r*0.3); ctx.quadraticCurveTo(x,y+r*0.1,x+r*0.2,y+r*0.7);
-  ctx.stroke();
-  ctx.restore();
-
-  // main specular highlight — oval gloss
-  const shine1=ctx.createRadialGradient(x-r*0.28,y-r*0.32,0,x-r*0.2,y-r*0.22,r*0.38);
-  shine1.addColorStop(0,'rgba(255,255,230,0.72)');
-  shine1.addColorStop(0.5,'rgba(255,255,200,0.3)');
-  shine1.addColorStop(1,'rgba(255,255,200,0)');
-  ctx.fillStyle=shine1;
-  ctx.beginPath(); ctx.ellipse(x-r*0.25,y-r*0.28,r*0.28,r*0.17,-0.6,0,Math.PI*2); ctx.fill();
-  // secondary micro-sparkle
-  ctx.fillStyle='rgba(255,255,245,0.85)';
-  ctx.beginPath(); ctx.ellipse(x-r*0.35,y-r*0.42,r*0.08,r*0.04,-0.5,0,Math.PI*2); ctx.fill();
-}
-
-function drawDiamond(ctx,x,y,r){
-  const grad=ctx.createLinearGradient(x-r,y-r,x+r,y+r);
-  grad.addColorStop(0,'#e0ffff'); grad.addColorStop(0.4,'#7df9ff'); grad.addColorStop(1,'#0af');
-  ctx.fillStyle=grad;
-  ctx.beginPath();
-  ctx.moveTo(x,y-r); ctx.lineTo(x+r*0.8,y-r*0.1);
-  ctx.lineTo(x+r*0.6,y+r); ctx.lineTo(x-r*0.6,y+r);
-  ctx.lineTo(x-r*0.8,y-r*0.1); ctx.closePath(); ctx.fill();
-  // facet
-  ctx.strokeStyle='rgba(255,255,255,0.7)'; ctx.lineWidth=1;
-  ctx.beginPath();
-  ctx.moveTo(x,y-r); ctx.lineTo(x+r*0.3,y+r*0.3);
-  ctx.moveTo(x,y-r); ctx.lineTo(x-r*0.3,y+r*0.3);
-  ctx.moveTo(x-r*0.8,y-r*0.1); ctx.lineTo(x+r*0.3,y+r*0.3);
-  ctx.moveTo(x+r*0.8,y-r*0.1); ctx.lineTo(x-r*0.3,y+r*0.3);
-  ctx.stroke();
-  ctx.fillStyle='rgba(255,255,255,0.6)';
-  ctx.beginPath(); ctx.ellipse(x-r*0.15,y-r*0.35,r*0.14,r*0.06,-0.5,0,Math.PI*2); ctx.fill();
-}
-
-function drawFakeRock(ctx,x,y,r,wobVal){
-  const s=r/14;
-  ctx.fillStyle='#5a5040';
-  ctx.beginPath(); ctx.ellipse(x,y+2,r*0.9,r*0.75,0,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle='#7a6a50';
-  ctx.beginPath();
-  ctx.moveTo(x-r*0.7,y); ctx.lineTo(x-r*0.3,y-r*0.6); ctx.lineTo(x+r*0.3,y-r*0.7);
-  ctx.lineTo(x+r*0.8,y-r*0.1); ctx.lineTo(x+r*0.5,y+r*0.5);
-  ctx.lineTo(x-r*0.4,y+r*0.6); ctx.closePath(); ctx.fill();
-  // fool's glint
-  ctx.fillStyle=`rgba(200,180,100,${0.3+wobVal*0.2})`;
-  ctx.beginPath(); ctx.ellipse(x-r*0.2,y-r*0.2,r*0.18,r*0.08,-0.6,0,Math.PI*2); ctx.fill();
-}
-
-function roundRectPath(ctx,x,y,w,h,r){
-  ctx.beginPath();
-  ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r);
-  ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r);
-  ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
 }
 
 function goldGameOver(kpiMet, msg){
@@ -5385,6 +4989,7 @@ function exitGoldToMain(){
   consecutiveBursts=0; updateBurstCount();
   document.getElementById('hint-bar').textContent='Chạm khối → ghost hiện · Di ngón → ghost bám · Thả trên ô → đặt · Thả vùng trống → xoay';
   goldWave=1;
+  awaitingGoldUnlock=false;
   // Trigger Map ẩn 6 unlock immediately after Map ẩn 5
   setTimeout(()=>triggerMoleUnlock(), 400);
   // Activate thorn vine difficulty after returning from Map ẩn 5
@@ -5395,18 +5000,52 @@ function exitGoldToMain(){
   renderPieces(); checkGameOverA();
 }
 
-/* ── điều khiển Gold Miner: bấm bất cứ đâu → thả móc ── */
+/* ── điều khiển: chạm gần mèo → đào / chạm xa → di chuyển / chạm chuột → bắt ── */
+function goldCanvasPt(e){
+  const cv=GCV(), rect=cv.getBoundingClientRect();
+  return {
+    x:(e.clientX-rect.left)*(cv.width/rect.width),
+    y:(e.clientY-rect.top)*(cv.height/rect.height)
+  };
+}
 GCV().addEventListener('pointerdown', e=>{
   if(!goldMode) return;
   e.preventDefault();
-  if(gmRope.state==='swinging'){
-    sfxRopeDrop();
-    gmRope.state='extending';
-    gmRope.len=0;
-    gmRope.hookedItem=null;
+  const pt=goldCanvasPt(e);
+  const W=GCV().width;
+
+  // bắt chuột
+  if(gmMouse.on && !gmMouse.caught){
+    const md=Math.hypot(gmMouse.x-pt.x,gmMouse.y-pt.y);
+    if(md<25){
+      gmMouse.on=false; gmMouse.caught=true; gmMouse.catchAlpha=1;
+      score+=150; if(score>best) best=score; updateScoreUI(); updateGoldHUD();
+      gmSpawnCatchFx(gmMouse.x,gmMouse.y);
+      gmFloatText(gmMouse.x,gmMouse.y,'+150','#4FC3F7',24);
+      sfxDiamondCollect();
+      return;
+    }
+  }
+
+  // đào đất
+  const col=Math.floor(pt.x/gmCW), row=Math.floor((pt.y-GM_GT)/gmCH);
+  if(col>=0 && col<GM_COLS && row>=0 && row<GM_ROWS && !gmGrid[row][col].dug && !gmDigging){
+    const cc=Math.floor(gmCatX/gmCW), cr=Math.floor((gmCatY-GM_GT)/gmCH);
+    const dist=Math.abs(col-cc)+Math.abs(row-cr);
+    if(dist<=2){
+      gmDigging=true; gmDigTimer=0.3; gmDigCol=col; gmDigRow=row;
+      gmCatTX=col*gmCW+gmCW/2; gmCatTY=GM_GT+row*gmCH+gmCH/2;
+      sfxRopeDrop();
+    } else {
+      const tc=Math.max(0,Math.min(GM_COLS-1,col+(col>cc?-1:1)));
+      const tr=Math.max(0,Math.min(GM_ROWS-1,row+(row>cr?-1:1)));
+      gmCatTX=tc*gmCW+gmCW/2; gmCatTY=GM_GT+tr*gmCH+gmCH/2;
+    }
+  } else if(row>=0 && row<GM_ROWS){
+    gmCatTX=Math.max(gmCW/2,Math.min(W-gmCW/2,pt.x));
+    gmCatTY=Math.max(GM_GT+gmCH/2,Math.min(GM_GT+(GM_ROWS-0.5)*gmCH,pt.y));
   }
 });
-
 /* ══════════════════════════════════════════
    MAP ẨN 6 — ĐẬP ĐỘNG VẬT (WHACK-A-MOLE)
    8 ô trong vườn, chạm đầu để đập.
