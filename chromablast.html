@@ -1200,6 +1200,12 @@ function showAchievementToast(a){
   setTimeout(()=>{ toast.style.animation='toastOut 0.4s ease-in forwards'; setTimeout(()=>toast.remove(),400); }, 2800);
 }
 
+/* ── Quy tắc tính điểm chung: 1 ô = 1 điểm; phá liên tiếp 3 lần → x2; 6 lần → x3 ──
+   Dùng chung cho map thường và mọi map ẩn để thang điểm đồng nhất. */
+function comboScoreMultiplier(streak){
+  return streak>=6 ? 3 : streak>=3 ? 2 : 1;
+}
+
 /* ── Dynamic burst threshold based on level ── */
 function getMinBurst(){
   if(level >= 7) return COLOR_BURST_MIN + 2;
@@ -1874,8 +1880,9 @@ function processClears(){
 
   combo++;
   if(combo>=5) unlockAchievement('combo5');
-  const lineOnly=[...lineKeys].filter(k=>!colorKeys.has(k)).length;
-  const pts=lineOnly*12+colorKeys.size*28+(combo>1?combo*50:0);
+  // Quy tắc: phá 1 ô = 1 điểm. Phá liên tiếp (combo) từ lần thứ 3 → x2 điểm, từ lần thứ 6 → x3 điểm.
+  const scoreMult=comboScoreMultiplier(combo);
+  const pts=totalKeys.size*scoreMult;
   sfxMatch(colorKeys.size); if(combo>1) sfxComboUp(combo);
   score+=pts; if(score>best) best=score;
   if(score>=1000 && score-pts<1000) unlockAchievement('score1000');
@@ -2505,9 +2512,9 @@ function onSCClick(e){
     return;
   }
 
-  // Valid blast
+  // Valid blast — 1 điểm/ô, đồng bộ quy tắc map thường
   const ci=secretBoard[r][c];
-  const basePoints=group.length*60;
+  const basePoints=group.length;
 
   // Check timer — is this within SECRET_WINDOW of last blast?
   const now=Date.now();
@@ -2515,14 +2522,13 @@ function onSCClick(e){
 
   if(withinWindow){
     secretStreak++;
-    secretMultiplier= secretUltra ? secretMultiplier*3 : Math.min(secretStreak, 6);
     sfxStreak(secretStreak);
   } else {
     secretStreak=1;
-    secretMultiplier=1;
     secretUltra=false;
     document.getElementById('grid-wrap').classList.remove('ultra-glow');
   }
+  secretMultiplier=comboScoreMultiplier(secretStreak); // x2 từ streak 3, x3 từ streak 6
 
   // Ultra mode: 9 consecutive hits
   let ultraJustTriggered=false;
@@ -2721,9 +2727,9 @@ function dodgeLoop(now){
   const cv=DCV(), ctx=cv.getContext('2d'), W=cv.width, H=cv.height;
   const d=dodgeDiff();
 
-  // điểm sống sót
+  // điểm sống sót — 1 điểm/giây, đồng bộ thang điểm map thường
   dodgeAccum+=dt;
-  if(dodgeAccum>=1){ score+=15; if(score>best)best=score; dodgeAccum-=1; }
+  if(dodgeAccum>=1){ score+=1; if(score>best)best=score; dodgeAccum-=1; }
 
   // thỏ di chuyển + bắn
   rabbit.x+=rabbit.dir*d.rabbitSpeed*dt;
@@ -2767,10 +2773,10 @@ function dodgeLoop(now){
   for(const c of carrots) c.y+=c.vy*dt*speedMult;
   carrots=carrots.filter(c=>{
     if(c.y<H+20) return true;
-    score+=12; if(score>best)best=score;   // né được 1 viên
-    sfxDodge();
     dodgeStreak++;
-    if(dodgeStreak>=3){ score+=20; if(score>best)best=score; sfxScoreMilestone(); }
+    score+=1*comboScoreMultiplier(dodgeStreak); if(score>best)best=score; // né được 1 viên = 1đ, x2/x3 theo chuỗi liên tiếp
+    sfxDodge();
+    if(dodgeStreak===3||dodgeStreak===6) sfxScoreMilestone();
     return false;
   });
   updateScoreUI();
@@ -3349,14 +3355,14 @@ let fruitMissPopups=[]; // floating "-10" text khi chém trượt
 let fruitTrailPetals=[]; // flower petal particles that fall along the slash trail
 const TRAIL_PETAL_COLORS=['#ffb3cc','#ff80aa','#ffd6e7','#ff99bb','#ffe0ec','#ffaad4','#ff66a3'];
 const FRUIT_TYPES=[
-  {emoji:'🍉',r:38,pts:20,color:'#e74c3c',juice:'#ff6b6b',petals:['#ff8a80','#ff5252','#ff1744']},
-  {emoji:'🍊',r:28,pts:14,color:'#e67e22',juice:'#f39c12',petals:['#ffcc02','#ff9800','#ffa726']},
-  {emoji:'🍎',r:28,pts:14,color:'#c0392b',juice:'#e74c3c',petals:['#ef9a9a','#e53935','#b71c1c']},
-  {emoji:'🍓',r:22,pts:16,color:'#e91e63',juice:'#ff4081',petals:['#f48fb1','#ec407a','#ad1457']},
-  {emoji:'🍍',r:33,pts:22,color:'#f1c40f',juice:'#f39c12',petals:['#fff176','#ffee58','#f9a825']},
-  {emoji:'🥝',r:22,pts:16,color:'#27ae60',juice:'#2ecc71',petals:['#a5d6a7','#66bb6a','#2e7d32']},
-  {emoji:'🍋',r:24,pts:12,color:'#f1c40f',juice:'#f9e231',petals:['#fff9c4','#fff176','#f57f17']},
-  {emoji:'🍌',r:28,pts:18,color:'#f1c40f',juice:'#ffe066',petals:['#fff59d','#ffee58','#f9a825']},
+  {emoji:'🍉',r:38,pts:1,color:'#e74c3c',juice:'#ff6b6b',petals:['#ff8a80','#ff5252','#ff1744']},
+  {emoji:'🍊',r:28,pts:1,color:'#e67e22',juice:'#f39c12',petals:['#ffcc02','#ff9800','#ffa726']},
+  {emoji:'🍎',r:28,pts:1,color:'#c0392b',juice:'#e74c3c',petals:['#ef9a9a','#e53935','#b71c1c']},
+  {emoji:'🍓',r:22,pts:1,color:'#e91e63',juice:'#ff4081',petals:['#f48fb1','#ec407a','#ad1457']},
+  {emoji:'🍍',r:33,pts:1,color:'#f1c40f',juice:'#f39c12',petals:['#fff176','#ffee58','#f9a825']},
+  {emoji:'🥝',r:22,pts:1,color:'#27ae60',juice:'#2ecc71',petals:['#a5d6a7','#66bb6a','#2e7d32']},
+  {emoji:'🍋',r:24,pts:1,color:'#f1c40f',juice:'#f9e231',petals:['#fff9c4','#fff176','#f57f17']},
+  {emoji:'🍌',r:28,pts:1,color:'#f1c40f',juice:'#ffe066',petals:['#fff59d','#ffee58','#f9a825']},
 ];
 const FCV = () => document.getElementById('fruit-canvas');
 
@@ -3504,8 +3510,7 @@ function fruitLoop(now){
           if(fruitComboTimer) clearTimeout(fruitComboTimer);
           fruitComboTimer=setTimeout(()=>{ fruitCombo=0; fruitComboTimer=0; document.getElementById('combo-box').textContent=''; },800);
           document.getElementById('combo-box').textContent=fruitCombo>1?'🍉 x'+fruitCombo:'';
-          const fmul=Math.min(1+fruitCombo*0.15,2.5);
-          const earnedPts=Math.round(f.pts*fmul);
+          const earnedPts=f.pts*comboScoreMultiplier(fruitCombo);
           score+=earnedPts; if(score>best) best=score;
           sfxFruitSlice();
           spawnSliceFx(f.x,f.y,f.juice,f.petals,a,b);
@@ -4595,7 +4600,7 @@ function beeHandleTap(clientX,clientY){
 
   if(hitBee){
     hitBee.alive=false; beeCombo++; beeComboTimer=1.5;
-    const pts=10*Math.min(beeCombo,10);
+    const pts=1*comboScoreMultiplier(beeCombo);
     score+=pts; if(score>best) best=score;
     updateScoreUI(); updateBeeHUD();
     spawnSwatParticles(hitBee.x,hitBee.y);
@@ -4641,7 +4646,7 @@ let goldTimeLeft=30, goldWave=1;
 let awaitingGoldUnlock=false, goldUnlockBaseline=0;
 let awaitingMoleUnlock=false, moleUnlockBaseline=0;
 const GCV = () => document.getElementById('gold-canvas');
-const GOLD_TIME=30, GOLD_KPI_SCORE=280;
+const GOLD_TIME=30, GOLD_KPI_SCORE=30;
 
 const GM_COLS=8, GM_ROWS=10, GM_GT=40;
 let gmCW=45, gmCH=42;
@@ -4650,7 +4655,7 @@ let gmCatX=180, gmCatY=40+42*1.5, gmCatTX=180, gmCatTY=40+42*1.5;
 let gmDigging=false, gmDigTimer=0, gmDigCol=-1, gmDigRow=-1;
 let gmMouse={x:-60,y:200,vx:60,on:false,timer:0,interval:7,caught:false,catchAlpha:0};
 let gmMouseY0=0, gmMouseY1=0;
-const gmValues={dirt:0,gs:10,gb:30,gem:50,dia:100,chest:200};
+const gmValues={dirt:0,gs:1,gb:2,gem:3,dia:5,chest:8};
 const gmColors={gs:'#FFD700',gb:'#FFA000',gem:'#E040FB',dia:'#4FC3F7',chest:'#FF6D00'};
 
 function initGoldGrid(){
@@ -5086,9 +5091,9 @@ GCV().addEventListener('pointerdown', e=>{
     const md=Math.hypot(gmMouse.x-pt.x,gmMouse.y-pt.y);
     if(md<25){
       gmMouse.on=false; gmMouse.caught=true; gmMouse.catchAlpha=1;
-      score+=150; if(score>best) best=score; updateScoreUI(); updateGoldHUD();
+      score+=5; if(score>best) best=score; updateScoreUI(); updateGoldHUD();
       gmSpawnCatchFx(gmMouse.x,gmMouse.y);
-      gmFloatText(gmMouse.x,gmMouse.y,'+150','#4FC3F7',24);
+      gmFloatText(gmMouse.x,gmMouse.y,'+5','#4FC3F7',24);
       sfxDiamondCollect();
       return;
     }
@@ -5119,16 +5124,16 @@ GCV().addEventListener('pointerdown', e=>{
    KPI: 200 điểm trong 45 giây.
 ══════════════════════════════════════════ */
 const MOLE_ANIMALS = [
-  {emoji:'🦫', name:'Capybara', pts:20,  color:'#8B6914'},
-  {emoji:'🐰', name:'Thỏ',      pts:5,   color:'#ff9ac8'},
-  {emoji:'🐢', name:'Rùa',      pts:10,  color:'#4a9a40'},
-  {emoji:'🐶', name:'Samoyed',  pts:30,  color:'#ffffff'},
-  {emoji:'🐱', name:'Mèo',      pts:15,  color:'#ff9f40'},
-  {emoji:'🦔', name:'Nhím',     pts:-20, color:'#8B4513'},
-  {emoji:'🐍', name:'Rắn',      pts:-40, color:'#2d8a2d'},
+  {emoji:'🦫', name:'Capybara', pts:4,  color:'#8B6914'},
+  {emoji:'🐰', name:'Thỏ',      pts:1,  color:'#ff9ac8'},
+  {emoji:'🐢', name:'Rùa',      pts:2,  color:'#4a9a40'},
+  {emoji:'🐶', name:'Samoyed',  pts:6,  color:'#ffffff'},
+  {emoji:'🐱', name:'Mèo',      pts:3,  color:'#ff9f40'},
+  {emoji:'🦔', name:'Nhím',     pts:-4, color:'#8B4513'},
+  {emoji:'🐍', name:'Rắn',      pts:-8, color:'#2d8a2d'},
 ];
 const MOLE_COLS=4, MOLE_ROWS=2, MOLE_HOLES=8;
-const MOLE_TIME=45, MOLE_KPI=160;
+const MOLE_TIME=45, MOLE_KPI=32;
 
 let moleMode=false, moleRAF=null, moleLast=0, moleElapsed=0;
 let moleHoles=[], moleFx=[], moleScore=0;
@@ -5273,21 +5278,19 @@ function tapMole(ex,ey){
     const hx=h.x, hy=h.y-yOff;
     if(Math.hypot(ex-hx, ey-hy)<h.r+12){
       h.hit=true; h.fallT=0;
-      const pts=h.animal.pts;
+      const basePts=h.animal.pts;
+      let pts=basePts;
+      if(basePts>0){
+        const now2=performance.now();
+        if(now2-moleLastHitTime<2000){ moleComboCount++; } else { moleComboCount=1; }
+        moleLastHitTime=now2;
+        pts=basePts*comboScoreMultiplier(moleComboCount); // liên tiếp 3 lần → x2, 6 lần → x3
+        if(moleComboCount===3||moleComboCount===6) showComboFlash(0,false,'COMBO! x'+moleComboCount);
+      } else { moleComboCount=0; }
       moleScore+=pts; if(moleScore+score>best) best=moleScore+score;
       if(pts>0){ sfxHammer(); } else { sfxPenalty(); }
       const col=pts>0?'#f7c948':'#ff4444';
       moleFx.push({x:hx,y:hy,t:0,label:(pts>0?'+':'')+pts,color:col,emoji:h.animal.emoji});
-      if(pts>0){
-        const now2=performance.now();
-        if(now2-moleLastHitTime<2000){ moleComboCount++; } else { moleComboCount=1; }
-        moleLastHitTime=now2;
-        if(moleComboCount>=3){
-          moleScore+=15;
-          showComboFlash(0,false,'COMBO! x'+moleComboCount);
-          moleComboCount=0;
-        }
-      } else { moleComboCount=0; }
       hit=true;
       break;
     }
@@ -5522,7 +5525,7 @@ const MEMORY_ANIMALS=[
 ];
 
 let memoryMode=false, memoryRAF=null, memoryLast=0, memoryElapsed=0;
-let memoryCards=[], memoryFlipped=[], memoryMatched=0, memoryScore=0;
+let memoryCards=[], memoryFlipped=[], memoryMatched=0, memoryScore=0, memoryStreak=0;
 
 const MMCV=()=>document.getElementById('memory-canvas');
 
@@ -5558,7 +5561,7 @@ function enterMemoryMode(){
 }
 
 function initMemory(){
-  memoryScore=0; memoryElapsed=0; memoryMatched=0; memoryFlipped=[];
+  memoryScore=0; memoryElapsed=0; memoryMatched=0; memoryFlipped=[]; memoryStreak=0;
   // Create 6 pairs shuffled
   const deck=[];
   MEMORY_ANIMALS.forEach(a=>{ deck.push({...a}); deck.push({...a}); });
@@ -5724,9 +5727,9 @@ function tapMemory(ex,ey){
           setTimeout(()=>{
             openCards.forEach(x=>{ x.matched=true; });
             memoryMatched++;
-            const timeLeft=Math.max(0,MEMORY_TIME-memoryElapsed);
-            const bonus=Math.floor(timeLeft*3);
-            const pts=50+bonus;
+            memoryStreak++;
+            // 1 điểm/cặp ghép đúng, liên tiếp 3 cặp → x2, 6 cặp → x3 (đồng bộ map thường)
+            const pts=1*comboScoreMultiplier(memoryStreak);
             memoryScore+=pts;
             score+=pts; if(score>best)best=score; updateScoreUI();
             if(!sfxMuted) sfxMemoryMatch();
@@ -5735,6 +5738,7 @@ function tapMemory(ex,ey){
           },300);
         } else {
           // Mismatch - flip back after 0.8s
+          memoryStreak=0;
           setTimeout(()=>{
             openCards.forEach(x=>{ x.faceUp=false; });
             if(!sfxMuted) sfxMemoryMiss();
@@ -5791,14 +5795,14 @@ MMCV().addEventListener('pointerdown', e=>{
 /* ══════════════════════════════════════════
    MAP ẨN 8 — BUBBLE POP
 ══════════════════════════════════════════ */
-const BUBBLE_TIME=60, BUBBLE_KPI=500;
+const BUBBLE_TIME=60, BUBBLE_KPI=50;
 const BUBBLE_COLS=8, BUBBLE_ROWS=10;
 const BUBBLE_COLORS=['#e84040','#4080e8','#40c040','#e8c040','#9040c8','#e88040'];
 const BUBBLE_R=18; // radius of each bubble
 
 let bubbleMode=false, bubbleRAF=null, bubbleLast=0, bubbleElapsed=0;
 let bubbleGrid=[], bubbleShooter={color:'#e84040',angle:-Math.PI/2};
-let bubbleFlying=null, bubbleScore=0, bubbleFx=[];
+let bubbleFlying=null, bubbleScore=0, bubbleFx=[], bubbleStreak=0;
 let bubbleFallTimer=0;
 
 const BBCV=()=>document.getElementById('bubble-canvas');
@@ -5835,7 +5839,7 @@ function enterBubbleMode(){
 }
 
 function initBubble(){
-  bubbleScore=0; bubbleElapsed=0; bubbleFlying=null; bubbleFx=[];
+  bubbleScore=0; bubbleElapsed=0; bubbleFlying=null; bubbleFx=[]; bubbleStreak=0;
   bubbleFallTimer=0;
   // fill top 5 rows with bubbles
   bubbleGrid=[];
@@ -5963,7 +5967,9 @@ function checkBubblePop(row,col){
       bubbleFx.push({x:fx,y:fy,color,t:0,type:'pop'});
       bubbleGrid[r][c]=null;
     });
-    const pts=visited.size*10;
+    bubbleStreak++;
+    // 1 điểm/bóng nổ, liên tiếp 3 lần bắn trúng → x2, 6 lần → x3
+    const pts=visited.size*comboScoreMultiplier(bubbleStreak);
     bubbleScore+=pts;
     score+=pts;
     if(best<score){best=score;}
@@ -5972,6 +5978,8 @@ function checkBubblePop(row,col){
     sfxWaveWin();
     // Drop disconnected (orphaned) bubbles not connected to top row
     dropOrphanedBubbles();
+  } else {
+    bubbleStreak=0;
   }
 }
 
@@ -6015,7 +6023,7 @@ function dropOrphanedBubbles(){
     }
   }
   if(orphanCount>0){
-    const pts=orphanCount*5;
+    const pts=orphanCount*1;
     bubbleScore+=pts; score+=pts;
     if(best<score){best=score;}
     updateScoreUI();
@@ -6164,7 +6172,7 @@ const BLOCK_H=28, BLOCK_BASE_W=180;
 
 let stackMode=false, stackRAF=null, stackLast=0, stackElapsed=0;
 let stackBlocks=[], stackMoving={x:0,w:0,color:'#e84040'};
-let stackDir=1, stackSpeed=80, stackScore=0, stackCount=0;
+let stackDir=1, stackSpeed=80, stackScore=0, stackCount=0, stackPerfectStreak=0;
 let stackCameraY=0, stackFx=[];
 
 const STCV=()=>document.getElementById('stack-canvas');
@@ -6202,7 +6210,7 @@ function enterStackMode(){
 
 function initStack(){
   const cv=STCV(), W=cv.width, H=cv.height;
-  stackScore=0; stackCount=0; stackElapsed=0; stackFx=[]; stackCameraY=0;
+  stackScore=0; stackCount=0; stackElapsed=0; stackFx=[]; stackCameraY=0; stackPerfectStreak=0;
   stackDir=1; stackSpeed=80;
   // base block at bottom
   stackBlocks=[{x:(W-BLOCK_BASE_W)/2, y:H-BLOCK_H, w:BLOCK_BASE_W, color:'#888'}];
@@ -6263,13 +6271,16 @@ function dropStack(){
   stackCount++;
   stackSpeed=80+stackCount*5; // increase speed
 
-  let pts=10;
+  // 1 điểm/tầng xếp được; xếp "perfect" liên tiếp 3 lần → x2, 6 lần → x3
+  let pts=1;
   if(isPerfect){
-    pts+=20;
+    stackPerfectStreak++;
+    pts+=1*comboScoreMultiplier(stackPerfectStreak);
     stackFx.push({x:overlapL+overlapW/2,y:newY,t:0,type:'perfect',vy:-80});
     showComboFlash(0,false,'✨ PERFECT!');
     if(!sfxMuted) sfxStackPerfect();
   } else {
+    stackPerfectStreak=0;
     if(!sfxMuted) sfxStackDrop();
   }
   stackScore+=pts;
@@ -6478,7 +6489,7 @@ function bossLoop(now){
   bossProjectiles=bossProjectiles.filter(p=>{
     if(Math.abs(p.x-bossX)<50 && Math.abs(p.y-bossY)<50){
       bossHP-=10;
-      bossScore+=10; score+=10;
+      bossScore+=1; score+=1; // 1 điểm/lần trúng đòn
       if(best<score){ best=score; }
       updateScoreUI();
       bossFx.push({x:bossX,y:bossY,t:0,type:'hit'});
@@ -6651,13 +6662,13 @@ BOSCV().addEventListener('pointerdown', e=>{
 /* ══════════════════════════════════════════
    MAP ẨN 11 — ANIMAL CATCH 🧺
 ══════════════════════════════════════════ */
-const CATCH_TIME=50, CATCH_KPI=300;
+const CATCH_TIME=50, CATCH_KPI=60;
 const CATCH_GOOD=[
-  {emoji:'🦫',pts:20,color:'#8B6914'},
-  {emoji:'🐰',pts:10,color:'#ff9ac8'},
-  {emoji:'🐢',pts:15,color:'#4a9a40'},
-  {emoji:'🐶',pts:40,color:'#e8e8e8'},
-  {emoji:'🐱',pts:25,color:'#ff9f40'},
+  {emoji:'🦫',pts:4,color:'#8B6914'},
+  {emoji:'🐰',pts:2,color:'#ff9ac8'},
+  {emoji:'🐢',pts:3,color:'#4a9a40'},
+  {emoji:'🐶',pts:8,color:'#e8e8e8'},
+  {emoji:'🐱',pts:5,color:'#ff9f40'},
 ];
 const CATCH_BAD=[
   {emoji:'🦔',color:'#8B4513'},
@@ -6665,7 +6676,7 @@ const CATCH_BAD=[
 ];
 
 let catchMode=false, catchRAF=null, catchLast=0, catchElapsed=0;
-let catchAnimals=[], catchBasketX=180, catchLives=3, catchScore=0;
+let catchAnimals=[], catchBasketX=180, catchLives=3, catchScore=0, catchStreak=0;
 let catchFx=[], catchSpawnTimer=0;
 
 const CATCV=()=>document.getElementById('catch-canvas');
@@ -6703,7 +6714,7 @@ function enterCatchMode(){
 
 function initCatch(){
   const cv=CATCV();
-  catchAnimals=[]; catchFx=[]; catchScore=0; catchElapsed=0;
+  catchAnimals=[]; catchFx=[]; catchScore=0; catchElapsed=0; catchStreak=0;
   catchLives=3; catchSpawnTimer=0;
   catchBasketX=cv.width/2;
 }
@@ -6750,19 +6761,23 @@ function catchLoop(now){
     if(a.y>=basketY-basketH/2 && a.y<=basketY+basketH && Math.abs(a.x-catchBasketX)<basketW/2+26){
       if(a.isBad){
         catchLives--;
+        catchStreak=0;
         catchFx.push({x:a.x,y:basketY,t:0,type:'bad'});
         sfxPenalty();
         if(!sfxMuted) sfxDogStung();
       } else {
-        catchScore+=a.pts; score+=a.pts;
+        catchStreak++;
+        // liên tiếp bắt trúng 3 lần → x2, 6 lần → x3
+        const pts=a.pts*comboScoreMultiplier(catchStreak);
+        catchScore+=pts; score+=pts;
         if(best<score) best=score;
         updateScoreUI();
-        catchFx.push({x:a.x,y:basketY,t:0,type:'good',pts:a.pts});
+        catchFx.push({x:a.x,y:basketY,t:0,type:'good',pts});
         if(!sfxMuted) sfxCatchGood();
       }
       return false;
     }
-    if(a.y>H+30){ if(!sfxMuted) sfxCatchMiss(); return false; }
+    if(a.y>H+30){ catchStreak=0; if(!sfxMuted) sfxCatchMiss(); return false; }
     return true;
   });
 
@@ -7010,13 +7025,13 @@ function doFlood(newColorIdx){
   // Check win
   const flooded=countFlooded();
   if(flooded>=FLOOD_GRID_SIZE*FLOOD_GRID_SIZE){
-    const bonus=200+floodMoves*20;
+    const bonus=20+floodMoves*2;
     floodScore=bonus; score+=bonus;
     if(best<score) best=score;
     updateScoreUI();
     floodDone(true);
   } else if(floodMoves<=0){
-    const partial=Math.floor((flooded/100)*100);
+    const partial=Math.floor(flooded/5);
     floodScore=partial; score+=partial;
     if(best<score) best=score;
     updateScoreUI();
@@ -7148,13 +7163,13 @@ FLCV().addEventListener('pointerdown', e=>{
 /* ══════════════════════════════════════════
    MAP ẨN 13 — SURVIVAL ARENA 🌊
 ══════════════════════════════════════════ */
-const ARENA_TIME=90, ARENA_KPI=1000;
+const ARENA_TIME=90, ARENA_KPI=150;
 const ARENA_WAVE_TIMES=[0,20,40,60];
 
 let arenaMode=false, arenaRAF=null, arenaLast=0, arenaElapsed=0;
 let arenaDogX=180, arenaDogY=380, arenaDogLives=5;
 let arenaInvincible=0, arenaBees=[], arenaCarrots=[], arenaSnake={x:180,y:80,hp:100,vx:80,fireTimer:0};
-let arenaVenom=[], arenaFx=[], arenaScore=0, arenaWave=0;
+let arenaVenom=[], arenaFx=[], arenaScore=0, arenaWave=0, arenaKillStreak=0;
 let arenaSpawnTimer=0, arenaCarrotTimer=0, arenaWaveFlash=0, arenaWaveFlashText='';
 let arenaPointerX=null, arenaPointerY=null;
 let arenaPetals=[];
@@ -7196,7 +7211,7 @@ function initArena(){
   arenaDogX=cv.width/2; arenaDogY=cv.height-80;
   arenaDogLives=5; arenaInvincible=0;
   arenaBees=[]; arenaCarrots=[]; arenaVenom=[]; arenaFx=[];
-  arenaScore=0; arenaElapsed=0; arenaWave=0;
+  arenaScore=0; arenaElapsed=0; arenaWave=0; arenaKillStreak=0;
   arenaSpawnTimer=0; arenaCarrotTimer=0;
   arenaWaveFlash=0; arenaWaveFlashText='';
   arenaSnake={x:cv.width/2,y:80,hp:100,vx:80,fireTimer:0};
@@ -7247,7 +7262,7 @@ function arenaLoop(now){
   arenaWaveFlash=Math.max(0,arenaWaveFlash-dt);
 
   // Score per second
-  arenaScore+=10*dt; score+=10*dt;
+  arenaScore+=1*dt; score+=1*dt; // 1 điểm/giây sống sót
   if(best<score) best=score;
 
   // Invincibility countdown
@@ -7313,7 +7328,7 @@ function arenaLoop(now){
   if(arenaInvincible<=0){
     arenaBees=arenaBees.filter(b=>{
       if(Math.hypot(b.x-arenaDogX,b.y-arenaDogY)<28){
-        arenaDogLives--; arenaInvincible=2;
+        arenaDogLives--; arenaInvincible=2; arenaKillStreak=0;
         arenaFx.push({x:arenaDogX,y:arenaDogY,t:0,type:'dmg'});
         sfxDogStung(); return false;
       }
@@ -7323,7 +7338,7 @@ function arenaLoop(now){
     if(arenaInvincible<=0){
       arenaCarrots=arenaCarrots.filter(c=>{
         if(Math.hypot(c.x-arenaDogX,c.y-arenaDogY)<28){
-          arenaDogLives--; arenaInvincible=2;
+          arenaDogLives--; arenaInvincible=2; arenaKillStreak=0;
           arenaFx.push({x:arenaDogX,y:arenaDogY,t:0,type:'dmg'});
           sfxDogStung(); return false;
         }
@@ -7334,7 +7349,7 @@ function arenaLoop(now){
     if(arenaInvincible<=0){
       arenaVenom=arenaVenom.filter(v=>{
         if(Math.hypot(v.x-arenaDogX,v.y-arenaDogY)<24){
-          arenaDogLives--; arenaInvincible=2;
+          arenaDogLives--; arenaInvincible=2; arenaKillStreak=0;
           arenaFx.push({x:arenaDogX,y:arenaDogY,t:0,type:'dmg'});
           sfxDogStung(); return false;
         }
@@ -7509,9 +7524,12 @@ ARCV().addEventListener('pointerdown', e=>{
   const ty=(e.clientY-rect.top)*(cv.height/rect.height);
   arenaPointerX=tx; arenaPointerY=ty;
   // Tap bees to kill
+  // 1 điểm/lần hạ gục, liên tiếp 3 lần → x2, 6 lần → x3
   arenaBees=arenaBees.filter(b=>{
     if(Math.hypot(b.x-tx,b.y-ty)<28){
-      arenaScore+=15; score+=15; if(best<score) best=score;
+      arenaKillStreak++;
+      const pts=1*comboScoreMultiplier(arenaKillStreak);
+      arenaScore+=pts; score+=pts; if(best<score) best=score;
       arenaFx.push({x:b.x,y:b.y,t:0,type:'kill'});
       if(!sfxMuted) sfxArenaKill(); return false;
     }
@@ -7520,7 +7538,9 @@ ARCV().addEventListener('pointerdown', e=>{
   // Tap carrots to kill
   arenaCarrots=arenaCarrots.filter(c=>{
     if(Math.hypot(c.x-tx,c.y-ty)<28){
-      arenaScore+=15; score+=15; if(best<score) best=score;
+      arenaKillStreak++;
+      const pts=1*comboScoreMultiplier(arenaKillStreak);
+      arenaScore+=pts; score+=pts; if(best<score) best=score;
       arenaFx.push({x:c.x,y:c.y,t:0,type:'kill'});
       if(!sfxMuted) sfxArenaKill(); return false;
     }
@@ -7529,10 +7549,13 @@ ARCV().addEventListener('pointerdown', e=>{
   // Tap snake boss
   if((arenaWave===2||arenaWave===3)&&arenaSnake&&arenaSnake.hp>0){
     if(Math.hypot(arenaSnake.x-tx,arenaSnake.y-ty)<40){
-      arenaSnake.hp-=20; arenaScore+=10; score+=10; if(best<score) best=score;
+      arenaSnake.hp-=20;
+      arenaKillStreak++;
+      const hitPts=1*comboScoreMultiplier(arenaKillStreak);
+      arenaScore+=hitPts; score+=hitPts; if(best<score) best=score;
       arenaFx.push({x:arenaSnake.x,y:arenaSnake.y,t:0,type:'hit'});
       if(arenaSnake.hp<=0){
-        arenaScore+=50; score+=50; if(best<score) best=score;
+        arenaScore+=5; score+=5; if(best<score) best=score;
         arenaFx.push({x:arenaSnake.x,y:arenaSnake.y,t:0,type:'kill'});
       }
       if(!sfxMuted) sfxArenaKill();
@@ -8426,7 +8449,7 @@ function snakeLoop(now){
     // check food
     if(nx===snakeFood.x&&ny===snakeFood.y){
       snakeFoodCount++;
-      const pts=snakeFood.special?30:10;
+      const pts=snakeFood.special?3:1;
       snakeScore+=pts;
       score+=pts; if(best<score) best=score;
       snakeFx.push({x:SNAKE_OX+nx*SNAKE_CELL+SNAKE_CELL/2, y:SNAKE_OY+ny*SNAKE_CELL, t:0, text:'+'+pts, special:snakeFood.special});
@@ -8844,9 +8867,8 @@ function brickLoop(now){
           brickCombo++;
           if(brickComboTimer) clearTimeout(brickComboTimer);
           brickComboTimer=setTimeout(()=>{ brickCombo=0; brickComboTimer=0; document.getElementById('combo-box').textContent=''; },1000);
-          const basePts=b.maxHp===2?30:10;
-          const mul=Math.min(1+(brickCombo-1)*0.2, 3);
-          const pts=Math.round(basePts*mul);
+          const basePts=b.maxHp===2?2:1;
+          const pts=basePts*comboScoreMultiplier(brickCombo);
           brickScore+=pts; score+=pts; if(best<score) best=score;
           brickFx.push({x:b.x+b.w/2,y:b.y+b.h/2,t:0,text:'+'+pts+(brickCombo>1?' x'+brickCombo:'')});
           document.getElementById('combo-box').textContent=brickCombo>1?'🧱 x'+brickCombo:'';
@@ -8854,7 +8876,7 @@ function brickLoop(now){
           if(brickCombo>=3) showComboFlash(0,false,'💥 COMBO x'+brickCombo+'!');
           sfxBrickBreak();
         } else {
-          brickScore+=10; score+=10; if(best<score) best=score;
+          brickScore+=1; score+=1; if(best<score) best=score;
           sfxBallBrick();
         }
         updateScoreUI();
@@ -9048,7 +9070,7 @@ function runnerLoop(now){
 
   runnerElapsed+=dt;
   const timeLeft=Math.max(0,60-runnerElapsed);
-  runnerScore+=dt*10;
+  runnerScore+=dt*1; // 1 điểm/giây chạy được
   runnerSpeed=Math.min(400, 180+runnerElapsed*2);
   runnerScrollX+=runnerSpeed*dt;
 
@@ -9079,7 +9101,7 @@ function runnerLoop(now){
   runnerStars=runnerStars.filter(s=>{
     s.x-=runnerSpeed*0.6*dt;
     if(Math.abs(s.x-80)<20 && Math.abs(s.y-runnerDogY)<24){
-      const pts=5; runnerScore+=pts; score+=pts; if(best<score) best=score;
+      const pts=1; runnerScore+=pts; score+=pts; if(best<score) best=score;
       runnerFx.push({x:s.x,y:s.y,t:0,text:'+'+pts});
       sfxRunnerStar(); updateScoreUI(); return false;
     }
@@ -9377,7 +9399,7 @@ function spaceLoop(){
         if(Math.abs(b.x-a.x)<20&&Math.abs(b.y-a.y)<20){
           s.bullets.splice(bi,1);
           s.aliens.splice(ai,1);
-          s.score+=10;
+          s.score+=1; // 1 điểm/quái tiêu diệt
           sfxSpaceHit();
           break;
         }
@@ -9490,6 +9512,7 @@ function spaceLoop(){
 function exitSpaceToMain(){
   spaceMode=false;
   if(spaceRAF){cancelAnimationFrame(spaceRAF);spaceRAF=null;}
+  if(spaceState.score){ score+=spaceState.score; if(score>best) best=score; updateScoreUI(); }
   SPC().classList.remove('active');
   document.getElementById('grid').style.display='';
   document.getElementById('pieces-area').style.display='';
@@ -9579,7 +9602,8 @@ function initRhythmGame(){
     spawnInterval:90,
     expandSpeed:0.8,
     maxRadius:55,
-    ringWidth:12
+    ringWidth:12,
+    streak:0
   };
   rhythmStars=[];
   for(let i=0;i<40;i++){
@@ -9628,9 +9652,10 @@ function rhythmTap(tx,ty){
     if(dist<c.baseRadius+s.ringWidth*2){
       const diff=Math.abs(c.ringRadius-c.baseRadius);
       let pts=0, label='';
-      if(diff<8){ pts=30; label='PERFECT!'; sfxRhythmPerfect(); }
-      else if(diff<20){ pts=15; label='GOOD'; sfxRhythmGood(); }
-      else { pts=0; label='MISS'; sfxRhythmMiss(); }
+      // 1 điểm/nhịp trúng cơ bản, PERFECT gấp đôi; liên tiếp trúng 3 lần → x2, 6 lần → x3
+      if(diff<8){ s.streak++; pts=2*comboScoreMultiplier(s.streak); label='PERFECT!'; sfxRhythmPerfect(); }
+      else if(diff<20){ s.streak++; pts=1*comboScoreMultiplier(s.streak); label='GOOD'; sfxRhythmGood(); }
+      else { s.streak=0; pts=0; label='MISS'; sfxRhythmMiss(); }
       s.score+=pts;
       s.feedbacks.push({x:tx,y:ty,text:label,life:60,pts});
       s.circles.splice(i,1);
@@ -9670,6 +9695,7 @@ function rhythmLoop(){
       if(c.ringRadius>s.maxRadius||c.life<=0){
         s.circles.splice(i,1);
         s.completed++;
+        s.streak=0;
         sfxRhythmMiss();
         s.feedbacks.push({x:c.x,y:c.y,text:'MISS',life:45,pts:0});
       }
@@ -9725,7 +9751,7 @@ function rhythmLoop(){
     ctx.fillText('🎵 HOÀN THÀNH!',W/2,H/2-30);
     ctx.fillStyle='#ffffff';
     ctx.font='18px monospace';
-    ctx.fillText('Điểm: '+s.score+' / 600',W/2,H/2+10);
+    ctx.fillText('Điểm: '+s.score+' / 60',W/2,H/2+10);
     setTimeout(()=>exitRhythmToMain(),3000);
     s.won=false; s.gameOver=true;
   }
@@ -9735,6 +9761,7 @@ function rhythmLoop(){
 function exitRhythmToMain(){
   rhythmMode=false;
   if(rhythmRAF){cancelAnimationFrame(rhythmRAF);rhythmRAF=null;}
+  if(rhythmState.score){ score+=rhythmState.score; if(score>best) best=score; updateScoreUI(); }
   RHY().classList.remove('active');
   document.getElementById('grid').style.display='';
   document.getElementById('pieces-area').style.display='';
@@ -10141,7 +10168,7 @@ function megaLoop(){
         s.bullets.splice(i,1);
         boss.hp--;
         boss.flashTimer=6;
-        s.score+=2;
+        s.score+=1; // 1 điểm/lần trúng đòn
         if(boss.hp<=0){
           s.won=true; megaWon=true;
           sfxMazeSolve();
@@ -10292,6 +10319,7 @@ function megaLoop(){
 function exitMegaToMain(){
   megaMode=false;
   if(megaRAF){cancelAnimationFrame(megaRAF);megaRAF=null;}
+  if(megaState.score){ score+=megaState.score; if(score>best) best=score; updateScoreUI(); }
   MGC().classList.remove('active');
   document.getElementById('grid').style.display='';
   document.getElementById('pieces-area').style.display='';
