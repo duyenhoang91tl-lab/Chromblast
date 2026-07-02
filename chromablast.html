@@ -2841,9 +2841,11 @@ function onSCClick(e){
   // Đạt đủ điểm trong ván map ẩn 1 → thắng, mở map ẩn 2 (timeout giờ chỉ còn là thua, không tự thắng nữa)
   if(secret1Gained>=TEST_UNLOCK_SCORE){
     clearSecretTimer();
-    secretMode=false;
+    sfxWaveWin();
+    showComboFlash(0,false,'🏆 '+secret1Gained+' điểm! THẮNG!');
     setTimeout(()=>{
-      dropSecretTiles();
+      exitSecretMode(); // trả về màn hình chính — trước đây chỉ tắt secretMode mà không ẩn bàn cờ ẩn,
+                         // khiến thanh thời gian đứng yên (đầy) và toàn bộ ô không bấm được nữa
       startUnlockGate(0);
     }, 310);
     return;
