@@ -1460,6 +1460,43 @@ let secretMissStreak = 0;  // đếm số lần bấm sai liên tiếp
 let borderSparkInterval = null; // continuous outward sparks during secret mode
 let fireInterval = null; // fire border particles for Map ẩn 1 combo
 
+/* ══════════════════════════════════════════
+   BGM ENGINE - Nhạc nền tổng hợp theo chủ đề
+══════════════════════════════════════════ */
+let bgmInterval = null;
+let bgmStep = 0;
+let bgmCurrentTheme = null;
+const NOTES = {
+  C4: 261.63, E4: 329.63, G4: 392.00, B4: 493.88,
+  A3: 220.00, D4: 293.66, F4: 349.23, C5: 523.25,
+  G3: 196.00, B3: 246.94, E3: 164.81, A4: 440.00
+};
+const BGM_THEMES = {
+  'main': [NOTES.C4, NOTES.E4, NOTES.G4, NOTES.E4, NOTES.B4, NOTES.G4, NOTES.E4, NOTES.G4],
+  'action': [NOTES.A3, NOTES.C4, NOTES.E4, NOTES.A3, NOTES.D4, NOTES.F4, NOTES.A3, NOTES.E4],
+  'space': [NOTES.G3, NOTES.D4, NOTES.G3, NOTES.C5, NOTES.G3, NOTES.B4, NOTES.G3, NOTES.A4],
+  'mystery': [NOTES.E3, NOTES.G3, NOTES.B3, NOTES.E4, NOTES.G3, NOTES.B3, NOTES.D4, NOTES.B3]
+};
+function startBgm(type) {
+  if(bgmCurrentTheme===type && bgmInterval) return; // đã phát đúng nhạc nền này rồi, khỏi khởi động lại (tránh giật nhịp)
+  stopBgm();
+  bgmCurrentTheme=type;
+  if (sfxMuted) return;
+  bgmStep = 0;
+  const melody = BGM_THEMES[type] || BGM_THEMES['main'];
+  const tempo = (type === 'action') ? 250 : 450;
+  bgmInterval = setInterval(() => {
+    if (sfxMuted) return;
+    const freq = melody[bgmStep % melody.length];
+    playTone(freq, 'triangle', 0.5, 0.04);
+    bgmStep++;
+  }, tempo);
+}
+function stopBgm() {
+  if (bgmInterval) { clearInterval(bgmInterval); bgmInterval = null; }
+  bgmCurrentTheme = null;
+}
+
 /* ══════════════════════════════════════════════
    SOUND ENGINE — Web Audio API synthesized sounds
 ══════════════════════════════════════════════ */
@@ -2406,6 +2443,7 @@ function enterSecretMode(){
   unlockAchievement('secret1');
   endDrag();
   sfxUnlock();
+  startBgm('mystery');
   secretMode=true;
   secretStreak=0;
   secretMultiplier=1;
@@ -2445,6 +2483,7 @@ function enterSecretMode(){
 
 function exitSecretMode(){
   secretMode=false;
+  startBgm('main');
   document.getElementById('secret-hearts').style.display='none';
   if(borderSparkInterval){ clearInterval(borderSparkInterval); borderSparkInterval=null; }
   if(fireInterval){ clearInterval(fireInterval); fireInterval=null; }
@@ -2915,6 +2954,7 @@ function triggerDodgeUnlock(){
 function enterDodgeMode(){
   endDrag();
   sfxUnlock();
+  startBgm('space');
   secretMode=false; clearSecretTimer();
   // dọn UI map ẩn 1
   const sg=document.getElementById('secret-grid');
@@ -3559,6 +3599,7 @@ function dodgeGameOver(){
 
 function exitDodgeToMain(){
   dodgeMode=false;
+  startBgm('main');
   if(dodgeRAF){ cancelAnimationFrame(dodgeRAF); dodgeRAF=null; }
   DCV().classList.remove('active');
   document.getElementById('dodge-controls').classList.remove('active');
@@ -3675,6 +3716,7 @@ function triggerFruitUnlock(){
 function enterFruitMode(){
   endDrag();
   sfxUnlock();
+  startBgm('action');
   document.getElementById('grid').style.display='none';
   document.getElementById('pieces-area').style.display='none';
   document.getElementById('hint-bar').style.display='';
@@ -4122,6 +4164,7 @@ function fruitGameOver(success, msg){
 
 function exitFruitToMain(){
   fruitMode=false;
+  startBgm('main');
   if(fruitRAF){ cancelAnimationFrame(fruitRAF); fruitRAF=null; }
   FCV().classList.remove('active');
   document.getElementById('grid').style.display='';
@@ -4219,6 +4262,7 @@ function triggerBeeUnlock(){
 function enterBeeMode(){
   endDrag();
   sfxUnlock();
+  startBgm('action');
   document.getElementById('grid').style.display='none';
   document.getElementById('pieces-area').style.display='none';
   document.getElementById('hint-bar').style.display='';
@@ -4835,6 +4879,7 @@ function beeGameOver(){
 
 function exitBeeToMain(){
   beeMode=false;
+  startBgm('main');
   if(beeRAF){ cancelAnimationFrame(beeRAF); beeRAF=null; }
   BCV().classList.remove('active');
   document.getElementById('bee-hearts').style.display='none';
@@ -4987,6 +5032,7 @@ function triggerGoldUnlock(){
 function enterGoldMode(){
   endDrag();
   sfxUnlock();
+  startBgm('main');
   document.getElementById('grid').style.display='none';
   document.getElementById('pieces-area').style.display='none';
   document.getElementById('hint-bar').style.display='';
@@ -5349,6 +5395,7 @@ function goldGameOver(kpiMet, msg){
 
 function exitGoldToMain(){
   goldMode=false;
+  startBgm('main');
   if(goldRAF){ cancelAnimationFrame(goldRAF); goldRAF=null; }
   GCV().classList.remove('active');
   document.getElementById('grid').style.display='';
@@ -5456,6 +5503,7 @@ function triggerMoleUnlock(){
 function enterMoleMode(){
   endDrag();
   sfxUnlock();
+  startBgm('action');
   document.getElementById('grid').style.display='none';
   document.getElementById('pieces-area').style.display='none';
   document.getElementById('hint-bar').style.display='';
@@ -5778,6 +5826,7 @@ function moleDone(){
 
 function exitMoleToMain(){
   moleMode=false;
+  startBgm('main');
   if(moleRAF){ cancelAnimationFrame(moleRAF); moleRAF=null; }
   MCV().classList.remove('active');
   document.getElementById('grid').style.display='';
@@ -5846,6 +5895,7 @@ function triggerMemoryUnlock(){
 function enterMemoryMode(){
   endDrag();
   sfxUnlock();
+  startBgm('main');
   document.getElementById('grid').style.display='none';
   document.getElementById('pieces-area').style.display='none';
   document.getElementById('hint-bar').style.display='';
@@ -6071,6 +6121,7 @@ function memoryDone(){
 
 function exitMemoryToMain(){
   memoryMode=false;
+  startBgm('main');
   if(memoryRAF){ cancelAnimationFrame(memoryRAF); memoryRAF=null; }
   MMCV().classList.remove('active');
   document.getElementById('grid').style.display='';
@@ -6126,6 +6177,7 @@ function triggerBubbleUnlock(){
 function enterBubbleMode(){
   endDrag();
   sfxUnlock();
+  startBgm('main');
   document.getElementById('grid').style.display='none';
   document.getElementById('pieces-area').style.display='none';
   document.getElementById('hint-bar').style.display='';
@@ -6443,6 +6495,7 @@ function bubbleDone(won){
 
 function exitBubbleToMain(){
   bubbleMode=false;
+  startBgm('main');
   if(bubbleRAF){ cancelAnimationFrame(bubbleRAF); bubbleRAF=null; }
   BBCV().classList.remove('active');
   document.getElementById('grid').style.display='';
@@ -6514,6 +6567,7 @@ function triggerStackUnlock(){
 function enterStackMode(){
   endDrag();
   sfxUnlock();
+  startBgm('main');
   document.getElementById('grid').style.display='none';
   document.getElementById('pieces-area').style.display='none';
   document.getElementById('hint-bar').style.display='';
@@ -6696,6 +6750,7 @@ function stackDone(won){
 
 function exitStackToMain(){
   stackMode=false;
+  startBgm('main');
   if(stackRAF){ cancelAnimationFrame(stackRAF); stackRAF=null; }
   STCV().classList.remove('active');
   document.getElementById('grid').style.display='';
@@ -6746,6 +6801,7 @@ function triggerBossUnlock(){
 function enterBossMode(){
   endDrag();
   sfxUnlock();
+  startBgm('action');
   document.getElementById('grid').style.display='none';
   document.getElementById('pieces-area').style.display='none';
   document.getElementById('hint-bar').style.display='';
@@ -6961,6 +7017,7 @@ function bossDone(won){
 
 function exitBossToMain(){
   bossMode=false;
+  startBgm('main');
   if(bossRAF){ cancelAnimationFrame(bossRAF); bossRAF=null; }
   BOSCV().classList.remove('active');
   document.getElementById('grid').style.display='';
@@ -7022,6 +7079,7 @@ function triggerCatchUnlock(){
 function enterCatchMode(){
   endDrag();
   sfxUnlock();
+  startBgm('main');
   document.getElementById('grid').style.display='none';
   document.getElementById('pieces-area').style.display='none';
   document.getElementById('hint-bar').style.display='';
@@ -7212,6 +7270,7 @@ function catchDone(won){
 
 function exitCatchToMain(){
   catchMode=false;
+  startBgm('main');
   if(catchRAF){ cancelAnimationFrame(catchRAF); catchRAF=null; }
   CATCV().classList.remove('active');
   document.getElementById('grid').style.display='';
@@ -7268,6 +7327,7 @@ function triggerFloodUnlock(){
 function enterFloodMode(){
   endDrag();
   sfxUnlock();
+  startBgm('main');
   document.getElementById('grid').style.display='none';
   document.getElementById('pieces-area').style.display='none';
   document.getElementById('hint-bar').style.display='';
@@ -7468,6 +7528,7 @@ function floodDone(won){
 
 function exitFloodToMain(){
   floodMode=false;
+  startBgm('main');
   if(floodRAF){ cancelAnimationFrame(floodRAF); floodRAF=null; }
   FLCV().classList.remove('active');
   document.getElementById('grid').style.display='';
@@ -7533,6 +7594,7 @@ function triggerArenaUnlock(){
 function enterArenaMode(){
   endDrag();
   sfxUnlock();
+  startBgm('action');
   document.getElementById('grid').style.display='none';
   document.getElementById('pieces-area').style.display='none';
   document.getElementById('hint-bar').style.display='';
@@ -7833,6 +7895,7 @@ function arenaDone(won){
 
 function exitArenaToMain(){
   arenaMode=false;
+  startBgm('main');
   if(arenaRAF){ cancelAnimationFrame(arenaRAF); arenaRAF=null; }
   ARCV().classList.remove('active');
   document.getElementById('grid').style.display='';
@@ -8047,6 +8110,9 @@ function showPraise(level){
   el.textContent=PRAISE[i]+'!';
   el.style.color=c;
 
+  // Lồng tiếng
+  speakPraise(level);
+
   // Font size: nhỏ ở NOT BAD, siêu to ở GODLIKE
   const base=22+i*9;  // 22 → 94px
   const maxW=(document.getElementById('grid-wrap').clientWidth||360)*0.88;
@@ -8086,6 +8152,23 @@ function showComboCountFlash(n){
   el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
 }
 
+// Lồng tiếng câu khen bằng giọng tổng hợp của trình duyệt — cao độ/tốc độ tăng dần theo cấp khen
+function speakPraise(level) {
+  if (typeof sfxMuted !== 'undefined' && sfxMuted) return;
+  if (!('speechSynthesis' in window)) return;
+  try {
+    const i = pIdx(level);
+    const text = PRAISE[i];
+    window.speechSynthesis.cancel();
+    const msg = new SpeechSynthesisUtterance(text);
+    msg.lang = 'en-US';
+    msg.pitch = 0.8 + (i * 0.1);
+    msg.rate = 1.0 + (i * 0.05);
+    msg.volume = 0.6;
+    window.speechSynthesis.speak(msg);
+  } catch(e) {}
+}
+
 function showComboFlash(n, isColor, customText){
   const el=document.getElementById('combo-flash');
   el.style.color=''; el.style.fontSize=''; el.style.textShadow='';   // reset về kiểu mặc định
@@ -8109,6 +8192,7 @@ function showHint(msg){
    START / RESTART
 ══════════════════════════════════════════ */
 function startGame(){
+  startBgm('main');
   // Reset achievements for new game session
   Object.values(ACHIEVEMENTS).forEach(a=>{ a.done=false; });
   fruitSlicedTotal=0; survive60Unlocked=false;
@@ -8341,6 +8425,7 @@ function togglePause(){
     overlay.style.display = 'flex';
     btn.textContent = '▶';
     stopRhythmBgm();
+    stopBgm();
     if(dodgeRAF){ cancelAnimationFrame(dodgeRAF); dodgeRAF=null; }
     if(fruitRAF){ cancelAnimationFrame(fruitRAF); fruitRAF=null; }
     if(beeRAF){   cancelAnimationFrame(beeRAF);   beeRAF=null;   }
@@ -8382,10 +8467,11 @@ function togglePause(){
     if(typeof brickMode!=='undefined'&&brickMode)   { brickLast=0;brickRAF=requestAnimationFrame(brickLoop);}
     if(typeof runnerMode!=='undefined'&&runnerMode) { runnerLast=0;runnerRAF=requestAnimationFrame(runnerLoop);}
     if(typeof spaceMode!=='undefined'&&spaceMode)   { spaceLast=0; spaceRAF=requestAnimationFrame(spaceLoop);}
-    if(typeof rhythmMode!=='undefined'&&rhythmMode) { rhythmLast=0;rhythmRAF=requestAnimationFrame(rhythmLoop); startRhythmBgm(); }
+    if(typeof rhythmMode!=='undefined'&&rhythmMode) { rhythmLast=0;rhythmRAF=requestAnimationFrame(rhythmLoop); }
     if(typeof mazeMode!=='undefined'&&mazeMode)     { mazeLast=0;  mazeRAF=requestAnimationFrame(mazeLoop);}
     if(typeof megaMode!=='undefined'&&megaMode)     { megaLast=0;  megaRAF=requestAnimationFrame(megaLoop);}
     if(secretMode) { resetSecretTimer(); }
+    resumeContextBgm();
   }
 }
 
@@ -8761,10 +8847,20 @@ initAuthScreen();
 initAdminPanel();
 initAccountPanel();
 initStartScreen();
+// Chọn đúng nhạc nền theo map đang chơi — dùng khi bật lại âm thanh hoặc thoát tạm dừng
+function resumeContextBgm(){
+  if(rhythmMode){ startRhythmBgm(); return; }
+  stopRhythmBgm();
+  if(secretMode) startBgm('mystery');
+  else if(dodgeMode||spaceMode||mazeMode) startBgm('space');
+  else if(fruitMode||beeMode||moleMode||bossMode||arenaMode||snakeMode||runnerMode||megaMode) startBgm('action');
+  else startBgm('main');
+}
 document.getElementById('mute-btn').addEventListener('click',function(){
   sfxMuted=!sfxMuted;
   this.textContent=sfxMuted?'🔇':'🔊';
-  if(!sfxMuted){ sfxPlacePiece(); }
+  if(sfxMuted){ stopBgm(); stopRhythmBgm(); }
+  else { sfxPlacePiece(); resumeContextBgm(); }
 });
 document.getElementById('pause-btn').addEventListener('click', togglePause);
 document.getElementById('resume-btn').addEventListener('click', togglePause);
@@ -8808,6 +8904,7 @@ function placeSnakeFood(){
 function enterSnakeMode(){
   endDrag();
   sfxUnlock();
+  startBgm('action');
   document.getElementById('grid').style.display='none';
   document.getElementById('pieces-area').style.display='none';
   SCV().classList.add('active');
@@ -9116,6 +9213,7 @@ function snakeDone(won){
 
 function exitSnakeToMain(){
   snakeMode=false;
+  startBgm('main');
   if(snakeRAF){ cancelAnimationFrame(snakeRAF); snakeRAF=null; }
   SCV().classList.remove('active');
   document.getElementById('grid').style.display='';
@@ -9192,6 +9290,7 @@ function initBricks(){
 function enterBrickMode(){
   endDrag();
   sfxUnlock();
+  startBgm('main');
   document.getElementById('grid').style.display='none';
   document.getElementById('pieces-area').style.display='none';
   BrCV().classList.add('active');
@@ -9379,6 +9478,7 @@ function brickDone(won){
 
 function exitBrickToMain(){
   brickMode=false;
+  startBgm('main');
   brickCombo=0; if(brickComboTimer){clearTimeout(brickComboTimer); brickComboTimer=0;}
   if(brickRAF){ cancelAnimationFrame(brickRAF); brickRAF=null; }
   BrCV().classList.remove('active');
@@ -9433,6 +9533,7 @@ function triggerRunnerUnlock(){
 function enterRunnerMode(){
   endDrag();
   sfxUnlock();
+  startBgm('action');
   document.getElementById('grid').style.display='none';
   document.getElementById('pieces-area').style.display='none';
   RuCV().classList.add('active');
@@ -9627,6 +9728,7 @@ function runnerDone(won){
 
 function exitRunnerToMain(){
   runnerMode=false;
+  startBgm('main');
   if(runnerRAF){ cancelAnimationFrame(runnerRAF); runnerRAF=null; }
   RuCV().classList.remove('active');
   document.getElementById('grid').style.display='';
@@ -9668,6 +9770,7 @@ function triggerSpaceUnlock(){
 
 function enterSpaceMode(){
   endDrag(); sfxUnlock();
+  startBgm('space');
   document.getElementById('grid').style.display='none';
   document.getElementById('pieces-area').style.display='none';
   document.getElementById('hint-bar').textContent='Di chuyển ngón tay → tàu theo! Chạm để bắn, hoặc bật Tự bắn ở góc trái!';
@@ -9958,6 +10061,7 @@ function spaceLoop(){
 
 function exitSpaceToMain(){
   spaceMode=false;
+  startBgm('main');
   if(spaceRAF){cancelAnimationFrame(spaceRAF);spaceRAF=null;}
   if(!spaceWon) forfeitHiddenMapScore();
   else if(spaceState.score){ score+=spaceState.score; if(score>best) best=score; updateScoreUI(); }
@@ -10050,6 +10154,7 @@ function enterRhythmMode(){
   document.getElementById('mode-badge').classList.add('secret');
   RHY().classList.add('active');
   rhythmMode=true; rhythmWon=false;
+  stopBgm();
   startRhythmBgm();
   initRhythmGame();
 }
@@ -10234,6 +10339,7 @@ function rhythmLoop(){
 function exitRhythmToMain(){
   rhythmMode=false;
   stopRhythmBgm();
+  startBgm('main');
   if(rhythmRAF){cancelAnimationFrame(rhythmRAF);rhythmRAF=null;}
   if(rhythmState.score){ score+=rhythmState.score; if(score>best) best=score; updateScoreUI(); }
   RHY().classList.remove('active');
@@ -10266,6 +10372,7 @@ function triggerMazeUnlock(){
 
 function enterMazeMode(){
   endDrag(); sfxUnlock();
+  startBgm('space');
   document.getElementById('grid').style.display='none';
   document.getElementById('pieces-area').style.display='none';
   document.getElementById('hint-bar').textContent='Vuốt hoặc phím mũi tên để di chuyển qua mê cung!';
@@ -10492,6 +10599,7 @@ function mazeLoop(){
 
 function exitMazeToMain(){
   mazeMode=false;
+  startBgm('main');
   if(mazeRAF){cancelAnimationFrame(mazeRAF);mazeRAF=null;}
   MZC().classList.remove('active');
   document.getElementById('grid').style.display='';
@@ -10561,6 +10669,7 @@ function triggerMegaUnlock(){
 
 function enterMegaMode(){
   endDrag(); sfxUnlock();
+  startBgm('action');
   document.getElementById('grid').style.display='none';
   document.getElementById('pieces-area').style.display='none';
   document.getElementById('hint-bar').textContent='Di chuyển ngón → né đạn! Tự bắn! Hạ gục Rồng!';
@@ -10844,6 +10953,7 @@ function megaLoop(){
 
 function exitMegaToMain(){
   megaMode=false;
+  startBgm('main');
   if(megaRAF){cancelAnimationFrame(megaRAF);megaRAF=null;}
   if(megaWon){ markMapCleared('mega'); if(megaState.score){ score+=megaState.score; if(score>best) best=score; updateScoreUI(); } }
   MGC().classList.remove('active');
