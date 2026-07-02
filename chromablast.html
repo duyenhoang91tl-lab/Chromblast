@@ -5646,8 +5646,8 @@ function tapMole(ex,ey){
   moleHammerX=ex; moleHammerY=ey; moleHammerVis=true; moleHammerAnim=1;
   let hit=false;
   for(const h of moleHoles){
-    // hittable ngay khi con thú đã bay lên gần hết khỏi ô (>=80%), không cần đợi đúng 100%
-    if(!h.animal || h.fallT>=0 || h.hit || h.riseT<0.8) continue;
+    // chỉ hittable khi con thú đã bay lên đúng 100% ra khỏi hố
+    if(!h.animal || h.fallT>=0 || h.hit || h.riseT<1) continue;
     const rise=moleRise(h);
     const yOff=(1-rise)*h.r*1.8;
     const hx=h.x, hy=h.y-yOff;
@@ -5788,8 +5788,8 @@ function drawMole(ctx,W,H,now,timeLeft){
 
     ctx.restore();
 
-    // hiện viền sáng có thể đập khi đã bay lên gần hết (>=80%)
-    if(h.riseT>=0.8 && h.fallT<0 && !h.hit){
+    // hiện viền sáng có thể đập khi đã bay lên đúng 100%
+    if(h.riseT>=1 && h.fallT<0 && !h.hit){
       const pulse=0.55+0.45*Math.sin(now*0.008);
       ctx.save();
       ctx.shadowColor=h.animal.pts>0?'rgba(255,230,60,0.9)':'rgba(255,80,80,0.9)';
