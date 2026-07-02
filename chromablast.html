@@ -8906,6 +8906,8 @@ function enterSnakeMode(){
   document.getElementById('grid').style.display='none';
   document.getElementById('pieces-area').style.display='none';
   SCV().classList.add('active');
+  // nâng độ phân giải canvas lên 2× (720×920) — CSS giữ nguyên kích thước hiển thị nên hình nét hơn hẳn
+  SCV().width=720; SCV().height=920;
   document.getElementById('mode-badge').textContent='🐍 MAP ẨN 14';
   document.getElementById('mode-badge').classList.add('secret');
   document.getElementById('burst-count').textContent='🐍 Dài: 3/20';
@@ -8927,8 +8929,11 @@ function snakeLoop(now){
   if(!snakeMode){ snakeRAF=null; return; }
   const dt=Math.min((now-(snakeLast||now))/1000, 0.08);
   snakeLast=now;
-  const cv=SCV(), W=cv.width, H=cv.height;
+  // Vẽ ở độ phân giải gấp đôi (720×920) rồi scale — nét căng trên màn hình điện thoại,
+  // toạ độ game vẫn giữ nguyên hệ logic 360×460
+  const cv=SCV(), W=360, H=460;
   const ctx=cv.getContext('2d');
+  ctx.setTransform(2,0,0,2,0,0);
 
   snakeMoveTimer+=dt;
   if(snakeMoveTimer>=1/snakeSpeed){
@@ -9074,14 +9079,19 @@ function drawSnake(ctx, W, H, now){
   const grassG=ctx.createLinearGradient(OX,OY,OX,OY+gridH);
   grassG.addColorStop(0,'#4CAF50'); grassG.addColorStop(0.5,'#3d8b3a'); grassG.addColorStop(1,'#2f6e2c');
   ctx.fillStyle=grassG; ctx.fillRect(OX,OY,gridW,gridH);
+  // bàn cờ cỏ hai tông kiểu Snake cổ điển — dễ canh ô, nhìn có chiều sâu hơn
+  ctx.fillStyle='rgba(255,255,255,0.07)';
   for(let r=0;r<SNAKE_ROWS;r++){
     for(let c=0;c<SNAKE_COLS;c++){
-      if((r*SNAKE_COLS+c)%3===0){
-        const sd=r*SNAKE_COLS+c;
-        ctx.fillStyle='rgba(255,255,255,0.05)';
-        ctx.beginPath(); ctx.arc(OX+c*SNAKE_CELL+((sd*7)%(SNAKE_CELL-4))+2, OY+r*SNAKE_CELL+((sd*13)%(SNAKE_CELL-4))+2, 1.4, 0, Math.PI*2); ctx.fill();
-      }
+      if((r+c)%2===0) ctx.fillRect(OX+c*SNAKE_CELL, OY+r*SNAKE_CELL, SNAKE_CELL, SNAKE_CELL);
     }
+  }
+  // vài khóm cỏ nhỏ rải rác cho sinh động
+  ctx.strokeStyle='rgba(255,255,255,0.14)'; ctx.lineWidth=1.2; ctx.lineCap='round';
+  for(let k=0;k<14;k++){
+    const gx=OX+((k*67)%(SNAKE_COLS*SNAKE_CELL-8))+4, gy=OY+((k*113)%(SNAKE_ROWS*SNAKE_CELL-10))+6;
+    ctx.beginPath(); ctx.moveTo(gx,gy+4); ctx.quadraticCurveTo(gx-1,gy+1,gx-2,gy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(gx,gy+4); ctx.quadraticCurveTo(gx+1,gy+1,gx+2,gy-1); ctx.stroke();
   }
   // viền khung hoa văn (hàng rào vườn nhỏ)
   ctx.strokeStyle='rgba(255,255,255,0.5)'; ctx.lineWidth=3;
