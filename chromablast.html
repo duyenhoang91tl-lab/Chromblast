@@ -2838,6 +2838,17 @@ function onSCClick(e){
     secretBoard[gr][gc]=null;
   });
 
+  // Đạt đủ điểm trong ván map ẩn 1 → thắng, mở map ẩn 2 (timeout giờ chỉ còn là thua, không tự thắng nữa)
+  if(secret1Gained>=TEST_UNLOCK_SCORE){
+    clearSecretTimer();
+    secretMode=false;
+    setTimeout(()=>{
+      dropSecretTiles();
+      startUnlockGate(0);
+    }, 310);
+    return;
+  }
+
   // Start/reset timer
   resetSecretTimer();
 
@@ -2869,16 +2880,19 @@ function resetSecretTimer(){
 
   secretTimer=setTimeout(()=>{
     if(secretUltra){
-      // Không bấm kịp trong cửa sổ rút ngắn → tắt lửa, quay về bình thường (không thua, chơi tiếp)
+      // Không bấm kịp trong cửa sổ rút ngắn → tắt lửa + mất chuỗi combo, quay về bình thường (chơi tiếp, không thua)
       secretUltra=false;
+      secretStreak=0; secretMultiplier=1;
       document.getElementById('grid-wrap').classList.remove('ultra-glow');
+      renderStreakDots();
+      updateComboBorderGlow(0);
+      document.getElementById('burst-count').textContent='Nhân: x1';
       resetSecretTimer();
       return;
     }
-    // Hết giờ map ẩn 1 → TEST: luôn mở khoá MAP ẨN 2 ngay (không cần về map thường)
-    // Production sau: nếu đạt điểm mới unlock, không đạt → exitSecretMode()
-    secretMode=false; clearSecretTimer();
-    startUnlockGate(0);
+    // Hết giờ (không bấm kịp) → mất combo, mất lửa, thua ván này → về map thường
+    forfeitHiddenMapScore();
+    exitSecretMode();
   }, windowMs);
 }
 
@@ -8153,19 +8167,56 @@ function showComboCountFlash(n){
 }
 
 // Lồng tiếng câu khen bằng giọng tổng hợp của trình duyệt — cao độ/tốc độ tăng dần theo cấp khen
+// Chọn sẵn 1 giọng đọc "có hồn" hơn giọng mặc định của Chrome/Google — ưu tiên các giọng
+// thường được đánh giá tự nhiên/sinh động hơn (Microsoft/Apple/Google WaveNet…), cache lại
+// vì getVoices() nạp bất đồng bộ và danh sách khác nhau tuỳ máy/trình duyệt.
+let _praiseVoice = undefined; // undefined = chưa tìm; null = không có giọng nào phù hợp (dùng mặc định)
+const PRAISE_VOICE_PREFERENCE = [
+  'Google US English', 'Microsoft Aria', 'Microsoft Jenny', 'Microsoft Guy',
+  'Samantha', 'Alex', 'Daniel', 'Karen', 'Moira', 'Tessa',
+  'Microsoft Zira', 'Microsoft David'
+];
+function pickPraiseVoice(){
+  if(_praiseVoice!==undefined) return _praiseVoice;
+  try{
+    const voices=window.speechSynthesis.getVoices();
+    if(!voices||!voices.length) return null; // chưa nạp xong, thử lại lần gọi sau
+    let best=null;
+    for(const name of PRAISE_VOICE_PREFERENCE){
+      best=voices.find(v=>v.name.includes(name)&&v.lang.startsWith('en'));
+      if(best) break;
+    }
+    if(!best) best=voices.find(v=>v.lang==='en-US'&&!v.default) || voices.find(v=>v.lang.startsWith('en'));
+    _praiseVoice=best||null;
+  }catch(e){ _praiseVoice=null; }
+  return _praiseVoice;
+}
+if(typeof window!=='undefined' && 'speechSynthesis' in window){
+  window.speechSynthesis.onvoiceschanged=()=>{ _praiseVoice=undefined; };
+}
+
+// Web Speech API không hỗ trợ điều khiển "cảm xúc" thật sự (không có SSML/prosody) —
+// nên ta giả lập sự hào hứng bằng cách: chọn giọng sống động hơn mặc định, kéo giãn mạnh
+// cao độ/tốc độ theo cấp khen, và lặp lại 2 lần dồn dập ở các cấp cao nhất (Legendary/Godlike).
 function speakPraise(level) {
   if (typeof sfxMuted !== 'undefined' && sfxMuted) return;
   if (!('speechSynthesis' in window)) return;
   try {
     const i = pIdx(level);
     const text = PRAISE[i];
+    const voice = pickPraiseVoice();
     window.speechSynthesis.cancel();
-    const msg = new SpeechSynthesisUtterance(text);
-    msg.lang = 'en-US';
-    msg.pitch = 0.8 + (i * 0.1);
-    msg.rate = 1.0 + (i * 0.05);
-    msg.volume = 0.6;
-    window.speechSynthesis.speak(msg);
+    const say=(pitchBoost, rateBoost, vol)=>{
+      const msg = new SpeechSynthesisUtterance(text);
+      if(voice) msg.voice = voice;
+      msg.lang = 'en-US';
+      msg.pitch = Math.min(2, 0.85 + i*0.11 + pitchBoost);
+      msg.rate  = Math.min(1.7, 1.0 + i*0.06 + rateBoost);
+      msg.volume = vol;
+      window.speechSynthesis.speak(msg);
+    };
+    say(0, 0, 0.7);
+    if(i>=8) setTimeout(()=>say(0.15, 0.1, 0.75), 260); // hô lại lần 2, dồn dập hơn ở Legendary/Godlike
   } catch(e) {}
 }
 
