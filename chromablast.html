@@ -3349,13 +3349,7 @@ function drawDodge(ctx,W,H){
 
   drawTurtle(ctx,turtle.x,turtle.y,turtle.w,turtle.h,dodgeElapsed*0.001,turtle.vx||0,turtlePanicLevel);
 
-  // HUD
-  ctx.save();
-  ctx.fillStyle='rgba(200,210,255,0.95)';
-  ctx.font='bold 15px system-ui'; ctx.textAlign='left'; ctx.textBaseline='top';
-  ctx.shadowColor='rgba(120,150,255,0.8)'; ctx.shadowBlur=8;
-  ctx.fillText('⏱ '+(dodgeElapsed/1000).toFixed(1)+'s', 12, 10);
-  ctx.restore();
+  drawHudTop(ctx,W,{left:'⏱ '+(dodgeElapsed/1000).toFixed(1)+'s'});
 }
 
 function roundRect(ctx,x,y,w,h,r){
@@ -3367,6 +3361,32 @@ function roundRect(ctx,x,y,w,h,r){
   ctx.arcTo(x,y+h,x,y,r);
   ctx.arcTo(x,y,x+w,y,r);
   ctx.closePath();
+}
+
+// Thanh HUD chuẩn dùng chung cho mọi map ẩn: 1 dải bo góc trên cùng canvas,
+// chữ trắng bold 14px system-ui, tối đa 3 mục trái/giữa/phải, có thể kèm vạch tiến trình.
+function drawHudTop(ctx,W,opts){
+  const barH=26, y=8, x=10, w=W-20;
+  ctx.save();
+  ctx.beginPath(); roundRect(ctx,x,y,w,barH,8);
+  ctx.fillStyle='rgba(0,0,0,0.5)';
+  ctx.fill();
+  if(opts.progress!=null){
+    ctx.save();
+    ctx.beginPath(); roundRect(ctx,x,y,w,barH,8); ctx.clip();
+    ctx.fillStyle=opts.progressColor||'#44dd44';
+    ctx.fillRect(x,y,w*Math.max(0,Math.min(1,opts.progress)),barH);
+    ctx.restore();
+  }
+  ctx.fillStyle='#ffffff';
+  ctx.font='bold 14px system-ui';
+  ctx.textBaseline='middle';
+  ctx.shadowColor='rgba(0,0,0,0.6)'; ctx.shadowBlur=3;
+  const ty=y+barH/2;
+  if(opts.left){ ctx.textAlign='left'; ctx.fillText(opts.left, x+8, ty); }
+  if(opts.center){ ctx.textAlign='center'; ctx.fillText(opts.center, W/2, ty); }
+  if(opts.right){ ctx.textAlign='right'; ctx.fillText(opts.right, x+w-8, ty); }
+  ctx.restore();
 }
 
 function drawTurtle(ctx,x,y,w,h,t=0,vx=0,panicLevel=0){
@@ -4141,15 +4161,7 @@ function drawFruit(ctx,W,H,now){
   }
   ctx.shadowBlur=0;
 
-  // HUD
-  ctx.save();
-  ctx.fillStyle='rgba(230,200,255,0.95)';
-  ctx.font='bold 16px system-ui'; ctx.textAlign='left'; ctx.textBaseline='top';
-  ctx.shadowColor='rgba(180,80,255,0.7)'; ctx.shadowBlur=10;
-  ctx.fillText('⏱ '+Math.ceil(fruitTimeLeft)+'s', 12, 10);
-  ctx.textAlign='right';
-  ctx.fillText('❤️'.repeat(Math.max(0,fruitLives)), W-12, 10);
-  ctx.restore();
+  drawHudTop(ctx,W,{left:'⏱ '+Math.ceil(fruitTimeLeft)+'s', right:'❤️'.repeat(Math.max(0,fruitLives))});
 
   // ── floating "-10" popup khi chém trượt ──
   for(const p of fruitMissPopups){
@@ -5228,15 +5240,7 @@ function drawGold(ctx,W,H,t){
   gmDrawMouse(ctx,t);
   gmDrawParticles(ctx,1/60);
 
-  // HUD
-  ctx.save();
-  ctx.fillStyle='rgba(255,220,120,0.95)';
-  ctx.font='bold 14px system-ui'; ctx.textAlign='left'; ctx.textBaseline='middle';
-  ctx.shadowColor='rgba(255,180,0,0.6)'; ctx.shadowBlur=6;
-  ctx.fillText('💎 '+goldSessionScore, 10, GM_GT/2);
-  ctx.textAlign='right';
-  ctx.fillText('⏱ '+Math.ceil(goldTimeLeft)+'s', W-10, GM_GT/2);
-  ctx.restore();
+  drawHudTop(ctx,W,{left:'💎 '+goldSessionScore, right:'⏱ '+Math.ceil(goldTimeLeft)+'s'});
 }
 
 function gmDrawDirt(ctx,x,y,w,h,r,c){
@@ -5834,23 +5838,9 @@ function drawMole(ctx,W,H,now,timeLeft){
     ctx.restore();
   }
 
-  // timer bar
-  const barW=W*0.7, barX=(W-barW)/2, barY=H*0.05;
   const frac=Math.max(0,timeLeft/MOLE_TIME);
-  ctx.fillStyle='rgba(0,0,0,0.3)';
-  ctx.beginPath(); roundRect(ctx,barX,barY,barW,10,5); ctx.fill();
   const barCol=frac>0.4?'#44dd44':frac>0.2?'#ffaa00':'#ff3333';
-  ctx.fillStyle=barCol;
-  ctx.beginPath(); roundRect(ctx,barX,barY,barW*frac,10,5); ctx.fill();
-  ctx.fillStyle='white'; ctx.font='bold 13px system-ui'; ctx.textAlign='center';
-  ctx.fillText('⏱ '+timeLeft.toFixed(0)+'s', W/2, H*0.085);
-
-  // hearts HUD
-  ctx.save();
-  ctx.font='18px system-ui'; ctx.textAlign='right'; ctx.textBaseline='top';
-  ctx.shadowColor='rgba(0,0,0,0.5)'; ctx.shadowBlur=6;
-  ctx.fillText('❤️'.repeat(Math.max(0,moleLives)), W-12, 10);
-  ctx.restore();
+  drawHudTop(ctx,W,{left:'🔨 '+moleScore+'/'+MOLE_KPI, center:'⏱ '+timeLeft.toFixed(0)+'s', right:'❤️'.repeat(Math.max(0,moleLives)), progress:frac, progressColor:barCol});
 }
 
 function moleDone(forceLose){
@@ -6092,12 +6082,8 @@ function drawMemory(ctx,W,H){
     ctx.restore();
   });
 
-  // Time display at top
   const timeLeft=Math.max(0,MEMORY_TIME-memoryElapsed);
-  ctx.font='bold 18px system-ui'; ctx.textAlign='center'; ctx.textBaseline='top';
-  ctx.fillStyle='#fff'; ctx.shadowColor='rgba(0,0,0,0.5)'; ctx.shadowBlur=4;
-  ctx.fillText('⏱ '+timeLeft.toFixed(0)+'s  🃏 '+memoryMatched+'/6 cặp',W/2,8);
-  ctx.shadowBlur=0;
+  drawHudTop(ctx,W,{left:'⏱ '+timeLeft.toFixed(0)+'s', right:'🃏 '+memoryMatched+'/'+MEMORY_KPI_PAIRS});
 }
 
 let memoryFlipLock=false;
@@ -7005,21 +6991,8 @@ function drawBoss(ctx,W,H){
     ctx.beginPath(); ctx.arc(cx+cr*0.7,cy+4,cr*0.7,0,Math.PI*2); ctx.fill();
   });
 
-  // progress bar (thời gian còn lại)
-  ctx.fillStyle='rgba(0,0,0,0.25)';
-  ctx.fillRect(20,12,W-40,14);
   const timePct=Math.max(0,1-bossElapsed/BOSS_TIME);
-  const hpGrad=ctx.createLinearGradient(20,0,W-20,0);
-  hpGrad.addColorStop(0,'#ffd700'); hpGrad.addColorStop(1,'#ff9900');
-  ctx.fillStyle=hpGrad;
-  ctx.fillRect(20,12,(W-40)*timePct,14);
-  ctx.strokeStyle='#ffdd00';
-  ctx.lineWidth=1;
-  ctx.strokeRect(20,12,W-40,14);
-  ctx.fillStyle='#fff';
-  ctx.font='bold 10px system-ui';
-  ctx.textAlign='center';
-  ctx.fillText('ĐỢT '+Math.min(bossWave,BOSS_TOTAL_WAVES)+'/'+BOSS_TOTAL_WAVES+'  •  ĐIỂM '+bossScore, W/2, 23);
+  drawHudTop(ctx,W,{left:'🐔 ĐỢT '+Math.min(bossWave,BOSS_TOTAL_WAVES)+'/'+BOSS_TOTAL_WAVES, center:'⭐ '+bossScore, right:'❤️'.repeat(Math.max(0,bossDogLives)), progress:timePct, progressColor:'#ffd700'});
 
   // chickens
   ctx.font='30px system-ui';
@@ -7042,10 +7015,6 @@ function drawBoss(ctx,W,H){
   ctx.font='42px system-ui';
   ctx.fillText('🛩️', bossDogX, H-40);
 
-  // lives
-  ctx.font='18px system-ui';
-  ctx.textAlign='left';
-  for(let i=0;i<Math.max(0,bossDogLives);i++) ctx.fillText('❤️', 10+i*24, H-10);
 
   // fx
   bossFx.forEach(f=>{
@@ -7308,15 +7277,7 @@ function drawCatch(ctx,W,H,basketY,basketW,basketH){
     }
     ctx.globalAlpha=1;
   });
-  // HUD
-  ctx.fillStyle='rgba(0,0,0,0.5)';
-  ctx.beginPath(); ctx.roundRect(8,8,140,28,6); ctx.fill();
-  ctx.fillStyle='#fff'; ctx.font='bold 13px system-ui'; ctx.textAlign='left';
-  ctx.fillText('🧺 '+catchScore+' / '+CATCH_KPI+' pts', 14, 27);
-  // Lives
-  ctx.textAlign='right';
-  let hx=W-10;
-  for(let i=0;i<catchLives;i++){ ctx.fillText('❤️',hx,27); hx-=24; }
+  drawHudTop(ctx,W,{left:'🧺 '+catchScore+'/'+CATCH_KPI, right:'❤️'.repeat(Math.max(0,catchLives))});
 }
 
 function catchDone(won){
@@ -7556,12 +7517,8 @@ function drawFlood(ctx,W,H){
     }
   });
 
-  // HUD
-  ctx.fillStyle='rgba(0,0,0,0.6)';
-  ctx.beginPath(); ctx.roundRect(8,8,W-16,34,8); ctx.fill();
-  ctx.fillStyle='#fff'; ctx.font='bold 14px system-ui'; ctx.textAlign='center';
   const flooded=countFlooded();
-  ctx.fillText('🎨 Tràn: '+flooded+'/100  Bước: '+floodMoves+'/'+FLOOD_MAX_MOVES, W/2, 30);
+  drawHudTop(ctx,W,{left:'🎨 '+flooded+'/100', right:'👣 '+floodMoves+'/'+FLOOD_MAX_MOVES});
 
   // FX
   floodFx.forEach(f=>{
@@ -7928,19 +7885,9 @@ function drawArena(ctx,W,H){
     ctx.globalAlpha=1;
   }
 
-  // Wave progress bar
   const wavePct=Math.min(arenaElapsed/ARENA_TIME,1);
-  ctx.fillStyle='rgba(255,255,255,0.1)'; ctx.fillRect(0,0,W,6);
-  const wg=ctx.createLinearGradient(0,0,W,0);
-  wg.addColorStop(0,'#4080ff'); wg.addColorStop(0.5,'#ff40ff'); wg.addColorStop(1,'#ff8040');
-  ctx.fillStyle=wg; ctx.fillRect(0,0,W*wavePct,6);
-
-  // HUD
-  ctx.fillStyle='rgba(0,0,0,0.55)';
-  ctx.beginPath(); ctx.roundRect(8,10,W-16,28,6); ctx.fill();
-  ctx.fillStyle='#fff'; ctx.font='bold 12px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
   const wLabel=['Sóng 1: Ong','Sóng 2: Cà Rốt','Sóng 3: Rắn Boss','Sóng 4: Tất cả!'][arenaWave]||'';
-  ctx.fillText('🌊 '+wLabel+'  ❤️×'+arenaDogLives+'  '+Math.floor(arenaScore)+' pts',W/2,24);
+  drawHudTop(ctx,W,{left:'🌊 '+wLabel, center:'⭐ '+Math.floor(arenaScore), right:'❤️×'+arenaDogLives, progress:wavePct, progressColor:'#ff40ff'});
 }
 
 function arenaDone(won){
@@ -9266,14 +9213,7 @@ function drawSnake(ctx, W, H, now){
     ctx.fillText(snakeFood.emoji, fx, fy);
   }
 
-  // Top bar
-  ctx.fillStyle='rgba(0,0,0,0.55)';
-  ctx.fillRect(0,0,W,26);
-  ctx.fillStyle='#fff'; ctx.font='bold 13px system-ui'; ctx.textAlign='left'; ctx.textBaseline='middle';
-  let livesStr=''; for(let i=0;i<snakeLives;i++) livesStr+='❤️';
-  ctx.fillText(livesStr, 6, 13);
-  ctx.textAlign='right';
-  ctx.fillText('⭐ '+snakeScore, W-6, 13);
+  drawHudTop(ctx,W,{left:'❤️'.repeat(Math.max(0,snakeLives)), right:'⭐ '+snakeScore});
 
   // Fx
   snakeFx.forEach(f=>{
@@ -9545,14 +9485,7 @@ function drawBrick(ctx,W,H,pw,paddleY){
   ctx.beginPath();
   ctx.roundRect(brickPaddleX-halfPW,paddleY,pw,brickPaddleH,7);
   ctx.fill();
-  // Top bar
-  ctx.fillStyle='rgba(0,0,0,0.6)';
-  ctx.fillRect(0,0,W,26);
-  ctx.fillStyle='#fff'; ctx.font='bold 13px system-ui'; ctx.textAlign='left'; ctx.textBaseline='middle';
-  let ls=''; for(let i=0;i<brickLives;i++) ls+='❤️';
-  ctx.fillText(ls,6,13);
-  ctx.textAlign='right';
-  ctx.fillText('⭐ '+brickScore,W-6,13);
+  drawHudTop(ctx,W,{left:'❤️'.repeat(Math.max(0,brickLives)), right:'⭐ '+brickScore});
   // Fx
   brickFx.forEach(f=>{
     ctx.globalAlpha=1-f.t;
@@ -9786,20 +9719,9 @@ function drawRunner(ctx,W,H,timeLeft){
     ctx.fillText('🐶',80,runnerDogY+36);
   }
 
-  // Timer bar
-  const barW=(timeLeft/60)*W;
-  ctx.fillStyle='rgba(0,0,0,0.5)';
-  ctx.fillRect(0,0,W,20);
-  ctx.fillStyle=timeLeft>20?'#44cc44':timeLeft>10?'#ffcc00':'#ff4444';
-  ctx.fillRect(0,0,barW,20);
-  ctx.fillStyle='#fff'; ctx.font='bold 12px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
-  ctx.fillText('⏱ '+Math.ceil(timeLeft)+'s',W/2,10);
-
-  // Lives and score
-  ctx.textAlign='left'; ctx.font='13px system-ui'; ctx.textBaseline='middle';
-  let ls=''; for(let i=0;i<runnerLives;i++) ls+='❤️';
-  ctx.fillStyle='rgba(0,0,0,0.5)'; ctx.fillRect(0,22,120,20);
-  ctx.fillStyle='#fff'; ctx.fillText(ls+' ⭐'+Math.floor(runnerScore),4,32);
+  const timePct=Math.max(0,timeLeft/60);
+  const timeCol=timeLeft>20?'#44cc44':timeLeft>10?'#ffcc00':'#ff4444';
+  drawHudTop(ctx,W,{left:'❤️'.repeat(Math.max(0,runnerLives)), center:'⏱ '+Math.ceil(timeLeft)+'s', right:'⭐ '+Math.floor(runnerScore), progress:timePct, progressColor:timeCol});
 
   // Fx
   runnerFx.forEach(f=>{
@@ -10117,14 +10039,7 @@ function spaceLoop(){
   ctx.fillRect(4,H*0.35+H*0.3*(1-readyPct),8,H*0.3*readyPct);
   ctx.strokeStyle='rgba(255,255,255,0.4)'; ctx.lineWidth=1;
   ctx.strokeRect(4,H*0.35,8,H*0.3);
-  ctx.fillStyle='#ffffff';
-  ctx.font='bold 14px monospace';
-  ctx.textAlign='left';
-  ctx.fillText('❤️'.repeat(s.lives),10,20);
-  ctx.textAlign='right';
-  ctx.fillText('ĐIỂM: '+s.score,W-10,20);
-  ctx.textAlign='center';
-  ctx.fillText('SÓNG '+(Math.min(s.wave,s.totalWaves))+'/'+s.totalWaves,W/2,20);
+  drawHudTop(ctx,W,{left:'❤️'.repeat(Math.max(0,s.lives)), center:'SÓNG '+(Math.min(s.wave,s.totalWaves))+'/'+s.totalWaves, right:'⭐ '+s.score});
   if(s.waveCleared && s.wave<s.totalWaves && !s.won){
     ctx.fillStyle='rgba(0,0,50,0.6)';
     ctx.fillRect(0,H/2-40,W,80);
@@ -10413,16 +10328,7 @@ function rhythmLoop(){
     ctx.fillStyle=f.text==='PERFECT!'?`rgba(255,215,0,${alpha})`:f.text==='GREAT'?`rgba(150,255,150,${alpha})`:f.text==='COOL'?`rgba(120,200,255,${alpha})`:f.text==='BAD'?`rgba(255,160,80,${alpha})`:`rgba(255,80,80,${alpha})`;
     ctx.fillText(f.text+(f.pts>0?' +'+f.pts:''),f.x,f.y-20+((60-f.life)*0.3));
   }
-  ctx.fillStyle='#ff88ff';
-  ctx.font='bold 14px monospace';
-  ctx.textAlign='left';
-  ctx.fillText('ĐIỂM: '+s.score,10,20);
-  ctx.textAlign='right';
-  ctx.fillText(s.completed+'/'+s.totalCircles,W-10,20);
-  ctx.fillStyle='#330033';
-  ctx.fillRect(10,30,W-20,8);
-  ctx.fillStyle='#ff44ff';
-  ctx.fillRect(10,30,(W-20)*(s.completed/s.totalCircles),8);
+  drawHudTop(ctx,W,{left:'⭐ '+s.score, right:s.completed+'/'+s.totalCircles, progress:s.completed/s.totalCircles, progressColor:'#ff44ff'});
   if(s.won){
     ctx.fillStyle='rgba(0,0,0,0.8)';
     ctx.fillRect(0,0,W,H);
@@ -10624,14 +10530,7 @@ function mazeLoop(){
     ctx.fillStyle=`rgba(150,170,255,${fa})`;
     ctx.beginPath(); ctx.arc(fx,fy,1.2,0,Math.PI*2); ctx.fill();
   }
-  ctx.fillStyle=s.timeLeft<=10?'#ff4444':'#88aaff';
-  ctx.font='bold 16px monospace';
-  ctx.textAlign='center';
-  ctx.fillText('⏱ '+s.timeLeft+'s',W/2,28);
-  ctx.textAlign='left';
-  ctx.fillStyle='#aaaaff';
-  ctx.font='12px monospace';
-  ctx.fillText('Vuốt hoặc phím mũi tên',8,28);
+  drawHudTop(ctx,W,{left:'⏱ '+s.timeLeft+'s', right:'Vuốt/phím mũi tên'});
   const {cols,rows,cells,cellW,cellH,offX,offY}=s;
   ctx.save();
   ctx.shadowColor='rgba(120,150,255,0.6)'; ctx.shadowBlur=4;
@@ -10959,17 +10858,8 @@ function megaLoop(){
     ctx.fillRect(0,0,W,H);
   }
   const hpRatio=boss.hp/boss.maxHp;
-  ctx.fillStyle='#330000';
-  ctx.fillRect(20,12,W-40,14);
-  ctx.fillStyle=hpRatio>0.6?'#ff4444':hpRatio>0.3?'#ff8800':'#ff00ff';
-  ctx.fillRect(20,12,(W-40)*hpRatio,14);
-  ctx.strokeStyle='#ff0000';
-  ctx.lineWidth=1;
-  ctx.strokeRect(20,12,W-40,14);
-  ctx.fillStyle='#ffffff';
-  ctx.font='10px monospace';
-  ctx.textAlign='center';
-  ctx.fillText('👹 BOSS HP: '+boss.hp+'/'+boss.maxHp,W/2,23);
+  const hpCol=hpRatio>0.6?'#ff4444':hpRatio>0.3?'#ff8800':'#ff00ff';
+  drawHudTop(ctx,W,{left:'❤️'.repeat(Math.max(0,s.lives)), center:'👹 '+boss.hp+'/'+boss.maxHp, right:'⭐ '+s.score, progress:hpRatio, progressColor:hpCol});
   ctx.font=boss.flashTimer>0?'72px serif':'64px serif';
   ctx.textAlign='center';
   ctx.textBaseline='middle';
@@ -11013,13 +10903,6 @@ function megaLoop(){
     ctx.textBaseline='middle';
     ctx.fillText('🚀',s.ship.x,s.ship.y);
   }
-  ctx.fillStyle='#ffffff';
-  ctx.font='bold 13px monospace';
-  ctx.textAlign='left';
-  ctx.textBaseline='alphabetic';
-  ctx.fillText('❤️'.repeat(s.lives),10,H-10);
-  ctx.textAlign='right';
-  ctx.fillText('ĐIỂM: '+s.score,W-10,H-10);
   if(s.won){
     ctx.fillStyle='rgba(0,0,0,0.85)';
     ctx.fillRect(0,0,W,H);
