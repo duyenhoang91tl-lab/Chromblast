@@ -2534,10 +2534,13 @@ function renderSecretGrid(){
       sg.appendChild(d);
       secretCells[r][c]=d;
     }
-    sg.addEventListener('click', e=>{
+    // Gán bằng onclick (không addEventListener): mỗi lần thoát map secretCells bị reset về null,
+    // vào lại sẽ chạy khối này lần nữa — addEventListener sẽ CHỒNG listener khiến 1 lần bấm
+    // tính thành 2-3 lần (nhân đôi điểm/chuỗi/lượt sai). onclick ghi đè nên chỉ có đúng 1 listener.
+    sg.onclick = e=>{
       const cell=e.target.closest('.sc');
       if(cell && cell.dataset.gem==='1') onSCClick({currentTarget:cell, clientX:e.clientX, clientY:e.clientY});
-    });
+    };
   }
   for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
     const d=secretCells[r][c];
@@ -2767,8 +2770,21 @@ function onSCClick(e){
     // Shake visual
     const cell=getSC(r,c);
     if(cell){ cell.style.animation='none'; void cell.offsetWidth; cell.style.animation=''; }
-    // Bấm sai liên tiếp 3 lần → mất 1 tim; hết tim → thua, về map thường
     secretMissStreak++;
+    if(secretUltra){
+      // Chế độ lửa (thanh vàng đầy): bấm sai liên tiếp 5 phát → thua ngay, về map thường
+      if(secretMissStreak>=5){
+        secretMissStreak=0;
+        sfxGameOver();
+        showComboFlash(0,false,'💀 Sai 5 phát liên tiếp trong chế độ lửa!');
+        forfeitHiddenMapScore();
+        setTimeout(()=>exitSecretMode(),400);
+      } else if(secretMissStreak>=3){
+        showHint('🔥 Sai '+secretMissStreak+'/5 — sai 5 phát là thua!');
+      }
+      return;
+    }
+    // Map thường (chưa lửa): bấm sai liên tiếp 3 lần → mất 1 tim; hết tim → thua, về map thường
     if(secretMissStreak>=3){
       secretMissStreak=0;
       secretLives--;
@@ -2841,9 +2857,11 @@ function onSCClick(e){
   // Đạt đủ điểm trong ván map ẩn 1 → thắng, mở map ẩn 2 (timeout giờ chỉ còn là thua, không tự thắng nữa)
   if(secret1Gained>=TEST_UNLOCK_SCORE){
     clearSecretTimer();
-    secretMode=false;
+    sfxWaveWin();
+    showComboFlash(0,false,'🏆 '+secret1Gained+' điểm! THẮNG!');
     setTimeout(()=>{
-      dropSecretTiles();
+      exitSecretMode(); // trả về màn hình chính — trước đây chỉ tắt secretMode mà không ẩn bàn cờ ẩn,
+                         // khiến thanh thời gian đứng yên (đầy) và toàn bộ ô không bấm được nữa
       startUnlockGate(0);
     }, 310);
     return;
@@ -2873,8 +2891,8 @@ function dropSecretTiles(){
 // Timer management
 function resetSecretTimer(){
   clearSecretTimer();
-  // Đang ở chế độ lửa (ultra) → cửa sổ giữ lửa chỉ còn 1/2, phải bấm chuẩn liên tục mới duy trì
-  const windowMs = secretUltra ? SECRET_WINDOW/2 : SECRET_WINDOW;
+  // Đang ở chế độ lửa (ultra/thanh vàng đầy) → thanh chạy nhanh hơn hẳn (chỉ còn 40% cửa sổ thường)
+  const windowMs = secretUltra ? SECRET_WINDOW*0.4 : SECRET_WINDOW;
   secretTimerEnd=Date.now()+windowMs;
   animateTimerBar();
 
@@ -2905,7 +2923,7 @@ function clearSecretTimer(){
 
 function animateTimerBar(){
   const bar=document.getElementById('timer-bar');
-  const windowMs = secretUltra ? SECRET_WINDOW/2 : SECRET_WINDOW;
+  const windowMs = secretUltra ? SECRET_WINDOW*0.4 : SECRET_WINDOW; // phải khớp với resetSecretTimer
   function frame(){
     const now=Date.now();
     const remaining=Math.max(0, secretTimerEnd-now);
@@ -3164,144 +3182,27 @@ function spawnShootingStar(W,H){
 function drawDodge(ctx,W,H){
   ctx.clearRect(0,0,W,H);
 
-  // ── deep space gradient background ──
-  const bg=ctx.createLinearGradient(0,0,0,H);
-  bg.addColorStop(0,'#020012'); bg.addColorStop(0.3,'#060228'); bg.addColorStop(0.65,'#0e0535'); bg.addColorStop(0.85,'#160a40'); bg.addColorStop(1,'#0a1030');
-  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+  // ── nền vườn ban ngày pastel dễ thương (đồng bộ phong cách Map ẩn 4) ──
+  cuteDayBg(ctx,W,H,dodgeElapsed*0.001);
 
-  // ── nebula clouds ──
-  const nt=dodgeElapsed*0.0003;
-  [[W*0.15,H*0.2,80,0.06,'#6030a0'],[W*0.7,H*0.12,65,0.05,'#203090'],[W*0.5,H*0.38,55,0.04,'#501070'],[W*0.85,H*0.3,45,0.04,'#104060']].forEach(([nx,ny,nr,na,nc])=>{
-    const ng=ctx.createRadialGradient(nx,ny,0,nx,ny,nr);
-    ng.addColorStop(0,nc.replace('#','rgba(').replace(/([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})/i,(_,r,g,b)=>`${parseInt(r,16)},${parseInt(g,16)},${parseInt(b,16)}`)+`,${na})`);
-    ng.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.fillStyle=ng; ctx.beginPath(); ctx.arc(nx,ny,nr,0,Math.PI*2); ctx.fill();
-  });
-
-  // ── star field: 3 layers ──
-  const st=dodgeElapsed*0.001;
-  // layer 1 — tiny distant stars
-  for(let i=0;i<50;i++){
-    const sx=(Math.sin(i*137.5)*0.5+0.5)*W;
-    const sy=(Math.cos(i*97.3)*0.5+0.5)*H*0.82;
-    const sa=0.2+Math.sin(i*41+st*1.5)*0.15;
-    ctx.fillStyle=`rgba(200,210,255,${sa})`;
-    ctx.beginPath(); ctx.arc(sx,sy,0.6,0,Math.PI*2); ctx.fill();
-  }
-  // layer 2 — medium twinkling stars
-  for(let i=0;i<28;i++){
-    const sx=(Math.sin(i*211.3)*0.5+0.5)*W;
-    const sy=(Math.cos(i*163.7)*0.5+0.5)*H*0.78;
-    const sa=0.5+Math.sin(i*31+st*2.5)*0.4;
-    const sr=0.9+Math.sin(i*19+st*1.8)*0.5;
-    ctx.fillStyle=`rgba(255,245,220,${sa})`;
-    ctx.beginPath(); ctx.arc(sx,sy,sr,0,Math.PI*2); ctx.fill();
-    if(sa>0.7 && i%3===0){
-      ctx.strokeStyle=`rgba(255,240,200,${sa*0.45})`; ctx.lineWidth=0.8;
-      ctx.beginPath(); ctx.moveTo(sx-5,sy); ctx.lineTo(sx+5,sy); ctx.moveTo(sx,sy-5); ctx.lineTo(sx,sy+5); ctx.stroke();
-    }
-  }
-  // layer 3 — large bright stars with 4-point sparkle
-  for(let i=0;i<10;i++){
-    const sx=(Math.sin(i*313.1)*0.5+0.5)*W;
-    const sy=(Math.cos(i*247.9)*0.5+0.5)*H*0.65;
-    const sa=0.6+Math.sin(i*17+st*3)*0.4;
-    const sr=1.4+Math.sin(i*13+st*2)*0.7;
-    ctx.save();
-    ctx.shadowColor=`rgba(200,230,255,${sa})`; ctx.shadowBlur=8;
-    ctx.fillStyle=`rgba(220,235,255,${sa})`;
-    ctx.beginPath(); ctx.arc(sx,sy,sr,0,Math.PI*2); ctx.fill();
-    // 4-point cross glow
-    ctx.strokeStyle=`rgba(220,235,255,${sa*0.6})`; ctx.lineWidth=1.2;
-    ctx.beginPath(); ctx.moveTo(sx-7,sy); ctx.lineTo(sx+7,sy); ctx.moveTo(sx,sy-7); ctx.lineTo(sx,sy+7); ctx.stroke();
-    ctx.restore();
-  }
-
-  // ── shooting stars ──
-  if(!window.dodgeShootingStars) window.dodgeShootingStars=[];
-  const dt2=0.016;
-  if(Math.random()<0.012) spawnShootingStar(W,H);
-  window.dodgeShootingStars=window.dodgeShootingStars.filter(s=>s.life>0);
-  for(const s of window.dodgeShootingStars){
-    s.x+=s.vx*dt2; s.y+=s.vy*dt2; s.life-=dt2*1.2;
-    const alpha=Math.min(s.life,0.5)*2;
-    if(alpha<=0) continue;
-    // tail gradient
-    const tailLen=60+s.vx*0.25;
-    const tx=s.x-s.vx*0.18, ty=s.y-s.vy*0.18;
-    const sg=ctx.createLinearGradient(tx-s.vx*0.3,ty-s.vy*0.3,s.x,s.y);
-    sg.addColorStop(0,'rgba(255,255,255,0)');
-    sg.addColorStop(0.6,`rgba(200,220,255,${alpha*0.3})`);
-    sg.addColorStop(1,`rgba(255,255,255,${alpha*0.95})`);
-    ctx.save();
-    ctx.shadowColor=`rgba(180,200,255,${alpha*0.8})`; ctx.shadowBlur=10;
-    ctx.strokeStyle=sg; ctx.lineWidth=2.5; ctx.lineCap='round';
-    ctx.beginPath(); ctx.moveTo(tx-s.vx*0.32,ty-s.vy*0.32); ctx.lineTo(s.x,s.y); ctx.stroke();
-    // head glow dot
-    ctx.fillStyle=`rgba(255,255,255,${alpha})`;
-    ctx.beginPath(); ctx.arc(s.x,s.y,2.5,0,Math.PI*2); ctx.fill();
-    ctx.restore();
-  }
-
-  // ── moon ──
-  const mx=W*0.82, my=H*0.1;
-  const moonG=ctx.createRadialGradient(mx-6,my-6,2,mx,my,22);
-  moonG.addColorStop(0,'#fffef0'); moonG.addColorStop(0.7,'#f5f0d0'); moonG.addColorStop(1,'#e8e0b0');
-  ctx.save();
-  ctx.shadowColor='rgba(255,250,200,0.6)'; ctx.shadowBlur=25;
-  ctx.fillStyle=moonG; ctx.beginPath(); ctx.arc(mx,my,18,0,Math.PI*2); ctx.fill();
-  // moon craters
-  ctx.fillStyle='rgba(180,170,120,0.35)';
-  [[mx+5,my+4,4],[mx-5,my+8,2.5],[mx+2,my-7,2]].forEach(([cx2,cy2,cr])=>{
-    ctx.beginPath(); ctx.arc(cx2,cy2,cr,0,Math.PI*2); ctx.fill();
-  });
-  ctx.restore();
-
-  // ── aurora ribbon at top ──
-  const at=dodgeElapsed*0.0005;
-  ctx.save(); ctx.globalAlpha=0.22;
-  for(let layer=0;layer<3;layer++){
-    const grad=ctx.createLinearGradient(0,0,W,0);
-    const hue=[180,220,260][layer];
-    grad.addColorStop(0,`hsla(${hue},100%,60%,0)`);
-    grad.addColorStop(0.3+Math.sin(at+layer)*0.1,`hsla(${hue},100%,65%,0.8)`);
-    grad.addColorStop(0.6+Math.cos(at*0.7+layer)*0.1,`hsla(${hue+30},100%,70%,0.5)`);
-    grad.addColorStop(1,`hsla(${hue+60},100%,60%,0)`);
-    ctx.fillStyle=grad;
-    ctx.beginPath();
-    ctx.moveTo(0,0);
-    for(let x=0;x<=W;x+=20){
-      const y=H*0.08+Math.sin(x*0.02+at*(1+layer*0.3))*H*0.04+layer*8;
+  // ── đồi cỏ xanh mềm mại ──
+  const groundY=H-50;
+  ['#5EB862','#4CAF50'].forEach((col,li)=>{
+    ctx.fillStyle=col;
+    ctx.beginPath(); ctx.moveTo(0,H);
+    for(let x=0;x<=W;x+=6){
+      const y=groundY+li*10+Math.sin(x*0.025+0.5+li)*12+Math.sin(x*0.01)*8;
       ctx.lineTo(x,y);
     }
-    ctx.lineTo(W,0); ctx.closePath(); ctx.fill();
-  }
-  ctx.restore();
-
-  // ── ground: rolling hills with moonlit grass ──
-  const groundY=H-50;
-  // hill silhouettes
-  ctx.save();
-  ctx.fillStyle='#04031a';
-  ctx.beginPath(); ctx.moveTo(0,H);
-  for(let x=0;x<=W;x+=6){
-    const y=groundY+Math.sin(x*0.025+0.5)*14+Math.sin(x*0.01)*8;
-    ctx.lineTo(x,y);
-  }
-  ctx.lineTo(W,H); ctx.closePath(); ctx.fill();
-  // grass edge glow (moonlight)
-  const grassGrad=ctx.createLinearGradient(0,groundY-5,0,groundY+18);
-  grassGrad.addColorStop(0,'rgba(80,160,100,0.45)');
-  grassGrad.addColorStop(0.5,'rgba(30,80,50,0.25)');
-  grassGrad.addColorStop(1,'rgba(0,0,0,0)');
-  ctx.fillStyle=grassGrad;
-  ctx.beginPath(); ctx.moveTo(0,H);
-  for(let x=0;x<=W;x+=6){
-    const y=groundY+Math.sin(x*0.025+0.5)*14+Math.sin(x*0.01)*8;
-    ctx.lineTo(x,y);
-  }
-  ctx.lineTo(W,H); ctx.closePath(); ctx.fill();
-  ctx.restore();
+    ctx.lineTo(W,H); ctx.closePath(); ctx.fill();
+  });
+  // hoa nhỏ chấm phá trên cỏ
+  [[W*0.12,'#ff88cc'],[W*0.35,'#ffee66'],[W*0.6,'#ffffff'],[W*0.85,'#ffaa66']].forEach(([fx0,fc])=>{
+    const fy=groundY+22;
+    ctx.fillStyle=fc;
+    for(let k=0;k<5;k++){ const fa=k/5*Math.PI*2; ctx.beginPath(); ctx.ellipse(fx0+Math.cos(fa)*4,fy+Math.sin(fa)*4,3,2,fa,0,Math.PI*2); ctx.fill(); }
+    ctx.fillStyle='#ffe066'; ctx.beginPath(); ctx.arc(fx0,fy,2.5,0,Math.PI*2); ctx.fill();
+  });
 
   drawRabbit(ctx,rabbit.x,rabbit.y,rabbit.w,rabbit.h,dodgeElapsed*0.001);
   for(const c of carrots) drawCarrot(ctx,c.x,c.y,c.r);
@@ -3386,6 +3287,48 @@ function drawHudTop(ctx,W,opts){
   if(opts.left){ ctx.textAlign='left'; ctx.fillText(opts.left, x+8, ty); }
   if(opts.center){ ctx.textAlign='center'; ctx.fillText(opts.center, W/2, ty); }
   if(opts.right){ ctx.textAlign='right'; ctx.fillText(opts.right, x+w-8, ty); }
+  ctx.restore();
+}
+
+/* ── Nền pastel dễ thương dùng chung — cùng phong cách Map ẩn 4 (vườn ong) ── */
+function cuteDayBg(ctx,W,H,t){
+  const g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'#7EC8E3'); g.addColorStop(0.4,'#ADE0F2'); g.addColorStop(0.75,'#D4F0FF'); g.addColorStop(1,'#E8F8E0');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  beeDrawSun(ctx,t);
+  beeDrawCloud(ctx,110+Math.sin(t*0.08)*18,42,1.0);
+  beeDrawCloud(ctx,260+Math.sin(t*0.06+1)*22,70,0.7);
+  beeDrawCloud(ctx,185+Math.sin(t*0.1+3)*14,112,0.5);
+}
+// Bản đêm nhưng vẫn dễ thương: tím lavender pastel + trăng cười má hồng + sao kẹo ngọt
+function cuteNightBg(ctx,W,H,t){
+  const g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'#4a3f7e'); g.addColorStop(0.5,'#6a55a2'); g.addColorStop(1,'#9878c8');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  for(let i=0;i<26;i++){
+    const sx=(Math.sin(i*137.5)*0.5+0.5)*W;
+    const sy=(Math.cos(i*97.3)*0.5+0.5)*H*0.85;
+    const tw=0.35+0.35*Math.sin(t*2+i*1.7);
+    ctx.fillStyle=['rgba(255,240,200,','rgba(255,210,230,','rgba(220,235,255,'][i%3]+tw+')';
+    ctx.beginPath(); ctx.arc(sx,sy,1+(i%3)*0.5,0,Math.PI*2); ctx.fill();
+  }
+  const mx=W*0.82,my=H*0.12;
+  ctx.save();
+  ctx.shadowColor='rgba(255,240,180,0.7)'; ctx.shadowBlur=18;
+  ctx.fillStyle='#FFF3B0';
+  ctx.beginPath(); ctx.arc(mx,my,19,0,Math.PI*2); ctx.fill();
+  ctx.shadowBlur=0;
+  ctx.strokeStyle='#b8934a'; ctx.lineWidth=1.6; ctx.lineCap='round';
+  ctx.beginPath(); ctx.arc(mx-7,my-3,3.2,Math.PI*1.15,Math.PI*1.85); ctx.stroke(); // mắt trái nhắm cười
+  ctx.beginPath(); ctx.arc(mx+7,my-3,3.2,Math.PI*1.15,Math.PI*1.85); ctx.stroke(); // mắt phải
+  ctx.beginPath(); ctx.arc(mx,my+4,5.5,0.25,Math.PI-0.25); ctx.stroke();           // miệng cười
+  ctx.fillStyle='rgba(255,150,160,0.5)';
+  ctx.beginPath(); ctx.arc(mx-11,my+4,2.6,0,Math.PI*2); ctx.fill();                 // má hồng
+  ctx.beginPath(); ctx.arc(mx+11,my+4,2.6,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.globalAlpha=0.32;
+  beeDrawCloud(ctx,90+Math.sin(t*0.07)*16,66,0.8);
+  beeDrawCloud(ctx,250+Math.sin(t*0.05+2)*20,105,0.6);
   ctx.restore();
 }
 
@@ -3947,59 +3890,13 @@ function spawnBoomFx(x,y){
 function drawFruit(ctx,W,H,now){
   ctx.clearRect(0,0,W,H);
 
-  // ── rich night sky with purple-magenta gradient ──
-  const bg=ctx.createLinearGradient(0,0,0,H);
-  bg.addColorStop(0,'#030008'); bg.addColorStop(0.25,'#0a0320'); bg.addColorStop(0.55,'#140828'); bg.addColorStop(0.8,'#1a0618'); bg.addColorStop(1,'#0d0510');
-  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+  // ── vườn ban ngày pastel dễ thương (đồng bộ phong cách Map ẩn 4) ──
+  cuteDayBg(ctx,W,H,now*0.001);
 
-  // ── nebula glow patches ──
-  [[W*0.2,H*0.15,90,0.07,'130,20,150'],[W*0.75,H*0.1,70,0.06,'60,10,180'],[W*0.5,H*0.4,55,0.04,'180,20,80'],[W*0.1,H*0.6,40,0.03,'20,60,180']].forEach(([nx,ny,nr,na,nc])=>{
-    const ng=ctx.createRadialGradient(nx,ny,0,nx,ny,nr);
-    ng.addColorStop(0,`rgba(${nc},${na})`); ng.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.fillStyle=ng; ctx.beginPath(); ctx.arc(nx,ny,nr,0,Math.PI*2); ctx.fill();
-  });
-
-  // ── background stars — 3 layers ──
-  const st2=now*0.0008;
-  for(let i=0;i<55;i++){
-    const sx=(Math.sin(i*141.5+st2*0.1)*0.5+0.5)*W;
-    const sy=(Math.cos(i*89.3+st2*0.06)*0.5+0.5)*H*0.85;
-    const sa=0.2+Math.sin(i*29+st2*2)*0.18;
-    const sz=0.5+Math.sin(i*19+st2*1.2)*0.35;
-    ctx.fillStyle=`rgba(230,210,255,${sa})`;
-    ctx.beginPath(); ctx.arc(sx,sy,sz,0,Math.PI*2); ctx.fill();
-  }
-  for(let i=0;i<22;i++){
-    const sx=(Math.sin(i*233.1)*0.5+0.5)*W;
-    const sy=(Math.cos(i*171.7)*0.5+0.5)*H*0.75;
-    const sa=0.45+Math.sin(i*37+st2*3)*0.4;
-    const sz=1.1+Math.sin(i*23+st2*2)*0.7;
-    // warm vs cool tones alternating
-    const col=i%2===0?`rgba(255,230,200,${sa})`:`rgba(200,220,255,${sa})`;
-    ctx.fillStyle=col; ctx.beginPath(); ctx.arc(sx,sy,sz,0,Math.PI*2); ctx.fill();
-    if(sa>0.7 && i%4===0){
-      ctx.strokeStyle=col.replace(/,[^,]+\)$/,`,${sa*0.4})`); ctx.lineWidth=0.9;
-      ctx.beginPath(); ctx.moveTo(sx-6,sy); ctx.lineTo(sx+6,sy); ctx.moveTo(sx,sy-6); ctx.lineTo(sx,sy+6); ctx.stroke();
-    }
-  }
-  // bright feature stars
-  for(let i=0;i<6;i++){
-    const sx=(Math.sin(i*421.3)*0.5+0.5)*W;
-    const sy=(Math.cos(i*317.9)*0.5+0.5)*H*0.6;
-    const sa=0.7+Math.sin(i*11+st2*4)*0.3;
-    ctx.save();
-    ctx.shadowColor=`rgba(255,240,200,${sa})`; ctx.shadowBlur=12;
-    ctx.fillStyle=`rgba(255,248,230,${sa})`;
-    ctx.beginPath(); ctx.arc(sx,sy,1.8,0,Math.PI*2); ctx.fill();
-    ctx.strokeStyle=`rgba(255,240,200,${sa*0.5})`; ctx.lineWidth=1;
-    ctx.beginPath(); ctx.moveTo(sx-9,sy); ctx.lineTo(sx+9,sy); ctx.moveTo(sx,sy-9); ctx.lineTo(sx,sy+9); ctx.stroke();
-    ctx.restore();
-  }
-
-  // ── bottom glow — stage floor ──
+  // ── dải cỏ mềm dưới đáy ──
   const floorG=ctx.createLinearGradient(0,H-40,0,H);
-  floorG.addColorStop(0,'rgba(100,20,80,0.3)');
-  floorG.addColorStop(1,'rgba(20,5,20,0.8)');
+  floorG.addColorStop(0,'rgba(126,200,130,0)');
+  floorG.addColorStop(1,'rgba(76,175,80,0.85)');
   ctx.fillStyle=floorG; ctx.fillRect(0,H-40,W,40);
 
   // ── draw slice FX (petals, juice, slash) ──
@@ -5208,15 +5105,10 @@ function goldLoop(now){
 
 function drawGold(ctx,W,H,t){
   ctx.clearRect(0,0,W,H);
-  // sky/header
+  // dải trời pastel ban ngày phía trên hầm mỏ (đồng bộ phong cách Map ẩn 4)
   const g=ctx.createLinearGradient(0,0,0,GM_GT);
-  g.addColorStop(0,'#0a0a2e'); g.addColorStop(1,'#1a1040');
+  g.addColorStop(0,'#7EC8E3'); g.addColorStop(0.6,'#ADE0F2'); g.addColorStop(1,'#D4F0FF');
   ctx.fillStyle=g; ctx.fillRect(0,0,W,GM_GT);
-  for(let i=0;i<15;i++){
-    const sx=(i*47+13)%W, sy=(i*19+7)%(GM_GT-5);
-    ctx.beginPath(); ctx.arc(sx,sy,0.8+(i%3)*0.4,0,Math.PI*2);
-    ctx.fillStyle='rgba(255,255,255,'+(0.3+(i%4)*0.15)+')'; ctx.fill();
-  }
 
   for(let r=0;r<GM_ROWS;r++){
     for(let c=0;c<GM_COLS;c++){
@@ -6486,6 +6378,9 @@ function drawBubble(ctx,W,H){
       ctx.globalAlpha=1;
     }
   });
+
+  const bTimeLeft=Math.max(0,BUBBLE_TIME-bubbleElapsed);
+  drawHudTop(ctx,W,{left:'🫧 '+bubbleScore+'/'+BUBBLE_KPI, right:'⏱ '+bTimeLeft.toFixed(0)+'s'});
 }
 
 function drawBubbleCircle(ctx,x,y,r,color){
@@ -6761,6 +6656,9 @@ function drawStack(ctx,W,H){
       ctx.globalAlpha=1;
     }
   });
+
+  const sTimeLeft=Math.max(0,STACK_TIME-stackElapsed);
+  drawHudTop(ctx,W,{left:'🏗️ '+stackCount+'/'+STACK_KPI+' tầng', right:'⏱ '+sTimeLeft.toFixed(0)+'s'});
 }
 
 function stackDone(won){
@@ -6979,14 +6877,15 @@ function bossLoop(now){
 
 function drawBoss(ctx,W,H){
   ctx.clearRect(0,0,W,H);
-  // bright sky arena
+  // bầu trời pastel ban ngày dễ thương (đồng bộ phong cách Map ẩn 4)
   const bg=ctx.createLinearGradient(0,0,0,H);
-  bg.addColorStop(0,'#0a1a30'); bg.addColorStop(0.5,'#123a55'); bg.addColorStop(1,'#5aaadd');
+  bg.addColorStop(0,'#7EC8E3'); bg.addColorStop(0.4,'#ADE0F2'); bg.addColorStop(0.75,'#D4F0FF'); bg.addColorStop(1,'#E8F8E0');
   ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
-  // drifting clouds
+  beeDrawSun(ctx,bossElapsed);
+  // mây trôi ngang
   [[W*0.2,H*0.15,30],[W*0.7,H*0.25,38],[W*0.45,H*0.35,26]].forEach(([cx0,cy,cr],i)=>{
     const cx=(cx0+bossElapsed*10*(i+1))%(W+80)-40;
-    ctx.fillStyle='rgba(255,255,255,0.55)';
+    ctx.fillStyle='rgba(255,255,255,0.8)';
     ctx.beginPath(); ctx.arc(cx,cy,cr,0,Math.PI*2); ctx.fill();
     ctx.beginPath(); ctx.arc(cx+cr*0.7,cy+4,cr*0.7,0,Math.PI*2); ctx.fill();
   });
@@ -7001,8 +6900,8 @@ function drawBoss(ctx,W,H){
 
   // bullets
   bossProjectiles.forEach(p=>{
-    ctx.shadowColor='#66ccff'; ctx.shadowBlur=10;
-    ctx.fillStyle='#aeefff';
+    ctx.shadowColor='#ff9500'; ctx.shadowBlur=8;
+    ctx.fillStyle='#ff7b2e'; // cam đậm — nổi rõ trên nền trời pastel sáng
     ctx.fillRect(p.x-2,p.y-8,4,14);
     ctx.shadowBlur=0;
   });
@@ -8795,7 +8694,8 @@ function hardResetAllModes(){
   // Ẩn các lớp HUD riêng của Map ẩn 4 (tim/điểm/đợt/sức chịu) và Map ẩn 1 (tim) — trước đây bị sót lại
   // đè lên các map khác khi chuyển map trực tiếp qua admin panel / menu chọn map ẩn.
   const burstCount=document.getElementById('burst-count'); if(burstCount) burstCount.style.display='';
-  ['bee-hearts','bee-scoreUI','bee-waveUI','bee-stamina-label','bee-stamina-wrap','secret-hearts'].forEach(id=>{
+  ['bee-hearts','bee-scoreUI','bee-waveUI','bee-stamina-label','bee-stamina-wrap','secret-hearts',
+   'space-autofire-btn'].forEach(id=>{ // nút Tự bắn của Map 17 trước đây bị sót, lộ sang map khác khi chuyển map trực tiếp
     const el=document.getElementById(id); if(el) el.style.display='none';
   });
 }
@@ -9442,15 +9342,8 @@ function brickLoop(now){
 }
 
 function drawBrick(ctx,W,H,pw,paddleY){
-  // Space background
-  ctx.fillStyle='#050015';
-  ctx.fillRect(0,0,W,H);
-  // Stars
-  ctx.fillStyle='rgba(255,255,255,0.6)';
-  for(let i=0;i<40;i++){
-    const sx=((i*137+79)%360), sy=((i*97+43)%460);
-    ctx.fillRect(sx,sy,i%3===0?2:1,i%3===0?2:1);
-  }
+  // đêm lavender pastel dễ thương + trăng cười (đồng bộ phong cách Map ẩn 4)
+  cuteNightBg(ctx,W,H,Date.now()*0.001);
   // Bricks
   brickBricks.forEach(b=>{
     if(!b.alive) return;
@@ -9894,33 +9787,18 @@ function spaceShoot(){
 }
 
 function drawSpaceBg(ctx,W,H){
-  const t=Date.now()*0.0004;
-  const bg=ctx.createLinearGradient(0,0,0,H);
-  bg.addColorStop(0,'#050015'); bg.addColorStop(0.5,'#0a0a2a'); bg.addColorStop(1,'#000010');
-  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
-  // tinh vân mờ ảo
-  [[W*0.2,H*0.2,90,'rgba(90,30,140,0.18)'],[W*0.8,H*0.55,110,'rgba(20,60,150,0.16)'],[W*0.45,H*0.85,80,'rgba(150,20,90,0.14)']].forEach(([nx,ny,nr,nc])=>{
-    const g=ctx.createRadialGradient(nx,ny,0,nx,ny,nr);
-    g.addColorStop(0,nc); g.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(nx,ny,nr,0,Math.PI*2); ctx.fill();
-  });
-  // hành tinh nhỏ góc trên
+  const t=Date.now()*0.001;
+  // đêm lavender pastel dễ thương + trăng cười (đồng bộ phong cách Map ẩn 4)
+  cuteNightBg(ctx,W,H,t);
+  // hành tinh kẹo ngọt có vành, góc trên trái
   ctx.save();
-  const px=W*0.85, py=H*0.12, pr=22;
+  const px=W*0.14, py=H*0.14, pr=20;
   const pg=ctx.createRadialGradient(px-pr*0.3,py-pr*0.3,2,px,py,pr);
-  pg.addColorStop(0,'#ffd9a0'); pg.addColorStop(1,'#c86a2a');
+  pg.addColorStop(0,'#ffd9ec'); pg.addColorStop(1,'#e88ab8');
   ctx.fillStyle=pg; ctx.beginPath(); ctx.arc(px,py,pr,0,Math.PI*2); ctx.fill();
-  ctx.strokeStyle='rgba(255,220,180,0.4)'; ctx.lineWidth=3;
+  ctx.strokeStyle='rgba(255,230,245,0.65)'; ctx.lineWidth=3;
   ctx.beginPath(); ctx.ellipse(px,py,pr*1.6,pr*0.35,-0.3,0,Math.PI*2); ctx.stroke();
   ctx.restore();
-  // sao lấp lánh nhiều lớp
-  for(let i=0;i<35;i++){
-    const sx=(Math.sin(i*137.5)*0.5+0.5)*W;
-    const sy=(Math.cos(i*97.3+t*0.5)*0.5+0.5)*H;
-    const tw=0.4+0.5*Math.sin(t*3+i);
-    ctx.fillStyle=`rgba(200,220,255,${tw})`;
-    ctx.beginPath(); ctx.arc(sx,sy,0.9+tw,0,Math.PI*2); ctx.fill();
-  }
 }
 
 function spaceLoop(){
@@ -10435,6 +10313,9 @@ function initMazeGame(){
     usedKeys.add(key);
     pickups.push({r,c,type:'coin',taken:false});
   }
+  // gỡ listener của ván trước (nếu có) trước khi thay mazeState — tránh chồng handler khi chơi lại
+  if(mazeState._keyHandler) window.removeEventListener('keydown',mazeState._keyHandler);
+  if(mazeState._retryKey) window.removeEventListener('keydown',mazeState._retryKey);
   mazeState={
     W,H,cols,rows,cells,cellW,cellH,offX,offY,
     dog:{r:0,c:0},
@@ -10519,26 +10400,25 @@ function mazeLoop(){
     }
   }
   const mzT=Date.now()*0.0005;
-  const bg=ctx.createRadialGradient(W/2,H*0.4,20,W/2,H*0.4,W*0.9);
-  bg.addColorStop(0,'#181850'); bg.addColorStop(0.6,'#0f0f38'); bg.addColorStop(1,'#08081e');
-  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+  // đêm lavender pastel dễ thương + trăng cười (đồng bộ phong cách Map ẩn 4)
+  cuteNightBg(ctx,W,H,mzT*2);
   // hạt sáng huyền ảo trôi nổi
   for(let i=0;i<26;i++){
     const fx=(Math.sin(i*91.7+mzT*0.6)*0.5+0.5)*W;
     const fy=(Math.cos(i*63.1+mzT*0.8)*0.5+0.5)*H;
-    const fa=0.15+0.2*Math.sin(mzT*2+i);
-    ctx.fillStyle=`rgba(150,170,255,${fa})`;
+    const fa=0.2+0.25*Math.sin(mzT*2+i);
+    ctx.fillStyle=`rgba(255,240,210,${fa})`;
     ctx.beginPath(); ctx.arc(fx,fy,1.2,0,Math.PI*2); ctx.fill();
   }
   drawHudTop(ctx,W,{left:'⏱ '+s.timeLeft+'s', right:'Vuốt/phím mũi tên'});
   const {cols,rows,cells,cellW,cellH,offX,offY}=s;
   ctx.save();
-  ctx.shadowColor='rgba(120,150,255,0.6)'; ctx.shadowBlur=4;
+  ctx.shadowColor='rgba(255,255,255,0.5)'; ctx.shadowBlur=3;
   for(let r=0;r<rows;r++){
     for(let c=0;c<cols;c++){
       const x=offX+c*cellW, y=offY+r*cellH;
       const w=cells[r][c].walls;
-      ctx.strokeStyle='#7a8ae8';
+      ctx.strokeStyle='#fff6d8'; // tường kem sáng — nổi rõ trên nền lavender pastel
       ctx.lineWidth=1.5;
       if(w[0]){ ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+cellW,y); ctx.stroke(); }
       if(w[1]){ ctx.beginPath(); ctx.moveTo(x+cellW,y); ctx.lineTo(x+cellW,y+cellH); ctx.stroke(); }
@@ -10591,10 +10471,16 @@ function mazeLoop(){
     ctx.fillStyle='#ffffff';
     ctx.font='16px monospace';
     ctx.fillText('Nhấn để thử lại',W/2,H/2+32);
-    MZC().ontouchstart=ev=>{ ev.preventDefault(); initMazeGame(); };
-    window.removeEventListener('keydown',s._keyHandler);
-    const retryKey=ev=>{ if(ev.key===' '||ev.key==='Enter'){ window.removeEventListener('keydown',retryKey); initMazeGame(); } };
-    window.addEventListener('keydown',retryKey);
+    // Chỉ gắn listener thử-lại MỘT lần — nhánh gameOver này chạy mỗi frame,
+    // trước đây mỗi frame lại chồng thêm 1 listener keydown mới → bấm Enter
+    // sau vài giây game over sẽ gọi initMazeGame hàng trăm lần cùng lúc.
+    if(!s._retryArmed){
+      s._retryArmed=true;
+      MZC().ontouchstart=ev=>{ ev.preventDefault(); initMazeGame(); };
+      window.removeEventListener('keydown',s._keyHandler);
+      s._retryKey=ev=>{ if(ev.key===' '||ev.key==='Enter'){ window.removeEventListener('keydown',s._retryKey); initMazeGame(); } };
+      window.addEventListener('keydown',s._retryKey);
+    }
   }
   mazeRAF=requestAnimationFrame(mazeLoop);
 }
@@ -10603,6 +10489,10 @@ function exitMazeToMain(){
   mazeMode=false;
   startBgm('main');
   if(mazeRAF){cancelAnimationFrame(mazeRAF);mazeRAF=null;}
+  // gỡ listener bàn phím gắn vào window — trước đây thắng/thoát không gỡ,
+  // handler cũ tồn tại mãi và mỗi lần vào lại maze lại chồng thêm 1 cái
+  if(mazeState._keyHandler) window.removeEventListener('keydown',mazeState._keyHandler);
+  if(mazeState._retryKey) window.removeEventListener('keydown',mazeState._retryKey);
   MZC().classList.remove('active');
   document.getElementById('grid').style.display='';
   document.getElementById('pieces-area').style.display='';
@@ -10643,9 +10533,8 @@ function updateMegaBg(dt,W,H){
 }
 
 function drawMegaBg(ctx,W,H,now){
-  const bg=ctx.createLinearGradient(0,0,0,H);
-  bg.addColorStop(0,'#0a0210'); bg.addColorStop(0.5,'#160518'); bg.addColorStop(1,'#20060a');
-  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+  // đêm lavender pastel dễ thương + trăng cười (đồng bộ phong cách Map ẩn 4)
+  cuteNightBg(ctx,W,H,now*0.001);
 
   megaNebulas.forEach(n=>{
     const g=ctx.createRadialGradient(n.x,n.y,0,n.x,n.y,n.r);
@@ -10655,7 +10544,7 @@ function drawMegaBg(ctx,W,H,now){
 
   megaStars.forEach(s=>{
     const tw=0.5+0.5*Math.sin(now*0.003+s.phase);
-    ctx.fillStyle=`rgba(255,220,230,${0.3+tw*0.6})`;
+    ctx.fillStyle=`rgba(255,235,245,${0.3+tw*0.6})`;
     ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2); ctx.fill();
   });
 }
