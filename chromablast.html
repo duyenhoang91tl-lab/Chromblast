@@ -2534,10 +2534,13 @@ function renderSecretGrid(){
       sg.appendChild(d);
       secretCells[r][c]=d;
     }
-    sg.addEventListener('click', e=>{
+    // Gán bằng onclick (không addEventListener): mỗi lần thoát map secretCells bị reset về null,
+    // vào lại sẽ chạy khối này lần nữa — addEventListener sẽ CHỒNG listener khiến 1 lần bấm
+    // tính thành 2-3 lần (nhân đôi điểm/chuỗi/lượt sai). onclick ghi đè nên chỉ có đúng 1 listener.
+    sg.onclick = e=>{
       const cell=e.target.closest('.sc');
       if(cell && cell.dataset.gem==='1') onSCClick({currentTarget:cell, clientX:e.clientX, clientY:e.clientY});
-    });
+    };
   }
   for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
     const d=secretCells[r][c];
@@ -2767,8 +2770,21 @@ function onSCClick(e){
     // Shake visual
     const cell=getSC(r,c);
     if(cell){ cell.style.animation='none'; void cell.offsetWidth; cell.style.animation=''; }
-    // Bấm sai liên tiếp 3 lần → mất 1 tim; hết tim → thua, về map thường
     secretMissStreak++;
+    if(secretUltra){
+      // Chế độ lửa (thanh vàng đầy): bấm sai liên tiếp 5 phát → thua ngay, về map thường
+      if(secretMissStreak>=5){
+        secretMissStreak=0;
+        sfxGameOver();
+        showComboFlash(0,false,'💀 Sai 5 phát liên tiếp trong chế độ lửa!');
+        forfeitHiddenMapScore();
+        setTimeout(()=>exitSecretMode(),400);
+      } else if(secretMissStreak>=3){
+        showHint('🔥 Sai '+secretMissStreak+'/5 — sai 5 phát là thua!');
+      }
+      return;
+    }
+    // Map thường (chưa lửa): bấm sai liên tiếp 3 lần → mất 1 tim; hết tim → thua, về map thường
     if(secretMissStreak>=3){
       secretMissStreak=0;
       secretLives--;
@@ -2875,8 +2891,8 @@ function dropSecretTiles(){
 // Timer management
 function resetSecretTimer(){
   clearSecretTimer();
-  // Đang ở chế độ lửa (ultra) → cửa sổ giữ lửa chỉ còn 1/2, phải bấm chuẩn liên tục mới duy trì
-  const windowMs = secretUltra ? SECRET_WINDOW/2 : SECRET_WINDOW;
+  // Đang ở chế độ lửa (ultra/thanh vàng đầy) → thanh chạy nhanh hơn hẳn (chỉ còn 40% cửa sổ thường)
+  const windowMs = secretUltra ? SECRET_WINDOW*0.4 : SECRET_WINDOW;
   secretTimerEnd=Date.now()+windowMs;
   animateTimerBar();
 
@@ -2907,7 +2923,7 @@ function clearSecretTimer(){
 
 function animateTimerBar(){
   const bar=document.getElementById('timer-bar');
-  const windowMs = secretUltra ? SECRET_WINDOW/2 : SECRET_WINDOW;
+  const windowMs = secretUltra ? SECRET_WINDOW*0.4 : SECRET_WINDOW; // phải khớp với resetSecretTimer
   function frame(){
     const now=Date.now();
     const remaining=Math.max(0, secretTimerEnd-now);
@@ -6488,6 +6504,9 @@ function drawBubble(ctx,W,H){
       ctx.globalAlpha=1;
     }
   });
+
+  const bTimeLeft=Math.max(0,BUBBLE_TIME-bubbleElapsed);
+  drawHudTop(ctx,W,{left:'🫧 '+bubbleScore+'/'+BUBBLE_KPI, right:'⏱ '+bTimeLeft.toFixed(0)+'s'});
 }
 
 function drawBubbleCircle(ctx,x,y,r,color){
@@ -6763,6 +6782,9 @@ function drawStack(ctx,W,H){
       ctx.globalAlpha=1;
     }
   });
+
+  const sTimeLeft=Math.max(0,STACK_TIME-stackElapsed);
+  drawHudTop(ctx,W,{left:'🏗️ '+stackCount+'/'+STACK_KPI+' tầng', right:'⏱ '+sTimeLeft.toFixed(0)+'s'});
 }
 
 function stackDone(won){
@@ -10437,6 +10459,9 @@ function initMazeGame(){
     usedKeys.add(key);
     pickups.push({r,c,type:'coin',taken:false});
   }
+  // gỡ listener của ván trước (nếu có) trước khi thay mazeState — tránh chồng handler khi chơi lại
+  if(mazeState._keyHandler) window.removeEventListener('keydown',mazeState._keyHandler);
+  if(mazeState._retryKey) window.removeEventListener('keydown',mazeState._retryKey);
   mazeState={
     W,H,cols,rows,cells,cellW,cellH,offX,offY,
     dog:{r:0,c:0},
@@ -10593,10 +10618,16 @@ function mazeLoop(){
     ctx.fillStyle='#ffffff';
     ctx.font='16px monospace';
     ctx.fillText('Nhấn để thử lại',W/2,H/2+32);
-    MZC().ontouchstart=ev=>{ ev.preventDefault(); initMazeGame(); };
-    window.removeEventListener('keydown',s._keyHandler);
-    const retryKey=ev=>{ if(ev.key===' '||ev.key==='Enter'){ window.removeEventListener('keydown',retryKey); initMazeGame(); } };
-    window.addEventListener('keydown',retryKey);
+    // Chỉ gắn listener thử-lại MỘT lần — nhánh gameOver này chạy mỗi frame,
+    // trước đây mỗi frame lại chồng thêm 1 listener keydown mới → bấm Enter
+    // sau vài giây game over sẽ gọi initMazeGame hàng trăm lần cùng lúc.
+    if(!s._retryArmed){
+      s._retryArmed=true;
+      MZC().ontouchstart=ev=>{ ev.preventDefault(); initMazeGame(); };
+      window.removeEventListener('keydown',s._keyHandler);
+      s._retryKey=ev=>{ if(ev.key===' '||ev.key==='Enter'){ window.removeEventListener('keydown',s._retryKey); initMazeGame(); } };
+      window.addEventListener('keydown',s._retryKey);
+    }
   }
   mazeRAF=requestAnimationFrame(mazeLoop);
 }
@@ -10605,6 +10636,10 @@ function exitMazeToMain(){
   mazeMode=false;
   startBgm('main');
   if(mazeRAF){cancelAnimationFrame(mazeRAF);mazeRAF=null;}
+  // gỡ listener bàn phím gắn vào window — trước đây thắng/thoát không gỡ,
+  // handler cũ tồn tại mãi và mỗi lần vào lại maze lại chồng thêm 1 cái
+  if(mazeState._keyHandler) window.removeEventListener('keydown',mazeState._keyHandler);
+  if(mazeState._retryKey) window.removeEventListener('keydown',mazeState._retryKey);
   MZC().classList.remove('active');
   document.getElementById('grid').style.display='';
   document.getElementById('pieces-area').style.display='';
