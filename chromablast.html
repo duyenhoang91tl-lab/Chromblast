@@ -2838,6 +2838,17 @@ function onSCClick(e){
     secretBoard[gr][gc]=null;
   });
 
+  // Đạt đủ điểm trong ván map ẩn 1 → thắng, mở map ẩn 2 (timeout giờ chỉ còn là thua, không tự thắng nữa)
+  if(secret1Gained>=TEST_UNLOCK_SCORE){
+    clearSecretTimer();
+    secretMode=false;
+    setTimeout(()=>{
+      dropSecretTiles();
+      startUnlockGate(0);
+    }, 310);
+    return;
+  }
+
   // Start/reset timer
   resetSecretTimer();
 
@@ -2869,16 +2880,19 @@ function resetSecretTimer(){
 
   secretTimer=setTimeout(()=>{
     if(secretUltra){
-      // Không bấm kịp trong cửa sổ rút ngắn → tắt lửa, quay về bình thường (không thua, chơi tiếp)
+      // Không bấm kịp trong cửa sổ rút ngắn → tắt lửa + mất chuỗi combo, quay về bình thường (chơi tiếp, không thua)
       secretUltra=false;
+      secretStreak=0; secretMultiplier=1;
       document.getElementById('grid-wrap').classList.remove('ultra-glow');
+      renderStreakDots();
+      updateComboBorderGlow(0);
+      document.getElementById('burst-count').textContent='Nhân: x1';
       resetSecretTimer();
       return;
     }
-    // Hết giờ map ẩn 1 → TEST: luôn mở khoá MAP ẨN 2 ngay (không cần về map thường)
-    // Production sau: nếu đạt điểm mới unlock, không đạt → exitSecretMode()
-    secretMode=false; clearSecretTimer();
-    startUnlockGate(0);
+    // Hết giờ (không bấm kịp) → mất combo, mất lửa, thua ván này → về map thường
+    forfeitHiddenMapScore();
+    exitSecretMode();
   }, windowMs);
 }
 
@@ -3335,13 +3349,7 @@ function drawDodge(ctx,W,H){
 
   drawTurtle(ctx,turtle.x,turtle.y,turtle.w,turtle.h,dodgeElapsed*0.001,turtle.vx||0,turtlePanicLevel);
 
-  // HUD
-  ctx.save();
-  ctx.fillStyle='rgba(200,210,255,0.95)';
-  ctx.font='bold 15px system-ui'; ctx.textAlign='left'; ctx.textBaseline='top';
-  ctx.shadowColor='rgba(120,150,255,0.8)'; ctx.shadowBlur=8;
-  ctx.fillText('⏱ '+(dodgeElapsed/1000).toFixed(1)+'s', 12, 10);
-  ctx.restore();
+  drawHudTop(ctx,W,{left:'⏱ '+(dodgeElapsed/1000).toFixed(1)+'s'});
 }
 
 function roundRect(ctx,x,y,w,h,r){
@@ -3353,6 +3361,32 @@ function roundRect(ctx,x,y,w,h,r){
   ctx.arcTo(x,y+h,x,y,r);
   ctx.arcTo(x,y,x+w,y,r);
   ctx.closePath();
+}
+
+// Thanh HUD chuẩn dùng chung cho mọi map ẩn: 1 dải bo góc trên cùng canvas,
+// chữ trắng bold 14px system-ui, tối đa 3 mục trái/giữa/phải, có thể kèm vạch tiến trình.
+function drawHudTop(ctx,W,opts){
+  const barH=26, y=8, x=10, w=W-20;
+  ctx.save();
+  ctx.beginPath(); roundRect(ctx,x,y,w,barH,8);
+  ctx.fillStyle='rgba(0,0,0,0.5)';
+  ctx.fill();
+  if(opts.progress!=null){
+    ctx.save();
+    ctx.beginPath(); roundRect(ctx,x,y,w,barH,8); ctx.clip();
+    ctx.fillStyle=opts.progressColor||'#44dd44';
+    ctx.fillRect(x,y,w*Math.max(0,Math.min(1,opts.progress)),barH);
+    ctx.restore();
+  }
+  ctx.fillStyle='#ffffff';
+  ctx.font='bold 14px system-ui';
+  ctx.textBaseline='middle';
+  ctx.shadowColor='rgba(0,0,0,0.6)'; ctx.shadowBlur=3;
+  const ty=y+barH/2;
+  if(opts.left){ ctx.textAlign='left'; ctx.fillText(opts.left, x+8, ty); }
+  if(opts.center){ ctx.textAlign='center'; ctx.fillText(opts.center, W/2, ty); }
+  if(opts.right){ ctx.textAlign='right'; ctx.fillText(opts.right, x+w-8, ty); }
+  ctx.restore();
 }
 
 function drawTurtle(ctx,x,y,w,h,t=0,vx=0,panicLevel=0){
@@ -3683,6 +3717,7 @@ let fruitMode=false, fruitRAF=null, fruitLast=0, fruitElapsed=0, fruitSpawnTimer
 let fruits=[], fruitTrail=[], fruitTimeLeft=60;
 let fruitCombo=0, fruitComboTimer=0;
 let fruitMissStreak=0; // số lần chém trượt (quả rơi hết màn hình mà không chém trúng) liên tiếp
+let fruitLives=5; // chém trúng bom trừ 1 mạng thay vì thua ngay
 let fruitFx=[]; // slice effects: juice drops + petals + slash lines
 let fruitMissPopups=[]; // floating "-10" text khi chém trượt
 let fruitTrailPetals=[]; // flower petal particles that fall along the slash trail
@@ -3736,6 +3771,7 @@ function enterFruitMode(){
 function initFruit(){
   fruits=[]; fruitTrail=[]; fruitFx=[]; fruitTrailPetals=[]; fruitMissPopups=[];
   fruitElapsed=0; fruitSpawnTimer=0; fruitTimeLeft=60; fruitMissStreak=0;
+  fruitLives=5; // 5 mạng — chém trúng bom chỉ trừ 1 mạng thay vì thua ngay
 }
 
 function fruitDiff(){
@@ -3857,7 +3893,11 @@ function fruitLoop(now){
 
   drawFruit(ctx,W,H,now);
 
-  if(boomed){ fruitGameOver(false); return; }
+  if(boomed){
+    fruitLives--;
+    if(fruitLives<=0){ fruitGameOver(false); return; }
+    showComboFlash(0,false,'💣 Trúng bom! Còn '+fruitLives+' mạng');
+  }
   if(missedDie){ fruitGameOver(false, '😵 Trượt quá 5 lần liên tiếp!'); return; }
   if(fruitTimeLeft<=0 && fruits.every(f=>f.y>H+60||f.sliced)){ fruitGameOver(true); return; }
   fruitRAF=requestAnimationFrame(fruitLoop);
@@ -4121,13 +4161,7 @@ function drawFruit(ctx,W,H,now){
   }
   ctx.shadowBlur=0;
 
-  // HUD
-  ctx.save();
-  ctx.fillStyle='rgba(230,200,255,0.95)';
-  ctx.font='bold 16px system-ui'; ctx.textAlign='left'; ctx.textBaseline='top';
-  ctx.shadowColor='rgba(180,80,255,0.7)'; ctx.shadowBlur=10;
-  ctx.fillText('⏱ '+Math.ceil(fruitTimeLeft)+'s', 12, 10);
-  ctx.restore();
+  drawHudTop(ctx,W,{left:'⏱ '+Math.ceil(fruitTimeLeft)+'s', right:'❤️'.repeat(Math.max(0,fruitLives))});
 
   // ── floating "-10" popup khi chém trượt ──
   for(const p of fruitMissPopups){
@@ -5206,15 +5240,7 @@ function drawGold(ctx,W,H,t){
   gmDrawMouse(ctx,t);
   gmDrawParticles(ctx,1/60);
 
-  // HUD
-  ctx.save();
-  ctx.fillStyle='rgba(255,220,120,0.95)';
-  ctx.font='bold 14px system-ui'; ctx.textAlign='left'; ctx.textBaseline='middle';
-  ctx.shadowColor='rgba(255,180,0,0.6)'; ctx.shadowBlur=6;
-  ctx.fillText('💎 '+goldSessionScore, 10, GM_GT/2);
-  ctx.textAlign='right';
-  ctx.fillText('⏱ '+Math.ceil(goldTimeLeft)+'s', W-10, GM_GT/2);
-  ctx.restore();
+  drawHudTop(ctx,W,{left:'💎 '+goldSessionScore, right:'⏱ '+Math.ceil(goldTimeLeft)+'s'});
 }
 
 function gmDrawDirt(ctx,x,y,w,h,r,c){
@@ -5484,6 +5510,7 @@ const MOLE_TIME=45, MOLE_KPI=32;
 let moleMode=false, moleRAF=null, moleLast=0, moleElapsed=0;
 let moleHoles=[], moleFx=[], moleScore=0;
 let moleComboCount=0, moleLastHitTime=0;
+let moleLives=3, moleMissStreak=0; // đập trượt liên tiếp 3 phát → trừ 1 tim, tổng 3 tim
 let moleHammerX=0, moleHammerY=0, moleHammerVis=false, moleHammerAnim=0;
 const MCV=()=>document.getElementById('mole-canvas');
 
@@ -5522,6 +5549,7 @@ function enterMoleMode(){
 function initMole(){
   const cv=MCV(), W=cv.width, H=cv.height;
   moleScore=0; moleFx=[]; moleElapsed=0; moleComboCount=0; moleLastHitTime=0;
+  moleLives=3; moleMissStreak=0;
   // 8 holes in a 4×2 grid in lower 2/3 of canvas
   moleHoles=[];
   const hx0=W*0.14, hxStep=W*0.24;
@@ -5566,7 +5594,9 @@ function moleLoop(now){
         for(let i=0;i<pool.length;i++){ rnd-=weights[i]; if(rnd<=0){chosen=pool[i];break;} }
         h.animal=chosen;
         h.showT=0;
-        h.maxShow=Math.max(1.1, 2.8-moleElapsed/22000);
+        // thời gian con thú "bay lên" hiển thị trên mặt đất — dài hơn để dễ đập,
+        // vẫn giảm dần theo độ khó (thời gian chơi càng lâu càng ngắn lại)
+        h.maxShow=Math.max(1.6, 3.6-moleElapsed/22000);
         h.riseT=0; h.fallT=-1; h.hit=false;
         if(!sfxMuted) sfxMoleAppear();
       }
@@ -5620,7 +5650,8 @@ function tapMole(ex,ey){
   moleHammerX=ex; moleHammerY=ey; moleHammerVis=true; moleHammerAnim=1;
   let hit=false;
   for(const h of moleHoles){
-    if(!h.animal || h.fallT>=0 || h.hit || h.riseT<1) continue; // only hittable once fully risen (100%)
+    // chỉ hittable khi con thú đã bay lên đúng 100% ra khỏi hố
+    if(!h.animal || h.fallT>=0 || h.hit || h.riseT<1) continue;
     const rise=moleRise(h);
     const yOff=(1-rise)*h.r*1.8;
     const hx=h.x, hy=h.y-yOff;
@@ -5640,10 +5671,20 @@ function tapMole(ex,ey){
       const col=pts>0?'#f7c948':'#ff4444';
       moleFx.push({x:hx,y:hy,t:0,label:(pts>0?'+':'')+pts,color:col,emoji:h.animal.emoji});
       hit=true;
+      moleMissStreak=0;
       break;
     }
   }
-  if(!hit){ sfxHammer(); } // missed tap
+  if(!hit){
+    sfxHammer(); // missed tap
+    moleMissStreak++;
+    if(moleMissStreak>=3){
+      moleMissStreak=0;
+      moleLives--;
+      showComboFlash(0,false,'💔 Trượt 3 lần! Còn '+Math.max(0,moleLives)+' tim');
+      if(moleLives<=0){ moleDone(true); return; }
+    }
+  }
 }
 
 function easeOut(t){ return 1-(1-t)*(1-t); }
@@ -5751,7 +5792,7 @@ function drawMole(ctx,W,H,now,timeLeft){
 
     ctx.restore();
 
-    // chỉ hiện viền sáng có thể đập khi đã bay lên đúng 100%
+    // hiện viền sáng có thể đập khi đã bay lên đúng 100%
     if(h.riseT>=1 && h.fallT<0 && !h.hit){
       const pulse=0.55+0.45*Math.sin(now*0.008);
       ctx.save();
@@ -5797,29 +5838,22 @@ function drawMole(ctx,W,H,now,timeLeft){
     ctx.restore();
   }
 
-  // timer bar
-  const barW=W*0.7, barX=(W-barW)/2, barY=H*0.05;
   const frac=Math.max(0,timeLeft/MOLE_TIME);
-  ctx.fillStyle='rgba(0,0,0,0.3)';
-  ctx.beginPath(); roundRect(ctx,barX,barY,barW,10,5); ctx.fill();
   const barCol=frac>0.4?'#44dd44':frac>0.2?'#ffaa00':'#ff3333';
-  ctx.fillStyle=barCol;
-  ctx.beginPath(); roundRect(ctx,barX,barY,barW*frac,10,5); ctx.fill();
-  ctx.fillStyle='white'; ctx.font='bold 13px system-ui'; ctx.textAlign='center';
-  ctx.fillText('⏱ '+timeLeft.toFixed(0)+'s', W/2, H*0.085);
+  drawHudTop(ctx,W,{left:'🔨 '+moleScore+'/'+MOLE_KPI, center:'⏱ '+timeLeft.toFixed(0)+'s', right:'❤️'.repeat(Math.max(0,moleLives)), progress:frac, progressColor:barCol});
 }
 
-function moleDone(){
+function moleDone(forceLose){
   if(moleRAF){ cancelAnimationFrame(moleRAF); moleRAF=null; }
   moleMode=false;
-  const won=moleScore>=MOLE_KPI;
+  const won=!forceLose && moleScore>=MOLE_KPI;
   if(won){
     score+=moleScore; if(score>best)best=score; updateScoreUI();
     sfxWaveWin();
     showComboFlash(0,false,'🏆 '+moleScore+' điểm! THẮNG!');
   } else {
     sfxGameOver();
-    showComboFlash(0,false,'🔨 '+moleScore+'/'+MOLE_KPI+' — Chưa đủ!');
+    showComboFlash(0,false, forceLose ? '💔 Hết tim! '+moleScore+'/'+MOLE_KPI+'đ' : '🔨 '+moleScore+'/'+MOLE_KPI+' — Chưa đủ!');
   }
   setTimeout(()=>{ exitMoleToMain(); setTimeout(()=>startUnlockGate(5), 500); }, 500);
 }
@@ -6048,12 +6082,8 @@ function drawMemory(ctx,W,H){
     ctx.restore();
   });
 
-  // Time display at top
   const timeLeft=Math.max(0,MEMORY_TIME-memoryElapsed);
-  ctx.font='bold 18px system-ui'; ctx.textAlign='center'; ctx.textBaseline='top';
-  ctx.fillStyle='#fff'; ctx.shadowColor='rgba(0,0,0,0.5)'; ctx.shadowBlur=4;
-  ctx.fillText('⏱ '+timeLeft.toFixed(0)+'s  🃏 '+memoryMatched+'/6 cặp',W/2,8);
-  ctx.shadowBlur=0;
+  drawHudTop(ctx,W,{left:'⏱ '+timeLeft.toFixed(0)+'s', right:'🃏 '+memoryMatched+'/'+MEMORY_KPI_PAIRS});
 }
 
 let memoryFlipLock=false;
@@ -6773,28 +6803,27 @@ STCV().addEventListener('pointerdown', e=>{
 /* ══════════════════════════════════════════
    MAP ẨN 10 — BOSS BATTLE
 ══════════════════════════════════════════ */
-const BOSS_TIME=90, BOSS_HP_MAX=200;
-const BOSS_PROJ_COLORS=['#ff4444','#ff9900','#ffdd00','#44ff88','#44aaff','#cc44ff'];
+const BOSS_TIME=90, BOSS_TOTAL_WAVES=3;
 
 let bossMode=false, bossRAF=null, bossLast=0, bossElapsed=0;
-let bossHP=BOSS_HP_MAX, bossX=180, bossVX=60, bossY=60;
-let bossProjectiles=[], bossVenom=[], bossDogX=180, bossDogLives=3;
+let bossDogX=180, bossDogLives=3;
+let bossChickens=[], bossProjectiles=[], bossVenom=[];
 let bossFx=[], bossScore=0, bossFireTimer=0, bossVenomTimer=0;
-let bossProjColorIdx=0;
+let bossWave=0, bossWaveCleared=true;
 
 const BOSCV=()=>document.getElementById('boss-canvas');
 
 function triggerBossUnlock(){
   markMapCleared('stack');
   pendingUnlock='boss';
-  document.getElementById('unlock-title').textContent='🐍 MAP ẨN 10 MỞ KHÓA!';
+  document.getElementById('unlock-title').textContent='🐔 MAP ẨN 10 MỞ KHÓA!';
   document.getElementById('unlock-desc').innerHTML=
-    '🐍 <b>Đại Chiến Boss!</b><br><br>'+
-    'Chú chó Samoyed đối đầu con rắn khổng lồ!<br>'+
-    'Chạm vào màn hình → bắn đạn lên! Tiêu diệt Boss (200 HP)!<br>'+
-    'Né giọt nọc độc rơi xuống — bạn có <b>3 mạng ❤️</b>!<br>'+
-    'Hạ gục Boss trước <b>'+BOSS_TIME+'s</b> để chiến thắng!';
-  document.getElementById('unlock-btn').textContent='🐍 CHIẾN ĐẤU!';
+    '🚀 <b>Phi Cơ Bắn Gà!</b><br><br>'+
+    'Điều khiển phi cơ bắn hạ đàn gà xâm lăng!<br>'+
+    'Kéo ngón tay để lái — phi cơ tự động bắn liên tục!<br>'+
+    'Né trứng gà rơi xuống — bạn có <b>3 mạng ❤️</b>!<br>'+
+    'Tiêu diệt hết <b>'+BOSS_TOTAL_WAVES+' đợt gà</b> trước <b>'+BOSS_TIME+'s</b> để chiến thắng!';
+  document.getElementById('unlock-btn').textContent='🐔 CHIẾN ĐẤU!';
   showUnlockOverlay();
 }
 
@@ -6805,24 +6834,37 @@ function enterBossMode(){
   document.getElementById('grid').style.display='none';
   document.getElementById('pieces-area').style.display='none';
   document.getElementById('hint-bar').style.display='';
-  document.getElementById('hint-bar').textContent='Chạm để bắn! Chú chó tự né độc!';
+  document.getElementById('hint-bar').textContent='Kéo ngón tay để lái phi cơ! Tự động bắn — né trứng gà rơi!';
   BOSCV().classList.add('active');
   document.getElementById('grid-wrap').classList.add('secret-mode');
-  document.getElementById('mode-badge').textContent='🐍 MAP ẨN 10';
+  document.getElementById('mode-badge').textContent='🐔 MAP ẨN 10';
   document.getElementById('mode-badge').classList.add('secret');
-  document.getElementById('burst-count').textContent='🐍 Boss HP: '+BOSS_HP_MAX;
+  document.getElementById('burst-count').textContent='🐔 Đợt 0/'+BOSS_TOTAL_WAVES;
   bossMode=true;
   initBoss();
   bossLast=performance.now();
   bossRAF=requestAnimationFrame(bossLoop);
 }
 
+function spawnChickenWave(){
+  bossWave++;
+  bossWaveCleared=false;
+  bossChickens=[];
+  const cols=6, rows=2+(bossWave>1?1:0);
+  const speed=18+bossWave*10;
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      bossChickens.push({x:35+c*50, y:45+r*44, dir:1, speed, emoji: Math.random()<0.15?'🐓':'🐔'});
+    }
+  }
+}
+
 function initBoss(){
-  bossHP=BOSS_HP_MAX; bossX=180; bossVX=60; bossY=70;
-  bossProjectiles=[]; bossVenom=[]; bossDogLives=3;
-  bossFx=[]; bossScore=0; bossElapsed=0;
-  bossFireTimer=0; bossVenomTimer=0; bossProjColorIdx=0;
-  const cv=BOSCV(); bossDogX=cv.width/2;
+  const cv=BOSCV();
+  bossDogX=cv.width/2; bossDogLives=3;
+  bossChickens=[]; bossProjectiles=[]; bossVenom=[]; bossFx=[];
+  bossScore=0; bossElapsed=0; bossFireTimer=0; bossVenomTimer=0;
+  bossWave=0; bossWaveCleared=true;
 }
 
 function bossLoop(now){
@@ -6832,67 +6874,67 @@ function bossLoop(now){
   bossElapsed+=dt;
 
   const cv=BOSCV(), W=cv.width, H=cv.height;
-  const speedMult=1+Math.floor((BOSS_HP_MAX-bossHP)/30)*0.3;
 
-  // move boss
-  bossX+=bossVX*speedMult*dt;
-  if(bossX>W-50){ bossX=W-50; bossVX=-Math.abs(bossVX); }
-  if(bossX<50){ bossX=50; bossVX=Math.abs(bossVX); }
-  // boss slowly descends
-  bossY+=5*dt;
-  if(bossY>H*0.35) bossY=H*0.35;
-
-  // boss fires venom
-  const venomInterval=Math.max(1.2, 2.5-Math.floor((BOSS_HP_MAX-bossHP)/30)*0.3);
-  bossVenomTimer+=dt;
-  if(bossVenomTimer>=venomInterval){
-    bossVenomTimer=0;
-    bossVenom.push({x:bossX+(Math.random()-0.5)*40, y:bossY+40, vy:120+Math.random()*40});
-    if(!sfxMuted) sfxVenomFire();
+  if(bossWaveCleared && bossWave<BOSS_TOTAL_WAVES){
+    spawnChickenWave();
   }
 
-  // player fires projectiles (auto-fire every 0.4s)
+  // player plane auto-fires
   bossFireTimer+=dt;
-  if(bossFireTimer>=0.4){
+  if(bossFireTimer>=0.3){
     bossFireTimer=0;
-    bossProjectiles.push({x:bossDogX, y:H-60, vy:-300, color:BOSS_PROJ_COLORS[bossProjColorIdx%BOSS_PROJ_COLORS.length]});
-    bossProjColorIdx++;
+    bossProjectiles.push({x:bossDogX, y:H-60, vy:-320});
     if(!sfxMuted) sfxBossShoot();
   }
-
-  // move projectiles
   bossProjectiles.forEach(p=>p.y+=p.vy*dt);
   bossProjectiles=bossProjectiles.filter(p=>p.y>0);
 
-  // check projectile hits boss
-  bossProjectiles=bossProjectiles.filter(p=>{
-    if(Math.abs(p.x-bossX)<50 && Math.abs(p.y-bossY)<50){
-      bossHP-=10;
-      bossScore+=1; score+=1; // 1 điểm/lần trúng đòn
-      if(best<score){ best=score; }
-      updateScoreUI();
-      bossFx.push({x:bossX,y:bossY,t:0,type:'hit'});
-      if(!sfxMuted) sfxBossHit();
-      return false;
-    }
-    return true;
-  });
+  // chickens move side to side, descend on wall bounce
+  let hitWall=false;
+  for(const c of bossChickens){
+    c.x+=c.dir*c.speed*dt;
+    if(c.x>W-25||c.x<25) hitWall=true;
+  }
+  if(hitWall){ for(const c of bossChickens){ c.dir*=-1; c.y+=16; } }
 
-  // move venom
+  // chickens drop eggs
+  const eggInterval=Math.max(0.5, 1.4-bossWave*0.2);
+  bossVenomTimer+=dt;
+  if(bossVenomTimer>=eggInterval && bossChickens.length>0){
+    bossVenomTimer=0;
+    const c=bossChickens[Math.floor(Math.random()*bossChickens.length)];
+    bossVenom.push({x:c.x, y:c.y+14, vy:110+bossWave*15});
+    if(!sfxMuted) sfxVenomFire();
+  }
   bossVenom.forEach(v=>v.y+=v.vy*dt);
   bossVenom=bossVenom.filter(v=>v.y<H);
 
-  // dog auto-dodge
-  const closestVenom=bossVenom.filter(v=>v.y>H*0.5).sort((a,b)=>Math.abs(a.x-bossDogX)-Math.abs(b.x-bossDogX))[0];
-  if(closestVenom && Math.abs(closestVenom.x-bossDogX)<80){
-    const dodgeDir=closestVenom.x>bossDogX?-1:1;
-    bossDogX+=dodgeDir*120*dt;
-    bossDogX=Math.max(30,Math.min(W-30,bossDogX));
+  // bullet vs chicken collision
+  bulletLoop:
+  for(let bi=bossProjectiles.length-1;bi>=0;bi--){
+    const p=bossProjectiles[bi];
+    for(let ci=bossChickens.length-1;ci>=0;ci--){
+      const c=bossChickens[ci];
+      if(Math.abs(p.x-c.x)<20 && Math.abs(p.y-c.y)<20){
+        bossProjectiles.splice(bi,1);
+        bossChickens.splice(ci,1);
+        bossScore+=1; score+=1; // 1 điểm/con gà bị bắn hạ
+        if(best<score) best=score;
+        updateScoreUI();
+        bossFx.push({x:c.x,y:c.y,t:0,type:'hit'});
+        if(!sfxMuted) sfxBossHit();
+        continue bulletLoop;
+      }
+    }
   }
 
-  // check venom hits dog
+  if(bossChickens.length===0 && !bossWaveCleared){
+    bossWaveCleared=true;
+  }
+
+  // egg hits plane
   bossVenom=bossVenom.filter(v=>{
-    if(v.y>H-80 && Math.abs(v.x-bossDogX)<30){
+    if(v.y>H-70 && Math.abs(v.x-bossDogX)<28){
       bossDogLives--;
       bossFx.push({x:bossDogX,y:H-60,t:0,type:'dmg'});
       sfxDogStung();
@@ -6900,6 +6942,17 @@ function bossLoop(now){
     }
     return true;
   });
+
+  // chicken reaches bottom → hits plane
+  for(let ci=bossChickens.length-1;ci>=0;ci--){
+    if(bossChickens[ci].y>H-90){
+      bossDogLives--;
+      bossFx.push({x:bossDogX,y:H-60,t:0,type:'dmg'});
+      sfxDogStung();
+      bossChickens.splice(ci,1);
+      break;
+    }
+  }
 
   // update fx
   bossFx.forEach(f=>f.t+=dt);
@@ -6909,13 +6962,13 @@ function bossLoop(now){
   drawBoss(ctx,W,H);
 
   const timeLeft=Math.max(0,BOSS_TIME-bossElapsed);
-  document.getElementById('burst-count').textContent='🐍 Boss HP: '+Math.max(0,bossHP)+'  ❤️×'+bossDogLives;
+  document.getElementById('burst-count').textContent='🐔 Đợt '+Math.min(bossWave,BOSS_TOTAL_WAVES)+'/'+BOSS_TOTAL_WAVES+'  ❤️×'+Math.max(0,bossDogLives);
 
   // win/lose conditions
-  if(bossHP<=0){
+  if(bossWave>=BOSS_TOTAL_WAVES && bossWaveCleared){
     bossDone(true); return;
   }
-  if(bossDogLives<=0 || bossY>=H-100){
+  if(bossDogLives<=0){
     bossDone(false); return;
   }
   if(timeLeft<=0){
@@ -6926,62 +6979,42 @@ function bossLoop(now){
 
 function drawBoss(ctx,W,H){
   ctx.clearRect(0,0,W,H);
-  // Epic dark arena
+  // bright sky arena
   const bg=ctx.createLinearGradient(0,0,0,H);
-  bg.addColorStop(0,'#1a0030'); bg.addColorStop(0.5,'#2a0020'); bg.addColorStop(1,'#0d0010');
+  bg.addColorStop(0,'#0a1a30'); bg.addColorStop(0.5,'#123a55'); bg.addColorStop(1,'#5aaadd');
   ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
-  // arena lines
-  ctx.strokeStyle='rgba(150,0,80,0.15)';
-  ctx.lineWidth=1;
-  for(let i=0;i<H;i+=40){ ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(W,i); ctx.stroke(); }
+  // drifting clouds
+  [[W*0.2,H*0.15,30],[W*0.7,H*0.25,38],[W*0.45,H*0.35,26]].forEach(([cx0,cy,cr],i)=>{
+    const cx=(cx0+bossElapsed*10*(i+1))%(W+80)-40;
+    ctx.fillStyle='rgba(255,255,255,0.55)';
+    ctx.beginPath(); ctx.arc(cx,cy,cr,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx+cr*0.7,cy+4,cr*0.7,0,Math.PI*2); ctx.fill();
+  });
 
-  // HP bar background
-  ctx.fillStyle='rgba(255,0,0,0.2)';
-  ctx.fillRect(20,12,W-40,14);
-  // HP bar fill
-  const hpPct=Math.max(0,bossHP/BOSS_HP_MAX);
-  const hpGrad=ctx.createLinearGradient(20,0,W-20,0);
-  hpGrad.addColorStop(0,'#ff4444'); hpGrad.addColorStop(1,'#ff9900');
-  ctx.fillStyle=hpGrad;
-  ctx.fillRect(20,12,(W-40)*hpPct,14);
-  ctx.strokeStyle='#ff4444';
-  ctx.lineWidth=1;
-  ctx.strokeRect(20,12,W-40,14);
-  ctx.fillStyle='#fff';
-  ctx.font='bold 10px system-ui';
-  ctx.textAlign='center';
-  ctx.fillText('BOSS HP '+Math.max(0,bossHP)+'/'+BOSS_HP_MAX, W/2, 23);
+  const timePct=Math.max(0,1-bossElapsed/BOSS_TIME);
+  drawHudTop(ctx,W,{left:'🐔 ĐỢT '+Math.min(bossWave,BOSS_TOTAL_WAVES)+'/'+BOSS_TOTAL_WAVES, center:'⭐ '+bossScore, right:'❤️'.repeat(Math.max(0,bossDogLives)), progress:timePct, progressColor:'#ffd700'});
 
-  // Boss snake emoji
-  ctx.font='80px system-ui';
-  ctx.textAlign='center';
-  ctx.fillText('🐍', bossX, bossY+40);
+  // chickens
+  ctx.font='30px system-ui';
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  bossChickens.forEach(c=>{ ctx.fillText(c.emoji, c.x, c.y); });
 
-  // projectiles
+  // bullets
   bossProjectiles.forEach(p=>{
-    ctx.shadowColor=p.color; ctx.shadowBlur=12;
-    ctx.fillStyle=p.color;
-    ctx.beginPath(); ctx.arc(p.x,p.y,6,0,Math.PI*2); ctx.fill();
+    ctx.shadowColor='#66ccff'; ctx.shadowBlur=10;
+    ctx.fillStyle='#aeefff';
+    ctx.fillRect(p.x-2,p.y-8,4,14);
     ctx.shadowBlur=0;
   });
 
-  // venom drops
-  bossVenom.forEach(v=>{
-    ctx.fillStyle='rgba(0,200,0,0.7)';
-    ctx.beginPath(); ctx.arc(v.x,v.y,8,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle='rgba(0,200,0,0.3)';
-    ctx.beginPath(); ctx.arc(v.x,v.y-8,4,0,Math.PI*2); ctx.fill();
-  });
+  // falling eggs
+  ctx.font='18px system-ui';
+  bossVenom.forEach(v=>{ ctx.fillText('🥚', v.x, v.y); });
 
-  // Draw dog at bottom
-  ctx.font='48px system-ui';
-  ctx.textAlign='center';
-  ctx.fillText('🐕', bossDogX, H-20);
+  // player plane at bottom
+  ctx.font='42px system-ui';
+  ctx.fillText('🛩️', bossDogX, H-40);
 
-  // lives
-  ctx.font='20px system-ui';
-  ctx.textAlign='left';
-  for(let i=0;i<bossDogLives;i++) ctx.fillText('❤️', 10+i*26, H-10);
 
   // fx
   bossFx.forEach(f=>{
@@ -6989,12 +7022,12 @@ function drawBoss(ctx,W,H){
     ctx.globalAlpha=Math.max(0,1-prog);
     if(f.type==='hit'){
       ctx.strokeStyle='#ffdd00'; ctx.lineWidth=3;
-      ctx.beginPath(); ctx.arc(f.x,f.y,20*(1+prog),0,Math.PI*2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(f.x,f.y,18*(1+prog),0,Math.PI*2); ctx.stroke();
     } else if(f.type==='dmg'){
       ctx.fillStyle='#ff4444';
-      ctx.font='bold 24px system-ui';
+      ctx.font='bold 22px system-ui';
       ctx.textAlign='center';
-      ctx.fillText('💥', f.x, f.y-prog*30);
+      ctx.fillText('💥', f.x, f.y-prog*28);
     }
     ctx.globalAlpha=1;
   });
@@ -7005,12 +7038,12 @@ function bossDone(won){
   bossMode=false;
   if(won){
     sfxWaveWin();
-    showComboFlash(0,false,'🏆 Boss bị tiêu diệt!');
+    showComboFlash(0,false,'🏆 Tiêu diệt hết đàn gà!');
     setTimeout(()=>startUnlockGate(9), 500);
   } else {
     forfeitHiddenMapScore();
     sfxGameOver();
-    showComboFlash(0,false,'🐍 Boss chưa bị hạ! HP: '+Math.max(0,bossHP));
+    showComboFlash(0,false,'🐔 Chưa xong! Đợt '+Math.min(bossWave,BOSS_TOTAL_WAVES)+'/'+BOSS_TOTAL_WAVES);
   }
   setTimeout(exitBossToMain, 600);
 }
@@ -7031,14 +7064,16 @@ function exitBossToMain(){
   renderPieces(); checkGameOverA();
 }
 
-BOSCV().addEventListener('pointerdown', e=>{
+function bossHandlePointer(e){
   if(!bossMode) return;
   e.preventDefault();
   const rect=BOSCV().getBoundingClientRect();
   const scaleX=BOSCV().width/rect.width;
   const tx=(e.clientX-rect.left)*scaleX;
   bossDogX=Math.max(30,Math.min(BOSCV().width-30,tx));
-});
+}
+BOSCV().addEventListener('pointerdown', bossHandlePointer);
+BOSCV().addEventListener('pointermove', bossHandlePointer);
 
 /* ══════════════════════════════════════════
    MAP ẨN 11 — ANIMAL CATCH 🧺
@@ -7242,15 +7277,7 @@ function drawCatch(ctx,W,H,basketY,basketW,basketH){
     }
     ctx.globalAlpha=1;
   });
-  // HUD
-  ctx.fillStyle='rgba(0,0,0,0.5)';
-  ctx.beginPath(); ctx.roundRect(8,8,140,28,6); ctx.fill();
-  ctx.fillStyle='#fff'; ctx.font='bold 13px system-ui'; ctx.textAlign='left';
-  ctx.fillText('🧺 '+catchScore+' / '+CATCH_KPI+' pts', 14, 27);
-  // Lives
-  ctx.textAlign='right';
-  let hx=W-10;
-  for(let i=0;i<catchLives;i++){ ctx.fillText('❤️',hx,27); hx-=24; }
+  drawHudTop(ctx,W,{left:'🧺 '+catchScore+'/'+CATCH_KPI, right:'❤️'.repeat(Math.max(0,catchLives))});
 }
 
 function catchDone(won){
@@ -7490,12 +7517,8 @@ function drawFlood(ctx,W,H){
     }
   });
 
-  // HUD
-  ctx.fillStyle='rgba(0,0,0,0.6)';
-  ctx.beginPath(); ctx.roundRect(8,8,W-16,34,8); ctx.fill();
-  ctx.fillStyle='#fff'; ctx.font='bold 14px system-ui'; ctx.textAlign='center';
   const flooded=countFlooded();
-  ctx.fillText('🎨 Tràn: '+flooded+'/100  Bước: '+floodMoves+'/'+FLOOD_MAX_MOVES, W/2, 30);
+  drawHudTop(ctx,W,{left:'🎨 '+flooded+'/100', right:'👣 '+floodMoves+'/'+FLOOD_MAX_MOVES});
 
   // FX
   floodFx.forEach(f=>{
@@ -7862,19 +7885,9 @@ function drawArena(ctx,W,H){
     ctx.globalAlpha=1;
   }
 
-  // Wave progress bar
   const wavePct=Math.min(arenaElapsed/ARENA_TIME,1);
-  ctx.fillStyle='rgba(255,255,255,0.1)'; ctx.fillRect(0,0,W,6);
-  const wg=ctx.createLinearGradient(0,0,W,0);
-  wg.addColorStop(0,'#4080ff'); wg.addColorStop(0.5,'#ff40ff'); wg.addColorStop(1,'#ff8040');
-  ctx.fillStyle=wg; ctx.fillRect(0,0,W*wavePct,6);
-
-  // HUD
-  ctx.fillStyle='rgba(0,0,0,0.55)';
-  ctx.beginPath(); ctx.roundRect(8,10,W-16,28,6); ctx.fill();
-  ctx.fillStyle='#fff'; ctx.font='bold 12px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
   const wLabel=['Sóng 1: Ong','Sóng 2: Cà Rốt','Sóng 3: Rắn Boss','Sóng 4: Tất cả!'][arenaWave]||'';
-  ctx.fillText('🌊 '+wLabel+'  ❤️×'+arenaDogLives+'  '+Math.floor(arenaScore)+' pts',W/2,24);
+  drawHudTop(ctx,W,{left:'🌊 '+wLabel, center:'⭐ '+Math.floor(arenaScore), right:'❤️×'+arenaDogLives, progress:wavePct, progressColor:'#ff40ff'});
 }
 
 function arenaDone(won){
@@ -8153,19 +8166,56 @@ function showComboCountFlash(n){
 }
 
 // Lồng tiếng câu khen bằng giọng tổng hợp của trình duyệt — cao độ/tốc độ tăng dần theo cấp khen
+// Chọn sẵn 1 giọng đọc "có hồn" hơn giọng mặc định của Chrome/Google — ưu tiên các giọng
+// thường được đánh giá tự nhiên/sinh động hơn (Microsoft/Apple/Google WaveNet…), cache lại
+// vì getVoices() nạp bất đồng bộ và danh sách khác nhau tuỳ máy/trình duyệt.
+let _praiseVoice = undefined; // undefined = chưa tìm; null = không có giọng nào phù hợp (dùng mặc định)
+const PRAISE_VOICE_PREFERENCE = [
+  'Google US English', 'Microsoft Aria', 'Microsoft Jenny', 'Microsoft Guy',
+  'Samantha', 'Alex', 'Daniel', 'Karen', 'Moira', 'Tessa',
+  'Microsoft Zira', 'Microsoft David'
+];
+function pickPraiseVoice(){
+  if(_praiseVoice!==undefined) return _praiseVoice;
+  try{
+    const voices=window.speechSynthesis.getVoices();
+    if(!voices||!voices.length) return null; // chưa nạp xong, thử lại lần gọi sau
+    let best=null;
+    for(const name of PRAISE_VOICE_PREFERENCE){
+      best=voices.find(v=>v.name.includes(name)&&v.lang.startsWith('en'));
+      if(best) break;
+    }
+    if(!best) best=voices.find(v=>v.lang==='en-US'&&!v.default) || voices.find(v=>v.lang.startsWith('en'));
+    _praiseVoice=best||null;
+  }catch(e){ _praiseVoice=null; }
+  return _praiseVoice;
+}
+if(typeof window!=='undefined' && 'speechSynthesis' in window){
+  window.speechSynthesis.onvoiceschanged=()=>{ _praiseVoice=undefined; };
+}
+
+// Web Speech API không hỗ trợ điều khiển "cảm xúc" thật sự (không có SSML/prosody) —
+// nên ta giả lập sự hào hứng bằng cách: chọn giọng sống động hơn mặc định, kéo giãn mạnh
+// cao độ/tốc độ theo cấp khen, và lặp lại 2 lần dồn dập ở các cấp cao nhất (Legendary/Godlike).
 function speakPraise(level) {
   if (typeof sfxMuted !== 'undefined' && sfxMuted) return;
   if (!('speechSynthesis' in window)) return;
   try {
     const i = pIdx(level);
     const text = PRAISE[i];
+    const voice = pickPraiseVoice();
     window.speechSynthesis.cancel();
-    const msg = new SpeechSynthesisUtterance(text);
-    msg.lang = 'en-US';
-    msg.pitch = 0.8 + (i * 0.1);
-    msg.rate = 1.0 + (i * 0.05);
-    msg.volume = 0.6;
-    window.speechSynthesis.speak(msg);
+    const say=(pitchBoost, rateBoost, vol)=>{
+      const msg = new SpeechSynthesisUtterance(text);
+      if(voice) msg.voice = voice;
+      msg.lang = 'en-US';
+      msg.pitch = Math.min(2, 0.85 + i*0.11 + pitchBoost);
+      msg.rate  = Math.min(1.7, 1.0 + i*0.06 + rateBoost);
+      msg.volume = vol;
+      window.speechSynthesis.speak(msg);
+    };
+    say(0, 0, 0.7);
+    if(i>=8) setTimeout(()=>say(0.15, 0.1, 0.75), 260); // hô lại lần 2, dồn dập hơn ở Legendary/Godlike
   } catch(e) {}
 }
 
@@ -9163,14 +9213,7 @@ function drawSnake(ctx, W, H, now){
     ctx.fillText(snakeFood.emoji, fx, fy);
   }
 
-  // Top bar
-  ctx.fillStyle='rgba(0,0,0,0.55)';
-  ctx.fillRect(0,0,W,26);
-  ctx.fillStyle='#fff'; ctx.font='bold 13px system-ui'; ctx.textAlign='left'; ctx.textBaseline='middle';
-  let livesStr=''; for(let i=0;i<snakeLives;i++) livesStr+='❤️';
-  ctx.fillText(livesStr, 6, 13);
-  ctx.textAlign='right';
-  ctx.fillText('⭐ '+snakeScore, W-6, 13);
+  drawHudTop(ctx,W,{left:'❤️'.repeat(Math.max(0,snakeLives)), right:'⭐ '+snakeScore});
 
   // Fx
   snakeFx.forEach(f=>{
@@ -9442,14 +9485,7 @@ function drawBrick(ctx,W,H,pw,paddleY){
   ctx.beginPath();
   ctx.roundRect(brickPaddleX-halfPW,paddleY,pw,brickPaddleH,7);
   ctx.fill();
-  // Top bar
-  ctx.fillStyle='rgba(0,0,0,0.6)';
-  ctx.fillRect(0,0,W,26);
-  ctx.fillStyle='#fff'; ctx.font='bold 13px system-ui'; ctx.textAlign='left'; ctx.textBaseline='middle';
-  let ls=''; for(let i=0;i<brickLives;i++) ls+='❤️';
-  ctx.fillText(ls,6,13);
-  ctx.textAlign='right';
-  ctx.fillText('⭐ '+brickScore,W-6,13);
+  drawHudTop(ctx,W,{left:'❤️'.repeat(Math.max(0,brickLives)), right:'⭐ '+brickScore});
   // Fx
   brickFx.forEach(f=>{
     ctx.globalAlpha=1-f.t;
@@ -9683,20 +9719,9 @@ function drawRunner(ctx,W,H,timeLeft){
     ctx.fillText('🐶',80,runnerDogY+36);
   }
 
-  // Timer bar
-  const barW=(timeLeft/60)*W;
-  ctx.fillStyle='rgba(0,0,0,0.5)';
-  ctx.fillRect(0,0,W,20);
-  ctx.fillStyle=timeLeft>20?'#44cc44':timeLeft>10?'#ffcc00':'#ff4444';
-  ctx.fillRect(0,0,barW,20);
-  ctx.fillStyle='#fff'; ctx.font='bold 12px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
-  ctx.fillText('⏱ '+Math.ceil(timeLeft)+'s',W/2,10);
-
-  // Lives and score
-  ctx.textAlign='left'; ctx.font='13px system-ui'; ctx.textBaseline='middle';
-  let ls=''; for(let i=0;i<runnerLives;i++) ls+='❤️';
-  ctx.fillStyle='rgba(0,0,0,0.5)'; ctx.fillRect(0,22,120,20);
-  ctx.fillStyle='#fff'; ctx.fillText(ls+' ⭐'+Math.floor(runnerScore),4,32);
+  const timePct=Math.max(0,timeLeft/60);
+  const timeCol=timeLeft>20?'#44cc44':timeLeft>10?'#ffcc00':'#ff4444';
+  drawHudTop(ctx,W,{left:'❤️'.repeat(Math.max(0,runnerLives)), center:'⏱ '+Math.ceil(timeLeft)+'s', right:'⭐ '+Math.floor(runnerScore), progress:timePct, progressColor:timeCol});
 
   // Fx
   runnerFx.forEach(f=>{
@@ -10014,14 +10039,7 @@ function spaceLoop(){
   ctx.fillRect(4,H*0.35+H*0.3*(1-readyPct),8,H*0.3*readyPct);
   ctx.strokeStyle='rgba(255,255,255,0.4)'; ctx.lineWidth=1;
   ctx.strokeRect(4,H*0.35,8,H*0.3);
-  ctx.fillStyle='#ffffff';
-  ctx.font='bold 14px monospace';
-  ctx.textAlign='left';
-  ctx.fillText('❤️'.repeat(s.lives),10,20);
-  ctx.textAlign='right';
-  ctx.fillText('ĐIỂM: '+s.score,W-10,20);
-  ctx.textAlign='center';
-  ctx.fillText('SÓNG '+(Math.min(s.wave,s.totalWaves))+'/'+s.totalWaves,W/2,20);
+  drawHudTop(ctx,W,{left:'❤️'.repeat(Math.max(0,s.lives)), center:'SÓNG '+(Math.min(s.wave,s.totalWaves))+'/'+s.totalWaves, right:'⭐ '+s.score});
   if(s.waveCleared && s.wave<s.totalWaves && !s.won){
     ctx.fillStyle='rgba(0,0,50,0.6)';
     ctx.fillRect(0,H/2-40,W,80);
@@ -10310,16 +10328,7 @@ function rhythmLoop(){
     ctx.fillStyle=f.text==='PERFECT!'?`rgba(255,215,0,${alpha})`:f.text==='GREAT'?`rgba(150,255,150,${alpha})`:f.text==='COOL'?`rgba(120,200,255,${alpha})`:f.text==='BAD'?`rgba(255,160,80,${alpha})`:`rgba(255,80,80,${alpha})`;
     ctx.fillText(f.text+(f.pts>0?' +'+f.pts:''),f.x,f.y-20+((60-f.life)*0.3));
   }
-  ctx.fillStyle='#ff88ff';
-  ctx.font='bold 14px monospace';
-  ctx.textAlign='left';
-  ctx.fillText('ĐIỂM: '+s.score,10,20);
-  ctx.textAlign='right';
-  ctx.fillText(s.completed+'/'+s.totalCircles,W-10,20);
-  ctx.fillStyle='#330033';
-  ctx.fillRect(10,30,W-20,8);
-  ctx.fillStyle='#ff44ff';
-  ctx.fillRect(10,30,(W-20)*(s.completed/s.totalCircles),8);
+  drawHudTop(ctx,W,{left:'⭐ '+s.score, right:s.completed+'/'+s.totalCircles, progress:s.completed/s.totalCircles, progressColor:'#ff44ff'});
   if(s.won){
     ctx.fillStyle='rgba(0,0,0,0.8)';
     ctx.fillRect(0,0,W,H);
@@ -10521,14 +10530,7 @@ function mazeLoop(){
     ctx.fillStyle=`rgba(150,170,255,${fa})`;
     ctx.beginPath(); ctx.arc(fx,fy,1.2,0,Math.PI*2); ctx.fill();
   }
-  ctx.fillStyle=s.timeLeft<=10?'#ff4444':'#88aaff';
-  ctx.font='bold 16px monospace';
-  ctx.textAlign='center';
-  ctx.fillText('⏱ '+s.timeLeft+'s',W/2,28);
-  ctx.textAlign='left';
-  ctx.fillStyle='#aaaaff';
-  ctx.font='12px monospace';
-  ctx.fillText('Vuốt hoặc phím mũi tên',8,28);
+  drawHudTop(ctx,W,{left:'⏱ '+s.timeLeft+'s', right:'Vuốt/phím mũi tên'});
   const {cols,rows,cells,cellW,cellH,offX,offY}=s;
   ctx.save();
   ctx.shadowColor='rgba(120,150,255,0.6)'; ctx.shadowBlur=4;
@@ -10856,17 +10858,8 @@ function megaLoop(){
     ctx.fillRect(0,0,W,H);
   }
   const hpRatio=boss.hp/boss.maxHp;
-  ctx.fillStyle='#330000';
-  ctx.fillRect(20,12,W-40,14);
-  ctx.fillStyle=hpRatio>0.6?'#ff4444':hpRatio>0.3?'#ff8800':'#ff00ff';
-  ctx.fillRect(20,12,(W-40)*hpRatio,14);
-  ctx.strokeStyle='#ff0000';
-  ctx.lineWidth=1;
-  ctx.strokeRect(20,12,W-40,14);
-  ctx.fillStyle='#ffffff';
-  ctx.font='10px monospace';
-  ctx.textAlign='center';
-  ctx.fillText('👹 BOSS HP: '+boss.hp+'/'+boss.maxHp,W/2,23);
+  const hpCol=hpRatio>0.6?'#ff4444':hpRatio>0.3?'#ff8800':'#ff00ff';
+  drawHudTop(ctx,W,{left:'❤️'.repeat(Math.max(0,s.lives)), center:'👹 '+boss.hp+'/'+boss.maxHp, right:'⭐ '+s.score, progress:hpRatio, progressColor:hpCol});
   ctx.font=boss.flashTimer>0?'72px serif':'64px serif';
   ctx.textAlign='center';
   ctx.textBaseline='middle';
@@ -10910,13 +10903,6 @@ function megaLoop(){
     ctx.textBaseline='middle';
     ctx.fillText('🚀',s.ship.x,s.ship.y);
   }
-  ctx.fillStyle='#ffffff';
-  ctx.font='bold 13px monospace';
-  ctx.textAlign='left';
-  ctx.textBaseline='alphabetic';
-  ctx.fillText('❤️'.repeat(s.lives),10,H-10);
-  ctx.textAlign='right';
-  ctx.fillText('ĐIỂM: '+s.score,W-10,H-10);
   if(s.won){
     ctx.fillStyle='rgba(0,0,0,0.85)';
     ctx.fillRect(0,0,W,H);
