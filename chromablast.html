@@ -2891,24 +2891,14 @@ function dropSecretTiles(){
 // Timer management
 function resetSecretTimer(){
   clearSecretTimer();
-  // Đang ở chế độ lửa (ultra/thanh vàng đầy) → thanh chạy nhanh hơn hẳn (chỉ còn 40% cửa sổ thường)
-  const windowMs = secretUltra ? SECRET_WINDOW*0.4 : SECRET_WINDOW;
+  // Đang ở chế độ lửa (ultra) → thời gian giảm nhanh GẤP ĐÔI bình thường (cửa sổ còn 1/2)
+  const windowMs = secretUltra ? SECRET_WINDOW/2 : SECRET_WINDOW;
   secretTimerEnd=Date.now()+windowMs;
   animateTimerBar();
 
   secretTimer=setTimeout(()=>{
-    if(secretUltra){
-      // Không bấm kịp trong cửa sổ rút ngắn → tắt lửa + mất chuỗi combo, quay về bình thường (chơi tiếp, không thua)
-      secretUltra=false;
-      secretStreak=0; secretMultiplier=1;
-      document.getElementById('grid-wrap').classList.remove('ultra-glow');
-      renderStreakDots();
-      updateComboBorderGlow(0);
-      document.getElementById('burst-count').textContent='Nhân: x1';
-      resetSecretTimer();
-      return;
-    }
-    // Hết giờ (không bấm kịp) → mất combo, mất lửa, thua ván này → về map thường
+    // Hết giờ (không bấm đúng kịp) — kể cả đang cháy lửa mà chỉ bấm sai liên tục
+    // đến khi thanh cạn → thua ván này, mất điểm phiên, về map thường
     forfeitHiddenMapScore();
     exitSecretMode();
   }, windowMs);
@@ -2923,7 +2913,7 @@ function clearSecretTimer(){
 
 function animateTimerBar(){
   const bar=document.getElementById('timer-bar');
-  const windowMs = secretUltra ? SECRET_WINDOW*0.4 : SECRET_WINDOW; // phải khớp với resetSecretTimer
+  const windowMs = secretUltra ? SECRET_WINDOW/2 : SECRET_WINDOW; // phải khớp với resetSecretTimer
   function frame(){
     const now=Date.now();
     const remaining=Math.max(0, secretTimerEnd-now);
