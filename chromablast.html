@@ -529,6 +529,33 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
   from { transform: translateY(0) scale(1); }
   to   { transform: translateY(-4px) scale(1.08); }
 }
+/* Thanh HP của sóc — hiện ngay phía trên ô nó đang đứng */
+.cell.squirrel-cell::before {
+  content: '';
+  position: absolute; top: 2px; left: 10%;
+  width: 80%; height: 4px;
+  background: linear-gradient(90deg, #2ecc40 var(--sqhp, 100%), rgba(20,20,30,0.75) var(--sqhp, 100%));
+  border: 1px solid rgba(0,0,0,0.6);
+  border-radius: 3px;
+  pointer-events: none;
+  z-index: 5;
+}
+/* Khung ô đã bị sóc gặm — hỏng, không đặt khối lên được; diệt sóc sẽ phục hồi */
+.cell.bitten-cell { position: relative; }
+.cell.bitten-cell::after {
+  content: '🦷';
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; opacity: 0.85;
+  background:
+    radial-gradient(circle at 25% 30%, rgba(0,0,0,0.55) 4px, transparent 5px),
+    radial-gradient(circle at 70% 65%, rgba(0,0,0,0.5) 5px, transparent 6px),
+    rgba(120,70,40,0.28);
+  border: 2px dashed #a0662e;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 2;
+}
 /* 🧊 Ô đóng băng (vòng 4) — nổ lần 1 nứt băng, lần 2 mới vỡ */
 .cell.ice-cell { position: relative; }
 .cell.ice-cell::after {
@@ -1707,6 +1734,7 @@ const MOUNTAIN_GROW_EVERY = 10;
 let squirrel = null; // {r, c, hp}
 let squirrelStepCount = 0;
 let squirrelStolen = 0;
+let bittenCells = new Set(); // khung các ô đã bị sóc gặm — hiện rõ trên bàn, chặn đặt khối, diệt sóc sẽ phục hồi
 const SQUIRREL_HP = 10, SQUIRREL_STEAL_LIMIT = 15, SQUIRREL_MOVE_EVERY = 3;
 
 // 🧊 Vòng 4 — băng giá: thỉnh thoảng 1 ô màu bị đóng băng, phải nổ 2 lần mới vỡ
@@ -1791,7 +1819,7 @@ function tornadoSweep(){
   const cells=[], colors=[];
   for(let i=0;i<(isRow?COLS:ROWS);i++){
     const r=isRow?idx:i, c=isRow?i:idx, k=r+','+c;
-    if(mountainCells.has(k)||thornCells.has(k)||iceCells.has(k)) continue;
+    if(mountainCells.has(k)||thornCells.has(k)||iceCells.has(k)||bittenCells.has(k)) continue;
     if(bombCell&&bombCell.r===r&&bombCell.c===c) continue;
     if(dragonEgg&&dragonEgg.r===r&&dragonEgg.c===c) continue;
     cells.push([r,c]);
@@ -1950,7 +1978,7 @@ function dropWall(){
   for(let i=0;i<3;i++){
     const r=isRow?r0:Math.min(ROWS-1,r0+i), c=isRow?Math.min(COLS-1,c0+i):c0;
     const k=r+','+c;
-    if(!board[r][c] && !mountainCells.has(k) && !wallCells.has(k)
+    if(!board[r][c] && !mountainCells.has(k) && !wallCells.has(k) && !bittenCells.has(k)
        && !(bombCell&&bombCell.r===r&&bombCell.c===c) && !(dragonEgg&&dragonEgg.r===r&&dragonEgg.c===c)
        && !(blackHole&&blackHole.r===r&&blackHole.c===c)){ wallCells.add(k); placed++; }
   }
@@ -2169,13 +2197,16 @@ function squirrelMoveAndSteal(){
   if(filled.length){
     const [r,c]=filled[rnd(filled.length)];
     squirrel.r=r; squirrel.c=c;
-    board[r][c]=null; thornCells.delete(r+','+c); iceCells.delete(r+','+c); // trộm mất ô màu
-    squirrelStolen++;
+    const k=r+','+c;
+    board[r][c]=null; thornCells.delete(k); iceCells.delete(k); // trộm mất ô màu
+    bittenCells.add(k); // để lại khung ô đã bị gặm — không đặt khối lên được nữa
+    squirrelStolen=bittenCells.size;
     try{ sfxPenalty(); }catch(e){}
-    if(squirrelStolen>=SQUIRREL_STEAL_LIMIT){
+    showHint('🐿️ Sóc đã ăn '+bittenCells.size+'/'+SQUIRREL_STEAL_LIMIT+' ô — diệt nó để phục hồi!');
+    if(bittenCells.size>=SQUIRREL_STEAL_LIMIT){
       renderGrid();
       sfxGameOver();
-      showComboFlash(0,false,'🐿️ Sóc đã trộm sạch bàn cờ!');
+      showComboFlash(0,false,'🐿️ Sóc đã gặm nát bàn cờ!');
       document.getElementById('go-score').textContent='Điểm của bạn: '+score.toLocaleString();
       document.getElementById('game-over-overlay').classList.add('show');
       return;
@@ -2546,7 +2577,7 @@ function initBoard(){
   board=Array.from({length:ROWS},()=>Array(COLS).fill(null));
   thornMode=false; thornCells=new Set(); cellBurstCount={}; thornPlacementCount=0; thornWave=0; thornThreshold=6;
   mountainCells=new Set(); mountainStepCount=0; mountainRespawn=0;
-  squirrel=null; squirrelStepCount=0; squirrelStolen=0;
+  squirrel=null; squirrelStepCount=0; squirrelStolen=0; bittenCells=new Set();
   iceCells=new Map(); iceStepCount=0;
   fogCenter=null; fogStepCount=0; fogCooldown=0;
   bombCell=null; bombTimer=0; bombRespawn=0;
@@ -2601,6 +2632,7 @@ function cellBlockedForPlacement(r,c){
   const k=r+','+c;
   if(mountainCells.has(k)||wallCells.has(k)) return true;
   if(slimeCells.has(k)) return true;
+  if(bittenCells.has(k)) return true; // ô đã bị sóc gặm — hỏng, không đặt được
   if(bombCell&&bombCell.r===r&&bombCell.c===c) return true;
   if(dragonEgg&&dragonEgg.r===r&&dragonEgg.c===c) return true;
   if(blackHole&&blackHole.r===r&&blackHole.c===c) return true;
@@ -2647,6 +2679,7 @@ function renderGrid(){
       +(mountainCells.has(thornKey)?' mountain-cell':'')
       +(wallCells.has(thornKey)?' wall-cell':'')
       +(squirrel&&squirrel.r===r&&squirrel.c===c?' squirrel-cell':'')
+      +(bittenCells.has(thornKey)?' bitten-cell':'')
       +(iceCells.has(thornKey)?(iceCells.get(thornKey)>=2?' ice-cell':' ice-cell ice-cracked'):'')
       +(inFog?' fog-cell':'')
       +(bombCell&&bombCell.r===r&&bombCell.c===c?' bomb-cell':'')
@@ -2665,6 +2698,10 @@ function renderGrid(){
     if(bombCell&&bombCell.r===r&&bombCell.c===c){
       if(cell.dataset.bomb!==String(bombTimer)) cell.dataset.bomb=bombTimer;
     } else if(cell.dataset.bomb) delete cell.dataset.bomb;
+    // thanh HP của sóc ngay trên ô nó đứng
+    if(squirrel&&squirrel.r===r&&squirrel.c===c){
+      cell.style.setProperty('--sqhp', Math.round(squirrel.hp/SQUIRREL_HP*100)+'%');
+    }
     // 👻 ô bị ma nhập hiển thị MÀU GIẢ — logic game vẫn dùng màu thật trong board
     let bg=board[r][c]||'';
     if(ghostCell&&ghostCell.r===r&&ghostCell.c===c&&bg) bg=ghostCell.disguise;
@@ -3289,7 +3326,8 @@ function processClears(){
         squirrel.hp--;
         if(squirrel.hp<=0){
           squirrel=null;
-          showComboFlash(0,false,'🎉 Hạ gục sóc trộm! +50đ');
+          bittenCells.clear(); squirrelStolen=0; // các ô bị gặm được phục hồi khi sóc chết
+          showComboFlash(0,false,'🎉 Hạ gục sóc trộm — các ô bị gặm phục hồi! +50đ');
           score+=50; if(score>best) best=score; updateScoreUI();
         } else {
           showHint('🐿️ Trúng sóc! HP còn '+squirrel.hp+'/'+SQUIRREL_HP);
