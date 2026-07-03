@@ -1335,6 +1335,8 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
       <div class="admin-title"><span>🛠️ Chọn map ẩn để test</span><button class="admin-close" id="admin-close-btn">✕</button></div>
       <div class="admin-sub">Chỉ tài khoản admin mới thấy bảng này. Bấm vào map để vào chơi thử ngay lập tức.</div>
       <div id="admin-map-list"></div>
+      <div class="admin-sub" style="margin-top:10px;">🎯 Đánh thử <b>map thường</b> theo vòng độ khó (bật sẵn các cơ chế của vòng đó):</div>
+      <div id="admin-round-list" style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px;"></div>
       <button id="mechcfg-open-btn" class="admin-map-btn" style="margin-top:8px;">⚙️ <b>Nhịp &amp; Thưởng</b> — chỉnh 20 cơ chế độ khó</button>
     </div>
   </div>
@@ -3570,11 +3572,31 @@ function afterPlace(){
 }
 
 function checkGameOverA(){
-  const hasMove=pieces.some(piece=>{
-    if(piece.used) return false;
-    for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) if(canPlace(piece,r,c)) return true;
+  // khay đã dùng hết khối → bổ sung trước khi kết luận (tránh báo hết lượt oan
+  // khi luồng unlock/thoát map ẩn gọi check trước khi refill kịp chạy)
+  if(!pieces || !pieces.length || pieces.every(p=>p.used)){ refillPieces(); renderPieces(); }
+  const rot=s=>{ const maxR=Math.max(...s.map(([r])=>r)); return s.map(([r,c])=>[c,maxR-r]); };
+  const pieceFits=piece=>{
+    let sh=piece.shape;
+    for(let k=0;k<4;k++){ // người chơi có thể XOAY khối — phải thử đủ 4 hướng
+      for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) if(canPlace({shape:sh},r,c)) return true;
+      sh=rot(sh);
+    }
     return false;
+  };
+  let hasMove=pieces.some((piece,i)=>{
+    if(piece.used) return false;
+    if(spiderWebbedIdx===i && spiderWebbedLeft>0) return false; // khối bị tơ khóa không tính
+    return pieceFits(piece);
   });
+  // nước đi duy nhất còn lại nằm ở khối đang bị tơ nhện khóa → gỡ tơ thay vì xử thua
+  if(!hasMove && spiderWebbedIdx>=0 && spiderWebbedLeft>0 && pieces[spiderWebbedIdx] &&
+     !pieces[spiderWebbedIdx].used && pieceFits(pieces[spiderWebbedIdx])){
+    spiderWebbedIdx=-1; spiderWebbedLeft=0;
+    renderPieces();
+    showHint('🕸️ Tơ nhện tự đứt — khối cuối cùng được giải phóng!');
+    hasMove=true;
+  }
   if(!hasMove){
     sfxGameOver();
     document.getElementById('go-score').textContent='Điểm của bạn: '+score.toLocaleString();
@@ -10021,6 +10043,31 @@ function initAdminPanel(){
   document.getElementById('admin-close-btn').addEventListener('click', ()=>{
     document.getElementById('admin-panel').classList.remove('show');
   });
+
+  // 🎯 Đánh thử map thường theo vòng độ khó 1-20 (admin test đủ mọi "map")
+  const roundList=document.getElementById('admin-round-list');
+  for(let v=1; v<=20; v++){
+    const rb=document.createElement('button');
+    rb.className='admin-map-btn';
+    rb.style.cssText='padding:6px 4px;text-align:center;font-size:12px;';
+    rb.innerHTML='<b>V'+v+'</b>';
+    rb.title='Map thường — vòng '+v;
+    rb.addEventListener('click', ()=>{
+      document.getElementById('admin-panel').classList.remove('show');
+      const startScreen=document.getElementById('start-screen');
+      if(startScreen){
+        startScreen.classList.add('hide');
+        setTimeout(()=>{ startScreen.style.display='none'; }, 500);
+      }
+      sfxClick();
+      hardResetAllModes();
+      startGame();
+      mainHardTier=v;
+      applyRoundMechanics();
+      showComboFlash(0,false,'🎯 Test map thường — vòng '+v);
+    });
+    roundList.appendChild(rb);
+  }
 
   // ⚙️ Mục Nhịp & Thưởng
   document.getElementById('mechcfg-open-btn').addEventListener('click', ()=>{
