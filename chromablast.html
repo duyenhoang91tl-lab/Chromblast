@@ -1107,10 +1107,10 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
     <div id="secret-grid"></div>
 
     <!-- MODE C: Map ẩn 2 — rùa né cà rốt -->
-    <canvas id="dodge-canvas" width="360" height="460"></canvas>
+    <canvas id="dodge-canvas" width="720" height="920"></canvas>
 
     <!-- MODE D: Map ẩn 4 — bảo vệ chó Samoyed khỏi ong vò vẽ -->
-    <canvas id="bee-canvas" width="360" height="460"></canvas>
+    <canvas id="bee-canvas" width="720" height="920"></canvas>
     <div class="bee-hearts-bar" id="bee-hearts" style="display:none"></div>
     <div class="bee-score-bar" id="bee-scoreUI" style="display:none">0</div>
     <div class="bee-wave-bar" id="bee-waveUI" style="display:none">Đợt 1</div>
@@ -1118,40 +1118,40 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
     <div class="bee-stamina-wrap" id="bee-stamina-wrap" style="display:none"><div class="bee-stamina-fill" id="bee-staminaFill" style="width:100%"></div></div>
 
     <!-- MODE E: Map ẩn 3 — chém hoa quả 60s -->
-    <canvas id="fruit-canvas" width="360" height="460"></canvas>
+    <canvas id="fruit-canvas" width="720" height="920"></canvas>
 
     <!-- MODE F: Map ẩn 5 — đào vàng 30s -->
-    <canvas id="gold-canvas" width="360" height="460"></canvas>
+    <canvas id="gold-canvas" width="720" height="920"></canvas>
 
     <!-- MODE G: Map ẩn 6 — Đập động vật (Whack-a-Mole) -->
-    <canvas id="mole-canvas" width="360" height="460"></canvas>
+    <canvas id="mole-canvas" width="720" height="920"></canvas>
 
     <!-- MODE H: Map ẩn 7 — Lật thẻ ký ức (Memory Match) -->
-    <canvas id="memory-canvas" width="360" height="460"></canvas>
+    <canvas id="memory-canvas" width="720" height="920"></canvas>
 
     <!-- MODE I: Map ẩn 8 — Bắn bong bóng (Bubble Pop) -->
-    <canvas id="bubble-canvas" width="360" height="460"></canvas>
+    <canvas id="bubble-canvas" width="720" height="920"></canvas>
     <!-- MODE J: Map ẩn 9 — Xếp tháp (Stack Tower) -->
-    <canvas id="stack-canvas" width="360" height="460"></canvas>
+    <canvas id="stack-canvas" width="720" height="920"></canvas>
     <!-- MODE K: Map ẩn 10 — Đại chiến Boss (Boss Battle) -->
-    <canvas id="boss-canvas" width="360" height="460"></canvas>
+    <canvas id="boss-canvas" width="720" height="920"></canvas>
     <!-- MODE L: Map ẩn 11 — Animal Catch (Bắt thú) -->
-    <canvas id="catch-canvas" width="360" height="460"></canvas>
+    <canvas id="catch-canvas" width="720" height="920"></canvas>
     <!-- MODE M: Map ẩn 12 — Color Flood (Tràn màu) -->
-    <canvas id="flood-canvas" width="360" height="460"></canvas>
+    <canvas id="flood-canvas" width="720" height="920"></canvas>
     <!-- MODE N: Map ẩn 13 — Survival Arena (Đấu trường sinh tồn) -->
-    <canvas id="arena-canvas" width="360" height="460"></canvas>
+    <canvas id="arena-canvas" width="720" height="920"></canvas>
     <!-- MODE O: Map ẩn 14 — Snake (Rắn) -->
-    <canvas id="snake-canvas" width="360" height="460"></canvas>
+    <canvas id="snake-canvas" width="720" height="920"></canvas>
     <!-- MODE P: Map ẩn 15 — Brick Breaker (Bắn gạch) -->
-    <canvas id="brick-canvas" width="360" height="460"></canvas>
+    <canvas id="brick-canvas" width="720" height="920"></canvas>
     <!-- MODE Q: Map ẩn 16 — Infinite Runner (Chạy vô tận) -->
-    <canvas id="runner-canvas" width="360" height="460"></canvas>
-    <canvas id="space-canvas"  width="360" height="460"></canvas>
+    <canvas id="runner-canvas" width="720" height="920"></canvas>
+    <canvas id="space-canvas"  width="720" height="920"></canvas>
     <button id="space-autofire-btn" style="display:none;position:absolute;left:8px;bottom:8px;z-index:20;background:rgba(0,0,0,0.55);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;">🔫 Tự bắn: TẮT</button>
-    <canvas id="rhythm-canvas" width="360" height="460"></canvas>
-    <canvas id="maze-canvas"   width="360" height="460"></canvas>
-    <canvas id="mega-canvas"   width="360" height="460"></canvas>
+    <canvas id="rhythm-canvas" width="720" height="920"></canvas>
+    <canvas id="maze-canvas"   width="720" height="920"></canvas>
+    <canvas id="mega-canvas"   width="720" height="920"></canvas>
 
     <!-- Lớp phủ pháo hoa cho map ẩn (vệt cháy ở viền khi nổ) -->
     <div id="sc-fx"></div>
@@ -3014,7 +3014,7 @@ function enterDodgeMode(){
 }
 
 function initDodge(){
-  const cv=DCV(), W=cv.width, H=cv.height;
+  const cv=DCV(), W=360, H=460;
   turtle={ x:W/2-24, y:H-52, w:48, h:36, target:W/2 };
   rabbit={ x:W/2-26, y:16, w:52, h:42, dir:1 };
   carrots=[];
@@ -3037,10 +3037,10 @@ function dodgeDiff(){
 
 function dodgeLoop(now){
   if(!dodgeMode) return;
-  const dt=Math.min(0.05,(now-dodgeLast)/1000);
+  const dt=Math.min(0.05,Math.max(0,(now-dodgeLast)/1000));
   dodgeLast=now; dodgeElapsed+=dt*1000;
   if(dodgeElapsed>=60000 && !survive60Unlocked){ survive60Unlocked=true; unlockAchievement('survive60'); }
-  const cv=DCV(), ctx=cv.getContext('2d'), W=cv.width, H=cv.height;
+  const cv=DCV(), ctx=cv.getContext('2d'), W=360, H=460; ctx.setTransform(2,0,0,2,0,0);
   const d=dodgeDiff();
 
   // điểm sống sót — 1 điểm/giây, đồng bộ thang điểm map thường
@@ -3628,8 +3628,8 @@ function dodgePointer(e){
   if(!dodgeMode||!turtle) return;
   e.preventDefault();
   const cv=DCV(), rect=cv.getBoundingClientRect();
-  const lx=(e.clientX-rect.left)*(cv.width/rect.width);
-  turtle.target=Math.max(turtle.w/2, Math.min(cv.width-turtle.w/2, lx));
+  const lx=(e.clientX-rect.left)*(360/rect.width);
+  turtle.target=Math.max(turtle.w/2, Math.min(360-turtle.w/2, lx));
   dodgeKeys.left=dodgeKeys.right=false;
 }
 DCV().addEventListener('pointerdown', dodgePointer);
@@ -3661,7 +3661,7 @@ document.addEventListener('keydown', e=>{
   }
   if(typeof brickMode!=='undefined'&&brickMode){
     if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A'){ e.preventDefault(); brickPaddleX=Math.max(brickPaddleW/2,brickPaddleX-30); }
-    else if(e.key==='ArrowRight'||e.key==='d'||e.key==='D'){ const cv=BrCV(); e.preventDefault(); brickPaddleX=Math.min(cv.width-brickPaddleW/2,brickPaddleX+30); }
+    else if(e.key==='ArrowRight'||e.key==='d'||e.key==='D'){ const cv=BrCV(); e.preventDefault(); brickPaddleX=Math.min(360-brickPaddleW/2,brickPaddleX+30); }
     else if(e.key===' '){ e.preventDefault(); brickBall.launched=true; }
   }
   if(typeof runnerMode!=='undefined'&&runnerMode){
@@ -3778,10 +3778,10 @@ function distPtSeg2(px,py,x1,y1,x2,y2){
 
 function fruitLoop(now){
   if(!fruitMode) return;
-  const dt=Math.min(0.05,(now-fruitLast)/1000);
+  const dt=Math.min(0.05,Math.max(0,(now-fruitLast)/1000));
   fruitLast=now; fruitElapsed+=dt*1000;
   fruitTimeLeft=Math.max(0,60-fruitElapsed/1000);
-  const cv=FCV(), ctx=cv.getContext('2d'), W=cv.width, H=cv.height;
+  const cv=FCV(), ctx=cv.getContext('2d'), W=360, H=460; ctx.setTransform(2,0,0,2,0,0);
   const d=fruitDiff();
   const GRAV=900;
 
@@ -4143,8 +4143,8 @@ function exitFruitToMain(){
 function fruitCanvasPt(e){
   const cv=FCV(), rect=cv.getBoundingClientRect();
   return {
-    x:(e.clientX-rect.left)*(cv.width/rect.width),
-    y:(e.clientY-rect.top)*(cv.height/rect.height)
+    x:(e.clientX-rect.left)*(360/rect.width),
+    y:(e.clientY-rect.top)*(460/rect.height)
   };
 }
 function fruitPointerDown(e){
@@ -4273,7 +4273,7 @@ function initBeeButterflies(W,H){
 }
 
 function initBee(){
-  const cv=BCV(), W=cv.width, H=cv.height;
+  const cv=BCV(), W=360, H=460;
   dog={
     x: W/2, y: H*0.75, vx:0, vy:0,
     targetX:null, targetY:null,
@@ -4815,9 +4815,9 @@ function beeDraw(ctx,W,H,t){
 
 function beeLoop(now){
   if(!beeMode) return;
-  const dt=Math.min(0.05,(now-beeLast)/1000);
+  const dt=Math.min(0.05,Math.max(0,(now-beeLast)/1000));
   beeLast=now; beeElapsed+=dt*1000;
-  const cv=BCV(), ctx=cv.getContext('2d'), W=cv.width, H=cv.height;
+  const cv=BCV(), ctx=cv.getContext('2d'), W=360, H=460; ctx.setTransform(2,0,0,2,0,0);
   beeUpdate(dt,W,H);
   beeDraw(ctx,W,H,now/1000);
   if(!beeMode) return;
@@ -4862,15 +4862,15 @@ function exitBeeToMain(){
 function beeCanvasPt(e){
   const cv=BCV(), rect=cv.getBoundingClientRect();
   return {
-    x:(e.clientX-rect.left)*(cv.width/rect.width),
-    y:(e.clientY-rect.top)*(cv.height/rect.height)
+    x:(e.clientX-rect.left)*(360/rect.width),
+    y:(e.clientY-rect.top)*(460/rect.height)
   };
 }
 function beeShowComboFloat(x,y,c){
   const el=document.createElement('div');
   el.className='bee-combo-float';
   el.textContent='x'+c+' +'+(10*Math.min(c,10));
-  el.style.left=(x/BCV().width*100)+'%'; el.style.top=(y/BCV().height*100)+'%';
+  el.style.left=(x/360*100)+'%'; el.style.top=(y/460*100)+'%';
   document.getElementById('grid-wrap').appendChild(el);
   setTimeout(()=>el.remove(),800);
 }
@@ -4904,7 +4904,7 @@ function beeHandleTap(clientX,clientY){
     if(beeCombo>=2) beeShowComboFloat(hitBee.x,hitBee.y,beeCombo);
     sfxBeeKill();
   } else {
-    const bnd=beeDogBounds(BCV().width,BCV().height);
+    const bnd=beeDogBounds(360,460);
     dog.targetX=Math.max(bnd.minX,Math.min(bnd.maxX,pt.x));
     dog.targetY=Math.max(bnd.minY,Math.min(bnd.maxY,pt.y));
     beeShowTapHint(clientX,clientY);
@@ -4920,7 +4920,7 @@ function beePointerMove(e){
   if(!beeMode||!gdPointerDown) return;
   e.preventDefault();
   const pt=beeCanvasPt(e);
-  const bnd=beeDogBounds(BCV().width,BCV().height);
+  const bnd=beeDogBounds(360,460);
   dog.targetX=Math.max(bnd.minX,Math.min(bnd.maxX,pt.x));
   dog.targetY=Math.max(bnd.minY,Math.min(bnd.maxY,pt.y));
 }
@@ -5006,7 +5006,7 @@ function enterGoldMode(){
 }
 
 function initGold(){
-  const cv=GCV(), W=cv.width, H=cv.height;
+  const cv=GCV(), W=360, H=460;
   gmCW=W/GM_COLS; gmCH=(H-GM_GT)/GM_ROWS;
   goldElapsed=0; goldTimeLeft=GOLD_TIME; goldSessionScore=0;
   gmPts=[];
@@ -5039,7 +5039,7 @@ function gmSpawnCatchFx(x,y){
 function gmFloatText(x,y,txt,color,size){
   const el=document.createElement('div');
   el.className='fl'; el.textContent=txt;
-  el.style.position='absolute'; el.style.left=(x/GCV().width*100)+'%'; el.style.top=((GM_GT>0?y:y)/GCV().height*100)+'%';
+  el.style.position='absolute'; el.style.left=(x/360*100)+'%'; el.style.top=((GM_GT>0?y:y)/460*100)+'%';
   el.style.color=color||'#FFD700'; el.style.fontSize=(size||16)+'px'; el.style.fontWeight='900';
   el.style.pointerEvents='none'; el.style.zIndex=8; el.style.textShadow='0 1px 6px rgba(0,0,0,0.6)';
   el.style.transition='transform .9s ease-out, opacity .9s ease-out';
@@ -5064,10 +5064,10 @@ function gmMouseAlert(){
 
 function goldLoop(now){
   if(!goldMode) return;
-  const dt=Math.min(0.05,(now-goldLast)/1000);
+  const dt=Math.min(0.05,Math.max(0,(now-goldLast)/1000));
   goldLast=now; goldElapsed+=dt*1000;
   goldTimeLeft=Math.max(0,GOLD_TIME-goldElapsed/1000);
-  const cv=GCV(), ctx=cv.getContext('2d'), W=cv.width, H=cv.height;
+  const cv=GCV(), ctx=cv.getContext('2d'), W=360, H=460; ctx.setTransform(2,0,0,2,0,0);
 
   if(goldTimeLeft<=0){ goldGameOver(goldSessionScore>=GOLD_KPI_SCORE); return; }
 
@@ -5365,15 +5365,15 @@ function exitGoldToMain(){
 function goldCanvasPt(e){
   const cv=GCV(), rect=cv.getBoundingClientRect();
   return {
-    x:(e.clientX-rect.left)*(cv.width/rect.width),
-    y:(e.clientY-rect.top)*(cv.height/rect.height)
+    x:(e.clientX-rect.left)*(360/rect.width),
+    y:(e.clientY-rect.top)*(460/rect.height)
   };
 }
 GCV().addEventListener('pointerdown', e=>{
   if(!goldMode) return;
   e.preventDefault();
   const pt=goldCanvasPt(e);
-  const W=GCV().width;
+  const W=360;
 
   // bắt chuột
   if(gmMouse.on && !gmMouse.caught){
@@ -5464,7 +5464,7 @@ function enterMoleMode(){
 }
 
 function initMole(){
-  const cv=MCV(), W=cv.width, H=cv.height;
+  const cv=MCV(), W=360, H=460;
   moleScore=0; moleFx=[]; moleElapsed=0; moleComboCount=0; moleLastHitTime=0;
   moleLives=3; moleMissStreak=0;
   // 8 holes in a 4×2 grid in lower 2/3 of canvas
@@ -5490,10 +5490,10 @@ function initMole(){
 
 function moleLoop(now){
   if(!moleMode) return;
-  const dt=Math.min(0.05,(now-moleLast)/1000);
+  const dt=Math.min(0.05,Math.max(0,(now-moleLast)/1000));
   moleLast=now; moleElapsed+=dt*1000;
   const timeLeft=Math.max(0, MOLE_TIME-moleElapsed/1000);
-  const cv=MCV(), ctx=cv.getContext('2d'), W=cv.width, H=cv.height;
+  const cv=MCV(), ctx=cv.getContext('2d'), W=360, H=460; ctx.setTransform(2,0,0,2,0,0);
 
   // update holes
   for(const h of moleHoles){
@@ -5797,13 +5797,13 @@ MCV().addEventListener('pointerdown', e=>{
   if(!moleMode) return;
   e.preventDefault();
   const rect=MCV().getBoundingClientRect();
-  const scaleX=MCV().width/rect.width, scaleY=MCV().height/rect.height;
+  const scaleX=360/rect.width, scaleY=460/rect.height;
   tapMole((e.clientX-rect.left)*scaleX, (e.clientY-rect.top)*scaleY);
 });
 MCV().addEventListener('pointermove', e=>{
   if(!moleMode) return;
   const rect=MCV().getBoundingClientRect();
-  const scaleX=MCV().width/rect.width, scaleY=MCV().height/rect.height;
+  const scaleX=360/rect.width, scaleY=460/rect.height;
   moleHammerX=(e.clientX-rect.left)*scaleX;
   moleHammerY=(e.clientY-rect.top)*scaleY;
   moleHammerVis=true;
@@ -5880,7 +5880,7 @@ function initMemory(){
 
 function memoryLoop(now){
   if(!memoryMode){ memoryRAF=null; return; }
-  const dt=Math.min((now-(memoryLast||now))/1000,0.1);
+  const dt=Math.min(0.1,Math.max(0,(now-(memoryLast||now))/1000));
   memoryLast=now;
   memoryElapsed+=dt;
 
@@ -5892,8 +5892,8 @@ function memoryLoop(now){
     else if(c.flipT>target) c.flipT=Math.max(target,c.flipT-dt*spd);
   });
 
-  const cv=MMCV(), W=cv.width, H=cv.height;
-  const ctx=cv.getContext('2d');
+  const cv=MMCV(), W=360, H=460;
+  const ctx=cv.getContext('2d'); ctx.setTransform(2,0,0,2,0,0);
   drawMemory(ctx,W,H);
 
   const timeLeft=Math.max(0,MEMORY_TIME-memoryElapsed);
@@ -6090,7 +6090,7 @@ MMCV().addEventListener('pointerdown', e=>{
   if(!memoryMode) return;
   e.preventDefault();
   const rect=MMCV().getBoundingClientRect();
-  const scaleX=MMCV().width/rect.width, scaleY=MMCV().height/rect.height;
+  const scaleX=360/rect.width, scaleY=460/rect.height;
   tapMemory((e.clientX-rect.left)*scaleX, (e.clientY-rect.top)*scaleY);
 });
 
@@ -6161,7 +6161,7 @@ function initBubble(){
 
 function bubbleLoop(now){
   if(!bubbleMode){ bubbleRAF=null; return; }
-  const dt=Math.min((now-(bubbleLast||now))/1000,0.08);
+  const dt=Math.min(0.08,Math.max(0,(now-(bubbleLast||now))/1000));
   bubbleLast=now;
   bubbleElapsed+=dt;
   bubbleFallTimer+=dt;
@@ -6170,7 +6170,7 @@ function bubbleLoop(now){
   if(bubbleFlying){
     bubbleFlying.x+=bubbleFlying.vx*dt;
     bubbleFlying.y+=bubbleFlying.vy*dt;
-    const cv=BBCV(), W=cv.width;
+    const cv=BBCV(), W=360;
     // bounce off walls
     if(bubbleFlying.x-BUBBLE_R<0){ bubbleFlying.x=BUBBLE_R; bubbleFlying.vx*=-1; if(!sfxMuted) sfxBubbleBounce(); }
     if(bubbleFlying.x+BUBBLE_R>W){ bubbleFlying.x=W-BUBBLE_R; bubbleFlying.vx*=-1; if(!sfxMuted) sfxBubbleBounce(); }
@@ -6208,8 +6208,8 @@ function bubbleLoop(now){
   bubbleFx.forEach(f=>f.t+=dt);
   bubbleFx=bubbleFx.filter(f=>f.t<0.6);
 
-  const cv=BBCV(), W=cv.width, H=cv.height;
-  const ctx=cv.getContext('2d');
+  const cv=BBCV(), W=360, H=460;
+  const ctx=cv.getContext('2d'); ctx.setTransform(2,0,0,2,0,0);
   drawBubble(ctx,W,H);
 
   const timeLeft=Math.max(0,BUBBLE_TIME-bubbleElapsed);
@@ -6225,7 +6225,7 @@ function bubbleLoop(now){
 }
 
 function bubbleLandRow(fx,fy){
-  const cv=BBCV(), H=cv.height;
+  const cv=BBCV(), H=460;
   const cellH=(H-80)/BUBBLE_ROWS;
   const col=Math.round((fx - BUBBLE_OX - BUBBLE_R) / (BUBBLE_R*2));
   const safeCol=Math.max(0,Math.min(BUBBLE_COLS-1,col));
@@ -6263,7 +6263,7 @@ function checkBubblePop(row,col){
     }
   }
   if(visited.size>=3){
-    const cv=BBCV(), W=cv.width, H=cv.height;
+    const cv=BBCV(), W=360, H=460;
     const cellH=(H-80)/BUBBLE_ROWS;
     visited.forEach(key=>{
       const [r,c]=key.split(',').map(Number);
@@ -6313,7 +6313,7 @@ function dropOrphanedBubbles(){
     }
   }
   // Remove orphaned bubbles and add score
-  const cv=BBCV(), H=cv.height;
+  const cv=BBCV(), H=460;
   const cellH=(H-80)/BUBBLE_ROWS;
   let orphanCount=0;
   for(let r=0;r<BUBBLE_ROWS;r++){
@@ -6467,10 +6467,10 @@ BBCV().addEventListener('pointerdown', e=>{
   if(!bubbleMode) return;
   e.preventDefault();
   const rect=BBCV().getBoundingClientRect();
-  const scaleX=BBCV().width/rect.width, scaleY=BBCV().height/rect.height;
+  const scaleX=360/rect.width, scaleY=460/rect.height;
   const tx=(e.clientX-rect.left)*scaleX;
   const ty=(e.clientY-rect.top)*scaleY;
-  const cv=BBCV(), W=cv.width, H=cv.height;
+  const cv=BBCV(), W=360, H=460;
   const shooterX=W/2, shooterY=H-30;
   const dx=tx-shooterX, dy=ty-shooterY;
   if(dx===0&&dy===0) return;
@@ -6538,7 +6538,7 @@ function enterStackMode(){
 }
 
 function initStack(){
-  const cv=STCV(), W=cv.width, H=cv.height;
+  const cv=STCV(), W=360, H=460;
   stackScore=0; stackCount=0; stackElapsed=0; stackFx=[]; stackCameraY=0; stackPerfectStreak=0;
   stackDir=1; stackSpeed=80;
   // base block at bottom
@@ -6548,11 +6548,11 @@ function initStack(){
 
 function stackLoop(now){
   if(!stackMode){ stackRAF=null; return; }
-  const dt=Math.min((now-(stackLast||now))/1000,0.08);
+  const dt=Math.min(0.08,Math.max(0,(now-(stackLast||now))/1000));
   stackLast=now;
   stackElapsed+=dt;
 
-  const cv=STCV(), W=cv.width;
+  const cv=STCV(), W=360;
   // move the platform
   stackMoving.x+=stackDir*stackSpeed*dt;
   if(stackMoving.x+stackMoving.w>W){ stackMoving.x=W-stackMoving.w; stackDir=-1; }
@@ -6562,8 +6562,8 @@ function stackLoop(now){
   stackFx.forEach(f=>{ f.t+=dt; f.y+=f.vy*dt; f.vy+=200*dt; });
   stackFx=stackFx.filter(f=>f.t<1.2);
 
-  const ctx=cv.getContext('2d');
-  drawStack(ctx,W,cv.height);
+  const ctx=cv.getContext('2d'); ctx.setTransform(2,0,0,2,0,0);
+  drawStack(ctx,W,460);
 
   const timeLeft=Math.max(0,STACK_TIME-stackElapsed);
   document.getElementById('burst-count').textContent='🏗️ '+stackCount+'/'+STACK_KPI+'  ⏱'+timeLeft.toFixed(0)+'s';
@@ -6576,7 +6576,7 @@ function stackLoop(now){
 
 function dropStack(){
   if(!stackMode||stackMoving.w<=0) return;
-  const cv=STCV(), W=cv.width, H=cv.height;
+  const cv=STCV(), W=360, H=460;
   // top block
   const top=stackBlocks[stackBlocks.length-1];
   const overlapL=Math.max(stackMoving.x, top.x);
@@ -6795,7 +6795,7 @@ function spawnChickenWave(){
 
 function initBoss(){
   const cv=BOSCV();
-  bossDogX=cv.width/2; bossDogLives=3;
+  bossDogX=180; bossDogLives=3;
   bossChickens=[]; bossProjectiles=[]; bossVenom=[]; bossFx=[];
   bossScore=0; bossElapsed=0; bossFireTimer=0; bossVenomTimer=0;
   bossWave=0; bossWaveCleared=true;
@@ -6803,11 +6803,11 @@ function initBoss(){
 
 function bossLoop(now){
   if(!bossMode){ bossRAF=null; return; }
-  const dt=Math.min((now-(bossLast||now))/1000,0.08);
+  const dt=Math.min(0.08,Math.max(0,(now-(bossLast||now))/1000));
   bossLast=now;
   bossElapsed+=dt;
 
-  const cv=BOSCV(), W=cv.width, H=cv.height;
+  const cv=BOSCV(), W=360, H=460;
 
   if(bossWaveCleared && bossWave<BOSS_TOTAL_WAVES){
     spawnChickenWave();
@@ -6892,7 +6892,7 @@ function bossLoop(now){
   bossFx.forEach(f=>f.t+=dt);
   bossFx=bossFx.filter(f=>f.t<0.5);
 
-  const ctx=cv.getContext('2d');
+  const ctx=cv.getContext('2d'); ctx.setTransform(2,0,0,2,0,0);
   drawBoss(ctx,W,H);
 
   const timeLeft=Math.max(0,BOSS_TIME-bossElapsed);
@@ -7005,9 +7005,9 @@ function bossHandlePointer(e){
   if(!bossMode) return;
   e.preventDefault();
   const rect=BOSCV().getBoundingClientRect();
-  const scaleX=BOSCV().width/rect.width;
+  const scaleX=360/rect.width;
   const tx=(e.clientX-rect.left)*scaleX;
-  bossDogX=Math.max(30,Math.min(BOSCV().width-30,tx));
+  bossDogX=Math.max(30,Math.min(330,tx));
 }
 BOSCV().addEventListener('pointerdown', bossHandlePointer);
 BOSCV().addEventListener('pointermove', bossHandlePointer);
@@ -7071,7 +7071,7 @@ function initCatch(){
   const cv=CATCV();
   catchAnimals=[]; catchFx=[]; catchScore=0; catchElapsed=0; catchStreak=0;
   catchLives=3; catchSpawnTimer=0;
-  catchBasketX=cv.width/2;
+  catchBasketX=180;
 }
 
 function spawnCatchAnimal(){
@@ -7081,7 +7081,7 @@ function spawnCatchAnimal(){
   const tmpl=pool[Math.floor(Math.random()*pool.length)];
   const speedBonus=Math.min(catchElapsed/CATCH_TIME,1)*80;
   catchAnimals.push({
-    x:40+Math.random()*(cv.width-80),
+    x:40+Math.random()*(360-80),
     y:-30,
     vy:90+Math.random()*40+speedBonus,
     emoji:tmpl.emoji,
@@ -7095,11 +7095,11 @@ function spawnCatchAnimal(){
 
 function catchLoop(now){
   if(!catchMode){ catchRAF=null; return; }
-  const dt=Math.min((now-(catchLast||now))/1000,0.08);
+  const dt=Math.min(0.08,Math.max(0,(now-(catchLast||now))/1000));
   catchLast=now;
   catchElapsed+=dt;
 
-  const cv=CATCV(), W=cv.width, H=cv.height;
+  const cv=CATCV(), W=360, H=460;
   const spawnInterval=Math.max(0.5,1.2-catchElapsed/CATCH_TIME*0.7);
   catchSpawnTimer+=dt;
   if(catchSpawnTimer>=spawnInterval){ catchSpawnTimer=0; spawnCatchAnimal(); }
@@ -7139,7 +7139,7 @@ function catchLoop(now){
   catchFx.forEach(f=>f.t+=dt);
   catchFx=catchFx.filter(f=>f.t<0.7);
 
-  const ctx=cv.getContext('2d');
+  const ctx=cv.getContext('2d'); ctx.setTransform(2,0,0,2,0,0);
   drawCatch(ctx,W,H,basketY,basketW,basketH);
 
   const timeLeft=Math.max(0,CATCH_TIME-catchElapsed);
@@ -7255,15 +7255,15 @@ CATCV().addEventListener('pointermove', e=>{
   if(!catchMode) return;
   e.preventDefault();
   const rect=CATCV().getBoundingClientRect();
-  const scaleX=CATCV().width/rect.width;
-  catchBasketX=Math.max(40,Math.min(CATCV().width-40,(e.clientX-rect.left)*scaleX));
+  const scaleX=360/rect.width;
+  catchBasketX=Math.max(40,Math.min(320,(e.clientX-rect.left)*scaleX));
 });
 CATCV().addEventListener('pointerdown', e=>{
   if(!catchMode) return;
   e.preventDefault();
   const rect=CATCV().getBoundingClientRect();
-  const scaleX=CATCV().width/rect.width;
-  catchBasketX=Math.max(40,Math.min(CATCV().width-40,(e.clientX-rect.left)*scaleX));
+  const scaleX=360/rect.width;
+  catchBasketX=Math.max(40,Math.min(320,(e.clientX-rect.left)*scaleX));
 });
 
 /* ══════════════════════════════════════════
@@ -7395,8 +7395,8 @@ function doFlood(newColorIdx){
 
 function floodLoop(){
   if(!floodMode){ floodRAF=null; return; }
-  const cv=FLCV(), W=cv.width, H=cv.height;
-  const ctx=cv.getContext('2d');
+  const cv=FLCV(), W=360, H=460;
+  const ctx=cv.getContext('2d'); ctx.setTransform(2,0,0,2,0,0);
   drawFlood(ctx,W,H);
   floodRAF=requestAnimationFrame(floodLoop);
 }
@@ -7510,14 +7510,14 @@ FLCV().addEventListener('pointerdown', e=>{
   e.preventDefault();
   const cv=FLCV();
   const rect=cv.getBoundingClientRect();
-  const scaleX=cv.width/rect.width, scaleY=cv.height/rect.height;
+  const scaleX=360/rect.width, scaleY=460/rect.height;
   const tx=(e.clientX-rect.left)*scaleX, ty=(e.clientY-rect.top)*scaleY;
   // Detect color button taps
   const cellSize=32, gap=2, cols=FLOOD_GRID_SIZE;
   const gridW=cols*cellSize+(cols-1)*gap;
   const offY=48, gridH=FLOOD_GRID_SIZE*cellSize+(FLOOD_GRID_SIZE-1)*gap;
   const btnY=offY+gridH+14;
-  const btnR=20, btnSpacing=52, btnStartX=(cv.width-(FLOOD_COLORS.length-1)*btnSpacing)/2;
+  const btnR=20, btnSpacing=52, btnStartX=(360-(FLOOD_COLORS.length-1)*btnSpacing)/2;
   FLOOD_COLORS.forEach((col,i)=>{
     const bx=btnStartX+i*btnSpacing, by=btnY+btnR;
     if(Math.hypot(tx-bx,ty-by)<btnR+6){ doFlood(i); }
@@ -7574,18 +7574,18 @@ function enterArenaMode(){
 
 function initArena(){
   const cv=ARCV();
-  arenaDogX=cv.width/2; arenaDogY=cv.height-80;
+  arenaDogX=180; arenaDogY=460-80;
   arenaDogLives=5; arenaInvincible=0;
   arenaBees=[]; arenaCarrots=[]; arenaVenom=[]; arenaFx=[];
   arenaScore=0; arenaElapsed=0; arenaWave=0; arenaKillStreak=0; arenaScoreAccum=0;
   arenaSpawnTimer=0; arenaCarrotTimer=0;
   arenaWaveFlash=0; arenaWaveFlashText='';
-  arenaSnake={x:cv.width/2,y:80,hp:100,vx:80,fireTimer:0};
+  arenaSnake={x:180,y:80,hp:100,vx:80,fireTimer:0};
   arenaPointerX=null; arenaPointerY=null;
   arenaPetals=[];
   for(let i=0;i<28;i++){
     arenaPetals.push({
-      x:Math.random()*cv.width, y:Math.random()*cv.height,
+      x:Math.random()*360, y:Math.random()*460,
       speed:14+Math.random()*18, drift:6+Math.random()*10,
       phase:Math.random()*Math.PI*2, size:5+Math.random()*5,
       spin:Math.random()*Math.PI*2, spinSpeed:(Math.random()-0.5)*2,
@@ -7609,11 +7609,11 @@ const ARENA_WAVE_LABELS=['SÓNG 1: ONG TẤN CÔNG!','SÓNG 2: CÀ RỐT ĐỔ B
 
 function arenaLoop(now){
   if(!arenaMode){ arenaRAF=null; return; }
-  const dt=Math.min((now-(arenaLast||now))/1000,0.08);
+  const dt=Math.min(0.08,Math.max(0,(now-(arenaLast||now))/1000));
   arenaLast=now;
   arenaElapsed+=dt;
 
-  const cv=ARCV(), W=cv.width, H=cv.height;
+  const cv=ARCV(), W=360, H=460;
 
   // Wave transitions
   let newWave=0;
@@ -7732,7 +7732,7 @@ function arenaLoop(now){
   arenaFx=arenaFx.filter(f=>f.t<0.6);
   updateArenaPetals(dt,W,H);
 
-  const ctx=cv.getContext('2d');
+  const ctx=cv.getContext('2d'); ctx.setTransform(2,0,0,2,0,0);
   drawArena(ctx,W,H);
 
   const timeLeft=Math.max(0,ARENA_TIME-arenaElapsed);
@@ -7873,15 +7873,15 @@ ARCV().addEventListener('pointermove', e=>{
   if(!arenaMode) return;
   e.preventDefault();
   const cv=ARCV(), rect=cv.getBoundingClientRect();
-  arenaPointerX=(e.clientX-rect.left)*(cv.width/rect.width);
-  arenaPointerY=(e.clientY-rect.top)*(cv.height/rect.height);
+  arenaPointerX=(e.clientX-rect.left)*(360/rect.width);
+  arenaPointerY=(e.clientY-rect.top)*(460/rect.height);
 });
 ARCV().addEventListener('pointerdown', e=>{
   if(!arenaMode) return;
   e.preventDefault();
   const cv=ARCV(), rect=cv.getBoundingClientRect();
-  const tx=(e.clientX-rect.left)*(cv.width/rect.width);
-  const ty=(e.clientY-rect.top)*(cv.height/rect.height);
+  const tx=(e.clientX-rect.left)*(360/rect.width);
+  const ty=(e.clientY-rect.top)*(460/rect.height);
   arenaPointerX=tx; arenaPointerY=ty;
   // Tap bees to kill
   // 1 điểm/lần hạ gục, liên tiếp 3 lần → x2, 6 lần → x3
@@ -8906,8 +8906,6 @@ function enterSnakeMode(){
   document.getElementById('grid').style.display='none';
   document.getElementById('pieces-area').style.display='none';
   SCV().classList.add('active');
-  // nâng độ phân giải canvas lên 2× (720×920) — CSS giữ nguyên kích thước hiển thị nên hình nét hơn hẳn
-  SCV().width=720; SCV().height=920;
   document.getElementById('mode-badge').textContent='🐍 MAP ẨN 14';
   document.getElementById('mode-badge').classList.add('secret');
   document.getElementById('burst-count').textContent='🐍 Dài: 3/20';
@@ -8927,12 +8925,12 @@ function setSnakeDir(x,y){ snakeNextDir={x,y}; sfxSnakeTurn(); }
 
 function snakeLoop(now){
   if(!snakeMode){ snakeRAF=null; return; }
-  const dt=Math.min((now-(snakeLast||now))/1000, 0.08);
+  const dt=Math.min(0.08,Math.max(0,(now-(snakeLast||now))/1000));
   snakeLast=now;
   // Vẽ ở độ phân giải gấp đôi (720×920) rồi scale — nét căng trên màn hình điện thoại,
   // toạ độ game vẫn giữ nguyên hệ logic 360×460
   const cv=SCV(), W=360, H=460;
-  const ctx=cv.getContext('2d');
+  const ctx=cv.getContext('2d'); ctx.setTransform(2,0,0,2,0,0);
   ctx.setTransform(2,0,0,2,0,0);
 
   snakeMoveTimer+=dt;
@@ -9313,10 +9311,10 @@ function enterBrickMode(){
 
 function brickLoop(now){
   if(!brickMode){ brickRAF=null; return; }
-  const dt=Math.min((now-(brickLast||now))/1000,0.05);
+  const dt=Math.min(0.05,Math.max(0,(now-(brickLast||now))/1000));
   brickLast=now;
-  const cv=BrCV(), W=cv.width, H=cv.height;
-  const ctx=cv.getContext('2d');
+  const cv=BrCV(), W=360, H=460;
+  const ctx=cv.getContext('2d'); ctx.setTransform(2,0,0,2,0,0);
 
   brickWidePaddleTimer=Math.max(0,brickWidePaddleTimer-dt);
   const pw=brickWidePaddleTimer>0?110:brickPaddleW;
@@ -9530,7 +9528,7 @@ function enterRunnerMode(){
   document.getElementById('hint-bar').textContent='Chạm để nhảy · Chạm 2 lần = nhảy đôi';
   document.getElementById('grid-wrap').classList.add('secret-mode');
   const cv=RuCV();
-  const H=cv.height;
+  const H=460;
   runnerElapsed=0; runnerScore=0; runnerLives=2; runnerSpeed=180;
   runnerDogY=H*RUNNER_GROUND_Y_FRAC-36;
   runnerDogVY=0; runnerJumps=0;
@@ -9546,10 +9544,10 @@ function enterRunnerMode(){
 
 function runnerLoop(now){
   if(!runnerMode){ runnerRAF=null; return; }
-  const dt=Math.min((now-(runnerLast||now))/1000,0.05);
+  const dt=Math.min(0.05,Math.max(0,(now-(runnerLast||now))/1000));
   runnerLast=now;
-  const cv=RuCV(), W=cv.width, H=cv.height;
-  const ctx=cv.getContext('2d');
+  const cv=RuCV(), W=360, H=460;
+  const ctx=cv.getContext('2d'); ctx.setTransform(2,0,0,2,0,0);
   const GROUND=H*RUNNER_GROUND_Y_FRAC-36;
 
   runnerElapsed+=dt;
@@ -9864,7 +9862,7 @@ function drawSpaceBg(ctx,W,H){
 function spaceLoop(){
   if(!spaceMode){ spaceRAF=null; return; }
   const s=spaceState;
-  const cv=SPC(), ctx=cv.getContext('2d');
+  const cv=SPC(), ctx=cv.getContext('2d'); ctx.setTransform(2,0,0,2,0,0);
   const W=s.W, H=s.H;
   if(!s.gameOver && !s.won){
     if(s.waveCleared && s.wave<s.totalWaves){
@@ -10202,7 +10200,7 @@ function rhythmTap(tx,ty){
 function rhythmLoop(){
   if(!rhythmMode){ rhythmRAF=null; return; }
   const s=rhythmState;
-  const cv=RHY(), ctx=cv.getContext('2d');
+  const cv=RHY(), ctx=cv.getContext('2d'); ctx.setTransform(2,0,0,2,0,0);
   const W=s.W, H=s.H;
   if(!s.gameOver&&!s.won){
     s.spawnTimer++;
@@ -10449,7 +10447,7 @@ function tryMoveDog(dr,dc){
 function mazeLoop(){
   if(!mazeMode){ mazeRAF=null; return; }
   const s=mazeState;
-  const cv=MZC(), ctx=cv.getContext('2d');
+  const cv=MZC(), ctx=cv.getContext('2d'); ctx.setTransform(2,0,0,2,0,0);
   const W=s.W, H=s.H;
   if(!s.won&&!s.gameOver){
     s.timerTick++;
@@ -10685,7 +10683,7 @@ function megaShoot(){
 function megaLoop(){
   if(!megaMode){ megaRAF=null; return; }
   const s=megaState;
-  const cv=MGC(), ctx=cv.getContext('2d');
+  const cv=MGC(), ctx=cv.getContext('2d'); ctx.setTransform(2,0,0,2,0,0);
   const W=s.W, H=s.H;
   const boss=s.boss;
   if(!s.gameOver&&!s.won){
