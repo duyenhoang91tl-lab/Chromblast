@@ -7685,7 +7685,7 @@ function drawBubble(ctx,W,H){
 
 function drawBubbleCircle(ctx,x,y,r,color){
   ctx.save();
-  ctx.shadowColor='rgba(60,90,120,0.3)'; ctx.shadowBlur=6; ctx.shadowOffsetY=3;
+  // (bỏ shadowBlur — vẽ ~40 bóng/frame có shadow là điểm nghẽn hiệu năng lớn nhất của map này)
   const grad=ctx.createRadialGradient(x-r*0.35,y-r*0.4,r*0.05,x,y,r*1.05);
   grad.addColorStop(0,'rgba(255,255,255,0.95)');
   grad.addColorStop(0.32,color);
@@ -11794,19 +11794,22 @@ function mazeLoop(){
   drawHudTop(ctx,W,{left:'⏱ '+s.timeLeft+'s', right:'Vuốt/phím mũi tên'});
   const {cols,rows,cells,cellW,cellH,offX,offY}=s;
   ctx.save();
-  ctx.shadowColor='rgba(255,255,255,0.5)'; ctx.shadowBlur=3;
+  // Gom TOÀN BỘ tường vào 1 path + 1 lệnh stroke, bỏ shadowBlur — trước đây mỗi đoạn tường
+  // là 1 beginPath/stroke riêng kèm shadow (hàng trăm lệnh vẽ mỗi frame) gây tụt FPS
+  ctx.strokeStyle='#fff6d8'; // tường kem sáng — nổi rõ trên nền lavender pastel
+  ctx.lineWidth=1.5;
+  ctx.beginPath();
   for(let r=0;r<rows;r++){
     for(let c=0;c<cols;c++){
       const x=offX+c*cellW, y=offY+r*cellH;
       const w=cells[r][c].walls;
-      ctx.strokeStyle='#fff6d8'; // tường kem sáng — nổi rõ trên nền lavender pastel
-      ctx.lineWidth=1.5;
-      if(w[0]){ ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+cellW,y); ctx.stroke(); }
-      if(w[1]){ ctx.beginPath(); ctx.moveTo(x+cellW,y); ctx.lineTo(x+cellW,y+cellH); ctx.stroke(); }
-      if(w[2]){ ctx.beginPath(); ctx.moveTo(x,y+cellH); ctx.lineTo(x+cellW,y+cellH); ctx.stroke(); }
-      if(w[3]){ ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x,y+cellH); ctx.stroke(); }
+      if(w[0]){ ctx.moveTo(x,y); ctx.lineTo(x+cellW,y); }
+      if(w[1]){ ctx.moveTo(x+cellW,y); ctx.lineTo(x+cellW,y+cellH); }
+      if(w[2]){ ctx.moveTo(x,y+cellH); ctx.lineTo(x+cellW,y+cellH); }
+      if(w[3]){ ctx.moveTo(x,y); ctx.lineTo(x,y+cellH); }
     }
   }
+  ctx.stroke();
   ctx.restore();
   // quầng sáng cổng ra
   const ex=offX+(cols-1)*cellW+cellW/2, ey=offY+(rows-1)*cellH+cellH/2;
