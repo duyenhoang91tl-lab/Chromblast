@@ -1039,6 +1039,7 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
     <div style="text-align:center">
       <div id="combo-box"></div>
       <div id="level-box">Cấp độ 1</div>
+      <div id="player-level-box" style="font-size:11px;color:#ffd700;margin-top:2px;white-space:nowrap;"></div>
     </div>
     <div style="text-align:right">
       <div id="adventure-avatar" style="display:none;">🧑‍🚀</div>
@@ -1342,8 +1343,43 @@ function startUnlockGate(clearedIdx){
   // khối gạch to/khó xếp xuất hiện nhiều hơn + rải thêm ô chướng ngại lên bàn cờ
   mainHardTier=unlockGateStageIndex;
   sprinkleJunkCells(Math.min(5, 1+Math.floor(mainHardTier/3)));
-  setTimeout(()=>showComboFlash(0,false,'⚠️ Map thường khó hơn — vòng '+mainHardTier+'!'), 1200);
+  addPlayerXP(30+clearedIdx*10); // thưởng XP mỗi lần phá đảo một map ẩn — vòng càng sâu thưởng càng lớn
 }
+
+/* ══════════════════════════════════════════
+   HỆ THỐNG ĐIỂM KINH NGHIỆM & LEVEL NGƯỜI CHƠI
+   Mỗi điểm ghi được = 1 XP; thắng map ẩn có thưởng thêm.
+   Level và XP lưu bền vững qua localStorage.
+══════════════════════════════════════════ */
+let playerXP=0, playerLevel=1, _xpLastScore=0;
+(function loadPlayerXP(){
+  try{
+    const s=JSON.parse(localStorage.getItem('chromablast_player')||'{}');
+    if(s.xp>0) playerXP=s.xp;
+    if(s.level>0) playerLevel=s.level;
+  }catch(e){}
+})();
+function xpNeeded(lv){ return 100+(lv-1)*50; } // cấp càng cao càng cần nhiều XP
+function savePlayerXP(){ try{ localStorage.setItem('chromablast_player', JSON.stringify({xp:playerXP, level:playerLevel})); }catch(e){} }
+function addPlayerXP(n){
+  if(!(n>0)) return;
+  playerXP+=n;
+  let leveled=false;
+  while(playerXP>=xpNeeded(playerLevel)){ playerXP-=xpNeeded(playerLevel); playerLevel++; leveled=true; }
+  if(leveled){
+    try{ sfxUnlock(); }catch(e){}
+    try{ showComboFlash(0,false,'🎉 LÊN CẤP '+playerLevel+'!'); }catch(e){}
+  }
+  savePlayerXP(); renderPlayerXP();
+}
+function renderPlayerXP(){
+  const el=document.getElementById('player-level-box'); if(!el) return;
+  const need=xpNeeded(playerLevel);
+  el.innerHTML='⭐ Lv.'+playerLevel+
+    ' <span style="display:inline-block;width:44px;height:5px;background:rgba(255,255,255,0.15);border-radius:3px;vertical-align:middle;overflow:hidden;">'+
+    '<span style="display:block;height:100%;width:'+Math.min(100,Math.round(playerXP/need*100))+'%;background:linear-gradient(90deg,#ffd700,#ff9900);border-radius:3px;"></span></span>';
+}
+renderPlayerXP(); // hiển thị ngay khi tải trang (script nằm cuối body nên phần tử đã tồn tại)
 
 // Mode A state
 let board, pieces, selected, score=0, best=0, linesCleared=0, level=1, combo=0;
@@ -7961,6 +7997,9 @@ function updateScoreUI(){
   document.getElementById('best-box').textContent='Kỷ lục: '+Math.round(best).toLocaleString();
   document.getElementById('lines-cleared').textContent='Hàng xóa: '+linesCleared;
   document.getElementById('level-box').textContent='Cấp độ '+level;
+  // mỗi điểm ghi thêm = 1 XP người chơi (điểm giảm/reset không trừ XP)
+  if(score>_xpLastScore) addPlayerXP(score-_xpLastScore);
+  _xpLastScore=score;
   if(unlockGateActive && !secretMode) updateBurstCount();
   saveProgress();
 }
@@ -8208,7 +8247,7 @@ function startGame(){
   // Reset achievements for new game session
   Object.values(ACHIEVEMENTS).forEach(a=>{ a.done=false; });
   fruitSlicedTotal=0; survive60Unlocked=false;
-  score=0; linesCleared=0; level=1; combo=0; consecutiveBursts=0;
+  score=0; linesCleared=0; level=1; combo=0; consecutiveBursts=0; _xpLastScore=0;
   hiddenMapEntryScore=0;
   secretStreak=0; secretMultiplier=1; secretUltra=false;
   secret1Gained=0; pendingUnlock='secret';
