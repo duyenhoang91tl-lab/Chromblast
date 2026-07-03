@@ -1295,9 +1295,10 @@ function setAdventureTheme(on){
   if(btn) btn.textContent = on ? '🚀 ADV: BẬT' : '🚀 ADV';
 }
 
-let hiddenMapEntryScore=0; // mốc điểm map thường lúc VỪA VÀO map ẩn — thua map ẩn sẽ mất hết điểm kiếm được trong ván đó
+let hiddenMapEntryScore=0; // mốc điểm lúc vào map ẩn (chỉ còn để tham khảo)
 function forfeitHiddenMapScore(){
-  score=hiddenMapEntryScore;
+  // (đã gỡ theo yêu cầu) thua map ẩn KHÔNG thu hồi điểm nữa — người chơi giữ nguyên
+  // toàn bộ điểm đã kiếm được, chỉ quay về map thường
   if(typeof updateScoreUI==='function') updateScoreUI();
 }
 const UNLOCK_STAGE_ORDER = ['secret','dodge','fruit','bee','gold','mole','memory','bubble','stack','boss','catch','flood','arena','snake','brick','runner','space','rhythm','maze','mega'];
