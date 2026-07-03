@@ -1452,7 +1452,6 @@ function getMinBurst(){
 
 /* ── Level-up fanfare ── */
 function applyLevelDifficulty(){
-  showComboFlash(0, false, '⬆ CẤP ' + level + '! Độ khó tăng!');
   try { sfxUnlock(); } catch(e){}
   const lb = document.getElementById('level-box');
   if(lb){
