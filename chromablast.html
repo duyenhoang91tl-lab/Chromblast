@@ -1804,6 +1804,10 @@ let thornWave = 0;
 let thornThreshold = 6;
 let thornCells = new Set();
 let cellBurstCount = {};
+// Tuổi ô: gai CHỈ quấn ô đã nằm trên bàn QUÁ 5 lượt đặt khối mà vẫn chưa bị phá
+let placeCounter = 0;      // tổng số lượt đặt khối trong ván
+let cellPlacedAt = {};     // key "r,c" -> lượt mà ô nhận màu (đặt/dịch chuyển tới)
+const THORN_MIN_AGE = 5;
 
 // ⛰️ Vòng 2 — ngọn núi: mọc từ 1 chấm, cứ 10 bước không bào mòn lại lan thêm 1 ô,
 // che ô nào nuốt ô đó; nổ nhóm CẠNH núi sẽ bào mòn núi 1 ô
@@ -1903,11 +1907,12 @@ function tornadoSweep(){
     if(board[r][c]) colors.push(board[r][c]);
   }
   if(!colors.length) return;
-  cells.forEach(([r,c])=>board[r][c]=null);
+  cells.forEach(([r,c])=>{ board[r][c]=null; delete cellPlacedAt[r+','+c]; });
   const spots=cells.slice();
   while(colors.length && spots.length){
     const [r,c]=spots.splice(rnd(spots.length),1)[0];
     board[r][c]=colors.pop();
+    cellPlacedAt[r+','+c]=placeCounter; // ô vừa bị lốc thổi tới — tính là mới
   }
   showComboFlash(0,false,'🌪️ Lốc xoáy càn qua '+(isRow?'hàng':'cột')+' '+(idx+1)+'!');
   renderGrid();
@@ -2121,6 +2126,7 @@ function portalTeleport(){
   const [fr,fc]=filled[rnd(filled.length)];
   const [er,ec]=empt[rnd(empt.length)];
   board[er][ec]=board[fr][fc]; board[fr][fc]=null;
+  cellPlacedAt[er+','+ec]=placeCounter; delete cellPlacedAt[fr+','+fc]; // ô dịch chuyển tới tính là mới
   renderGrid();
 }
 function spawnDragonKing(){
@@ -2647,6 +2653,7 @@ function getSC(r,c){ return secretCells && secretCells[r] ? secretCells[r][c] : 
 function initBoard(){
   board=Array.from({length:ROWS},()=>Array(COLS).fill(null));
   thornMode=false; thornCells=new Set(); cellBurstCount={}; thornPlacementCount=0; thornWave=0; thornThreshold=6;
+  placeCounter=0; cellPlacedAt={};
   mountainCells=new Set(); mountainStepCount=0; mountainRespawn=0;
   squirrel=null; squirrelStepCount=0; squirrelStolen=0; bittenCells=new Set();
   iceCells=new Map(); iceStepCount=0;
@@ -2884,7 +2891,8 @@ function placeAt(R,C){
   if(selected===null) return false;
   const piece=pieces[selected];
   if(!piece||piece.used||!canPlace(piece,R,C)) return false;
-  piece.shape.forEach(([dr,dc])=>{ board[R+dr][C+dc]=piece.color; });
+  placeCounter++;
+  piece.shape.forEach(([dr,dc])=>{ board[R+dr][C+dc]=piece.color; cellPlacedAt[(R+dr)+','+(C+dc)]=placeCounter; });
   piece.used=true;
   sfxPlacePiece();
   // Đặt khối lên bàn cờ cũng được cộng điểm — bằng đúng số ô của khối vừa đặt
@@ -3255,6 +3263,7 @@ function processClears(){
         iceCells.delete(key);
       }
       board[r][c]=null;
+      delete cellPlacedAt[key];
       // 💣 nổ ô kề bom → gỡ bom thành công, thưởng điểm
       if(bombCell && Math.abs(bombCell.r-r)<=1 && Math.abs(bombCell.c-c)<=1 && !(bombCell.r===r&&bombCell.c===c)){
         bombCell=null; bombRespawn=10;
@@ -3434,7 +3443,9 @@ function spawnThorns(){
   for(let r=0;r<ROWS;r++){
     for(let c=0;c<COLS;c++){
       const key=`${r},${c}`;
-      if(!cellBurstCount[key] && board[r][c]!==null && !thornCells.has(key)){
+      // chỉ quấn gai ô đã nằm QUÁ 5 lượt đặt khối mà chưa bị phá — khối mới đặt được tha
+      const age=placeCounter-(cellPlacedAt[key]!==undefined?cellPlacedAt[key]:placeCounter);
+      if(!cellBurstCount[key] && board[r][c]!==null && !thornCells.has(key) && age>THORN_MIN_AGE){
         thornCells.add(key);
         newThorns++;
       }
