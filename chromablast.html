@@ -499,6 +499,225 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
   box-shadow: inset 0 0 6px rgba(0,60,0,0.5);
   z-index: 2;
 }
+/* ⛰️ Ô bị núi che (vòng 2) — không đặt khối lên được, nổ ô kề bên để bào mòn núi */
+.cell.mountain-cell { position: relative; }
+.cell.mountain-cell::after {
+  content: '⛰️';
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  background: linear-gradient(160deg, #6b7280 0%, #4b5563 55%, #374151 100%);
+  border: 2px solid #64748b;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: inset 0 2px 5px rgba(255,255,255,0.18), inset 0 -3px 6px rgba(0,0,0,0.45);
+  z-index: 2;
+}
+/* 🐿️ Ô con sóc đang đứng (vòng 3) — nổ trúng ô này để trừ HP sóc */
+.cell.squirrel-cell { position: relative; }
+.cell.squirrel-cell::after {
+  content: '🐿️';
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px;
+  pointer-events: none;
+  filter: drop-shadow(0 0 6px rgba(255,180,60,0.9));
+  animation: squirrelHop 0.6s ease-in-out infinite alternate;
+  z-index: 3;
+}
+@keyframes squirrelHop {
+  from { transform: translateY(0) scale(1); }
+  to   { transform: translateY(-4px) scale(1.08); }
+}
+/* 🧊 Ô đóng băng (vòng 4) — nổ lần 1 nứt băng, lần 2 mới vỡ */
+.cell.ice-cell { position: relative; }
+.cell.ice-cell::after {
+  content: '❄️';
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  background: linear-gradient(135deg, rgba(160,220,255,0.55), rgba(80,160,230,0.45));
+  border: 2px solid rgba(190,230,255,0.9);
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: inset 0 0 8px rgba(255,255,255,0.6);
+  z-index: 2;
+}
+.cell.ice-cell.ice-cracked::after {
+  content: '🩹';
+  content: '💢';
+  background: linear-gradient(135deg, rgba(160,220,255,0.3), rgba(80,160,230,0.22));
+  border-style: dashed;
+}
+/* 🌫️ Ô bị sương mù che (vòng 5) — không nhìn thấy màu bên dưới */
+.cell.fog-cell { position: relative; }
+.cell.fog-cell::after {
+  content: '☁️';
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  background: linear-gradient(135deg, #8b93a5 0%, #6b7284 100%);
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0.96;
+  z-index: 4; /* che cả gai/băng bên dưới — đúng nghĩa mù thông tin */
+}
+/* 💣 Ô có bom hẹn giờ (vòng 6) — hiện số bước còn lại */
+.cell.bomb-cell { position: relative; }
+.cell.bomb-cell::after {
+  content: '💣';
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  pointer-events: none;
+  animation: bombPulse 0.8s ease-in-out infinite alternate;
+  z-index: 3;
+}
+.cell.bomb-cell::before {
+  content: attr(data-bomb);
+  position: absolute; top: 1px; right: 3px;
+  font-size: 11px; font-weight: 800; color: #ff5555;
+  text-shadow: 0 0 4px #000;
+  z-index: 4;
+}
+@keyframes bombPulse {
+  from { transform: scale(1);   filter: drop-shadow(0 0 2px rgba(255,60,60,0.5)); }
+  to   { transform: scale(1.12); filter: drop-shadow(0 0 8px rgba(255,60,60,0.95)); }
+}
+/* 🥚 Ô trứng rồng (vòng 8) — nổ kề bên 2 lần để đập vỡ trước khi nở */
+.cell.egg-cell { position: relative; }
+.cell.egg-cell::after {
+  content: '🥚';
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  pointer-events: none;
+  filter: drop-shadow(0 0 5px rgba(255,120,220,0.8));
+  animation: eggWobble 1.1s ease-in-out infinite;
+  z-index: 3;
+}
+.cell.egg-cell.egg-cracked::after { content: '🐣'; }
+@keyframes eggWobble {
+  0%,100% { transform: rotate(-6deg); }
+  50%     { transform: rotate(6deg); }
+}
+/* 🕷️ Nhện (V9) trên bàn cờ + khối bị tơ khóa trong khay */
+.cell.spider-cell { position: relative; }
+.cell.spider-cell::after {
+  content: '🕷️'; position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; pointer-events: none;
+  filter: drop-shadow(0 0 5px rgba(180,120,255,0.85));
+  z-index: 3;
+}
+.piece-slot.webbed { position: relative; opacity: 0.65; }
+.piece-slot.webbed::after {
+  content: '🕸️'; position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 30px; pointer-events: none; z-index: 3;
+  filter: drop-shadow(0 0 4px rgba(255,255,255,0.5));
+}
+/* 🌧️ Đầu cột đang có mây mưa (V10) */
+.cell.cloud-cell { position: relative; }
+.cell.cloud-cell::before {
+  content: '🌧️'; position: absolute; top: -4px; left: 50%; transform: translateX(-50%);
+  font-size: 16px; pointer-events: none; z-index: 5;
+  animation: bombPulse 1.4s ease-in-out infinite alternate;
+}
+/* 🕳️ Hố đen (V12) */
+.cell.blackhole-cell { position: relative; }
+.cell.blackhole-cell::after {
+  content: '🕳️'; position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; pointer-events: none; z-index: 3;
+  background: radial-gradient(circle, #000 30%, rgba(60,20,90,0.7) 70%, transparent 100%);
+  border-radius: inherit;
+  animation: bhSpin 3s linear infinite;
+}
+@keyframes bhSpin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+/* 👻 Ô bị ma nhập (V13) — chỉ hé lộ rất kín đáo bằng ánh mờ thoáng qua */
+.cell.ghost-cell { animation: ghostShimmer 2.4s ease-in-out infinite; }
+@keyframes ghostShimmer {
+  0%,88%,100% { filter: none; }
+  92%         { filter: brightness(1.5) saturate(0.4); }
+}
+/* 🐌 Ốc sên + vệt nhớt (V14) */
+.cell.snail-cell { position: relative; }
+.cell.snail-cell::after {
+  content: '🐌'; position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; pointer-events: none; z-index: 3;
+  filter: drop-shadow(0 0 5px rgba(160,255,140,0.85));
+}
+.cell.slime-cell { position: relative; }
+.cell.slime-cell::after {
+  content: '💧'; position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; pointer-events: none; z-index: 2;
+  background: rgba(140,230,120,0.3);
+  border: 1.5px dashed rgba(160,255,140,0.65);
+  border-radius: inherit;
+}
+/* 🧱 Tường gạch (V15/V18) */
+.cell.wall-cell { position: relative; }
+.cell.wall-cell::after {
+  content: '🧱'; position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; pointer-events: none; z-index: 2;
+  background: linear-gradient(160deg, #9a5b3c 0%, #7a4530 60%, #5e3423 100%);
+  border: 2px solid #b0704a;
+  border-radius: inherit;
+  box-shadow: inset 0 2px 4px rgba(255,255,255,0.15), inset 0 -3px 5px rgba(0,0,0,0.4);
+}
+/* ⚡ Vùng sét sắp đánh (V16) */
+.cell.lightning-warn { position: relative; }
+.cell.lightning-warn::after {
+  content: '⚡'; position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; pointer-events: none; z-index: 4;
+  background: rgba(255,220,60,0.22);
+  border: 2px dashed rgba(255,220,60,0.85);
+  border-radius: inherit;
+  animation: lightningBlink 0.4s steps(2) infinite;
+}
+@keyframes lightningBlink { from { opacity: 1; } to { opacity: 0.35; } }
+/* 🐍 Rắn thần (V17) */
+.cell.snakehead-cell { position: relative; }
+.cell.snakehead-cell::after {
+  content: '🐍'; position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 23px; pointer-events: none; z-index: 3;
+  filter: drop-shadow(0 0 6px rgba(80,255,120,0.9));
+}
+.cell.snakebody-cell { position: relative; }
+.cell.snakebody-cell::after {
+  content: ''; position: absolute; inset: 4px;
+  background: radial-gradient(circle, rgba(70,200,100,0.85) 30%, rgba(40,140,70,0.6) 100%);
+  border-radius: 50%;
+  pointer-events: none; z-index: 3;
+  box-shadow: 0 0 8px rgba(80,255,120,0.6);
+}
+/* 🌀 Cổng dịch chuyển (V19) */
+.cell.portal-cell { position: relative; }
+.cell.portal-cell::after {
+  content: '🌀'; position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; pointer-events: none; z-index: 3;
+  animation: bhSpin 2s linear infinite;
+  filter: drop-shadow(0 0 7px rgba(90,180,255,0.9));
+}
+/* 🐲 Vua Rồng (V20) */
+.cell.dragonking-cell { position: relative; }
+.cell.dragonking-cell::after {
+  content: '🐲'; position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px; pointer-events: none; z-index: 4;
+  animation: dkPulse 0.9s ease-in-out infinite alternate;
+}
+@keyframes dkPulse {
+  from { transform: scale(1);    filter: drop-shadow(0 0 4px rgba(255,50,50,0.7)); }
+  to   { transform: scale(1.15); filter: drop-shadow(0 0 12px rgba(255,50,50,1)); }
+}
 @keyframes popLine {
   0%  { transform:scale(1); filter:brightness(1); }
   30% { transform:scale(1.25); filter:brightness(2); }
@@ -1342,7 +1561,7 @@ function startUnlockGate(clearedIdx){
   // Mỗi vòng map ẩn thắng xong → map thường khó thêm một bậc:
   // khối gạch to/khó xếp xuất hiện nhiều hơn + rải thêm ô chướng ngại lên bàn cờ
   mainHardTier=unlockGateStageIndex;
-  sprinkleJunkCells(Math.min(5, 1+Math.floor(mainHardTier/3)));
+  applyRoundMechanics(); // vòng 1: dây gai · vòng 2: +ngọn núi · vòng 3: +sóc trộm ô
   addPlayerXP(30+clearedIdx*10); // thưởng XP mỗi lần phá đảo một map ẩn — vòng càng sâu thưởng càng lớn
 }
 
@@ -1452,7 +1671,6 @@ function getMinBurst(){
 
 /* ── Level-up fanfare ── */
 function applyLevelDifficulty(){
-  showComboFlash(0, false, '⬆ CẤP ' + level + '! Độ khó tăng!');
   try { sfxUnlock(); } catch(e){}
   const lb = document.getElementById('level-box');
   if(lb){
@@ -1469,13 +1687,504 @@ function applyLevelDifficulty(){
 let awaitingSecretUnlock=true;  // mở map ẩn 1 khi đạt TEST_UNLOCK_SCORE điểm từ map thường
 let secretUnlockBaseline=0;     // mốc điểm lúc bắt đầu đếm
 
-// Thorn vine difficulty state (activates after returning from Map ẩn 5)
+// 🌿 Vòng 1 — dây gai: ô không được phá sau N bước sẽ bị gai quấn, phải nổ ô kề bên để gỡ
 let thornMode = false;
 let thornPlacementCount = 0;
 let thornWave = 0;
 let thornThreshold = 6;
 let thornCells = new Set();
 let cellBurstCount = {};
+
+// ⛰️ Vòng 2 — ngọn núi: mọc từ 1 chấm, cứ 10 bước không bào mòn lại lan thêm 1 ô,
+// che ô nào nuốt ô đó; nổ nhóm CẠNH núi sẽ bào mòn núi 1 ô
+let mountainCells = new Set();
+let mountainStepCount = 0;
+let mountainRespawn = 0; // đếm lùi số bước để núi mọc lại sau khi bị san phẳng
+const MOUNTAIN_GROW_EVERY = 10;
+
+// 🐿️ Vòng 3 — con sóc: vài bước lại nhảy tới trộm 1 ô màu; nổ trúng ô nó đứng để trừ HP;
+// để nó trộm đủ giới hạn là thua luôn ván map thường
+let squirrel = null; // {r, c, hp}
+let squirrelStepCount = 0;
+let squirrelStolen = 0;
+const SQUIRREL_HP = 10, SQUIRREL_STEAL_LIMIT = 15, SQUIRREL_MOVE_EVERY = 3;
+
+// 🧊 Vòng 4 — băng giá: thỉnh thoảng 1 ô màu bị đóng băng, phải nổ 2 lần mới vỡ
+let iceCells = new Map(); // key -> 2 (băng cứng) | 1 (đã nứt)
+let iceStepCount = 0;
+const ICE_EVERY = 7;
+
+// 🌫️ Vòng 5 — sương mù 3×3 trôi trên bàn, che màu ô; nổ ô trong sương làm sương tan tạm
+let fogCenter = null; // {r,c}
+let fogStepCount = 0, fogCooldown = 0;
+const FOG_MOVE_EVERY = 4;
+
+// 💣 Vòng 6 — bom hẹn giờ: đếm ngược theo bước, nổ mất vùng 3×3; gỡ bằng nổ ô kề bên
+let bombCell = null; // {r,c}
+let bombTimer = 0, bombRespawn = 0;
+const BOMB_FUSE = 8;
+
+// 🌪️ Vòng 7 — lốc xoáy: mỗi 15 bước càn qua 1 hàng/cột, xáo trộn vị trí ô màu
+let tornadoStepCount = 0;
+const TORNADO_EVERY = 15;
+
+// 🥚 Vòng 8 — trứng rồng: nở sau 12 bước → thiêu rụi cả hàng; đập vỡ trước bằng 2 lần nổ kề bên
+let dragonEgg = null; // {r,c,shell,hatch}
+let eggRespawn = 0;
+const EGG_SHELL = 2, EGG_HATCH = 12;
+
+let mechAnnounced={};
+function announceMech(key,msg,delay){
+  if(mechAnnounced[key]) return;
+  mechAnnounced[key]=true;
+  setTimeout(()=>showComboFlash(0,false,msg), delay);
+}
+function randEmptyKey(){
+  const empties=[];
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
+    if(!board[r][c] && !cellBlockedForPlacement(r,c)) empties.push([r,c]);
+  }
+  return empties.length? empties[rnd(empties.length)] : null;
+}
+function freezeRandomCell(){
+  const cands=[];
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
+    const k=r+','+c;
+    if(board[r][c] && !iceCells.has(k) && !thornCells.has(k)) cands.push(k);
+  }
+  if(!cands.length) return;
+  iceCells.set(cands[rnd(cands.length)], 2);
+  renderGrid();
+}
+function spawnFog(){
+  fogCenter={r:1+rnd(ROWS-2), c:1+rnd(COLS-2)};
+  fogStepCount=0;
+  renderGrid();
+}
+function driftFog(){
+  if(!fogCenter) return;
+  fogCenter.r=Math.max(1,Math.min(ROWS-2,fogCenter.r+rnd(3)-1));
+  fogCenter.c=Math.max(1,Math.min(COLS-2,fogCenter.c+rnd(3)-1));
+  renderGrid();
+}
+function spawnBomb(){
+  const p=randEmptyKey(); if(!p) return;
+  bombCell={r:p[0], c:p[1]}; bombTimer=BOMB_FUSE;
+  renderGrid();
+}
+function bombExplode(){
+  const {r,c}=bombCell;
+  for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){
+    const nr=r+dr,nc=c+dc;
+    if(nr<0||nr>=ROWS||nc<0||nc>=COLS) continue;
+    const k=nr+','+nc;
+    if(mountainCells.has(k)) continue;
+    board[nr][nc]=null; thornCells.delete(k); iceCells.delete(k);
+  }
+  bombCell=null; bombRespawn=10;
+  try{ sfxGameOver(); }catch(e){}
+  showComboFlash(0,false,'💥 Bom nổ — mất vùng 3×3!');
+  renderGrid();
+}
+function tornadoSweep(){
+  const isRow=Math.random()<0.5, idx=rnd(isRow?ROWS:COLS);
+  const cells=[], colors=[];
+  for(let i=0;i<(isRow?COLS:ROWS);i++){
+    const r=isRow?idx:i, c=isRow?i:idx, k=r+','+c;
+    if(mountainCells.has(k)||thornCells.has(k)||iceCells.has(k)) continue;
+    if(bombCell&&bombCell.r===r&&bombCell.c===c) continue;
+    if(dragonEgg&&dragonEgg.r===r&&dragonEgg.c===c) continue;
+    cells.push([r,c]);
+    if(board[r][c]) colors.push(board[r][c]);
+  }
+  if(!colors.length) return;
+  cells.forEach(([r,c])=>board[r][c]=null);
+  const spots=cells.slice();
+  while(colors.length && spots.length){
+    const [r,c]=spots.splice(rnd(spots.length),1)[0];
+    board[r][c]=colors.pop();
+  }
+  showComboFlash(0,false,'🌪️ Lốc xoáy càn qua '+(isRow?'hàng':'cột')+' '+(idx+1)+'!');
+  renderGrid();
+}
+function spawnEgg(){
+  const p=randEmptyKey(); if(!p) return;
+  dragonEgg={r:p[0], c:p[1], shell:EGG_SHELL, hatch:EGG_HATCH};
+  renderGrid();
+}
+function eggHatchBurn(){
+  const row=dragonEgg.r;
+  for(let c=0;c<COLS;c++){
+    const k=row+','+c;
+    if(mountainCells.has(k)) continue;
+    board[row][c]=null; thornCells.delete(k); iceCells.delete(k);
+  }
+  dragonEgg=null; eggRespawn=12;
+  try{ sfxGameOver(); }catch(e){}
+  showComboFlash(0,false,'🐲 Rồng con nở — thiêu rụi cả hàng '+(row+1)+'!');
+  renderGrid();
+}
+
+/* ── VÒNG 9-20 — các cơ chế nâng cao, cộng dồn và hiểm dần ── */
+// 🕷️ V9 — nhện: giăng tơ KHÓA 1 khối trong khay 3 bước; nổ trúng ô nhện 5 lần để diệt
+let spider=null; // {r,c,hp}
+let spiderStepCount=0, spiderRespawn=0, spiderWebbedIdx=-1, spiderWebbedLeft=0;
+const SPIDER_HP=5, SPIDER_WEB_EVERY=6, SPIDER_WEB_LOCK=3;
+// 🌧️ V10 — mây mưa: rửa trôi màu 1 ô trong cột nó đứng → ô xám chết (chỉ xóa bằng hàng)
+let cloudCol=-1, cloudStepCount=0;
+const CLOUD_EVERY=6, WASHED_COLOR='#8a8f98';
+// 🦎 V11 — tắc kè: lén đổi màu 2 ô mỗi 8 bước
+let chamStepCount=0;
+const CHAM_EVERY=8;
+// 🕳️ V12 — hố đen: nuốt ô màu gần nhất mỗi 10 bước; nổ kề 3 lần để phong ấn
+let blackHole=null; // {r,c,eaten,seals}
+let bhStepCount=0, bhRespawn=0;
+const BH_EVERY=10, BH_SEALS=3;
+// 👻 V13 — bóng ma: nhập vào 1 ô và HIỂN THỊ MÀU GIẢ; nổ trúng để trừ tà
+let ghostCell=null; // {r,c,disguise}
+let ghostStepCount=0, ghostRespawn=0;
+const GHOST_MOVE_EVERY=7;
+// 🐌 V14 — ốc sên: bò 1 ô/bước, để vệt nhớt chặn đặt khối 4 bước; nổ kề 2 lần để diệt
+let snail=null; // {r,c,hits}
+let slimeCells=new Map(); // key -> số bước còn dính
+let snailRespawn=0;
+const SLIME_LAST=4, SNAIL_HITS=2;
+// 🧱 V15 — tường gạch: mỗi 14 bước rơi 1 đoạn tường 1×3; bào mòn như núi
+let wallCells=new Set();
+let wallStepCount=0;
+const WALL_EVERY=14;
+// ⚡ V16 — sét: cảnh báo trước 3 bước rồi đánh sạch vùng 2×2 (không gỡ được)
+let lightning=null; // {r,c,countdown}
+let lightningStepCount=0;
+const LIGHTNING_EVERY=9, LIGHTNING_WARN=3;
+// 🐍 V17 — rắn thần: thân 3 ô trườn mỗi bước, ăn ô màu nó bò lên; nổ trúng thân 5 lần
+let snakeSpirit=null; // {cells:[[r,c]...], hp}
+let snakeSpiritRespawn=0;
+const SNAKE_SPIRIT_HP=5;
+// 🌋 V18 — núi lửa: khi còn núi, mỗi 15 bước phun 3 tảng đá thành tường
+let volcanoStepCount=0;
+const VOLCANO_EVERY=15;
+// 🌀 V19 — cổng dịch chuyển: mỗi 5 bước dịch 1 ô màu đi chỗ khác; nổ kề cổng 3 lần để đóng
+let portalA=null, portalB=null, portalHits=0;
+let portalStepCount=0, portalRespawn=0;
+const PORTAL_EVERY=5, PORTAL_SEALS=3;
+// 🐲 V20 — VUA RỒNG: mỗi 12 bước tung 1 đòn ngẫu nhiên; nổ trúng 15 lần để hạ
+let dragonKing=null; // {r,c,hp}
+let dkStepCount=0, dkRespawn=0;
+const DK_HP=15, DK_EVERY=12;
+
+function spawnSpider(){ const p=randEmptyKey(); if(!p) return; spider={r:p[0],c:p[1],hp:SPIDER_HP}; spiderStepCount=0; renderGrid(); }
+function spiderWebPiece(){
+  const cands=pieces.map((p,i)=>(!p.used&&i!==spiderWebbedIdx)?i:-1).filter(i=>i>=0);
+  if(!cands.length) return;
+  spiderWebbedIdx=cands[rnd(cands.length)]; spiderWebbedLeft=SPIDER_WEB_LOCK;
+  showHint('🕷️ Nhện giăng tơ khóa 1 khối — chờ '+SPIDER_WEB_LOCK+' bước hoặc diệt nhện!');
+  renderPieces();
+}
+function cloudWash(){
+  if(cloudCol<0) cloudCol=rnd(COLS);
+  const cands=[];
+  for(let r=0;r<ROWS;r++){
+    const k=r+','+cloudCol;
+    if(board[r][cloudCol] && board[r][cloudCol]!==WASHED_COLOR && !iceCells.has(k) && !thornCells.has(k)) cands.push(r);
+  }
+  if(cands.length){ board[cands[rnd(cands.length)]][cloudCol]=WASHED_COLOR; }
+  cloudCol=rnd(COLS); // mây trôi sang cột khác
+  renderGrid();
+}
+function chameleonRepaint(){
+  const cands=[];
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
+    const k=r+','+c;
+    if(board[r][c] && board[r][c]!==WASHED_COLOR && !iceCells.has(k) && !thornCells.has(k)) cands.push([r,c]);
+  }
+  for(let i=0;i<2 && cands.length;i++){
+    const [r,c]=cands.splice(rnd(cands.length),1)[0];
+    board[r][c]=rndColor();
+  }
+  renderGrid();
+}
+function spawnBlackHole(){ const p=randEmptyKey(); if(!p) return; blackHole={r:p[0],c:p[1],eaten:0,seals:0}; bhStepCount=0; renderGrid(); }
+function blackHoleSwallow(){
+  let bestD=1e9,best=null;
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
+    if(!board[r][c]) continue;
+    const d=Math.abs(r-blackHole.r)+Math.abs(c-blackHole.c);
+    if(d<bestD){ bestD=d; best=[r,c]; }
+  }
+  if(best){
+    const k=best[0]+','+best[1];
+    board[best[0]][best[1]]=null; thornCells.delete(k); iceCells.delete(k);
+    blackHole.eaten++;
+    if(blackHole.eaten>=6){ blackHole=null; bhRespawn=15; showComboFlash(0,false,'🕳️ Hố đen no nê rồi biến mất!'); }
+  }
+  renderGrid();
+}
+function spawnGhost(){
+  const cands=[];
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++) if(board[r][c]&&board[r][c]!==WASHED_COLOR) cands.push([r,c]);
+  if(!cands.length){ ghostRespawn=3; return; }
+  const [r,c]=cands[rnd(cands.length)];
+  let dis; do{ dis=rndColor(); }while(dis===board[r][c]);
+  ghostCell={r,c,disguise:dis};
+  ghostStepCount=0; renderGrid();
+}
+function spawnSnail(){ const p=randEmptyKey(); if(!p) return; snail={r:p[0],c:p[1],hits:0}; renderGrid(); }
+function snailCrawl(){
+  const dirs=[[1,0],[-1,0],[0,1],[0,-1]].filter(([dr,dc])=>{
+    const nr=snail.r+dr,nc=snail.c+dc;
+    return nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&!mountainCells.has(nr+','+nc)&&!wallCells.has(nr+','+nc);
+  });
+  if(dirs.length){
+    const [dr,dc]=dirs[rnd(dirs.length)];
+    snail.r+=dr; snail.c+=dc;
+    const k=snail.r+','+snail.c;
+    if(!board[snail.r][snail.c]) slimeCells.set(k,SLIME_LAST); // nhớt chỉ dính ô trống
+  }
+  renderGrid();
+}
+function dropWall(){
+  const isRow=Math.random()<0.5;
+  const r0=rnd(ROWS), c0=rnd(COLS);
+  let placed=0;
+  for(let i=0;i<3;i++){
+    const r=isRow?r0:Math.min(ROWS-1,r0+i), c=isRow?Math.min(COLS-1,c0+i):c0;
+    const k=r+','+c;
+    if(!board[r][c] && !mountainCells.has(k) && !wallCells.has(k)
+       && !(bombCell&&bombCell.r===r&&bombCell.c===c) && !(dragonEgg&&dragonEgg.r===r&&dragonEgg.c===c)
+       && !(blackHole&&blackHole.r===r&&blackHole.c===c)){ wallCells.add(k); placed++; }
+  }
+  if(placed) renderGrid();
+}
+function lightningStrike(){
+  for(let dr=0;dr<2;dr++)for(let dc=0;dc<2;dc++){
+    const nr=lightning.r+dr,nc=lightning.c+dc;
+    if(nr>=ROWS||nc>=COLS) continue;
+    const k=nr+','+nc;
+    if(mountainCells.has(k)||wallCells.has(k)) continue;
+    board[nr][nc]=null; thornCells.delete(k); iceCells.delete(k);
+  }
+  lightning=null;
+  try{ sfxPenalty(); }catch(e){}
+  showComboFlash(0,false,'⚡ Sét đánh trúng bàn cờ!');
+  renderGrid();
+}
+function spawnSnakeSpirit(){
+  const p=randEmptyKey(); if(!p) return;
+  snakeSpirit={cells:[[p[0],p[1]],[p[0],p[1]],[p[0],p[1]]], hp:SNAKE_SPIRIT_HP};
+  renderGrid();
+}
+function snakeSpiritSlither(){
+  const [hr,hc]=snakeSpirit.cells[0];
+  const dirs=[[1,0],[-1,0],[0,1],[0,-1]].filter(([dr,dc])=>{
+    const nr=hr+dr,nc=hc+dc;
+    if(nr<0||nr>=ROWS||nc<0||nc>=COLS) return false;
+    const k=nr+','+nc;
+    if(mountainCells.has(k)||wallCells.has(k)) return false;
+    return !snakeSpirit.cells.some(([sr,sc])=>sr===nr&&sc===nc);
+  });
+  if(!dirs.length) return;
+  const [dr,dc]=dirs[rnd(dirs.length)];
+  const nr=hr+dr,nc=hc+dc;
+  if(board[nr][nc]){ board[nr][nc]=null; thornCells.delete(nr+','+nc); iceCells.delete(nr+','+nc); } // ăn ô màu
+  snakeSpirit.cells.unshift([nr,nc]); snakeSpirit.cells.pop();
+  renderGrid();
+}
+function volcanoErupt(){
+  let dropped=0;
+  for(let i=0;i<3;i++){
+    const p=randEmptyKey(); if(!p) break;
+    wallCells.add(p[0]+','+p[1]); dropped++;
+  }
+  if(dropped){
+    try{ sfxPenalty(); }catch(e){}
+    showComboFlash(0,false,'🌋 Núi lửa phun '+dropped+' tảng đá!');
+    renderGrid();
+  }
+}
+function spawnPortals(){
+  const a=randEmptyKey(); if(!a) return;
+  portalA={r:a[0],c:a[1]};
+  const b=randEmptyKey();
+  if(!b){ portalA=null; return; }
+  portalB={r:b[0],c:b[1]};
+  portalHits=0; portalStepCount=0;
+  renderGrid();
+}
+function portalTeleport(){
+  const filled=[], empt=[];
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
+    const k=r+','+c;
+    if(board[r][c]&&!iceCells.has(k)&&!thornCells.has(k)) filled.push([r,c]);
+    else if(!board[r][c]&&!cellBlockedForPlacement(r,c)) empt.push([r,c]);
+  }
+  if(!filled.length||!empt.length) return;
+  const [fr,fc]=filled[rnd(filled.length)];
+  const [er,ec]=empt[rnd(empt.length)];
+  board[er][ec]=board[fr][fc]; board[fr][fc]=null;
+  renderGrid();
+}
+function spawnDragonKing(){
+  const p=randEmptyKey(); if(!p) return;
+  dragonKing={r:p[0],c:p[1],hp:DK_HP};
+  dkStepCount=0; renderGrid();
+}
+function dragonKingAttack(){
+  const atk=rnd(4);
+  if(atk===0){ // đốt 1 hàng ngẫu nhiên
+    const row=rnd(ROWS);
+    for(let c=0;c<COLS;c++){
+      const k=row+','+c;
+      if(mountainCells.has(k)||wallCells.has(k)) continue;
+      board[row][c]=null; thornCells.delete(k); iceCells.delete(k);
+    }
+    showComboFlash(0,false,'🐲 Vua Rồng thiêu rụi hàng '+(row+1)+'!');
+  } else if(atk===1){ // đóng băng 3 ô
+    for(let i=0;i<3;i++) freezeRandomCell();
+    showComboFlash(0,false,'🐲 Vua Rồng thổi băng giá!');
+  } else if(atk===2){ // gieo 2 gai
+    const cands=[];
+    for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
+      const k=r+','+c;
+      if(board[r][c]&&!thornCells.has(k)&&!iceCells.has(k)) cands.push(k);
+    }
+    for(let i=0;i<2&&cands.length;i++) thornCells.add(cands.splice(rnd(cands.length),1)[0]);
+    showComboFlash(0,false,'🐲 Vua Rồng gieo dây gai!');
+  } else { // trộm 3 ô màu
+    for(let i=0;i<3;i++){
+      const cands=[];
+      for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++) if(board[r][c]) cands.push([r,c]);
+      if(!cands.length) break;
+      const [r,c]=cands[rnd(cands.length)];
+      board[r][c]=null; thornCells.delete(r+','+c); iceCells.delete(r+','+c);
+    }
+    showComboFlash(0,false,'🐲 Vua Rồng cướp ô màu!');
+  }
+  try{ sfxPenalty(); }catch(e){}
+  renderGrid();
+}
+
+// Kích hoạt dần từng cơ chế theo số vòng map ẩn đã thắng (gọi sau mỗi lần thắng map ẩn)
+function applyRoundMechanics(){
+  if(mainHardTier>=1 && !thornMode){
+    thornMode=true; thornPlacementCount=0; thornWave=0; thornThreshold=6;
+    thornCells=new Set(); cellBurstCount={};
+    setTimeout(()=>showComboFlash(0,false,'🌿 Dây gai xuất hiện trên bàn cờ!'), 900);
+  }
+  if(mainHardTier>=2 && mountainCells.size===0 && mountainRespawn<=0){
+    spawnMountain();
+    setTimeout(()=>showComboFlash(0,false,'⛰️ Ngọn núi nhỏ xuất hiện — đừng để nó lớn!'), 1600);
+  }
+  if(mainHardTier>=3 && !squirrel){
+    spawnSquirrel();
+    setTimeout(()=>showComboFlash(0,false,'🐿️ Con sóc trộm ô xuất hiện — nổ trúng nó '+SQUIRREL_HP+' lần!'), 2300);
+  }
+  if(mainHardTier>=4) announceMech('ice','🧊 Băng giá: ô đóng băng phải nổ 2 lần mới vỡ!', 3000);
+  if(mainHardTier>=5){
+    if(!fogCenter && fogCooldown<=0) spawnFog();
+    announceMech('fog','🌫️ Sương mù che khuất màu — hãy ghi nhớ!', 3700);
+  }
+  if(mainHardTier>=6){
+    if(!bombCell && bombRespawn<=0) spawnBomb();
+    announceMech('bomb','💣 Bom hẹn giờ! Nổ ô kề bên để gỡ trước khi nổ!', 4400);
+  }
+  if(mainHardTier>=7) announceMech('tornado','🌪️ Coi chừng lốc xoáy xáo trộn bàn cờ!', 5100);
+  if(mainHardTier>=8){
+    if(!dragonEgg && eggRespawn<=0) spawnEgg();
+    announceMech('egg','🥚 Trứng rồng xuất hiện — đập vỡ trước khi nó nở!', 5800);
+  }
+  if(mainHardTier>=9){
+    if(!spider && spiderRespawn<=0) spawnSpider();
+    announceMech('spider','🕷️ Nhện giăng tơ khóa khối gạch của bạn!', 6500);
+  }
+  if(mainHardTier>=10){
+    if(cloudCol<0) cloudCol=rnd(COLS);
+    announceMech('cloud','🌧️ Mây mưa rửa trôi màu ô thành ô xám!', 7200);
+  }
+  if(mainHardTier>=11) announceMech('cham','🦎 Tắc kè lén đổi màu ô — cẩn thận!', 7900);
+  if(mainHardTier>=12){
+    if(!blackHole && bhRespawn<=0) spawnBlackHole();
+    announceMech('bh','🕳️ Hố đen nuốt ô — nổ kề bên 3 lần để phong ấn!', 8600);
+  }
+  if(mainHardTier>=13){
+    if(!ghostCell && ghostRespawn<=0) spawnGhost();
+    announceMech('ghost','👻 Bóng ma giả dạng màu ô — đừng tin vào mắt mình!', 9300);
+  }
+  if(mainHardTier>=14){
+    if(!snail && snailRespawn<=0) spawnSnail();
+    announceMech('snail','🐌 Ốc sên để lại vệt nhớt chặn ô trống!', 10000);
+  }
+  if(mainHardTier>=15) announceMech('wall','🧱 Tường gạch sẽ rơi xuống bàn cờ!', 10700);
+  if(mainHardTier>=16) announceMech('lightning','⚡ Sét đánh — tránh xa vùng cảnh báo!', 11400);
+  if(mainHardTier>=17){
+    if(!snakeSpirit && snakeSpiritRespawn<=0) spawnSnakeSpirit();
+    announceMech('snakespirit','🐍 Rắn thần trườn qua nuốt ô màu!', 12100);
+  }
+  if(mainHardTier>=18) announceMech('volcano','🌋 Núi hóa núi lửa — sẽ phun đá!', 12800);
+  if(mainHardTier>=19){
+    if(!portalA && portalRespawn<=0) spawnPortals();
+    announceMech('portal','🌀 Cổng dịch chuyển tráo đổi ô màu!', 13500);
+  }
+  if(mainHardTier>=20){
+    if(!dragonKing && dkRespawn<=0) spawnDragonKing();
+    announceMech('dk','🐲 VUA RỒNG GIÁNG THẾ — thử thách tối thượng!', 14200);
+  }
+}
+function spawnMountain(){
+  const empties=[];
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++) if(!board[r][c]) empties.push(r+','+c);
+  if(!empties.length) return;
+  mountainCells=new Set([empties[rnd(empties.length)]]);
+  mountainStepCount=0;
+  renderGrid();
+}
+function growMountain(){
+  const cands=[];
+  mountainCells.forEach(k=>{
+    const [r,c]=k.split(',').map(Number);
+    for(const [dr,dc] of [[-1,0],[1,0],[0,-1],[0,1]]){
+      const nr=r+dr,nc=c+dc,nk=nr+','+nc;
+      if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&!mountainCells.has(nk)) cands.push(nk);
+    }
+  });
+  if(!cands.length) return;
+  const nk=cands[rnd(cands.length)];
+  mountainCells.add(nk);
+  const [r,c]=nk.split(',').map(Number);
+  board[r][c]=null; // núi lan tới đâu nuốt ô tới đó
+  thornCells.delete(nk); iceCells.delete(nk);
+  renderGrid();
+}
+function spawnSquirrel(){
+  squirrel={r:rnd(ROWS), c:rnd(COLS), hp:SQUIRREL_HP};
+  squirrelStepCount=0; squirrelStolen=0;
+  renderGrid();
+}
+function squirrelMoveAndSteal(){
+  if(!squirrel) return;
+  const filled=[];
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
+    if(board[r][c] && !mountainCells.has(r+','+c)) filled.push([r,c]);
+  }
+  if(filled.length){
+    const [r,c]=filled[rnd(filled.length)];
+    squirrel.r=r; squirrel.c=c;
+    board[r][c]=null; thornCells.delete(r+','+c); iceCells.delete(r+','+c); // trộm mất ô màu
+    squirrelStolen++;
+    try{ sfxPenalty(); }catch(e){}
+    if(squirrelStolen>=SQUIRREL_STEAL_LIMIT){
+      renderGrid();
+      sfxGameOver();
+      showComboFlash(0,false,'🐿️ Sóc đã trộm sạch bàn cờ!');
+      document.getElementById('go-score').textContent='Điểm của bạn: '+score.toLocaleString();
+      document.getElementById('game-over-overlay').classList.add('show');
+      return;
+    }
+  } else {
+    squirrel.r=rnd(ROWS); squirrel.c=rnd(COLS); // bàn trống thì chỉ chạy loanh quanh
+  }
+  renderGrid();
+}
 
 // Mode B state
 let secretBoard = [];        // 8x8 color indices
@@ -1833,7 +2542,31 @@ function getSC(r,c){ return secretCells && secretCells[r] ? secretCells[r][c] : 
 /* ══════════════════════════════════════════
    MODE A — MAIN GAME
 ══════════════════════════════════════════ */
-function initBoard(){ board=Array.from({length:ROWS},()=>Array(COLS).fill(null)); thornMode=false; thornCells=new Set(); cellBurstCount={}; thornPlacementCount=0; thornWave=0; thornThreshold=6; }
+function initBoard(){
+  board=Array.from({length:ROWS},()=>Array(COLS).fill(null));
+  thornMode=false; thornCells=new Set(); cellBurstCount={}; thornPlacementCount=0; thornWave=0; thornThreshold=6;
+  mountainCells=new Set(); mountainStepCount=0; mountainRespawn=0;
+  squirrel=null; squirrelStepCount=0; squirrelStolen=0;
+  iceCells=new Map(); iceStepCount=0;
+  fogCenter=null; fogStepCount=0; fogCooldown=0;
+  bombCell=null; bombTimer=0; bombRespawn=0;
+  tornadoStepCount=0;
+  dragonEgg=null; eggRespawn=0;
+  spider=null; spiderStepCount=0; spiderRespawn=0; spiderWebbedIdx=-1; spiderWebbedLeft=0;
+  cloudCol=-1; cloudStepCount=0;
+  chamStepCount=0;
+  blackHole=null; bhStepCount=0; bhRespawn=0;
+  ghostCell=null; ghostStepCount=0; ghostRespawn=0;
+  snail=null; slimeCells=new Map(); snailRespawn=0;
+  wallCells=new Set(); wallStepCount=0;
+  lightning=null; lightningStepCount=0;
+  snakeSpirit=null; snakeSpiritRespawn=0;
+  volcanoStepCount=0;
+  portalA=null; portalB=null; portalHits=0; portalStepCount=0; portalRespawn=0;
+  dragonKing=null; dkStepCount=0; dkRespawn=0;
+  // ván mới vẫn giữ tier đã đạt — kích hoạt lại các cơ chế tương ứng
+  if(typeof mainHardTier!=='undefined' && mainHardTier>0) setTimeout(()=>applyRoundMechanics(), 50);
+}
 let mainHardTier=0; // số vòng map ẩn đã thắng — map thường khó dần theo mỗi vòng
 function makePiece(){
   // Càng qua nhiều vòng map ẩn, khối càng thiên về hình to/khó xếp
@@ -1844,18 +2577,7 @@ function makePiece(){
   const shape=pool.length?pool[rnd(pool.length)]:SHAPES[rnd(SHAPES.length)];
   return {shape, color:rndColor(), used:false};
 }
-// Rải vài ô "chướng ngại" màu ngẫu nhiên lên bàn cờ chính sau mỗi vòng map ẩn
-function sprinkleJunkCells(n){
-  if(!board) return;
-  const empties=[];
-  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++) if(!board[r][c]) empties.push([r,c]);
-  for(let i=0;i<n && empties.length;i++){
-    const [r,c]=empties.splice(rnd(empties.length),1)[0];
-    board[r][c]=rndColor();
-  }
-  renderGrid();
-}
-function refillPieces(){ pieces=[makePiece(),makePiece(),makePiece()]; selected=null; }
+function refillPieces(){ pieces=[makePiece(),makePiece(),makePiece()]; selected=null; spiderWebbedIdx=-1; spiderWebbedLeft=0; }
 
 // Xoay shape 90° theo chiều kim đồng hồ: (r,c) → (c, maxR-r)
 function rotatePiece(idx){
@@ -1874,10 +2596,24 @@ function rotatePiece(idx){
   showHint('🔄 Đã xoay!');
 }
 
+// Ô bị chặn không đặt khối lên được (do các cơ chế độ khó chiếm giữ)
+function cellBlockedForPlacement(r,c){
+  const k=r+','+c;
+  if(mountainCells.has(k)||wallCells.has(k)) return true;
+  if(slimeCells.has(k)) return true;
+  if(bombCell&&bombCell.r===r&&bombCell.c===c) return true;
+  if(dragonEgg&&dragonEgg.r===r&&dragonEgg.c===c) return true;
+  if(blackHole&&blackHole.r===r&&blackHole.c===c) return true;
+  if(portalA&&portalA.r===r&&portalA.c===c) return true;
+  if(portalB&&portalB.r===r&&portalB.c===c) return true;
+  if(snakeSpirit&&snakeSpirit.cells.some(([sr,sc])=>sr===r&&sc===c)) return true;
+  if(dragonKing&&dragonKing.r===r&&dragonKing.c===c) return true;
+  return false;
+}
 function canPlace(piece,r,c){
   return piece.shape.every(([dr,dc])=>{
     const nr=r+dr,nc=c+dc;
-    return nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&!board[nr][nc];
+    return nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&!board[nr][nc]&&!cellBlockedForPlacement(nr,nc);
   });
 }
 
@@ -1904,9 +2640,34 @@ function renderGrid(){
   for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
     const cell=gridCells[r][c];
     const thornKey=`${r},${c}`;
-    const cls='cell'+(board[r][c]?' filled':'')+(thornCells.has(thornKey)?' thorn-cell':'');
+    const inFog=fogCenter && Math.abs(fogCenter.r-r)<=1 && Math.abs(fogCenter.c-c)<=1;
+    const inLightning=lightning && r>=lightning.r && r<=lightning.r+1 && c>=lightning.c && c<=lightning.c+1;
+    const snakeIdx=snakeSpirit? snakeSpirit.cells.findIndex(([sr,sc])=>sr===r&&sc===c) : -1;
+    const cls='cell'+(board[r][c]?' filled':'')+(thornCells.has(thornKey)?' thorn-cell':'')
+      +(mountainCells.has(thornKey)?' mountain-cell':'')
+      +(wallCells.has(thornKey)?' wall-cell':'')
+      +(squirrel&&squirrel.r===r&&squirrel.c===c?' squirrel-cell':'')
+      +(iceCells.has(thornKey)?(iceCells.get(thornKey)>=2?' ice-cell':' ice-cell ice-cracked'):'')
+      +(inFog?' fog-cell':'')
+      +(bombCell&&bombCell.r===r&&bombCell.c===c?' bomb-cell':'')
+      +(dragonEgg&&dragonEgg.r===r&&dragonEgg.c===c?(dragonEgg.shell<EGG_SHELL?' egg-cell egg-cracked':' egg-cell'):'')
+      +(spider&&spider.r===r&&spider.c===c?' spider-cell':'')
+      +(mainHardTier>=10&&c===cloudCol&&r===0?' cloud-cell':'')
+      +(blackHole&&blackHole.r===r&&blackHole.c===c?' blackhole-cell':'')
+      +(ghostCell&&ghostCell.r===r&&ghostCell.c===c?' ghost-cell':'')
+      +(snail&&snail.r===r&&snail.c===c?' snail-cell':'')
+      +(slimeCells.has(thornKey)?' slime-cell':'')
+      +(inLightning?' lightning-warn':'')
+      +(snakeIdx===0?' snakehead-cell':snakeIdx>0?' snakebody-cell':'')
+      +((portalA&&portalA.r===r&&portalA.c===c)||(portalB&&portalB.r===r&&portalB.c===c)?' portal-cell':'')
+      +(dragonKing&&dragonKing.r===r&&dragonKing.c===c?' dragonking-cell':'');
     if(cell.className!==cls) cell.className=cls;
-    const bg=board[r][c]||'';
+    if(bombCell&&bombCell.r===r&&bombCell.c===c){
+      if(cell.dataset.bomb!==String(bombTimer)) cell.dataset.bomb=bombTimer;
+    } else if(cell.dataset.bomb) delete cell.dataset.bomb;
+    // 👻 ô bị ma nhập hiển thị MÀU GIẢ — logic game vẫn dùng màu thật trong board
+    let bg=board[r][c]||'';
+    if(ghostCell&&ghostCell.r===r&&ghostCell.c===c&&bg) bg=ghostCell.disguise;
     if(cell.style.background!==bg) cell.style.background=bg;
   }
 }
@@ -2030,6 +2791,152 @@ function placeAt(R,C){
       spawnThorns();
     }
   }
+  // ⛰️ núi lớn dần theo bước đặt khối (vòng 2+)
+  if(mainHardTier>=2){
+    if(mountainCells.size>0){
+      mountainStepCount++;
+      if(mountainStepCount>=MOUNTAIN_GROW_EVERY){ mountainStepCount=0; growMountain(); }
+    } else if(mountainRespawn>0 && --mountainRespawn<=0){
+      spawnMountain();
+    }
+  }
+  // 🐿️ sóc di chuyển & trộm ô theo bước (vòng 3+)
+  if(mainHardTier>=3 && squirrel){
+    squirrelStepCount++;
+    if(squirrelStepCount>=SQUIRREL_MOVE_EVERY){ squirrelStepCount=0; squirrelMoveAndSteal(); }
+  }
+  // 🧊 đóng băng ô mới theo chu kỳ (vòng 4+)
+  if(mainHardTier>=4){
+    iceStepCount++;
+    if(iceStepCount>=ICE_EVERY){ iceStepCount=0; freezeRandomCell(); }
+  }
+  // 🌫️ sương mù trôi / tan rồi tụ lại (vòng 5+)
+  if(mainHardTier>=5){
+    if(fogCenter){
+      fogStepCount++;
+      if(fogStepCount>=FOG_MOVE_EVERY){ fogStepCount=0; driftFog(); }
+    } else if(fogCooldown>0 && --fogCooldown<=0){
+      spawnFog();
+    }
+  }
+  // 💣 bom đếm ngược / mọc lại (vòng 6+)
+  if(mainHardTier>=6){
+    if(bombCell){
+      bombTimer--;
+      if(bombTimer<=0) bombExplode();
+    } else if(bombRespawn>0 && --bombRespawn<=0){
+      spawnBomb();
+    }
+  }
+  // 🌪️ lốc xoáy theo chu kỳ (vòng 7+)
+  if(mainHardTier>=7){
+    tornadoStepCount++;
+    if(tornadoStepCount>=TORNADO_EVERY){ tornadoStepCount=0; tornadoSweep(); }
+  }
+  // 🥚 trứng rồng ấp / mọc lại (vòng 8+)
+  if(mainHardTier>=8){
+    if(dragonEgg){
+      dragonEgg.hatch--;
+      if(dragonEgg.hatch<=0) eggHatchBurn();
+    } else if(eggRespawn>0 && --eggRespawn<=0){
+      spawnEgg();
+    }
+  }
+  // 🕷️ nhện giăng tơ khay + gỡ tơ dần (vòng 9+)
+  if(mainHardTier>=9){
+    if(spiderWebbedLeft>0 && --spiderWebbedLeft<=0){ spiderWebbedIdx=-1; renderPieces(); }
+    if(spider){
+      spiderStepCount++;
+      if(spiderStepCount>=SPIDER_WEB_EVERY){ spiderStepCount=0; spiderWebPiece(); }
+    } else if(spiderRespawn>0 && --spiderRespawn<=0){
+      spawnSpider();
+    }
+  }
+  // 🌧️ mây mưa rửa màu (vòng 10+)
+  if(mainHardTier>=10){
+    cloudStepCount++;
+    if(cloudStepCount>=CLOUD_EVERY){ cloudStepCount=0; cloudWash(); }
+  }
+  // 🦎 tắc kè đổi màu lén (vòng 11+)
+  if(mainHardTier>=11){
+    chamStepCount++;
+    if(chamStepCount>=CHAM_EVERY){ chamStepCount=0; chameleonRepaint(); }
+  }
+  // 🕳️ hố đen nuốt ô (vòng 12+)
+  if(mainHardTier>=12){
+    if(blackHole){
+      bhStepCount++;
+      if(bhStepCount>=BH_EVERY){ bhStepCount=0; blackHoleSwallow(); }
+    } else if(bhRespawn>0 && --bhRespawn<=0){
+      spawnBlackHole();
+    }
+  }
+  // 👻 bóng ma di chuyển / đổi màu giả (vòng 13+)
+  if(mainHardTier>=13){
+    if(ghostCell){
+      if(!board[ghostCell.r][ghostCell.c]){ ghostCell=null; ghostRespawn=3; } // ô ma nhập đã biến mất
+      else {
+        ghostStepCount++;
+        if(ghostStepCount>=GHOST_MOVE_EVERY){ ghostStepCount=0; spawnGhost(); }
+      }
+    } else if(ghostRespawn>0 && --ghostRespawn<=0){
+      spawnGhost();
+    }
+  }
+  // 🐌 ốc sên bò + nhớt bay hơi (vòng 14+)
+  if(mainHardTier>=14){
+    slimeCells.forEach((v,k)=>{ if(v<=1) slimeCells.delete(k); else slimeCells.set(k,v-1); });
+    if(snail) snailCrawl();
+    else if(snailRespawn>0 && --snailRespawn<=0) spawnSnail();
+  }
+  // 🧱 tường rơi (vòng 15+)
+  if(mainHardTier>=15){
+    wallStepCount++;
+    if(wallStepCount>=WALL_EVERY){ wallStepCount=0; dropWall(); }
+  }
+  // ⚡ sét: cảnh báo rồi đánh (vòng 16+)
+  if(mainHardTier>=16){
+    if(lightning){
+      lightning.countdown--;
+      if(lightning.countdown<=0) lightningStrike();
+      else renderGrid();
+    } else {
+      lightningStepCount++;
+      if(lightningStepCount>=LIGHTNING_EVERY){
+        lightningStepCount=0;
+        lightning={r:rnd(ROWS-1), c:rnd(COLS-1), countdown:LIGHTNING_WARN};
+        renderGrid();
+      }
+    }
+  }
+  // 🐍 rắn thần trườn (vòng 17+)
+  if(mainHardTier>=17){
+    if(snakeSpirit) snakeSpiritSlither();
+    else if(snakeSpiritRespawn>0 && --snakeSpiritRespawn<=0) spawnSnakeSpirit();
+  }
+  // 🌋 núi lửa phun đá khi còn núi (vòng 18+)
+  if(mainHardTier>=18 && mountainCells.size>0){
+    volcanoStepCount++;
+    if(volcanoStepCount>=VOLCANO_EVERY){ volcanoStepCount=0; volcanoErupt(); }
+  }
+  // 🌀 cổng dịch chuyển (vòng 19+)
+  if(mainHardTier>=19){
+    if(portalA){
+      portalStepCount++;
+      if(portalStepCount>=PORTAL_EVERY){ portalStepCount=0; portalTeleport(); }
+    } else if(portalRespawn>0 && --portalRespawn<=0){
+      spawnPortals();
+    }
+  }
+  // 🐲 Vua Rồng ra đòn (vòng 20)
+  if(mainHardTier>=20){
+    if(dragonKing){
+      dkStepCount++;
+      if(dkStepCount>=DK_EVERY){ dkStepCount=0; dragonKingAttack(); }
+    } else if(dkRespawn>0 && --dkRespawn<=0){
+      spawnDragonKing();
+    }
+  }
   renderGrid(); renderPieces();
   setTimeout(()=>processClears(), 90);
   return true;
@@ -2047,6 +2954,11 @@ function onSlotPointerDown(e, idx){
   if(secretMode) return;
   const piece=pieces[idx];
   if(piece.used) return;
+  if(spiderWebbedIdx===idx && spiderWebbedLeft>0){
+    showHint('🕸️ Khối này đang bị tơ nhện khóa — còn '+spiderWebbedLeft+' bước nữa!');
+    try{ sfxPenalty(); }catch(err){}
+    return;
+  }
   e.preventDefault();
   const isTouch=(e.pointerType==='touch'||e.pointerType==='pen');
   drag.active=true; drag.moved=false;
@@ -2219,9 +3131,131 @@ function processClears(){
 
   const waitTime=colorKeys.size>0?500:360;
   setTimeout(()=>{
+    let eggHitThisWave=false; // mỗi ĐỢT nổ chỉ làm nứt vỏ trứng 1 lớp, dù nhiều ô cùng kề trứng
+    let spiderHitWave=false, bhHitWave=false, snailHitWave=false, snakeHitWave=false, portalHitWave=false, dkHitWave=false;
     totalKeys.forEach(key=>{
       const [r,c]=key.split(',').map(Number);
+      // 🧊 ô đóng băng: lần nổ đầu chỉ làm NỨT băng (ô sống sót), lần 2 mới vỡ và xóa
+      if(iceCells.has(key)){
+        const stage=iceCells.get(key);
+        if(stage>=2){ iceCells.set(key,1); try{ sfxClick(); }catch(e){} return; }
+        iceCells.delete(key);
+      }
       board[r][c]=null;
+      // 💣 nổ ô kề bom → gỡ bom thành công, thưởng điểm
+      if(bombCell && Math.abs(bombCell.r-r)<=1 && Math.abs(bombCell.c-c)<=1 && !(bombCell.r===r&&bombCell.c===c)){
+        bombCell=null; bombRespawn=10;
+        score+=20; if(score>best) best=score; updateScoreUI();
+        showComboFlash(0,false,'✂️ Gỡ bom thành công! +20đ');
+      }
+      // 🥚 nổ ô kề trứng rồng → nứt vỏ; vỡ hẳn thì thưởng điểm
+      if(dragonEgg && !eggHitThisWave && Math.abs(dragonEgg.r-r)<=1 && Math.abs(dragonEgg.c-c)<=1 && !(dragonEgg.r===r&&dragonEgg.c===c)){
+        eggHitThisWave=true;
+        dragonEgg.shell--;
+        if(dragonEgg.shell<=0){
+          dragonEgg=null; eggRespawn=12;
+          score+=40; if(score>best) best=score; updateScoreUI();
+          showComboFlash(0,false,'🍳 Đập vỡ trứng rồng! +40đ');
+        } else {
+          showHint('🥚 Vỏ trứng đã nứt — nổ kề bên thêm 1 lần nữa!');
+        }
+      }
+      // 🌫️ nổ ô trong vùng sương mù → sương tan một lúc
+      if(fogCenter && Math.abs(fogCenter.r-r)<=1 && Math.abs(fogCenter.c-c)<=1){
+        fogCenter=null; fogCooldown=6;
+      }
+      // 🕷️ nổ trúng ô nhện → trừ HP, nhện nhảy đi
+      if(spider && !spiderHitWave && spider.r===r && spider.c===c){
+        spiderHitWave=true;
+        spider.hp--;
+        if(spider.hp<=0){
+          spider=null; spiderRespawn=20; spiderWebbedIdx=-1; spiderWebbedLeft=0;
+          score+=30; if(score>best) best=score; updateScoreUI();
+          showComboFlash(0,false,'🕷️ Diệt nhện! +30đ');
+          renderPieces();
+        } else {
+          showHint('🕷️ Trúng nhện! HP còn '+spider.hp+'/'+SPIDER_HP);
+          const p=randEmptyKey(); if(p){ spider.r=p[0]; spider.c=p[1]; }
+        }
+      }
+      // 🕳️ nổ kề hố đen → tích dấu phong ấn
+      if(blackHole && !bhHitWave && Math.abs(blackHole.r-r)<=1 && Math.abs(blackHole.c-c)<=1 && !(blackHole.r===r&&blackHole.c===c)){
+        bhHitWave=true;
+        blackHole.seals++;
+        if(blackHole.seals>=BH_SEALS){
+          blackHole=null; bhRespawn=15;
+          score+=35; if(score>best) best=score; updateScoreUI();
+          showComboFlash(0,false,'🕳️ Phong ấn hố đen! +35đ');
+        } else {
+          showHint('🕳️ Phong ấn '+blackHole.seals+'/'+BH_SEALS);
+        }
+      }
+      // 👻 nổ trúng ô ma nhập → trừ tà
+      if(ghostCell && ghostCell.r===r && ghostCell.c===c){
+        ghostCell=null; ghostRespawn=12;
+        score+=25; if(score>best) best=score; updateScoreUI();
+        showComboFlash(0,false,'👻 Trừ tà thành công! +25đ');
+      }
+      // 🐌 nổ kề ốc sên → tích đòn
+      if(snail && !snailHitWave && Math.abs(snail.r-r)<=1 && Math.abs(snail.c-c)<=1 && !(snail.r===r&&snail.c===c)){
+        snailHitWave=true;
+        snail.hits++;
+        if(snail.hits>=SNAIL_HITS){
+          snail=null; snailRespawn=18;
+          score+=30; if(score>best) best=score; updateScoreUI();
+          showComboFlash(0,false,'🐌 Diệt ốc sên! +30đ');
+        } else {
+          showHint('🐌 Trúng ốc sên '+snail.hits+'/'+SNAIL_HITS);
+        }
+      }
+      // 🧱 nổ ô cạnh tường → bào mòn tường (giống núi, mỗi ô nổ bào 1 ô tường)
+      if(wallCells.size){
+        for(const [dr,dc] of [[-1,0],[1,0],[0,-1],[0,1]]){
+          const nk=`${r+dr},${c+dc}`;
+          if(wallCells.has(nk)){ wallCells.delete(nk); break; }
+        }
+      }
+      // 🐍 nổ trúng thân rắn thần → trừ HP
+      if(snakeSpirit && !snakeHitWave && snakeSpirit.cells.some(([sr,sc])=>sr===r&&sc===c)){
+        snakeHitWave=true;
+        snakeSpirit.hp--;
+        if(snakeSpirit.hp<=0){
+          snakeSpirit=null; snakeSpiritRespawn=25;
+          score+=60; if(score>best) best=score; updateScoreUI();
+          showComboFlash(0,false,'🐍 Hạ rắn thần! +60đ');
+        } else {
+          showHint('🐍 Trúng rắn thần! HP còn '+snakeSpirit.hp+'/'+SNAKE_SPIRIT_HP);
+        }
+      }
+      // 🌀 nổ kề cổng → tích dấu đóng cổng (cả 2 cổng cùng đóng)
+      if(portalA && !portalHitWave){
+        const nearA=Math.abs(portalA.r-r)<=1&&Math.abs(portalA.c-c)<=1;
+        const nearB=portalB&&Math.abs(portalB.r-r)<=1&&Math.abs(portalB.c-c)<=1;
+        if(nearA||nearB){
+          portalHitWave=true;
+          portalHits++;
+          if(portalHits>=PORTAL_SEALS){
+            portalA=null; portalB=null; portalRespawn=20;
+            score+=40; if(score>best) best=score; updateScoreUI();
+            showComboFlash(0,false,'🌀 Đóng cổng dịch chuyển! +40đ');
+          } else {
+            showHint('🌀 Đóng cổng '+portalHits+'/'+PORTAL_SEALS);
+          }
+        }
+      }
+      // 🐲 nổ trúng ô Vua Rồng → trừ HP, hắn bay đi chỗ khác
+      if(dragonKing && !dkHitWave && dragonKing.r===r && dragonKing.c===c){
+        dkHitWave=true;
+        dragonKing.hp--;
+        if(dragonKing.hp<=0){
+          dragonKing=null; dkRespawn=30;
+          score+=100; if(score>best) best=score; updateScoreUI();
+          showComboFlash(0,false,'👑 HẠ GỤC VUA RỒNG! +100đ');
+        } else {
+          showHint('🐲 Trúng Vua Rồng! HP còn '+dragonKing.hp+'/'+DK_HP);
+          const p=randEmptyKey(); if(p){ dragonKing.r=p[0]; dragonKing.c=p[1]; }
+        }
+      }
       // Track burst history and remove adjacent thorns
       if(thornMode){
         cellBurstCount[key]=(cellBurstCount[key]||0)+1;
@@ -2229,6 +3263,33 @@ function processClears(){
         for(const [dr,dc] of [[-1,0],[1,0],[0,-1],[0,1]]){
           const nk=`${r+dr},${c+dc}`;
           if(thornCells.has(nk)) thornCells.delete(nk);
+        }
+      }
+      // ⛰️ nổ ô cạnh núi → bào mòn núi 1 ô (mỗi ô nổ bào tối đa 1 ô núi)
+      if(mountainCells.size){
+        for(const [dr,dc] of [[-1,0],[1,0],[0,-1],[0,1]]){
+          const nk=`${r+dr},${c+dc}`;
+          if(mountainCells.has(nk)){
+            mountainCells.delete(nk);
+            if(mountainCells.size===0){
+              mountainRespawn=15; // san phẳng! 15 bước sau núi mới mọc lại
+              showComboFlash(0,false,'⛰️ Núi bị san phẳng!');
+            }
+            break;
+          }
+        }
+      }
+      // 🐿️ nổ trúng ô sóc đang đứng → trừ HP
+      if(squirrel && squirrel.r===r && squirrel.c===c){
+        squirrel.hp--;
+        if(squirrel.hp<=0){
+          squirrel=null;
+          showComboFlash(0,false,'🎉 Hạ gục sóc trộm! +50đ');
+          score+=50; if(score>best) best=score; updateScoreUI();
+        } else {
+          showHint('🐿️ Trúng sóc! HP còn '+squirrel.hp+'/'+SQUIRREL_HP);
+          // sóc hoảng sợ nhảy đi chỗ khác
+          squirrel.r=rnd(ROWS); squirrel.c=rnd(COLS);
         }
       }
     });
@@ -2392,7 +3453,8 @@ function renderPieces(){
   slotEls=[];
   pieces.forEach((piece,idx)=>{
     const slot=document.createElement('div');
-    slot.className='piece-slot'+(piece.used?' used':'')+(selected===idx?' selected':'');
+    slot.className='piece-slot'+(piece.used?' used':'')+(selected===idx?' selected':'')
+      +(spiderWebbedIdx===idx&&spiderWebbedLeft>0?' webbed':'');
     slot.addEventListener('pointerdown', (e)=>onSlotPointerDown(e, idx));
     const maxR=Math.max(...piece.shape.map(([r])=>r));
     const maxC=Math.max(...piece.shape.map(([,c])=>c));
@@ -5404,11 +6466,7 @@ function exitGoldToMain(){
   awaitingGoldUnlock=false;
   // Trigger Map ẩn 6 unlock immediately after Map ẩn 5
   setTimeout(()=>startUnlockGate(4), 400);
-  // Activate thorn vine difficulty after returning from Map ẩn 5
-  if(!thornCells) thornCells=new Set();
-  thornMode=true; thornPlacementCount=0; thornWave=0; thornThreshold=6;
-  thornCells=new Set(); cellBurstCount={};
-  setTimeout(()=>showComboFlash(0,false,'🌿 Chế độ khó: Dây gai xuất hiện!'), 600);
+  // (dây gai giờ kích hoạt từ vòng 1 qua applyRoundMechanics — không reset lại ở đây nữa)
   renderPieces(); checkGameOverA();
 }
 
