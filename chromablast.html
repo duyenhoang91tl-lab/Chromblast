@@ -1457,7 +1457,9 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
   <div id="hint-bar">Chạm khối → ghost hiện · Di ngón → ghost bám · Thả trên ô → đặt · Thả vùng trống → xoay</div>
 
   <!-- Nút xoay khối — hiện khi đã chọn 1 khối -->
-  <div id="rotate-bar" style="display:none;justify-content:center;gap:10px;margin-top:6px;">
+  <!-- Luôn chiếm chỗ trong layout (visibility thay vì display) để khi hiện/ẩn
+       không đẩy bàn cờ và khay khối nhảy lên xuống gây "rung" màn hình -->
+  <div id="rotate-bar" style="display:flex;visibility:hidden;justify-content:center;gap:10px;margin-top:6px;min-height:38px;">
     <button id="rotate-btn" style="
       background:linear-gradient(135deg,#378ADD,#7F77DD);color:#fff;border:none;
       border-radius:12px;padding:8px 28px;font-size:14px;font-weight:700;cursor:pointer;
@@ -3147,7 +3149,10 @@ document.getElementById('grid').addEventListener('pointerdown', e=>{
 });
 
 function showRotateBar(show){
-  document.getElementById('rotate-bar').style.display = show ? 'flex' : 'none';
+  // visibility (không phải display) — thanh luôn giữ chỗ, hiện/ẩn không làm layout nhảy
+  const bar=document.getElementById('rotate-bar');
+  bar.style.visibility = show ? 'visible' : 'hidden';
+  bar.style.pointerEvents = show ? 'auto' : 'none';
 }
 document.addEventListener('pointermove', onDocPointerMove, {passive:false});
 document.addEventListener('pointerup', onDocPointerUp);
