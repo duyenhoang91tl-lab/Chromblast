@@ -3133,8 +3133,13 @@ function processClears(){
   setTimeout(()=>{
     let eggHitThisWave=false; // mỗi ĐỢT nổ chỉ làm nứt vỏ trứng 1 lớp, dù nhiều ô cùng kề trứng
     let spiderHitWave=false, bhHitWave=false, snailHitWave=false, snakeHitWave=false, portalHitWave=false, dkHitWave=false;
+    // 🌿 chụp trước các ô đang có dây gai TẠI THỜI ĐIỂM đợt nổ bắt đầu — các ô này được gai
+    // bảo vệ suốt đợt (kể cả khi ô kề bên nổ trong cùng đợt vừa gỡ gai xong): ô màu KHÔNG mất,
+    // chỉ mất dây gai nhờ ô kề bên nổ; đợt nổ sau ô mới vỡ như bình thường
+    const vineProtected=new Set([...totalKeys].filter(k=>thornCells.has(k)));
     totalKeys.forEach(key=>{
       const [r,c]=key.split(',').map(Number);
+      if(vineProtected.has(key)) return; // gai đỡ đòn cho ô màu bên dưới
       // 🧊 ô đóng băng: lần nổ đầu chỉ làm NỨT băng (ô sống sót), lần 2 mới vỡ và xóa
       if(iceCells.has(key)){
         const stage=iceCells.get(key);
