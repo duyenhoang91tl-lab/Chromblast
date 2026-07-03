@@ -1335,6 +1335,8 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
       <div class="admin-title"><span>🛠️ Chọn map ẩn để test</span><button class="admin-close" id="admin-close-btn">✕</button></div>
       <div class="admin-sub">Chỉ tài khoản admin mới thấy bảng này. Bấm vào map để vào chơi thử ngay lập tức.</div>
       <div id="admin-map-list"></div>
+      <div class="admin-sub" style="margin-top:10px;">🎯 Đánh thử <b>map thường</b> theo vòng độ khó (bật sẵn các cơ chế của vòng đó):</div>
+      <div id="admin-round-list" style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px;"></div>
       <button id="mechcfg-open-btn" class="admin-map-btn" style="margin-top:8px;">⚙️ <b>Nhịp &amp; Thưởng</b> — chỉnh 20 cơ chế độ khó</button>
     </div>
   </div>
@@ -1804,6 +1806,10 @@ let thornWave = 0;
 let thornThreshold = 6;
 let thornCells = new Set();
 let cellBurstCount = {};
+// Tuổi ô: gai CHỈ quấn ô đã nằm trên bàn QUÁ 5 lượt đặt khối mà vẫn chưa bị phá
+let placeCounter = 0;      // tổng số lượt đặt khối trong ván
+let cellPlacedAt = {};     // key "r,c" -> lượt mà ô nhận màu (đặt/dịch chuyển tới)
+const THORN_MIN_AGE = 5;
 
 // ⛰️ Vòng 2 — ngọn núi: mọc từ 1 chấm, cứ 10 bước không bào mòn lại lan thêm 1 ô,
 // che ô nào nuốt ô đó; nổ nhóm CẠNH núi sẽ bào mòn núi 1 ô
@@ -1903,11 +1909,12 @@ function tornadoSweep(){
     if(board[r][c]) colors.push(board[r][c]);
   }
   if(!colors.length) return;
-  cells.forEach(([r,c])=>board[r][c]=null);
+  cells.forEach(([r,c])=>{ board[r][c]=null; delete cellPlacedAt[r+','+c]; });
   const spots=cells.slice();
   while(colors.length && spots.length){
     const [r,c]=spots.splice(rnd(spots.length),1)[0];
     board[r][c]=colors.pop();
+    cellPlacedAt[r+','+c]=placeCounter; // ô vừa bị lốc thổi tới — tính là mới
   }
   showComboFlash(0,false,'🌪️ Lốc xoáy càn qua '+(isRow?'hàng':'cột')+' '+(idx+1)+'!');
   renderGrid();
@@ -2121,6 +2128,7 @@ function portalTeleport(){
   const [fr,fc]=filled[rnd(filled.length)];
   const [er,ec]=empt[rnd(empt.length)];
   board[er][ec]=board[fr][fc]; board[fr][fc]=null;
+  cellPlacedAt[er+','+ec]=placeCounter; delete cellPlacedAt[fr+','+fc]; // ô dịch chuyển tới tính là mới
   renderGrid();
 }
 function spawnDragonKing(){
@@ -2647,6 +2655,7 @@ function getSC(r,c){ return secretCells && secretCells[r] ? secretCells[r][c] : 
 function initBoard(){
   board=Array.from({length:ROWS},()=>Array(COLS).fill(null));
   thornMode=false; thornCells=new Set(); cellBurstCount={}; thornPlacementCount=0; thornWave=0; thornThreshold=6;
+  placeCounter=0; cellPlacedAt={};
   mountainCells=new Set(); mountainStepCount=0; mountainRespawn=0;
   squirrel=null; squirrelStepCount=0; squirrelStolen=0; bittenCells=new Set();
   iceCells=new Map(); iceStepCount=0;
@@ -2884,7 +2893,8 @@ function placeAt(R,C){
   if(selected===null) return false;
   const piece=pieces[selected];
   if(!piece||piece.used||!canPlace(piece,R,C)) return false;
-  piece.shape.forEach(([dr,dc])=>{ board[R+dr][C+dc]=piece.color; });
+  placeCounter++;
+  piece.shape.forEach(([dr,dc])=>{ board[R+dr][C+dc]=piece.color; cellPlacedAt[(R+dr)+','+(C+dc)]=placeCounter; });
   piece.used=true;
   sfxPlacePiece();
   // Đặt khối lên bàn cờ cũng được cộng điểm — bằng đúng số ô của khối vừa đặt
@@ -3255,6 +3265,7 @@ function processClears(){
         iceCells.delete(key);
       }
       board[r][c]=null;
+      delete cellPlacedAt[key];
       // 💣 nổ ô kề bom → gỡ bom thành công, thưởng điểm
       if(bombCell && Math.abs(bombCell.r-r)<=1 && Math.abs(bombCell.c-c)<=1 && !(bombCell.r===r&&bombCell.c===c)){
         bombCell=null; bombRespawn=10;
@@ -3434,7 +3445,9 @@ function spawnThorns(){
   for(let r=0;r<ROWS;r++){
     for(let c=0;c<COLS;c++){
       const key=`${r},${c}`;
-      if(!cellBurstCount[key] && board[r][c]!==null && !thornCells.has(key)){
+      // chỉ quấn gai ô đã nằm QUÁ 5 lượt đặt khối mà chưa bị phá — khối mới đặt được tha
+      const age=placeCounter-(cellPlacedAt[key]!==undefined?cellPlacedAt[key]:placeCounter);
+      if(!cellBurstCount[key] && board[r][c]!==null && !thornCells.has(key) && age>THORN_MIN_AGE){
         thornCells.add(key);
         newThorns++;
       }
@@ -3559,11 +3572,31 @@ function afterPlace(){
 }
 
 function checkGameOverA(){
-  const hasMove=pieces.some(piece=>{
-    if(piece.used) return false;
-    for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) if(canPlace(piece,r,c)) return true;
+  // khay đã dùng hết khối → bổ sung trước khi kết luận (tránh báo hết lượt oan
+  // khi luồng unlock/thoát map ẩn gọi check trước khi refill kịp chạy)
+  if(!pieces || !pieces.length || pieces.every(p=>p.used)){ refillPieces(); renderPieces(); }
+  const rot=s=>{ const maxR=Math.max(...s.map(([r])=>r)); return s.map(([r,c])=>[c,maxR-r]); };
+  const pieceFits=piece=>{
+    let sh=piece.shape;
+    for(let k=0;k<4;k++){ // người chơi có thể XOAY khối — phải thử đủ 4 hướng
+      for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) if(canPlace({shape:sh},r,c)) return true;
+      sh=rot(sh);
+    }
     return false;
+  };
+  let hasMove=pieces.some((piece,i)=>{
+    if(piece.used) return false;
+    if(spiderWebbedIdx===i && spiderWebbedLeft>0) return false; // khối bị tơ khóa không tính
+    return pieceFits(piece);
   });
+  // nước đi duy nhất còn lại nằm ở khối đang bị tơ nhện khóa → gỡ tơ thay vì xử thua
+  if(!hasMove && spiderWebbedIdx>=0 && spiderWebbedLeft>0 && pieces[spiderWebbedIdx] &&
+     !pieces[spiderWebbedIdx].used && pieceFits(pieces[spiderWebbedIdx])){
+    spiderWebbedIdx=-1; spiderWebbedLeft=0;
+    renderPieces();
+    showHint('🕸️ Tơ nhện tự đứt — khối cuối cùng được giải phóng!');
+    hasMove=true;
+  }
   if(!hasMove){
     sfxGameOver();
     document.getElementById('go-score').textContent='Điểm của bạn: '+score.toLocaleString();
@@ -10010,6 +10043,31 @@ function initAdminPanel(){
   document.getElementById('admin-close-btn').addEventListener('click', ()=>{
     document.getElementById('admin-panel').classList.remove('show');
   });
+
+  // 🎯 Đánh thử map thường theo vòng độ khó 1-20 (admin test đủ mọi "map")
+  const roundList=document.getElementById('admin-round-list');
+  for(let v=1; v<=20; v++){
+    const rb=document.createElement('button');
+    rb.className='admin-map-btn';
+    rb.style.cssText='padding:6px 4px;text-align:center;font-size:12px;';
+    rb.innerHTML='<b>V'+v+'</b>';
+    rb.title='Map thường — vòng '+v;
+    rb.addEventListener('click', ()=>{
+      document.getElementById('admin-panel').classList.remove('show');
+      const startScreen=document.getElementById('start-screen');
+      if(startScreen){
+        startScreen.classList.add('hide');
+        setTimeout(()=>{ startScreen.style.display='none'; }, 500);
+      }
+      sfxClick();
+      hardResetAllModes();
+      startGame();
+      mainHardTier=v;
+      applyRoundMechanics();
+      showComboFlash(0,false,'🎯 Test map thường — vòng '+v);
+    });
+    roundList.appendChild(rb);
+  }
 
   // ⚙️ Mục Nhịp & Thưởng
   document.getElementById('mechcfg-open-btn').addEventListener('click', ()=>{
