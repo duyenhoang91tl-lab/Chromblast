@@ -1039,6 +1039,7 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
     <div style="text-align:center">
       <div id="combo-box"></div>
       <div id="level-box">Cấp độ 1</div>
+      <div id="player-level-box" style="font-size:11px;color:#ffd700;margin-top:2px;white-space:nowrap;"></div>
     </div>
     <div style="text-align:right">
       <div id="adventure-avatar" style="display:none;">🧑‍🚀</div>
@@ -1295,9 +1296,10 @@ function setAdventureTheme(on){
   if(btn) btn.textContent = on ? '🚀 ADV: BẬT' : '🚀 ADV';
 }
 
-let hiddenMapEntryScore=0; // mốc điểm map thường lúc VỪA VÀO map ẩn — thua map ẩn sẽ mất hết điểm kiếm được trong ván đó
+let hiddenMapEntryScore=0; // mốc điểm lúc vào map ẩn (chỉ còn để tham khảo)
 function forfeitHiddenMapScore(){
-  score=hiddenMapEntryScore;
+  // (đã gỡ theo yêu cầu) thua map ẩn KHÔNG thu hồi điểm nữa — người chơi giữ nguyên
+  // toàn bộ điểm đã kiếm được, chỉ quay về map thường
   if(typeof updateScoreUI==='function') updateScoreUI();
 }
 const UNLOCK_STAGE_ORDER = ['secret','dodge','fruit','bee','gold','mole','memory','bubble','stack','boss','catch','flood','arena','snake','brick','runner','space','rhythm','maze','mega'];
@@ -1337,7 +1339,47 @@ function startUnlockGate(clearedIdx){
   unlockGateBaseline = score;
   unlockGateActive = (unlockGateStageIndex < UNLOCK_STAGE_ORDER.length);
   consecutiveBursts=0; updateBurstCount();
+  // Mỗi vòng map ẩn thắng xong → map thường khó thêm một bậc:
+  // khối gạch to/khó xếp xuất hiện nhiều hơn + rải thêm ô chướng ngại lên bàn cờ
+  mainHardTier=unlockGateStageIndex;
+  sprinkleJunkCells(Math.min(5, 1+Math.floor(mainHardTier/3)));
+  addPlayerXP(30+clearedIdx*10); // thưởng XP mỗi lần phá đảo một map ẩn — vòng càng sâu thưởng càng lớn
 }
+
+/* ══════════════════════════════════════════
+   HỆ THỐNG ĐIỂM KINH NGHIỆM & LEVEL NGƯỜI CHƠI
+   Mỗi điểm ghi được = 1 XP; thắng map ẩn có thưởng thêm.
+   Level và XP lưu bền vững qua localStorage.
+══════════════════════════════════════════ */
+let playerXP=0, playerLevel=1, _xpLastScore=0;
+(function loadPlayerXP(){
+  try{
+    const s=JSON.parse(localStorage.getItem('chromablast_player')||'{}');
+    if(s.xp>0) playerXP=s.xp;
+    if(s.level>0) playerLevel=s.level;
+  }catch(e){}
+})();
+function xpNeeded(lv){ return 100+(lv-1)*50; } // cấp càng cao càng cần nhiều XP
+function savePlayerXP(){ try{ localStorage.setItem('chromablast_player', JSON.stringify({xp:playerXP, level:playerLevel})); }catch(e){} }
+function addPlayerXP(n){
+  if(!(n>0)) return;
+  playerXP+=n;
+  let leveled=false;
+  while(playerXP>=xpNeeded(playerLevel)){ playerXP-=xpNeeded(playerLevel); playerLevel++; leveled=true; }
+  if(leveled){
+    try{ sfxUnlock(); }catch(e){}
+    try{ showComboFlash(0,false,'🎉 LÊN CẤP '+playerLevel+'!'); }catch(e){}
+  }
+  savePlayerXP(); renderPlayerXP();
+}
+function renderPlayerXP(){
+  const el=document.getElementById('player-level-box'); if(!el) return;
+  const need=xpNeeded(playerLevel);
+  el.innerHTML='⭐ Lv.'+playerLevel+
+    ' <span style="display:inline-block;width:44px;height:5px;background:rgba(255,255,255,0.15);border-radius:3px;vertical-align:middle;overflow:hidden;">'+
+    '<span style="display:block;height:100%;width:'+Math.min(100,Math.round(playerXP/need*100))+'%;background:linear-gradient(90deg,#ffd700,#ff9900);border-radius:3px;"></span></span>';
+}
+renderPlayerXP(); // hiển thị ngay khi tải trang (script nằm cuối body nên phần tử đã tồn tại)
 
 // Mode A state
 let board, pieces, selected, score=0, best=0, linesCleared=0, level=1, combo=0;
@@ -1792,7 +1834,27 @@ function getSC(r,c){ return secretCells && secretCells[r] ? secretCells[r][c] : 
    MODE A — MAIN GAME
 ══════════════════════════════════════════ */
 function initBoard(){ board=Array.from({length:ROWS},()=>Array(COLS).fill(null)); thornMode=false; thornCells=new Set(); cellBurstCount={}; thornPlacementCount=0; thornWave=0; thornThreshold=6; }
-function makePiece(){ return {shape:SHAPES[rnd(SHAPES.length)], color:rndColor(), used:false}; }
+let mainHardTier=0; // số vòng map ẩn đã thắng — map thường khó dần theo mỗi vòng
+function makePiece(){
+  // Càng qua nhiều vòng map ẩn, khối càng thiên về hình to/khó xếp
+  // (mặc định ~55% khối lớn giống tỉ lệ cũ, mỗi vòng +3%, tối đa 90%)
+  const hardP=Math.min(0.9, 0.55+mainHardTier*0.03);
+  const wantHard=Math.random()<hardP;
+  const pool=SHAPES.filter(s=> wantHard ? s.length>=4 : s.length<=3);
+  const shape=pool.length?pool[rnd(pool.length)]:SHAPES[rnd(SHAPES.length)];
+  return {shape, color:rndColor(), used:false};
+}
+// Rải vài ô "chướng ngại" màu ngẫu nhiên lên bàn cờ chính sau mỗi vòng map ẩn
+function sprinkleJunkCells(n){
+  if(!board) return;
+  const empties=[];
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++) if(!board[r][c]) empties.push([r,c]);
+  for(let i=0;i<n && empties.length;i++){
+    const [r,c]=empties.splice(rnd(empties.length),1)[0];
+    board[r][c]=rndColor();
+  }
+  renderGrid();
+}
 function refillPieces(){ pieces=[makePiece(),makePiece(),makePiece()]; selected=null; }
 
 // Xoay shape 90° theo chiều kim đồng hồ: (r,c) → (c, maxR-r)
@@ -2891,24 +2953,14 @@ function dropSecretTiles(){
 // Timer management
 function resetSecretTimer(){
   clearSecretTimer();
-  // Đang ở chế độ lửa (ultra/thanh vàng đầy) → thanh chạy nhanh hơn hẳn (chỉ còn 40% cửa sổ thường)
-  const windowMs = secretUltra ? SECRET_WINDOW*0.4 : SECRET_WINDOW;
+  // Đang ở chế độ lửa (ultra) → thời gian giảm nhanh GẤP ĐÔI bình thường (cửa sổ còn 1/2)
+  const windowMs = secretUltra ? SECRET_WINDOW/2 : SECRET_WINDOW;
   secretTimerEnd=Date.now()+windowMs;
   animateTimerBar();
 
   secretTimer=setTimeout(()=>{
-    if(secretUltra){
-      // Không bấm kịp trong cửa sổ rút ngắn → tắt lửa + mất chuỗi combo, quay về bình thường (chơi tiếp, không thua)
-      secretUltra=false;
-      secretStreak=0; secretMultiplier=1;
-      document.getElementById('grid-wrap').classList.remove('ultra-glow');
-      renderStreakDots();
-      updateComboBorderGlow(0);
-      document.getElementById('burst-count').textContent='Nhân: x1';
-      resetSecretTimer();
-      return;
-    }
-    // Hết giờ (không bấm kịp) → mất combo, mất lửa, thua ván này → về map thường
+    // Hết giờ (không bấm đúng kịp) — kể cả đang cháy lửa mà chỉ bấm sai liên tục
+    // đến khi thanh cạn → thua ván này, mất điểm phiên, về map thường
     forfeitHiddenMapScore();
     exitSecretMode();
   }, windowMs);
@@ -2923,7 +2975,7 @@ function clearSecretTimer(){
 
 function animateTimerBar(){
   const bar=document.getElementById('timer-bar');
-  const windowMs = secretUltra ? SECRET_WINDOW*0.4 : SECRET_WINDOW; // phải khớp với resetSecretTimer
+  const windowMs = secretUltra ? SECRET_WINDOW/2 : SECRET_WINDOW; // phải khớp với resetSecretTimer
   function frame(){
     const now=Date.now();
     const remaining=Math.max(0, secretTimerEnd-now);
@@ -3668,8 +3720,7 @@ document.addEventListener('keydown', e=>{
     if(e.key===' '||e.key==='ArrowUp'||e.key==='w'||e.key==='W'){
       e.preventDefault();
       if(e.repeat) return;
-      if(runnerJumps===0){ runnerDogVY=RUNNER_JUMP_VY; runnerJumps=1; sfxRunnerJump(); }
-      else if(runnerJumps===1){ runnerDogVY=RUNNER_JUMP2_VY; runnerJumps=2; sfxRunnerDoubleJump(); }
+      runnerTryJump();
     }
   }
 });
@@ -7946,6 +7997,9 @@ function updateScoreUI(){
   document.getElementById('best-box').textContent='Kỷ lục: '+Math.round(best).toLocaleString();
   document.getElementById('lines-cleared').textContent='Hàng xóa: '+linesCleared;
   document.getElementById('level-box').textContent='Cấp độ '+level;
+  // mỗi điểm ghi thêm = 1 XP người chơi (điểm giảm/reset không trừ XP)
+  if(score>_xpLastScore) addPlayerXP(score-_xpLastScore);
+  _xpLastScore=score;
   if(unlockGateActive && !secretMode) updateBurstCount();
   saveProgress();
 }
@@ -8193,7 +8247,7 @@ function startGame(){
   // Reset achievements for new game session
   Object.values(ACHIEVEMENTS).forEach(a=>{ a.done=false; });
   fruitSlicedTotal=0; survive60Unlocked=false;
-  score=0; linesCleared=0; level=1; combo=0; consecutiveBursts=0;
+  score=0; linesCleared=0; level=1; combo=0; consecutiveBursts=0; _xpLastScore=0;
   hiddenMapEntryScore=0;
   secretStreak=0; secretMultiplier=1; secretUltra=false;
   secret1Gained=0; pendingUnlock='secret';
@@ -9496,6 +9550,13 @@ BrCV().addEventListener('pointerdown', e=>{
 const RUNNER_GROUND_Y_FRAC=0.82;
 const RuCV=()=>document.getElementById('runner-canvas');
 const RUNNER_GRAVITY=800, RUNNER_JUMP_VY=-380, RUNNER_JUMP2_VY=-300;
+const RUNNER_JUMP_BUFFER=0.1; // ấn sớm trong 0.1s trước khi chạm đất vẫn được tính, nhảy tiếp ngay khi đáp
+let runnerJumpBuffer=0;
+function runnerTryJump(){
+  if(runnerJumps===0){ runnerDogVY=RUNNER_JUMP_VY; runnerJumps=1; sfxRunnerJump(); }
+  else if(runnerJumps===1){ runnerDogVY=RUNNER_JUMP2_VY; runnerJumps=2; sfxRunnerDoubleJump(); }
+  else { runnerJumpBuffer=RUNNER_JUMP_BUFFER; } // đang hết lượt nhảy → ghi nhớ cú ấn, đáp đất sẽ bật lại ngay
+}
 
 // (đã chuyển khai báo biến mode lên đầu file để tránh lỗi TDZ)
 let runnerDogY=0, runnerDogVY=0, runnerJumps=0;
@@ -9531,7 +9592,7 @@ function enterRunnerMode(){
   const H=460;
   runnerElapsed=0; runnerScore=0; runnerLives=2; runnerSpeed=180;
   runnerDogY=H*RUNNER_GROUND_Y_FRAC-36;
-  runnerDogVY=0; runnerJumps=0;
+  runnerDogVY=0; runnerJumps=0; runnerJumpBuffer=0;
   runnerObstacles=[]; runnerStars=[]; runnerFx=[];
   runnerSpawnTimer=1.5;
   runnerStarSpawnTimer=1.0;
@@ -9559,9 +9620,11 @@ function runnerLoop(now){
   // Physics
   runnerDogVY+=RUNNER_GRAVITY*dt;
   runnerDogY+=runnerDogVY*dt;
+  if(runnerJumpBuffer>0) runnerJumpBuffer=Math.max(0,runnerJumpBuffer-dt);
   if(runnerDogY>=GROUND){
     if(runnerDogVY>50) sfxRunnerLand();
     runnerDogY=GROUND; runnerDogVY=0; runnerJumps=0;
+    if(runnerJumpBuffer>0){ runnerJumpBuffer=0; runnerTryJump(); } // cú ấn đệm → bật nhảy ngay khi đáp
   }
 
   // Spawn obstacles
@@ -9721,11 +9784,7 @@ function exitRunnerToMain(){
 RuCV().addEventListener('pointerdown', e=>{
   if(!runnerMode) return;
   e.preventDefault();
-  if(runnerJumps<2){
-    if(runnerJumps===0){ runnerDogVY=RUNNER_JUMP_VY; sfxRunnerJump(); }
-    else { runnerDogVY=RUNNER_JUMP2_VY; sfxRunnerDoubleJump(); }
-    runnerJumps++;
-  }
+  runnerTryJump();
 },{passive:false});
 
 /* ═══════════════════════════════════════════════════════
@@ -10693,28 +10752,29 @@ function megaLoop(){
       sfxMegaPhaseChange();
       s.phaseFlash=90;
     }
-    boss.x+=boss.speed*boss.dir;
+    // rồng bay nhanh dần theo phase — phase 3 lao qua lại dữ dội
+    boss.x+=boss.speed*(1+(boss.phase-1)*0.55)*boss.dir;
     if(boss.x>W-60||boss.x<60) boss.dir*=-1;
-    const baseInterval=boss.phase===1?80:boss.phase===2?60:35;
+    const baseInterval=boss.phase===1?65:boss.phase===2?48:30;
     boss.shootTimer--;
     if(boss.shootTimer<=0){
       boss.shootTimer=baseInterval;
-      const angles=boss.phase===1?[-0.2,0,0.2]:boss.phase===2?[-0.3,0,0.3]:[-0.4,-0.2,0,0.2,0.4];
+      const angles=boss.phase===1?[-0.2,0,0.2]:boss.phase===2?[-0.35,-0.17,0,0.17,0.35]:[-0.5,-0.33,-0.17,0,0.17,0.33,0.5];
       for(const ang of angles){
-        s.bossShots.push({x:boss.x,y:boss.y+40,vx:Math.sin(ang)*3,vy:4+boss.phase});
+        s.bossShots.push({x:boss.x,y:boss.y+40,vx:Math.sin(ang)*3,vy:4.5+boss.phase*1.3});
       }
     }
     if(boss.phase>=2){
       boss.homingTimer--;
       if(boss.homingTimer<=0){
-        boss.homingTimer=120;
+        boss.homingTimer=90;
         s.homingMissiles.push({x:boss.x,y:boss.y+40,vx:0,vy:2,hp:3});
       }
     }
     if(boss.phase===3){
       boss.laserTimer--;
       if(boss.laserTimer<=0&&!boss.laserActive){
-        boss.laserTimer=200;
+        boss.laserTimer=150;
         boss.laserActive=true;
         boss.laserSweep=0;
         boss.laserAngle=-0.8;
@@ -10722,8 +10782,8 @@ function megaLoop(){
       }
       if(boss.laserActive){
         boss.laserSweep++;
-        boss.laserAngle+=0.025;
-        if(boss.laserSweep>65) boss.laserActive=false;
+        boss.laserAngle+=0.03;
+        if(boss.laserSweep>60) boss.laserActive=false;
       }
     }
     if(s.shootCooldown>0) s.shootCooldown--;
@@ -10740,9 +10800,9 @@ function megaLoop(){
       const m=s.homingMissiles[i];
       const dx=s.ship.x-m.x, dy=s.ship.y-m.y;
       const dist=Math.hypot(dx,dy);
-      if(dist>1){ m.vx+=dx/dist*0.08; m.vy+=dy/dist*0.08; }
+      if(dist>1){ m.vx+=dx/dist*0.1; m.vy+=dy/dist*0.1; }
       const spd=Math.hypot(m.vx,m.vy);
-      if(spd>3){ m.vx=m.vx/spd*3; m.vy=m.vy/spd*3; }
+      if(spd>3.4){ m.vx=m.vx/spd*3.4; m.vy=m.vy/spd*3.4; }
       m.x+=m.vx; m.y+=m.vy;
       if(m.y>H+10) s.homingMissiles.splice(i,1);
     }
@@ -10807,44 +10867,73 @@ function megaLoop(){
   const hpRatio=boss.hp/boss.maxHp;
   const hpCol=hpRatio>0.6?'#ff4444':hpRatio>0.3?'#ff8800':'#ff00ff';
   drawHudTop(ctx,W,{left:'❤️'.repeat(Math.max(0,s.lives)), center:'👹 '+boss.hp+'/'+boss.maxHp, right:'⭐ '+s.score, progress:hpRatio, progressColor:hpCol});
+  // rồng với hào quang màu theo phase, bồng bềnh nhẹ
+  const phaseGlow=boss.phase===3?'rgba(255,0,255,0.8)':boss.phase===2?'rgba(255,140,0,0.75)':'rgba(255,70,70,0.65)';
+  const bobY=boss.y+Math.sin(performance.now()*0.004)*4;
+  ctx.save();
+  ctx.shadowColor=phaseGlow; ctx.shadowBlur=boss.flashTimer>0?34:22;
   ctx.font=boss.flashTimer>0?'72px serif':'64px serif';
   ctx.textAlign='center';
   ctx.textBaseline='middle';
-  ctx.fillText('🐉',boss.x,boss.y);
-  ctx.font='11px monospace';
-  ctx.fillStyle=boss.phase===3?'#ff00ff':boss.phase===2?'#ff8800':'#ff4444';
-  ctx.fillText('PHASE '+boss.phase,boss.x,boss.y+52);
+  ctx.fillText('🐉',boss.x,bobY);
+  ctx.restore();
+  ctx.save();
+  ctx.font='bold 11px monospace';
+  ctx.fillStyle=boss.phase===3?'#ff66ff':boss.phase===2?'#ffaa44':'#ff7777';
+  ctx.shadowColor='rgba(0,0,0,0.7)'; ctx.shadowBlur=4;
+  ctx.fillText('PHASE '+boss.phase,boss.x,bobY+52);
+  ctx.restore();
   if(boss.laserActive){
     ctx.save();
     ctx.translate(boss.x,boss.y+20);
-    ctx.beginPath();
     const lx2=Math.sin(boss.laserAngle)*500, ly2=Math.cos(boss.laserAngle)*500;
-    ctx.moveTo(0,0);
-    ctx.lineTo(lx2,ly2);
-    ctx.strokeStyle='rgba(255,0,0,0.85)';
-    ctx.lineWidth=8;
-    ctx.stroke();
-    ctx.strokeStyle='rgba(255,150,150,0.4)';
-    ctx.lineWidth=20;
-    ctx.stroke();
+    // quầng ngoài → tia đỏ → lõi trắng nóng
+    ctx.lineCap='round';
+    ctx.strokeStyle='rgba(255,80,120,0.25)'; ctx.lineWidth=24;
+    ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(lx2,ly2); ctx.stroke();
+    ctx.strokeStyle='rgba(255,30,60,0.85)'; ctx.lineWidth=9;
+    ctx.shadowColor='rgba(255,40,80,0.9)'; ctx.shadowBlur=16;
+    ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(lx2,ly2); ctx.stroke();
+    ctx.shadowBlur=0;
+    ctx.strokeStyle='rgba(255,255,255,0.95)'; ctx.lineWidth=3;
+    ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(lx2,ly2); ctx.stroke();
     ctx.restore();
   }
-  ctx.fillStyle='#ff6600';
+  // cầu lửa gradient rực rỡ
   for(const b of s.bossShots){
-    ctx.beginPath();
-    ctx.arc(b.x,b.y,5,0,Math.PI*2);
-    ctx.fill();
+    const fg=ctx.createRadialGradient(b.x-1.5,b.y-1.5,0.5,b.x,b.y,6.5);
+    fg.addColorStop(0,'#fff3a0'); fg.addColorStop(0.5,'#ff9933'); fg.addColorStop(1,'#e83a10');
+    ctx.fillStyle=fg;
+    ctx.beginPath(); ctx.arc(b.x,b.y,6,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='rgba(255,140,40,0.3)';
+    ctx.beginPath(); ctx.arc(b.x-b.vx*1.6,b.y-b.vy*1.6,4,0,Math.PI*2); ctx.fill(); // vệt đuôi
   }
+  // tên lửa truy đuổi: vòng cảnh báo đỏ nhấp nháy + vệt khói
   ctx.font='18px serif';
   ctx.textBaseline='middle';
   for(const m of s.homingMissiles){
+    ctx.fillStyle='rgba(200,200,220,0.35)';
+    ctx.beginPath(); ctx.arc(m.x-m.vx*3,m.y-m.vy*3,3,0,Math.PI*2); ctx.fill();
+    const warn=0.4+0.4*Math.sin(performance.now()*0.02);
+    ctx.strokeStyle=`rgba(255,60,60,${warn})`; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.arc(m.x,m.y,13,0,Math.PI*2); ctx.stroke();
     ctx.fillText('🎯',m.x,m.y);
   }
-  ctx.fillStyle='#00ffff';
+  // đạn phi thuyền có glow
+  ctx.save();
+  ctx.fillStyle='#8ffcff';
+  ctx.shadowColor='#00e5ff'; ctx.shadowBlur=8;
   for(const b of s.bullets){
     ctx.fillRect(b.x-2,b.y-10,4,16);
   }
+  ctx.restore();
   if(s.invincible<=0||Math.floor(s.invincible/5)%2===0){
+    // lửa động cơ phập phồng dưới phi thuyền
+    const fl=6+Math.sin(performance.now()*0.03)*3;
+    const eg=ctx.createRadialGradient(s.ship.x,s.ship.y+22,1,s.ship.x,s.ship.y+22,fl+6);
+    eg.addColorStop(0,'rgba(255,240,150,0.9)'); eg.addColorStop(0.6,'rgba(255,140,40,0.55)'); eg.addColorStop(1,'rgba(255,80,0,0)');
+    ctx.fillStyle=eg;
+    ctx.beginPath(); ctx.ellipse(s.ship.x,s.ship.y+22,5,fl+5,0,0,Math.PI*2); ctx.fill();
     ctx.font='36px serif';
     ctx.textAlign='center';
     ctx.textBaseline='middle';
