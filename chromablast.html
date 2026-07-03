@@ -499,6 +499,36 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
   box-shadow: inset 0 0 6px rgba(0,60,0,0.5);
   z-index: 2;
 }
+/* ⛰️ Ô bị núi che (vòng 2) — không đặt khối lên được, nổ ô kề bên để bào mòn núi */
+.cell.mountain-cell { position: relative; }
+.cell.mountain-cell::after {
+  content: '⛰️';
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  background: linear-gradient(160deg, #6b7280 0%, #4b5563 55%, #374151 100%);
+  border: 2px solid #64748b;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: inset 0 2px 5px rgba(255,255,255,0.18), inset 0 -3px 6px rgba(0,0,0,0.45);
+  z-index: 2;
+}
+/* 🐿️ Ô con sóc đang đứng (vòng 3) — nổ trúng ô này để trừ HP sóc */
+.cell.squirrel-cell { position: relative; }
+.cell.squirrel-cell::after {
+  content: '🐿️';
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px;
+  pointer-events: none;
+  filter: drop-shadow(0 0 6px rgba(255,180,60,0.9));
+  animation: squirrelHop 0.6s ease-in-out infinite alternate;
+  z-index: 3;
+}
+@keyframes squirrelHop {
+  from { transform: translateY(0) scale(1); }
+  to   { transform: translateY(-4px) scale(1.08); }
+}
 @keyframes popLine {
   0%  { transform:scale(1); filter:brightness(1); }
   30% { transform:scale(1.25); filter:brightness(2); }
@@ -1342,7 +1372,7 @@ function startUnlockGate(clearedIdx){
   // Mỗi vòng map ẩn thắng xong → map thường khó thêm một bậc:
   // khối gạch to/khó xếp xuất hiện nhiều hơn + rải thêm ô chướng ngại lên bàn cờ
   mainHardTier=unlockGateStageIndex;
-  sprinkleJunkCells(Math.min(5, 1+Math.floor(mainHardTier/3)));
+  applyRoundMechanics(); // vòng 1: dây gai · vòng 2: +ngọn núi · vòng 3: +sóc trộm ô
   addPlayerXP(30+clearedIdx*10); // thưởng XP mỗi lần phá đảo một map ẩn — vòng càng sâu thưởng càng lớn
 }
 
@@ -1468,13 +1498,99 @@ function applyLevelDifficulty(){
 let awaitingSecretUnlock=true;  // mở map ẩn 1 khi đạt TEST_UNLOCK_SCORE điểm từ map thường
 let secretUnlockBaseline=0;     // mốc điểm lúc bắt đầu đếm
 
-// Thorn vine difficulty state (activates after returning from Map ẩn 5)
+// 🌿 Vòng 1 — dây gai: ô không được phá sau N bước sẽ bị gai quấn, phải nổ ô kề bên để gỡ
 let thornMode = false;
 let thornPlacementCount = 0;
 let thornWave = 0;
 let thornThreshold = 6;
 let thornCells = new Set();
 let cellBurstCount = {};
+
+// ⛰️ Vòng 2 — ngọn núi: mọc từ 1 chấm, cứ 10 bước không bào mòn lại lan thêm 1 ô,
+// che ô nào nuốt ô đó; nổ nhóm CẠNH núi sẽ bào mòn núi 1 ô
+let mountainCells = new Set();
+let mountainStepCount = 0;
+let mountainRespawn = 0; // đếm lùi số bước để núi mọc lại sau khi bị san phẳng
+const MOUNTAIN_GROW_EVERY = 10;
+
+// 🐿️ Vòng 3 — con sóc: vài bước lại nhảy tới trộm 1 ô màu; nổ trúng ô nó đứng để trừ HP;
+// để nó trộm đủ giới hạn là thua luôn ván map thường
+let squirrel = null; // {r, c, hp}
+let squirrelStepCount = 0;
+let squirrelStolen = 0;
+const SQUIRREL_HP = 10, SQUIRREL_STEAL_LIMIT = 15, SQUIRREL_MOVE_EVERY = 3;
+
+// Kích hoạt dần từng cơ chế theo số vòng map ẩn đã thắng (gọi sau mỗi lần thắng map ẩn)
+function applyRoundMechanics(){
+  if(mainHardTier>=1 && !thornMode){
+    thornMode=true; thornPlacementCount=0; thornWave=0; thornThreshold=6;
+    thornCells=new Set(); cellBurstCount={};
+    setTimeout(()=>showComboFlash(0,false,'🌿 Dây gai xuất hiện trên bàn cờ!'), 900);
+  }
+  if(mainHardTier>=2 && mountainCells.size===0 && mountainRespawn<=0){
+    spawnMountain();
+    setTimeout(()=>showComboFlash(0,false,'⛰️ Ngọn núi nhỏ xuất hiện — đừng để nó lớn!'), 1600);
+  }
+  if(mainHardTier>=3 && !squirrel){
+    spawnSquirrel();
+    setTimeout(()=>showComboFlash(0,false,'🐿️ Con sóc trộm ô xuất hiện — nổ trúng nó '+SQUIRREL_HP+' lần!'), 2300);
+  }
+}
+function spawnMountain(){
+  const empties=[];
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++) if(!board[r][c]) empties.push(r+','+c);
+  if(!empties.length) return;
+  mountainCells=new Set([empties[rnd(empties.length)]]);
+  mountainStepCount=0;
+  renderGrid();
+}
+function growMountain(){
+  const cands=[];
+  mountainCells.forEach(k=>{
+    const [r,c]=k.split(',').map(Number);
+    for(const [dr,dc] of [[-1,0],[1,0],[0,-1],[0,1]]){
+      const nr=r+dr,nc=c+dc,nk=nr+','+nc;
+      if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&!mountainCells.has(nk)) cands.push(nk);
+    }
+  });
+  if(!cands.length) return;
+  const nk=cands[rnd(cands.length)];
+  mountainCells.add(nk);
+  const [r,c]=nk.split(',').map(Number);
+  board[r][c]=null; // núi lan tới đâu nuốt ô tới đó
+  thornCells.delete(nk);
+  renderGrid();
+}
+function spawnSquirrel(){
+  squirrel={r:rnd(ROWS), c:rnd(COLS), hp:SQUIRREL_HP};
+  squirrelStepCount=0; squirrelStolen=0;
+  renderGrid();
+}
+function squirrelMoveAndSteal(){
+  if(!squirrel) return;
+  const filled=[];
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
+    if(board[r][c] && !mountainCells.has(r+','+c)) filled.push([r,c]);
+  }
+  if(filled.length){
+    const [r,c]=filled[rnd(filled.length)];
+    squirrel.r=r; squirrel.c=c;
+    board[r][c]=null; thornCells.delete(r+','+c); // trộm mất ô màu
+    squirrelStolen++;
+    try{ sfxPenalty(); }catch(e){}
+    if(squirrelStolen>=SQUIRREL_STEAL_LIMIT){
+      renderGrid();
+      sfxGameOver();
+      showComboFlash(0,false,'🐿️ Sóc đã trộm sạch bàn cờ!');
+      document.getElementById('go-score').textContent='Điểm của bạn: '+score.toLocaleString();
+      document.getElementById('game-over-overlay').classList.add('show');
+      return;
+    }
+  } else {
+    squirrel.r=rnd(ROWS); squirrel.c=rnd(COLS); // bàn trống thì chỉ chạy loanh quanh
+  }
+  renderGrid();
+}
 
 // Mode B state
 let secretBoard = [];        // 8x8 color indices
@@ -1832,7 +1948,14 @@ function getSC(r,c){ return secretCells && secretCells[r] ? secretCells[r][c] : 
 /* ══════════════════════════════════════════
    MODE A — MAIN GAME
 ══════════════════════════════════════════ */
-function initBoard(){ board=Array.from({length:ROWS},()=>Array(COLS).fill(null)); thornMode=false; thornCells=new Set(); cellBurstCount={}; thornPlacementCount=0; thornWave=0; thornThreshold=6; }
+function initBoard(){
+  board=Array.from({length:ROWS},()=>Array(COLS).fill(null));
+  thornMode=false; thornCells=new Set(); cellBurstCount={}; thornPlacementCount=0; thornWave=0; thornThreshold=6;
+  mountainCells=new Set(); mountainStepCount=0; mountainRespawn=0;
+  squirrel=null; squirrelStepCount=0; squirrelStolen=0;
+  // ván mới vẫn giữ tier đã đạt — kích hoạt lại các cơ chế tương ứng
+  if(typeof mainHardTier!=='undefined' && mainHardTier>0) setTimeout(()=>applyRoundMechanics(), 50);
+}
 let mainHardTier=0; // số vòng map ẩn đã thắng — map thường khó dần theo mỗi vòng
 function makePiece(){
   // Càng qua nhiều vòng map ẩn, khối càng thiên về hình to/khó xếp
@@ -1842,17 +1965,6 @@ function makePiece(){
   const pool=SHAPES.filter(s=> wantHard ? s.length>=4 : s.length<=3);
   const shape=pool.length?pool[rnd(pool.length)]:SHAPES[rnd(SHAPES.length)];
   return {shape, color:rndColor(), used:false};
-}
-// Rải vài ô "chướng ngại" màu ngẫu nhiên lên bàn cờ chính sau mỗi vòng map ẩn
-function sprinkleJunkCells(n){
-  if(!board) return;
-  const empties=[];
-  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++) if(!board[r][c]) empties.push([r,c]);
-  for(let i=0;i<n && empties.length;i++){
-    const [r,c]=empties.splice(rnd(empties.length),1)[0];
-    board[r][c]=rndColor();
-  }
-  renderGrid();
 }
 function refillPieces(){ pieces=[makePiece(),makePiece(),makePiece()]; selected=null; }
 
@@ -1876,7 +1988,7 @@ function rotatePiece(idx){
 function canPlace(piece,r,c){
   return piece.shape.every(([dr,dc])=>{
     const nr=r+dr,nc=c+dc;
-    return nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&!board[nr][nc];
+    return nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&!board[nr][nc]&&!mountainCells.has(nr+','+nc);
   });
 }
 
@@ -1903,7 +2015,9 @@ function renderGrid(){
   for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
     const cell=gridCells[r][c];
     const thornKey=`${r},${c}`;
-    const cls='cell'+(board[r][c]?' filled':'')+(thornCells.has(thornKey)?' thorn-cell':'');
+    const cls='cell'+(board[r][c]?' filled':'')+(thornCells.has(thornKey)?' thorn-cell':'')
+      +(mountainCells.has(thornKey)?' mountain-cell':'')
+      +(squirrel&&squirrel.r===r&&squirrel.c===c?' squirrel-cell':'');
     if(cell.className!==cls) cell.className=cls;
     const bg=board[r][c]||'';
     if(cell.style.background!==bg) cell.style.background=bg;
@@ -2028,6 +2142,20 @@ function placeAt(R,C){
       thornThreshold=Math.max(3,6-thornWave);
       spawnThorns();
     }
+  }
+  // ⛰️ núi lớn dần theo bước đặt khối (vòng 2+)
+  if(mainHardTier>=2){
+    if(mountainCells.size>0){
+      mountainStepCount++;
+      if(mountainStepCount>=MOUNTAIN_GROW_EVERY){ mountainStepCount=0; growMountain(); }
+    } else if(mountainRespawn>0 && --mountainRespawn<=0){
+      spawnMountain();
+    }
+  }
+  // 🐿️ sóc di chuyển & trộm ô theo bước (vòng 3+)
+  if(mainHardTier>=3 && squirrel){
+    squirrelStepCount++;
+    if(squirrelStepCount>=SQUIRREL_MOVE_EVERY){ squirrelStepCount=0; squirrelMoveAndSteal(); }
   }
   renderGrid(); renderPieces();
   setTimeout(()=>processClears(), 90);
@@ -2228,6 +2356,33 @@ function processClears(){
         for(const [dr,dc] of [[-1,0],[1,0],[0,-1],[0,1]]){
           const nk=`${r+dr},${c+dc}`;
           if(thornCells.has(nk)) thornCells.delete(nk);
+        }
+      }
+      // ⛰️ nổ ô cạnh núi → bào mòn núi 1 ô (mỗi ô nổ bào tối đa 1 ô núi)
+      if(mountainCells.size){
+        for(const [dr,dc] of [[-1,0],[1,0],[0,-1],[0,1]]){
+          const nk=`${r+dr},${c+dc}`;
+          if(mountainCells.has(nk)){
+            mountainCells.delete(nk);
+            if(mountainCells.size===0){
+              mountainRespawn=15; // san phẳng! 15 bước sau núi mới mọc lại
+              showComboFlash(0,false,'⛰️ Núi bị san phẳng!');
+            }
+            break;
+          }
+        }
+      }
+      // 🐿️ nổ trúng ô sóc đang đứng → trừ HP
+      if(squirrel && squirrel.r===r && squirrel.c===c){
+        squirrel.hp--;
+        if(squirrel.hp<=0){
+          squirrel=null;
+          showComboFlash(0,false,'🎉 Hạ gục sóc trộm! +50đ');
+          score+=50; if(score>best) best=score; updateScoreUI();
+        } else {
+          showHint('🐿️ Trúng sóc! HP còn '+squirrel.hp+'/'+SQUIRREL_HP);
+          // sóc hoảng sợ nhảy đi chỗ khác
+          squirrel.r=rnd(ROWS); squirrel.c=rnd(COLS);
         }
       }
     });
@@ -5403,11 +5558,7 @@ function exitGoldToMain(){
   awaitingGoldUnlock=false;
   // Trigger Map ẩn 6 unlock immediately after Map ẩn 5
   setTimeout(()=>startUnlockGate(4), 400);
-  // Activate thorn vine difficulty after returning from Map ẩn 5
-  if(!thornCells) thornCells=new Set();
-  thornMode=true; thornPlacementCount=0; thornWave=0; thornThreshold=6;
-  thornCells=new Set(); cellBurstCount={};
-  setTimeout(()=>showComboFlash(0,false,'🌿 Chế độ khó: Dây gai xuất hiện!'), 600);
+  // (dây gai giờ kích hoạt từ vòng 1 qua applyRoundMechanics — không reset lại ở đây nữa)
   renderPieces(); checkGameOverA();
 }
 
