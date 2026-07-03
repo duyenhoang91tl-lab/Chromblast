@@ -529,6 +529,78 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
   from { transform: translateY(0) scale(1); }
   to   { transform: translateY(-4px) scale(1.08); }
 }
+/* 🧊 Ô đóng băng (vòng 4) — nổ lần 1 nứt băng, lần 2 mới vỡ */
+.cell.ice-cell { position: relative; }
+.cell.ice-cell::after {
+  content: '❄️';
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  background: linear-gradient(135deg, rgba(160,220,255,0.55), rgba(80,160,230,0.45));
+  border: 2px solid rgba(190,230,255,0.9);
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: inset 0 0 8px rgba(255,255,255,0.6);
+  z-index: 2;
+}
+.cell.ice-cell.ice-cracked::after {
+  content: '🩹';
+  content: '💢';
+  background: linear-gradient(135deg, rgba(160,220,255,0.3), rgba(80,160,230,0.22));
+  border-style: dashed;
+}
+/* 🌫️ Ô bị sương mù che (vòng 5) — không nhìn thấy màu bên dưới */
+.cell.fog-cell { position: relative; }
+.cell.fog-cell::after {
+  content: '☁️';
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  background: linear-gradient(135deg, #8b93a5 0%, #6b7284 100%);
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0.96;
+  z-index: 4; /* che cả gai/băng bên dưới — đúng nghĩa mù thông tin */
+}
+/* 💣 Ô có bom hẹn giờ (vòng 6) — hiện số bước còn lại */
+.cell.bomb-cell { position: relative; }
+.cell.bomb-cell::after {
+  content: '💣';
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  pointer-events: none;
+  animation: bombPulse 0.8s ease-in-out infinite alternate;
+  z-index: 3;
+}
+.cell.bomb-cell::before {
+  content: attr(data-bomb);
+  position: absolute; top: 1px; right: 3px;
+  font-size: 11px; font-weight: 800; color: #ff5555;
+  text-shadow: 0 0 4px #000;
+  z-index: 4;
+}
+@keyframes bombPulse {
+  from { transform: scale(1);   filter: drop-shadow(0 0 2px rgba(255,60,60,0.5)); }
+  to   { transform: scale(1.12); filter: drop-shadow(0 0 8px rgba(255,60,60,0.95)); }
+}
+/* 🥚 Ô trứng rồng (vòng 8) — nổ kề bên 2 lần để đập vỡ trước khi nở */
+.cell.egg-cell { position: relative; }
+.cell.egg-cell::after {
+  content: '🥚';
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  pointer-events: none;
+  filter: drop-shadow(0 0 5px rgba(255,120,220,0.8));
+  animation: eggWobble 1.1s ease-in-out infinite;
+  z-index: 3;
+}
+.cell.egg-cell.egg-cracked::after { content: '🐣'; }
+@keyframes eggWobble {
+  0%,100% { transform: rotate(-6deg); }
+  50%     { transform: rotate(6deg); }
+}
 @keyframes popLine {
   0%  { transform:scale(1); filter:brightness(1); }
   30% { transform:scale(1.25); filter:brightness(2); }
@@ -1520,6 +1592,125 @@ let squirrelStepCount = 0;
 let squirrelStolen = 0;
 const SQUIRREL_HP = 10, SQUIRREL_STEAL_LIMIT = 15, SQUIRREL_MOVE_EVERY = 3;
 
+// 🧊 Vòng 4 — băng giá: thỉnh thoảng 1 ô màu bị đóng băng, phải nổ 2 lần mới vỡ
+let iceCells = new Map(); // key -> 2 (băng cứng) | 1 (đã nứt)
+let iceStepCount = 0;
+const ICE_EVERY = 7;
+
+// 🌫️ Vòng 5 — sương mù 3×3 trôi trên bàn, che màu ô; nổ ô trong sương làm sương tan tạm
+let fogCenter = null; // {r,c}
+let fogStepCount = 0, fogCooldown = 0;
+const FOG_MOVE_EVERY = 4;
+
+// 💣 Vòng 6 — bom hẹn giờ: đếm ngược theo bước, nổ mất vùng 3×3; gỡ bằng nổ ô kề bên
+let bombCell = null; // {r,c}
+let bombTimer = 0, bombRespawn = 0;
+const BOMB_FUSE = 8;
+
+// 🌪️ Vòng 7 — lốc xoáy: mỗi 15 bước càn qua 1 hàng/cột, xáo trộn vị trí ô màu
+let tornadoStepCount = 0;
+const TORNADO_EVERY = 15;
+
+// 🥚 Vòng 8 — trứng rồng: nở sau 12 bước → thiêu rụi cả hàng; đập vỡ trước bằng 2 lần nổ kề bên
+let dragonEgg = null; // {r,c,shell,hatch}
+let eggRespawn = 0;
+const EGG_SHELL = 2, EGG_HATCH = 12;
+
+let mechAnnounced={};
+function announceMech(key,msg,delay){
+  if(mechAnnounced[key]) return;
+  mechAnnounced[key]=true;
+  setTimeout(()=>showComboFlash(0,false,msg), delay);
+}
+function randEmptyKey(){
+  const empties=[];
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
+    const k=r+','+c;
+    if(!board[r][c] && !mountainCells.has(k)
+       && !(bombCell&&bombCell.r===r&&bombCell.c===c)
+       && !(dragonEgg&&dragonEgg.r===r&&dragonEgg.c===c)) empties.push([r,c]);
+  }
+  return empties.length? empties[rnd(empties.length)] : null;
+}
+function freezeRandomCell(){
+  const cands=[];
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
+    const k=r+','+c;
+    if(board[r][c] && !iceCells.has(k) && !thornCells.has(k)) cands.push(k);
+  }
+  if(!cands.length) return;
+  iceCells.set(cands[rnd(cands.length)], 2);
+  renderGrid();
+}
+function spawnFog(){
+  fogCenter={r:1+rnd(ROWS-2), c:1+rnd(COLS-2)};
+  fogStepCount=0;
+  renderGrid();
+}
+function driftFog(){
+  if(!fogCenter) return;
+  fogCenter.r=Math.max(1,Math.min(ROWS-2,fogCenter.r+rnd(3)-1));
+  fogCenter.c=Math.max(1,Math.min(COLS-2,fogCenter.c+rnd(3)-1));
+  renderGrid();
+}
+function spawnBomb(){
+  const p=randEmptyKey(); if(!p) return;
+  bombCell={r:p[0], c:p[1]}; bombTimer=BOMB_FUSE;
+  renderGrid();
+}
+function bombExplode(){
+  const {r,c}=bombCell;
+  for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){
+    const nr=r+dr,nc=c+dc;
+    if(nr<0||nr>=ROWS||nc<0||nc>=COLS) continue;
+    const k=nr+','+nc;
+    if(mountainCells.has(k)) continue;
+    board[nr][nc]=null; thornCells.delete(k); iceCells.delete(k);
+  }
+  bombCell=null; bombRespawn=10;
+  try{ sfxGameOver(); }catch(e){}
+  showComboFlash(0,false,'💥 Bom nổ — mất vùng 3×3!');
+  renderGrid();
+}
+function tornadoSweep(){
+  const isRow=Math.random()<0.5, idx=rnd(isRow?ROWS:COLS);
+  const cells=[], colors=[];
+  for(let i=0;i<(isRow?COLS:ROWS);i++){
+    const r=isRow?idx:i, c=isRow?i:idx, k=r+','+c;
+    if(mountainCells.has(k)||thornCells.has(k)||iceCells.has(k)) continue;
+    if(bombCell&&bombCell.r===r&&bombCell.c===c) continue;
+    if(dragonEgg&&dragonEgg.r===r&&dragonEgg.c===c) continue;
+    cells.push([r,c]);
+    if(board[r][c]) colors.push(board[r][c]);
+  }
+  if(!colors.length) return;
+  cells.forEach(([r,c])=>board[r][c]=null);
+  const spots=cells.slice();
+  while(colors.length && spots.length){
+    const [r,c]=spots.splice(rnd(spots.length),1)[0];
+    board[r][c]=colors.pop();
+  }
+  showComboFlash(0,false,'🌪️ Lốc xoáy càn qua '+(isRow?'hàng':'cột')+' '+(idx+1)+'!');
+  renderGrid();
+}
+function spawnEgg(){
+  const p=randEmptyKey(); if(!p) return;
+  dragonEgg={r:p[0], c:p[1], shell:EGG_SHELL, hatch:EGG_HATCH};
+  renderGrid();
+}
+function eggHatchBurn(){
+  const row=dragonEgg.r;
+  for(let c=0;c<COLS;c++){
+    const k=row+','+c;
+    if(mountainCells.has(k)) continue;
+    board[row][c]=null; thornCells.delete(k); iceCells.delete(k);
+  }
+  dragonEgg=null; eggRespawn=12;
+  try{ sfxGameOver(); }catch(e){}
+  showComboFlash(0,false,'🐲 Rồng con nở — thiêu rụi cả hàng '+(row+1)+'!');
+  renderGrid();
+}
+
 // Kích hoạt dần từng cơ chế theo số vòng map ẩn đã thắng (gọi sau mỗi lần thắng map ẩn)
 function applyRoundMechanics(){
   if(mainHardTier>=1 && !thornMode){
@@ -1534,6 +1725,20 @@ function applyRoundMechanics(){
   if(mainHardTier>=3 && !squirrel){
     spawnSquirrel();
     setTimeout(()=>showComboFlash(0,false,'🐿️ Con sóc trộm ô xuất hiện — nổ trúng nó '+SQUIRREL_HP+' lần!'), 2300);
+  }
+  if(mainHardTier>=4) announceMech('ice','🧊 Băng giá: ô đóng băng phải nổ 2 lần mới vỡ!', 3000);
+  if(mainHardTier>=5){
+    if(!fogCenter && fogCooldown<=0) spawnFog();
+    announceMech('fog','🌫️ Sương mù che khuất màu — hãy ghi nhớ!', 3700);
+  }
+  if(mainHardTier>=6){
+    if(!bombCell && bombRespawn<=0) spawnBomb();
+    announceMech('bomb','💣 Bom hẹn giờ! Nổ ô kề bên để gỡ trước khi nổ!', 4400);
+  }
+  if(mainHardTier>=7) announceMech('tornado','🌪️ Coi chừng lốc xoáy xáo trộn bàn cờ!', 5100);
+  if(mainHardTier>=8){
+    if(!dragonEgg && eggRespawn<=0) spawnEgg();
+    announceMech('egg','🥚 Trứng rồng xuất hiện — đập vỡ trước khi nó nở!', 5800);
   }
 }
 function spawnMountain(){
@@ -1558,7 +1763,7 @@ function growMountain(){
   mountainCells.add(nk);
   const [r,c]=nk.split(',').map(Number);
   board[r][c]=null; // núi lan tới đâu nuốt ô tới đó
-  thornCells.delete(nk);
+  thornCells.delete(nk); iceCells.delete(nk);
   renderGrid();
 }
 function spawnSquirrel(){
@@ -1575,7 +1780,7 @@ function squirrelMoveAndSteal(){
   if(filled.length){
     const [r,c]=filled[rnd(filled.length)];
     squirrel.r=r; squirrel.c=c;
-    board[r][c]=null; thornCells.delete(r+','+c); // trộm mất ô màu
+    board[r][c]=null; thornCells.delete(r+','+c); iceCells.delete(r+','+c); // trộm mất ô màu
     squirrelStolen++;
     try{ sfxPenalty(); }catch(e){}
     if(squirrelStolen>=SQUIRREL_STEAL_LIMIT){
@@ -1953,6 +2158,11 @@ function initBoard(){
   thornMode=false; thornCells=new Set(); cellBurstCount={}; thornPlacementCount=0; thornWave=0; thornThreshold=6;
   mountainCells=new Set(); mountainStepCount=0; mountainRespawn=0;
   squirrel=null; squirrelStepCount=0; squirrelStolen=0;
+  iceCells=new Map(); iceStepCount=0;
+  fogCenter=null; fogStepCount=0; fogCooldown=0;
+  bombCell=null; bombTimer=0; bombRespawn=0;
+  tornadoStepCount=0;
+  dragonEgg=null; eggRespawn=0;
   // ván mới vẫn giữ tier đã đạt — kích hoạt lại các cơ chế tương ứng
   if(typeof mainHardTier!=='undefined' && mainHardTier>0) setTimeout(()=>applyRoundMechanics(), 50);
 }
@@ -1988,7 +2198,9 @@ function rotatePiece(idx){
 function canPlace(piece,r,c){
   return piece.shape.every(([dr,dc])=>{
     const nr=r+dr,nc=c+dc;
-    return nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&!board[nr][nc]&&!mountainCells.has(nr+','+nc);
+    return nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&!board[nr][nc]&&!mountainCells.has(nr+','+nc)
+      &&!(bombCell&&bombCell.r===nr&&bombCell.c===nc)
+      &&!(dragonEgg&&dragonEgg.r===nr&&dragonEgg.c===nc);
   });
 }
 
@@ -2015,10 +2227,18 @@ function renderGrid(){
   for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
     const cell=gridCells[r][c];
     const thornKey=`${r},${c}`;
+    const inFog=fogCenter && Math.abs(fogCenter.r-r)<=1 && Math.abs(fogCenter.c-c)<=1;
     const cls='cell'+(board[r][c]?' filled':'')+(thornCells.has(thornKey)?' thorn-cell':'')
       +(mountainCells.has(thornKey)?' mountain-cell':'')
-      +(squirrel&&squirrel.r===r&&squirrel.c===c?' squirrel-cell':'');
+      +(squirrel&&squirrel.r===r&&squirrel.c===c?' squirrel-cell':'')
+      +(iceCells.has(thornKey)?(iceCells.get(thornKey)>=2?' ice-cell':' ice-cell ice-cracked'):'')
+      +(inFog?' fog-cell':'')
+      +(bombCell&&bombCell.r===r&&bombCell.c===c?' bomb-cell':'')
+      +(dragonEgg&&dragonEgg.r===r&&dragonEgg.c===c?(dragonEgg.shell<EGG_SHELL?' egg-cell egg-cracked':' egg-cell'):'');
     if(cell.className!==cls) cell.className=cls;
+    if(bombCell&&bombCell.r===r&&bombCell.c===c){
+      if(cell.dataset.bomb!==String(bombTimer)) cell.dataset.bomb=bombTimer;
+    } else if(cell.dataset.bomb) delete cell.dataset.bomb;
     const bg=board[r][c]||'';
     if(cell.style.background!==bg) cell.style.background=bg;
   }
@@ -2156,6 +2376,43 @@ function placeAt(R,C){
   if(mainHardTier>=3 && squirrel){
     squirrelStepCount++;
     if(squirrelStepCount>=SQUIRREL_MOVE_EVERY){ squirrelStepCount=0; squirrelMoveAndSteal(); }
+  }
+  // 🧊 đóng băng ô mới theo chu kỳ (vòng 4+)
+  if(mainHardTier>=4){
+    iceStepCount++;
+    if(iceStepCount>=ICE_EVERY){ iceStepCount=0; freezeRandomCell(); }
+  }
+  // 🌫️ sương mù trôi / tan rồi tụ lại (vòng 5+)
+  if(mainHardTier>=5){
+    if(fogCenter){
+      fogStepCount++;
+      if(fogStepCount>=FOG_MOVE_EVERY){ fogStepCount=0; driftFog(); }
+    } else if(fogCooldown>0 && --fogCooldown<=0){
+      spawnFog();
+    }
+  }
+  // 💣 bom đếm ngược / mọc lại (vòng 6+)
+  if(mainHardTier>=6){
+    if(bombCell){
+      bombTimer--;
+      if(bombTimer<=0) bombExplode();
+    } else if(bombRespawn>0 && --bombRespawn<=0){
+      spawnBomb();
+    }
+  }
+  // 🌪️ lốc xoáy theo chu kỳ (vòng 7+)
+  if(mainHardTier>=7){
+    tornadoStepCount++;
+    if(tornadoStepCount>=TORNADO_EVERY){ tornadoStepCount=0; tornadoSweep(); }
+  }
+  // 🥚 trứng rồng ấp / mọc lại (vòng 8+)
+  if(mainHardTier>=8){
+    if(dragonEgg){
+      dragonEgg.hatch--;
+      if(dragonEgg.hatch<=0) eggHatchBurn();
+    } else if(eggRespawn>0 && --eggRespawn<=0){
+      spawnEgg();
+    }
   }
   renderGrid(); renderPieces();
   setTimeout(()=>processClears(), 90);
@@ -2346,9 +2603,38 @@ function processClears(){
 
   const waitTime=colorKeys.size>0?500:360;
   setTimeout(()=>{
+    let eggHitThisWave=false; // mỗi ĐỢT nổ chỉ làm nứt vỏ trứng 1 lớp, dù nhiều ô cùng kề trứng
     totalKeys.forEach(key=>{
       const [r,c]=key.split(',').map(Number);
+      // 🧊 ô đóng băng: lần nổ đầu chỉ làm NỨT băng (ô sống sót), lần 2 mới vỡ và xóa
+      if(iceCells.has(key)){
+        const stage=iceCells.get(key);
+        if(stage>=2){ iceCells.set(key,1); try{ sfxClick(); }catch(e){} return; }
+        iceCells.delete(key);
+      }
       board[r][c]=null;
+      // 💣 nổ ô kề bom → gỡ bom thành công, thưởng điểm
+      if(bombCell && Math.abs(bombCell.r-r)<=1 && Math.abs(bombCell.c-c)<=1 && !(bombCell.r===r&&bombCell.c===c)){
+        bombCell=null; bombRespawn=10;
+        score+=20; if(score>best) best=score; updateScoreUI();
+        showComboFlash(0,false,'✂️ Gỡ bom thành công! +20đ');
+      }
+      // 🥚 nổ ô kề trứng rồng → nứt vỏ; vỡ hẳn thì thưởng điểm
+      if(dragonEgg && !eggHitThisWave && Math.abs(dragonEgg.r-r)<=1 && Math.abs(dragonEgg.c-c)<=1 && !(dragonEgg.r===r&&dragonEgg.c===c)){
+        eggHitThisWave=true;
+        dragonEgg.shell--;
+        if(dragonEgg.shell<=0){
+          dragonEgg=null; eggRespawn=12;
+          score+=40; if(score>best) best=score; updateScoreUI();
+          showComboFlash(0,false,'🍳 Đập vỡ trứng rồng! +40đ');
+        } else {
+          showHint('🥚 Vỏ trứng đã nứt — nổ kề bên thêm 1 lần nữa!');
+        }
+      }
+      // 🌫️ nổ ô trong vùng sương mù → sương tan một lúc
+      if(fogCenter && Math.abs(fogCenter.r-r)<=1 && Math.abs(fogCenter.c-c)<=1){
+        fogCenter=null; fogCooldown=6;
+      }
       // Track burst history and remove adjacent thorns
       if(thornMode){
         cellBurstCount[key]=(cellBurstCount[key]||0)+1;
