@@ -961,6 +961,9 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
 #maze-canvas.active   { display:block; }
 #mega-canvas   { display:none; width:100%; max-width:393px; aspect-ratio:360/460; background:#100005; border-radius:14px; touch-action:none; margin:0 auto; }
 #mega-canvas.active   { display:block; }
+/* Canvas dùng chung cho mọi plugin-map (maps/mapNN.js chuẩn init/update/draw) */
+#plugin-canvas { display:none; width:100%; max-width:393px; aspect-ratio:360/460; background:#0a0a1e; border-radius:14px; touch-action:none; margin:0 auto; }
+#plugin-canvas.active { display:block; }
 .sc {
   width: 44px; height: 44px; border-radius: 8px;
   cursor: pointer; transition: transform 0.08s, filter 0.08s, box-shadow 0.12s;
