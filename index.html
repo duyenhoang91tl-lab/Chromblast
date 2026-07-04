@@ -9698,57 +9698,36 @@ function showComboCountFlash(n){
   el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
 }
 
-// Lồng tiếng câu khen bằng giọng tổng hợp của trình duyệt — cao độ/tốc độ tăng dần theo cấp khen
-// Chọn sẵn 1 giọng đọc "có hồn" hơn giọng mặc định của Chrome/Google — ưu tiên các giọng
-// thường được đánh giá tự nhiên/sinh động hơn (Microsoft/Apple/Google WaveNet…), cache lại
-// vì getVoices() nạp bất đồng bộ và danh sách khác nhau tuỳ máy/trình duyệt.
-let _praiseVoice = undefined; // undefined = chưa tìm; null = không có giọng nào phù hợp (dùng mặc định)
-const PRAISE_VOICE_PREFERENCE = [
-  'Google US English', 'Microsoft Aria', 'Microsoft Jenny', 'Microsoft Guy',
-  'Samantha', 'Alex', 'Daniel', 'Karen', 'Moira', 'Tessa',
-  'Microsoft Zira', 'Microsoft David'
+// Lồng tiếng câu khen bằng file audio thu sẵn (sounds/) — mỗi cấp khen 1 file .wav riêng,
+// khớp thứ tự với mảng PRAISE. Được preload 1 lần khi trang tải xong.
+const PRAISE_SOUND_FILES = [
+  'not_bad.wav','cool.wav','good.wav','great.wav','impressive.wav',
+  'amazing.wav','perfect.wav','spectacular.wav','unreal.wav','legendary.wav','godlike.wav'
 ];
-function pickPraiseVoice(){
-  if(_praiseVoice!==undefined) return _praiseVoice;
-  try{
-    const voices=window.speechSynthesis.getVoices();
-    if(!voices||!voices.length) return null; // chưa nạp xong, thử lại lần gọi sau
-    let best=null;
-    for(const name of PRAISE_VOICE_PREFERENCE){
-      best=voices.find(v=>v.name.includes(name)&&v.lang.startsWith('en'));
-      if(best) break;
-    }
-    if(!best) best=voices.find(v=>v.lang==='en-US'&&!v.default) || voices.find(v=>v.lang.startsWith('en'));
-    _praiseVoice=best||null;
-  }catch(e){ _praiseVoice=null; }
-  return _praiseVoice;
-}
-if(typeof window!=='undefined' && 'speechSynthesis' in window){
-  window.speechSynthesis.onvoiceschanged=()=>{ _praiseVoice=undefined; };
-}
+const PRAISE_AUDIO = PRAISE_SOUND_FILES.map(f=>{
+  const a = new Audio('sounds/'+f);
+  a.preload = 'auto';
+  return a;
+});
 
-// Web Speech API không hỗ trợ điều khiển "cảm xúc" thật sự (không có SSML/prosody) —
-// nên ta giả lập sự hào hứng bằng cách: chọn giọng sống động hơn mặc định, kéo giãn mạnh
-// cao độ/tốc độ theo cấp khen, và lặp lại 2 lần dồn dập ở các cấp cao nhất (Legendary/Godlike).
 function speakPraise(level) {
   if (typeof sfxMuted !== 'undefined' && sfxMuted) return;
-  if (!('speechSynthesis' in window)) return;
   try {
     const i = pIdx(level);
-    const text = PRAISE[i];
-    const voice = pickPraiseVoice();
-    window.speechSynthesis.cancel();
-    const say=(pitchBoost, rateBoost, vol)=>{
-      const msg = new SpeechSynthesisUtterance(text);
-      if(voice) msg.voice = voice;
-      msg.lang = 'en-US';
-      msg.pitch = Math.min(2, 0.85 + i*0.11 + pitchBoost);
-      msg.rate  = Math.min(1.7, 1.0 + i*0.06 + rateBoost);
-      msg.volume = vol;
-      window.speechSynthesis.speak(msg);
-    };
-    say(0, 0, 0.7);
-    if(i>=8) setTimeout(()=>say(0.15, 0.1, 0.75), 260); // hô lại lần 2, dồn dập hơn ở Legendary/Godlike
+    const audio = PRAISE_AUDIO[i];
+    if (!audio) return;
+    audio.currentTime = 0;
+    audio.volume = 1;
+    audio.play().catch(()=>{}); // trình duyệt có thể chặn autoplay trước tương tác đầu tiên — bỏ qua lỗi
+    // Ở 2 cấp cao nhất (Legendary/Godlike), hô lại lần 2 dồn dập hơn cho khí thế
+    if (i>=8) {
+      setTimeout(()=>{
+        const a2 = PRAISE_AUDIO[i];
+        a2.currentTime = 0;
+        a2.volume = 0.85;
+        a2.play().catch(()=>{});
+      }, 300);
+    }
   } catch(e) {}
 }
 
