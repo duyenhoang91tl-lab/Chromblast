@@ -78,28 +78,8 @@ let unlockGateStageIndex = 0;   // index (0-based) trong UNLOCK_STAGE_ORDER củ
 let unlockGateBaseline = 0;     // mốc điểm map thường lúc bắt đầu chờ
 let unlockGateActive = true;    // đang tích điểm map thường để mở map ẩn tiếp theo?
 function triggerStageUnlock(stageKey){
-  switch(stageKey){
-    case 'secret': return triggerUnlock();
-    case 'dodge': return triggerDodgeUnlock();
-    case 'fruit': return triggerFruitUnlock();
-    case 'bee': return triggerBeeUnlock();
-    case 'gold': return triggerGoldUnlock();
-    case 'mole': return triggerMoleUnlock();
-    case 'memory': return triggerMemoryUnlock();
-    case 'bubble': return triggerBubbleUnlock();
-    case 'stack': return triggerStackUnlock();
-    case 'boss': return triggerBossUnlock();
-    case 'catch': return triggerCatchUnlock();
-    case 'flood': return triggerFloodUnlock();
-    case 'arena': return triggerArenaUnlock();
-    case 'snake': return triggerSnakeUnlock();
-    case 'brick': return triggerBrickUnlock();
-    case 'runner': return triggerRunnerUnlock();
-    case 'space': return triggerSpaceUnlock();
-    case 'rhythm': return triggerRhythmUnlock();
-    case 'maze': return triggerMazeUnlock();
-    case 'mega': return triggerMegaUnlock();
-  }
+  // Dispatch qua MapManager (đã thay chuỗi switch cũ).
+  return triggerMapUnlock(stageKey);
 }
 // Gọi khi vừa THẮNG map ẩn ở vị trí clearedIdx (0-based) trong UNLOCK_STAGE_ORDER —
 // bắt đầu đếm điểm map thường để mở map ẩn kế tiếp.
@@ -1995,26 +1975,8 @@ document.getElementById('unlock-btn').addEventListener('click',()=>{
   sfxClick();
   document.getElementById('unlock-overlay').classList.remove('show');
   hiddenMapEntryScore=score; // ghi nhớ mốc điểm — thua map ẩn này sẽ mất hết điểm kiếm thêm trong ván
-  if(pendingUnlock==='dodge') enterDodgeMode();
-  else if(pendingUnlock==='fruit') enterFruitMode();
-  else if(pendingUnlock==='bee') enterBeeMode();
-  else if(pendingUnlock==='gold') enterGoldMode();
-  else if(pendingUnlock==='mole') enterMoleMode();
-  else if(pendingUnlock==='memory') enterMemoryMode();
-  else if(pendingUnlock==='bubble') enterBubbleMode();
-  else if(pendingUnlock==='stack') enterStackMode();
-  else if(pendingUnlock==='boss') enterBossMode();
-  else if(pendingUnlock==='catch') enterCatchMode();
-  else if(pendingUnlock==='flood') enterFloodMode();
-  else if(pendingUnlock==='arena') enterArenaMode();
-  else if(pendingUnlock==='snake')  enterSnakeMode();
-  else if(pendingUnlock==='brick')  enterBrickMode();
-  else if(pendingUnlock==='runner') enterRunnerMode();
-  else if(pendingUnlock==='space')  enterSpaceMode();
-  else if(pendingUnlock==='rhythm') enterRhythmMode();
-  else if(pendingUnlock==='maze')   enterMazeMode();
-  else if(pendingUnlock==='mega')   enterMegaMode();
-  else enterSecretMode();
+  // Dispatch qua MapManager (đã thay chuỗi if(pendingUnlock==='...') cũ).
+  if(!startMap(pendingUnlock)) enterSecretMode();
 });
 
 document.getElementById('unlock-later-btn').addEventListener('click',()=>{
