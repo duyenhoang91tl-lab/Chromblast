@@ -9309,18 +9309,20 @@ function initAdminPanel(){
     document.getElementById('admin-panel').classList.remove('show');
   });
 
-  // 🎯 Đánh thử map thường theo vòng độ khó 1-40 (1-20 đơn, 21-40 cơ chế đôi — admin test đủ mọi "map")
+  // 🎯 Đánh thử map thường theo vòng độ khó 1-41 (1-20 đơn, 21-40 cơ chế đôi, 41 = Thế giới gương — admin test đủ mọi "map")
   const roundList=document.getElementById('admin-round-list');
-  for(let v=1; v<=40; v++){
+  for(let v=1; v<=41; v++){
     const rb=document.createElement('button');
     rb.className='admin-map-btn';
     rb.style.cssText='padding:6px 4px;text-align:center;font-size:12px;'+(v>20?'border-color:#c084fc;':'');
     rb.innerHTML='<b>V'+v+'</b>';
     if(v<=20){
       rb.title='Map thường — vòng '+v+' ('+ROUND_MECH_NAMES[v]+')';
-    } else {
+    } else if(v<=40){
       const [a,b]=comboPairForTier(v);
       rb.title='Map thường — vòng '+v+' [ĐÔI] '+ROUND_MECH_NAMES[a]+' + '+ROUND_MECH_NAMES[b];
+    } else {
+      rb.title='Map thường — vòng '+v+' ('+ROUND_MECH_NAMES[21]+')';
     }
     rb.addEventListener('click', ()=>{
       document.getElementById('admin-panel').classList.remove('show');
@@ -9336,9 +9338,11 @@ function initAdminPanel(){
       resetMechanicState();
       applyRoundMechanics();
       if(v<=20) showComboFlash(0,false,'🎯 Test map thường — vòng '+v);
-      else{
+      else if(v<=40){
         const [a,b]=comboPairForTier(v);
         showComboFlash(0,false,'🎯 Test vòng '+v+' [ĐÔI]: '+ROUND_MECH_NAMES[a]+' + '+ROUND_MECH_NAMES[b]);
+      } else {
+        showComboFlash(0,false,'🎯 Test vòng '+v+': '+ROUND_MECH_NAMES[21]);
       }
     });
     roundList.appendChild(rb);
