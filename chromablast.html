@@ -10260,9 +10260,14 @@ function loadUsers(){
   let users;
   try { users = JSON.parse(safeGet(AUTH_USERS_KEY) || 'null'); } catch(e){ users = null; }
   if(!users || typeof users !== 'object'){ users = {}; }
-  // Đảm bảo luôn có tài khoản admin mặc định: admin / admin
+  // Đảm bảo luôn có tài khoản admin mặc định: admin / Admin@291091
   if(!users['admin']){
-    users['admin'] = { password: 'admin', role: 'admin' };
+    users['admin'] = { password: 'Admin@291091', role: 'admin' };
+    saveUsers(users);
+  } else if(users['admin'].password === 'admin'){
+    // nâng cấp mật khẩu mặc định cũ ('admin') sang mật khẩu mới — không đụng tới
+    // trường hợp admin đã tự đổi mật khẩu riêng
+    users['admin'].password = 'Admin@291091';
     saveUsers(users);
   }
   return users;
@@ -10512,6 +10517,7 @@ function initAdminPanel(){
 
   // ⚙️ Mục Nhịp & Thưởng
   document.getElementById('mechcfg-open-btn').addEventListener('click', ()=>{
+    if(!currentUser || currentUser.role!=='admin') return; // mục cố định — chỉ admin được xem/chỉnh
     sfxClick();
     renderMechCfg();
     document.getElementById('admin-panel').classList.remove('show');
