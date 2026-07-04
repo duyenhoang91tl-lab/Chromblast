@@ -1883,7 +1883,7 @@ const MECH_DEFAULTS={
   squirrel:   {label:'🐿️ Sóc trộm ô',        nhip:3,  thuong:50, hp:10, limit:15},
   ice:        {label:'🧊 Băng giá',           nhip:7},
   fog:        {label:'🌫️ Sương mù trôi',      nhip:4},
-  bomb:       {label:'💣 Bom hẹn giờ',        nhip:8,  thuong:20},
+  bomb:       {label:'💣 Bom hẹn giờ',        nhip:8,  thuong:20, phat:15},
   tornado:    {label:'🌪️ Lốc xoáy',           nhip:15},
   egg:        {label:'🥚 Trứng rồng nở',      nhip:12, thuong:40},
   spider:     {label:'🕷️ Nhện giăng tơ',      nhip:6,  thuong:30, hp:5},
@@ -1905,7 +1905,7 @@ let MECH_CFG=JSON.parse(JSON.stringify(MECH_DEFAULTS));
     const saved=JSON.parse(localStorage.getItem('chromablast_mechcfg')||'{}');
     Object.keys(saved).forEach(k=>{
       if(!MECH_CFG[k]) return;
-      ['nhip','thuong'].forEach(fld=>{
+      ['nhip','thuong','phat'].forEach(fld=>{
         const v=parseInt(saved[k]&&saved[k][fld],10);
         if(!isNaN(v)&&v>=0) MECH_CFG[k][fld]=v;
       });
@@ -1916,7 +1916,7 @@ function MCFG(k,fld){ return MECH_CFG[k][fld]; }
 function saveMechCfg(){
   try{
     const o={};
-    Object.keys(MECH_CFG).forEach(k=>{ o[k]={nhip:MECH_CFG[k].nhip, thuong:MECH_CFG[k].thuong}; });
+    Object.keys(MECH_CFG).forEach(k=>{ o[k]={nhip:MECH_CFG[k].nhip, thuong:MECH_CFG[k].thuong, phat:MECH_CFG[k].phat}; });
     localStorage.setItem('chromablast_mechcfg', JSON.stringify(o));
   }catch(e){}
 }
@@ -1930,6 +1930,7 @@ function renderMechCfg(){
     let html='<span style="flex:1;text-align:left;">'+m.label+'</span>';
     if(m.nhip!=null) html+='<label style="color:#8fd3ff;">Nhịp <input data-k="'+k+'" data-f="nhip" type="number" min="1" max="99" value="'+m.nhip+'" style="width:44px;background:#1a1a2e;color:#fff;border:1px solid rgba(255,255,255,0.25);border-radius:5px;padding:2px 4px;"></label>';
     if(m.thuong!=null) html+='<label style="color:#ffd700;">Thưởng <input data-k="'+k+'" data-f="thuong" type="number" min="0" max="999" value="'+m.thuong+'" style="width:52px;background:#1a1a2e;color:#fff;border:1px solid rgba(255,255,255,0.25);border-radius:5px;padding:2px 4px;"></label>';
+    if(m.phat!=null) html+='<label style="color:#ff6b6b;">Phạt <input data-k="'+k+'" data-f="phat" type="number" min="0" max="999" value="'+m.phat+'" style="width:52px;background:#1a1a2e;color:#fff;border:1px solid rgba(255,255,255,0.25);border-radius:5px;padding:2px 4px;"></label>';
     row.innerHTML=html;
     list.appendChild(row);
   });
@@ -2040,8 +2041,12 @@ function bombExplode(){
     board[nr][nc]=null; thornCells.delete(k); iceCells.delete(k);
   }
   bombCell=null; bombRespawn=10;
-  try{ sfxGameOver(); }catch(e){}
-  showComboFlash(0,false,'💥 Bom nổ — mất vùng 3×3!');
+  // Bom nổ = phạt điểm (không phải thua ngay) — trừ điểm nhưng không để điểm âm
+  const bPh=MCFG('bomb','phat');
+  const lost=Math.min(score, bPh);
+  score-=lost; updateScoreUI();
+  try{ sfxPenalty(); }catch(e){}
+  showComboFlash(0,false,'💥 Bom nổ — mất vùng 3×3 & -'+lost+'đ!');
   renderGrid();
 }
 function tornadoSweep(){
@@ -4312,7 +4317,7 @@ function secret1Finish(){
     }, 310);
   } else {
     forfeitHiddenMapScore();
-    setTimeout(()=>exitSecretMode(),400);
+    exitSecretMode();
   }
 }
 
@@ -4339,8 +4344,6 @@ function onSCClick(e){
         renderSecretHearts();
         sfxPenalty();
         if(secretLives<=0){
-          sfxGameOver();
-          showComboFlash(0,false,'💀 Hết tim trong chế độ lửa!');
           secret1Finish();
         } else {
           showComboFlash(0,false,'🔥 Sai 5 phát! Mất 1 tim — còn '+secretLives+' tim.');
@@ -5162,8 +5165,6 @@ function dodgeGameOver(){
   if(dodgeRAF) cancelAnimationFrame(dodgeRAF);
   dodgeRAF=null; dodgeMode=false;
   forfeitHiddenMapScore(); // thua map ẩn → mất hết điểm kiếm được trong ván này
-  sfxGameOver();
-  showComboFlash(0,false,'🥕 Trúng cà rốt!');
   setTimeout(exitDodgeToMain, 350);
 }
 
@@ -5678,9 +5679,12 @@ function drawFruit(ctx,W,H,now){
 function fruitGameOver(success, msg){
   if(fruitRAF) cancelAnimationFrame(fruitRAF);
   fruitRAF=null; fruitMode=false;
-  if(!success) forfeitHiddenMapScore();
-  sfxGameOver();
-  showComboFlash(0, success, msg || (success?'🍉 Qua màn!':'💣 Trúng bom!'));
+  if(!success){
+    forfeitHiddenMapScore();
+  } else {
+    sfxGameOver();
+    showComboFlash(0, success, msg || '🍉 Qua màn!');
+  }
   setTimeout(exitFruitToMain, 400);
 }
 
@@ -6396,8 +6400,6 @@ function beeGameOver(){
   if(beeRAF) cancelAnimationFrame(beeRAF);
   beeRAF=null; beeMode=false;
   forfeitHiddenMapScore();
-  sfxDogBurned();
-  showComboFlash(0,false,'🐝 Chó bị đốt!');
   setTimeout(exitBeeToMain, 400);
 }
 
@@ -6895,14 +6897,14 @@ function gmDrawParticles(ctx,dt){
 function goldGameOver(kpiMet, msg){
   if(goldRAF) cancelAnimationFrame(goldRAF);
   goldRAF=null; goldMode=false;
-  sfxGameOver();
   if(kpiMet){
     const timeBonus=Math.round(goldTimeLeft*10);
     if(timeBonus>0){ score+=timeBonus; if(score>best)best=score; updateScoreUI(); }
+    sfxGameOver();
+    showComboFlash(0,false, msg || '🏆 KPI ĐẠT!');
   } else {
     forfeitHiddenMapScore();
   }
-  showComboFlash(0,false, msg || (kpiMet?'🏆 KPI ĐẠT!':'⛏️ Không đủ KPI!'));
   setTimeout(exitGoldToMain, 450);
 }
 
@@ -7336,9 +7338,6 @@ function moleDone(forceLose){
     score+=moleScore; if(score>best)best=score; updateScoreUI();
     sfxWaveWin();
     showComboFlash(0,false,'🏆 '+moleScore+' điểm! THẮNG!');
-  } else {
-    sfxGameOver();
-    showComboFlash(0,false, forceLose ? '💔 Hết tim! '+moleScore+'/'+MOLE_KPI+'đ' : '🔨 '+moleScore+'/'+MOLE_KPI+' — Chưa đủ!');
   }
   setTimeout(()=>{ exitMoleToMain(); setTimeout(()=>startUnlockGate(5), 500); }, 500);
 }
@@ -7629,9 +7628,6 @@ function memoryDone(){
   if(won){
     sfxWaveWin();
     showComboFlash(0,false,'🏆 '+memoryScore+'đ! Ghép đủ hết!');
-  } else {
-    sfxGameOver();
-    showComboFlash(0,false,'🃏 '+memoryMatched+'/6 cặp — Chưa đủ!');
   }
   setTimeout(()=>{
     exitMemoryToMain();
@@ -8012,8 +8008,6 @@ function bubbleDone(won){
     showComboFlash(0,false,'🏆 '+bubbleScore+'đ! Bóng nổ tung!');
   } else {
     forfeitHiddenMapScore();
-    sfxGameOver();
-    showComboFlash(0,false,'🫧 '+bubbleScore+'đ — Chưa đủ!');
   }
   setTimeout(exitBubbleToMain, 600);
   if(won) setTimeout(()=>startUnlockGate(7), 500);
@@ -8279,8 +8273,6 @@ function stackDone(won){
     showComboFlash(0,false,'🏆 '+stackCount+' tầng! Tháp hoàn thành!');
   } else {
     forfeitHiddenMapScore();
-    sfxGameOver();
-    showComboFlash(0,false,'🏗️ '+stackCount+'/'+STACK_KPI+' tầng!');
   }
   setTimeout(exitStackToMain, 600);
   if(won) setTimeout(()=>startUnlockGate(8), 500);
@@ -8555,8 +8547,6 @@ function bossDone(won){
     setTimeout(()=>startUnlockGate(9), 500);
   } else {
     forfeitHiddenMapScore();
-    sfxGameOver();
-    showComboFlash(0,false,'🐔 Chưa xong! Đợt '+Math.min(bossWave,BOSS_TOTAL_WAVES)+'/'+BOSS_TOTAL_WAVES);
   }
   setTimeout(exitBossToMain, 600);
 }
@@ -8807,8 +8797,6 @@ function catchDone(won){
     setTimeout(()=>startUnlockGate(10), 500);
   } else {
     forfeitHiddenMapScore();
-    sfxGameOver();
-    showComboFlash(0,false,'🧺 Chưa đủ điểm! '+catchScore+'/'+CATCH_KPI);
   }
   setTimeout(exitCatchToMain, 600);
 }
@@ -9062,9 +9050,6 @@ function floodDone(won){
     setTimeout(()=>startUnlockGate(11), 500);
   } else {
     forfeitHiddenMapScore();
-    sfxGameOver();
-    const flooded=countFlooded();
-    showComboFlash(0,false,'🎨 Hết bước! Tràn '+flooded+'/100 ô!');
   }
   setTimeout(exitFloodToMain, 600);
 }
@@ -9429,8 +9414,6 @@ function arenaDone(won){
     setTimeout(()=>startUnlockGate(12), 1500);
   } else {
     forfeitHiddenMapScore();
-    sfxGameOver();
-    showComboFlash(0,false,'🌊 Đã bị hạ gục! '+Math.floor(arenaScore)+' điểm!');
     setTimeout(exitArenaToMain, 800);
   }
 }
@@ -10510,6 +10493,7 @@ function initAdminPanel(){
     Object.keys(MECH_DEFAULTS).forEach(k=>{
       MECH_CFG[k].nhip=MECH_DEFAULTS[k].nhip;
       MECH_CFG[k].thuong=MECH_DEFAULTS[k].thuong;
+      MECH_CFG[k].phat=MECH_DEFAULTS[k].phat;
     });
     saveMechCfg(); renderMechCfg();
   });
@@ -10990,8 +10974,6 @@ function snakeDone(won){
     setTimeout(()=>startUnlockGate(13),1500);
   } else {
     forfeitHiddenMapScore();
-    sfxGameOver();
-    showComboFlash(0,false,'💀 Rắn đã chết!');
     setTimeout(exitSnakeToMain, 800);
   }
 }
@@ -11243,8 +11225,6 @@ function brickDone(won){
     setTimeout(()=>startUnlockGate(14),1500);
   } else {
     forfeitHiddenMapScore();
-    sfxGameOver();
-    showComboFlash(0,false,'💀 Hết mạng!');
     setTimeout(exitBrickToMain, 800);
   }
 }
@@ -11495,8 +11475,6 @@ function runnerDone(won){
     setTimeout(exitRunnerToMain, 3500);
   } else {
     forfeitHiddenMapScore();
-    sfxGameOver();
-    showComboFlash(0,false,'💀 Vấp ngã rồi!');
     setTimeout(exitRunnerToMain, 800);
   }
 }
@@ -11784,16 +11762,7 @@ function spaceLoop(){
     ctx.fillText('Chuẩn bị sóng tiếp theo...',W/2,H/2+18);
   }
   if(s.gameOver && !s.won){
-    ctx.fillStyle='rgba(0,0,0,0.75)';
-    ctx.fillRect(0,0,W,H);
-    ctx.fillStyle='#ff4444';
-    ctx.font='bold 28px monospace';
-    ctx.textAlign='center';
-    ctx.fillText('GAME OVER',W/2,H/2-20);
-    ctx.fillStyle='#ffffff';
-    ctx.font='16px monospace';
-    ctx.fillText('Nhấn để thử lại',W/2,H/2+20);
-    SPC().onclick=()=>{ initSpaceGame(); };
+    if(!s._exited){ s._exited=true; setTimeout(()=>exitSpaceToMain(), 300); }
   } else if(s.won){
     ctx.fillStyle='rgba(0,0,20,0.8)';
     ctx.fillRect(0,0,W,H);
@@ -12322,26 +12291,9 @@ function mazeLoop(){
     setTimeout(()=>exitMazeToMain(),3000);
     s.won=false; s.gameOver=true;
   } else if(s.gameOver){
-    if(!s._forfeited){ s._forfeited=true; forfeitHiddenMapScore(); }
-    ctx.fillStyle='rgba(0,0,0,0.8)';
-    ctx.fillRect(0,0,W,H);
-    ctx.fillStyle='#ff4444';
-    ctx.font='bold 26px monospace';
-    ctx.textAlign='center';
-    ctx.textBaseline='alphabetic';
-    ctx.fillText('HẾT GIỜ!',W/2,H/2);
-    ctx.fillStyle='#ffffff';
-    ctx.font='16px monospace';
-    ctx.fillText('Nhấn để thử lại',W/2,H/2+32);
-    // Chỉ gắn listener thử-lại MỘT lần — nhánh gameOver này chạy mỗi frame,
-    // trước đây mỗi frame lại chồng thêm 1 listener keydown mới → bấm Enter
-    // sau vài giây game over sẽ gọi initMazeGame hàng trăm lần cùng lúc.
-    if(!s._retryArmed){
-      s._retryArmed=true;
-      MZC().ontouchstart=ev=>{ ev.preventDefault(); initMazeGame(); };
-      window.removeEventListener('keydown',s._keyHandler);
-      s._retryKey=ev=>{ if(ev.key===' '||ev.key==='Enter'){ window.removeEventListener('keydown',s._retryKey); initMazeGame(); } };
-      window.addEventListener('keydown',s._retryKey);
+    if(!s._forfeited){
+      s._forfeited=true; forfeitHiddenMapScore();
+      setTimeout(()=>exitMazeToMain(), 300);
     }
   }
   mazeRAF=requestAnimationFrame(mazeLoop);
@@ -12704,18 +12656,10 @@ function megaLoop(){
     setTimeout(()=>exitMegaToMain(),5000);
     s.won=false; s.gameOver=true;
   } else if(s.gameOver){
-    ctx.fillStyle='rgba(0,0,0,0.8)';
-    ctx.fillRect(0,0,W,H);
-    ctx.fillStyle='#ff4444';
-    ctx.font='bold 26px monospace';
-    ctx.textAlign='center';
-    ctx.textBaseline='middle';
-    ctx.fillText('GAME OVER',W/2,H/2-20);
-    ctx.fillStyle='#ffffff';
-    ctx.font='14px monospace';
-    ctx.fillText('Nhấn để thử lại',W/2,H/2+20);
-    MGC().onclick=()=>initMegaGame();
-    MGC().ontouchstart=ev=>{ ev.preventDefault(); initMegaGame(); };
+    if(!s._forfeited){
+      s._forfeited=true; forfeitHiddenMapScore();
+      setTimeout(()=>exitMegaToMain(), 300);
+    }
   }
   megaRAF=requestAnimationFrame(megaLoop);
 }
