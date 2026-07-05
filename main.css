@@ -1124,6 +1124,16 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
   white-space: nowrap;
   animation: scorePop 0.9s cubic-bezier(.2,.8,.2,1) forwards;
 }
+.score-pop-bonus {
+  z-index: 36; font-style: italic; letter-spacing: 0.5px;
+  animation: scorePopBonus 1.15s cubic-bezier(.2,.8,.2,1) forwards;
+  animation-delay: 0.12s;
+}
+@keyframes scorePopBonus {
+  0%   { opacity: 0; transform: translate(-50%,-40%) scale(0.6); }
+  20%  { opacity: 1; transform: translate(calc(-50% + 26px),-90%) scale(1.1); }
+  100% { opacity: 0; transform: translate(calc(-50% + 34px),-230%) scale(1); }
+}
 @keyframes scorePop {
   0%   { opacity: 0; transform: translate(-50%,-40%) scale(0.5); }
   18%  { opacity: 1; transform: translate(-50%,-72%) scale(1.15); }
