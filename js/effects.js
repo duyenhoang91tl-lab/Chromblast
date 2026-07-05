@@ -443,6 +443,47 @@ function showComboCountFlash(n){
   el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
 }
 
+// ── Mốc điểm tròn: confetti rơi + banner ăn mừng lớn giữa màn hình ──
+function spawnConfetti(){
+  const layer=document.getElementById('milestone-confetti');
+  if(!layer) return;
+  const wrap=document.getElementById('grid-wrap');
+  const W=(wrap&&wrap.clientWidth)||360, H=(wrap&&wrap.clientHeight)||500;
+  const colors=['#ffd700','#ff7a3c','#5DCAA5','#378ADD','#ab47bc','#f7c948','#E24B4A','#ffffff'];
+  const N=42;
+  for(let i=0;i<N;i++){
+    const p=document.createElement('div'); p.className='confetti-piece';
+    const size=6+Math.random()*7;
+    const round=Math.random()<0.5;
+    p.style.width=size+'px'; p.style.height=(round?size:size*1.6)+'px';
+    if(round) p.style.borderRadius='50%';
+    p.style.left=(Math.random()*W)+'px';
+    p.style.background=colors[(Math.random()*colors.length)|0];
+    const fall=(H*0.9)+Math.random()*H*0.4;
+    const drift=(Math.random()*160-80);
+    const spin=(Math.random()*720-360);
+    const dur=1400+Math.random()*900;
+    p.style.setProperty('--fall',fall+'px');
+    p.style.setProperty('--drift',drift+'px');
+    p.style.setProperty('--spin',spin+'deg');
+    p.style.animationDuration=dur+'ms';
+    p.style.animationDelay=(Math.random()*250)+'ms';
+    layer.appendChild(p);
+    setTimeout(()=>p.remove(), dur+300);
+  }
+}
+
+function showMilestoneBanner(scoreValue, text){
+  const banner=document.getElementById('milestone-banner');
+  if(!banner) return;
+  document.getElementById('milestone-score').textContent=scoreValue.toLocaleString()+' điểm!';
+  document.getElementById('milestone-text').textContent=text;
+  spawnConfetti();
+  try{ sfxScoreMilestone(); }catch(e){ try{ sfxStreak(5); }catch(e2){} }
+  banner.classList.remove('show'); void banner.offsetWidth; banner.classList.add('show');
+  setTimeout(()=>banner.classList.remove('show'), 2250);
+}
+
 
 // ── Scenery dùng chung (chuyển từ map bee): nắng, mây, hoa — nhiều map dùng làm nền ──
 function beeDrawSun(ctx,t){
