@@ -957,26 +957,6 @@ function processClears(){
 }
 
 /* 🌿 Thorn vine difficulty mechanic */
-function spawnThorns(){
-  let newThorns=0;
-  for(let r=0;r<ROWS;r++){
-    for(let c=0;c<COLS;c++){
-      const key=`${r},${c}`;
-      // chỉ quấn gai ô đã nằm QUÁ 5 lượt đặt khối mà chưa bị phá — khối mới đặt được tha
-      const age=placeCounter-(cellPlacedAt[key]!==undefined?cellPlacedAt[key]:placeCounter);
-      if(!cellBurstCount[key] && board[r][c]!==null && !thornCells.has(key) && age>THORN_MIN_AGE){
-        thornCells.add(key);
-        newThorns++;
-      }
-    }
-  }
-  renderGrid();
-  if(newThorns>0){
-    sfxThorn();
-    const msg='🌿 Dây gai xuất hiện! ('+newThorns+' ô bị phong toả)';
-    showComboFlash(0,false,msg);
-  }
-}
 
 /* 🎆 Hiệu ứng pháo hoa viền + tia lấp lánh cho map thường */
 
