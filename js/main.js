@@ -1584,7 +1584,7 @@ function processClears(){
   if(level>prevLevel) setTimeout(()=>applyLevelDifficulty(), 600);
   updateScoreUI(); updateComboUI();
   const _ctr=clearCentroid([...totalKeys].map(k=>k.split(',').map(Number)), getCell);
-  showScorePop(pts, _ctr.x, _ctr.y, consecutiveBursts);
+  showScorePop(totalKeys.size, pts, _ctr.x, _ctr.y, consecutiveBursts);
   showShockwave(_ctr.x, _ctr.y, consecutiveBursts);
   showPraise(consecutiveBursts);
   showComboCountFlash(combo);
@@ -2232,19 +2232,36 @@ function clearCentroid(coords, getter){
   return { x: sx/n, y: sy/n };
 }
 
-// "+N" điểm bay lên ngay tại chỗ phá
-function showScorePop(points, x, y, level){
-  const d=document.createElement('div');
+// "+N" điểm bay lên ngay tại chỗ phá — tách riêng điểm GỐC (trắng) và điểm THƯỞNG combo (màu, nếu có nhân)
+function showScorePop(basePoints, totalPoints, x, y, level){
   const i=pIdx(level);
+  const bonus=Math.round(totalPoints-basePoints);
+
+  // 1) Điểm gốc — luôn trắng, cỡ cố định, bay lên ngay lập tức
+  const d=document.createElement('div');
   d.className='score-pop';
-  d.textContent='+'+points;
+  d.textContent='+'+Math.round(basePoints);
   d.style.left=x+'px'; d.style.top=y+'px';
-  d.style.fontSize=(20+i*4)+'px';  // 20 → 52px
-  d.style.color=i>=2?PRAISE_COLOR[i]:'#fff';
+  d.style.fontSize='22px';
+  d.style.color='#fff';
   d.style.textShadow='0 2px 8px rgba(0,0,0,0.7)';
-  if(i>=5) d.style.textShadow=`0 2px 8px rgba(0,0,0,0.7), 0 0 ${10+i*4}px ${PRAISE_COLOR[i]}`;
   document.getElementById('game-root').appendChild(d);
   setTimeout(()=>d.remove(), 950);
+
+  // 2) Điểm thưởng combo — chỉ hiện khi có nhân (x2/x3...), bay chậm hơn 1 nhịp, màu theo cấp khen
+  if(bonus>0){
+    const b=document.createElement('div');
+    b.className='score-pop score-pop-bonus';
+    b.textContent='+'+bonus+' 🔥 combo';
+    b.style.left=x+'px'; b.style.top=(y+30)+'px';
+    b.style.fontSize=(18+i*3)+'px';
+    b.style.color=i>=2?PRAISE_COLOR[i]:'#ffd24a';
+    b.style.textShadow=i>=5
+      ? `0 2px 8px rgba(0,0,0,0.7), 0 0 ${10+i*4}px ${PRAISE_COLOR[i]}`
+      : '0 2px 8px rgba(0,0,0,0.7)';
+    document.getElementById('game-root').appendChild(b);
+    setTimeout(()=>b.remove(), 1150);
+  }
 }
 
 // Vòng sáng nổ — to & sáng dần theo level
