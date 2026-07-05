@@ -496,7 +496,7 @@ const ROUND_HELP = [
   { title:'🐲 Vòng 20 — Vua Rồng giáng thế', body:'Thử thách tối thượng của map thường! Vua Rồng tung ra nhiều đòn tấn công ngẫu nhiên: thiêu rụi cả một hàng, đóng băng nhiều ô, gieo thêm dây gai, hoặc cướp mất vài ô màu trên bàn cùng lúc.' },
 ];
 // 🌗 Vòng 21-40 — hướng dẫn cơ chế đôi, tự ghép từ mô tả 2 vòng gốc liền kề (luôn khớp comboPairForTier).
-// Dựng LƯỜI (lazy) lúc chạy — không dựng ở top-level vì comboPairForTier (roundMechanics.js)
+// Dựng LƯỜI (lazy) lúc chạy — không dựng ở top-level vì comboPairForTier (round-mechanics.js)
 // nạp SAU ui.js; gọi ở đầu renderRoundHelp để đảm bảo mọi phụ thuộc đã sẵn sàng.
 let _roundHelpComboBuilt = false;
 function ensureComboRoundHelp(){

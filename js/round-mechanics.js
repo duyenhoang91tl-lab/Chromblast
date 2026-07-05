@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════
-// js/roundMechanics.js — 20 CƠ CHẾ ĐỘ KHÓ CỦA MAP THƯỜNG (vòng 1-20 + 41 Gương)
+// js/round-mechanics.js — 20 CƠ CHẾ ĐỘ KHÓ CỦA MAP THƯỜNG (vòng 1-20 + 41 Gương)
 // Tách verbatim khỏi main.js. State + hàm spawn/step của dây gai, núi, sóc, băng,
 // sương mù, bom, lốc, trứng, nhện, mây, tắc kè, hố đen, ma, ốc, tường, sét, rắn,
 // núi lửa, cổng, Vua Rồng, Thế giới gương + applyRoundMechanics/resetMechanicState.

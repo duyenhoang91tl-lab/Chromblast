@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════
-// bossManager.js — Điều phối các BOSS (map ẩn 10 & 20)
+// boss-manager.js — Điều phối các BOSS (map ẩn 10 & 20)
 // Nạp SAU các file boss/*.js (để tham chiếu được hàm của chúng) và TRƯỚC main.js.
 // Cung cấp registry tập trung + tiện ích reset dùng chung global scope.
 // ═══════════════════════════════════════════════════════════════

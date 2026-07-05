@@ -2,7 +2,7 @@
 // maps/map21.js — MAP CHUẨN PLUGIN (mẫu / template cho map mới)
 // Chỉ làm 1 việc: init/update/draw. Engine (mapManager) lo canvas, vòng
 // lặp, dt, input, thoát. Thêm map mới = copy file này + 1 dòng đăng ký
-// trong mapManager.js. KHÔNG đụng engine / board / UI / audio.
+// trong map-manager.js. KHÔNG đụng engine / board / UI / audio.
 //
 //   api.W, api.H          kích thước logic (360×460)
 //   api.input.{x,y,down}  vị trí con trỏ; api.input.tapX/tapY: lần chạm mới

@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════
-// boss/chickenInvader.js — BOSS Map ẩn 10 (Phi cơ bắn gà / Chicken Invaders)
+// boss/chicken-invader.js — BOSS Map ẩn 10 (Phi cơ bắn gà / Chicken Invaders)
 // Tách khỏi main.js, nạp TRƯỚC main.js (dùng chung global scope).
 // ═══════════════════════════════════════════════════════════════
 
