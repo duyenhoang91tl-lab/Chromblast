@@ -40,11 +40,98 @@ function registerMap(desc){
   {id:20, key:'mega',   name:'MEGA BOSS',          enter:enterMegaMode,   trigger:triggerMegaUnlock},
 ].forEach(registerMap);
 
-// ── Map "ngoài" nạp động: chỉ cần khai báo file + tên hàm enter ──
-// Ví dụ mẫu cho map 21+ (file maps/mapNN.js tự đăng ký hàm enterMapNN vào global).
+// ── Map "ngoài" nạp động (chuẩn plugin init/update/draw) ──
+// File maps/mapNN.js chỉ gọi registerMapModule({...}); startMap(NN) sẽ tự lazy-load.
 [
-  {id:21, key:'map21', name:'Map mẫu (lazy-load)', file:'maps/map21.js', enterName:'enterMap21'},
+  {id:21, key:'map21', name:'Map mẫu (plugin)', file:'maps/map21.js'},
 ].forEach(registerMap);
+
+/* ═══════════════════════════════════════════════════════════════
+   RUNTIME PLUGIN-MAP — chạy vòng đời cho map chuẩn { id,name,init,update,draw }
+   Map chỉ làm 1 việc: vẽ chính nó. Engine lo canvas/RAF/dt/input/thoát.
+   Thêm map mới = tạo maps/mapNN.js + 1 dòng đăng ký ở trên. Không đụng engine/UI.
+   ═══════════════════════════════════════════════════════════════ */
+let _activeMapModule = null, _pluginRAF = null, _pluginLast = 0;
+const PGCV = () => document.getElementById('plugin-canvas');
+
+// maps/mapNN.js gọi hàm này để đăng ký chính nó vào registry.
+function registerMapModule(mod){
+  if(!mod || mod.id==null) return mod;
+  const desc = MAP_REGISTRY[mod.id] || { id: mod.id, key: mod.key || ('map'+mod.id) };
+  desc.module = mod;
+  desc.name = mod.name || desc.name;
+  desc.enter = () => enterMapModule(mod);   // startMap(id) → chạy qua runtime
+  registerMap(desc);
+  return mod;
+}
+
+// API engine trao cho map — mọi thứ (điểm/âm thanh/thoát) đã có sẵn, map chỉ dùng.
+function _makeMapApi(mod){
+  return {
+    W: 360, H: 460,
+    input: { x: 180, y: 230, down: false, tapX: null, tapY: null },
+    get canvas(){ return PGCV(); },
+    get score(){ return (typeof score!=='undefined') ? score : 0; },
+    addScore(n){ if(n){ score += n; if(score>best) best=score; if(typeof updateScoreUI==='function') updateScoreUI(); } },
+    sfx(name){ const f=window['sfx'+name]; if(typeof f==='function') f(); },
+    flash(msg){ if(typeof showComboFlash==='function') showComboFlash(0,false,msg); },
+    finish(won){ exitMapModule(mod, won); },   // kết thúc map, về bàn chính
+  };
+}
+
+function enterMapModule(mod){
+  if(typeof endDrag==='function') endDrag();
+  if(_pluginRAF){ cancelAnimationFrame(_pluginRAF); _pluginRAF=null; }
+  if(typeof hardResetAllModes==='function') hardResetAllModes(); // dừng map builtin đang chạy
+  document.getElementById('grid').style.display='none';
+  document.getElementById('pieces-area').style.display='none';
+  const badge=document.getElementById('mode-badge'); if(badge){ badge.textContent='🧩 '+(mod.name||('MAP '+mod.id)); badge.classList.add('secret'); }
+  document.getElementById('grid-wrap').classList.add('secret-mode');
+  PGCV().classList.add('active');
+  if(typeof startBgm==='function') startBgm(mod.bgm||'action');
+  _activeMapModule = mod;
+  mod._api = _makeMapApi(mod);
+  if(typeof mod.init==='function') try{ mod.init(mod._api); }catch(e){ console.error('[map '+mod.id+'] init lỗi', e); }
+  _pluginLast = performance.now();
+  _pluginRAF = requestAnimationFrame(_pluginLoop);
+}
+
+function _pluginLoop(now){
+  const mod = _activeMapModule; if(!mod){ _pluginRAF=null; return; }
+  const dt = Math.min(0.05, Math.max(0,(now-_pluginLast)/1000)); _pluginLast=now;
+  const cv=PGCV(), ctx=cv.getContext('2d'); ctx.setTransform(2,0,0,2,0,0);
+  if(typeof mod.update==='function') try{ mod.update(dt, mod._api); }catch(e){ console.error('[map '+mod.id+'] update lỗi', e); }
+  if(_activeMapModule!==mod){ return; }  // map đã tự finish() trong update
+  ctx.clearRect(0,0,360,460);
+  if(typeof mod.draw==='function') try{ mod.draw(ctx, mod._api); }catch(e){ console.error('[map '+mod.id+'] draw lỗi', e); }
+  _pluginRAF = requestAnimationFrame(_pluginLoop);
+}
+
+function exitMapModule(mod, won){
+  if(_pluginRAF){ cancelAnimationFrame(_pluginRAF); _pluginRAF=null; }
+  _activeMapModule = null;
+  PGCV().classList.remove('active');
+  if(typeof setActiveHiddenMap==='function') setActiveHiddenMap(null);
+  if(typeof startBgm==='function') startBgm('main');
+  document.getElementById('grid').style.display='';
+  document.getElementById('pieces-area').style.display='';
+  document.getElementById('grid-wrap').classList.remove('secret-mode');
+  const badge=document.getElementById('mode-badge'); if(badge){ badge.textContent='BÌNH THƯỜNG'; badge.classList.remove('secret'); }
+  const hb=document.getElementById('hint-bar'); if(hb) hb.textContent='Chạm khối → ghost hiện · Di ngón → ghost bám · Thả trên ô → đặt · Thả vùng trống → xoay';
+  if(!won && typeof forfeitHiddenMapScore==='function') forfeitHiddenMapScore();
+  if(typeof mod.onExit==='function') try{ mod.onExit(won, mod._api); }catch(e){}
+  if(typeof renderPieces==='function') renderPieces();
+  if(typeof checkGameOverA==='function') checkGameOverA();
+}
+
+// Input dùng chung: pointer trên plugin-canvas → cập nhật api.input + gọi hook map.
+(function wirePluginInput(){
+  const cv = PGCV(); if(!cv) return;
+  const toLogical = e => { const r=cv.getBoundingClientRect(); return { x:(e.clientX-r.left)*(360/r.width), y:(e.clientY-r.top)*(460/r.height) }; };
+  cv.addEventListener('pointerdown', e=>{ const m=_activeMapModule; if(!m) return; e.preventDefault(); const p=toLogical(e); const a=m._api.input; a.x=p.x; a.y=p.y; a.down=true; a.tapX=p.x; a.tapY=p.y; if(typeof m.onPointerDown==='function') m.onPointerDown(p.x,p.y,m._api); });
+  cv.addEventListener('pointermove', e=>{ const m=_activeMapModule; if(!m) return; const p=toLogical(e); m._api.input.x=p.x; m._api.input.y=p.y; });
+  cv.addEventListener('pointerup',  ()=>{ const m=_activeMapModule; if(!m) return; m._api.input.down=false; });
+})();
 
 // Nạp động file map (chỉ 1 lần) rồi gọi callback.
 function loadMapModule(d, cb){
