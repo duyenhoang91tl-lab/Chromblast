@@ -1929,7 +1929,9 @@ function checkGameOverA(){
     sfxGameOver();
     document.getElementById('go-score').textContent='Điểm của bạn: '+score.toLocaleString();
     document.getElementById('game-over-overlay').classList.add('show');
+    return true; // đã báo thua
   }
+  return false;
 }
 
 function renderPieces(){
@@ -1974,6 +1976,10 @@ document.getElementById('unlock-autoskip-chk').addEventListener('change', e=>{
   saveAutoSkipHiddenMaps(autoSkipHiddenMaps);
 });
 function triggerUnlock(){
+  // 🐛 FIX: nhánh này (combo≥3) trước đây bỏ qua checkGameOverA() hoàn toàn — nếu quân
+  // vừa đặt lấp kín bàn cờ ĐÚNG lúc đạt combo mở khoá, game sẽ chỉ hiện popup mở khoá
+  // (hoặc treo im nếu popup bị bỏ qua) mà không bao giờ báo thua. Phải kiểm tra trước.
+  if(checkGameOverA()) return; // đã hiện Game Over overlay — không hiện popup mở khoá nữa
   pendingUnlock='secret';
   document.getElementById('unlock-title').textContent='🔥 NHIỆM VỤ ẨN MỞ KHÓA!';
   document.getElementById('unlock-desc').innerHTML=
