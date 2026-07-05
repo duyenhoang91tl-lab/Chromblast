@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════
-// mapManager.js — Trình quản lý MAP tập trung
+// map-manager.js — Trình quản lý MAP tập trung
 // Thay cho các chuỗi if(map==N) / switch(stageKey): mọi map được đăng ký
 // vào MAP_REGISTRY theo SỐ (1-20) và theo KHOÁ ('secret'...'mega').
 //   startMap(10) / startMap('boss')  → vào map (tự lazy-load maps/mapN.js nếu là map ngoài)

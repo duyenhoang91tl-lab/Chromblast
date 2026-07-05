@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════
-// js/mechConfig.js — CẤU HÌNH "NHỊP & THƯỞNG" cho 20 cơ chế độ khó (admin chỉnh).
+// js/mech-config.js — CẤU HÌNH "NHỊP & THƯỞNG" cho 20 cơ chế độ khó (admin chỉnh).
 // MECH_DEFAULTS/MECH_CFG + MCFG()/loadMechCfg/renderMechCfg. Nạp SAU save.js, TRƯỚC
-// roundMechanics.js (dùng MCFG lúc chạy). Lưu bền qua localStorage (save.js).
+// round-mechanics.js (dùng MCFG lúc chạy). Lưu bền qua localStorage (save.js).
 // ═══════════════════════════════════════════════════════════════
 
 /* ══════════════════════════════════════════

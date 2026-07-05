@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════
-// boss/megaDragon.js — BOSS Map ẩn 20 (MEGA BOSS — Rồng huyền thoại)
+// boss/mega-dragon.js — BOSS Map ẩn 20 (MEGA BOSS — Rồng huyền thoại)
 // Tách khỏi main.js, nạp TRƯỚC main.js (dùng chung global scope).
 // ═══════════════════════════════════════════════════════════════
 
