@@ -153,6 +153,11 @@ let board, pieces, selected, score=0, best=0, linesCleared=0, level=1, combo=0;
   if(saved.best) best = saved.best;
 })();
 let consecutiveBursts = 0; // counts chain explosions toward unlock
+let lastMilestoneScore = 0; // mốc điểm tròn gần nhất đã ăn mừng (banner + confetti)
+const MILESTONE_STEP = 1000; // cứ mỗi 1000 điểm lại ăn mừng 1 lần
+const MILESTONE_MSGS = ['Khởi đầu tốt!','Đà tiến ấn tượng!','Không thể ngăn cản!','Phong độ đỉnh cao!',
+  'Cực kỳ xuất sắc!','Siêu phàm!','Thần sầu!','Huyền thoại sống!','Vô đối thiên hạ!','Thần thoại sống!'];
+function milestoneMsgFor(tier){ return MILESTONE_MSGS[Math.min(tier-1, MILESTONE_MSGS.length-1)]; }
 
 /* ══════════════════════════════════════════
    ACHIEVEMENT SYSTEM
@@ -2183,8 +2188,18 @@ function updateScoreUI(){
   // mỗi điểm ghi thêm = 1 XP người chơi (điểm giảm/reset không trừ XP)
   if(score>_xpLastScore) addPlayerXP(score-_xpLastScore);
   _xpLastScore=score;
+  checkScoreMilestone();
   if(unlockGateActive && !secretMode) updateBurstCount();
   saveProgress();
+}
+
+// Mốc điểm tròn (1000, 2000, 3000...) → banner ăn mừng lớn giữa màn hình + confetti
+function checkScoreMilestone(){
+  const tier=Math.floor(score/MILESTONE_STEP);
+  if(tier>0 && tier*MILESTONE_STEP>lastMilestoneScore){
+    lastMilestoneScore=tier*MILESTONE_STEP;
+    showMilestoneBanner(lastMilestoneScore, milestoneMsgFor(tier));
+  }
 }
 
 function updateComboUI(){
@@ -2292,7 +2307,7 @@ function startGame(){
   // Reset achievements for new game session
   Object.values(ACHIEVEMENTS).forEach(a=>{ a.done=false; });
   fruitSlicedTotal=0; survive60Unlocked=false;
-  score=0; linesCleared=0; level=1; combo=0; consecutiveBursts=0; _xpLastScore=0;
+  score=0; linesCleared=0; level=1; combo=0; consecutiveBursts=0; _xpLastScore=0; lastMilestoneScore=0;
   hiddenMapEntryScore=0;
   secretStreak=0; secretMultiplier=1; secretUltra=false;
   secret1Gained=0; pendingUnlock='secret';
