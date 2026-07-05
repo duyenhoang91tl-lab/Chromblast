@@ -1078,6 +1078,44 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
   100% { opacity:0; transform:translate(-50%,-70%) skewX(-6deg) scale(1); }
 }
 
+/* ── MILESTONE BANNER (mốc điểm tròn) + CONFETTI ── */
+#milestone-confetti {
+  position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 39;
+}
+.confetti-piece {
+  position: absolute; top: -20px; border-radius: 2px; opacity: 0.95;
+  animation: confettiFall linear forwards;
+}
+@keyframes confettiFall {
+  0%   { transform: translateY(0) translateX(0) rotate(0deg); opacity: 1; }
+  85%  { opacity: 1; }
+  100% { transform: translateY(var(--fall)) translateX(var(--drift)) rotate(var(--spin)); opacity: 0; }
+}
+#milestone-banner {
+  position: absolute; top: 38%; left: 50%; transform: translate(-50%,-50%) scale(0.6);
+  text-align: center; pointer-events: none; z-index: 40; opacity: 0;
+  font-family: 'Nunito', system-ui, sans-serif;
+}
+#milestone-score {
+  font-size: 46px; font-weight: 900; color: #ffd700; letter-spacing: 1px;
+  text-shadow: 0 0 10px rgba(255,215,0,0.9), 0 0 26px rgba(255,180,0,0.7), 0 3px 0 rgba(120,70,0,0.9), 0 4px 12px rgba(0,0,0,0.5);
+  -webkit-text-stroke: 1.5px #7a4a00;
+}
+#milestone-text {
+  margin-top: 2px; font-size: 24px; font-weight: 900; font-style: italic; color: #fff;
+  text-shadow: 0 0 8px #ff8a3c, 0 0 18px rgba(255,120,40,0.8), 0 3px 0 rgba(120,40,0,0.9), 0 4px 10px rgba(0,0,0,0.5);
+  -webkit-text-stroke: 1.2px #b3450f;
+  white-space: nowrap;
+}
+#milestone-banner.show { animation: milestoneAnim 2.2s cubic-bezier(.2,.8,.2,1) forwards; }
+@keyframes milestoneAnim {
+  0%   { opacity: 0; transform: translate(-50%,-30%) scale(0.5); }
+  12%  { opacity: 1; transform: translate(-50%,-55%) scale(1.15); }
+  20%  { transform: translate(-50%,-52%) scale(1); }
+  85%  { opacity: 1; transform: translate(-50%,-52%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%,-70%) scale(0.92); }
+}
+
 /* ── SCORE POPUP + SHOCKWAVE GLOW ── */
 .score-pop {
   position: absolute; transform: translate(-50%,-50%);
