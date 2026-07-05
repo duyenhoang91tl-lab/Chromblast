@@ -354,7 +354,12 @@ function exitMegaToMain(){
   megaMode=false;
   startBgm('main');
   if(megaRAF){cancelAnimationFrame(megaRAF);megaRAF=null;}
-  if(megaWon){ markMapCleared('mega'); if(megaState.score){ score+=megaState.score; if(score>best) best=score; updateScoreUI(); } }
+  if(megaWon){
+    markMapCleared('mega');
+    if(megaState.score){ score+=megaState.score; if(score>best) best=score; updateScoreUI(); }
+    // Thắng map ẩn CUỐI (vòng 20) → mở tiến trình "qua màn" cho các level 21+ (không có map ẩn).
+    if(typeof advanceHiddenGate==='function') advanceHiddenGate(19);
+  }
   MGC().classList.remove('active');
   document.getElementById('grid').style.display='';
   document.getElementById('pieces-area').style.display='';
