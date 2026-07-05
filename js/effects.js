@@ -442,3 +442,87 @@ function showComboCountFlash(n){
   el.textContent='Combo x'+n;
   el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
 }
+
+
+// ── Scenery dùng chung (chuyển từ map bee): nắng, mây, hoa — nhiều map dùng làm nền ──
+function beeDrawSun(ctx,t){
+  const sx=55, sy=50;
+  const glow=ctx.createRadialGradient(sx,sy,8,sx,sy,70);
+  glow.addColorStop(0,'rgba(255,240,120,0.5)'); glow.addColorStop(0.4,'rgba(255,220,80,0.15)'); glow.addColorStop(1,'rgba(255,200,50,0)');
+  ctx.fillStyle=glow; ctx.beginPath(); ctx.arc(sx,sy,70,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(sx,sy,18,0,Math.PI*2); ctx.fillStyle='#FFE566'; ctx.fill();
+  ctx.beginPath(); ctx.arc(sx,sy,14,0,Math.PI*2); ctx.fillStyle='#FFF3B0'; ctx.fill();
+  ctx.save(); ctx.translate(sx,sy); ctx.rotate(t*0.15);
+  for(let i=0;i<10;i++){
+    ctx.rotate(Math.PI/5); ctx.beginPath();
+    ctx.moveTo(20,-1.5); ctx.lineTo(32+Math.sin(t*2.5+i)*4,0); ctx.lineTo(20,1.5);
+    ctx.closePath(); ctx.fillStyle='rgba(255,230,80,0.4)'; ctx.fill();
+  }
+  ctx.restore();
+}
+
+function beeDrawCloud(ctx,x,y,s){
+  ctx.save(); ctx.translate(x,y); ctx.scale(s,s);
+  ctx.fillStyle='rgba(255,255,255,0.82)';
+  [[0,0,18],[-16,4,13],[16,4,13],[-7,-7,12],[8,-5,14],[20,-2,10],[-20,0,10]].forEach(([cx,cy,r])=>{
+    ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+  });
+  ctx.restore();
+}
+
+function beeDrawTulip(ctx,s,color){
+  for(let i=-1;i<=1;i++){
+    ctx.beginPath(); ctx.ellipse(i*s*0.3,-s*0.3,s*0.35,s*0.6,i*0.25,0,Math.PI*2);
+    ctx.fillStyle=color; ctx.fill();
+  }
+}
+
+function beeDrawDaisy(ctx,s){
+  for(let i=0;i<8;i++){
+    const a=(i/8)*Math.PI*2;
+    ctx.save(); ctx.translate(Math.cos(a)*s*0.35,Math.sin(a)*s*0.35); ctx.rotate(a);
+    ctx.beginPath(); ctx.ellipse(0,0,s*0.18,s*0.35,0,0,Math.PI*2);
+    ctx.fillStyle='#FFF'; ctx.fill(); ctx.restore();
+  }
+  ctx.beginPath(); ctx.arc(0,0,s*0.2,0,Math.PI*2); ctx.fillStyle='#FFD700'; ctx.fill();
+  ctx.beginPath(); ctx.arc(0,0,s*0.12,0,Math.PI*2); ctx.fillStyle='#FFA000'; ctx.fill();
+}
+
+function beeDrawRose(ctx,s,color){
+  for(let i=0;i<5;i++){
+    const a=(i/5)*Math.PI*2;
+    ctx.beginPath(); ctx.ellipse(Math.cos(a)*s*0.15,Math.sin(a)*s*0.15,s*0.3,s*0.25,a,0,Math.PI*2);
+    ctx.fillStyle=color; ctx.fill();
+  }
+  ctx.beginPath(); ctx.arc(0,0,s*0.15,0,Math.PI*1.5);
+  ctx.strokeStyle='rgba(255,255,255,0.3)'; ctx.lineWidth=1; ctx.stroke();
+}
+
+function beeDrawSunflower(ctx,s){
+  for(let i=0;i<12;i++){
+    const a=(i/12)*Math.PI*2;
+    ctx.save(); ctx.translate(Math.cos(a)*s*0.38,Math.sin(a)*s*0.38); ctx.rotate(a+0.3);
+    ctx.beginPath(); ctx.ellipse(0,0,s*0.12,s*0.28,0,0,Math.PI*2);
+    ctx.fillStyle='#FFD54F'; ctx.fill(); ctx.restore();
+  }
+  ctx.beginPath(); ctx.arc(0,0,s*0.25,0,Math.PI*2); ctx.fillStyle='#5D4037'; ctx.fill();
+}
+
+function beeDrawOneFlower(ctx,f,t){
+  const sway=Math.sin(t*f.speed+f.phase)*2.5;
+  ctx.save(); ctx.translate(f.x+sway,f.y);
+  ctx.beginPath(); ctx.moveTo(0,0);
+  ctx.quadraticCurveTo(sway*0.7,-f.stemH*0.5,sway*0.3,-f.stemH);
+  ctx.strokeStyle='#388E3C'; ctx.lineWidth=1.8; ctx.stroke();
+  ctx.save(); ctx.translate(sway*0.35,-f.stemH*0.45); ctx.rotate(0.4);
+  ctx.beginPath(); ctx.ellipse(f.size*0.35,0,f.size*0.3,f.size*0.1,0,0,Math.PI*2);
+  ctx.fillStyle='#4CAF50'; ctx.fill(); ctx.restore();
+  ctx.translate(sway*0.3,-f.stemH);
+  switch(f.type){
+    case 'tulip': beeDrawTulip(ctx,f.size,f.color); break;
+    case 'daisy': beeDrawDaisy(ctx,f.size); break;
+    case 'rose': beeDrawRose(ctx,f.size,f.color); break;
+    case 'sunflower': beeDrawSunflower(ctx,f.size); break;
+  }
+  ctx.restore();
+}
