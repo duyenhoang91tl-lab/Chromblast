@@ -343,6 +343,20 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   padding: 20px;
 }
 #maphelp-panel.show { display:flex; }
+#roundguide-panel {
+  position: fixed; inset:0; z-index: 10004; display:none;
+  align-items:center; justify-content:center; background: rgba(0,0,0,0.7);
+  padding: 20px;
+}
+#roundguide-panel.show { display:flex; }
+.roundguide-item {
+  border:1px solid rgba(255,255,255,0.12); border-radius:10px;
+  padding:10px 12px; margin-bottom:10px; background:rgba(255,255,255,0.04);
+}
+.roundguide-item.cur { border-color:#ffd54a; background:rgba(255,213,74,0.10); }
+.roundguide-item h4 { margin:0 0 4px; font-size:14px; color:#ffd54a; }
+.roundguide-item p { margin:0; font-size:13px; line-height:1.5; color:#dfe6f2; }
+.roundguide-item .rg-tier { font-size:11px; color:#9aa7bd; font-weight:normal; }
 .admin-map-help-btn {
   flex: 0 0 auto; background: rgba(34,166,255,0.15); border: 1px solid rgba(34,166,255,0.4);
   color:#fff; border-radius: 8px; width:32px; height:32px; font-size:14px; cursor:pointer;

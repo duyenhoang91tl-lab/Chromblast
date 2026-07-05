@@ -136,6 +136,7 @@
     <div id="game-controls" style="display:flex;gap:6px;align-items:center;">
       <button id="admin-btn" title="Bảng admin - chọn map ẩn" style="display:none;">🛠️ ADMIN</button>
       <button id="hiddenmap-menu-btn" title="Chọn map ẩn đã chơi qua" style="display:none;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;align-items:center;justify-content:center;padding:0;">🗺️</button>
+      <button id="roundguide-btn" title="Hướng dẫn cơ chế vòng hiện tại" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">📖</button>
       <button id="adventure-toggle-btn" title="Chế độ Adventure">🚀 ADV</button>
       <button id="account-btn" title="Tài khoản">👤</button>
       <button id="mute-btn" title="Tắt/bật âm thanh" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">🔊</button>
@@ -204,6 +205,13 @@
     <div class="admin-card">
       <div class="admin-title"><span id="maphelp-title">📖 Cách chơi</span><button class="admin-close" id="maphelp-close-btn">✕</button></div>
       <div class="help-body" id="maphelp-body"></div>
+    </div>
+  </div>
+
+  <div id="roundguide-panel">
+    <div class="admin-card">
+      <div class="admin-title"><span id="roundguide-title">📖 Hướng dẫn cơ chế vòng</span><button class="admin-close" id="roundguide-close-btn">✕</button></div>
+      <div class="help-body" id="roundguide-body"></div>
     </div>
   </div>
 
