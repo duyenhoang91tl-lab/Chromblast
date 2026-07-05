@@ -904,3 +904,27 @@ function stepRoundMechanics(_mirrorPlacedCells,_mirrorPlacedColor){
     placePlayerPiece(_mirrorPlacedCells,_mirrorPlacedColor);
   }
 }
+
+// ═══════════════════════════════════════════════════════════════
+// spawnThorns — vòng 1 (dây gai): quấn gai các ô đã nằm quá 5 lượt chưa bị phá.
+// ═══════════════════════════════════════════════════════════════
+function spawnThorns(){
+  let newThorns=0;
+  for(let r=0;r<ROWS;r++){
+    for(let c=0;c<COLS;c++){
+      const key=`${r},${c}`;
+      // chỉ quấn gai ô đã nằm QUÁ 5 lượt đặt khối mà chưa bị phá — khối mới đặt được tha
+      const age=placeCounter-(cellPlacedAt[key]!==undefined?cellPlacedAt[key]:placeCounter);
+      if(!cellBurstCount[key] && board[r][c]!==null && !thornCells.has(key) && age>THORN_MIN_AGE){
+        thornCells.add(key);
+        newThorns++;
+      }
+    }
+  }
+  renderGrid();
+  if(newThorns>0){
+    sfxThorn();
+    const msg='🌿 Dây gai xuất hiện! ('+newThorns+' ô bị phong toả)';
+    showComboFlash(0,false,msg);
+  }
+}
