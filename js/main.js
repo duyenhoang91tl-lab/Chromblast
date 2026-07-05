@@ -68,9 +68,12 @@ function setAdventureTheme(on){
 
 let hiddenMapEntryScore=0; // mốc điểm lúc vào map ẩn (chỉ còn để tham khảo)
 function forfeitHiddenMapScore(){
-  // (đã gỡ theo yêu cầu) thua map ẩn KHÔNG thu hồi điểm nữa — người chơi giữ nguyên
-  // toàn bộ điểm đã kiếm được, chỉ quay về map thường
+  // Thua map ẩn KHÔNG thu hồi điểm — người chơi giữ nguyên toàn bộ điểm đã kiếm.
+  // Và tiến trình VẪN đi tiếp: thua map ẩn N cũng mở đường sang map ẩn N+1
+  // (đạt mốc điểm map thường kế tiếp — 200, 300, 400... — sẽ mở map ẩn tiếp theo),
+  // giống hệt khi thắng, chỉ KHÔNG ghi "đã phá đảo" và KHÔNG thưởng XP.
   if(typeof updateScoreUI==='function') updateScoreUI();
+  advanceHiddenGate(unlockGateStageIndex);
 }
 const UNLOCK_STAGE_ORDER = ['secret','dodge','fruit','bee','gold','mole','memory','bubble','stack','boss','catch','flood','arena','snake','brick','runner','space','rhythm','maze','mega'];
 function unlockThresholdForStage(stageNum){ return 100*stageNum; } // stageNum 1-indexed (map ẩn thứ mấy)
@@ -84,19 +87,25 @@ function triggerStageUnlock(stageKey){
 // Gọi khi vừa THẮNG map ẩn ở vị trí clearedIdx (0-based) trong UNLOCK_STAGE_ORDER —
 // bắt đầu đếm điểm map thường để mở map ẩn kế tiếp.
 function startUnlockGate(clearedIdx){
-  markMapCleared(UNLOCK_STAGE_ORDER[clearedIdx]);
-  unlockGateStageIndex = clearedIdx+1;
+  markMapCleared(UNLOCK_STAGE_ORDER[clearedIdx]);           // ghi "đã phá đảo" (chỉ khi THẮNG)
+  addPlayerXP(30+clearedIdx*10); // thưởng XP mỗi lần phá đảo một map ẩn — vòng càng sâu thưởng càng lớn (chỉ khi THẮNG)
+  advanceHiddenGate(clearedIdx);
+}
+// Đẩy tiến trình sang map ẩn kế tiếp — dùng chung cho cả THẮNG (startUnlockGate)
+// lẫn THUA (forfeitHiddenMapScore): sau map ẩn thứ `playedIdx` (0-based), mốc điểm
+// map thường để mở map ẩn tiếp theo tăng dần 200 → 300 → 400 ... Thắng hay thua đều tiến.
+function advanceHiddenGate(playedIdx){
+  unlockGateStageIndex = playedIdx+1;
   unlockGateBaseline = score;
   unlockGateActive = (unlockGateStageIndex < UNLOCK_STAGE_ORDER.length);
   consecutiveBursts=0; updateBurstCount();
-  // Mỗi vòng map ẩn thắng xong → map thường khó thêm một bậc:
+  // Mỗi vòng map ẩn xong → map thường khó thêm một bậc:
   // khối gạch to/khó xếp xuất hiện nhiều hơn + rải thêm ô chướng ngại lên bàn cờ
   mainHardTier=unlockGateStageIndex;
   resetMechanicState(); // tắt cơ chế của vòng trước — mỗi vòng chỉ có đúng 1 cơ chế mới
   applyRoundMechanics(); // vòng 1: dây gai · vòng 2: núi · vòng 3: sóc trộm ô · ...
-  addPlayerXP(30+clearedIdx*10); // thưởng XP mỗi lần phá đảo một map ẩn — vòng càng sâu thưởng càng lớn
-  // 🌗 Vừa thắng map ẩn CUỐI CÙNG (Mega, vòng 20) → không còn map ẩn nào nữa,
-  // bắt đầu tiến trình vòng cơ chế đôi 21-40 ngay trên bàn cờ thường (tuần tự, không nhảy cóc).
+  // 🌗 Vừa qua map ẩn CUỐI CÙNG (Mega, vòng 20) → không còn map ẩn nào nữa,
+  // bắt đầu tiến trình "qua màn" cho các level không có map ẩn (21-41) ngay trên bàn cờ thường.
   if(!unlockGateActive){
     comboGateActive=true;
     comboGateBaseline=score;
@@ -1827,11 +1836,12 @@ function updateBurstCount(){
       earned>=need?'🔥 Mở khóa sẵn sàng!':
       `Tiến độ: ${earned}/${need}đ`;
   } else if(comboGateActive && !secretMode && mainHardTier>=20 && mainHardTier<41){
+    // Các level KHÔNG có map ẩn: đạt đủ điểm map thường → "qua màn", lên level kế tiếp.
     const need=comboThresholdForTier(mainHardTier);
     const earned=Math.min(Math.round(score-comboGateBaseline), need);
     bc.textContent=
-      earned>=need?'🌗 Sẵn sàng vượt vòng '+mainHardTier+'!':
-      `Vòng ${mainHardTier}: ${earned}/${need}đ`;
+      earned>=need?'🎉 Sẵn sàng qua màn — Level '+mainHardTier+'!':
+      `Level ${mainHardTier}: ${earned}/${need}đ`;
   } else {
     bc.textContent=
       consecutiveBursts>=3?'🔥 Mở khóa sẵn sàng!':`Chuỗi nổ: ${consecutiveBursts}/3`;
@@ -1868,11 +1878,11 @@ function afterPlace(){
     if(isComboTier(mainHardTier)){
       const [na,nb]=comboPairForTier(mainHardTier);
       setTimeout(()=>showComboFlash(0,false,
-        '🎉 Vượt qua vòng '+passedTier+'! Bước vào vòng '+mainHardTier+' — Cơ chế đôi: '
+        '🎉 QUA MÀN — Level '+passedTier+'! Lên Level '+mainHardTier+' — Cơ chế đôi: '
         +ROUND_MECH_NAMES[na]+' + '+ROUND_MECH_NAMES[nb]+'!'), 300);
     } else {
       setTimeout(()=>showComboFlash(0,false,
-        '🎉 Vượt qua vòng '+passedTier+'! Bước vào vòng '+mainHardTier+' — '
+        '🎉 QUA MÀN — Level '+passedTier+'! Lên Level '+mainHardTier+' — '
         +ROUND_MECH_NAMES[21]+'!'), 300);
     }
   }
