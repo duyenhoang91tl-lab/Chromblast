@@ -567,3 +567,181 @@ function beeDrawOneFlower(ctx,f,t){
   }
   ctx.restore();
 }
+
+// ═══════════════════════════════════════════════════════════════
+// NỀN PASTEL DÙNG CHUNG + ĐIỂM BAY / CÂU KHEN (tách từ main.js — đều là hiệu ứng)
+// ═══════════════════════════════════════════════════════════════
+/* ── Nền pastel dễ thương dùng chung — cùng phong cách Map ẩn 4 (vườn ong) ── */
+function cuteDayBg(ctx,W,H,t){
+  const g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'#7EC8E3'); g.addColorStop(0.4,'#ADE0F2'); g.addColorStop(0.75,'#D4F0FF'); g.addColorStop(1,'#E8F8E0');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  beeDrawSun(ctx,t);
+  beeDrawCloud(ctx,110+Math.sin(t*0.08)*18,42,1.0);
+  beeDrawCloud(ctx,260+Math.sin(t*0.06+1)*22,70,0.7);
+  beeDrawCloud(ctx,185+Math.sin(t*0.1+3)*14,112,0.5);
+}
+// Bản đêm nhưng vẫn dễ thương: tím lavender pastel + trăng cười má hồng + sao kẹo ngọt
+function cuteNightBg(ctx,W,H,t){
+  const g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'#4a3f7e'); g.addColorStop(0.5,'#6a55a2'); g.addColorStop(1,'#9878c8');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  for(let i=0;i<26;i++){
+    const sx=(Math.sin(i*137.5)*0.5+0.5)*W;
+    const sy=(Math.cos(i*97.3)*0.5+0.5)*H*0.85;
+    const tw=0.35+0.35*Math.sin(t*2+i*1.7);
+    ctx.fillStyle=['rgba(255,240,200,','rgba(255,210,230,','rgba(220,235,255,'][i%3]+tw+')';
+    ctx.beginPath(); ctx.arc(sx,sy,1+(i%3)*0.5,0,Math.PI*2); ctx.fill();
+  }
+  const mx=W*0.82,my=H*0.12;
+  ctx.save();
+  ctx.shadowColor='rgba(255,240,180,0.7)'; ctx.shadowBlur=18;
+  ctx.fillStyle='#FFF3B0';
+  ctx.beginPath(); ctx.arc(mx,my,19,0,Math.PI*2); ctx.fill();
+  ctx.shadowBlur=0;
+  ctx.strokeStyle='#b8934a'; ctx.lineWidth=1.6; ctx.lineCap='round';
+  ctx.beginPath(); ctx.arc(mx-7,my-3,3.2,Math.PI*1.15,Math.PI*1.85); ctx.stroke(); // mắt trái nhắm cười
+  ctx.beginPath(); ctx.arc(mx+7,my-3,3.2,Math.PI*1.15,Math.PI*1.85); ctx.stroke(); // mắt phải
+  ctx.beginPath(); ctx.arc(mx,my+4,5.5,0.25,Math.PI-0.25); ctx.stroke();           // miệng cười
+  ctx.fillStyle='rgba(255,150,160,0.5)';
+  ctx.beginPath(); ctx.arc(mx-11,my+4,2.6,0,Math.PI*2); ctx.fill();                 // má hồng
+  ctx.beginPath(); ctx.arc(mx+11,my+4,2.6,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.globalAlpha=0.32;
+  beeDrawCloud(ctx,90+Math.sin(t*0.07)*16,66,0.8);
+  beeDrawCloud(ctx,250+Math.sin(t*0.05+2)*20,105,0.6);
+  ctx.restore();
+}
+
+// Dải vườn dễ thương sát đáy canvas: đồi cỏ 2 lớp + hoa lắc lư + bướm (phong cách Map ẩn 4)
+let cuteFlowerCache=null;
+function cuteGardenStrip(ctx,W,H,t,baseY,withButterflies=true){
+  ['#5EB862','#4CAF50'].forEach((col,li)=>{
+    ctx.fillStyle=col;
+    ctx.beginPath(); ctx.moveTo(0,H);
+    for(let x=0;x<=W;x+=8){
+      const y=baseY+li*8+Math.sin(x*0.03+li*1.3)*6;
+      ctx.lineTo(x,y);
+    }
+    ctx.lineTo(W,H); ctx.closePath(); ctx.fill();
+  });
+  if(!cuteFlowerCache) cuteFlowerCache=[
+    {x:0.08,type:'tulip',color:'#FF6FA5',size:9,stemH:16,speed:1.1,phase:0.5},
+    {x:0.24,type:'daisy',size:8,stemH:13,speed:1.4,phase:2.1},
+    {x:0.42,type:'rose',color:'#FF8FB8',size:8,stemH:15,speed:0.9,phase:4.0},
+    {x:0.60,type:'sunflower',size:9,stemH:18,speed:1.2,phase:1.2},
+    {x:0.78,type:'tulip',color:'#C58FFF',size:8,stemH:14,speed:1.3,phase:3.3},
+    {x:0.93,type:'daisy',size:7,stemH:12,speed:1.5,phase:5.1},
+  ];
+  cuteFlowerCache.forEach(f=>{ beeDrawOneFlower(ctx,{...f,x:f.x*W,y:H-4},t); });
+  if(withButterflies){
+    ctx.font='13px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('🦋', W*0.3+Math.sin(t*0.9)*W*0.22, baseY-24+Math.sin(t*2.1)*10);
+    ctx.fillText('🦋', W*0.7+Math.sin(t*0.7+2)*W*0.2, baseY-38+Math.sin(t*1.7+1)*12);
+  }
+}
+
+/* ══════════════════════════════════════════
+   ĐIỂM BAY + CÂU KHEN + HIỆU ỨNG PHÁT SÁNG
+══════════════════════════════════════════ */
+const PRAISE = ['NOT BAD','COOL','GOOD','GREAT','IMPRESSIVE','AMAZING','PERFECT','SPECTACULAR','UNREAL','LEGENDARY','GODLIKE'];
+// Colors escalate: muted → teal → blue → purple → gold → red → pink → blaze → fire
+const PRAISE_COLOR = ['#9ab8b0','#5DCAA5','#378ADD','#7F77DD','#4dd0e1','#ab47bc','#EF9F27','#E24B4A','#D4537E','#f7c948','#ff6b35'];
+function pIdx(level){ return Math.min(Math.max(level||1,1),PRAISE.length)-1; }
+
+function hexToRgba(hex,a){
+  const n=parseInt(hex.replace('#',''),16);
+  return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;
+}
+
+// Trọng tâm (theo toạ độ #game-root) của các ô vừa phá
+function clearCentroid(coords, getter){
+  const root=document.getElementById('game-root').getBoundingClientRect();
+  let sx=0,sy=0,n=0;
+  coords.forEach(([r,c])=>{
+    const el=getter(r,c);
+    if(el){ const b=el.getBoundingClientRect(); sx+=b.left+b.width/2-root.left; sy+=b.top+b.height/2-root.top; n++; }
+  });
+  const gw=document.getElementById('grid-wrap').getBoundingClientRect();
+  if(!n) return { x: gw.left-root.left+gw.width/2, y: gw.top-root.top+gw.height/2 };
+  return { x: sx/n, y: sy/n };
+}
+
+// "+N" điểm bay lên ngay tại chỗ phá — tách riêng điểm GỐC (trắng) và điểm THƯỞNG combo (màu, nếu có nhân)
+function showScorePop(basePoints, totalPoints, x, y, level){
+  const i=pIdx(level);
+  const bonus=Math.round(totalPoints-basePoints);
+
+  // 1) Điểm gốc — luôn trắng, cỡ cố định, bay lên ngay lập tức
+  const d=document.createElement('div');
+  d.className='score-pop';
+  d.textContent='+'+Math.round(basePoints);
+  d.style.left=x+'px'; d.style.top=y+'px';
+  d.style.fontSize='22px';
+  d.style.color='#fff';
+  d.style.textShadow='0 2px 8px rgba(0,0,0,0.7)';
+  document.getElementById('game-root').appendChild(d);
+  setTimeout(()=>d.remove(), 950);
+
+  // 2) Điểm thưởng combo — chỉ hiện khi có nhân (x2/x3...), bay chậm hơn 1 nhịp, màu theo cấp khen
+  if(bonus>0){
+    const b=document.createElement('div');
+    b.className='score-pop score-pop-bonus';
+    b.textContent='+'+bonus+' 🔥 combo';
+    b.style.left=x+'px'; b.style.top=(y+30)+'px';
+    b.style.fontSize=(18+i*3)+'px';
+    b.style.color=i>=2?PRAISE_COLOR[i]:'#ffd24a';
+    b.style.textShadow=i>=5
+      ? `0 2px 8px rgba(0,0,0,0.7), 0 0 ${10+i*4}px ${PRAISE_COLOR[i]}`
+      : '0 2px 8px rgba(0,0,0,0.7)';
+    document.getElementById('game-root').appendChild(b);
+    setTimeout(()=>b.remove(), 1150);
+  }
+}
+
+// Vòng sáng nổ — to & sáng dần theo level
+
+/* ── Viền toả sáng lấp lánh theo combo — cả map thường lẫn map ẩn ── */
+
+
+// Câu khen leo thang mạnh dần theo 9 cấp độ
+function showPraise(level){
+  const el=document.getElementById('combo-flash');
+  const i=pIdx(level);
+  const c=PRAISE_COLOR[i];
+  el.textContent=PRAISE[i]+'!';
+  el.style.color=c;
+
+  // Lồng tiếng
+  speakPraise(level);
+
+  // Font size: nhỏ ở NOT BAD, siêu to ở GODLIKE
+  const base=22+i*9;  // 22 → 94px
+  const maxW=(document.getElementById('grid-wrap').clientWidth||360)*0.88;
+  const fit=maxW/(el.textContent.length*0.62);
+  el.style.fontSize=Math.max(18, Math.min(base, fit))+'px';
+
+  // Text shadow: ngày càng nhiều lớp & sáng hơn
+  const g=i>=7?'drop-shadow(0 0 '+(i*6)+'px '+c+') ':'';
+  el.style.filter=g;
+  if(i<=1){
+    el.style.textShadow=`0 1px 8px ${hexToRgba(c,0.7)}`;
+  } else if(i<=3){
+    el.style.textShadow=`0 2px 12px ${hexToRgba(c,0.9)}, 0 0 ${20+i*8}px ${hexToRgba(c,0.6)}`;
+  } else if(i<=5){
+    el.style.textShadow=`0 2px 16px ${hexToRgba(c,1)}, 0 0 ${30+i*10}px ${hexToRgba(c,0.8)}, 0 0 ${60+i*14}px ${hexToRgba(c,0.35)}`;
+  } else {
+    el.style.textShadow=`0 0 10px #fff, 0 2px 20px ${hexToRgba(c,1)}, 0 0 ${50+i*12}px ${hexToRgba(c,0.9)}, 0 0 ${100+i*18}px ${hexToRgba(c,0.5)}, 0 0 ${160+i*22}px ${hexToRgba(c,0.25)}`;
+  }
+
+  el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+
+  // Screen shake at LEGENDARY(7) and GODLIKE(8)
+  if(i>=7){
+    const root=document.getElementById('game-root');
+    root.classList.remove('screen-shake');
+    void root.offsetWidth;
+    root.classList.add('screen-shake');
+    setTimeout(()=>root.classList.remove('screen-shake'), 500);
+  }
+}
