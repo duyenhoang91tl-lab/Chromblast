@@ -993,6 +993,45 @@ let mainHardTier=0; // số vòng map ẩn đã thắng — map thường khó d
 // vòng 21 = cơ chế(1)+cơ chế(2) · vòng 22 = cơ chế(2)+cơ chế(3) · ... ·
 // vòng 39 = cơ chế(19)+cơ chế(20) · vòng 40 = cơ chế(20)+cơ chế(1)  → 20 cặp, không cặp nào trùng nhau.
 const ROUND_MECH_NAMES=['','🌿 Dây gai','⛰️ Núi đá','🐿️ Sóc trộm ô','🧊 Băng giá','🌫️ Sương mù','💣 Bom hẹn giờ','🌪️ Lốc xoáy','🥚 Trứng rồng','🕷️ Nhện giăng tơ','🌧️ Mây mưa','🦎 Tắc kè hoa','🕳️ Hố đen','👻 Bóng ma','🐌 Ốc sên','🧱 Tường gạch','⚡ Sét đánh','🐍 Rắn thần','🌋 Núi lửa','🌀 Cổng dịch chuyển','🐲 Vua Rồng','🪞 Thế giới gương'];
+// Mô tả CÁCH CHƠI / cách hoá giải từng cơ chế (khớp chỉ số với ROUND_MECH_NAMES 1-21).
+const ROUND_MECH_DESC=['',
+  'Khối để quá 5 lượt chưa nổ sẽ bị dây gai bao quanh. Phải nổ ô kề bên để gỡ dây trước; ô màu dưới dây không mất khi dây còn đó — dây phá xong ô mới nổ bình thường.',
+  'Ngọn núi nhỏ tự lớn dần nếu bạn không nổ các ô quanh nó. Để nó lớn sẽ chiếm mất nhiều ô bàn cờ — hãy nổ ô kề để chặn.',
+  'Con sóc bò tới ăn dần ô màu và có thanh HP. Nổ trúng nó hoặc ô kề bên đủ số lần để đuổi; để nó ăn hết ô sẽ thua.',
+  'Ô bị đóng băng phải nổ 2 lần mới vỡ — lần đầu chỉ nứt băng, lần sau mới ăn điểm.',
+  'Sương mù che khuất màu một vùng ô. Hãy ghi nhớ vị trí màu trước khi bị che để nổ đúng nhóm.',
+  'Bom hẹn giờ đếm ngược trên bàn cờ. Nổ một ô kề bên để gỡ bom trước khi nó phát nổ phá cả vùng.',
+  'Lốc xoáy quét qua và xáo trộn vị trí các ô — bố cục màu sẽ đổi bất ngờ, tính toán lại nước đi.',
+  'Trứng rồng sẽ NỞ nếu để lâu. Nổ ô kề bên để đập vỡ trứng trước khi nó nở ra rắc rối.',
+  'Nhện giăng tơ khóa 1 khối trong khay khiến bạn không đặt được. Nổ nhóm màu để gỡ tơ, giải phóng khối.',
+  'Mây mưa trôi qua rửa trôi màu một cột thành ô xám vô dụng — dọn sớm cột đó trước khi bị xám.',
+  'Tắc kè hoa lén đổi màu vài ô. Nhìn kỹ trước khi nổ vì màu có thể vừa bị thay.',
+  'Hố đen nuốt dần các ô quanh nó. Nổ ô kề bên hố 3 lần để phong ấn nó lại.',
+  'Bóng ma giả dạng màu ô — màu hiển thị có thể không thật. Đừng chỉ tin vào mắt, quan sát chuyển động của ma.',
+  'Ốc sên bò để lại vệt nhớt chặn các ô trống khiến không đặt được khối lên đó — dọn đường đi của ốc.',
+  'Từng hàng tường gạch rơi xuống chiếm ô bàn cờ. Nổ để phá tường trước khi nó dồn kín bàn.',
+  'Sét đánh giáng xuống các vùng có cảnh báo. Đừng đặt khối ở vùng bị đánh dấu để tránh mất ô.',
+  'Rắn thần trườn qua nuốt ô màu trên đường đi. Nổ chặn hoặc né hướng di chuyển của rắn.',
+  'Núi lửa phun đá bắn quanh bàn cờ tạo các ô chướng ngại. Dọn nhanh trước khi đá chất đống.',
+  'Hai cổng dịch chuyển tráo đổi ô màu giữa hai vị trí — một nhóm tưởng chừng liền màu có thể bị cổng đổi chỗ.',
+  'VUA RỒNG giáng thế — thử thách tối thượng, tung nhiều đòn phá bàn cờ cùng lúc. Giữ bình tĩnh, ưu tiên nổ nhóm lớn.',
+  'THẾ GIỚI GƯƠNG: mỗi khối bạn đặt sẽ tự sinh 1 khối đối xứng qua trục giữa. Nếu bản đối xứng không có chỗ đặt → thua. Luôn chừa chỗ cho cả hai bên.'
+];
+// Trả về mô tả cơ chế của một VÒNG bất kỳ (1-41): vòng đơn 1-20, đôi 21-40, 41 = Thế giới gương.
+function roundMechDescFor(tier){
+  if(tier>=1 && tier<=20) return ROUND_MECH_NAMES[tier]+': '+ROUND_MECH_DESC[tier];
+  if(tier>=21 && tier<=40){
+    const [a,b]=comboPairForTier(tier);
+    return 'CƠ CHẾ ĐÔI — '+ROUND_MECH_NAMES[a]+' + '+ROUND_MECH_NAMES[b]+':<br>• '+
+      ROUND_MECH_NAMES[a]+': '+ROUND_MECH_DESC[a]+'<br>• '+ROUND_MECH_NAMES[b]+': '+ROUND_MECH_DESC[b];
+  }
+  if(tier===41) return ROUND_MECH_NAMES[21]+': '+ROUND_MECH_DESC[21];
+  return '';
+}
+// Vòng khó cao nhất người chơi đã CHẠM tới (để giới hạn hướng dẫn cho tài khoản thường).
+function highestReachedTier(){
+  return Math.max(mainHardTier|0, maxComboTierReached|0); // 0 = chưa tới vòng có cơ chế nào
+}
 function comboPairForTier(t){ // t trong 21..40 → [a,b] là 2 vòng cơ chế gốc (1-20)
   const i=t-21, a=i+1, b=(i+1)%20+1;
   return [a,b];

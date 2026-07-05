@@ -146,6 +146,41 @@ function togglePause(){
   }
 }
 
+// 📖 Hướng dẫn cơ chế theo VÒNG độ khó của map thường.
+// Người chơi thường: chỉ đọc được cơ chế của các vòng ĐÃ CHẠM tới (tới vòng nào biết vòng đó).
+// Tài khoản admin: đọc được cơ chế của TẤT CẢ các vòng (1-41).
+function showRoundGuide(){
+  const isAdmin = !!(currentUser && currentUser.role==='admin');
+  const reached = (typeof highestReachedTier==='function') ? highestReachedTier() : 0;
+  const cur = (typeof mainHardTier!=='undefined' ? (mainHardTier|0) : 0);
+  const maxTier = isAdmin ? 41 : reached;
+  const title = document.getElementById('roundguide-title');
+  const body  = document.getElementById('roundguide-body');
+  title.textContent = isAdmin ? '📖 Cơ chế TẤT CẢ các vòng (admin)' : '📖 Hướng dẫn cơ chế vòng của bạn';
+  if(maxTier < 1){
+    body.innerHTML = '<p style="font-size:13px;line-height:1.5;color:#dfe6f2;">Bạn chưa tới vòng nào có cơ chế đặc biệt. '+
+      'Mỗi khi qua một map ẩn, map thường sẽ thêm một cơ chế mới — quay lại đây để đọc hướng dẫn nhé!</p>';
+    document.getElementById('roundguide-panel').classList.add('show');
+    return;
+  }
+  let html = '';
+  if(!isAdmin){
+    html += '<p style="font-size:12px;color:#9aa7bd;margin:0 0 10px;">Bạn đang ở <b style="color:#ffd54a;">Vòng '+
+      (cur||1)+'</b>. Dưới đây là cơ chế mọi vòng bạn đã chạm tới.</p>';
+  }
+  for(let v=1; v<=maxTier; v++){
+    const desc = roundMechDescFor(v);
+    if(!desc) continue;
+    const isCur = (v===cur);
+    html += '<div class="roundguide-item'+(isCur?' cur':'')+'">'+
+      '<h4>'+(isCur?'▶ ':'')+'Vòng '+v+' <span class="rg-tier">'+
+        (v<=20?'(đơn)':v<=40?'(cơ chế đôi)':'(đặc biệt)')+(isCur?' · đang chơi':'')+'</span></h4>'+
+      '<p>'+desc+'</p></div>';
+  }
+  body.innerHTML = html;
+  document.getElementById('roundguide-panel').classList.add('show');
+}
+
 function showMapHelp(key){
   const info = MAP_HELP[key];
   if(!info) return;
@@ -300,6 +335,11 @@ function initAdminPanel(){
   document.getElementById('maphelp-close-btn').addEventListener('click', ()=>{
     document.getElementById('maphelp-panel').classList.remove('show');
   });
+
+  const rgBtn=document.getElementById('roundguide-btn');
+  if(rgBtn) rgBtn.addEventListener('click', ()=>{ sfxClick(); showRoundGuide(); });
+  const rgClose=document.getElementById('roundguide-close-btn');
+  if(rgClose) rgClose.addEventListener('click', ()=>{ document.getElementById('roundguide-panel').classList.remove('show'); });
 
   const advBtn=document.getElementById('adventure-toggle-btn');
   if(advBtn){
