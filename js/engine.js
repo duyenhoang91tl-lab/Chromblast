@@ -428,7 +428,9 @@ function processClears(){
   const _ctr=clearCentroid([...totalKeys].map(k=>k.split(',').map(Number)), getCell);
   showScorePop(totalKeys.size, pts, _ctr.x, _ctr.y, consecutiveBursts);
   showShockwave(_ctr.x, _ctr.y, consecutiveBursts);
-  showPraise(consecutiveBursts);
+  // Chỉ hiện câu khen (COOL/GOOD/...) khi đạt MỐC 5 lần nổ liên tiếp — không phải cứ nổ
+  // là khen ngay, phải thật sự khó (combo dài) mới được khen (tham khảo Block Blast).
+  if(shouldPraise(consecutiveBursts)) showPraise(praiseLevelForStreak(consecutiveBursts));
   showComboCountFlash(combo);
   updateComboBorderGlow(consecutiveBursts); // viền sáng theo combo map thường
   // 🎆 Pháo hoa viền + tia lấp lánh cho map thường

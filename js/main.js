@@ -58,6 +58,12 @@ function comboScoreMultiplier(streak){
   return streak>=6 ? 3 : streak>=3 ? 2 : 1;
 }
 
+/* ── Câu khen chỉ hiện mỗi khi đạt MỐC 5 lần nổ liên tiếp — không phải cứ nổ là khen ──
+   streak 5 → 'COOL', streak 10 → 'GOOD', streak 15 → 'GREAT'... càng khó càng khen to. */
+const COMBO_PRAISE_STEP = 5;
+function shouldPraise(streak){ return streak>0 && streak % COMBO_PRAISE_STEP === 0; }
+function praiseLevelForStreak(streak){ return Math.floor(streak/COMBO_PRAISE_STEP)+1; } // dùng cho pIdx
+
 /* ── Dynamic burst threshold based on level ── */
 function getMinBurst(){
   if(level >= 7) return COLOR_BURST_MIN + 2;

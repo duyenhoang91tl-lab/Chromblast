@@ -318,7 +318,7 @@ function sfxMegaPhaseChange(){if(sfxMuted)return; playTone(110,'square',0.2,0.5)
 // Lồng tiếng câu khen bằng file audio thu sẵn (sounds/) — mỗi cấp khen 1 file .wav riêng,
 // khớp thứ tự với mảng PRAISE. Được preload 1 lần khi trang tải xong.
 const PRAISE_SOUND_FILES = [
-  'not_bad.wav','cool.wav','good.wav','great.wav','impressive.wav',
+  'cool.wav','good.wav','great.wav','impressive.wav',
   'amazing.wav','perfect.wav','spectacular.wav','unreal.wav','legendary.wav','godlike.wav'
 ];
 const PRAISE_AUDIO = PRAISE_SOUND_FILES.map(f=>{

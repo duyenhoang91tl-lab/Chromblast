@@ -644,10 +644,13 @@ function cuteGardenStrip(ctx,W,H,t,baseY,withButterflies=true){
 /* ══════════════════════════════════════════
    ĐIỂM BAY + CÂU KHEN + HIỆU ỨNG PHÁT SÁNG
 ══════════════════════════════════════════ */
-const PRAISE = ['NOT BAD','COOL','GOOD','GREAT','IMPRESSIVE','AMAZING','PERFECT','SPECTACULAR','UNREAL','LEGENDARY','GODLIKE'];
-// Colors escalate: muted → teal → blue → purple → gold → red → pink → blaze → fire
-const PRAISE_COLOR = ['#9ab8b0','#5DCAA5','#378ADD','#7F77DD','#4dd0e1','#ab47bc','#EF9F27','#E24B4A','#D4537E','#f7c948','#ff6b35'];
-function pIdx(level){ return Math.min(Math.max(level||1,1),PRAISE.length)-1; }
+const PRAISE = ['COOL','GOOD','GREAT','IMPRESSIVE','AMAZING','PERFECT','SPECTACULAR','UNREAL','LEGENDARY','GODLIKE'];
+// Colors escalate: teal → blue → purple → gold → red → pink → blaze → fire
+const PRAISE_COLOR = ['#5DCAA5','#378ADD','#7F77DD','#4dd0e1','#ab47bc','#EF9F27','#E24B4A','#D4537E','#f7c948','#ff6b35'];
+// level = số lần nổ liên tiếp (combo streak). Kiểu Block Blast: lần nổ ĐẦU TIÊN (streak 1)
+// chỉ là 1 pha bình thường, chưa tính là combo nên KHÔNG có câu khen — câu khen chỉ bắt đầu
+// từ lần nổ liên tiếp thứ 2 trở đi (streak 2 → 'COOL', streak 3 → 'GOOD', ...).
+function pIdx(level){ return Math.min(Math.max((level||1)-1,1),PRAISE.length)-1; }
 
 function hexToRgba(hex,a){
   const n=parseInt(hex.replace('#',''),16);
@@ -715,7 +718,7 @@ function showPraise(level){
   // Lồng tiếng
   speakPraise(level);
 
-  // Font size: nhỏ ở NOT BAD, siêu to ở GODLIKE
+  // Font size: nhỏ ở COOL, siêu to ở GODLIKE
   const base=22+i*9;  // 22 → 94px
   const maxW=(document.getElementById('grid-wrap').clientWidth||360)*0.88;
   const fit=maxW/(el.textContent.length*0.62);
