@@ -274,7 +274,7 @@ function onSCClick(e){
   secretBurstFX(ci, ultraJustTriggered || secretUltra);  // 🎆 pháo hoa viền + bàn cờ sáng
   secretColorRing(_ctr.x, _ctr.y, ci);                   // 💠 vòng sóng màu lan ra
   secretSparkleBurst(group, ci);                         // ✨ tia lấp lánh ở từng ô
-  if(!ultraJustTriggered) showPraise(secretStreak);
+  if(!ultraJustTriggered && shouldPraise(secretStreak)) showPraise(praiseLevelForStreak(secretStreak));
 
   // Animate pop
   group.forEach(([gr,gc])=>{
