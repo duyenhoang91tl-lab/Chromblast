@@ -374,6 +374,40 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 }
 #help-ok-btn.enabled { opacity:1; pointer-events:auto; }
 
+/* ══════════════════ DAILY REWARDS ══════════════════ */
+#daily-btn { position: relative; }
+#daily-btn.has-reward::after {
+  content:''; position:absolute; top:-2px; right:-2px; width:10px; height:10px;
+  border-radius:50%; background:#ff4757; box-shadow:0 0 0 2px #17102b;
+  animation: daily-pulse 1.4s infinite;
+}
+@keyframes daily-pulse { 0%,100%{ transform:scale(1); opacity:1; } 50%{ transform:scale(1.25); opacity:0.7; } }
+.daily-grid {
+  display:grid; grid-template-columns: repeat(4, 1fr); gap:8px; margin-top:4px;
+}
+.daily-day {
+  border-radius:10px; padding:10px 4px; text-align:center; font-size:11.5px;
+  border:1px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.05); color:rgba(255,255,255,0.55);
+}
+.daily-day-num { font-weight:800; margin-bottom:4px; }
+.daily-day-xp { font-weight:700; }
+.daily-day.claimed { border-color: rgba(46,204,113,0.5); background: rgba(46,204,113,0.12); color:#8ee08e; }
+.daily-day.today { border-color: #f7c948; background: rgba(247,201,72,0.18); color:#ffd700; box-shadow:0 0 12px rgba(247,201,72,0.35); }
+.daily-day.locked { opacity:0.55; }
+
+/* ══════════════════ LEADERBOARD ══════════════════ */
+.lb-row {
+  display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:10px;
+  background: rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); margin-bottom:6px;
+  font-size:13px;
+}
+.lb-row.me { border-color: rgba(247,201,72,0.55); background: rgba(247,201,72,0.12); }
+.lb-rank { width:26px; text-align:center; font-weight:900; color:#f7c948; flex:0 0 auto; }
+.lb-name { flex:1; color:#fff; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.lb-score { color:#ffd700; font-weight:800; flex:0 0 auto; }
+.lb-empty { text-align:center; color: rgba(255,255,255,0.5); font-size:12.5px; padding:16px 0; }
+.lb-my-rank { margin-top:10px; padding-top:10px; border-top:1px dashed rgba(255,255,255,0.15); font-size:12.5px; color:#ffd700; text-align:center; font-weight:700; }
+
 /* ══════════════════ ACCOUNT / LOGOUT ══════════════════ */
 #account-btn {
   background: rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2);
