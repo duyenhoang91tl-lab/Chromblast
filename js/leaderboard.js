@@ -1,0 +1,121 @@
+// ═══════════════════════════════════════════════════════════════
+// js/leaderboard.js — BẢNG XẾP HẠNG
+//
+// ⚠️ HIỆN TẠI: lưu CỤC BỘ trong máy (localStorage), không đồng bộ giữa
+// các thiết bị khác nhau. Có kèm vài mốc điểm giả (LEADERBOARD_SEED) để
+// bảng không trống trơn lúc mới cài — đây KHÔNG phải điểm của người chơi
+// thật, chỉ để test UI. Xoá mảng này khi nối backend thật.
+//
+// ĐỂ NÂNG CẤP THÀNH "TOÀN CẦU" THẬT (đồng bộ mọi máy qua server, vd
+// Firebase Firestore): chỉ cần viết lại nội dung bên trong 3 hàm
+// submitScoreToLeaderboard() / fetchTopScores() / fetchMyRank() để gọi
+// API thay vì đọc/ghi localStorage. Toàn bộ phần UI bên dưới
+// (renderLeaderboardPanel, initLeaderboardPanel) và các chỗ gọi 3 hàm
+// này ở nơi khác trong code (engine.js) KHÔNG cần sửa gì thêm.
+//
+// Nạp SAU save.js, TRƯỚC main.js.
+// ═══════════════════════════════════════════════════════════════
+
+const LEADERBOARD_KEY = 'chromablast_leaderboard_local';
+const LEADERBOARD_SEED = [ // dữ liệu giả lập — xoá khi có server thật
+  {name:'Minh',        score: 4820},
+  {name:'Huyền Trang',  score: 3960},
+  {name:'Quang',        score: 3510},
+  {name:'Bảo Anh',      score: 2870},
+  {name:'Nam',          score: 2340},
+];
+
+function getLeaderboardEntries(){
+  try{
+    const raw = safeGet(LEADERBOARD_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  const seeded = LEADERBOARD_SEED.slice();
+  safeSet(LEADERBOARD_KEY, JSON.stringify(seeded));
+  return seeded;
+}
+
+function currentPlayerName(){
+  if(typeof currentUser !== 'undefined' && currentUser && currentUser.username) return currentUser.username;
+  let gid = safeGet('chromablast_guest_name');
+  if(!gid){
+    gid = 'Khách#' + Math.floor(1000 + Math.random()*9000);
+    safeSet('chromablast_guest_name', gid);
+  }
+  return gid;
+}
+
+// Gửi điểm lên bảng — chỉ giữ điểm CAO NHẤT của mỗi tên (tránh spam nhiều dòng trùng người chơi).
+function submitScoreToLeaderboard(score){
+  if(!score || score <= 0) return;
+  const name = currentPlayerName();
+  let entries = getLeaderboardEntries();
+  const idx = entries.findIndex(e => e.name === name);
+  if(idx >= 0){
+    if(score > entries[idx].score) entries[idx].score = score;
+  } else {
+    entries.push({name, score});
+  }
+  entries.sort((a,b) => b.score - a.score);
+  entries = entries.slice(0, 100); // giữ top 100
+  safeSet(LEADERBOARD_KEY, JSON.stringify(entries));
+}
+
+function fetchTopScores(limit){
+  const entries = getLeaderboardEntries().slice().sort((a,b) => b.score - a.score);
+  return entries.slice(0, limit || 10);
+}
+
+function fetchMyRank(){
+  const name = currentPlayerName();
+  const entries = getLeaderboardEntries().slice().sort((a,b) => b.score - a.score);
+  const idx = entries.findIndex(e => e.name === name);
+  return idx >= 0 ? { rank: idx+1, score: entries[idx].score, total: entries.length } : null;
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function renderLeaderboardPanel(){
+  const list = document.getElementById('leaderboard-list');
+  if(list){
+    const top = fetchTopScores(20);
+    const myName = currentPlayerName();
+    list.innerHTML = '';
+    if(!top.length){
+      list.innerHTML = '<div class="lb-empty">Chưa có điểm nào — chơi để lên bảng đầu tiên!</div>';
+    }
+    top.forEach((e,i) => {
+      const row = document.createElement('div');
+      row.className = 'lb-row' + (e.name === myName ? ' me' : '');
+      const medal = i===0 ? '🥇' : i===1 ? '🥈' : i===2 ? '🥉' : String(i+1);
+      row.innerHTML = '<span class="lb-rank">'+medal+'</span>'
+        + '<span class="lb-name">'+escapeHtml(e.name)+'</span>'
+        + '<span class="lb-score">'+e.score.toLocaleString()+'</span>';
+      list.appendChild(row);
+    });
+  }
+  const myRankBox = document.getElementById('leaderboard-my-rank');
+  if(myRankBox){
+    const mine = fetchMyRank();
+    myRankBox.textContent = mine
+      ? ('Hạng của bạn: #' + mine.rank + ' / ' + mine.total + ' — ' + mine.score.toLocaleString() + ' điểm')
+      : 'Bạn chưa có điểm nào trên bảng xếp hạng — chơi 1 ván để lên bảng!';
+  }
+}
+
+function initLeaderboardPanel(){
+  const btn = document.getElementById('leaderboard-btn');
+  const panel = document.getElementById('leaderboard-panel');
+  if(!btn || !panel) return;
+  function openPanel(){
+    if(typeof sfxClick === 'function') sfxClick();
+    renderLeaderboardPanel();
+    panel.classList.add('show');
+  }
+  function closePanel(){ panel.classList.remove('show'); }
+  btn.addEventListener('click', openPanel);
+  document.getElementById('leaderboard-close-btn').addEventListener('click', closePanel);
+  panel.addEventListener('click', (e) => { if(e.target === panel) closePanel(); });
+}

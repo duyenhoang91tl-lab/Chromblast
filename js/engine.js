@@ -679,6 +679,7 @@ function checkGameOverA(){
     sfxGameOver();
     document.getElementById('go-score').textContent='Điểm của bạn: '+score.toLocaleString();
     document.getElementById('game-over-overlay').classList.add('show');
+    if(typeof submitScoreToLeaderboard==='function') submitScoreToLeaderboard(score);
     return true; // đã báo thua
   }
   return false;

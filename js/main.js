@@ -704,6 +704,8 @@ initAccountPanel();
 
 initHelpPanel();
 initStartScreen();
+initDailyRewardPanel();
+initLeaderboardPanel();
 // Chọn đúng nhạc nền theo map đang chơi — dùng khi bật lại âm thanh hoặc thoát tạm dừng
 function resumeContextBgm(){
   if(rhythmMode){ startRhythmBgm(); return; }
