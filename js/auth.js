@@ -13,6 +13,7 @@ function applyLoggedInUser(username){
   document.getElementById('admin-btn').style.display = (currentUser.role === 'admin') ? 'flex' : 'none';
   const nameBox = document.getElementById('account-username-box');
   if(nameBox) nameBox.textContent = username + (currentUser.role === 'admin' ? ' (admin)' : '');
+  if(typeof updateDailyBadge === 'function') updateDailyBadge(); // khoá lưu quà đổi theo tài khoản
   return true;
 }
 
@@ -70,6 +71,7 @@ function initAuthScreen(){
   guestBtn.addEventListener('click', ()=>{
     sfxClick();
     currentUser = null;
+    if(typeof updateDailyBadge === 'function') updateDailyBadge();
     hideAuthScreen();
   });
 
