@@ -612,6 +612,7 @@ const ADMIN_MAPS = [
   { key:'rhythm',  label:'Map ẩn 18 — Rhythm Tap',           run: enterRhythmMode },
   { key:'maze',    label:'Map ẩn 19 — Mê cung (Maze)',       run: enterMazeMode },
   { key:'mega',    label:'Map ẩn 20 — MEGA BOSS cuối cùng',  run: enterMegaMode },
+  { key:'floodpig',label:'Map ẩn 22 — Cẩu cứu heo mùa lũ',   run: () => startMap('floodpig') },
 ];
 let clearedHiddenMaps = new Set(getSavedClearedMaps());
 
