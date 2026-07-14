@@ -51,7 +51,7 @@ function rotatePiece(idx){
   piece.shape=piece.shape.map(([r,c])=>[r-minR, c-minC]);
   renderPieces();
   if(selected===idx){ showGhost(piece); updatePreview(lastMouseX||0, lastMouseY||0); }
-  showHint('🔄 Đã xoay!');
+  showHint(t('hintRotated'));
 }
 
 // Ô bị chặn không đặt khối lên được (do các cơ chế độ khó chiếm giữ)
@@ -280,7 +280,7 @@ function onSlotPointerDown(e, idx){
   const piece=pieces[idx];
   if(piece.used) return;
   if(spiderWebbedIdx===idx && spiderWebbedLeft>0){
-    showHint('🕸️ Khối này đang bị tơ nhện khóa — còn '+spiderWebbedLeft+' bước nữa!');
+    showHint(t('hintWebbed', spiderWebbedLeft));
     try{ sfxPenalty(); }catch(err){}
     return;
   }
@@ -356,7 +356,7 @@ document.getElementById('rotate-confirm-btn').addEventListener('click', (e)=>{
   if(selected===null) return;
   rotateLocked=true;
   showRotateBar(false);
-  showHint('✅ Đã khoá xoay — kéo khối vào bàn để đặt!');
+  showHint(t('hintRotateLocked'));
 });
 
 // Tap trên nền lưới (không phải ô cụ thể) khi đang giữ khối → xoay
@@ -384,7 +384,7 @@ function onCellClick(e){
   const o=originFromPointer(e.clientX,e.clientY,piece,'mouse');
   const R=o?o.R:+e.currentTarget.dataset.r;
   const C=o?o.C:+e.currentTarget.dataset.c;
-  if(!canPlace(piece,R,C)){ sfxInvalid(); showHint('❌ Không đặt được ở đây!'); return; }
+  if(!canPlace(piece,R,C)){ sfxInvalid(); showHint(t('hintCantPlace')); return; }
   placeAt(R,C);
 }
 
@@ -497,7 +497,7 @@ function processClears(){
         bombCell=null; bombRespawn=10;
         const bTh=MCFG('bomb','thuong');
         score+=bTh; if(score>best) best=score; updateScoreUI();
-        showComboFlash(0,false,'✂️ Gỡ bom thành công! +'+bTh+'đ');
+        showComboFlash(0,false,t('fxDefuse', bTh));
       }
       // 🥚 nổ ô kề trứng rồng → nứt vỏ; vỡ hẳn thì thưởng điểm
       if(dragonEgg && !eggHitThisWave && Math.abs(dragonEgg.r-r)<=1 && Math.abs(dragonEgg.c-c)<=1 && !(dragonEgg.r===r&&dragonEgg.c===c)){
@@ -507,9 +507,9 @@ function processClears(){
           dragonEgg=null; eggRespawn=12;
           const eTh=MCFG('egg','thuong');
           score+=eTh; if(score>best) best=score; updateScoreUI();
-          showComboFlash(0,false,'🍳 Đập vỡ trứng rồng! +'+eTh+'đ');
+          showComboFlash(0,false,t('fxEggBreak', eTh));
         } else {
-          showHint('🥚 Vỏ trứng đã nứt — nổ kề bên thêm 1 lần nữa!');
+          showHint(t('hintEggCracked'));
         }
       }
       // 🌫️ nổ ô trong vùng sương mù → sương tan một lúc
@@ -524,10 +524,10 @@ function processClears(){
           spider=null; spiderRespawn=20; spiderWebbedIdx=-1; spiderWebbedLeft=0;
           const sTh=MCFG('spider','thuong');
           score+=sTh; if(score>best) best=score; updateScoreUI();
-          showComboFlash(0,false,'🕷️ Diệt nhện! +'+sTh+'đ');
+          showComboFlash(0,false,t('fxSpiderKill', sTh));
           renderPieces();
         } else {
-          showHint('🕷️ Trúng nhện! HP còn '+spider.hp+'/'+MCFG('spider','hp'));
+          showHint(t('hintSpiderHp', spider.hp, MCFG('spider','hp')));
           const p=randEmptyKey(); if(p){ spider.r=p[0]; spider.c=p[1]; }
         }
       }
@@ -539,9 +539,9 @@ function processClears(){
           blackHole=null; bhRespawn=15;
           const hTh=MCFG('bh','thuong');
           score+=hTh; if(score>best) best=score; updateScoreUI();
-          showComboFlash(0,false,'🕳️ Phong ấn hố đen! +'+hTh+'đ');
+          showComboFlash(0,false,t('fxBhSeal', hTh));
         } else {
-          showHint('🕳️ Phong ấn '+blackHole.seals+'/'+BH_SEALS);
+          showHint(t('hintBhSeal', blackHole.seals, BH_SEALS));
         }
       }
       // 👻 nổ trúng ô ma nhập → trừ tà
@@ -549,7 +549,7 @@ function processClears(){
         ghostCell=null; ghostRespawn=12;
         const gTh=MCFG('ghost','thuong');
         score+=gTh; if(score>best) best=score; updateScoreUI();
-        showComboFlash(0,false,'👻 Trừ tà thành công! +'+gTh+'đ');
+        showComboFlash(0,false,t('fxGhostOut', gTh));
       }
       // 🐌 nổ kề ốc sên → tích đòn
       if(snail && !snailHitWave && Math.abs(snail.r-r)<=1 && Math.abs(snail.c-c)<=1 && !(snail.r===r&&snail.c===c)){
@@ -559,9 +559,9 @@ function processClears(){
           snail=null; snailRespawn=18;
           const oTh=MCFG('snail','thuong');
           score+=oTh; if(score>best) best=score; updateScoreUI();
-          showComboFlash(0,false,'🐌 Diệt ốc sên! +'+oTh+'đ');
+          showComboFlash(0,false,t('fxSnailKill', oTh));
         } else {
-          showHint('🐌 Trúng ốc sên '+snail.hits+'/'+SNAIL_HITS);
+          showHint(t('hintSnailHit', snail.hits, SNAIL_HITS));
         }
       }
       // 🧱 nổ ô cạnh tường → bào mòn tường (giống núi, mỗi ô nổ bào 1 ô tường)
@@ -579,9 +579,9 @@ function processClears(){
           snakeSpirit=null; snakeSpiritRespawn=25;
           const rTh=MCFG('snakeSpirit','thuong');
           score+=rTh; if(score>best) best=score; updateScoreUI();
-          showComboFlash(0,false,'🐍 Hạ rắn thần! +'+rTh+'đ');
+          showComboFlash(0,false,t('fxSnakeKill', rTh));
         } else {
-          showHint('🐍 Trúng rắn thần! HP còn '+snakeSpirit.hp+'/'+MCFG('snakeSpirit','hp'));
+          showHint(t('hintSnakeHp', snakeSpirit.hp, MCFG('snakeSpirit','hp')));
         }
       }
       // 🌀 nổ kề cổng → tích dấu đóng cổng (cả 2 cổng cùng đóng)
@@ -595,9 +595,9 @@ function processClears(){
             portalA=null; portalB=null; portalRespawn=20;
             const pTh=MCFG('portal','thuong');
             score+=pTh; if(score>best) best=score; updateScoreUI();
-            showComboFlash(0,false,'🌀 Đóng cổng dịch chuyển! +'+pTh+'đ');
+            showComboFlash(0,false,t('fxPortalClose', pTh));
           } else {
-            showHint('🌀 Đóng cổng '+portalHits+'/'+PORTAL_SEALS);
+            showHint(t('hintPortalHit', portalHits, PORTAL_SEALS));
           }
         }
       }
@@ -609,7 +609,7 @@ function processClears(){
           dragonKing=null; dkRespawn=30;
           const kTh=MCFG('dk','thuong');
           score+=kTh; if(score>best) best=score; updateScoreUI();
-          showComboFlash(0,false,'👑 HẠ GỤC VUA RỒNG! +'+kTh+'đ');
+          showComboFlash(0,false,t('fxDkDown', kTh));
         } else {
           showHint('🐲 Trúng Vua Rồng! HP còn '+dragonKing.hp+'/'+MCFG('dk','hp'));
           const p=randEmptyKey(); if(p){ dragonKing.r=p[0]; dragonKing.c=p[1]; }
@@ -632,7 +632,7 @@ function processClears(){
             mountainCells.delete(nk);
             if(mountainCells.size===0){
               mountainRespawn=15; // san phẳng! 15 bước sau núi mới mọc lại
-              showComboFlash(0,false,'⛰️ Núi bị san phẳng!');
+              showComboFlash(0,false,t('fxMountainFlat'));
             }
             break;
           }
@@ -647,7 +647,7 @@ function processClears(){
           bittenCells.clear(); squirrelStolen=0; // các ô bị gặm được phục hồi khi sóc chết
           squirrelRespawn=6; // 6 bước sau nếu bàn cờ chưa "sạch" thì sóc mới sẽ xuất hiện
           const bTh=MCFG('squirrel','thuong');
-          showComboFlash(0,false,'🎉 Hạ gục sóc trộm — các ô bị gặm phục hồi! +'+bTh+'đ');
+          showComboFlash(0,false,t('fxSquirrelDown', bTh));
           score+=bTh; if(score>best) best=score; updateScoreUI();
         } else {
           showHint('🐿️ Trúng sóc! HP còn '+squirrel.hp+'/'+MCFG('squirrel','hp'));

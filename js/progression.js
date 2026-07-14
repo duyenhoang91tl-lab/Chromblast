@@ -18,7 +18,7 @@ function checkAdventureUnlock(){
   adventureUnlocked=true;
   saveAdventureUnlocked();
   const btn=document.getElementById('adventure-toggle-btn'); if(btn) btn.style.display='inline-block';
-  showComboFlash(0,false,'🚀 ADVENTURE 1 MỞ KHÓA!');
+  showComboFlash(0,false,t('adventureUnlock'));
   sfxUnlock();
 }
 function setAdventureTheme(on){
@@ -110,10 +110,8 @@ renderPlayerXP(); // hiển thị ngay khi tải trang (script nằm cuối body
 
 let lastMilestoneScore = 0; // mốc điểm tròn gần nhất đã ăn mừng (banner + confetti)
 const MILESTONE_STEP = 1000; // cứ mỗi 1000 điểm lại ăn mừng 1 lần
-const MILESTONE_MSGS = ['Khởi đầu tốt!','Đà tiến ấn tượng!','Không thể ngăn cản!','Phong độ đỉnh cao!',
-  'Cực kỳ xuất sắc!','Siêu phàm!','Thần sầu!','Huyền thoại sống!','Vô đối thiên hạ!','Thần thoại sống!'];
-function milestoneMsgFor(tier){ return MILESTONE_MSGS[Math.min(tier-1, MILESTONE_MSGS.length-1)]; }
-
+// Câu chúc cột mốc đa ngôn ngữ: xem MILESTONE_MSG (js/i18n-content.js).
+function milestoneMsgFor(tier){ return MILESTONE_MSG(tier); }
 /* ══════════════════════════════════════════
    ACHIEVEMENT SYSTEM
 ══════════════════════════════════════════ */

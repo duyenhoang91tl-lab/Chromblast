@@ -71,46 +71,28 @@
 <button id="help-btn" title="Hướng dẫn chơi" data-i18n-title="ttHelp">❓</button>
 <div id="help-panel">
   <div class="admin-card">
-    <div class="admin-title"><span>📖 Hướng dẫn chơi</span><button class="admin-close" id="help-close-btn">✕</button></div>
+    <div class="admin-title"><span data-i18n="helpTitle">📖 Hướng dẫn chơi</span><button class="admin-close" id="help-close-btn">✕</button></div>
     <div class="help-body">
-      <h4>🎯 Mục tiêu</h4>
-      <ul>
-        <li>Kéo các khối ở khay dưới đặt vào bàn cờ để ghi điểm.</li>
-        <li>Đặt khối sao cho <b>lấp đầy 1 hàng hoặc 1 cột</b> → hàng/cột đó sẽ nổ và biến mất.</li>
-        <li>Đặt khối sao cho tạo ra một <b>cụm 3+ ô cùng màu nối liền nhau</b> (trên/dưới/trái/phải) → cụm đó cũng nổ.</li>
-      </ul>
-      <h4>⭐ Tính điểm & Combo</h4>
-      <ul>
-        <li>Mỗi ô bị nổ = <b>1 điểm</b>.</li>
-        <li>Nổ liên tiếp không hụt = <b>combo</b>: từ lần nổ thứ 3 → điểm x2, từ lần thứ 6 → điểm x3.</li>
-        <li>Đặt khối mà không nổ ô nào → <b>combo bị đứt</b>, phải tính lại từ đầu.</li>
-      </ul>
-      <h4>🔥 Map ẩn (chế độ bí mật)</h4>
-      <ul>
-        <li>Nổ liên tiếp nhiều lần trong bàn cờ thường sẽ mở khóa các <b>map ẩn</b> — minigame đặc biệt với luật chơi riêng.</li>
-        <li>Mỗi map ẩn sẽ có bảng hướng dẫn riêng hiện ra khi mở khóa.</li>
-        <li>Hoàn thành map ẩn để quay lại bàn cờ thường và nhận thưởng.</li>
-      </ul>
-      <h4>🌟 Cơ chế đặc biệt trên map thường (mở dần theo tiến trình)</h4>
-      <p style="margin:0 0 6px;color:rgba(255,255,255,0.7);">Mỗi lần bạn <b>thắng một map ẩn</b>, bàn cờ map thường sẽ mở khoá thêm 1 cơ chế mới, khó dần theo thứ tự (vòng 1-20). Sau khi thắng đủ <b>20/20 map ẩn</b>, bàn cờ mở tiếp <b>20 vòng cơ chế đôi (vòng 21-40)</b> ngay trên bàn cờ thường — mỗi vòng kết hợp CÙNG LÚC 2 cơ chế liền kề (vd: vòng 21 = vòng 1+2, vòng 22 = vòng 2+3...), không có cặp nào lặp lại. Các vòng này phải chơi <b>tuần tự</b>: kiếm đủ điểm mốc để vượt qua vòng hiện tại mới mở được vòng kế tiếp, không thể nhảy cóc. Bạn chỉ xem được mô tả của <b>vòng mình đã từng chơi tới</b> — các vòng chưa mở khoá sẽ hiện 🔒.</p>
+      <h4 data-i18n="hpGoal">🎯 Mục tiêu</h4>
+      <ul data-i18n-html="hpGoalBody"></ul>
+      <h4 data-i18n="hpCombo">⭐ Tính điểm & Combo</h4>
+      <ul data-i18n-html="hpComboBody"></ul>
+      <h4 data-i18n="hpHidden">🔥 Map ẩn (chế độ bí mật)</h4>
+      <ul data-i18n-html="hpHiddenBody"></ul>
+      <h4 data-i18n="hpMech">🌟 Cơ chế đặc biệt</h4>
+      <p style="margin:0 0 6px;color:rgba(255,255,255,0.7);" data-i18n-html="hpMechBody"></p>
       <div class="help-map-list" id="round-help-list"></div>
 
-      <h4>💀 Kết thúc</h4>
-      <ul>
-        <li>Trò chơi kết thúc khi <b>không còn khối nào trong khay đặt vừa</b> vào bàn cờ.</li>
-        <li>Cố gắng đạt điểm cao hơn kỷ lục (Kỷ lục hiển thị ở góc trên bên trái)!</li>
-      </ul>
+      <h4 data-i18n="hpEnd">💀 Kết thúc</h4>
+      <ul data-i18n-html="hpEndBody"></ul>
 
-      <h4>🗺️ Cách chơi từng map ẩn</h4>
-      <p style="margin:0 0 6px;color:rgba(255,255,255,0.7);">
-        Mỗi map ẩn có <b>hướng dẫn riêng</b> — chỉ hiện ra khi bạn <b>chơi tới map đó</b>. Trong lúc chơi map ẩn, bấm nút <b>❓</b> nổi ở góc màn hình để xem luật của đúng map đang chơi.
-        Với các map ẩn đã <b>vượt qua rồi</b>, bấm nút 🗺️ ở thanh trên để mở lại và xem lại cách chơi bất cứ lúc nào.
-      </p>
+      <h4 data-i18n="hpMaps">🗺️ Cách chơi từng map ẩn</h4>
+      <p style="margin:0 0 6px;color:rgba(255,255,255,0.7);" data-i18n-html="hpMapsBody"></p>
 
       <label id="help-agree-label">
-        <input type="checkbox" id="help-agree-chk"> Tôi đã đọc và hiểu luật chơi
+        <input type="checkbox" id="help-agree-chk"> <span data-i18n="helpAgree">Tôi đã đọc và hiểu luật chơi</span>
       </label>
-      <button id="help-ok-btn">✅ Đã hiểu, bắt đầu chơi!</button>
+      <button id="help-ok-btn" data-i18n="helpOk">✅ Đã hiểu, bắt đầu chơi!</button>
     </div>
   </div>
 </div>
@@ -284,7 +266,7 @@
       <div id="milestone-text"></div>
     </div>
     <div id="unlock-overlay">
-      <div id="unlock-title">🔥 NHIỆM VỤ ẨN MỞ KHÓA!</div>
+      <div id="unlock-title" data-i18n="unlockTitle">🔥 NHIỆM VỤ ẨN MỞ KHÓA!</div>
       <div id="unlock-desc">
         3 vụ nổ liên tiếp!<br><br>
         Bàn cờ màu bí ẩn xuất hiện.<br>
@@ -293,7 +275,7 @@
         Đạt <b>9 lần</b> liên tiếp → bàn cờ bùng cháy x3!
       </div>
       <button id="unlock-btn">⚡ VÀO ĐẤU!</button>
-      <button id="unlock-later-btn">🔙 Quay lại map thường</button>
+      <button id="unlock-later-btn" data-i18n="unlockLater">🔙 Quay lại map thường</button>
       <label id="unlock-autoskip-label">
         <input type="checkbox" id="unlock-autoskip-chk"> Tự động bỏ qua (không hỏi lại map ẩn nữa)
       </label>

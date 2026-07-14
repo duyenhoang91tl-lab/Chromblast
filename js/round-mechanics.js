@@ -122,7 +122,7 @@ function bombExplode(){
   const lost=Math.min(score, bPh);
   score-=lost; updateScoreUI();
   try{ sfxPenalty(); }catch(e){}
-  showComboFlash(0,false,'💥 Bom nổ — mất vùng 3×3 & -'+lost+'đ!');
+  showComboFlash(0,false,t('fxBombExplode', lost));
   renderGrid();
 }
 function tornadoSweep(){
@@ -144,7 +144,7 @@ function tornadoSweep(){
     board[r][c]=colors.pop();
     cellPlacedAt[r+','+c]=placeCounter; // ô vừa bị lốc thổi tới — tính là mới
   }
-  showComboFlash(0,false,'🌪️ Lốc xoáy càn qua '+(isRow?'hàng':'cột')+' '+(idx+1)+'!');
+  showComboFlash(0,false,t('fxTornado', idx+1, isRow?t('rowWord'):t('colWord')));
   renderGrid();
 }
 function spawnEgg(){
@@ -164,7 +164,7 @@ function eggHatchBurn(){
   dragonEgg=null; eggRespawn=12;
   const lost=penalizeMechDestroy(destroyed);
   try{ sfxGameOver(); }catch(e){}
-  showComboFlash(0,false,'🐲 Rồng con nở — thiêu rụi cả hàng '+(row+1)+(lost>0?' & -'+lost+'đ':'')+'!');
+  showComboFlash(0,false,t('fxEggHatch', row+1, lost>0?' (-'+lost+')':''));
   renderGrid();
 }
 
@@ -226,7 +226,7 @@ function placePlayerPiece(placedCells,color){
   updateMirrorBreakUI();
   if(mirrorBreakPending){
     mirrorBreakPending=false;
-    showComboFlash(0,false,'🪞 Mirror Break — lượt này không sinh khối đối xứng!');
+    showComboFlash(0,false,t('fxMirrorUse'));
     updateMirrorBreakUI();
     return;
   }
@@ -271,7 +271,7 @@ function updateMirrorCombo(success){
     mirrorCombo++;
     if(mirrorCombo>0 && mirrorCombo%MIRROR_COMBO_FOR_CHARGE===0){
       mirrorBreakCharges++;
-      showComboFlash(0,false,'🪞 Nhận được 1 Mirror Break!');
+      showComboFlash(0,false,t('fxMirrorGain'));
     }
   } else {
     mirrorCombo=0;
@@ -342,9 +342,9 @@ function blackHoleSwallow(){
     const lost=penalizeMechDestroy(1);
     if(blackHole.eaten>=6){
       blackHole=null; bhRespawn=15;
-      showComboFlash(0,false,'🕳️ Hố đen no nê rồi biến mất!'+(lost>0?' (-'+lost+'đ)':''));
+      showComboFlash(0,false,t('fxBhFull', lost>0?' (-'+lost+')':''));
     } else if(lost>0){
-      showComboFlash(0,false,'🕳️ Hố đen nuốt mất 1 ô — -'+lost+'đ!');
+      showComboFlash(0,false,t('fxBhSwallow', lost));
     }
   }
   renderGrid();
@@ -398,7 +398,7 @@ function lightningStrike(){
   lightning=null;
   const lost=penalizeMechDestroy(destroyed);
   try{ sfxPenalty(); }catch(e){}
-  showComboFlash(0,false,'⚡ Sét đánh trúng bàn cờ'+(lost>0?' — -'+lost+'đ':'')+'!');
+  showComboFlash(0,false,t('fxLightning', lost>0?' (-'+lost+')':''));
   renderGrid();
 }
 function spawnSnakeSpirit(){
@@ -421,7 +421,7 @@ function snakeSpiritSlither(){
   if(board[nr][nc]){
     board[nr][nc]=null; thornCells.delete(nr+','+nc); iceCells.delete(nr+','+nc); // ăn ô màu
     const lost=penalizeMechDestroy(1);
-    if(lost>0) showComboFlash(0,false,'🐍 Rắn thần nuốt mất 1 ô — -'+lost+'đ!');
+    if(lost>0) showComboFlash(0,false,t('fxSnakeAte', lost));
   }
   snakeSpirit.cells.unshift([nr,nc]); snakeSpirit.cells.pop();
   renderGrid();
@@ -434,7 +434,7 @@ function volcanoErupt(){
   }
   if(dropped){
     try{ sfxPenalty(); }catch(e){}
-    showComboFlash(0,false,'🌋 Núi lửa phun '+dropped+' tảng đá!');
+    showComboFlash(0,false,t('fxVolcano', dropped));
     renderGrid();
   }
 }
@@ -478,10 +478,10 @@ function dragonKingAttack(){
       board[row][c]=null; thornCells.delete(k); iceCells.delete(k);
     }
     const lost=penalizeMechDestroy(destroyed);
-    showComboFlash(0,false,'🐲 Vua Rồng thiêu rụi hàng '+(row+1)+(lost>0?' — -'+lost+'đ':'')+'!');
+    showComboFlash(0,false,t('fxDkBurn', row+1, lost>0?' (-'+lost+')':''));
   } else if(atk===1){ // đóng băng 3 ô
     for(let i=0;i<3;i++) freezeRandomCell();
-    showComboFlash(0,false,'🐲 Vua Rồng thổi băng giá!');
+    showComboFlash(0,false,t('fxDkFreeze'));
   } else if(atk===2){ // gieo 2 gai
     const cands=[];
     for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
@@ -489,7 +489,7 @@ function dragonKingAttack(){
       if(board[r][c]&&!thornCells.has(k)&&!iceCells.has(k)) cands.push(k);
     }
     for(let i=0;i<2&&cands.length;i++) thornCells.add(cands.splice(rnd(cands.length),1)[0]);
-    showComboFlash(0,false,'🐲 Vua Rồng gieo dây gai!');
+    showComboFlash(0,false,t('fxDkThorn'));
   } else { // trộm 3 ô màu
     let destroyed=0;
     for(let i=0;i<3;i++){
@@ -501,7 +501,7 @@ function dragonKingAttack(){
       destroyed++;
     }
     const lost=penalizeMechDestroy(destroyed);
-    showComboFlash(0,false,'🐲 Vua Rồng cướp ô màu'+(lost>0?' — -'+lost+'đ':'')+'!');
+    showComboFlash(0,false,t('fxDkSteal', lost>0?' (-'+lost+')':''));
   }
   try{ sfxPenalty(); }catch(e){}
   renderGrid();
@@ -540,72 +540,72 @@ function applyRoundMechanics(){
   if(tierActive(1) && !thornMode){
     thornMode=true; thornPlacementCount=0; thornWave=0; thornThreshold=6;
     thornCells=new Set(); cellBurstCount={};
-    setTimeout(()=>showComboFlash(0,false,'🌿 Dây gai xuất hiện trên bàn cờ!'), 900);
+    setTimeout(()=>showComboFlash(0,false,MECH_ALERT(1)), 900);
   }
   if(tierActive(2) && mountainCells.size===0 && mountainRespawn<=0){
     spawnMountain();
-    setTimeout(()=>showComboFlash(0,false,'⛰️ Ngọn núi nhỏ xuất hiện — đừng để nó lớn!'), 1600);
+    setTimeout(()=>showComboFlash(0,false,MECH_ALERT(2)), 1600);
   }
   if(tierActive(3) && !squirrel){
     spawnSquirrel();
-    setTimeout(()=>showComboFlash(0,false,'🐿️ Con sóc trộm ô xuất hiện — nổ trúng nó hoặc ô kề bên '+MCFG('squirrel','hp')+' lần!'), 2300);
+    setTimeout(()=>showComboFlash(0,false,MECH_ALERT(3)), 2300);
   }
-  if(tierActive(4)) announceMech('ice','🧊 Băng giá: ô đóng băng phải nổ 2 lần mới vỡ!', 3000);
+  if(tierActive(4)) announceMech('ice',MECH_ALERT(4), 3000);
   if(tierActive(5)){
     if(!fogCenter && fogCooldown<=0) spawnFog();
-    announceMech('fog','🌫️ Sương mù che khuất màu — hãy ghi nhớ!', 3700);
+    announceMech('fog',MECH_ALERT(5), 3700);
   }
   if(tierActive(6)){
     if(!bombCell && bombRespawn<=0) spawnBomb();
-    announceMech('bomb','💣 Bom hẹn giờ! Nổ ô kề bên để gỡ trước khi nổ!', 4400);
+    announceMech('bomb',MECH_ALERT(6), 4400);
   }
-  if(tierActive(7)) announceMech('tornado','🌪️ Coi chừng lốc xoáy xáo trộn bàn cờ!', 5100);
+  if(tierActive(7)) announceMech('tornado',MECH_ALERT(7), 5100);
   if(tierActive(8)){
     if(!dragonEgg && eggRespawn<=0) spawnEgg();
-    announceMech('egg','🥚 Trứng rồng xuất hiện — đập vỡ trước khi nó nở!', 5800);
+    announceMech('egg',MECH_ALERT(8), 5800);
   }
   if(tierActive(9)){
     if(!spider && spiderRespawn<=0) spawnSpider();
-    announceMech('spider','🕷️ Nhện giăng tơ khóa khối gạch của bạn!', 6500);
+    announceMech('spider',MECH_ALERT(9), 6500);
   }
   if(tierActive(10)){
     if(cloudCol<0) cloudCol=rnd(COLS);
-    announceMech('cloud','🌧️ Mây mưa rửa trôi màu ô thành ô xám!', 7200);
+    announceMech('cloud',MECH_ALERT(10), 7200);
   }
-  if(tierActive(11)) announceMech('cham','🦎 Tắc kè lén đổi màu ô — cẩn thận!', 7900);
+  if(tierActive(11)) announceMech('cham',MECH_ALERT(11), 7900);
   if(tierActive(12)){
     if(!blackHole && bhRespawn<=0) spawnBlackHole();
-    announceMech('bh','🕳️ Hố đen nuốt ô — nổ kề bên 3 lần để phong ấn!', 8600);
+    announceMech('bh',MECH_ALERT(12), 8600);
   }
   if(tierActive(13)){
     if(!ghostCell && ghostRespawn<=0) spawnGhost();
-    announceMech('ghost','👻 Bóng ma giả dạng màu ô — đừng tin vào mắt mình!', 9300);
+    announceMech('ghost',MECH_ALERT(13), 9300);
   }
   if(tierActive(14)){
     if(!snail && snailRespawn<=0) spawnSnail();
-    announceMech('snail','🐌 Ốc sên để lại vệt nhớt chặn ô trống!', 10000);
+    announceMech('snail',MECH_ALERT(14), 10000);
   }
-  if(tierActive(15)) announceMech('wall','🧱 Tường gạch sẽ rơi xuống bàn cờ!', 10700);
-  if(tierActive(16)) announceMech('lightning','⚡ Sét đánh — tránh xa vùng cảnh báo!', 11400);
+  if(tierActive(15)) announceMech('wall',MECH_ALERT(15), 10700);
+  if(tierActive(16)) announceMech('lightning',MECH_ALERT(16), 11400);
   if(tierActive(17)){
     if(!snakeSpirit && snakeSpiritRespawn<=0) spawnSnakeSpirit();
-    announceMech('snakespirit','🐍 Rắn thần trườn qua nuốt ô màu!', 12100);
+    announceMech('snakespirit',MECH_ALERT(17), 12100);
   }
   if(tierActive(18)){
     if(mountainCells.size===0 && mountainRespawn<=0) spawnMountain(); // đỉnh núi lửa riêng của vòng 18
-    announceMech('volcano','🌋 Núi lửa xuất hiện — sẽ phun đá quanh bàn cờ!', 12800);
+    announceMech('volcano',MECH_ALERT(18), 12800);
   }
   if(tierActive(19)){
     if(!portalA && portalRespawn<=0) spawnPortals();
-    announceMech('portal','🌀 Cổng dịch chuyển tráo đổi ô màu!', 13500);
+    announceMech('portal',MECH_ALERT(19), 13500);
   }
   if(tierActive(20)){
     if(!dragonKing && dkRespawn<=0) spawnDragonKing();
-    announceMech('dk','🐲 VUA RỒNG GIÁNG THẾ — thử thách tối thượng!', 14200);
+    announceMech('dk',MECH_ALERT(20), 14200);
   }
   if(tierActive(21)){
     updateMirrorBreakUI();
-    announceMech('mirror','🪞 THẾ GIỚI GƯƠNG — mỗi khối bạn đặt sẽ tự sinh 1 khối đối xứng qua trục giữa. Đối xứng không có chỗ đặt → thua!', 14900);
+    announceMech('mirror',MECH_ALERT(21), 14900);
   }
   if(isComboTier(mainHardTier)){
     const [a,b]=comboPairForTier(mainHardTier);
@@ -639,7 +639,7 @@ function growMountain(){
   thornCells.delete(nk); iceCells.delete(nk);
   if(hadColor){
     const lost=penalizeMechDestroy(1);
-    if(lost>0) showComboFlash(0,false,'⛰️ Núi nuốt mất 1 ô màu — -'+lost+'đ!');
+    if(lost>0) showComboFlash(0,false,t('fxMountainAte', lost));
   }
   renderGrid();
 }
@@ -688,7 +688,7 @@ function squirrelBiteCell(r,c){
   if(bittenCells.size>=MCFG('squirrel','limit')){
     renderGrid();
     sfxGameOver();
-    showComboFlash(0,false,'🐿️ Sóc đã gặm nát bàn cờ!');
+    showComboFlash(0,false,t('fxSquirrelWreck'));
     document.getElementById('go-score').textContent=t('finalScore', score.toLocaleString());
     document.getElementById('game-over-overlay').classList.add('show');
   }
@@ -778,7 +778,7 @@ function stepRoundMechanics(_mirrorPlacedCells,_mirrorPlacedColor){
     } else if(squirrelRespawn>0 && --squirrelRespawn<=0){
       // Sóc đã bị diệt — nếu 6 bước trôi qua mà không có sóc mới thì tự xuất hiện con khác
       spawnSquirrel();
-      showComboFlash(0,false,'🐿️ Một con sóc khác lại xuất hiện!');
+      showComboFlash(0,false,t('fxSquirrelAgain'));
     }
   }
   // 🧊 đóng băng ô mới theo chu kỳ (CHỈ vòng 4)
@@ -942,7 +942,6 @@ function spawnThorns(){
   renderGrid();
   if(newThorns>0){
     sfxThorn();
-    const msg='🌿 Dây gai xuất hiện! ('+newThorns+' ô bị phong toả)';
-    showComboFlash(0,false,msg);
+    showComboFlash(0,false,t('fxThornGrow', newThorns));
   }
 }
