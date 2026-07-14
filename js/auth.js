@@ -19,11 +19,11 @@ function applyLoggedInUser(username){
 function doLogin(username, password){
   const errBox = document.getElementById('login-error');
   errBox.textContent = '';
-  if(!username || !password){ errBox.textContent = 'Vui lòng nhập đầy đủ thông tin.'; return; }
+  if(!username || !password){ errBox.textContent = t('errFillAll'); return; }
   const users = loadUsers();
   const u = users[username];
   if(!u || u.password !== password){
-    errBox.textContent = 'Sai tên đăng nhập hoặc mật khẩu.';
+    errBox.textContent = t('errWrongLogin');
     return;
   }
   applyLoggedInUser(username);
@@ -33,12 +33,12 @@ function doLogin(username, password){
 function doRegister(username, password, password2){
   const errBox = document.getElementById('register-error');
   errBox.textContent = '';
-  if(!username || !password || !password2){ errBox.textContent = 'Vui lòng nhập đầy đủ thông tin.'; return; }
-  if(username.length < 3){ errBox.textContent = 'Tên đăng nhập cần tối thiểu 3 ký tự.'; return; }
-  if(password.length < 4){ errBox.textContent = 'Mật khẩu cần tối thiểu 4 ký tự.'; return; }
-  if(password !== password2){ errBox.textContent = 'Mật khẩu nhập lại không khớp.'; return; }
+  if(!username || !password || !password2){ errBox.textContent = t('errFillAll'); return; }
+  if(username.length < 3){ errBox.textContent = t('errUserShort'); return; }
+  if(password.length < 4){ errBox.textContent = t('errPassShort'); return; }
+  if(password !== password2){ errBox.textContent = t('errPassMismatch'); return; }
   const users = loadUsers();
-  if(users[username]){ errBox.textContent = 'Tên đăng nhập đã tồn tại.'; return; }
+  if(users[username]){ errBox.textContent = t('errUserExists'); return; }
   users[username] = { password, role: 'user' };
   saveUsers(users);
   applyLoggedInUser(username);

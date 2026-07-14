@@ -95,7 +95,7 @@ function addPlayerXP(n){
   while(playerXP>=xpNeeded(playerLevel)){ playerXP-=xpNeeded(playerLevel); playerLevel++; leveled=true; }
   if(leveled){
     try{ sfxUnlock(); }catch(e){}
-    try{ showComboFlash(0,false,'🎉 LÊN CẤP '+playerLevel+'!'); }catch(e){}
+    try{ showComboFlash(0,false,t('levelUp', playerLevel)); }catch(e){}
   }
   savePlayerXP(); renderPlayerXP();
 }
