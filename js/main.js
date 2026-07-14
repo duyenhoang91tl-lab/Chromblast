@@ -203,13 +203,9 @@ function afterPlace(){
     if(mainHardTier>=41) comboGateActive=false; // đã vào vòng cuối cùng hiện có (41 — Thế giới gương) — hết tiến trình tự động
     if(isComboTier(mainHardTier)){
       const [na,nb]=comboPairForTier(mainHardTier);
-      setTimeout(()=>showComboFlash(0,false,
-        '🎉 QUA MÀN — Level '+passedTier+'! Lên Level '+mainHardTier+' — Cơ chế đôi: '
-        +MECH_NAME(na)+' + '+MECH_NAME(nb)+'!'), 300);
+      setTimeout(()=>showComboFlash(0,false,t('passLevel', passedTier, mainHardTier, MECH_NAME(na)+' + '+MECH_NAME(nb))), 300);
     } else {
-      setTimeout(()=>showComboFlash(0,false,
-        '🎉 QUA MÀN — Level '+passedTier+'! Lên Level '+mainHardTier+' — '
-        +MECH_NAME(21)+'!'), 300);
+      setTimeout(()=>showComboFlash(0,false,t('passLevel', passedTier, mainHardTier, MECH_NAME(21))), 300);
     }
   }
   if(pieces.every(p=>p.used)){
@@ -234,14 +230,9 @@ function triggerUnlock(){
   // (hoặc treo im nếu popup bị bỏ qua) mà không bao giờ báo thua. Phải kiểm tra trước.
   if(checkGameOverA()) return; // đã hiện Game Over overlay — không hiện popup mở khoá nữa
   pendingUnlock='secret';
-  document.getElementById('unlock-title').textContent='🔥 NHIỆM VỤ ẨN MỞ KHÓA!';
-  document.getElementById('unlock-desc').innerHTML=
-    '3 vụ nổ liên tiếp!<br><br>'+
-    'Bàn cờ màu bí ẩn xuất hiện.<br>'+
-    'Bấm vào <b>3+ ô cùng màu liền kề</b> để nổ.<br>'+
-    'Nổ liên tiếp trong <b>2.5 giây</b> sẽ nhân điểm.<br>'+
-    'Đạt <b>'+TEST_UNLOCK_SCORE+' điểm</b> ở đây → mở khoá <b>Map ẩn 2</b>!';
-  document.getElementById('unlock-btn').textContent='⚡ VÀO ĐẤU!';
+  document.getElementById('unlock-title').textContent=t('unlockTitle');
+  document.getElementById('unlock-desc').innerHTML=t('unlockDesc', TEST_UNLOCK_SCORE);
+  document.getElementById('unlock-btn').textContent=t('unlockBtn');
   showUnlockOverlay();
 }
 

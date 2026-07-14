@@ -299,6 +299,7 @@ function t(key){
 // Quét DOM và thay chữ theo ngôn ngữ hiện tại.
 function applyI18nDom(){
   document.querySelectorAll('[data-i18n]').forEach(el=>{ el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll('[data-i18n-html]').forEach(el=>{ el.innerHTML = t(el.dataset.i18nHtml); });
   document.querySelectorAll('[data-i18n-title]').forEach(el=>{ el.title = t(el.dataset.i18nTitle); });
   document.documentElement.lang = currentLang;
   // các nhãn động đang hiển thị
