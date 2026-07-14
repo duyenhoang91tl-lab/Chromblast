@@ -60,6 +60,20 @@ function announceMech(key,msg,delay){
   mechAnnounced[key]=true;
   setTimeout(()=>showComboFlash(0,false,msg), delay);
 }
+// 💥 Điểm phạt mỗi Ô MÀU (không tính ô trống) bị PHÁ trực tiếp bởi cơ chế của map
+// (núi nuốt ô, sóc trộm ô, hố đen nuốt ô, sét đánh, rắn thần nuốt ô, trứng rồng
+// thiêu rụi hàng, Vua Rồng ra đòn...). Bom hẹn giờ dùng mức phạt riêng (MCFG bomb.phat).
+const MECH_CELL_DESTROY_PENALTY = 5;
+// destroyedCount: số ô màu thực sự vừa bị phá. Trừ điểm tương ứng (không để điểm âm),
+// trả về số điểm đã trừ (0 nếu không có ô nào bị phá / hết điểm để trừ).
+function penalizeMechDestroy(destroyedCount){
+  if(!destroyedCount || destroyedCount<=0) return 0;
+  const lost=Math.min(score, destroyedCount*MECH_CELL_DESTROY_PENALTY);
+  if(lost<=0) return 0;
+  score-=lost; updateScoreUI();
+  try{ sfxPenalty(); }catch(e){}
+  return lost;
+}
 function randEmptyKey(){
   const empties=[];
   for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
@@ -140,14 +154,17 @@ function spawnEgg(){
 }
 function eggHatchBurn(){
   const row=dragonEgg.r;
+  let destroyed=0;
   for(let c=0;c<COLS;c++){
     const k=row+','+c;
     if(mountainCells.has(k)) continue;
+    if(board[row][c]) destroyed++;
     board[row][c]=null; thornCells.delete(k); iceCells.delete(k);
   }
   dragonEgg=null; eggRespawn=12;
+  const lost=penalizeMechDestroy(destroyed);
   try{ sfxGameOver(); }catch(e){}
-  showComboFlash(0,false,'🐲 Rồng con nở — thiêu rụi cả hàng '+(row+1)+'!');
+  showComboFlash(0,false,'🐲 Rồng con nở — thiêu rụi cả hàng '+(row+1)+(lost>0?' & -'+lost+'đ':'')+'!');
   renderGrid();
 }
 
@@ -322,7 +339,13 @@ function blackHoleSwallow(){
     const k=best[0]+','+best[1];
     board[best[0]][best[1]]=null; thornCells.delete(k); iceCells.delete(k);
     blackHole.eaten++;
-    if(blackHole.eaten>=6){ blackHole=null; bhRespawn=15; showComboFlash(0,false,'🕳️ Hố đen no nê rồi biến mất!'); }
+    const lost=penalizeMechDestroy(1);
+    if(blackHole.eaten>=6){
+      blackHole=null; bhRespawn=15;
+      showComboFlash(0,false,'🕳️ Hố đen no nê rồi biến mất!'+(lost>0?' (-'+lost+'đ)':''));
+    } else if(lost>0){
+      showComboFlash(0,false,'🕳️ Hố đen nuốt mất 1 ô — -'+lost+'đ!');
+    }
   }
   renderGrid();
 }
@@ -363,16 +386,19 @@ function dropWall(){
   if(placed) renderGrid();
 }
 function lightningStrike(){
+  let destroyed=0;
   for(let dr=0;dr<2;dr++)for(let dc=0;dc<2;dc++){
     const nr=lightning.r+dr,nc=lightning.c+dc;
     if(nr>=ROWS||nc>=COLS) continue;
     const k=nr+','+nc;
     if(mountainCells.has(k)||wallCells.has(k)) continue;
+    if(board[nr][nc]) destroyed++;
     board[nr][nc]=null; thornCells.delete(k); iceCells.delete(k);
   }
   lightning=null;
+  const lost=penalizeMechDestroy(destroyed);
   try{ sfxPenalty(); }catch(e){}
-  showComboFlash(0,false,'⚡ Sét đánh trúng bàn cờ!');
+  showComboFlash(0,false,'⚡ Sét đánh trúng bàn cờ'+(lost>0?' — -'+lost+'đ':'')+'!');
   renderGrid();
 }
 function spawnSnakeSpirit(){
@@ -392,7 +418,11 @@ function snakeSpiritSlither(){
   if(!dirs.length) return;
   const [dr,dc]=dirs[rnd(dirs.length)];
   const nr=hr+dr,nc=hc+dc;
-  if(board[nr][nc]){ board[nr][nc]=null; thornCells.delete(nr+','+nc); iceCells.delete(nr+','+nc); } // ăn ô màu
+  if(board[nr][nc]){
+    board[nr][nc]=null; thornCells.delete(nr+','+nc); iceCells.delete(nr+','+nc); // ăn ô màu
+    const lost=penalizeMechDestroy(1);
+    if(lost>0) showComboFlash(0,false,'🐍 Rắn thần nuốt mất 1 ô — -'+lost+'đ!');
+  }
   snakeSpirit.cells.unshift([nr,nc]); snakeSpirit.cells.pop();
   renderGrid();
 }
@@ -440,12 +470,15 @@ function dragonKingAttack(){
   const atk=rnd(4);
   if(atk===0){ // đốt 1 hàng ngẫu nhiên
     const row=rnd(ROWS);
+    let destroyed=0;
     for(let c=0;c<COLS;c++){
       const k=row+','+c;
       if(mountainCells.has(k)||wallCells.has(k)) continue;
+      if(board[row][c]) destroyed++;
       board[row][c]=null; thornCells.delete(k); iceCells.delete(k);
     }
-    showComboFlash(0,false,'🐲 Vua Rồng thiêu rụi hàng '+(row+1)+'!');
+    const lost=penalizeMechDestroy(destroyed);
+    showComboFlash(0,false,'🐲 Vua Rồng thiêu rụi hàng '+(row+1)+(lost>0?' — -'+lost+'đ':'')+'!');
   } else if(atk===1){ // đóng băng 3 ô
     for(let i=0;i<3;i++) freezeRandomCell();
     showComboFlash(0,false,'🐲 Vua Rồng thổi băng giá!');
@@ -458,14 +491,17 @@ function dragonKingAttack(){
     for(let i=0;i<2&&cands.length;i++) thornCells.add(cands.splice(rnd(cands.length),1)[0]);
     showComboFlash(0,false,'🐲 Vua Rồng gieo dây gai!');
   } else { // trộm 3 ô màu
+    let destroyed=0;
     for(let i=0;i<3;i++){
       const cands=[];
       for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++) if(board[r][c]) cands.push([r,c]);
       if(!cands.length) break;
       const [r,c]=cands[rnd(cands.length)];
       board[r][c]=null; thornCells.delete(r+','+c); iceCells.delete(r+','+c);
+      destroyed++;
     }
-    showComboFlash(0,false,'🐲 Vua Rồng cướp ô màu!');
+    const lost=penalizeMechDestroy(destroyed);
+    showComboFlash(0,false,'🐲 Vua Rồng cướp ô màu'+(lost>0?' — -'+lost+'đ':'')+'!');
   }
   try{ sfxPenalty(); }catch(e){}
   renderGrid();
@@ -598,8 +634,13 @@ function growMountain(){
   const nk=cands[rnd(cands.length)];
   mountainCells.add(nk);
   const [r,c]=nk.split(',').map(Number);
+  const hadColor=!!board[r][c];
   board[r][c]=null; // núi lan tới đâu nuốt ô tới đó
   thornCells.delete(nk); iceCells.delete(nk);
+  if(hadColor){
+    const lost=penalizeMechDestroy(1);
+    if(lost>0) showComboFlash(0,false,'⛰️ Núi nuốt mất 1 ô màu — -'+lost+'đ!');
+  }
   renderGrid();
 }
 function spawnSquirrel(){
@@ -641,8 +682,9 @@ function squirrelBiteCell(r,c){
   board[r][c]=null; thornCells.delete(k); iceCells.delete(k); // trộm mất ô màu
   bittenCells.add(k); // để lại khung ô đã bị gặm — không đặt khối lên được nữa, sóc cũng không quay lại ô này nữa
   squirrelStolen=bittenCells.size;
+  const lost=penalizeMechDestroy(1);
   try{ sfxPenalty(); }catch(e){}
-  showHint('🐿️ Sóc đã gặm '+bittenCells.size+'/'+MCFG('squirrel','limit')+' ô — diệt nó để phục hồi!');
+  showHint('🐿️ Sóc đã gặm '+bittenCells.size+'/'+MCFG('squirrel','limit')+' ô'+(lost>0?' (-'+lost+'đ)':'')+' — diệt nó để phục hồi!');
   if(bittenCells.size>=MCFG('squirrel','limit')){
     renderGrid();
     sfxGameOver();
