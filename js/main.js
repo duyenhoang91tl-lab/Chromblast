@@ -134,7 +134,7 @@ let unlockDeferred=false; // true khi người chơi chọn "quay lại map thư
 function updateBurstCount(){
   const bc=document.getElementById('burst-count');
   if(unlockDeferred){
-    bc.textContent='🔓 Map ẩn đang chờ — nhấn để chơi!';
+    bc.textContent=t('unlockWaiting');
     bc.classList.add('unlock-pending');
     return;
   }
@@ -143,18 +143,18 @@ function updateBurstCount(){
     const need=unlockThresholdForStage(unlockGateStageIndex+1);
     const earned=Math.min(Math.round(score-unlockGateBaseline), need);
     bc.textContent=
-      earned>=need?'🔥 Mở khóa sẵn sàng!':
-      `Tiến độ: ${earned}/${need}đ`;
+      earned>=need?t('unlockReady'):
+      t('progress', earned, need);
   } else if(comboGateActive && !secretMode && mainHardTier>=20 && mainHardTier<41){
     // Các level KHÔNG có map ẩn: đạt đủ điểm map thường → "qua màn", lên level kế tiếp.
     const need=comboThresholdForTier(mainHardTier);
     const earned=Math.min(Math.round(score-comboGateBaseline), need);
     bc.textContent=
-      earned>=need?'🎉 Sẵn sàng qua màn — Level '+mainHardTier+'!':
-      `Level ${mainHardTier}: ${earned}/${need}đ`;
+      earned>=need?t('passReady', mainHardTier):
+      t('passProgress', mainHardTier, earned, need);
   } else {
     bc.textContent=
-      consecutiveBursts>=3?'🔥 Mở khóa sẵn sàng!':`Chuỗi nổ: ${consecutiveBursts}/3`;
+      consecutiveBursts>=3?t('unlockReady'):t('burstCount', consecutiveBursts);
   }
 }
 
@@ -356,9 +356,9 @@ document.addEventListener('keyup', e=>{
 ══════════════════════════════════════════ */
 function updateScoreUI(){
   document.getElementById('score-box').textContent=Math.round(score).toLocaleString();
-  document.getElementById('best-box').textContent='Kỷ lục: '+Math.round(best).toLocaleString();
+  document.getElementById('best-box').textContent=t('bestLabel', Math.round(best).toLocaleString());
   document.getElementById('lines-cleared').textContent='Hàng xóa: '+linesCleared;
-  document.getElementById('level-box').textContent='Cấp độ '+level;
+  document.getElementById('level-box').textContent=t('levelLabel', level);
   // mỗi điểm ghi thêm = 1 XP người chơi (điểm giảm/reset không trừ XP)
   if(score>_xpLastScore) addPlayerXP(score-_xpLastScore);
   _xpLastScore=score;
@@ -421,7 +421,7 @@ function startGame(){
     document.getElementById('grid-wrap').classList.remove('secret-mode','ultra-glow','combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5');
     document.getElementById('grid').style.display='';
     document.getElementById('pieces-area').style.display='';
-    document.getElementById('mode-badge').textContent='BÌNH THƯỜNG';
+    document.getElementById('mode-badge').textContent=t('badgeNormal');
     document.getElementById('mode-badge').classList.remove('secret');
   }
 
@@ -433,7 +433,7 @@ function startGame(){
     document.getElementById('grid-wrap').classList.remove('secret-mode','ultra-glow','combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5');
     document.getElementById('grid').style.display='';
     document.getElementById('pieces-area').style.display='';
-    document.getElementById('mode-badge').textContent='BÌNH THƯỜNG';
+    document.getElementById('mode-badge').textContent=t('badgeNormal');
     document.getElementById('mode-badge').classList.remove('secret');
   }
 
@@ -445,7 +445,7 @@ function startGame(){
     document.getElementById('grid-wrap').classList.remove('secret-mode','ultra-glow','combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5');
     document.getElementById('grid').style.display='';
     document.getElementById('pieces-area').style.display='';
-    document.getElementById('mode-badge').textContent='BÌNH THƯỜNG';
+    document.getElementById('mode-badge').textContent=t('badgeNormal');
     document.getElementById('mode-badge').classList.remove('secret');
   }
 
@@ -458,7 +458,7 @@ function startGame(){
     document.getElementById('grid-wrap').classList.remove('secret-mode','ultra-glow','combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5');
     document.getElementById('grid').style.display='';
     document.getElementById('pieces-area').style.display='';
-    document.getElementById('mode-badge').textContent='BÌNH THƯỜNG';
+    document.getElementById('mode-badge').textContent=t('badgeNormal');
     document.getElementById('mode-badge').classList.remove('secret');
   }
 
@@ -470,7 +470,7 @@ function startGame(){
     document.getElementById('grid-wrap').classList.remove('secret-mode','ultra-glow','combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5');
     document.getElementById('timer-bar-wrap').classList.remove('active');
     document.getElementById('secret-streak-bar').classList.remove('active');
-    document.getElementById('mode-badge').textContent='BÌNH THƯỜNG';
+    document.getElementById('mode-badge').textContent=t('badgeNormal');
     document.getElementById('mode-badge').classList.remove('secret');
     document.getElementById('grid').style.display='';
     document.getElementById('pieces-area').style.display='';
@@ -485,7 +485,7 @@ function startGame(){
     document.getElementById('grid-wrap').classList.remove('secret-mode','ultra-glow','combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5');
     document.getElementById('grid').style.display='';
     document.getElementById('pieces-area').style.display='';
-    document.getElementById('mode-badge').textContent='BÌNH THƯỜNG';
+    document.getElementById('mode-badge').textContent=t('badgeNormal');
     document.getElementById('mode-badge').classList.remove('secret');
   }
   // Force-exit map ẩn 9 nếu đang chơi
@@ -496,7 +496,7 @@ function startGame(){
     document.getElementById('grid-wrap').classList.remove('secret-mode','ultra-glow','combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5');
     document.getElementById('grid').style.display='';
     document.getElementById('pieces-area').style.display='';
-    document.getElementById('mode-badge').textContent='BÌNH THƯỜNG';
+    document.getElementById('mode-badge').textContent=t('badgeNormal');
     document.getElementById('mode-badge').classList.remove('secret');
   }
   // Force-exit map ẩn 10 nếu đang chơi
@@ -507,7 +507,7 @@ function startGame(){
     document.getElementById('grid-wrap').classList.remove('secret-mode','ultra-glow','combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5');
     document.getElementById('grid').style.display='';
     document.getElementById('pieces-area').style.display='';
-    document.getElementById('mode-badge').textContent='BÌNH THƯỜNG';
+    document.getElementById('mode-badge').textContent=t('badgeNormal');
     document.getElementById('mode-badge').classList.remove('secret');
   }
   // Force-exit map ẩn 11 nếu đang chơi
@@ -518,7 +518,7 @@ function startGame(){
     document.getElementById('grid-wrap').classList.remove('secret-mode','ultra-glow','combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5');
     document.getElementById('grid').style.display='';
     document.getElementById('pieces-area').style.display='';
-    document.getElementById('mode-badge').textContent='BÌNH THƯỜNG';
+    document.getElementById('mode-badge').textContent=t('badgeNormal');
     document.getElementById('mode-badge').classList.remove('secret');
   }
   // Force-exit map ẩn 12 nếu đang chơi
@@ -529,7 +529,7 @@ function startGame(){
     document.getElementById('grid-wrap').classList.remove('secret-mode','ultra-glow','combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5');
     document.getElementById('grid').style.display='';
     document.getElementById('pieces-area').style.display='';
-    document.getElementById('mode-badge').textContent='BÌNH THƯỜNG';
+    document.getElementById('mode-badge').textContent=t('badgeNormal');
     document.getElementById('mode-badge').classList.remove('secret');
   }
   // Force-exit map ẩn 13 nếu đang chơi
@@ -540,7 +540,7 @@ function startGame(){
     document.getElementById('grid-wrap').classList.remove('secret-mode','ultra-glow','combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5');
     document.getElementById('grid').style.display='';
     document.getElementById('pieces-area').style.display='';
-    document.getElementById('mode-badge').textContent='BÌNH THƯỜNG';
+    document.getElementById('mode-badge').textContent=t('badgeNormal');
     document.getElementById('mode-badge').classList.remove('secret');
   }
   // Force-exit map ẩn 14 nếu đang chơi
@@ -551,7 +551,7 @@ function startGame(){
     document.getElementById('grid-wrap').classList.remove('secret-mode','ultra-glow','combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5');
     document.getElementById('grid').style.display='';
     document.getElementById('pieces-area').style.display='';
-    document.getElementById('mode-badge').textContent='BÌNH THƯỜNG';
+    document.getElementById('mode-badge').textContent=t('badgeNormal');
     document.getElementById('mode-badge').classList.remove('secret');
   }
   // Force-exit map ẩn 15 nếu đang chơi
@@ -562,7 +562,7 @@ function startGame(){
     document.getElementById('grid-wrap').classList.remove('secret-mode','ultra-glow','combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5');
     document.getElementById('grid').style.display='';
     document.getElementById('pieces-area').style.display='';
-    document.getElementById('mode-badge').textContent='BÌNH THƯỜNG';
+    document.getElementById('mode-badge').textContent=t('badgeNormal');
     document.getElementById('mode-badge').classList.remove('secret');
   }
   // Force-exit map ẩn 16 nếu đang chơi
@@ -573,7 +573,7 @@ function startGame(){
     document.getElementById('grid-wrap').classList.remove('secret-mode','ultra-glow','combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5');
     document.getElementById('grid').style.display='';
     document.getElementById('pieces-area').style.display='';
-    document.getElementById('mode-badge').textContent='BÌNH THƯỜNG';
+    document.getElementById('mode-badge').textContent=t('badgeNormal');
     document.getElementById('mode-badge').classList.remove('secret');
   }
 
@@ -679,7 +679,7 @@ function hardResetAllModes(){
   const hint=document.getElementById('hint-bar');         if(hint)   hint.style.display='';
   document.getElementById('grid-wrap').classList.remove('secret-mode','ultra-glow',
     'combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5','fire-low','fire-high');
-  document.getElementById('mode-badge').textContent='BÌNH THƯỜNG';
+  document.getElementById('mode-badge').textContent=t('badgeNormal');
   document.getElementById('mode-badge').classList.remove('secret');
   document.getElementById('unlock-overlay').classList.remove('show');
   const pauseOverlay=document.getElementById('pause-overlay');
@@ -726,7 +726,7 @@ document.getElementById('pause-btn').addEventListener('click', togglePause);
 document.getElementById('resume-btn').addEventListener('click', togglePause);
 startGame();
 // Show persisted best score immediately after startGame (which resets score but not best)
-document.getElementById('best-box').textContent='Kỷ lục: '+best.toLocaleString();
+document.getElementById('best-box').textContent=t('bestLabel', best.toLocaleString());
 
 /* ══ MAP ẨN 14 — SNAKE ══ */
 

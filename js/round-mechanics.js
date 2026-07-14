@@ -244,7 +244,7 @@ function checkMirrorCollision(mirrorTarget){
 
 function triggerMirrorGameOver(){
   sfxGameOver();
-  document.getElementById('go-score').textContent='Điểm của bạn: '+score.toLocaleString()+' — 🪞 Khối đối xứng không còn chỗ đặt!';
+  document.getElementById('go-score').textContent=t('finalScore', score.toLocaleString())+' — 🪞';
   document.getElementById('game-over-overlay').classList.add('show');
 }
 
@@ -647,7 +647,7 @@ function squirrelBiteCell(r,c){
     renderGrid();
     sfxGameOver();
     showComboFlash(0,false,'🐿️ Sóc đã gặm nát bàn cờ!');
-    document.getElementById('go-score').textContent='Điểm của bạn: '+score.toLocaleString();
+    document.getElementById('go-score').textContent=t('finalScore', score.toLocaleString());
     document.getElementById('game-over-overlay').classList.add('show');
   }
 }

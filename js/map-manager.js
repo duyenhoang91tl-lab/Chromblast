@@ -117,8 +117,8 @@ function exitMapModule(mod, won){
   document.getElementById('grid').style.display='';
   document.getElementById('pieces-area').style.display='';
   document.getElementById('grid-wrap').classList.remove('secret-mode');
-  const badge=document.getElementById('mode-badge'); if(badge){ badge.textContent='BÌNH THƯỜNG'; badge.classList.remove('secret'); }
-  const hb=document.getElementById('hint-bar'); if(hb) hb.textContent='Chạm khối → ghost hiện · Di ngón → ghost bám · Thả trên ô → đặt · Thả vùng trống → xoay';
+  const badge=document.getElementById('mode-badge'); if(badge){ badge.textContent=t('badgeNormal'); badge.classList.remove('secret'); }
+  const hb=document.getElementById('hint-bar'); if(hb) hb.textContent=t('hintDefault');
   if(!won && typeof forfeitHiddenMapScore==='function') forfeitHiddenMapScore();
   if(typeof mod.onExit==='function') try{ mod.onExit(won, mod._api); }catch(e){}
   if(typeof renderPieces==='function') renderPieces();

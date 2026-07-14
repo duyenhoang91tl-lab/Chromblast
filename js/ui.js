@@ -55,7 +55,7 @@ function showHint(msg){
   const el=document.getElementById('hint-bar');
   el.style.display='';
   el.textContent=msg;
-  setTimeout(()=>{ el.textContent='Chạm khối → ghost hiện · Di ngón → ghost bám · Thả trên ô → đặt · Thả vùng trống → xoay'; },1600);
+  setTimeout(()=>{ el.textContent=t('hintDefault'); },1600);
 }
 
 function initStartScreen(){
@@ -154,7 +154,7 @@ function showRoundGuide(){
   const maxTier = reached;
   const title = document.getElementById('roundguide-title');
   const body  = document.getElementById('roundguide-body');
-  title.textContent = '📖 Hướng dẫn cơ chế vòng của bạn';
+  title.textContent = t('roundGuideTitle');
   if(maxTier < 1){
     body.innerHTML = '<p style="font-size:13px;line-height:1.5;color:#dfe6f2;">Bạn chưa tới vòng nào có cơ chế đặc biệt. '+
       'Mỗi khi qua một map ẩn, map thường sẽ thêm một cơ chế mới — quay lại đây để đọc hướng dẫn nhé!</p>';

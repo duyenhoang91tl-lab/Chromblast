@@ -84,7 +84,7 @@ function renderLeaderboardPanel(){
     const myName = currentPlayerName();
     list.innerHTML = '';
     if(!top.length){
-      list.innerHTML = '<div class="lb-empty">Chưa có điểm nào — chơi để lên bảng đầu tiên!</div>';
+      list.innerHTML = '<div class="lb-empty">'+t('lbEmpty')+'</div>';
     }
     top.forEach((e,i) => {
       const row = document.createElement('div');
@@ -100,8 +100,8 @@ function renderLeaderboardPanel(){
   if(myRankBox){
     const mine = fetchMyRank();
     myRankBox.textContent = mine
-      ? ('Hạng của bạn: #' + mine.rank + ' / ' + mine.total + ' — ' + mine.score.toLocaleString() + ' điểm')
-      : 'Bạn chưa có điểm nào trên bảng xếp hạng — chơi 1 ván để lên bảng!';
+      ? t('lbMyRank', mine.rank, mine.total, mine.score.toLocaleString())
+      : t('lbNoRank');
   }
 }
 

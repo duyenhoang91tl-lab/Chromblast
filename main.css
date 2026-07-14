@@ -1409,3 +1409,11 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
   #grid-wrap.secret-mode { animation: none; }
   .sc.selected-group { animation: none; filter: brightness(1.3); }
 }
+
+/* ── Bộ chọn ngôn ngữ (i18n) ── */
+.lang-picker{ display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin:0 0 14px; }
+.lang-pick-btn{
+  background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2);
+  border-radius:16px; color:#dfe6f2; font-size:12px; padding:5px 10px; cursor:pointer;
+}
+.lang-pick-btn.active{ border-color:#ffd54a; background:rgba(255,213,74,0.15); color:#ffd54a; font-weight:700; }

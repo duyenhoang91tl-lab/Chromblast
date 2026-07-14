@@ -15,40 +15,41 @@
   <div class="start-bg"></div>
   <div class="auth-card">
     <div class="auth-logo"><span class="logo-chroma">CHROMA</span><span class="logo-blast">BLAST</span></div>
-    <div class="auth-sub">🔐 Đăng nhập để bắt đầu chơi</div>
-    <button type="button" id="guest-play-btn" class="auth-submit-btn" style="background:linear-gradient(135deg,#56AB2F,#A8E063);margin-bottom:16px;">▶ CHƠI NGAY (KHÔNG CẦN ĐĂNG NHẬP)</button>
-    <div class="auth-switch" style="margin-bottom:10px;">— hoặc —</div>
+    <div class="auth-sub" data-i18n="authSub">🔐 Đăng nhập để bắt đầu chơi</div>
+    <button type="button" id="guest-play-btn" class="auth-submit-btn" style="background:linear-gradient(135deg,#56AB2F,#A8E063);margin-bottom:16px;" data-i18n="guestPlay">▶ CHƠI NGAY (KHÔNG CẦN ĐĂNG NHẬP)</button>
+    <div class="auth-switch" style="margin-bottom:10px;" data-i18n="orDivider">— hoặc —</div>
+    <div id="lang-picker-auth" class="lang-picker"></div>
 
     <form id="login-form" class="auth-form active">
       <div class="auth-field">
-        <label>Tên đăng nhập</label>
+        <label data-i18n="lblUsername">Tên đăng nhập</label>
         <input type="text" id="login-username" autocomplete="username" required>
       </div>
       <div class="auth-field">
-        <label>Mật khẩu</label>
+        <label data-i18n="lblPassword">Mật khẩu</label>
         <input type="password" id="login-password" autocomplete="current-password" required>
       </div>
       <div class="auth-error" id="login-error"></div>
-      <button type="submit" class="auth-submit-btn">ĐĂNG NHẬP</button>
-      <div class="auth-switch">Chưa có tài khoản? <a id="show-register">Đăng ký ngay</a></div>
+      <button type="submit" class="auth-submit-btn" data-i18n="btnLogin">ĐĂNG NHẬP</button>
+      <div class="auth-switch"><span data-i18n="noAccount">Chưa có tài khoản?</span> <a id="show-register" data-i18n="linkRegister">Đăng ký ngay</a></div>
     </form>
 
     <form id="register-form" class="auth-form">
       <div class="auth-field">
-        <label>Tên đăng nhập</label>
+        <label data-i18n="lblUsername">Tên đăng nhập</label>
         <input type="text" id="register-username" autocomplete="username" required>
       </div>
       <div class="auth-field">
-        <label>Mật khẩu</label>
+        <label data-i18n="lblPassword">Mật khẩu</label>
         <input type="password" id="register-password" autocomplete="new-password" required>
       </div>
       <div class="auth-field">
-        <label>Nhập lại mật khẩu</label>
+        <label data-i18n="lblPassword2">Nhập lại mật khẩu</label>
         <input type="password" id="register-password2" autocomplete="new-password" required>
       </div>
       <div class="auth-error" id="register-error"></div>
-      <button type="submit" class="auth-submit-btn">ĐĂNG KÝ</button>
-      <div class="auth-switch">Đã có tài khoản? <a id="show-login">Đăng nhập</a></div>
+      <button type="submit" class="auth-submit-btn" data-i18n="btnRegister">ĐĂNG KÝ</button>
+      <div class="auth-switch"><span data-i18n="hasAccount">Đã có tài khoản?</span> <a id="show-login" data-i18n="linkLogin">Đăng nhập</a></div>
     </form>
   </div>
 </div>
@@ -59,15 +60,15 @@
     <div class="start-logo">
       <span class="logo-chroma">CHROMA</span><span class="logo-blast">BLAST</span>
     </div>
-    <div class="start-subtitle">🎮 Phá màu · Khám phá · Chinh phục</div>
+    <div class="start-subtitle" data-i18n="startSubtitle">🎮 Phá màu · Khám phá · Chinh phục</div>
     <div class="start-chars">🟥🟧🟨🟩🟦🟪</div>
     <button id="start-btn" class="start-btn">
-      <span>▶ BẮT ĐẦU CHƠI</span>
+      <span data-i18n="startBtn">▶ BẮT ĐẦU CHƠI</span>
     </button>
-    <div class="start-hint">Chạm hoặc nhấp để bắt đầu</div>
+    <div class="start-hint" data-i18n="startHint">Chạm hoặc nhấp để bắt đầu</div>
   </div>
 </div>
-<button id="help-btn" title="Hướng dẫn chơi">❓</button>
+<button id="help-btn" title="Hướng dẫn chơi" data-i18n-title="ttHelp">❓</button>
 <div id="help-panel">
   <div class="admin-card">
     <div class="admin-title"><span>📖 Hướng dẫn chơi</span><button class="admin-close" id="help-close-btn">✕</button></div>
@@ -116,7 +117,7 @@
 <div id="game-root">
   <div id="header">
     <div>
-      <div id="score-label">ĐIỂM SỐ</div>
+      <div id="score-label" data-i18n="scoreLabel">ĐIỂM SỐ</div>
       <div id="score-box">0</div>
       <div id="best-box">Kỷ lục: 0</div>
     </div>
@@ -131,20 +132,20 @@
       <div style="font-size:10px;color:#555;margin-top:4px">ChromaBlast</div>
     </div>
     <div id="game-controls" style="display:flex;gap:6px;align-items:center;">
-      <button id="hiddenmap-menu-btn" title="Chọn map ẩn đã chơi qua" style="display:none;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;align-items:center;justify-content:center;padding:0;">🗺️</button>
-      <button id="daily-btn" title="Điểm danh nhận quà">🎁</button>
-      <button id="leaderboard-btn" title="Bảng xếp hạng">🏆</button>
-      <button id="roundguide-btn" title="Hướng dẫn cơ chế vòng hiện tại" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">📖</button>
-      <button id="adventure-toggle-btn" title="Chế độ Adventure">🚀 ADV</button>
-      <button id="account-btn" title="Tài khoản">👤</button>
-      <button id="mute-btn" title="Tắt/bật âm thanh" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">🔊</button>
-      <button id="pause-btn" title="Tạm dừng" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">⏸</button>
+      <button id="hiddenmap-menu-btn" title="Chọn map ẩn đã chơi qua" data-i18n-title="ttHiddenMap" style="display:none;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;align-items:center;justify-content:center;padding:0;">🗺️</button>
+      <button id="daily-btn" title="Điểm danh nhận quà" data-i18n-title="ttDaily">🎁</button>
+      <button id="leaderboard-btn" title="Bảng xếp hạng" data-i18n-title="ttLeaderboard">🏆</button>
+      <button id="roundguide-btn" title="Hướng dẫn cơ chế vòng hiện tại" data-i18n-title="ttRoundGuide" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">📖</button>
+      <button id="adventure-toggle-btn" title="Chế độ Adventure" data-i18n-title="ttAdventure">🚀 ADV</button>
+      <button id="account-btn" title="Tài khoản" data-i18n-title="ttAccount">👤</button>
+      <button id="mute-btn" title="Tắt/bật âm thanh" data-i18n-title="ttMute" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">🔊</button>
+      <button id="pause-btn" title="Tạm dừng" data-i18n-title="ttPause" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">⏸</button>
     </div>
   </div>
 
   <div id="account-panel">
     <div class="admin-card">
-      <div class="admin-title"><span>👤 Tài khoản</span><button class="admin-close" id="account-close-btn">✕</button></div>
+      <div class="admin-title"><span data-i18n="accountTitle">👤 Tài khoản</span><button class="admin-close" id="account-close-btn">✕</button></div>
       <div class="account-user">Đang đăng nhập: <b id="account-username-box">—</b></div>
 
       <div class="account-section-title">🔑 Đổi mật khẩu</div>
@@ -166,13 +167,16 @@
       </form>
 
       <hr class="account-divider">
-      <button class="logout-btn" id="logout-btn">🚪 Đăng xuất</button>
+      <div style="font-size:12px;color:#9aa7bd;margin:4px 0 6px;" data-i18n="langPickLabel">🌐 Ngôn ngữ</div>
+      <div id="lang-picker-account" class="lang-picker"></div>
+      <hr class="account-divider">
+      <button class="logout-btn" id="logout-btn" data-i18n="logoutBtn">🚪 Đăng xuất</button>
     </div>
   </div>
 
   <div id="daily-panel" class="admin-panel-like">
     <div class="admin-card">
-      <div class="admin-title"><span>🎁 Điểm danh hàng ngày</span><button class="admin-close" id="daily-close-btn">✕</button></div>
+      <div class="admin-title"><span data-i18n="dailyTitle">🎁 Điểm danh hàng ngày</span><button class="admin-close" id="daily-close-btn">✕</button></div>
       <div class="admin-sub">Điểm danh mỗi ngày để nhận XP. Bỏ lỡ 1 ngày sẽ mất chuỗi, quay lại ngày 1.</div>
       <div id="daily-reward-list" class="daily-grid"></div>
       <button id="daily-claim-btn" class="auth-submit-btn" style="margin-top:14px;">🎁 Nhận quà</button>
@@ -181,8 +185,8 @@
 
   <div id="leaderboard-panel" class="admin-panel-like">
     <div class="admin-card">
-      <div class="admin-title"><span>🏆 Bảng xếp hạng</span><button class="admin-close" id="leaderboard-close-btn">✕</button></div>
-      <div class="admin-sub">Điểm cao nhất của người chơi trên thiết bị này.</div>
+      <div class="admin-title"><span data-i18n="leaderboardTitle">🏆 Bảng xếp hạng</span><button class="admin-close" id="leaderboard-close-btn">✕</button></div>
+      <div class="admin-sub" data-i18n="lbSub">Điểm cao nhất của người chơi trên thiết bị này.</div>
       <div id="leaderboard-list"></div>
       <div id="leaderboard-my-rank" class="lb-my-rank"></div>
     </div>
@@ -190,13 +194,13 @@
 
   <div id="hiddenmap-menu-panel" class="admin-panel-like">
     <div class="admin-card">
-      <div class="admin-title"><span>🗺️ Map ẩn đã chơi qua</span><button class="admin-close" id="hiddenmap-menu-close-btn">✕</button></div>
+      <div class="admin-title"><span data-i18n="hiddenMapTitle">🗺️ Map ẩn đã chơi qua</span><button class="admin-close" id="hiddenmap-menu-close-btn">✕</button></div>
       <div class="admin-sub">Bấm ▶ để chơi lại, hoặc ❓ để xem lại cách chơi map bạn đã từng vượt qua.</div>
       <div id="hiddenmap-menu-list"></div>
     </div>
   </div>
 
-  <button id="hiddenmap-help-btn" title="Cách chơi map ẩn này" style="display:none;">❓</button>
+  <button id="hiddenmap-help-btn" title="Cách chơi map ẩn này" data-i18n-title="ttMapHelp" style="display:none;">❓</button>
   <div id="maphelp-panel">
     <div class="admin-card">
       <div class="admin-title"><span id="maphelp-title">📖 Cách chơi</span><button class="admin-close" id="maphelp-close-btn">✕</button></div>
@@ -295,13 +299,13 @@
       </label>
     </div>
     <div id="pause-overlay" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.75);z-index:100;border-radius:14px;flex-direction:column;align-items:center;justify-content:center;gap:20px;">
-      <div style="font-size:28px;font-weight:900;color:#fff;text-shadow:0 0 20px #fff;">⏸ TẠM DỪNG</div>
-      <button id="resume-btn" style="background:linear-gradient(135deg,#ff6600,#ffaa00);border:none;border-radius:30px;padding:14px 40px;font-size:18px;font-weight:800;color:#1a0a00;cursor:pointer;">▶ Tiếp tục</button>
+      <div style="font-size:28px;font-weight:900;color:#fff;text-shadow:0 0 20px #fff;" data-i18n="pauseTitle">⏸ TẠM DỪNG</div>
+      <button id="resume-btn" style="background:linear-gradient(135deg,#ff6600,#ffaa00);border:none;border-radius:30px;padding:14px 40px;font-size:18px;font-weight:800;color:#1a0a00;cursor:pointer;" data-i18n="resumeBtn">▶ Tiếp tục</button>
     </div>
     <div id="game-over-overlay">
-      <div id="go-title">🎮 Hết lượt!</div>
+      <div id="go-title" data-i18n="gameOverTitle">🎮 Hết lượt!</div>
       <div id="go-score"></div>
-      <button id="restart-btn">Chơi lại</button>
+      <button id="restart-btn" data-i18n="restartBtn">Chơi lại</button>
     </div>
   </div>
 
@@ -314,7 +318,7 @@
     <button class="dctrl" id="dctrl-right" aria-label="phải">▶</button>
   </div>
 
-  <div id="hint-bar">Chạm khối → ghost hiện · Di ngón → ghost bám · Thả trên ô → đặt · Thả vùng trống → xoay</div>
+  <div id="hint-bar" data-i18n="hintDefault">Chạm khối → ghost hiện · Di ngón → ghost bám · Thả trên ô → đặt · Thả vùng trống → xoay</div>
 
   <!-- 🪞 V41 — Mirror Break: chỉ hiện khi đang ở vòng Thế giới gương -->
   <div style="display:flex;justify-content:center;margin-top:6px;">
@@ -358,6 +362,7 @@
 <!-- Floating piece that follows the cursor/finger while dragging -->
 <div id="drag-ghost"></div>
 
+<script src="js/i18n.js"></script>
 <script src="js/audio.js"></script>
 <script src="js/save.js"></script>
 <script src="js/daily-rewards.js"></script>
