@@ -69,21 +69,6 @@ function saveProgress(force){
 }
 
 /* ──────────────────────────────────────────
-   ⚙️ CÀI ĐẶT NHỊP & THƯỞNG (chromablast_mechcfg)
-────────────────────────────────────────── */
-function getSavedMechCfg(){
-  try{ return JSON.parse(localStorage.getItem('chromablast_mechcfg')||'{}'); }
-  catch(e){ return {}; }
-}
-function saveMechCfg(){
-  try{
-    const o={};
-    Object.keys(MECH_CFG).forEach(k=>{ o[k]={nhip:MECH_CFG[k].nhip, thuong:MECH_CFG[k].thuong, phat:MECH_CFG[k].phat}; });
-    localStorage.setItem('chromablast_mechcfg', JSON.stringify(o));
-  }catch(e){}
-}
-
-/* ──────────────────────────────────────────
    🌗 TIẾN TRÌNH VÒNG CƠ CHẾ ĐÔI (chromablast_combo_tier)
 ────────────────────────────────────────── */
 function getSavedComboTier(){
@@ -110,7 +95,7 @@ function isRulesRead(){ return safeGet('chromablast_rules_read')==='1'; }
 /* ──────────────────────────────────────────
    🗺️ MỞ KHÓA MAP ẨN ĐÃ THẮNG (chromablast_cleared_maps)
 ────────────────────────────────────────── */
-const CLEARED_MAPS_ALIAS = { secret:'secret1' }; // 'secret' (khoá nội bộ) === 'secret1' (khoá trong ADMIN_MAPS)
+const CLEARED_MAPS_ALIAS = { secret:'secret1' }; // 'secret' (khoá nội bộ) === 'secret1' (khoá trong HIDDEN_MAP_LIST)
 function getSavedClearedMaps(){
   try{ return JSON.parse(localStorage.getItem('chromablast_cleared_maps')||'[]'); }
   catch(e){ return []; }
@@ -133,14 +118,11 @@ function loadUsers(){
   let users;
   try { users = JSON.parse(safeGet(AUTH_USERS_KEY) || 'null'); } catch(e){ users = null; }
   if(!users || typeof users !== 'object'){ users = {}; }
-  // Đảm bảo luôn có tài khoản admin mặc định: admin / Admin@291091
-  if(!users['admin']){
-    users['admin'] = { password: 'Admin@291091', role: 'admin' };
-    saveUsers(users);
-  } else if(users['admin'].password === 'admin'){
-    // nâng cấp mật khẩu mặc định cũ ('admin') sang mật khẩu mới — không đụng tới
-    // trường hợp admin đã tự đổi mật khẩu riêng
-    users['admin'].password = 'Admin@291091';
+  // Bản phát hành công khai (CH Play): KHÔNG còn tài khoản admin cài sẵn.
+  // Gỡ bỏ tài khoản admin/role admin cũ nếu còn sót trong localStorage từ bản dev.
+  if(users['admin'] || Object.values(users).some(u=>u && u.role==='admin')){
+    delete users['admin'];
+    Object.keys(users).forEach(k=>{ if(users[k] && users[k].role==='admin') users[k].role='user'; });
     saveUsers(users);
   }
   return users;

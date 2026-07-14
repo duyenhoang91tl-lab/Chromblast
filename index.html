@@ -134,7 +134,6 @@
       <div style="font-size:10px;color:#555;margin-top:4px">ChromaBlast</div>
     </div>
     <div id="game-controls" style="display:flex;gap:6px;align-items:center;">
-      <button id="admin-btn" title="Bảng admin - chọn map ẩn" style="display:none;">🛠️ ADMIN</button>
       <button id="hiddenmap-menu-btn" title="Chọn map ẩn đã chơi qua" style="display:none;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;align-items:center;justify-content:center;padding:0;">🗺️</button>
       <button id="daily-btn" title="Điểm danh nhận quà">🎁</button>
       <button id="leaderboard-btn" title="Bảng xếp hạng">🏆</button>
@@ -189,26 +188,6 @@
       <div class="admin-sub">⚠️ Đang ở chế độ thử nghiệm cục bộ — điểm chỉ lưu trên máy này, chưa đồng bộ toàn cầu.</div>
       <div id="leaderboard-list"></div>
       <div id="leaderboard-my-rank" class="lb-my-rank"></div>
-    </div>
-  </div>
-
-  <div id="admin-panel">
-    <div class="admin-card">
-      <div class="admin-title"><span>🛠️ Chọn map ẩn để test</span><button class="admin-close" id="admin-close-btn">✕</button></div>
-      <div class="admin-sub">Chỉ tài khoản admin mới thấy bảng này. Bấm vào map để vào chơi thử ngay lập tức.</div>
-      <div id="admin-map-list"></div>
-      <div class="admin-sub" style="margin-top:10px;">🎯 Đánh thử <b>map thường</b> theo vòng độ khó (bật sẵn các cơ chế của vòng đó):</div>
-      <div id="admin-round-list" style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px;"></div>
-      <button id="mechcfg-open-btn" class="admin-map-btn" style="margin-top:8px;">⚙️ <b>Nhịp &amp; Thưởng</b> — chỉnh 20 cơ chế độ khó</button>
-    </div>
-  </div>
-
-  <div id="mechcfg-panel" class="admin-panel-like">
-    <div class="admin-card">
-      <div class="admin-title"><span>⚙️ Nhịp &amp; Thưởng</span><button class="admin-close" id="mechcfg-close-btn">✕</button></div>
-      <div class="admin-sub">Nhịp = số bước đặt khối giữa 2 lần cơ chế hoạt động (nhỏ hơn = khó hơn). Thưởng = điểm khi hóa giải. Thay đổi lưu tự động, áp dụng ngay cả ván đang chơi.</div>
-      <div id="mechcfg-list"></div>
-      <button id="mechcfg-reset-btn" class="admin-map-btn" style="margin-top:8px;">↩️ Khôi phục mặc định</button>
     </div>
   </div>
 
