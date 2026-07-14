@@ -39,7 +39,7 @@ const SECRET_COLORS = COLORS.slice(0,4); // 4 màu đầu giống map thường
 const COLOR_BURST_MIN = 9;   // min cells in a CONNECTED same-colour group to clear (map chính)
 const SECRET_WINDOW = 2500;  // ms — khoảng thời gian giữa 2 lần nổ trong map ẩn (ấn chậm hơn sẽ thoát)
 const SECRET_ULTRA  = 9;     // streak to trigger ultra
-const TEST_UNLOCK_SCORE = 100; // 🧪 ngưỡng điểm để mở khoá map ẩn — ĐANG GIẢM ĐỂ TEST (bình thường là 1000)
+const TEST_UNLOCK_SCORE = 100; // ngưỡng điểm mở khoá Map ẩn 1 (và mốc thắng trong Map ẩn 1)
 
 
 // Mode A state
@@ -591,7 +591,7 @@ document.getElementById('restart-btn').addEventListener('click', ()=>{ sfxClick(
    AUTH — Đăng nhập / Đăng ký / Admin
 ══════════════════════════════════════════ */
 // Danh sách 20 map ẩn: {key, label, run}
-const ADMIN_MAPS = [
+const HIDDEN_MAP_LIST = [
   { key:'secret1', label:'Map ẩn 1 — Đấu màu bí ẩn',        run: enterSecretMode },
   { key:'dodge',   label:'Map ẩn 2 — Rùa né cà rốt',         run: enterDodgeMode },
   { key:'fruit',   label:'Map ẩn 3 — Chém hoa quả',          run: enterFruitMode },
@@ -700,7 +700,7 @@ function hardResetAllModes(){
 
 
 initAuthScreen();
-initAdminPanel();
+initGamePanels();
 initAccountPanel();
 
 initHelpPanel();

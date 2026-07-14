@@ -8,11 +8,10 @@ function applyLoggedInUser(username){
   const users = loadUsers();
   const u = users[username];
   if(!u) return false;
-  currentUser = { username, role: u.role || 'user' };
+  currentUser = { username, role: 'user' }; // bản phát hành: mọi tài khoản đều là người chơi thường
   setSession(username);
-  document.getElementById('admin-btn').style.display = (currentUser.role === 'admin') ? 'flex' : 'none';
   const nameBox = document.getElementById('account-username-box');
-  if(nameBox) nameBox.textContent = username + (currentUser.role === 'admin' ? ' (admin)' : '');
+  if(nameBox) nameBox.textContent = username;
   if(typeof updateDailyBadge === 'function') updateDailyBadge(); // khoá lưu quà đổi theo tài khoản
   return true;
 }
@@ -53,7 +52,7 @@ function hideAuthScreen(){
 }
 
 function initAuthScreen(){
-  loadUsers(); // seed tài khoản admin/admin mặc định nếu chưa có
+  loadUsers(); // dọn dữ liệu tài khoản cũ trong localStorage nếu cần
 
   if(storageBlocked){
     const sub = document.querySelector('.auth-sub');

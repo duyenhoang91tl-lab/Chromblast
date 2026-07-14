@@ -147,27 +147,22 @@ function togglePause(){
 }
 
 // 📖 Hướng dẫn cơ chế theo VÒNG độ khó của map thường.
-// Người chơi thường: chỉ đọc được cơ chế của các vòng ĐÃ CHẠM tới (tới vòng nào biết vòng đó).
-// Tài khoản admin: đọc được cơ chế của TẤT CẢ các vòng (1-41).
+// Người chơi chỉ đọc được cơ chế của các vòng ĐÃ CHẠM tới (tới vòng nào biết vòng đó).
 function showRoundGuide(){
-  const isAdmin = !!(currentUser && currentUser.role==='admin');
   const reached = (typeof highestReachedTier==='function') ? highestReachedTier() : 0;
   const cur = (typeof mainHardTier!=='undefined' ? (mainHardTier|0) : 0);
-  const maxTier = isAdmin ? 41 : reached;
+  const maxTier = reached;
   const title = document.getElementById('roundguide-title');
   const body  = document.getElementById('roundguide-body');
-  title.textContent = isAdmin ? '📖 Cơ chế TẤT CẢ các vòng (admin)' : '📖 Hướng dẫn cơ chế vòng của bạn';
+  title.textContent = '📖 Hướng dẫn cơ chế vòng của bạn';
   if(maxTier < 1){
     body.innerHTML = '<p style="font-size:13px;line-height:1.5;color:#dfe6f2;">Bạn chưa tới vòng nào có cơ chế đặc biệt. '+
       'Mỗi khi qua một map ẩn, map thường sẽ thêm một cơ chế mới — quay lại đây để đọc hướng dẫn nhé!</p>';
     document.getElementById('roundguide-panel').classList.add('show');
     return;
   }
-  let html = '';
-  if(!isAdmin){
-    html += '<p style="font-size:12px;color:#9aa7bd;margin:0 0 10px;">Bạn đang ở <b style="color:#ffd54a;">Vòng '+
-      (cur||1)+'</b>. Dưới đây là cơ chế mọi vòng bạn đã chạm tới.</p>';
-  }
+  let html = '<p style="font-size:12px;color:#9aa7bd;margin:0 0 10px;">Bạn đang ở <b style="color:#ffd54a;">Vòng '+
+    (cur||1)+'</b>. Dưới đây là cơ chế mọi vòng bạn đã chạm tới.</p>';
   for(let v=1; v<=maxTier; v++){
     const desc = roundMechDescFor(v);
     if(!desc) continue;
@@ -195,7 +190,7 @@ function renderHiddenMapMenu(){
   if(!btn||!list) return;
   btn.style.display = clearedHiddenMaps.size>0 ? 'flex' : 'none';
   list.innerHTML='';
-  ADMIN_MAPS.forEach(m=>{
+  HIDDEN_MAP_LIST.forEach(m=>{
     const cleared = clearedHiddenMaps.has(m.key);
     const row = document.createElement('div');
     row.className = 'admin-map-row';
@@ -231,93 +226,9 @@ function renderHiddenMapMenu(){
   });
 }
 
-function initAdminPanel(){
-  const list = document.getElementById('admin-map-list');
-  ADMIN_MAPS.forEach(m=>{
-    const btn = document.createElement('button');
-    btn.className = 'admin-map-btn';
-    btn.innerHTML = '<b>'+m.label.split(' — ')[0]+'</b> — '+m.label.split(' — ')[1];
-    btn.addEventListener('click', ()=>{
-      document.getElementById('admin-panel').classList.remove('show');
-      const startScreen = document.getElementById('start-screen');
-      startScreen.classList.add('hide');
-      setTimeout(()=>{ startScreen.style.display='none'; }, 500);
-      sfxClick();
-      hardResetAllModes();  // dọn sạch map cũ (kể cả map startGame() gốc bỏ sót) trước khi chuyển
-      startGame();          // reset trạng thái game về sạch
-      m.run();               // vào thẳng map ẩn được chọn
-    });
-    list.appendChild(btn);
-  });
-
-  document.getElementById('admin-btn').addEventListener('click', ()=>{
-    sfxClick();
-    document.getElementById('admin-panel').classList.add('show');
-  });
-  document.getElementById('admin-close-btn').addEventListener('click', ()=>{
-    document.getElementById('admin-panel').classList.remove('show');
-  });
-
-  // 🎯 Đánh thử map thường theo vòng độ khó 1-41 (1-20 đơn, 21-40 cơ chế đôi, 41 = Thế giới gương — admin test đủ mọi "map")
-  const roundList=document.getElementById('admin-round-list');
-  for(let v=1; v<=41; v++){
-    const rb=document.createElement('button');
-    rb.className='admin-map-btn';
-    rb.style.cssText='padding:6px 4px;text-align:center;font-size:12px;'+(v>20?'border-color:#c084fc;':'');
-    rb.innerHTML='<b>V'+v+'</b>';
-    if(v<=20){
-      rb.title='Map thường — vòng '+v+' ('+ROUND_MECH_NAMES[v]+')';
-    } else if(v<=40){
-      const [a,b]=comboPairForTier(v);
-      rb.title='Map thường — vòng '+v+' [ĐÔI] '+ROUND_MECH_NAMES[a]+' + '+ROUND_MECH_NAMES[b];
-    } else {
-      rb.title='Map thường — vòng '+v+' ('+ROUND_MECH_NAMES[21]+')';
-    }
-    rb.addEventListener('click', ()=>{
-      document.getElementById('admin-panel').classList.remove('show');
-      const startScreen=document.getElementById('start-screen');
-      if(startScreen){
-        startScreen.classList.add('hide');
-        setTimeout(()=>{ startScreen.style.display='none'; }, 500);
-      }
-      sfxClick();
-      hardResetAllModes();
-      startGame();
-      mainHardTier=v;
-      resetMechanicState();
-      applyRoundMechanics();
-      if(v<=20) showComboFlash(0,false,'🎯 Test map thường — vòng '+v);
-      else if(v<=40){
-        const [a,b]=comboPairForTier(v);
-        showComboFlash(0,false,'🎯 Test vòng '+v+' [ĐÔI]: '+ROUND_MECH_NAMES[a]+' + '+ROUND_MECH_NAMES[b]);
-      } else {
-        showComboFlash(0,false,'🎯 Test vòng '+v+': '+ROUND_MECH_NAMES[21]);
-      }
-    });
-    roundList.appendChild(rb);
-  }
-
-  // ⚙️ Mục Nhịp & Thưởng
-  document.getElementById('mechcfg-open-btn').addEventListener('click', ()=>{
-    if(!currentUser || currentUser.role!=='admin') return; // mục cố định — chỉ admin được xem/chỉnh
-    sfxClick();
-    renderMechCfg();
-    document.getElementById('admin-panel').classList.remove('show');
-    document.getElementById('mechcfg-panel').classList.add('show');
-  });
-  document.getElementById('mechcfg-close-btn').addEventListener('click', ()=>{
-    document.getElementById('mechcfg-panel').classList.remove('show');
-  });
-  document.getElementById('mechcfg-reset-btn').addEventListener('click', ()=>{
-    sfxClick();
-    Object.keys(MECH_DEFAULTS).forEach(k=>{
-      MECH_CFG[k].nhip=MECH_DEFAULTS[k].nhip;
-      MECH_CFG[k].thuong=MECH_DEFAULTS[k].thuong;
-      MECH_CFG[k].phat=MECH_DEFAULTS[k].phat;
-    });
-    saveMechCfg(); renderMechCfg();
-  });
-
+// Khởi tạo các panel dùng chung của game (menu map ẩn, hướng dẫn, adventure).
+// Bản phát hành CH Play: đã GỠ toàn bộ bảng admin / test vòng / chỉnh "Nhịp & Thưởng".
+function initGamePanels(){
   document.getElementById('hiddenmap-menu-btn').addEventListener('click', ()=>{
     sfxClick();
     renderHiddenMapMenu();
