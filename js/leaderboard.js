@@ -1,23 +1,21 @@
 // ═══════════════════════════════════════════════════════════════
-// js/leaderboard.js — BẢNG XẾP HẠNG
+// js/leaderboard.js — BẢNG XẾP HẠNG TRÊN THIẾT BỊ
 //
-// ⚠️ HIỆN TẠI: lưu CỤC BỘ trong máy (localStorage), không đồng bộ giữa
-// các thiết bị khác nhau. Có kèm vài mốc điểm giả (LEADERBOARD_SEED) để
-// bảng không trống trơn lúc mới cài — đây KHÔNG phải điểm của người chơi
-// thật, chỉ để test UI. Xoá mảng này khi nối backend thật.
+// Bản phát hành CH Play: lưu điểm cao nhất của từng người chơi TRÊN MÁY NÀY
+// (localStorage) — chỉ hiển thị điểm THẬT, không còn dữ liệu giả lập.
 //
-// ĐỂ NÂNG CẤP THÀNH "TOÀN CẦU" THẬT (đồng bộ mọi máy qua server, vd
-// Firebase Firestore): chỉ cần viết lại nội dung bên trong 3 hàm
-// submitScoreToLeaderboard() / fetchTopScores() / fetchMyRank() để gọi
-// API thay vì đọc/ghi localStorage. Toàn bộ phần UI bên dưới
-// (renderLeaderboardPanel, initLeaderboardPanel) và các chỗ gọi 3 hàm
-// này ở nơi khác trong code (engine.js) KHÔNG cần sửa gì thêm.
+// ĐỂ NÂNG CẤP THÀNH "TOÀN CẦU" (đồng bộ mọi máy qua server, vd Firebase
+// Firestore hoặc Google Play Games Services): chỉ cần viết lại nội dung
+// bên trong 3 hàm submitScoreToLeaderboard() / fetchTopScores() /
+// fetchMyRank() để gọi API thay vì đọc/ghi localStorage. Toàn bộ phần UI
+// bên dưới và các chỗ gọi 3 hàm này (engine.js) KHÔNG cần sửa gì thêm.
 //
 // Nạp SAU save.js, TRƯỚC main.js.
 // ═══════════════════════════════════════════════════════════════
 
 const LEADERBOARD_KEY = 'chromablast_leaderboard_local';
-const LEADERBOARD_SEED = [ // dữ liệu giả lập — xoá khi có server thật
+// Điểm giả lập từng seed ở bản dev — nhận diện để dọn khỏi máy đã cài bản cũ.
+const LEADERBOARD_DEV_SEED = [
   {name:'Minh',        score: 4820},
   {name:'Huyền Trang',  score: 3960},
   {name:'Quang',        score: 3510},
@@ -26,13 +24,15 @@ const LEADERBOARD_SEED = [ // dữ liệu giả lập — xoá khi có server th
 ];
 
 function getLeaderboardEntries(){
+  let entries = [];
   try{
     const raw = safeGet(LEADERBOARD_KEY);
-    if(raw) return JSON.parse(raw);
-  }catch(e){}
-  const seeded = LEADERBOARD_SEED.slice();
-  safeSet(LEADERBOARD_KEY, JSON.stringify(seeded));
-  return seeded;
+    if(raw) entries = JSON.parse(raw) || [];
+  }catch(e){ entries = []; }
+  // Dọn dữ liệu giả từ bản dev cũ (khớp đúng cả tên lẫn điểm mới xoá — không đụng người chơi thật trùng tên)
+  const cleaned = entries.filter(e => !LEADERBOARD_DEV_SEED.some(s => s.name===e.name && s.score===e.score));
+  if(cleaned.length !== entries.length) safeSet(LEADERBOARD_KEY, JSON.stringify(cleaned));
+  return cleaned;
 }
 
 function currentPlayerName(){
