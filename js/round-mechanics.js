@@ -574,7 +574,7 @@ function applyRoundMechanics(){
   if(isComboTier(mainHardTier)){
     const [a,b]=comboPairForTier(mainHardTier);
     announceMech('combo'+mainHardTier,
-      '🌗 Vòng '+mainHardTier+' — Cơ chế đôi: '+ROUND_MECH_NAMES[a]+' + '+ROUND_MECH_NAMES[b]+'!', 700);
+      '🌗 '+t('roundN', mainHardTier)+' — '+MECH_NAME(a)+' + '+MECH_NAME(b)+'!', 700);
   }
 }
 function spawnMountain(){
@@ -672,40 +672,16 @@ function squirrelMoveAndSteal(){
 // 🌗 VÒNG 21-40 — CƠ CHẾ ĐÔI (kết hợp 2 cơ chế đơn liền kề của vòng 1-20)
 // vòng 21 = cơ chế(1)+cơ chế(2) · vòng 22 = cơ chế(2)+cơ chế(3) · ... ·
 // vòng 39 = cơ chế(19)+cơ chế(20) · vòng 40 = cơ chế(20)+cơ chế(1)  → 20 cặp, không cặp nào trùng nhau.
-const ROUND_MECH_NAMES=['','🌿 Dây gai','⛰️ Núi đá','🐿️ Sóc trộm ô','🧊 Băng giá','🌫️ Sương mù','💣 Bom hẹn giờ','🌪️ Lốc xoáy','🥚 Trứng rồng','🕷️ Nhện giăng tơ','🌧️ Mây mưa','🦎 Tắc kè hoa','🕳️ Hố đen','👻 Bóng ma','🐌 Ốc sên','🧱 Tường gạch','⚡ Sét đánh','🐍 Rắn thần','🌋 Núi lửa','🌀 Cổng dịch chuyển','🐲 Vua Rồng','🪞 Thế giới gương'];
-// Mô tả CÁCH CHƠI / cách hoá giải từng cơ chế (khớp chỉ số với ROUND_MECH_NAMES 1-21).
-const ROUND_MECH_DESC=['',
-  'Ô nằm quá 5 lượt chưa nổ sẽ bị dây gai quấn, không nổ được nữa. Phá ô bên cạnh để gỡ gai.',
-  'Cứ 10 bước núi lan rộng thêm 1 ô, ô có núi không dùng được. Phá ô cạnh núi để bào mòn núi.',
-  'Sau 3 bước sóc sẽ ăn 1 ô, ô bị ăn không đặt được gạch. Loại bỏ sóc bằng cách phá ô bên cạnh nó — ô bị ăn sẽ hồi lại.',
-  'Thỉnh thoảng 1 ô bị đóng băng. Nổ 2 lần mới vỡ: lần 1 nứt, lần 2 vỡ hẳn.',
-  'Sương mù che màu một vùng và trôi dần quanh bàn. Ghi nhớ màu trước khi bị che.',
-  'Bom đếm ngược 8 bước rồi nổ mất vùng 3×3. Phá ô cạnh bom để gỡ bom trước.',
-  'Cứ 15 bước lốc xoáy xáo trộn 1 hàng hoặc 1 cột ngẫu nhiên.',
-  'Trứng nở sau 12 bước và thiêu cả hàng. Phá ô cạnh trứng 2 lần để đập vỡ trước khi nở.',
-  'Nhện khoá 1 khối trong khay 3 lượt không dùng được. Phá ô nhện đứng 5 lần để diệt nhện.',
-  'Mây mưa biến 1 ô trong cột nó đứng thành ô xám. Xoá ô xám bằng cách nổ trọn hàng chứa nó.',
-  'Cứ 8 bước tắc kè lén đổi màu 2 ô. Nhìn kỹ màu trước khi đặt gạch.',
-  'Cứ 10 bước hố đen nuốt 1 ô màu gần nhất. Phá ô cạnh hố 3 lần để phong ấn hố.',
-  'Bóng ma nhập vào 1 ô và hiện màu giả. Nổ trúng ô đó để trừ tà.',
-  'Ốc sên bò 1 ô mỗi bước, để lại vệt nhớt chặn đặt gạch 4 bước. Phá ô cạnh ốc 2 lần để diệt.',
-  'Cứ 14 bước 1 đoạn tường 3 ô rơi xuống chiếm chỗ. Phá ô cạnh tường để bào mòn.',
-  'Sét cảnh báo trước 3 bước rồi đánh sạch vùng 2×2. Tránh xếp màu vào vùng cảnh báo.',
-  'Rắn 3 đốt trườn mỗi bước và nuốt ô màu nó bò qua. Phá trúng thân rắn 5 lần để diệt.',
-  'Cứ 15 bước núi lửa phun 3 tảng đá chặn ô. Phá ô cạnh đá để dọn.',
-  'Cứ 5 bước cổng dịch chuyển tráo 1 ô màu đi chỗ khác. Phá ô cạnh cổng 3 lần để đóng.',
-  'Cứ 12 bước Vua Rồng tung 1 đòn ngẫu nhiên (đốt hàng, đóng băng, gieo gai...). Phá trúng ô rồng đứng 15 lần để hạ gục.',
-  'Mỗi khối bạn đặt sẽ tự sinh 1 khối đối xứng qua giữa bàn. Đối xứng hết chỗ đặt là thua — luôn chừa chỗ cho cả 2 bên.'
-];
+// Tên/mô tả cơ chế đa ngôn ngữ: xem js/i18n-content.js (MECH_NAME/MECH_DESC).
 // Trả về mô tả cơ chế của một VÒNG bất kỳ (1-41): vòng đơn 1-20, đôi 21-40, 41 = Thế giới gương.
 function roundMechDescFor(tier){
-  if(tier>=1 && tier<=20) return ROUND_MECH_NAMES[tier]+': '+ROUND_MECH_DESC[tier];
+  if(tier>=1 && tier<=20) return MECH_NAME(tier)+': '+MECH_DESC(tier);
   if(tier>=21 && tier<=40){
     const [a,b]=comboPairForTier(tier);
-    return 'CƠ CHẾ ĐÔI — '+ROUND_MECH_NAMES[a]+' + '+ROUND_MECH_NAMES[b]+':<br>• '+
-      ROUND_MECH_NAMES[a]+': '+ROUND_MECH_DESC[a]+'<br>• '+ROUND_MECH_NAMES[b]+': '+ROUND_MECH_DESC[b];
+    return t('comboPair')+' — '+MECH_NAME(a)+' + '+MECH_NAME(b)+':<br>• '+
+      MECH_NAME(a)+': '+MECH_DESC(a)+'<br>• '+MECH_NAME(b)+': '+MECH_DESC(b);
   }
-  if(tier===41) return ROUND_MECH_NAMES[21]+': '+ROUND_MECH_DESC[21];
+  if(tier===41) return MECH_NAME(21)+': '+MECH_DESC(21);
   return '';
 }
 // Vòng khó cao nhất người chơi đã CHẠM tới (để giới hạn hướng dẫn cho tài khoản thường).

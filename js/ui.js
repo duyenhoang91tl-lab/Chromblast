@@ -156,20 +156,18 @@ function showRoundGuide(){
   const body  = document.getElementById('roundguide-body');
   title.textContent = t('roundGuideTitle');
   if(maxTier < 1){
-    body.innerHTML = '<p style="font-size:13px;line-height:1.5;color:#dfe6f2;">Bạn chưa tới vòng nào có cơ chế đặc biệt. '+
-      'Mỗi khi qua một map ẩn, map thường sẽ thêm một cơ chế mới — quay lại đây để đọc hướng dẫn nhé!</p>';
+    body.innerHTML = '<p style="font-size:13px;line-height:1.5;color:#dfe6f2;">'+t('rgNone')+'</p>';
     document.getElementById('roundguide-panel').classList.add('show');
     return;
   }
-  let html = '<p style="font-size:12px;color:#9aa7bd;margin:0 0 10px;">Bạn đang ở <b style="color:#ffd54a;">Vòng '+
-    (cur||1)+'</b>. Dưới đây là cơ chế mọi vòng bạn đã chạm tới.</p>';
+  let html = '<p style="font-size:12px;color:#9aa7bd;margin:0 0 10px;">'+t('rgYouAt', cur||1)+'</p>';
   for(let v=1; v<=maxTier; v++){
     const desc = roundMechDescFor(v);
     if(!desc) continue;
     const isCur = (v===cur);
     html += '<div class="roundguide-item'+(isCur?' cur':'')+'">'+
-      '<h4>'+(isCur?'▶ ':'')+'Vòng '+v+' <span class="rg-tier">'+
-        (v<=20?'(đơn)':v<=40?'(cơ chế đôi)':'(đặc biệt)')+(isCur?' · đang chơi':'')+'</span></h4>'+
+      '<h4>'+(isCur?'▶ ':'')+t('roundN',v)+' <span class="rg-tier">'+
+        (v<=20?t('rgSingle'):v<=40?t('rgCombo'):t('rgSpecial'))+(isCur?t('rgPlaying'):'')+'</span></h4>'+
       '<p>'+desc+'</p></div>';
   }
   body.innerHTML = html;
@@ -177,7 +175,7 @@ function showRoundGuide(){
 }
 
 function showMapHelp(key){
-  const info = MAP_HELP[key];
+  const info = MAP_HELP_FOR(key);
   if(!info) return;
   document.getElementById('maphelp-title').textContent = info.title;
   document.getElementById('maphelp-body').innerHTML = info.body;
@@ -339,47 +337,22 @@ function initHelpPanel(){
   });
 }
 
-// ═══════════════════════════════════════════════════════════════
-// HƯỚNG DẪN RIÊNG TỪNG MAP ẨN (MAP_HELP) + render danh sách hướng dẫn cơ chế vòng.
-// Tách từ main.js — thuộc UI (đi cùng showMapHelp). Dùng clearedHiddenMaps / ROUND_MECH*
-// (khai báo nơi khác) lúc CHẠY.
-// ═══════════════════════════════════════════════════════════════
-// ═══════════ Hướng dẫn riêng từng map ẩn — chỉ đọc được khi đã chơi tới ═══════════
-const MAP_HELP = {
-  secret1: { title:'🔥 Map ẩn 1 — Nổ màu bí mật', body:'Bấm vào <b>3+ ô cùng màu liền kề</b> để nổ. Nổ tiếp trong 2.5 giây để giữ chuỗi. Bấm sai 3 lần hoặc để hết giờ → mất 1 tim; hết 3 tim ❤️ là kết thúc.' },
-  dodge: { title:'🐢 Map ẩn 2 — Rùa né cà rốt', body:'Kéo trái/phải (hoặc bấm ◀ ▶) cho Rùa né cà rốt Thỏ bắn ra. Sống càng lâu càng tốt.' },
-  fruit: { title:'🍉 Map ẩn 3 — Chém hoa quả', body:'Vuốt để chém hoa quả bay lên trong 60 giây. Đừng chém trúng 💣 bom — trúng là thua ngay.' },
-  bee: { title:'🐝 Map ẩn 4 — Chó trốn ong', body:'Chạm màn hình để chỉ đường cho chó chạy trốn, chạm vào ong để đập bay. Đừng để ong chích chó hết tim.' },
-  gold: { title:'⛏️ Map ẩn 5 — Mèo đào vàng', body:'Chạm ô đất cạnh mèo để đào vàng trong 30 giây, chạm xa hơn để dẫn mèo đi. Bắt chuột 💎 được thưởng lớn.' },
-  mole: { title:'🔨 Map ẩn 6 — Vườn thú bí ẩn', body:'Thú nhô lên khỏi hố thì chạm để đập. Tránh đập 🦔 nhím và 🐍 rắn. Đập trượt 3 lần liên tiếp mất 1 tim.' },
-  memory: { title:'🃏 Map ẩn 7 — Lật thẻ ký ức', body:'Chạm lật 2 thẻ để tìm cặp giống nhau — sai thì cả 2 úp lại. Ghép đủ 6 cặp trước khi hết giờ.' },
-  bubble: { title:'🫧 Map ẩn 8 — Bắn bong bóng', body:'Chạm để bắn bong bóng — 3+ bóng cùng màu liền nhau sẽ nổ. Đừng để bóng tràn xuống đáy.' },
-  stack: { title:'🏗️ Map ẩn 9 — Xếp tháp', body:'Chạm để thả khối đang chạy qua lại xuống tháp — phần thừa bị cắt. Lệch hoàn toàn là thua. Xếp đủ tầng để thắng.' },
-  boss: { title:'🐔 Map ẩn 10 — Phi cơ bắn gà', body:'Kéo ngón tay lái phi cơ (tự động bắn). Né trứng gà rơi — có 3 mạng ❤️. Diệt hết đàn gà trước khi hết giờ.' },
-  catch: { title:'🧺 Map ẩn 11 — Hứng thú cưng', body:'Di chuyển rổ để hứng thú cưng rơi xuống. Tránh hứng 🦔 nhím và 🐍 rắn — mất mạng.' },
-  flood: { title:'🎨 Map ẩn 12 — Tràn màu', body:'Nhấn nút màu để tràn màu đó từ góc trên trái. Phủ kín cả bảng trước khi hết lượt đi.' },
-  arena: { title:'🌊 Map ẩn 13 — Đấu trường sinh tồn', body:'Kéo chú chó 🐶 né đòn tấn công, chạm vào 🐝/🥕 để tiêu diệt. Sống sót qua 4 đợt sóng kẻ thù.' },
-  snake: { title:'🐍 Map ẩn 14 — Rắn săn mồi', body:'Vuốt để đổi hướng rắn, ăn trái cây để dài ra. Đừng đâm vào tường hoặc đuôi. Đạt độ dài 20 để thắng.' },
-  brick: { title:'🧱 Map ẩn 15 — Phá gạch', body:'Kéo thanh đỡ cho bóng nảy phá gạch. Đừng để bóng rơi xuống đáy — có 3 mạng ❤️. Phá hết gạch để thắng.' },
-  runner: { title:'🏃 Map ẩn 16 — Chạy vô tận', body:'Chạm để nhảy qua chướng ngại vật, chạm 2 lần để nhảy đôi. Sống sót 60 giây để thắng.' },
-  space: { title:'🚀 Map ẩn 17 — Space Shooter', body:'Di ngón tay để lái tàu, chạm để bắn (hoặc bật Tự bắn). Diệt hết các đợt quái để thắng.' },
-  rhythm: { title:'🎵 Map ẩn 18 — Rhythm Tap', body:'Chạm vào tâm đúng lúc vòng ngoài thu nhỏ khớp với vòng trong. Hoàn thành hết số vòng để thắng.' },
-  maze: { title:'🌀 Map ẩn 19 — Maze Runner', body:'Vuốt để dẫn chú chó thoát mê cung trong 60 giây. Đến ô đích ở góc dưới phải để thắng.' },
-  mega: { title:'💀 Map ẩn 20 — MEGA BOSS (trận cuối)', body:'Trận cuối! Di ngón tay né đạn, tàu tự động bắn Rồng. Bắn cạn máu Rồng để phá đảo toàn bộ game!' },
-};
+// Hướng dẫn từng map ẩn đa ngôn ngữ: xem js/i18n-content.js (MAP_HELP_FOR).
 // Ánh xạ vòng 1-20 (0-based) sang khoá cơ chế trong MECH_CFG, để tra điểm thưởng/phạt LUÔN ĐÚNG
-const ROUND_HELP = []; // dựng lười từ ROUND_MECH_NAMES + ROUND_MECH_DESC (round-mechanics.js) — 1 nguồn duy nhất
-let _roundHelpBuilt = false;
+const ROUND_HELP = []; // dựng từ MECH_NAME/MECH_DESC (i18n-content.js) theo NGÔN NGỮ hiện tại
+let _roundHelpLang = null;
 function ensureComboRoundHelp(){
-  if(_roundHelpBuilt || typeof comboPairForTier!=='function' || typeof ROUND_MECH_DESC==='undefined') return;
-  _roundHelpBuilt = true;
-  for(let v=1; v<=20; v++) ROUND_HELP.push({ title:'Vòng '+v+' — '+ROUND_MECH_NAMES[v], body:ROUND_MECH_DESC[v] });
+  if(typeof comboPairForTier!=='function' || typeof MECH_DESC!=='function') return;
+  if(_roundHelpLang === currentLang) return; // đã dựng đúng ngôn ngữ này rồi
+  _roundHelpLang = currentLang;
+  ROUND_HELP.length = 0;
+  for(let v=1; v<=20; v++) ROUND_HELP.push({ title:t('roundN',v)+' — '+MECH_NAME(v), body:MECH_DESC(v) });
   for(let v=21; v<=40; v++){
     const [a,b]=comboPairForTier(v);
     ROUND_HELP.push({
-      title:'🌗 Vòng '+v+' — Cơ chế đôi: '+ROUND_MECH_NAMES[a]+' + '+ROUND_MECH_NAMES[b],
-      body:'Vòng này có CÙNG LÚC 2 cơ chế:<br>① <b>'+ROUND_MECH_NAMES[a]+':</b> '+ROUND_MECH_DESC[a]
-        +'<br>② <b>'+ROUND_MECH_NAMES[b]+':</b> '+ROUND_MECH_DESC[b]
+      title:'🌗 '+t('roundN',v)+' — '+MECH_NAME(a)+' + '+MECH_NAME(b),
+      body:t('comboBoth')+'<br>① <b>'+MECH_NAME(a)+':</b> '+MECH_DESC(a)
+        +'<br>② <b>'+MECH_NAME(b)+':</b> '+MECH_DESC(b)
     });
   }
 }
@@ -403,10 +376,8 @@ function renderRoundHelp(){
       locked.className='admin-map-btn locked';
       locked.style.cursor='default';
       locked.innerHTML = i<20
-        ? '🔒 Vòng '+(i+1)+' — chơi tới đây để mở khoá hướng dẫn'
-        : (reached>=20
-            ? '🔒 Vòng '+(i+1)+' [cơ chế đôi] — vượt qua vòng '+i+' để mở khoá'
-            : '🔒 Vòng '+(i+1)+' [cơ chế đôi] — thắng đủ 20/20 map ẩn trước để bắt đầu tiến trình này');
+        ? t('lockedPlay', i+1)
+        : (reached>=20 ? t('lockedPass', i+1, i) : t('lockedAll', i+1));
       list.appendChild(locked);
     }
   });

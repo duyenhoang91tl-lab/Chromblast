@@ -189,11 +189,11 @@ function afterPlace(){
       const [na,nb]=comboPairForTier(mainHardTier);
       setTimeout(()=>showComboFlash(0,false,
         '🎉 QUA MÀN — Level '+passedTier+'! Lên Level '+mainHardTier+' — Cơ chế đôi: '
-        +ROUND_MECH_NAMES[na]+' + '+ROUND_MECH_NAMES[nb]+'!'), 300);
+        +MECH_NAME(na)+' + '+MECH_NAME(nb)+'!'), 300);
     } else {
       setTimeout(()=>showComboFlash(0,false,
         '🎉 QUA MÀN — Level '+passedTier+'! Lên Level '+mainHardTier+' — '
-        +ROUND_MECH_NAMES[21]+'!'), 300);
+        +MECH_NAME(21)+'!'), 300);
     }
   }
   if(pieces.every(p=>p.used)){
