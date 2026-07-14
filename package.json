@@ -1,13 +1,11 @@
 {
-  "name": "chromblast",
+  "name": "chromablast",
   "version": "1.0.0",
+  "description": "ChromaBlast - color matching puzzle game",
   "private": true,
-  "description": "ChromaBlast Android release wrapper",
   "scripts": {
-    "prepare:web": "node scripts/prepare-web.mjs",
-    "android:add": "npx cap add android",
-    "android:sync": "npm run prepare:web && npx cap sync android",
-    "android:open": "npx cap open android"
+    "build:www": "node scripts/build-www.mjs",
+    "cap:sync": "npm run build:www && npx cap sync android"
   },
   "dependencies": {
     "@capacitor/android": "^7.0.0",
