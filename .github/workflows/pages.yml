@@ -1,0 +1,36 @@
+# Tự động đăng toàn bộ game (kèm privacy-policy.html) lên GitHub Pages
+# mỗi khi push lên main. URL sau khi chạy:
+#   https://duyenhoang91tl-lab.github.io/chromblast/                     ← chơi game trên web
+#   https://duyenhoang91tl-lab.github.io/chromblast/privacy-policy.html ← điền vào Play Console
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true   # tự bật Pages cho repo nếu chưa bật
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - id: deployment
+        uses: actions/deploy-pages@v4
