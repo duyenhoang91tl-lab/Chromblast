@@ -20,6 +20,8 @@ function mainBurstFX(cells, streak){
     const W=wrap.clientWidth, H=wrap.clientHeight;
     const palette=[baseColor, '#ffd24a', '#ff7a3c', '#ffffff', '#ffe9a8', baseColor];
     const N = big ? 55 : 28;
+    const frag=document.createDocumentFragment();
+    const sparks=[];
     for(let i=0;i<N;i++){
       const side=i%4; const t=Math.random();
       let x,y,ang;
@@ -39,9 +41,13 @@ function mainBurstFX(cells, streak){
       s.style.setProperty('--len',len+'px');
       s.style.setProperty('--col',col);
       s.style.animationDuration=dur+'ms';
-      fx.appendChild(s);
-      setTimeout(()=>{ s.remove(); if(!fx.children.length) fx.classList.remove('active'); }, dur+60);
+      frag.appendChild(s);
+      sparks.push([s,dur]);
     }
+    fx.appendChild(frag); // 1 lần chèn DOM duy nhất thay vì N lần appendChild riêng lẻ
+    sparks.forEach(([s,dur])=>{
+      setTimeout(()=>{ s.remove(); if(!fx.children.length) fx.classList.remove('active'); }, dur+60);
+    });
   }
 
   // 2) Tia lấp lánh tại từng ô nổ
@@ -49,12 +55,22 @@ function mainBurstFX(cells, streak){
   const rr=root.getBoundingClientRect();
   let budget=big?50:30;
   const per=cells.length>14?1:(cells.length>7?2:3);
+  // Đọc vị trí TẤT CẢ ô cần hiệu ứng trước (1 lượt), rồi mới tạo/chèn phần tử (1 lượt).
+  // TRƯỚC ĐÂY: đọc getBoundingClientRect() rồi appendChild() xen kẽ NGAY trong vòng lặp
+  // — mỗi appendChild làm layout "bẩn", nên lần đọc kế tiếp lại buộc trình duyệt reflow
+  // lại toàn trang (layout thrashing). Với cụm nổ nhiều ô (combo lớn) đây là chỗ dễ giật
+  // đúng vào khoảnh khắc "đã tay" nhất của người chơi.
+  const spots=[];
   for(const [gr,gc] of cells){
     if(budget<=0) break;
     const cell=getCell(gr,gc); if(!cell) continue;
     const cr=cell.getBoundingClientRect();
-    const cx=cr.left-rr.left+cr.width/2, cy=cr.top-rr.top+cr.height/2;
     const n=Math.min(per,budget); budget-=n;
+    spots.push([cr.left-rr.left+cr.width/2, cr.top-rr.top+cr.height/2, n]);
+  }
+  const tFrag=document.createDocumentFragment();
+  const twinkles=[];
+  spots.forEach(([cx,cy,n])=>{
     for(let k=0;k<n;k++){
       const t=document.createElement('div'); t.className='twinkle';
       t.style.left=cx+'px'; t.style.top=cy+'px';
@@ -63,10 +79,12 @@ function mainBurstFX(cells, streak){
       t.style.setProperty('--tx',(Math.random()*28-14)+'px');
       t.style.setProperty('--ty',(Math.random()*28-14)+'px');
       t.style.animationDelay=(Math.random()*0.12)+'s';
-      root.appendChild(t);
-      setTimeout(()=>t.remove(),740);
+      tFrag.appendChild(t);
+      twinkles.push(t);
     }
-  }
+  });
+  root.appendChild(tFrag);
+  twinkles.forEach(t=>setTimeout(()=>t.remove(),740));
 }
 
 function secretBurstFX(ci, big){
