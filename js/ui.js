@@ -87,7 +87,8 @@ function initStartScreen(){
 }
 
 function togglePause(){
-  if(!secretMode && !dodgeMode && !fruitMode && !beeMode && !goldMode && !moleMode && !memoryMode && !bubbleMode && !stackMode && !bossMode && !catchMode && !floodMode && !arenaMode && !snakeMode && !brickMode && !runnerMode && !spaceRAF && !rhythmRAF && !mazeRAF && !megaRAF) return;
+  // Cho phép tạm dừng ở CẢ bàn chính lẫn map ẩn (bàn chính không có vòng lặp
+  // RAF nào cần dừng — chỉ hiện overlay + dừng nhạc).
   sfxClick();
   gamePaused = !gamePaused;
   const overlay = document.getElementById('pause-overlay');
