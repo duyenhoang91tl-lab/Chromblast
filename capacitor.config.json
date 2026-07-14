@@ -1,0 +1,12 @@
+{
+  "appId": "com.duyenhoang91tl.chromblast",
+  "appName": "ChromaBlast",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": false,
+    "backgroundColor": "#1a1a2e"
+  },
+  "server": {
+    "androidScheme": "https"
+  }
+}

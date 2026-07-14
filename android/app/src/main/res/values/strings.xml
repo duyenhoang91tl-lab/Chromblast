@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">ChromaBlast</string>
+    <string name="title_activity_main">ChromaBlast</string>
+    <string name="package_name">com.duyenhoang91tl.chromblast</string>
+    <string name="custom_url_scheme">com.duyenhoang91tl.chromblast</string>
+</resources>
