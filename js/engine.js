@@ -147,14 +147,25 @@ let lastMouseX=0, lastMouseY=0;   // vị trí con trỏ cuối — dùng khi xo
 const drag = { active:false, moved:false, sx:0, sy:0, wasSelected:false, pointerType:'mouse' };
 let rotateLocked=false;           // true sau khi bấm ✓ — chạm nền lưới sẽ KHÔNG xoay nhầm nữa
 
-// Hình học lưới theo toạ độ viewport (đọc trực tiếp để đúng cả khi cuộn/zoom)
+// Hình học lưới theo toạ độ viewport. TRƯỚC ĐÂY: gọi getBoundingClientRect() 3 lần
+// MỖI LẦN gridGeom() được gọi — và nó được gọi 2 lần mỗi sự kiện pointermove khi
+// kéo khối (qua moveGhost + updatePreview) → 6 lần ép reflow đồng bộ trên mỗi
+// pixel di chuyển của ngón tay, đây là nguyên nhân chính gây giật khi kéo-thả.
+// Giờ CACHE lại, chỉ tính lại khi bố cục thực sự có thể đổi (resize/xoay màn/cuộn/
+// #game-root co giãn lại qua fitGameRoot — xem invalidateGridGeom() gọi từ main.js).
+let _gridGeomCache=null;
+function invalidateGridGeom(){ _gridGeomCache=null; }
 function gridGeom(){
+  if(_gridGeomCache) return _gridGeomCache;
   const a=getCell(0,0).getBoundingClientRect();
   const b=getCell(0,1).getBoundingClientRect();
   const c=getCell(1,0).getBoundingClientRect();
-  return { x0:a.left, y0:a.top, cell:a.width,
+  return _gridGeomCache={ x0:a.left, y0:a.top, cell:a.width,
            stepX:(b.left-a.left)||a.width, stepY:(c.top-a.top)||a.height };
 }
+window.addEventListener('resize', invalidateGridGeom);
+window.addEventListener('orientationchange', invalidateGridGeom);
+window.addEventListener('scroll', invalidateGridGeom, true);
 
 // Vị trí ghost so với con trỏ. Cảm ứng: nâng khối lên trên ngón tay để không bị che.
 function ghostAnchor(x,y,bbH,ptype){
@@ -291,13 +302,25 @@ function onSlotPointerDown(e, idx){
   updatePreview(e.clientX,e.clientY);
 }
 
+// TRƯỚC ĐÂY: xử lý NGAY mỗi sự kiện pointermove — trên máy có cảm ứng lấy mẫu
+// >60Hz (Android hay coalesce nhiều sự kiện/khung hình) thì moveGhost+updatePreview
+// (đọc/ghi style liên tục) chạy nhiều lần hơn cần thiết trong 1 khung hình → giật khi
+// kéo khối. Giờ chỉ giữ lại toạ độ mới nhất và xử lý 1 lần/khung hình qua rAF.
+let _pmScheduled=false, _pmX=0, _pmY=0;
 function onDocPointerMove(e){
   if(selected===null) return;
   if(!drag.active && !hoverMode) return;
   if(drag.active && !drag.moved && Math.hypot(e.clientX-drag.sx, e.clientY-drag.sy)>6) drag.moved=true;
-  lastMouseX=e.clientX; lastMouseY=e.clientY;
-  moveGhost(e.clientX,e.clientY);
-  updatePreview(e.clientX,e.clientY);
+  _pmX=e.clientX; _pmY=e.clientY;
+  if(_pmScheduled) return;
+  _pmScheduled=true;
+  requestAnimationFrame(()=>{
+    _pmScheduled=false;
+    if(selected===null) return;
+    lastMouseX=_pmX; lastMouseY=_pmY;
+    moveGhost(_pmX,_pmY);
+    updatePreview(_pmX,_pmY);
+  });
 }
 
 function onDocPointerUp(e){

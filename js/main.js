@@ -11,12 +11,28 @@
       const scale=Math.max(0.55, availH/contentH);
       root.style.transform='scale('+scale+')';
     }
+    // #game-root vừa co giãn lại — toạ độ getBoundingClientRect() của lưới (cache trong
+    // engine.js) không còn đúng nữa, phải tính lại ở lần kéo-thả kế tiếp.
+    if(typeof invalidateGridGeom==='function') invalidateGridGeom();
   }
   window.addEventListener('resize', fitGameRoot);
   window.addEventListener('orientationchange', ()=>setTimeout(fitGameRoot,150));
   window.addEventListener('load', fitGameRoot);
   document.addEventListener('DOMContentLoaded', fitGameRoot);
-  setInterval(fitGameRoot, 1000);
+  // TRƯỚC ĐÂY: setInterval(fitGameRoot, 1000) ép tính lại MỖI GIÂY dù không có gì
+  // đổi — mỗi lần lại ghi transform:none rồi đọc scrollHeight ngay (layout thrashing),
+  // gây giật nhẹ đều đặn suốt ván chơi. Giờ dùng ResizeObserver: chỉ tính lại khi
+  // NỘI DUNG #game-root thực sự đổi kích thước (mở modal, đổi ngôn ngữ dài/ngắn...).
+  if('ResizeObserver' in window){
+    let pending=false;
+    new ResizeObserver(()=>{
+      if(pending) return;
+      pending=true;
+      requestAnimationFrame(()=>{ pending=false; fitGameRoot(); });
+    }).observe(root);
+  } else {
+    setInterval(fitGameRoot, 1000); // fallback cho trình duyệt cũ không có ResizeObserver
+  }
 })();
 /* ══════════════════════════════════════════
    CONSTANTS & STATE
