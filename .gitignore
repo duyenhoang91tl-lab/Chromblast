@@ -6,3 +6,10 @@ android/capacitor-cordova-android-plugins/
 *.keystore
 *.jks
 key.properties
+# Cấu hình cục bộ của công cụ
+.claude/
+
+# Bản clone repo lồng trong workspace (không thuộc source game)
+Chromblast/
+chromblast/
+pulse/
