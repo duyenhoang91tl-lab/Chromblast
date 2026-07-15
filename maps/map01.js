@@ -307,10 +307,8 @@ function onSCClick(e){
   updateFireBorder();
   const _ctr=clearCentroid(group, getSC);
   showScorePop(finalPts, _ctr.x, _ctr.y, secretStreak);
-  showShockwave(_ctr.x, _ctr.y, secretStreak);
-  secretBurstFX(ci, ultraJustTriggered || secretUltra || secretStreak>=3, secretStreak);  // 🎆 pháo hoa VIỀN
-  secretColorRing(_ctr.x, _ctr.y, ci);                   // 💠 vòng sóng màu lan ra
-  secretSparkleBurst(group, ci);                         // ✨ tia lấp lánh ở từng ô
+  // Chỉ pháo sáng VIỀN — bỏ shockwave / vòng màu / twinkle giữa bàn (rối + giật)
+  secretBurstFX(ci, ultraJustTriggered || secretUltra || secretStreak>=3, secretStreak);
   if(!ultraJustTriggered && shouldPraise(secretStreak)) showPraise(praiseLevelForStreak(secretStreak));
   refreshArcadeHud();
 
