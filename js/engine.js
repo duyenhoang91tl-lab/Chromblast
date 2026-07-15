@@ -26,14 +26,19 @@ function initBoard(){
   // ván mới vẫn giữ tier đã đạt — kích hoạt lại ĐÚNG 1 cơ chế của vòng đó
   if(typeof mainHardTier!=='undefined' && mainHardTier>0) setTimeout(()=>applyRoundMechanics(), 50);
 }
+// Nguồn ngẫu nhiên cho SINH KHỐI — chế độ Đấu 1-1 (versus.js) cắm PRNG có hạt giống
+// vào đây để 2 người chơi nhận CÙNG một chuỗi khối (công bằng tuyệt đối).
+let _pieceRand = null; // null = Math.random như bình thường
+function setPieceRand(f){ _pieceRand = f || null; }
 function makePiece(){
+  const R = _pieceRand || Math.random;
   // Càng qua nhiều vòng map ẩn, khối càng thiên về hình to/khó xếp
   // (mặc định ~55% khối lớn giống tỉ lệ cũ, mỗi vòng +3%, tối đa 90%)
   const hardP=Math.min(0.9, 0.55+mainHardTier*0.03);
-  const wantHard=Math.random()<hardP;
+  const wantHard=R()<hardP;
   const pool=SHAPES.filter(s=> wantHard ? s.length>=4 : s.length<=3);
-  const shape=pool.length?pool[rnd(pool.length)]:SHAPES[rnd(SHAPES.length)];
-  return {shape, color:rndColor(), used:false};
+  const shape=pool.length?pool[Math.floor(R()*pool.length)]:SHAPES[Math.floor(R()*SHAPES.length)];
+  return {shape, color:COLORS[Math.floor(R()*COLORS.length)], used:false};
 }
 function refillPieces(){ pieces=[makePiece(),makePiece(),makePiece()]; selected=null; spiderWebbedIdx=-1; spiderWebbedLeft=0; }
 
