@@ -279,23 +279,40 @@ function _vsResolveClears(P){
   return kill.size;
 }
 
-// ── Thẻ chướng ngại ──
+// ── Thẻ chướng ngại — ÚP trước (đối thủ ngồi đối diện không được đọc được).
+// Chạm 1 lá đang úp → lật riêng lá đó xem (chỉ người chơi đó thấy mặt thật,
+// vì bàn kia bị xoay 180° và thẻ vẫn hiện ❓ với họ). Chạm LẦN NỮA vào lá đã
+// lật để tung nó sang bàn đối thủ. Chạm 1 lá KHÁC trong lúc đang mở 1 lá sẽ
+// úp lá cũ lại rồi mở lá mới — luôn chỉ tối đa 1 lá mở tại một thời điểm.
 function _vsOfferCards(P){
   const picks=[]; const pool=VS_OBSTACLES.slice();
   while(picks.length<3&&pool.length) picks.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]);
   P.el.cards.innerHTML='<div class="vs-cards-title">'+t('vsPickCard')+'</div>'+
     '<div class="vs-cards-row"></div>';
   const row=P.el.cards.querySelector('.vs-cards-row');
-  picks.forEach(ob=>{
+  let openIdx=-1;
+  picks.forEach((ob,i)=>{
     const b=document.createElement('button');
-    b.className='vs-card';
-    b.innerHTML='<div class="vs-card-emoji">'+ob.emoji+'</div><div class="vs-card-name">'+MECH_NAME(ob.nameIdx).replace(/^\S+\s/,'')+'</div>';
+    b.className='vs-card face-down';
+    b.innerHTML='<div class="vs-card-inner">'+
+      '<div class="vs-card-back">❓</div>'+
+      '<div class="vs-card-front"><div class="vs-card-emoji">'+ob.emoji+'</div><div class="vs-card-name">'+MECH_NAME(ob.nameIdx).replace(/^\S+\s/,'')+'</div></div>'+
+      '</div>';
     b.addEventListener('pointerdown',ev=>{
       ev.preventDefault();
-      P.el.cards.classList.remove('show');
-      const foe=_vs.players[1-P.idx];
-      _vsApplyObstacle(foe,ob);
-      try{ sfxThorn(); }catch(e){ try{ sfxPenalty(); }catch(e2){} }
+      if(openIdx===i){
+        // lá đã lật, chạm lần nữa → dùng luôn
+        P.el.cards.classList.remove('show');
+        const foe=_vs.players[1-P.idx];
+        _vsApplyObstacle(foe,ob);
+        try{ sfxThorn(); }catch(e){ try{ sfxPenalty(); }catch(e2){} }
+        return;
+      }
+      // úp lá đang mở (nếu có), lật lá vừa chạm
+      row.querySelectorAll('.vs-card').forEach(el=>el.classList.add('face-down'));
+      b.classList.remove('face-down');
+      openIdx=i;
+      try{ sfxClick(); }catch(e){}
     });
     row.appendChild(b);
   });
