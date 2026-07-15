@@ -396,11 +396,10 @@ function enableArcadeHud(){
   if(!root) return;
   root.classList.add('hud-arcade');
   const acc=document.getElementById('account-btn');
-  if(acc && acc.dataset.arcadeOn!=='1'){
-    acc.dataset.prevEmoji=acc.textContent;
-    acc.dataset.arcadeOn='1';
+  if(acc){
     acc.textContent='⚙️';
-    acc.title='Cài đặt';
+    acc.title=(typeof t==='function'?t('ttSettings'):'Cài đặt');
+    acc.dataset.arcadeOn='1';
   }
   refreshArcadeHud();
 }
