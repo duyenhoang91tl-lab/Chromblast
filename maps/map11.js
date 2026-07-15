@@ -160,7 +160,7 @@ function drawCatch(ctx,W,H,basketY,basketW,basketH){
     ctx.restore();
     ctx.shadowBlur=0;
     // Icon con vật giữ nguyên hướng, kích thước lớn hơn để nhìn rõ
-    ctx.font='40px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.font='40px Nunito,system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.shadowColor='rgba(0,0,0,0.35)'; ctx.shadowBlur=4; ctx.shadowOffsetY=1;
     ctx.fillText(a.emoji,0,0);
     ctx.shadowBlur=0; ctx.shadowOffsetY=0;
@@ -179,16 +179,16 @@ function drawCatch(ctx,W,H,basketY,basketW,basketH){
     const prog=f.t/0.7;
     ctx.globalAlpha=Math.max(0,1-prog);
     if(f.type==='good'){
-      ctx.font='bold 18px system-ui'; ctx.textAlign='center';
+      ctx.font='bold 18px Nunito,system-ui'; ctx.textAlign='center';
       ctx.fillStyle='#ffdd00';
       ctx.fillText('+'+f.pts, f.x, basketY-30-prog*40);
-      ctx.font='16px system-ui';
+      ctx.font='16px Nunito,system-ui';
       ['⭐','⭐','⭐'].forEach((_,i)=>{
         const ang=f.t*6+i*2.1;
         ctx.fillText('⭐',f.x+Math.cos(ang)*20*prog*2,basketY+Math.sin(ang)*15*prog*2);
       });
     } else {
-      ctx.font='bold 20px system-ui'; ctx.textAlign='center';
+      ctx.font='bold 20px Nunito,system-ui'; ctx.textAlign='center';
       ctx.fillStyle='#ff4444';
       ctx.fillText('💥', f.x, basketY-prog*35);
     }

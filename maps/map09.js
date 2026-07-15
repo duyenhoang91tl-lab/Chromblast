@@ -184,7 +184,7 @@ function drawStack(ctx,W,H){
     } else if(f.type==='perfect'){
       ctx.globalAlpha=Math.max(0,1-f.t*1.5);
       ctx.fillStyle='#ffe060';
-      ctx.font='bold 20px system-ui';
+      ctx.font='bold 20px Nunito,system-ui';
       ctx.textAlign='center';
       ctx.fillText('✨',f.x,f.y-camOff);
       ctx.globalAlpha=1;

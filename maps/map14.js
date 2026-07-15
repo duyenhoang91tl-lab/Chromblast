@@ -310,7 +310,7 @@ function drawSnake(ctx, W, H, now){
     const alpha=1-f.t;
     ctx.globalAlpha=alpha;
     ctx.fillStyle=f.special?'#ffcc00':'#2f5d2a';
-    ctx.font='bold 14px system-ui';
+    ctx.font='bold 14px Nunito,system-ui';
     ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.fillText(f.text, f.x, f.y-f.t*30);
     ctx.globalAlpha=1;

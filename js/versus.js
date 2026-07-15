@@ -119,7 +119,7 @@ function _vsBuildArena(){
   
   // TẠO THANH GIAO DIỆN CHUNG BÊN TRÊN CÙNG
   arena.innerHTML =
-    '<div id="vs-top-hud" style="position: absolute; top: 10px; left: 10px; right: 10px; display: flex; justify-content: space-between; align-items: center; z-index: 999; background: rgba(0,0,0,0.7); padding: 8px 15px; border-radius: 8px; color: white; font-family: sans-serif;">'+
+    '<div id="vs-top-hud" style="position: absolute; top: 10px; left: 10px; right: 10px; display: flex; justify-content: space-between; align-items: center; z-index: 999; background: rgba(0,0,0,0.7); padding: 8px 15px; border-radius: 8px; color: white; font-family: Nunito,system-ui,sans-serif;">'+
       '<div style="font-weight: bold; font-size: 16px; color: #ff4d4d;">'+escapeHtml(_vs.names[1])+': <span id="vs-global-score1">0</span> <span id="vs-global-combo1" style="color:#ffcc00"></span></div>'+
       '<div style="display: flex; align-items: center; gap: 20px;">'+
         '<div style="font-weight: bold; font-size: 16px; color: #4da6ff;">'+escapeHtml(_vs.names[0])+': <span id="vs-global-score0">0</span> <span id="vs-global-combo0" style="color:#ffcc00"></span></div>'+

@@ -190,7 +190,7 @@ function drawBoss(ctx,W,H){
   drawHudTop(ctx,W,{left:'🐔 ĐỢT '+Math.min(bossWave,BOSS_TOTAL_WAVES)+'/'+BOSS_TOTAL_WAVES, center:'⭐ '+bossScore, right:'❤️'.repeat(Math.max(0,bossDogLives)), progress:timePct, progressColor:'#ffd700'});
 
   // chickens
-  ctx.font='30px system-ui';
+  ctx.font='30px Nunito,system-ui';
   ctx.textAlign='center'; ctx.textBaseline='middle';
   bossChickens.forEach(c=>{ ctx.fillText(c.emoji, c.x, c.y); });
 
@@ -203,11 +203,11 @@ function drawBoss(ctx,W,H){
   });
 
   // falling eggs
-  ctx.font='18px system-ui';
+  ctx.font='18px Nunito,system-ui';
   bossVenom.forEach(v=>{ ctx.fillText('🥚', v.x, v.y); });
 
   // player plane at bottom
-  ctx.font='42px system-ui';
+  ctx.font='42px Nunito,system-ui';
   ctx.fillText('🛩️', bossDogX, H-40);
 
 
@@ -220,7 +220,7 @@ function drawBoss(ctx,W,H){
       ctx.beginPath(); ctx.arc(f.x,f.y,18*(1+prog),0,Math.PI*2); ctx.stroke();
     } else if(f.type==='dmg'){
       ctx.fillStyle='#ff4444';
-      ctx.font='bold 22px system-ui';
+      ctx.font='bold 22px Nunito,system-ui';
       ctx.textAlign='center';
       ctx.fillText('💥', f.x, f.y-prog*28);
     }

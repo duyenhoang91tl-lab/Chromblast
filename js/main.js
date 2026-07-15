@@ -362,7 +362,16 @@ document.addEventListener('keyup', e=>{
    SHARED UI
 ══════════════════════════════════════════ */
 function updateScoreUI(){
-  document.getElementById('score-box').textContent=Math.round(score).toLocaleString();
+  const el=document.getElementById('score-box');
+  const next=Math.round(score).toLocaleString();
+  if(el.textContent!==next){
+    el.textContent=next;
+    el.classList.remove('tick');
+    void el.offsetWidth;
+    el.classList.add('tick');
+    clearTimeout(el._tickT);
+    el._tickT=setTimeout(()=>el.classList.remove('tick'), 180);
+  }
   document.getElementById('best-box').textContent=t('bestLabel', Math.round(best).toLocaleString());
   document.getElementById('lines-cleared').textContent='Hàng xóa: '+linesCleared;
   document.getElementById('level-box').textContent=t('levelLabel', level);

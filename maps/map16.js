@@ -193,7 +193,7 @@ function drawRunner(ctx,W,H,timeLeft){
   // Fx
   runnerFx.forEach(f=>{
     ctx.globalAlpha=1-f.t;
-    ctx.fillStyle='#ff4444'; ctx.font='bold 14px system-ui';
+    ctx.fillStyle='#ff4444'; ctx.font='bold 14px Nunito,system-ui';
     ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.fillText(f.text,f.x,f.y-f.t*40);
     ctx.globalAlpha=1;

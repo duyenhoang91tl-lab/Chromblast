@@ -190,7 +190,7 @@ function drawFlood(ctx,W,H){
     const prog=Math.min(f.t,1);
     ctx.globalAlpha=Math.max(0,1-prog);
     ctx.fillStyle=FLOOD_COLORS[f.colorIdx];
-    ctx.font='bold 20px system-ui'; ctx.textAlign='center';
+    ctx.font='bold 20px Nunito,system-ui'; ctx.textAlign='center';
     ctx.fillText('✨', W/2, H/2-prog*30);
     ctx.globalAlpha=1;
   });

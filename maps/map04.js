@@ -302,7 +302,7 @@ function drawDog(ctx,t){
   });
 
   if(panicLevel>0.6){
-    ctx.font='bold 11px sans-serif';
+    ctx.font='bold 11px Nunito,sans-serif';
     ctx.textAlign='center';
     ctx.fillStyle=`rgba(255,60,60,${panicLevel})`;
     const sweatY=-32+Math.sin(t*6)*2;
@@ -314,7 +314,7 @@ function drawDog(ctx,t){
     ctx.globalAlpha=gdDogHit;
     ctx.beginPath(); ctx.arc(0,-8,28,0,Math.PI*2);
     ctx.strokeStyle='rgba(255,60,60,0.5)'; ctx.lineWidth=2; ctx.stroke();
-    ctx.font='bold 12px sans-serif'; ctx.fillStyle='#FF4444';
+    ctx.font='bold 12px Nunito,sans-serif'; ctx.fillStyle='#FF4444';
     ctx.textAlign='center'; ctx.fillText('Ối!',0,-38);
     ctx.globalAlpha=1;
   }

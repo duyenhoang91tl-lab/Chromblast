@@ -257,7 +257,7 @@ function drawArena(ctx,W,H){
   }
 
   // Bees — bỏ shadowBlur (rất tốn hiệu năng khi có nhiều con cùng lúc → giật máy)
-  ctx.font='28px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.font='28px Nunito,system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
   arenaBees.forEach(b=>{ ctx.fillText('🐝',b.x,b.y); });
 
   // Carrots
@@ -265,7 +265,7 @@ function drawArena(ctx,W,H){
 
   // Snake boss
   if((arenaWave===2||arenaWave===3)&&arenaSnake&&arenaSnake.hp>0){
-    ctx.font='60px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.font='60px Nunito,system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.fillText('🐍',arenaSnake.x,arenaSnake.y);
     // HP bar
     const hpPct=arenaSnake.hp/100;
@@ -281,7 +281,7 @@ function drawArena(ctx,W,H){
 
   // Dog (with invincibility blink)
   if(arenaInvincible<=0||Math.floor(arenaInvincible*8)%2===0){
-    ctx.font='44px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.font='44px Nunito,system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.fillText('🐶',arenaDogX,arenaDogY);
   }
 
@@ -289,7 +289,7 @@ function drawArena(ctx,W,H){
   arenaFx.forEach(f=>{
     const prog=f.t/0.6;
     ctx.globalAlpha=Math.max(0,1-prog);
-    ctx.font='bold 28px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.font='bold 28px Nunito,system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.fillText('💥',f.x,f.y-prog*40);
     ctx.globalAlpha=1;
   });
@@ -300,7 +300,7 @@ function drawArena(ctx,W,H){
     ctx.globalAlpha=alpha;
     ctx.fillStyle='rgba(255,200,0,0.15)'; ctx.fillRect(0,0,W,H);
     ctx.fillStyle='#fff';
-    ctx.font='bold 22px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.font='bold 22px Nunito,system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.shadowColor='#ff8800'; ctx.shadowBlur=20;
     ctx.fillText(arenaWaveFlashText,W/2,H/2);
     ctx.shadowBlur=0;

@@ -229,8 +229,16 @@ function buildGhost(piece){
   });
 }
 
-function showGhost(piece){ buildGhost(piece); ghostEl.classList.add('active'); }
-function hideGhost(){ ghostEl.classList.remove('active'); ghostEl.innerHTML=''; }
+function showGhost(piece){
+  buildGhost(piece);
+  ghostEl.classList.add('active');
+  document.body.classList.add('is-dragging');
+}
+function hideGhost(){
+  ghostEl.classList.remove('active');
+  ghostEl.innerHTML='';
+  document.body.classList.remove('is-dragging');
+}
 
 function moveGhost(x,y){
   if(selected===null) return;
@@ -300,6 +308,8 @@ function endDrag(){
   drag.active=false; hoverMode=false; selected=null; rotateLocked=false;
   hideGhost(); clearPreview(); highlightSlot(null);
   showRotateBar(false);
+  document.body.classList.remove('is-dragging');
+  document.querySelectorAll('.piece-slot.dragging-src').forEach(el=>el.classList.remove('dragging-src'));
 }
 
 /* ── bộ xử lý pointer ── */
@@ -328,6 +338,8 @@ function onSlotPointerDown(e, idx){
   selected=idx;
   rotateLocked=false;
   sfxSelect();
+  document.querySelectorAll('.piece-slot.dragging-src').forEach(el=>el.classList.remove('dragging-src'));
+  if(slotEls[idx]) slotEls[idx].classList.add('dragging-src');
 
   // Touch: chọn ngay + ghost hiện ngay (không cần giữ/kéo)
   hoverMode=isTouch;

@@ -31,7 +31,7 @@ function drawRhythmBg(ctx,W,H){
     ctx.save();
     ctx.globalAlpha=0.55;
     ctx.fillStyle=n.hue;
-    ctx.font='bold '+n.size+'px system-ui';
+    ctx.font='800 '+n.size+'px Nunito,system-ui';
     ctx.fillText(n.glyph,n.x,n.y);
     ctx.restore();
   });
