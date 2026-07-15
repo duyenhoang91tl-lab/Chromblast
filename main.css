@@ -2005,3 +2005,145 @@ body:has(#secret-stage.active) .streak-dot.lit{
   #game-root.hud-arcade #header-right { display: none !important; }
   #game-root.hud-arcade #game-controls { grid-column: 3; }
 }
+
+/* ════════════════════════════════════════════════════════
+   SETTINGS HUB — modal xanh kiểu Block Blast
+════════════════════════════════════════════════════════ */
+.settings-overlay{
+  position:fixed; inset:0; z-index:10020; display:none;
+  align-items:center; justify-content:center;
+  background:rgba(6,10,28,0.72); padding:16px;
+}
+.settings-overlay.show{ display:flex; }
+.settings-modal{
+  width:min(360px,94vw); max-height:min(88vh,640px);
+  background:linear-gradient(180deg,#5BA8E8 0%,#3D8FD4 100%);
+  border-radius:18px; box-shadow:0 12px 40px rgba(0,0,0,0.45);
+  display:flex; flex-direction:column; overflow:hidden;
+  font-family:'Nunito',system-ui,sans-serif;
+}
+.settings-modal-sm{ max-height:min(70vh,420px); }
+.settings-modal-tall{ max-height:min(90vh,720px); }
+.settings-head{
+  position:relative; display:flex; align-items:center; justify-content:center;
+  padding:12px 44px 8px; color:#fff; font-weight:900; font-size:18px;
+  letter-spacing:0.3px; text-shadow:0 1px 0 rgba(0,0,0,0.15);
+}
+.settings-x, .settings-back{
+  position:absolute; top:8px; width:34px; height:34px; border:none; border-radius:50%;
+  background:rgba(255,255,255,0.18); color:#fff; font-size:18px; font-weight:900;
+  cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1;
+}
+.settings-x{ right:10px; }
+.settings-back{ left:10px; font-size:26px; padding-bottom:2px; }
+.settings-inner{
+  margin:0 12px 14px; padding:14px 12px 16px;
+  background:linear-gradient(180deg,#2A4A7A 0%,#1E3558 100%);
+  border-radius:14px; overflow:auto; max-height:calc(88vh - 70px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.12);
+}
+.settings-toggles{
+  display:flex; justify-content:center; gap:28px; margin-bottom:16px; padding-top:4px;
+}
+.set-toggle{
+  background:transparent; border:none; color:#fff; cursor:pointer;
+  display:flex; flex-direction:column; align-items:center; gap:6px; min-width:64px;
+}
+.set-toggle-ico{ font-size:28px; line-height:1; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.35)); }
+.set-toggle-lab{ font-size:11px; font-weight:800; letter-spacing:0.4px; opacity:0.95; }
+.set-toggle.is-off .set-toggle-ico{ opacity:0.45; position:relative; }
+.set-toggle.is-off .set-toggle-ico::after{
+  content:''; position:absolute; left:10%; right:10%; top:48%; height:2.5px;
+  background:#e53935; transform:rotate(-28deg); border-radius:2px;
+  box-shadow:0 0 0 1px rgba(0,0,0,0.2);
+}
+.settings-actions{ display:flex; flex-direction:column; gap:8px; }
+.set-action{
+  display:flex; align-items:center; gap:10px; width:100%;
+  border:none; border-radius:12px; padding:12px 14px; color:#fff;
+  font-family:inherit; font-weight:900; font-size:15px; cursor:pointer;
+  box-shadow:0 3px 0 rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.25);
+  position:relative; text-align:left;
+}
+.set-action:active{ transform:translateY(1px); box-shadow:0 1px 0 rgba(0,0,0,0.22); }
+.set-act-ico{ font-size:18px; width:28px; text-align:center; }
+.set-c-purple{ background:linear-gradient(180deg,#9B6BFF,#6A3FD4); }
+.set-c-teal{ background:linear-gradient(180deg,#3ECFC9,#1FA8A3); }
+.set-c-blue{ background:linear-gradient(180deg,#5B9BFF,#2F6FD6); }
+.set-c-gold{ background:linear-gradient(180deg,#FFD24A,#E0A800); color:#3a2200; }
+.set-c-green{ background:linear-gradient(180deg,#3FA86A,#2A7A4A); }
+.set-c-lime{ background:linear-gradient(180deg,#7BCF4A,#4FA828); }
+.set-dot{
+  position:absolute; top:6px; right:8px; width:9px; height:9px; border-radius:50%;
+  background:#ff3b30; box-shadow:0 0 0 2px rgba(255,255,255,0.35);
+}
+.set-dot-inline{ position:static; margin-left:6px; display:inline-block; vertical-align:middle; }
+
+.settings-appinfo{
+  display:flex; align-items:center; gap:12px; padding:6px 4px 14px;
+  border-bottom:1px solid rgba(255,255,255,0.12); margin-bottom:4px;
+}
+.settings-appico{
+  width:48px; height:48px; border-radius:12px;
+  background:linear-gradient(135deg,#ff6b6b,#ffd24a 40%,#5DCAA5 70%,#378ADD);
+  display:flex; align-items:center; justify-content:center; font-size:26px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.3);
+}
+.settings-appname{ font-weight:900; color:#fff; font-size:16px; }
+.settings-appver{ font-size:12px; color:rgba(255,255,255,0.65); margin-top:2px; font-weight:800; }
+.settings-row{
+  width:100%; display:flex; align-items:center; justify-content:space-between;
+  background:transparent; border:none; border-bottom:1px solid rgba(255,255,255,0.1);
+  color:#fff; font-family:inherit; font-weight:800; font-size:14px;
+  padding:14px 4px; cursor:pointer; text-align:left; position:relative;
+}
+.settings-chev{ opacity:0.7; font-size:20px; font-weight:900; margin-left:auto; }
+.settings-social{
+  display:flex; justify-content:center; gap:10px; padding:14px 4px;
+  border-bottom:1px solid rgba(255,255,255,0.1);
+}
+.soc-btn{
+  width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center;
+  color:#fff; font-weight:900; font-size:16px; text-decoration:none;
+  box-shadow:0 2px 6px rgba(0,0,0,0.3);
+}
+.soc-tt{ background:#111; }
+.soc-dc{ background:#5865F2; }
+.soc-x{ background:#000; }
+.soc-fb{ background:#1877F2; }
+.soc-yt{ background:#fff; color:#ff0000; }
+.settings-text-body{
+  color:rgba(255,255,255,0.9); font-size:13px; line-height:1.55; font-weight:800;
+  white-space:pre-wrap;
+}
+
+/* Cup / Achievement */
+.cup-stats{
+  display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px;
+}
+.cup-stat{
+  background:rgba(255,255,255,0.08); border:1px solid rgba(120,170,255,0.35);
+  border-radius:12px; padding:12px 10px; text-align:center;
+}
+.cup-stat-num{ font-size:22px; font-weight:900; color:#ffd700; line-height:1.1; }
+.cup-stat-lab{ font-size:11px; font-weight:800; color:rgba(255,255,255,0.8); margin-top:4px; }
+.cup-awards-title{
+  font-size:13px; font-weight:900; color:#ffe08a; letter-spacing:0.6px;
+  margin:4px 0 10px; text-transform:uppercase;
+}
+.cup-awards{
+  display:grid; grid-template-columns:repeat(3,1fr); gap:12px 8px;
+}
+.cup-award{ text-align:center; }
+.cup-badge{
+  width:58px; height:58px; margin:0 auto 6px; border-radius:14px;
+  background:linear-gradient(160deg,#c8d6ea,#8fa6c4);
+  display:flex; align-items:center; justify-content:center; font-size:26px;
+  position:relative; box-shadow:inset 0 2px 0 rgba(255,255,255,0.45), 0 3px 8px rgba(0,0,0,0.3);
+}
+.cup-badge.done{
+  background:linear-gradient(160deg,#ffe08a,#e0a800);
+}
+.cup-badge .set-dot{ top:-2px; right:-2px; }
+.cup-award-name{ font-size:10px; font-weight:800; color:#fff; line-height:1.2; }
+.cup-award-prog{ font-size:10px; font-weight:800; color:rgba(255,255,255,0.55); margin-top:2px; }

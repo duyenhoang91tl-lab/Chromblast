@@ -752,7 +752,8 @@ document.getElementById('mute-btn').addEventListener('click',function(){
   sfxMuted=!sfxMuted;
   this.textContent=sfxMuted?'🔇':'🔊';
   if(sfxMuted){ stopBgm(); stopRhythmBgm(); }
-  else { sfxPlacePiece(); resumeContextBgm(); }
+  else { sfxPlacePiece(); if(!bgmMuted) resumeContextBgm(); }
+  if(typeof syncSettingsToggles==='function') syncSettingsToggles();
 });
 document.getElementById('pause-btn').addEventListener('click', togglePause);
 document.getElementById('resume-btn').addEventListener('click', togglePause);

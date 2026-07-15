@@ -19,12 +19,12 @@ function startBgm(type) {
   if(bgmCurrentTheme===type && bgmInterval) return; // đã phát đúng nhạc nền này rồi, khỏi khởi động lại (tránh giật nhịp)
   stopBgm();
   bgmCurrentTheme=type;
-  if (sfxMuted) return;
+  if (sfxMuted || bgmMuted) return;
   bgmStep = 0;
   const melody = BGM_THEMES[type] || BGM_THEMES['main'];
   const tempo = (type === 'action') ? 250 : 450;
   bgmInterval = setInterval(() => {
-    if (sfxMuted) return;
+    if (sfxMuted || bgmMuted) return;
     const freq = melody[bgmStep % melody.length];
     playTone(freq, 'triangle', 0.5, 0.04);
     bgmStep++;
@@ -40,6 +40,7 @@ function stopBgm() {
 ══════════════════════════════════════════════ */
 let _sfxCtx = null;
 let sfxMuted = false;
+let bgmMuted = false;
 function getSfxCtx(){
   if(!_sfxCtx) _sfxCtx = new (window.AudioContext||window.webkitAudioContext)();
   return _sfxCtx;

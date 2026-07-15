@@ -58,6 +58,15 @@ vi: {
   ttPause:'Tạm dừng', ttHelp:'Hướng dẫn chơi', ttMapHelp:'Cách chơi map ẩn này',
   // Khác
   langPickLabel:'🌐 Ngôn ngữ',
+  ttSettings:'Cài đặt',
+  settingsTitle:'Cài đặt',
+  setSound:'Âm thanh', setBgm:'Nhạc nền',
+  setAccount:'Tài khoản', setLanguage:'Ngôn ngữ', setMap:'Map', setCup:'Cup',
+  setMore:'More Settings', setHome:'Home', setReplay:'Replay',
+  setMoreTitle:'More Settings', setContact:'Liên hệ', setShare:'Chia sẻ bạn bè',
+  setTerms:'Điều khoản', setPrivacy:'Chính sách riêng tư', setAbout:'Về chúng tôi',
+  setCupTitle:'Thành tích', setAwards:'Huân chương',
+  cupHighestCombo:'Combo cao nhất', cupBestScore:'Điểm cao nhất', cupRounds:'Vòng map', cupLoginDays:'Ngày đăng nhập',
 },
 
 en: {
@@ -101,6 +110,15 @@ en: {
   ttAdventure:'Adventure mode', ttAccount:'Account', ttMute:'Toggle sound',
   ttPause:'Pause', ttHelp:'How to play', ttMapHelp:'How to play this hidden map',
   langPickLabel:'🌐 Language',
+  ttSettings:'Settings',
+  settingsTitle:'Settings',
+  setSound:'Sound', setBgm:'BGM',
+  setAccount:'Account', setLanguage:'Language', setMap:'Map', setCup:'Cup',
+  setMore:'More Settings', setHome:'Home', setReplay:'Replay',
+  setMoreTitle:'More Settings', setContact:'Contact Us', setShare:'Share with Friends',
+  setTerms:'Terms of Service', setPrivacy:'Privacy Policy', setAbout:'About Us',
+  setCupTitle:'Achievement', setAwards:'Awards',
+  cupHighestCombo:'Highest Combo', cupBestScore:'Best Score', cupRounds:'Rounds', cupLoginDays:'Login Days',
 },
 
 ko: {
@@ -144,6 +162,15 @@ ko: {
   ttAdventure:'어드벤처 모드', ttAccount:'계정', ttMute:'소리 켜기/끄기',
   ttPause:'일시 정지', ttHelp:'플레이 방법', ttMapHelp:'이 히든 맵 플레이 방법',
   langPickLabel:'🌐 언어',
+  ttSettings:'설정',
+  settingsTitle:'설정',
+  setSound:'Sound', setBgm:'BGM',
+  setAccount:'Account', setLanguage:'Language', setMap:'Map', setCup:'Cup',
+  setMore:'More Settings', setHome:'Home', setReplay:'Replay',
+  setMoreTitle:'More Settings', setContact:'Contact Us', setShare:'Share with Friends',
+  setTerms:'Terms of Service', setPrivacy:'Privacy Policy', setAbout:'About Us',
+  setCupTitle:'Achievement', setAwards:'Awards',
+  cupHighestCombo:'Highest Combo', cupBestScore:'Best Score', cupRounds:'Rounds', cupLoginDays:'Login Days',
 },
 
 ja: {
@@ -187,6 +214,15 @@ ja: {
   ttAdventure:'アドベンチャーモード', ttAccount:'アカウント', ttMute:'サウンド切替',
   ttPause:'一時停止', ttHelp:'遊び方', ttMapHelp:'この隠しマップの遊び方',
   langPickLabel:'🌐 言語',
+  ttSettings:'Settings',
+  settingsTitle:'Settings',
+  setSound:'Sound', setBgm:'BGM',
+  setAccount:'Account', setLanguage:'Language', setMap:'Map', setCup:'Cup',
+  setMore:'More Settings', setHome:'Home', setReplay:'Replay',
+  setMoreTitle:'More Settings', setContact:'Contact Us', setShare:'Share with Friends',
+  setTerms:'Terms of Service', setPrivacy:'Privacy Policy', setAbout:'About Us',
+  setCupTitle:'Achievement', setAwards:'Awards',
+  cupHighestCombo:'Highest Combo', cupBestScore:'Best Score', cupRounds:'Rounds', cupLoginDays:'Login Days',
 },
 
 zh: {
@@ -230,6 +266,15 @@ zh: {
   ttAdventure:'冒险模式', ttAccount:'账号', ttMute:'开/关声音',
   ttPause:'暂停', ttHelp:'玩法说明', ttMapHelp:'本隐藏关卡玩法',
   langPickLabel:'🌐 语言',
+  ttSettings:'Settings',
+  settingsTitle:'Settings',
+  setSound:'Sound', setBgm:'BGM',
+  setAccount:'Account', setLanguage:'Language', setMap:'Map', setCup:'Cup',
+  setMore:'More Settings', setHome:'Home', setReplay:'Replay',
+  setMoreTitle:'More Settings', setContact:'Contact Us', setShare:'Share with Friends',
+  setTerms:'Terms of Service', setPrivacy:'Privacy Policy', setAbout:'About Us',
+  setCupTitle:'Achievement', setAwards:'Awards',
+  cupHighestCombo:'Highest Combo', cupBestScore:'Best Score', cupRounds:'Rounds', cupLoginDays:'Login Days',
 },
 
 es: {
@@ -273,6 +318,15 @@ es: {
   ttAdventure:'Modo aventura', ttAccount:'Cuenta', ttMute:'Activar/desactivar sonido',
   ttPause:'Pausa', ttHelp:'Cómo jugar', ttMapHelp:'Cómo jugar este mapa oculto',
   langPickLabel:'🌐 Idioma',
+  ttSettings:'Settings',
+  settingsTitle:'Settings',
+  setSound:'Sound', setBgm:'BGM',
+  setAccount:'Account', setLanguage:'Language', setMap:'Map', setCup:'Cup',
+  setMore:'More Settings', setHome:'Home', setReplay:'Replay',
+  setMoreTitle:'More Settings', setContact:'Contact Us', setShare:'Share with Friends',
+  setTerms:'Terms of Service', setPrivacy:'Privacy Policy', setAbout:'About Us',
+  setCupTitle:'Achievement', setAwards:'Awards',
+  cupHighestCombo:'Highest Combo', cupBestScore:'Best Score', cupRounds:'Rounds', cupLoginDays:'Login Days',
 },
 
 };
