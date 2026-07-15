@@ -670,6 +670,39 @@ function roundRect(ctx,x,y,w,h,r){
   ctx.closePath();
 }
 
+/* ── Ô kẹo bông mềm đáng yêu (canvas) — cùng ngôn ngữ CSS .cell.filled / .sc.gem ── */
+function drawSoftCandyCell(ctx,x,y,w,h,color,opts){
+  const o=opts||{};
+  const r=o.r!=null?o.r:Math.min(w,h)*0.36;
+  ctx.save();
+  // bóng mềm màu kẹo (không bevel cứng)
+  if(o.glow!==false){
+    ctx.shadowColor=color; ctx.shadowBlur=o.glowBlur!=null?o.glowBlur:Math.max(4,Math.min(w,h)*0.22);
+    ctx.shadowOffsetY=1;
+  }
+  roundRect(ctx,x,y,w,h,r);
+  // dùng màu thật: vẽ nền màu rồi phủ highlight
+  ctx.fillStyle=color; ctx.fill();
+  ctx.shadowBlur=0; ctx.shadowOffsetY=0;
+  // lớp sáng mềm phía trên (bông)
+  const fluff=ctx.createRadialGradient(x+w*0.32,y+h*0.28,0,x+w*0.32,y+h*0.28,w*0.7);
+  fluff.addColorStop(0,'rgba(255,255,255,0.78)');
+  fluff.addColorStop(0.35,'rgba(255,255,255,0.28)');
+  fluff.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.fillStyle=fluff; roundRect(ctx,x,y,w,h,r); ctx.fill();
+  // đốm specular nhỏ
+  ctx.fillStyle='rgba(255,255,255,0.9)';
+  ctx.beginPath();
+  ctx.ellipse(x+w*0.28,y+h*0.22,w*0.16,h*0.1,-0.4,0,Math.PI*2);
+  ctx.fill();
+  // viền sáng mỏng
+  ctx.strokeStyle='rgba(255,255,255,0.45)';
+  ctx.lineWidth=Math.max(1,Math.min(w,h)*0.04);
+  roundRect(ctx,x+0.5,y+0.5,w-1,h-1,Math.max(0,r-0.5));
+  ctx.stroke();
+  ctx.restore();
+}
+
 /* ── Đồi + hàng rào + sân vườn đầy đủ (cùng chất lượng Map 4) ── */
 function scenicHills(ctx,W,H,baseY){
   const y=baseY!=null?baseY:H*0.56;

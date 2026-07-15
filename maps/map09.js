@@ -163,27 +163,16 @@ function drawStack(ctx,W,H){
 
   const camOff=stackCameraY;
 
-  // draw stacked blocks
+  // draw stacked blocks — kẹo bông mềm
   stackBlocks.forEach(b=>{
     const by=b.y-camOff;
-    // 3D bevel
-    ctx.fillStyle=b.color;
-    ctx.fillRect(b.x,by,b.w,BLOCK_H);
-    ctx.fillStyle='rgba(255,255,255,0.25)';
-    ctx.fillRect(b.x,by,b.w,4);
-    ctx.fillStyle='rgba(0,0,0,0.2)';
-    ctx.fillRect(b.x,by+BLOCK_H-4,b.w,4);
+    drawSoftCandyCell(ctx,b.x,by,b.w,BLOCK_H,b.color,{r:8,glowBlur:4});
   });
 
   // draw moving block with glow
   const mb=stackMoving;
   const mby=stackBlocks[stackBlocks.length-1].y-BLOCK_H*1.5-camOff;
-  ctx.shadowColor=mb.color; ctx.shadowBlur=10;
-  ctx.fillStyle=mb.color;
-  ctx.fillRect(mb.x,mby,mb.w,BLOCK_H);
-  ctx.shadowBlur=0;
-  ctx.fillStyle='rgba(255,255,255,0.3)';
-  ctx.fillRect(mb.x,mby,mb.w,4);
+  drawSoftCandyCell(ctx,mb.x,mby,mb.w,BLOCK_H,mb.color,{r:8,glow:true,glowBlur:12});
 
   // fx
   stackFx.forEach(f=>{
