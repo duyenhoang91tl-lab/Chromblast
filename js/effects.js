@@ -88,9 +88,9 @@ function mainBurstFX(cells, streak){
 }
 
 function secretBurstFX(ci, big, streak){
-  // Không board-flash (filter brightness cả lưới → giật)
-  const st = streak|| (typeof secretStreak==='number' ? secretStreak : 1);
-  spawnBorderFireworks(ci, big || st>=3, st);
+  // Map ẩn 1 không còn burst pháo (giữa hay viền) — chỉ sparkler liên tục ở updateFireBorder.
+  // Giữ hàm no-op để chỗ gọi cũ (nếu có) không vỡ.
+  return;
 }
 
 /** Điểm trên chu vi khung (t = 0..1), kèm góc bắn ra ngoài */

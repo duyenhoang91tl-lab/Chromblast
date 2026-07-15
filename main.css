@@ -1986,10 +1986,17 @@ body:has(#secret-stage.active) .streak-dot.lit{
   box-shadow: 0 0 10px rgba(80,160,255,0.65), inset 0 1px 0 rgba(255,255,255,0.45);
   font-size: 15px !important;
 }
-#game-root.hud-arcade #combo-flash {
-  font-size: clamp(30px, 9vw, 42px);
-  -webkit-text-stroke: 1.2px #7a3a00;
-  color: #ffd24a !important;
+#game-root.hud-arcade #combo-flash,
+#game-root.hud-arcade #combo-count-flash {
+  display: none !important;
+  animation: none !important;
+}
+/* Ẩn lớp pháo sc-fx trên map ẩn 1 — chỉ dùng sparkler viền */
+#game-root.hud-arcade #sc-fx {
+  display: none !important;
+}
+#game-root.hud-arcade #sc-fx * {
+  display: none !important;
 }
 /* Tim đã hiện trong TARGETS — ẩn hàng tim trùng */
 #game-root.hud-arcade #secret-hearts { display: none !important; }

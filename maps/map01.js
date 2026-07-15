@@ -290,7 +290,7 @@ function onSCClick(e){
 
   const finalPts=Math.round(basePoints*secretMultiplier*(secretUltra?2:1));
   score+=finalPts; if(score>best) best=score;
-  showComboCountFlash(secretStreak);
+  // Không showComboCountFlash giữa bàn — streak đã hiện ở thanh chấm
   sfxMatch(group.length);
   secret1Gained+=finalPts;
   if(secret1Gained>=TEST_UNLOCK_SCORE && !secret1GoalShown){
@@ -306,10 +306,12 @@ function onSCClick(e){
   updateComboBorderGlow(secretStreak);
   updateFireBorder();
   const _ctr=clearCentroid(group, getSC);
-  showScorePop(finalPts, _ctr.x, _ctr.y, secretStreak);
-  // Chỉ pháo sáng VIỀN — bỏ shockwave / vòng màu / twinkle giữa bàn (rối + giật)
-  secretBurstFX(ci, ultraJustTriggered || secretUltra || secretStreak>=3, secretStreak);
-  if(!ultraJustTriggered && shouldPraise(secretStreak)) showPraise(praiseLevelForStreak(secretStreak));
+  showScorePop(basePoints, finalPts, _ctr.x, _ctr.y, secretStreak);
+  // Map ẩn 1: KHÔNG pháo/chữ nổ giữa bàn — chỉ sparkler viền (updateFireBorder)
+  // Giữ lồng tiếng khen, bỏ flash chữ giữa lưới
+  if(!ultraJustTriggered && shouldPraise(secretStreak)){
+    try{ speakPraise(praiseLevelForStreak(secretStreak)); }catch(e){}
+  }
   refreshArcadeHud();
 
   // Animate pop
