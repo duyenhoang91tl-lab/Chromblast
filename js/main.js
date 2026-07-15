@@ -52,7 +52,7 @@ const SHAPES=[
   [[0,0],[1,0],[2,0],[0,1],[2,1]],
 ];
 const SECRET_COLORS = COLORS.slice(0,4); // 4 màu đầu giống map thường
-const COLOR_BURST_MIN = 9;   // min cells in a CONNECTED same-colour group to clear (map chính)
+const COLOR_BURST_MIN = 12;   // Tăng ngưỡng nổ màu (từ 9 lên 12) để tránh nổ quá sớm khi chưa đầy hàng/cột
 const SECRET_WINDOW = 2500;  // ms — khoảng thời gian giữa 2 lần nổ trong map ẩn (ấn chậm hơn sẽ thoát)
 const SECRET_ULTRA  = 9;     // streak to trigger ultra
 const TEST_UNLOCK_SCORE = 100; // ngưỡng điểm mở khoá Map ẩn 1 (và mốc thắng trong Map ẩn 1)

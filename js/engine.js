@@ -205,8 +205,9 @@ function buildGhost(piece){
   const maxC=Math.max(...piece.shape.map(p=>p[1]));
   const maxR=Math.max(...piece.shape.map(p=>p[0]));
   const g=gridGeom();
-  ghostEl.style.gridTemplateColumns=`repeat(${maxC+1},${g.stepX}px)`;
-  ghostEl.style.gap=`${g.stepX - g.cell}px`; // Giữ đúng tỉ lệ khoảng cách ô
+  // SỬA: Phải dùng g.cell (kích thước ô) thay vì g.stepX (ô + khoảng cách) cho track size
+  ghostEl.style.gridTemplateColumns=`repeat(${maxC+1},${g.cell}px)`;
+  ghostEl.style.gap=`${g.stepX - g.cell}px`;
   ghostEl.innerHTML='';
   const cells=Array((maxR+1)*(maxC+1)).fill(null);
   piece.shape.forEach(([r,c])=>cells[r*(maxC+1)+c]=piece.color);
