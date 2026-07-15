@@ -474,6 +474,8 @@ function startGame(){
     secretMode=false;
     document.getElementById('secret-grid').classList.remove('active');
     document.getElementById('secret-grid').innerHTML=''; secretCells=null;
+    document.getElementById('secret-stage')?.classList.remove('active');
+    document.getElementById('grid-wrap').classList.remove('theme-garden');
     document.getElementById('grid-wrap').classList.remove('secret-mode','ultra-glow','combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5');
     document.getElementById('timer-bar-wrap').classList.remove('active');
     document.getElementById('secret-streak-bar').classList.remove('active');
@@ -677,15 +679,17 @@ function hardResetAllModes(){
   const dc=document.getElementById('dodge-controls');       if(dc)  dc.classList.remove('active');
   const tbw=document.getElementById('timer-bar-wrap');      if(tbw) tbw.classList.remove('active');
   const ssb=document.getElementById('secret-streak-bar');   if(ssb) ssb.classList.remove('active');
-  const sg=document.getElementById('secret-grid');          if(sg){ sg.innerHTML=''; }
+  const sg=document.getElementById('secret-grid');          if(sg){ sg.innerHTML=''; sg.classList.remove('active'); }
   secretCells=null;
+  document.getElementById('secret-stage')?.classList.remove('active');
+  document.getElementById('grid-wrap')?.classList.remove('theme-garden');
 
   // Trả UI chính về trạng thái mặc định
   const grid=document.getElementById('grid');             if(grid)   grid.style.display='';
   const pieces=document.getElementById('pieces-area');    if(pieces) pieces.style.display='';
   const hint=document.getElementById('hint-bar');         if(hint)   hint.style.display='';
   document.getElementById('grid-wrap').classList.remove('secret-mode','ultra-glow',
-    'combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5','fire-low','fire-high');
+    'combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5','fire-low','fire-high','theme-garden');
   document.getElementById('mode-badge').textContent=t('badgeNormal');
   document.getElementById('mode-badge').classList.remove('secret');
   document.getElementById('unlock-overlay').classList.remove('show');

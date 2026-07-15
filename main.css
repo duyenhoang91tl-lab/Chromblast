@@ -904,9 +904,173 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
 #secret-grid {
   display: none; grid-template-columns: repeat(8, 44px);
   gap: 3px; background: #0a0a1a; border-radius: 14px; padding: 10px;
-  position: relative; margin: 0 auto;
+  position: relative; margin: 0 auto; z-index: 2;
+}
+.secret-stage #secret-grid{
+  margin-left:auto; margin-right:auto;
 }
 #secret-grid.active { display: grid; }
+
+/* ════════════════════════════════════════════════════════
+   🌸 MAP ẨN 1 — SÂN VƯỜN (cùng phong cách Map 4 chó/ong)
+   Trời xanh → đồi cỏ → hàng rào gỗ → hoa lung linh + kẹo 3D
+════════════════════════════════════════════════════════ */
+.secret-stage{
+  display:none; position:relative; width:100%; max-width:393px;
+  margin:0 auto; border-radius:18px; overflow:hidden;
+  isolation:isolate;
+  padding: 28px 12px 36px;
+  box-sizing: border-box;
+}
+.secret-stage.active{ display:block; }
+.secret-sky{
+  position:absolute; inset:0; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 18%, rgba(255,255,255,0.55) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 40% at 78% 12%, rgba(255,255,220,0.35) 0%, transparent 50%),
+    linear-gradient(180deg, #87CEEB 0%, #B8E4F8 42%, #D4F0C8 68%, #7EC882 100%);
+}
+.secret-hills{
+  position:absolute; left:-8%; right:-8%; bottom:0; height:42%; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(ellipse 70% 90% at 20% 100%, #5EB862 0%, transparent 70%),
+    radial-gradient(ellipse 80% 100% at 80% 110%, #4CAF50 0%, transparent 65%),
+    linear-gradient(180deg, transparent 0%, #6BC46F 40%, #5EB862 100%);
+  border-radius:50% 50% 0 0 / 28% 28% 0 0;
+}
+.secret-fence{
+  position:absolute; left:0; right:0; bottom:18%; height:22px; z-index:1; pointer-events:none;
+  background:
+    repeating-linear-gradient(90deg,
+      transparent 0 18px,
+      #A0784A 18px 26px,
+      transparent 26px 44px),
+    linear-gradient(180deg, transparent 7px, #8B6539 7px 11px, transparent 11px),
+    linear-gradient(180deg, transparent 15px, #8B6539 15px 19px, transparent 19px);
+  opacity:0.85;
+}
+.secret-flowers{
+  position:absolute; inset:0; z-index:1; pointer-events:none;
+  background-image:
+    radial-gradient(circle at 8% 78%, #FF6B8A 0 4px, transparent 5px),
+    radial-gradient(circle at 14% 82%, #FFD700 0 3px, transparent 4px),
+    radial-gradient(circle at 22% 76%, #FF69B4 0 4px, transparent 5px),
+    radial-gradient(circle at 78% 80%, #FF8C42 0 4px, transparent 5px),
+    radial-gradient(circle at 86% 76%, #E040FB 0 3px, transparent 4px),
+    radial-gradient(circle at 92% 84%, #FF6347 0 4px, transparent 5px),
+    radial-gradient(circle at 50% 88%, #DA70D6 0 3px, transparent 4px),
+    radial-gradient(circle at 34% 86%, #FFAB40 0 3px, transparent 4px),
+    radial-gradient(circle at 62% 74%, #FF4466 0 4px, transparent 5px);
+}
+.secret-butterflies{
+  position:absolute; inset:0; z-index:1; pointer-events:none; overflow:hidden;
+}
+.sfly{ position:absolute; font-size:16px; filter:drop-shadow(0 2px 3px rgba(0,0,0,0.2)); opacity:0.9; }
+.sfly-1{ left:8%; top:6px; animation:sflyA 7s ease-in-out infinite; }
+.sfly-2{ right:10%; top:10px; animation:sflyB 9s ease-in-out infinite; font-size:14px; }
+.sfly-3{ left:48%; top:2px; animation:sflyC 6s ease-in-out infinite; font-size:13px; }
+@keyframes sflyA{
+  0%,100%{ transform:translate(0,0) rotate(-8deg); }
+  50%{ transform:translate(28px,18px) rotate(12deg); }
+}
+@keyframes sflyB{
+  0%,100%{ transform:translate(0,0) rotate(6deg); }
+  50%{ transform:translate(-22px,14px) rotate(-10deg); }
+}
+@keyframes sflyC{
+  0%,100%{ transform:translate(0,0) scale(1); }
+  50%{ transform:translate(16px,-10px) scale(1.08); }
+}
+
+/* Khung sân vườn khi Map ẩn 1 active */
+#grid-wrap.theme-garden.secret-mode{
+  box-shadow:
+    0 0 0 3px #FFE08A,
+    0 0 0 6px rgba(126,200,130,0.55),
+    0 12px 28px rgba(46,120,60,0.28);
+  animation: gardenFrameGlow 2.4s ease-in-out infinite;
+  background: transparent;
+}
+@keyframes gardenFrameGlow{
+  0%,100%{ box-shadow: 0 0 0 3px #FFE08A, 0 0 0 6px rgba(126,200,130,0.45), 0 12px 28px rgba(46,120,60,0.22); }
+  50%{ box-shadow: 0 0 0 4px #FFF3B0, 0 0 0 8px rgba(126,200,130,0.7), 0 14px 34px rgba(46,120,60,0.32); }
+}
+
+/* Khay kẹo trên sân vườn — nền đất ấm + viền gỗ */
+#grid-wrap.theme-garden #secret-grid{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.18) 0%, transparent 40%),
+    linear-gradient(160deg, #C4A574 0%, #A0784A 55%, #8B6539 100%);
+  border: 3px solid #6E4B2A;
+  box-shadow:
+    inset 0 2px 0 rgba(255,255,255,0.35),
+    inset 0 -4px 10px rgba(0,0,0,0.18),
+    0 8px 18px rgba(60,40,10,0.28);
+  padding: 10px;
+  border-radius: 16px;
+  gap: 3px;
+  width: min(360px, 100%);
+  box-sizing: border-box;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+}
+#grid-wrap.theme-garden #secret-grid .sc{
+  width: auto; height: auto; aspect-ratio: 1;
+}
+/* Ô trống: đất vườn mềm */
+#grid-wrap.theme-garden .sc:not(.gem){
+  background:
+    radial-gradient(circle at 30% 28%, rgba(255,255,255,0.22) 0%, transparent 45%),
+    linear-gradient(160deg, #E8D5B0 0%, #D2B48C 100%) !important;
+  border: none !important;
+  box-shadow: inset 0 1px 2px rgba(255,255,255,0.35), inset 0 -2px 3px rgba(90,60,20,0.18);
+}
+
+/* HUD Map ẩn 1 — pill mềm giống Map 4 */
+#grid-wrap.theme-garden ~ #secret-hearts,
+body:has(#grid-wrap.theme-garden) #secret-hearts{
+  background: rgba(0,0,0,0.22);
+  display: inline-flex !important;
+  margin: 0 auto 8px;
+  padding: 4px 14px;
+  border-radius: 20px;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.45);
+  width: fit-content;
+}
+#grid-wrap.theme-garden ~ #timer-bar-wrap,
+body:has(#secret-stage.active) #timer-bar-wrap{
+  background: rgba(0,0,0,0.22);
+  height: 8px;
+  border-radius: 6px;
+  margin: 8px auto 0;
+  max-width: 280px;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.25);
+}
+body:has(#secret-stage.active) #timer-bar{
+  background: linear-gradient(90deg, #FFD54A, #FFB300);
+  box-shadow: 0 0 8px rgba(255,200,0,0.55);
+}
+body:has(#secret-stage.active) #timer-bar.danger{
+  background: linear-gradient(90deg, #FF6B6B, #E24B4A);
+}
+body:has(#secret-stage.active) #secret-streak-bar{
+  background: rgba(0,0,0,0.18);
+  border-radius: 16px;
+  padding: 6px 12px;
+  margin-top: 8px;
+}
+body:has(#secret-stage.active) .streak-dot{
+  background: rgba(255,255,255,0.25);
+  border-color: rgba(255,255,255,0.35);
+}
+body:has(#secret-stage.active) .streak-dot.lit{
+  background: #FFD54A; border-color: #FFE082;
+  box-shadow: 0 0 8px rgba(255,213,74,0.7);
+}
+
+@media (prefers-reduced-motion: reduce){
+  .sfly-1,.sfly-2,.sfly-3{ animation:none; }
+  #grid-wrap.theme-garden.secret-mode{ animation:none; }
+}
 
 /* ── MAP ẨN 2: DODGE CANVAS (mode C) ── */
 #dodge-canvas {
@@ -1287,41 +1451,50 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
 @keyframes dotPulse { from{transform:scale(1)} to{transform:scale(1.3)} }
 
 /* ════════════════════════════════════════════════════════
-   ✨ ĐỒ HOẠ 3D — CHỈ CHO MAP ẨN (lưới ghép màu .sc) ✨
-   Map thường giữ phẳng như cũ. Mỗi viên kẹo 3D có vòm sáng
-   góc trên-trái, đáy tối tạo khối, viền trong + đốm specular.
-   Dẫn xuất từ 1 biến màu --cc bằng color-mix().
-════════════════════════════════════════════════════════ */
-/* ════════════════════════════════════════════════════════
-   🎨 MAP ẨN 1 — tile y hệt map thường, ánh sáng theo streak
+   🍬 MAP ẨN 1 — viên kẹo 3D bóng (sân vườn Map 4)
+   Vòm sáng góc trên-trái + đáy tối + đốm specular
 ════════════════════════════════════════════════════════ */
 .sc.gem {
   border: none;
-  border-radius: 8px;                                  /* y hệt .cell map thường */
-  background: var(--cc, #888);                         /* màu đặc, phẳng */
-  box-shadow: none;
+  border-radius: 12px;
+  background: var(--cc, #888);
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    inset 0 2px 3px rgba(255,255,255,0.55),
+    inset 0 -3px 5px rgba(0,0,0,0.22),
+    0 3px 0 color-mix(in srgb, var(--cc,#888) 65%, #000),
+    0 5px 10px rgba(0,0,0,0.18);
   transition: transform 0.08s, filter 0.08s, box-shadow 0.15s;
 }
-/* Không dùng ::before highlight — giữ y hệt map thường */
-.sc.gem::before { display: none; }
-/* Không dùng ::after */
-.sc.gem::after { display: none; }
+.sc.gem::before {
+  content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+  background:
+    radial-gradient(circle at 28% 22%, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0.15) 28%, transparent 52%),
+    linear-gradient(160deg, rgba(255,255,255,0.28) 0%, transparent 42%, rgba(0,0,0,0.12) 100%);
+}
+.sc.gem::after {
+  content:''; position:absolute; top:7px; left:9px; width:9px; height:5px; border-radius:50%;
+  background: rgba(255,255,255,0.85); pointer-events:none;
+  box-shadow: 0 0 6px rgba(255,255,255,0.5);
+  transform: rotate(-18deg);
+}
 
-/* ── Ô sáng nhẹ dần theo streak — chỉ filter brightness, không inset ── */
-.sc.gem.glow-1 { filter: brightness(1.05); }
-.sc.gem.glow-2 { filter: brightness(1.12) saturate(1.1); }
-.sc.gem.glow-3 { filter: brightness(1.2)  saturate(1.2); }
-.sc.gem.glow-4 { filter: brightness(1.3)  saturate(1.3); animation: gemPulse4 0.7s ease-in-out infinite alternate; }
+/* ── Ô sáng nhẹ dần theo streak — candy glow ── */
+.sc.gem.glow-1 { filter: brightness(1.05) saturate(1.05); }
+.sc.gem.glow-2 { filter: brightness(1.1) saturate(1.12); box-shadow: inset 0 2px 3px rgba(255,255,255,0.55), inset 0 -3px 5px rgba(0,0,0,0.22), 0 3px 0 color-mix(in srgb, var(--cc,#888) 65%, #000), 0 0 12px color-mix(in srgb, var(--cc,#888) 55%, transparent); }
+.sc.gem.glow-3 { filter: brightness(1.18) saturate(1.2); box-shadow: inset 0 2px 3px rgba(255,255,255,0.6), inset 0 -3px 5px rgba(0,0,0,0.2), 0 3px 0 color-mix(in srgb, var(--cc,#888) 65%, #000), 0 0 18px color-mix(in srgb, var(--cc,#888) 70%, transparent); }
+.sc.gem.glow-4 { filter: brightness(1.25) saturate(1.3); animation: gemPulse4 0.7s ease-in-out infinite alternate; }
 @keyframes gemPulse4 {
-  from { filter: brightness(1.25) saturate(1.25); }
-  to   { filter: brightness(1.38) saturate(1.4); }
+  from { filter: brightness(1.2) saturate(1.25); }
+  to   { filter: brightness(1.35) saturate(1.4); }
 }
 .sc.gem.glow-5 { animation: gemPulse5 0.38s ease-in-out infinite alternate; }
 @keyframes gemPulse5 {
-  from { filter: brightness(1.35) saturate(1.4); }
-  to   { filter: brightness(1.55) saturate(1.65); }
+  from { filter: brightness(1.3) saturate(1.35); transform: scale(1); }
+  to   { filter: brightness(1.5) saturate(1.55); transform: scale(1.03); }
 }
-/* khay map ẩn: nền giống map thường */
+/* khay map ẩn (fallback khi chưa có theme-garden) */
 #secret-grid {
   background: #16213e;
   box-shadow: none;

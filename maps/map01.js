@@ -35,9 +35,11 @@ function enterSecretMode(){
   document.getElementById('hint-bar').style.display='none';
   showRotateBar(false);
 
-  // Show mode B UI
+  // Show mode B UI — sân vườn cùng phong cách Map 4 (chó / ong)
+  document.getElementById('grid-wrap').classList.add('theme-garden');
   const sg=document.getElementById('secret-grid');
   sg.classList.add('active');
+  document.getElementById('secret-stage')?.classList.add('active');
   document.getElementById('grid-wrap').classList.add('secret-mode');
   document.getElementById('timer-bar-wrap').classList.add('active');
   document.getElementById('secret-streak-bar').classList.add('active');
@@ -79,6 +81,8 @@ function exitSecretMode(){
   sg.classList.remove('active','board-flash');
   sg.innerHTML='';
   secretCells=null; // DOM vừa bị xoá thủ công → buộc renderSecretGrid dựng lại cache lần kế tiếp
+  document.getElementById('secret-stage')?.classList.remove('active');
+  document.getElementById('grid-wrap').classList.remove('theme-garden');
   const fx=document.getElementById('sc-fx');
   if(fx){ fx.classList.remove('active'); fx.innerHTML=''; }
   document.getElementById('grid-wrap').classList.remove('secret-mode','ultra-glow','combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5');
@@ -123,7 +127,7 @@ function renderSecretGrid(){
     const ci=secretBoard[r][c];
     d.className='sc'+(ci===null?'':' gem'+(glowCls?' '+glowCls:''));
     d.dataset.gem = ci===null ? '0' : '1';
-    if(ci===null){ d.style.background='#0f0f23'; d.style.border='1px solid #2a2a4a'; }
+    if(ci===null){ d.style.background=''; d.style.border=''; } // ô trống: style từ CSS sân vườn
     else { const col=SECRET_COLORS[ci]; d.style.border=''; d.style.background=col; d.style.setProperty('--cc',col); }
   }
 }
