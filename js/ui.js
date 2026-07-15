@@ -512,6 +512,7 @@ function openSettingsMap(){
 }
 
 function renderCupPanel(){
+  try{ if(typeof checkPersistentCups==='function') checkPersistentCups(); }catch(e){}
   const stats=document.getElementById('cup-stats');
   const awards=document.getElementById('cup-awards');
   if(!stats||!awards) return;
@@ -527,24 +528,25 @@ function renderCupPanel(){
     (typeof combo==='number'?combo:0),
     (typeof secretStreak==='number'?secretStreak:0)
   );
+  const doneN=(typeof ACHIEVEMENTS==='object' && ACHIEVEMENTS)
+    ? Object.values(ACHIEVEMENTS).filter(a=>a.done).length : 0;
+  const totalN=(typeof ACHIEVEMENTS==='object' && ACHIEVEMENTS)
+    ? Object.keys(ACHIEVEMENTS).length : 0;
   stats.innerHTML=
+    '<div class="cup-stat"><div class="cup-stat-num">'+doneN+'/'+totalN+'</div><div class="cup-stat-lab">'+(t('setAwards')||'Cups')+'</div></div>'+
     '<div class="cup-stat"><div class="cup-stat-num">'+comboHi+'</div><div class="cup-stat-lab">'+(t('cupHighestCombo')||'Highest Combo')+'</div></div>'+
     '<div class="cup-stat"><div class="cup-stat-num">'+bestN.toLocaleString()+'</div><div class="cup-stat-lab">'+(t('cupBestScore')||'Best Score')+'</div></div>'+
     '<div class="cup-stat"><div class="cup-stat-num">'+rounds+'</div><div class="cup-stat-lab">'+(t('cupRounds')||'Rounds')+'</div></div>'+
     '<div class="cup-stat"><div class="cup-stat-num">'+loginDays+'</div><div class="cup-stat-lab">'+(t('cupLoginDays')||'Login Days')+'</div></div>';
 
-  const icons={
-    first_burst:'💥', combo5:'🔥', score1000:'⭐', score5000:'🌟',
-    secret1:'🗺️', ultra:'⚡', fruit50:'🍉', survive60:'🐢',
-    level5:'📈', level10:'🏆'
-  };
   const list=(typeof ACHIEVEMENTS==='object' && ACHIEVEMENTS)?Object.values(ACHIEVEMENTS):[];
   awards.innerHTML=list.map(a=>{
     const done=!!a.done;
-    return '<div class="cup-award">'+
-      '<div class="cup-badge'+(done?' done':'')+'">'+(icons[a.id]||'🎖️')+(done?'<span class="set-dot"></span>':'')+'</div>'+
-      '<div class="cup-award-name">'+a.label.replace(/^[^A-Za-zÀ-ỹ0-9]+/,'')+'</div>'+
-      '<div class="cup-award-prog">'+(done?'1/1':'0/1')+'</div>'+
+    const ico=a.icon||'🎖️';
+    return '<div class="cup-award'+(done?' is-done':'')+'" title="'+(a.desc||'')+'">'+
+      '<div class="cup-badge'+(done?' done':'')+'">'+ico+(done?'<span class="set-dot"></span>':'')+'</div>'+
+      '<div class="cup-award-name">'+(a.label||a.id)+'</div>'+
+      '<div class="cup-award-prog">'+(done?'✓':'…')+'</div>'+
     '</div>';
   }).join('');
 }
@@ -615,7 +617,7 @@ function initSettingsMenu(){
 
   document.getElementById('set-contact-btn')?.addEventListener('click', ()=>{
     sfxClick();
-    openSettingsText(t('setContact')||'Contact Us', 'Email: duyenhoang.tl@gmail.com\nChromaBlast support');
+    openSettingsText(t('setContact')||'Contact Us', 'Email: duyenhoang91.tl@gmail.com\nChromaBlast support');
   });
   document.getElementById('set-share-btn')?.addEventListener('click', ()=>{
     sfxClick();
