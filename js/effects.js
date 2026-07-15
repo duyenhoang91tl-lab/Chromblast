@@ -670,36 +670,60 @@ function roundRect(ctx,x,y,w,h,r){
   ctx.closePath();
 }
 
-/* ── Ô kẹo bông mềm đáng yêu (canvas) — cùng ngôn ngữ CSS .cell.filled / .sc.gem ── */
+/* ── Ô plush / pom-pom lông xù (canvas) — giống ảnh tham chiếu ── */
 function drawSoftCandyCell(ctx,x,y,w,h,color,opts){
   const o=opts||{};
-  const r=o.r!=null?o.r:Math.min(w,h)*0.36;
+  const r=o.r!=null?o.r:Math.min(w,h)*0.28;
+  const cx=x+w/2, cy=y+h/2;
   ctx.save();
-  // bóng mềm màu kẹo (không bevel cứng)
-  if(o.glow!==false){
-    ctx.shadowColor=color; ctx.shadowBlur=o.glowBlur!=null?o.glowBlur:Math.max(4,Math.min(w,h)*0.22);
-    ctx.shadowOffsetY=1;
-  }
+  // bóng đổ mềm dưới chân
+  ctx.shadowColor='rgba(40,25,10,0.28)';
+  ctx.shadowBlur=Math.max(4,Math.min(w,h)*0.18);
+  ctx.shadowOffsetY=Math.max(2,h*0.06);
   roundRect(ctx,x,y,w,h,r);
-  // dùng màu thật: vẽ nền màu rồi phủ highlight
   ctx.fillStyle=color; ctx.fill();
   ctx.shadowBlur=0; ctx.shadowOffsetY=0;
-  // lớp sáng mềm phía trên (bông)
-  const fluff=ctx.createRadialGradient(x+w*0.32,y+h*0.28,0,x+w*0.32,y+h*0.28,w*0.7);
-  fluff.addColorStop(0,'rgba(255,255,255,0.78)');
-  fluff.addColorStop(0.35,'rgba(255,255,255,0.28)');
-  fluff.addColorStop(1,'rgba(255,255,255,0)');
-  ctx.fillStyle=fluff; roundRect(ctx,x,y,w,h,r); ctx.fill();
-  // đốm specular nhỏ
-  ctx.fillStyle='rgba(255,255,255,0.9)';
-  ctx.beginPath();
-  ctx.ellipse(x+w*0.28,y+h*0.22,w*0.16,h*0.1,-0.4,0,Math.PI*2);
-  ctx.fill();
-  // viền sáng mỏng
-  ctx.strokeStyle='rgba(255,255,255,0.45)';
-  ctx.lineWidth=Math.max(1,Math.min(w,h)*0.04);
-  roundRect(ctx,x+0.5,y+0.5,w-1,h-1,Math.max(0,r-0.5));
-  ctx.stroke();
+
+  // lõi sáng mềm (không specular cứng)
+  const core=ctx.createRadialGradient(cx-w*0.12,cy-h*0.18,0,cx,cy,Math.max(w,h)*0.7);
+  core.addColorStop(0,'rgba(255,255,255,0.38)');
+  core.addColorStop(0.45,'rgba(255,255,255,0.08)');
+  core.addColorStop(1,'rgba(0,0,0,0.12)');
+  ctx.fillStyle=core; roundRect(ctx,x,y,w,h,r); ctx.fill();
+
+  // sợi lông xù quanh viền
+  const fibers=o.fibers!=null?o.fibers:Math.max(28,Math.floor((w+h)*0.9));
+  const seed=((x*12.9898+y*78.233)|0);
+  ctx.strokeStyle=color; ctx.lineCap='round';
+  for(let i=0;i<fibers;i++){
+    const a=(i/fibers)*Math.PI*2 + ((seed+i*17)%10)*0.02;
+    const wobble=0.85+(((seed*i)%7)/20);
+    const len=(Math.min(w,h)*0.1+((i*3)%5))*wobble;
+    const inset=Math.min(w,h)*0.42;
+    const sx=cx+Math.cos(a)*inset;
+    const sy=cy+Math.sin(a)*inset;
+    const ex=cx+Math.cos(a)*(inset+len);
+    const ey=cy+Math.sin(a)*(inset+len);
+    ctx.globalAlpha=0.35+((i%5)*0.08);
+    ctx.lineWidth=1+(i%3===0?0.8:0);
+    ctx.beginPath(); ctx.moveTo(sx,sy); ctx.lineTo(ex,ey); ctx.stroke();
+  }
+  // đốm sợi bên trong
+  ctx.fillStyle='rgba(255,255,255,0.35)';
+  for(let i=0;i<10;i++){
+    const px=x+w*(0.18+((seed+i*13)%70)/100*0.64);
+    const py=y+h*(0.18+((seed+i*29)%70)/100*0.64);
+    ctx.globalAlpha=0.25+((i%4)*0.1);
+    ctx.beginPath(); ctx.arc(px,py,0.7+(i%3)*0.4,0,Math.PI*2); ctx.fill();
+  }
+  ctx.globalAlpha=1;
+  // halo lông màu ngoài
+  if(o.glow!==false){
+    ctx.strokeStyle=color; ctx.globalAlpha=0.22;
+    ctx.lineWidth=Math.max(2,Math.min(w,h)*0.1);
+    roundRect(ctx,x-1,y-1,w+2,h+2,r+1); ctx.stroke();
+    ctx.globalAlpha=1;
+  }
   ctx.restore();
 }
 
