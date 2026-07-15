@@ -487,7 +487,8 @@ function updateComboBorderGlow(streak){
   else if(streak>=1) wrap.classList.add('combo-glow-1');
   // Re-render tiles với glow class mới (chỉ khi đang ở map ẩn)
   if(secretMode) renderSecretGrid();
-  if(streak>=2) spawnComboBorderSparks(streak);
+  // Map ẩn 1 đã có sparkler viền liên tục — bỏ burst sparks chồng thêm (gây giật)
+  if(streak>=2 && !secretMode) spawnComboBorderSparks(streak);
 }
 
 function spawnComboBorderSparks(streak){
