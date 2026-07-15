@@ -21,7 +21,7 @@ function getSC(r,c){ return secretCells && secretCells[r] ? secretCells[r][c] : 
 ══════════════════════════════════════════ */
 function initBoard(){
   board=Array.from({length:ROWS},()=>Array(COLS).fill(null));
-  placeCounter=0; cellPlacedAt={};
+  placeCounter=0; cellPlacedAt={}; pendingClearKeys.clear();
   resetMechanicState();
   // ván mới vẫn giữ tier đã đạt — kích hoạt lại ĐÚNG 1 cơ chế của vòng đó
   if(typeof mainHardTier!=='undefined' && mainHardTier>0) setTimeout(()=>applyRoundMechanics(), 50);
@@ -348,8 +348,11 @@ function onDocPointerUp(e){
 
   // Nếu là tap (không di chuyển) vào slot thì không làm gì (vì đã xoay ở PointerDown)
   if(!drag.moved && e.target.closest('.piece-slot')) return;
+  // Tap (không kéo) vào lưới → để sự kiện 'click' của #grid xử lý (onCellClick đặt
+  // ĐÚNG tại ô vừa chạm, không dùng anchor nâng khối của cảm ứng).
+  if(!drag.moved && e.target.closest('#grid')) return;
 
-  // Kéo thật hoặc tap vào lưới -> thả nếu đáp vào chỗ hợp lệ
+  // Kéo thật -> thả nếu đáp vào chỗ hợp lệ (vị trí trùng khớp với ô mờ đang hiện)
   const o=originFromPointer(e.clientX,e.clientY,piece);
   if(o && canPlace(piece,o.R,o.C)) placeAt(o.R,o.C);
   else if (drag.moved) { sfxInvalid(); endDrag(); }
@@ -372,9 +375,19 @@ document.getElementById('rotate-confirm-btn').addEventListener('click', (e)=>{
   showHint(t('hintRotateLocked'));
 });
 
-// Tap trên nền lưới (không phải ô cụ thể) khi đang giữ khối -> không xoay nữa (đã chuyển vào onSlotPointerDown)
+// Chạm/nhấn xuống LƯỚI khi đã chọn khối → bắt đầu "kéo tinh chỉnh": ô mờ bám theo
+// con trỏ và THẢ RA LÀ ĐẶT. Trước đây pointerup bị bỏ qua (drag.active=false vì kéo
+// không bắt đầu từ khay) nên căn ô mờ xong thả ra không đặt được — mất hẳn cơ chế
+// nhắm bằng ô mờ như bản cũ.
 document.getElementById('grid').addEventListener('pointerdown', e=>{
-  if(e.target.classList.contains('cell')) return;
+  if(selected===null || secretMode) return;
+  const piece=pieces[selected];
+  if(!piece || piece.used) return;
+  drag.active=true; drag.moved=false;
+  drag.sx=e.clientX; drag.sy=e.clientY;
+  drag.pointerType=e.pointerType||'mouse';
+  moveGhost(e.clientX,e.clientY);
+  updatePreview(e.clientX,e.clientY);
 });
 
 function showRotateBar(show){
@@ -382,8 +395,10 @@ function showRotateBar(show){
 }
 document.addEventListener('pointerdown', e => {
   if (selected === null || secretMode) return;
-  // Nếu chạm vào nền (không phải slot, không phải lưới, không phải UI buttons) -> Bỏ chọn
-  if (!e.target.closest('.piece-slot') && !e.target.closest('.cell') && !e.target.closest('#game-controls')) {
+  // Nếu chạm vào nền (không phải slot, không phải VÙNG lưới, không phải UI buttons) -> Bỏ chọn.
+  // Dùng #grid-wrap thay vì .cell: chạm vào khe/viền giữa các ô (đệm 10px + khe 3px của
+  // lưới) trước đây cũng bị tính là "nền" và huỷ chọn ngay — không căn ô mờ để đặt được.
+  if (!e.target.closest('.piece-slot') && !e.target.closest('#grid-wrap') && !e.target.closest('#game-controls')) {
     endDrag();
   }
 });
@@ -404,13 +419,19 @@ function onCellClick(e){
   placeAt(R,C);
 }
 
+// Ô đã được tính nổ và đang chờ animation gỡ khỏi board (board vẫn giữ màu suốt
+// 360-500ms để hiệu ứng pop chạy xong). Nếu người chơi đặt khối tiếp NGAY trong lúc
+// đó, lần tính nổ mới phải coi các ô này là TRỐNG — nếu không, hàng/cột/cụm "đầy ảo"
+// nhờ các ô sắp biến mất sẽ nổ oan, làm mất cả những ô của hàng CHƯA đủ gạch.
+const pendingClearKeys=new Set();
 function processClears(){
+  const cellAlive=(r,c)=> board[r][c]!==null && !pendingClearKeys.has(`${r},${c}`);
   let lineKeys=new Set();
   for(let r=0;r<ROWS;r++)
-    if(board[r].every(v=>v!==null))
+    if(board[r].every((v,c)=>cellAlive(r,c)))
       for(let c=0;c<COLS;c++) lineKeys.add(`${r},${c}`);
   for(let c=0;c<COLS;c++)
-    if(Array.from({length:ROWS},(_,r)=>board[r][c]).every(v=>v!==null))
+    if(Array.from({length:ROWS},(_,r)=>r).every(r=>cellAlive(r,c)))
       for(let r=0;r<ROWS;r++) lineKeys.add(`${r},${c}`);
 
   // Nổ màu: một CỤM cùng màu NỐI LIỀN nhau (4 hướng), tối thiểu COLOR_BURST_MIN ô.
@@ -419,14 +440,15 @@ function processClears(){
   for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
     const color=board[r][c];
     const key=`${r},${c}`;
-    if(!color || seen.has(key)) continue;
+    if(!color || seen.has(key) || pendingClearKeys.has(key)) continue;
     if(thornCells.has(key)){ seen.add(key); continue; } // thorn cell cannot start or join a burst
     const comp=[[r,c]]; const q=[[r,c]]; seen.add(key);   // BFS cụm cùng màu liền kề
     while(q.length){
       const [cr,cc]=q.shift();
       for(const [dr,dc] of [[-1,0],[1,0],[0,-1],[0,1]]){
         const nr=cr+dr, nc=cc+dc, nk=`${nr},${nc}`;
-        if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&!seen.has(nk)&&board[nr][nc]===color&&!thornCells.has(nk)){
+        if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&!seen.has(nk)&&board[nr][nc]===color
+           &&!thornCells.has(nk)&&!pendingClearKeys.has(nk)){
           seen.add(nk); q.push([nr,nc]); comp.push([nr,nc]);
         }
       }
@@ -435,6 +457,7 @@ function processClears(){
   }
 
   const totalKeys=new Set([...lineKeys,...colorKeys]);
+  totalKeys.forEach(k=>pendingClearKeys.add(k)); // đánh dấu ngay — đợt tính sau coi như trống
 
   if(totalKeys.size===0){
     // Đặt khối mà không nổ → đứt chuỗi combo, phải tính lại từ đầu (không khen liên tiếp nữa)
@@ -490,6 +513,8 @@ function processClears(){
 
   const waitTime=colorKeys.size>0?500:360;
   setTimeout(()=>{
+    // đợt nổ hoàn tất — gỡ dấu "đang chờ nổ" (kể cả ô sống sót nhờ gai/băng)
+    totalKeys.forEach(k=>pendingClearKeys.delete(k));
     let eggHitThisWave=false; // mỗi ĐỢT nổ chỉ làm nứt vỏ trứng 1 lớp, dù nhiều ô cùng kề trứng
     let spiderHitWave=false, bhHitWave=false, snailHitWave=false, snakeHitWave=false, portalHitWave=false, dkHitWave=false, squirrelHitWave=false;
     // 🌿 chụp trước các ô đang có dây gai TẠI THỜI ĐIỂM đợt nổ bắt đầu — các ô này được gai
@@ -689,6 +714,9 @@ function processClears(){
 
 
 function checkGameOverA(){
+  // Đang có đợt nổ chờ gỡ ô khỏi board (ô vẫn "đầy ảo" trong lúc animation chạy) —
+  // hoãn kết luận; chuỗi processClears sẽ gọi kiểm tra lại sau khi đợt nổ xong.
+  if(pendingClearKeys.size>0) return false;
   // khay đã dùng hết khối → bổ sung trước khi kết luận (tránh báo hết lượt oan
   // khi luồng unlock/thoát map ẩn gọi check trước khi refill kịp chạy)
   if(!pieces || !pieces.length || pieces.every(p=>p.used)){ refillPieces(); renderPieces(); }
