@@ -717,14 +717,11 @@ function drawSoftCandyCell(ctx,x,y,w,h,color,opts){
     ctx.beginPath(); ctx.arc(px,py,0.8+(i%3)*0.45,0,Math.PI*2); ctx.fill();
   }
   ctx.globalAlpha=1;
-  // halo lông màu ngoài dày hơn
+  // halo lông màu ngoài — mỏng, ít mờ
   if(o.glow!==false){
-    ctx.strokeStyle=color; ctx.globalAlpha=0.28;
-    ctx.lineWidth=Math.max(3,Math.min(w,h)*0.14);
-    roundRect(ctx,x-2,y-2,w+4,h+4,r+2); ctx.stroke();
-    ctx.globalAlpha=0.14;
-    ctx.lineWidth=Math.max(5,Math.min(w,h)*0.22);
-    roundRect(ctx,x-4,y-4,w+8,h+8,r+3); ctx.stroke();
+    ctx.strokeStyle=color; ctx.globalAlpha=0.2;
+    ctx.lineWidth=Math.max(1.5,Math.min(w,h)*0.07);
+    roundRect(ctx,x-1,y-1,w+2,h+2,r+1); ctx.stroke();
     ctx.globalAlpha=1;
   }
   ctx.restore();
