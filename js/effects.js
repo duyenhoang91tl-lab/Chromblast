@@ -691,37 +691,40 @@ function drawSoftCandyCell(ctx,x,y,w,h,color,opts){
   core.addColorStop(1,'rgba(0,0,0,0.12)');
   ctx.fillStyle=core; roundRect(ctx,x,y,w,h,r); ctx.fill();
 
-  // sợi lông xù quanh viền
-  const fibers=o.fibers!=null?o.fibers:Math.max(28,Math.floor((w+h)*0.9));
+  // sợi lông xù quanh viền (nhiều hơn)
+  const fibers=o.fibers!=null?o.fibers:Math.max(48,Math.floor((w+h)*1.45));
   const seed=((x*12.9898+y*78.233)|0);
   ctx.strokeStyle=color; ctx.lineCap='round';
   for(let i=0;i<fibers;i++){
     const a=(i/fibers)*Math.PI*2 + ((seed+i*17)%10)*0.02;
     const wobble=0.85+(((seed*i)%7)/20);
-    const len=(Math.min(w,h)*0.1+((i*3)%5))*wobble;
-    const inset=Math.min(w,h)*0.42;
+    const len=(Math.min(w,h)*0.14+((i*3)%6))*wobble;
+    const inset=Math.min(w,h)*0.38;
     const sx=cx+Math.cos(a)*inset;
     const sy=cy+Math.sin(a)*inset;
     const ex=cx+Math.cos(a)*(inset+len);
     const ey=cy+Math.sin(a)*(inset+len);
-    ctx.globalAlpha=0.35+((i%5)*0.08);
-    ctx.lineWidth=1+(i%3===0?0.8:0);
+    ctx.globalAlpha=0.4+((i%5)*0.1);
+    ctx.lineWidth=1.1+(i%3===0?1:0.2);
     ctx.beginPath(); ctx.moveTo(sx,sy); ctx.lineTo(ex,ey); ctx.stroke();
   }
   // đốm sợi bên trong
-  ctx.fillStyle='rgba(255,255,255,0.35)';
-  for(let i=0;i<10;i++){
-    const px=x+w*(0.18+((seed+i*13)%70)/100*0.64);
-    const py=y+h*(0.18+((seed+i*29)%70)/100*0.64);
-    ctx.globalAlpha=0.25+((i%4)*0.1);
-    ctx.beginPath(); ctx.arc(px,py,0.7+(i%3)*0.4,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,0.4)';
+  for(let i=0;i<16;i++){
+    const px=x+w*(0.15+((seed+i*13)%75)/100*0.7);
+    const py=y+h*(0.15+((seed+i*29)%75)/100*0.7);
+    ctx.globalAlpha=0.28+((i%4)*0.1);
+    ctx.beginPath(); ctx.arc(px,py,0.8+(i%3)*0.45,0,Math.PI*2); ctx.fill();
   }
   ctx.globalAlpha=1;
-  // halo lông màu ngoài
+  // halo lông màu ngoài dày hơn
   if(o.glow!==false){
-    ctx.strokeStyle=color; ctx.globalAlpha=0.22;
-    ctx.lineWidth=Math.max(2,Math.min(w,h)*0.1);
-    roundRect(ctx,x-1,y-1,w+2,h+2,r+1); ctx.stroke();
+    ctx.strokeStyle=color; ctx.globalAlpha=0.28;
+    ctx.lineWidth=Math.max(3,Math.min(w,h)*0.14);
+    roundRect(ctx,x-2,y-2,w+4,h+4,r+2); ctx.stroke();
+    ctx.globalAlpha=0.14;
+    ctx.lineWidth=Math.max(5,Math.min(w,h)*0.22);
+    roundRect(ctx,x-4,y-4,w+8,h+8,r+3); ctx.stroke();
     ctx.globalAlpha=1;
   }
   ctx.restore();

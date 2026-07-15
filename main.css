@@ -594,31 +594,31 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
   50%     { box-shadow: 0 0 0 7px #ffffff, 0 0 40px rgba(255,240,100,1),  0 0 85px rgba(255,180,0,0.8), 0 0 150px rgba(255,80,0,0.45); }
 }
 
-/* ── MAIN GRID (mode A) — khay gỗ ấm như ảnh plush ── */
+/* ── MAIN GRID (mode A) — bàn gỗ nhạt để gạch nổi ── */
 #grid {
   display: grid; gap: 4px;
   background:
-    repeating-linear-gradient(90deg, rgba(90,55,25,0.07) 0 1px, transparent 1px 11px),
-    repeating-linear-gradient(0deg, rgba(90,55,25,0.05) 0 1px, transparent 1px 11px),
-    linear-gradient(165deg, #E8D4B0 0%, #D4B896 42%, #C4A074 100%);
-  border: 3px solid #9A7348;
+    repeating-linear-gradient(90deg, rgba(140,110,70,0.045) 0 1px, transparent 1px 11px),
+    repeating-linear-gradient(0deg, rgba(140,110,70,0.035) 0 1px, transparent 1px 11px),
+    linear-gradient(165deg, #F7F0E4 0%, #F0E6D4 45%, #E8DCC6 100%);
+  border: 2px solid #D4C2A4;
   border-radius: 18px; padding: 10px;
   margin: 0 auto;
   box-shadow:
-    inset 0 2px 0 rgba(255,255,255,0.35),
-    inset 0 -3px 8px rgba(80,45,15,0.18),
-    0 10px 22px rgba(40,25,10,0.28);
+    inset 0 2px 0 rgba(255,255,255,0.55),
+    inset 0 -2px 6px rgba(160,130,90,0.1),
+    0 8px 18px rgba(60,40,20,0.16);
   touch-action: none; /* kéo tinh chỉnh bắt đầu từ khe/đệm lưới không được cuộn trang */
 }
 .cell {
   width: 44px; height: 44px; border-radius: 12px;
-  border: 1px solid rgba(110,70,30,0.18);
-  background: rgba(90,55,25,0.1);
-  box-shadow: inset 0 1px 3px rgba(60,35,10,0.18);
+  border: 1px solid rgba(160,130,90,0.14);
+  background: rgba(180,150,110,0.07);
+  box-shadow: inset 0 1px 2px rgba(120,90,50,0.1);
   cursor: default; transition: transform 0.08s, background 0.1s, box-shadow 0.12s, filter 0.12s;
   position: relative; touch-action: none;
 }
-/* 🧶 Gạch plush / pom-pom lông xù — giống ảnh tham chiếu */
+/* 🧶 Gạch plush / pom-pom — nhiều lông hơn */
 .cell.filled,
 .cell.preview-ok {
   --cc: #888;
@@ -631,36 +631,48 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
     radial-gradient(ellipse 70% 60% at 70% 78%, color-mix(in srgb, var(--cc) 70%, #000) 0%, transparent 60%),
     radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--cc) 82%, #fff) 0%, var(--cc) 70%);
   box-shadow:
-    /* viền lông xù nhiều lớp */
-    0 0 0 1px color-mix(in srgb, var(--cc) 75%, #fff),
-    0 0 3px 1px color-mix(in srgb, var(--cc) 85%, transparent),
-    0 0 7px 2px color-mix(in srgb, var(--cc) 55%, transparent),
-    0 0 12px 3px color-mix(in srgb, var(--cc) 28%, transparent),
+    /* viền lông xù dày hơn */
+    0 0 0 1.5px color-mix(in srgb, var(--cc) 70%, #fff),
+    0 0 4px 2px color-mix(in srgb, var(--cc) 90%, transparent),
+    0 0 9px 3px color-mix(in srgb, var(--cc) 65%, transparent),
+    0 0 16px 5px color-mix(in srgb, var(--cc) 35%, transparent),
+    0 0 22px 7px color-mix(in srgb, var(--cc) 18%, transparent),
     inset 0 3px 6px rgba(255,255,255,0.28),
-    inset 0 -5px 8px rgba(0,0,0,0.18),
-    0 5px 10px rgba(40,25,10,0.22);
-  filter: url(#plush-fur) saturate(1.08);
+    inset 0 -5px 8px rgba(0,0,0,0.16),
+    0 5px 12px rgba(40,25,10,0.18);
+  filter: url(#plush-fur) saturate(1.12);
 }
 .cell.filled::before,
 .cell.preview-ok::before {
-  /* lớp sợi lông dày hơn — cảm giác pom-pom */
-  content:''; position:absolute; inset:-3px; border-radius:inherit; pointer-events:none; z-index:1;
-  opacity:0.72;
+  /* sợi lông dày — phủ kín hơn */
+  content:''; position:absolute; inset:-5px; border-radius:inherit; pointer-events:none; z-index:1;
+  opacity:0.88;
   background:
-    radial-gradient(circle at 18% 16%, rgba(255,255,255,0.7) 0 1.4px, transparent 2.4px),
-    radial-gradient(circle at 38% 10%, rgba(255,255,255,0.55) 0 1.1px, transparent 2px),
-    radial-gradient(circle at 58% 14%, rgba(255,255,255,0.5) 0 1.2px, transparent 2.2px),
-    radial-gradient(circle at 78% 20%, rgba(255,255,255,0.6) 0 1.3px, transparent 2.3px),
-    radial-gradient(circle at 12% 38%, rgba(255,255,255,0.35) 0 1px, transparent 2px),
-    radial-gradient(circle at 32% 44%, rgba(0,0,0,0.14) 0 1.1px, transparent 2px),
-    radial-gradient(circle at 52% 36%, rgba(255,255,255,0.3) 0 1px, transparent 2px),
-    radial-gradient(circle at 72% 48%, rgba(0,0,0,0.12) 0 1.2px, transparent 2.1px),
-    radial-gradient(circle at 88% 40%, rgba(255,255,255,0.28) 0 1px, transparent 2px),
-    radial-gradient(circle at 22% 62%, rgba(0,0,0,0.1) 0 1.1px, transparent 2px),
-    radial-gradient(circle at 44% 70%, rgba(255,255,255,0.25) 0 1.2px, transparent 2.1px),
-    radial-gradient(circle at 66% 66%, rgba(0,0,0,0.12) 0 1px, transparent 2px),
-    radial-gradient(circle at 84% 72%, rgba(255,255,255,0.3) 0 1.1px, transparent 2px),
-    radial-gradient(circle at 50% 88%, rgba(0,0,0,0.1) 0 1.2px, transparent 2px);
+    radial-gradient(circle at 10% 12%, rgba(255,255,255,0.75) 0 1.5px, transparent 2.6px),
+    radial-gradient(circle at 22% 8%, rgba(255,255,255,0.6) 0 1.2px, transparent 2.2px),
+    radial-gradient(circle at 36% 14%, rgba(255,255,255,0.55) 0 1.3px, transparent 2.3px),
+    radial-gradient(circle at 50% 6%, rgba(255,255,255,0.65) 0 1.4px, transparent 2.4px),
+    radial-gradient(circle at 64% 12%, rgba(255,255,255,0.5) 0 1.2px, transparent 2.2px),
+    radial-gradient(circle at 78% 18%, rgba(255,255,255,0.7) 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 90% 14%, rgba(255,255,255,0.45) 0 1.1px, transparent 2px),
+    radial-gradient(circle at 8% 30%, rgba(255,255,255,0.4) 0 1.1px, transparent 2px),
+    radial-gradient(circle at 18% 40%, rgba(0,0,0,0.14) 0 1.2px, transparent 2.1px),
+    radial-gradient(circle at 34% 34%, rgba(255,255,255,0.35) 0 1px, transparent 2px),
+    radial-gradient(circle at 48% 42%, rgba(0,0,0,0.12) 0 1.1px, transparent 2px),
+    radial-gradient(circle at 62% 32%, rgba(255,255,255,0.32) 0 1.2px, transparent 2.1px),
+    radial-gradient(circle at 76% 44%, rgba(0,0,0,0.13) 0 1.2px, transparent 2.1px),
+    radial-gradient(circle at 88% 36%, rgba(255,255,255,0.3) 0 1px, transparent 2px),
+    radial-gradient(circle at 12% 55%, rgba(0,0,0,0.1) 0 1.1px, transparent 2px),
+    radial-gradient(circle at 28% 62%, rgba(255,255,255,0.28) 0 1.2px, transparent 2.1px),
+    radial-gradient(circle at 44% 58%, rgba(0,0,0,0.12) 0 1px, transparent 2px),
+    radial-gradient(circle at 58% 68%, rgba(255,255,255,0.3) 0 1.3px, transparent 2.2px),
+    radial-gradient(circle at 74% 60%, rgba(0,0,0,0.11) 0 1.1px, transparent 2px),
+    radial-gradient(circle at 90% 64%, rgba(255,255,255,0.35) 0 1.2px, transparent 2.1px),
+    radial-gradient(circle at 20% 80%, rgba(255,255,255,0.25) 0 1.1px, transparent 2px),
+    radial-gradient(circle at 40% 86%, rgba(0,0,0,0.1) 0 1.2px, transparent 2.1px),
+    radial-gradient(circle at 60% 82%, rgba(255,255,255,0.28) 0 1.1px, transparent 2px),
+    radial-gradient(circle at 80% 88%, rgba(0,0,0,0.1) 0 1.2px, transparent 2px),
+    radial-gradient(circle at 50% 94%, rgba(255,255,255,0.22) 0 1px, transparent 2px);
   mix-blend-mode: soft-light;
 }
 .cell.mirror-cell { box-shadow: inset 0 0 0 2px rgba(200,150,255,0.85), 0 0 10px color-mix(in srgb, var(--cc,#c8a0ff) 45%, transparent); }
@@ -1291,16 +1303,16 @@ body:has(#secret-stage.active) .streak-dot.lit{
 }
 .piece-slot {
   background:
-    linear-gradient(165deg, rgba(232,212,176,0.95) 0%, rgba(196,160,116,0.92) 100%);
-  border: 2px solid #9A7348; border-radius: 14px;
+    linear-gradient(165deg, #F6EFE3 0%, #EDE2CE 100%);
+  border: 2px solid #D4C2A4; border-radius: 14px;
   padding: 10px; cursor: grab; user-select: none; touch-action: none;
   transition: opacity 0.2s, transform 0.1s, border-color 0.1s, background 0.1s;
   display: flex; flex-direction: column; align-items: center; gap: 4px;
   min-width: 76px; min-height: 76px; justify-content: center;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 4px 10px rgba(40,25,10,0.2);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.55), 0 4px 10px rgba(60,40,20,0.12);
 }
 .piece-slot.dragging-src { cursor: grabbing; }
-.piece-slot:hover { border-color: #c49a5c; }
+.piece-slot:hover { border-color: #c9b18a; }
 .piece-slot.used { opacity: 0.15; pointer-events: none; }
 .piece-slot.selected { border: 2px solid #378ADD; background: linear-gradient(165deg, rgba(180,210,240,0.95) 0%, rgba(140,170,210,0.9) 100%); opacity: 0.55; }
 .p-cell { width: 14px; height: 14px; border-radius: 4px; }
@@ -1313,18 +1325,20 @@ body:has(#secret-stage.active) .streak-dot.lit{
   background:
     radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--cc) 60%, #fff) 0%, var(--cc) 75%);
   box-shadow:
-    0 0 2px 0.5px color-mix(in srgb, var(--cc) 80%, transparent),
-    0 0 4px 1px color-mix(in srgb, var(--cc) 45%, transparent),
+    0 0 3px 1px color-mix(in srgb, var(--cc) 85%, transparent),
+    0 0 6px 2px color-mix(in srgb, var(--cc) 50%, transparent),
     inset 0 1px 2px rgba(255,255,255,0.35),
-    0 1px 2px rgba(0,0,0,0.15);
-  filter: url(#plush-fur-sm) saturate(1.1);
+    0 1px 2px rgba(0,0,0,0.12);
+  filter: url(#plush-fur-sm) saturate(1.12);
 }
 .p-cell.candy::after {
-  content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
-  opacity:0.5;
+  content:''; position:absolute; inset:-2px; border-radius:inherit; pointer-events:none;
+  opacity:0.7;
   background:
-    radial-gradient(circle at 30% 25%, rgba(255,255,255,0.5) 0 0.6px, transparent 1.2px),
-    radial-gradient(circle at 70% 55%, rgba(0,0,0,0.15) 0 0.5px, transparent 1px);
+    radial-gradient(circle at 25% 20%, rgba(255,255,255,0.65) 0 0.8px, transparent 1.4px),
+    radial-gradient(circle at 70% 30%, rgba(255,255,255,0.4) 0 0.6px, transparent 1.2px),
+    radial-gradient(circle at 45% 70%, rgba(0,0,0,0.15) 0 0.6px, transparent 1.2px),
+    radial-gradient(circle at 80% 65%, rgba(255,255,255,0.35) 0 0.5px, transparent 1px);
   mix-blend-mode: soft-light;
 }
 
@@ -1559,27 +1573,34 @@ body:has(#secret-stage.active) .streak-dot.lit{
   position: relative;
   overflow: visible;
   box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--cc,#888) 75%, #fff),
-    0 0 3px 1px color-mix(in srgb, var(--cc,#888) 85%, transparent),
-    0 0 7px 2px color-mix(in srgb, var(--cc,#888) 55%, transparent),
-    0 0 12px 3px color-mix(in srgb, var(--cc,#888) 28%, transparent),
+    0 0 0 1.5px color-mix(in srgb, var(--cc,#888) 70%, #fff),
+    0 0 4px 2px color-mix(in srgb, var(--cc,#888) 90%, transparent),
+    0 0 9px 3px color-mix(in srgb, var(--cc,#888) 65%, transparent),
+    0 0 16px 5px color-mix(in srgb, var(--cc,#888) 35%, transparent),
+    0 0 22px 7px color-mix(in srgb, var(--cc,#888) 18%, transparent),
     inset 0 3px 6px rgba(255,255,255,0.28),
-    inset 0 -5px 8px rgba(0,0,0,0.18),
-    0 5px 10px rgba(40,25,10,0.22);
-  filter: url(#plush-fur) saturate(1.08);
+    inset 0 -5px 8px rgba(0,0,0,0.16),
+    0 5px 12px rgba(40,25,10,0.18);
+  filter: url(#plush-fur) saturate(1.12);
   transition: transform 0.08s, filter 0.08s, box-shadow 0.15s;
 }
 .sc.gem::before {
-  content:''; position:absolute; inset:-2px; border-radius:inherit; pointer-events:none;
-  opacity:0.55;
+  content:''; position:absolute; inset:-5px; border-radius:inherit; pointer-events:none;
+  opacity:0.88;
   background:
-    radial-gradient(circle at 22% 18%, rgba(255,255,255,0.55) 0 1.2px, transparent 2px),
-    radial-gradient(circle at 48% 12%, rgba(255,255,255,0.4) 0 1px, transparent 2px),
-    radial-gradient(circle at 72% 24%, rgba(255,255,255,0.45) 0 1.1px, transparent 2px),
-    radial-gradient(circle at 30% 42%, rgba(255,255,255,0.28) 0 1px, transparent 2px),
-    radial-gradient(circle at 62% 48%, rgba(0,0,0,0.12) 0 1px, transparent 2px),
-    radial-gradient(circle at 40% 70%, rgba(0,0,0,0.1) 0 1.2px, transparent 2px),
-    radial-gradient(circle at 78% 66%, rgba(255,255,255,0.25) 0 1px, transparent 2px);
+    radial-gradient(circle at 10% 12%, rgba(255,255,255,0.75) 0 1.5px, transparent 2.6px),
+    radial-gradient(circle at 28% 8%, rgba(255,255,255,0.6) 0 1.2px, transparent 2.2px),
+    radial-gradient(circle at 50% 14%, rgba(255,255,255,0.55) 0 1.3px, transparent 2.3px),
+    radial-gradient(circle at 72% 10%, rgba(255,255,255,0.65) 0 1.4px, transparent 2.4px),
+    radial-gradient(circle at 90% 20%, rgba(255,255,255,0.5) 0 1.2px, transparent 2.2px),
+    radial-gradient(circle at 16% 40%, rgba(0,0,0,0.14) 0 1.2px, transparent 2.1px),
+    radial-gradient(circle at 40% 36%, rgba(255,255,255,0.35) 0 1px, transparent 2px),
+    radial-gradient(circle at 64% 44%, rgba(0,0,0,0.12) 0 1.1px, transparent 2px),
+    radial-gradient(circle at 84% 38%, rgba(255,255,255,0.3) 0 1.2px, transparent 2.1px),
+    radial-gradient(circle at 24% 68%, rgba(255,255,255,0.28) 0 1.2px, transparent 2.1px),
+    radial-gradient(circle at 52% 72%, rgba(0,0,0,0.11) 0 1.1px, transparent 2px),
+    radial-gradient(circle at 78% 66%, rgba(255,255,255,0.32) 0 1.3px, transparent 2.2px),
+    radial-gradient(circle at 40% 90%, rgba(255,255,255,0.22) 0 1px, transparent 2px);
   mix-blend-mode: soft-light;
 }
 .sc.gem::after { content:none; }
