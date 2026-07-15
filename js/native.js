@@ -46,6 +46,7 @@
     'maphelp-panel','roundguide-panel','hiddenmap-menu-panel',
     'daily-panel','leaderboard-panel','account-panel','help-panel','unlock-overlay',
     'settings-panel','settings-more-panel','settings-lang-panel','settings-cup-panel','settings-text-panel',
+    'brick-skin-panel',
   ];
 
   function anyHiddenMapActive(){
@@ -62,7 +63,11 @@
     // 1. Đóng panel đang mở
     for(const id of CLOSABLE_PANELS){
       const el=document.getElementById(id);
-      if(el && el.classList.contains('show')){ el.classList.remove('show'); return; }
+      if(el && el.classList.contains('show')){
+        // Lần đầu chọn gạch — không đóng bằng nút Back
+        if(id==='brick-skin-panel' && el.dataset.mode==='starter') return;
+        el.classList.remove('show'); return;
+      }
     }
     // 2. Đang trong map ẩn → về bàn chính
     if(anyHiddenMapActive()){

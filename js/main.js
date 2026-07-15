@@ -739,6 +739,7 @@ initHelpPanel();
 initStartScreen();
 initDailyRewardPanel();
 initLeaderboardPanel();
+try{ if(typeof initBrickSkins==='function') initBrickSkins(); }catch(e){}
 // Chọn đúng nhạc nền theo map đang chơi — dùng khi bật lại âm thanh hoặc thoát tạm dừng
 function resumeContextBgm(){
   if(rhythmMode){ startRhythmBgm(); return; }
