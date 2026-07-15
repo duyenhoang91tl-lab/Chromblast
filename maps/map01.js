@@ -258,6 +258,7 @@ function onSCClick(e){
     secretUltra=false;
     document.getElementById('grid-wrap').classList.remove('ultra-glow');
   }
+  try{ if(typeof onComboSkillMilestone==='function') onComboSkillMilestone(secretStreak); }catch(e){}
   secretMultiplier=comboScoreMultiplier(secretStreak); // x2 từ streak 3, x3 từ streak 6
 
   // Ultra mode: 9 consecutive hits

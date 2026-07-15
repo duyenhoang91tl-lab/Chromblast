@@ -98,6 +98,8 @@ function addPlayerXP(n){
   if(leveled){
     try{ sfxUnlock(); }catch(e){}
     try{ showComboFlash(0,false,t('levelUp', playerLevel)); }catch(e){}
+    try{ if(typeof grantHearts==='function') grantHearts(1, 'Lên cấp'); }catch(e){}
+    try{ if(typeof unlockSkillByLevel==='function') unlockSkillByLevel(playerLevel); }catch(e){}
   }
   savePlayerXP(); renderPlayerXP();
 }
