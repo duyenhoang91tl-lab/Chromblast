@@ -385,6 +385,7 @@ function _vsEndMatch(){
     '<div class="lb-row'+(s2>s1?' me':'')+'"><span class="lb-rank">'+(s2>s1?'🥇':'🥈')+'</span><span class="lb-name">'+escapeHtml(n2)+'</span><span class="lb-score">'+s2.toLocaleString()+'</span></div>'+
     '<div style="font-size:11px;color:#9aa7bd;margin-top:8px;">'+t('vsXpNote', VERSUS_WIN_XP)+'</div>';
   try{ submitScoreToLeaderboard(Math.max(s1,s2)); }catch(e){}
+  if(typeof showInterstitialAd==='function') showInterstitialAd();
   _vsShow('versus-result-panel');
 }
 

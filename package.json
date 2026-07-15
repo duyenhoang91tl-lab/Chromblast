@@ -8,6 +8,7 @@
     "cap:sync": "npm run build:www && npx cap sync android"
   },
   "dependencies": {
+    "@capacitor-community/admob": "^8.0.0",
     "@capacitor/android": "^7.0.0",
     "@capacitor/app": "^7.1.2",
     "@capacitor/core": "^7.0.0"

@@ -8,10 +8,38 @@
 //   3. Đang chơi bàn chính (chưa pause) → mở TẠM DỪNG
 //   4. Còn lại (đang pause / màn hình đầu) → thu nhỏ app (không thoát hẳn)
 // ═══════════════════════════════════════════════════════════════
-(function initNativeBridge(){
+(async function initNativeBridge(){
   const cap = window.Capacitor;
   if(!cap || !cap.isNativePlatform || !cap.isNativePlatform()) return;
   const App = cap.Plugins && cap.Plugins.App;
+  const AdMob = cap.Plugins && cap.Plugins.AdMob;
+
+  // Khởi tạo AdMob
+  if(AdMob) {
+    try {
+      await AdMob.initialize({
+        testingDevices: [], // để trống khi đã publish thật
+        initializeForTesting: true, // ĐANG TEST — đổi thành false khi publish thật
+      });
+    } catch (e) {
+      console.error('AdMob Initialization Error:', e);
+    }
+  }
+
+  // Hàm hiển thị quảng cáo interstitial
+  window.showInterstitialAd = async function() {
+    if (!AdMob) return;
+    try {
+      await AdMob.prepareInterstitial({
+        adId: 'ca-app-pub-9093176034842025/6573161096',
+        isTesting: true, // ĐANG TEST — đổi false khi publish thật
+      });
+      await AdMob.showInterstitial();
+    } catch (e) {
+      console.error('AdMob Interstitial Error:', e);
+    }
+  };
+
   if(!App) return;
 
   const CLOSABLE_PANELS = [
