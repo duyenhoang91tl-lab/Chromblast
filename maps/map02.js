@@ -9,11 +9,10 @@ let turtle=null, rabbit=null, carrots=[];
 let turtlePanicLevel=0;
 let dodgePowerUps=[];
 let dodgePowerSpawnTimer=0;
-let dodgeShield=0, dodgeSlowTime=0, dodgeMagnet=0;
+let dodgeShield=0, dodgeSlowTime=0;
 const DODGE_POWERUPS=[
   { type:'shield', emoji:'🛡️', color:'#44aaff', label:'Khiên!',      duration:4 },
   { type:'slow',   emoji:'⏳', color:'#cc44ff', label:'Chậm!',       duration:3 },
-  { type:'magnet', emoji:'🧲', color:'#ff8800', label:'Nam châm!',   duration:4 },
 ];
 let dodgeStreak=0;
 const dodgeKeys={left:false,right:false};
@@ -78,7 +77,7 @@ function initDodge(){
   rabbit={ x:W/2-26, y:16, w:52, h:42, dir:1 };
   carrots=[];
   dodgePowerUps=[]; dodgePowerSpawnTimer=5;
-  dodgeShield=0; dodgeSlowTime=0; dodgeMagnet=0;
+  dodgeShield=0; dodgeSlowTime=0;
   dodgeElapsed=0; dodgeSpawnTimer=0; dodgeAccum=0; survive60Unlocked=false;
   dodgeKeys.left=dodgeKeys.right=false;
 }
@@ -174,22 +173,16 @@ function dodgeLoop(now){
   // power-up timers
   if(dodgeShield>0) dodgeShield-=dt;
   if(dodgeSlowTime>0) dodgeSlowTime-=dt;
-  if(dodgeMagnet>0) dodgeMagnet-=dt;
 
   // move & collect power-ups
   for(let i=dodgePowerUps.length-1;i>=0;i--){
     const pu=dodgePowerUps[i];
     pu.y+=pu.speed*dt*speedMult;
-    if(dodgeMagnet>0){
-      const mdx=(turtle.x+turtle.w/2)-pu.x;
-      pu.x+=mdx*dt*3;
-    }
     const tx=turtle.x+turtle.w/2, ty=turtle.y+turtle.h/2;
     const dist=Math.hypot(pu.x-tx, pu.y-ty);
     if(dist<pu.r+20){
       if(pu.type==='shield')  dodgeShield=pu.duration;
       if(pu.type==='slow')    dodgeSlowTime=pu.duration;
-      if(pu.type==='magnet')  dodgeMagnet=pu.duration;
       showComboFlash(0,false,pu.label);
       sfxGoldCollect();
       dodgePowerUps.splice(i,1);
