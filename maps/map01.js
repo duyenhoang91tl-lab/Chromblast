@@ -308,7 +308,7 @@ function onSCClick(e){
   const _ctr=clearCentroid(group, getSC);
   showScorePop(finalPts, _ctr.x, _ctr.y, secretStreak);
   showShockwave(_ctr.x, _ctr.y, secretStreak);
-  secretBurstFX(ci, ultraJustTriggered || secretUltra || secretStreak>=3, secretStreak);  // 🎆 pháo hoa viền + tâm
+  secretBurstFX(ci, ultraJustTriggered || secretUltra || secretStreak>=3, secretStreak);  // 🎆 pháo hoa VIỀN
   secretColorRing(_ctr.x, _ctr.y, ci);                   // 💠 vòng sóng màu lan ra
   secretSparkleBurst(group, ci);                         // ✨ tia lấp lánh ở từng ô
   if(!ultraJustTriggered && shouldPraise(secretStreak)) showPraise(praiseLevelForStreak(secretStreak));
