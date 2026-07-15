@@ -535,7 +535,7 @@ function MILESTONE_MSG(tier){ const c=_i18nContent(); const a=c.milestones||I18N
     passLevel:'🎉 ¡NIVEL SUPERADO — Nivel {0}! Ahora Nivel {1} — ¡{2}!', adventureUnlock:'🚀 ¡AVENTURA 1 DESBLOQUEADA!',
     unlockTitle:'🔥 ¡MISIÓN OCULTA DESBLOQUEADA!', unlockBtn:'⚡ ¡ENTRAR!', unlockLater:'🔙 Volver al tablero',
     unlockDesc:'¡3 explosiones seguidas!<br><br>Aparece un tablero de colores misterioso.<br>Toca <b>3+ celdas adyacentes del mismo color</b> para explotar.<br>Explota de nuevo en <b>2.5s</b> para multiplicar puntos.<br>¡Llega a <b>{0} puntos</b> aquí → desbloquea el <b>Mapa oculto 2</b>!',
-    hpGoal:'🎯 Objetivo', hpGoalBody:'<li>Arrastra piezas de la bandeja al tablero para puntuar.</li><li>Llena una <b>fila o columna completa</b> → explota.</li><li>Forma un <b>grupo de 3+ celdas adyacentes del mismo color</b> → también explota.</li>',
+    hpGoal:'🎯 Objetivo', hpGoalBody:'<li>Arrastra piezas de la bandeja al tablero para puntuar.</li><li>Llena una <b>fila o columna completa</b> → explota.</li><li>Forma un <b>grupo de 12+ celdas adyacentes del mismo color</b> → también explota (el umbral sube con el nivel).</li>',
     hpCombo:'⭐ Puntuación y combo', hpComboBody:'<li>Cada celda explotada = <b>1 punto</b>.</li><li>Explosiones seguidas = <b>combo</b>: 3ª → x2, 6ª → x3.</li><li>Colocar sin explotar <b>rompe el combo</b>.</li>',
     hpHidden:'🔥 Mapas ocultos (modo secreto)', hpHiddenBody:'<li>Puntúa lo suficiente para desbloquear <b>mapas ocultos</b> — minijuegos con reglas propias.</li><li>Cada uno muestra su guía al desbloquearse.</li><li>Complétalos para volver con recompensas.</li>',
     hpMech:'🌟 Mecánicas especiales (se desbloquean progresivamente)',
