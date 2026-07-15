@@ -14,15 +14,26 @@
 <!-- SVG filter: texture lông xù / pom-pom fluffy cho ô gạch -->
 <svg aria-hidden="true" width="0" height="0" style="position:absolute;overflow:hidden">
   <defs>
-    <filter id="plush-fur" x="-55%" y="-55%" width="210%" height="210%" color-interpolation-filters="sRGB">
-      <feTurbulence type="fractalNoise" baseFrequency="1.05" numOctaves="4" seed="7" result="noise"/>
-      <feDisplacementMap in="SourceGraphic" in2="noise" scale="8.5" xChannelSelector="R" yChannelSelector="G" result="displaced"/>
-      <feGaussianBlur in="displaced" stdDeviation="0.7" result="soft"/>
-      <feBlend in="soft" in2="SourceGraphic" mode="normal"/>
+    <filter id="plush-fur" x="-50%" y="-50%" width="200%" height="200%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="3" seed="7" result="noise"/>
+      <!-- phình trước khi displace → không để lộ lỗ đen trong suốt -->
+      <feMorphology in="SourceGraphic" operator="dilate" radius="2.2" result="fat"/>
+      <feDisplacementMap in="fat" in2="noise" scale="7" xChannelSelector="R" yChannelSelector="G" result="fur"/>
+      <feGaussianBlur in="fur" stdDeviation="0.55" result="softFur"/>
+      <feMerge>
+        <feMergeNode in="SourceGraphic"/>
+        <feMergeNode in="softFur"/>
+      </feMerge>
     </filter>
     <filter id="plush-fur-sm" x="-55%" y="-55%" width="210%" height="210%" color-interpolation-filters="sRGB">
-      <feTurbulence type="fractalNoise" baseFrequency="1.5" numOctaves="3" seed="3" result="noise"/>
-      <feDisplacementMap in="SourceGraphic" in2="noise" scale="5" xChannelSelector="R" yChannelSelector="G"/>
+      <feTurbulence type="fractalNoise" baseFrequency="1.55" numOctaves="3" seed="3" result="noise"/>
+      <feMorphology in="SourceGraphic" operator="dilate" radius="1.6" result="fat"/>
+      <feDisplacementMap in="fat" in2="noise" scale="4.2" xChannelSelector="R" yChannelSelector="G" result="fur"/>
+      <feGaussianBlur in="fur" stdDeviation="0.4" result="softFur"/>
+      <feMerge>
+        <feMergeNode in="SourceGraphic"/>
+        <feMergeNode in="softFur"/>
+      </feMerge>
     </filter>
   </defs>
 </svg>
