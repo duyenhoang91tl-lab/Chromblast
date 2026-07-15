@@ -290,14 +290,22 @@ function onSlotPointerDown(e, idx){
     return;
   }
   e.preventDefault();
+
+  if (selected === idx) {
+    // Nếu chạm vào chính khối đang chọn -> Xoay khối
+    rotatePiece(idx);
+    return;
+  }
+
   const isTouch=(e.pointerType==='touch'||e.pointerType==='pen');
   drag.active=true; drag.moved=false;
   drag.sx=e.clientX; drag.sy=e.clientY;
   drag.pointerType=e.pointerType||'mouse';
-  drag.wasSelected=(selected===idx);
+  drag.wasSelected=false; // Reset state để logic cũ không gây nhiễu
   selected=idx;
   rotateLocked=false;
-  if(!drag.wasSelected) sfxSelect();
+  sfxSelect();
+
   // Touch: chọn ngay + ghost hiện ngay (không cần giữ/kéo)
   hoverMode=isTouch;
   highlightSlot(idx);
@@ -335,11 +343,7 @@ function onDocPointerUp(e){
   const piece=pieces[selected];
 
   if(!drag.moved){
-    // Chạm không kéo: nếu touch thì ghost đã hiện (hoverMode=true), giữ nguyên
-    if(drag.wasSelected && !(drag.pointerType==='touch'||drag.pointerType==='pen')) endDrag();
-    else if(!(drag.pointerType==='touch'||drag.pointerType==='pen')){
-      hoverMode=true; moveGhost(e.clientX,e.clientY); updatePreview(e.clientX,e.clientY);
-    }
+    // Không xử lý đặt khối khi click tại chỗ trên khay (đã xử lý xoay ở PointerDown)
     return;
   }
   // Kéo thật → thả nếu đáp vào chỗ hợp lệ, ngược lại huỷ
@@ -364,11 +368,9 @@ document.getElementById('rotate-confirm-btn').addEventListener('click', (e)=>{
   showHint(t('hintRotateLocked'));
 });
 
-// Tap trên nền lưới (không phải ô cụ thể) khi đang giữ khối → xoay
-// (bỏ qua nếu đã bấm ✓ khoá xoay, để không cản trở thao tác kéo-thả)
+// Tap trên nền lưới (không phải ô cụ thể) khi đang giữ khối -> không xoay nữa (đã chuyển vào onSlotPointerDown)
 document.getElementById('grid').addEventListener('pointerdown', e=>{
   if(e.target.classList.contains('cell')) return;
-  if(selected!==null && !secretMode && !rotateLocked){ e.stopPropagation(); rotatePiece(selected); }
 });
 
 function showRotateBar(show){
