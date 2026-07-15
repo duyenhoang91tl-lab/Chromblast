@@ -238,10 +238,8 @@ function drawArenaPetal(ctx,p){
 
 function drawArena(ctx,W,H){
   ctx.clearRect(0,0,W,H);
-  // Nền vườn anh đào nhẹ nhàng
-  const bg=ctx.createLinearGradient(0,0,0,H);
-  bg.addColorStop(0,'#ffe6ef'); bg.addColorStop(0.45,'#ffd3e2'); bg.addColorStop(1,'#f6b8cf');
-  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+  // Nền vườn anh đào phong cách Map 4
+  scenicPartyBg(ctx,W,H,Date.now()*0.001);
   // Vòng tròn ánh sáng dịu nhẹ thay cho ring đấu trường cũ
   const rings=[[W/2,H/2,80],[W/2,H/2,140],[W/2,H/2,210],[W/2,H/2,290]];
   rings.forEach(([cx,cy,r],i)=>{

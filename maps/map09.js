@@ -146,14 +146,11 @@ function dropStack(){
 
 function drawStack(ctx,W,H){
   ctx.clearRect(0,0,W,H);
-  // Sky gradient background
-  const bg=ctx.createLinearGradient(0,0,0,H);
-  bg.addColorStop(0,'#87ceeb'); bg.addColorStop(1,'#e0f0ff');
-  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
-  // nắng + mây trôi (phong cách Map ẩn 4)
-  beeDrawSun(ctx,stackElapsed);
-  beeDrawCloud(ctx,150+Math.sin(stackElapsed*0.08)*20,60,0.8);
-  beeDrawCloud(ctx,290+Math.sin(stackElapsed*0.06+2)*24,100,0.6);
+  // Sky + sân vườn Map 4, giữ dãy nhà pastel phía sau
+  cuteDayBg(ctx,W,H,stackElapsed);
+  scenicHills(ctx,W,H,H*0.72);
+  scenicGrass(ctx,W,H,H*0.72);
+  scenicFence(ctx,W,H,H*0.98);
   // dãy nhà pastel dễ thương với cửa sổ vàng
   [['#b8a8e0',10,380,40,80],['#a8c8e8',60,360,30,100],['#e8b8c8',100,370,50,90],['#a8d8c0',160,350,35,110],['#e8d0a8',210,380,40,80],['#b8c8e8',260,355,45,105],['#d8b8e0',310,370,30,90]].forEach(([col,bx,by,bw,bh])=>{
     ctx.fillStyle=col; ctx.globalAlpha=0.55;
@@ -162,6 +159,7 @@ function drawStack(ctx,W,H){
     for(let wy=by+8;wy<by+bh-6;wy+=16) for(let wx=bx+6;wx<bx+bw-5;wx+=14) ctx.fillRect(wx,wy,5,7);
     ctx.globalAlpha=1;
   });
+  cuteGardenStrip(ctx,W,H,stackElapsed,H-8,true);
 
   const camOff=stackCameraY;
 

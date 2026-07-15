@@ -154,8 +154,8 @@ function brickLoop(now){
 }
 
 function drawBrick(ctx,W,H,pw,paddleY){
-  // đêm lavender pastel dễ thương + trăng cười (đồng bộ phong cách Map ẩn 4)
-  cuteNightBg(ctx,W,H,Date.now()*0.001);
+  // đêm Map 4 giàu chi tiết
+  scenicNightFull(ctx,W,H,Date.now()*0.001);
   // Bricks
   brickBricks.forEach(b=>{
     if(!b.alive) return;

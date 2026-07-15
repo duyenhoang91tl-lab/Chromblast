@@ -171,27 +171,8 @@ registerMapModule({
   draw(ctx, api){
     const W = api.W, H = api.H;
 
-    // ── trời mưa bão ──
-    const sky = ctx.createLinearGradient(0, 0, 0, 130);
-    sky.addColorStop(0, '#1b2436'); sky.addColorStop(1, '#33455e');
-    ctx.fillStyle = sky; ctx.fillRect(0, 0, W, 130);
-
-    // ── mặt nước lũ đục ngầu ──
-    const water = ctx.createLinearGradient(0, 130, 0, H);
-    water.addColorStop(0, '#6b5330'); water.addColorStop(1, '#3a2c18');
-    ctx.fillStyle = water; ctx.fillRect(0, 130, W, H - 130);
-
-    // gợn sóng
-    ctx.strokeStyle = 'rgba(255,255,255,0.12)'; ctx.lineWidth = 2;
-    for (let i = 0; i < 5; i++) {
-      const y = 160 + i * 60;
-      ctx.beginPath();
-      for (let x = 0; x <= W; x += 12) {
-        const yy = y + Math.sin((x + this.t * 80) * 0.05 + i) * 4;
-        x === 0 ? ctx.moveTo(x, yy) : ctx.lineTo(x, yy);
-      }
-      ctx.stroke();
-    }
+    // ── bão lũ Map 4 ──
+    scenicStormBg(ctx, W, H, this.t);
 
     // mưa
     ctx.strokeStyle = 'rgba(200,220,255,0.35)'; ctx.lineWidth = 1.5;

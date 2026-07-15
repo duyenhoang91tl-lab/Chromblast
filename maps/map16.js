@@ -146,13 +146,9 @@ function runnerLoop(now){
 function drawRunner(ctx,W,H,timeLeft){
   const GROUND_Y=H*RUNNER_GROUND_Y_FRAC;
 
-  // Sky
-  const sky=ctx.createLinearGradient(0,0,0,GROUND_Y);
-  sky.addColorStop(0,'#87ceeb'); sky.addColorStop(1,'#c9e8f5');
-  ctx.fillStyle=sky; ctx.fillRect(0,0,W,GROUND_Y);
-
-  // nắng (phong cách Map ẩn 4)
-  beeDrawSun(ctx,Date.now()*0.001);
+  // Sky Map 4
+  cuteDayBg(ctx,W,GROUND_Y,Date.now()*0.001);
+  beeDrawCloud(ctx,110+Math.sin(Date.now()*0.00008)*18,42,1.0);
   // Far mountains (parallax 0.3x) — tím pastel xa xăm
   ctx.fillStyle='#b8b0e0';
   for(let i=0;i<6;i++){
@@ -170,9 +166,9 @@ function drawRunner(ctx,W,H,timeLeft){
     ctx.fill();
   }
 
-  // Ground
-  ctx.fillStyle='#5aaa30';
-  ctx.fillRect(0,GROUND_Y,W,H-GROUND_Y);
+  // Ground Map 4
+  scenicGrass(ctx,W,H,GROUND_Y);
+  cuteGardenStrip(ctx,W,H,Date.now()*0.001,H-6,false);
   ctx.fillStyle='#3d8020';
   ctx.fillRect(0,GROUND_Y,W,6);
 

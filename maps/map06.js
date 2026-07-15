@@ -201,29 +201,11 @@ function easeOut(t){ return 1-(1-t)*(1-t); }
 function drawMole(ctx,W,H,now,timeLeft){
   ctx.clearRect(0,0,W,H);
 
-  // ── lush garden background ──
-  const bg=ctx.createLinearGradient(0,0,0,H);
-  bg.addColorStop(0,'#87CEEB'); bg.addColorStop(0.45,'#b8e8f0');
-  bg.addColorStop(0.46,'#5aaa30'); bg.addColorStop(1,'#2a7010');
-  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+  // ── sân vườn đầy đủ phong cách Map 4 ──
+  const t=now*0.001;
+  scenicDayFull(ctx,W,H,t,{hillY:H*0.38,fenceY:H*0.97,stripY:H-6,butterflies:true});
 
-  // clouds
-  [[W*0.15,H*0.1,45],[W*0.55,H*0.07,55],[W*0.82,H*0.13,38]].forEach(([cx,cy,cr])=>{
-    ctx.fillStyle='rgba(255,255,255,0.88)';
-    ctx.beginPath(); ctx.arc(cx,cy,cr,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(cx+cr*0.6,cy+5,cr*0.72,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(cx-cr*0.55,cy+6,cr*0.65,0,Math.PI*2); ctx.fill();
-  });
-
-  // grass ground
-  ctx.fillStyle='#5aaa30';
-  ctx.fillRect(0,H*0.38,W,H*0.62);
-  // grass shading
-  const gsh=ctx.createLinearGradient(0,H*0.38,0,H*0.55);
-  gsh.addColorStop(0,'rgba(255,255,255,0.15)'); gsh.addColorStop(1,'rgba(0,0,0,0.15)');
-  ctx.fillStyle=gsh; ctx.fillRect(0,H*0.38,W,H*0.17);
-
-  // flowers scattered
+  // flowers scattered (giữ điểm hoa quanh lỗ)
   const flowers=[
     [W*0.06,H*0.40,'#ff88cc'],[W*0.18,H*0.43,'#ffee44'],[W*0.88,H*0.41,'#ff7799'],
     [W*0.76,H*0.44,'#ffffff'],[W*0.32,H*0.95,'#ffaa44'],[W*0.62,H*0.93,'#cc88ff'],

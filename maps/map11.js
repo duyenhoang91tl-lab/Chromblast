@@ -141,20 +141,8 @@ function catchLoop(now){
 
 function drawCatch(ctx,W,H,basketY,basketW,basketH){
   ctx.clearRect(0,0,W,H);
-  // Sky background
-  const sky=ctx.createLinearGradient(0,0,0,H);
-  sky.addColorStop(0,'#87ceeb'); sky.addColorStop(1,'#c8e8ff');
-  ctx.fillStyle=sky; ctx.fillRect(0,0,W,H);
-  // nắng + mây (phong cách Map ẩn 4)
-  beeDrawSun(ctx,Date.now()*0.001);
-  ctx.fillStyle='rgba(255,255,255,0.8)';
-  [[60,40,50],[200,25,40],[310,55,35],[130,80,28]].forEach(([cx,cy,r])=>{
-    ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(cx+r*0.6,cy+5,r*0.7,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(cx-r*0.5,cy+5,r*0.65,0,Math.PI*2); ctx.fill();
-  });
-  // dải vườn hoa sát đáy
-  cuteGardenStrip(ctx,W,H,Date.now()*0.001,H-18,false);
+  // Sân vườn Map 4 đầy đủ
+  scenicDayFull(ctx,W,H,Date.now()*0.001,{hillY:H*0.7,fence:false,stripY:H-18,butterflies:true});
   // Animals
   catchAnimals.forEach(a=>{
     ctx.save();

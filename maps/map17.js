@@ -119,8 +119,8 @@ function spaceShoot(){
 
 function drawSpaceBg(ctx,W,H){
   const t=Date.now()*0.001;
-  // đêm lavender pastel dễ thương + trăng cười (đồng bộ phong cách Map ẩn 4)
-  cuteNightBg(ctx,W,H,t);
+  // đêm Map 4 giàu chi tiết
+  scenicNightFull(ctx,W,H,t);
   // hành tinh kẹo ngọt có vành, góc trên trái
   ctx.save();
   const px=W*0.14, py=H*0.14, pr=20;

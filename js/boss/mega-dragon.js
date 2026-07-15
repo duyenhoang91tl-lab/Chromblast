@@ -34,7 +34,7 @@ function updateMegaBg(dt,W,H){
 
 function drawMegaBg(ctx,W,H,now){
   // đêm lavender pastel dễ thương + trăng cười (đồng bộ phong cách Map ẩn 4)
-  cuteNightBg(ctx,W,H,now*0.001);
+  scenicNightFull(ctx,W,H,now*0.001);
 
   megaNebulas.forEach(n=>{
     const g=ctx.createRadialGradient(n.x,n.y,0,n.x,n.y,n.r);
