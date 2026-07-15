@@ -383,3 +383,59 @@ function renderRoundHelp(){
     }
   });
 }
+
+/* ════════════════════════════════════════════════════════
+   HUD ARCADE — dùng chung map thường + mọi map ẩn
+   (SCORE / LEVEL badge / TARGETS / pause · cài đặt · mute)
+════════════════════════════════════════════════════════ */
+function enableArcadeHud(){
+  const root=document.getElementById('game-root');
+  if(!root) return;
+  root.classList.add('hud-arcade');
+  const acc=document.getElementById('account-btn');
+  if(acc && acc.dataset.arcadeOn!=='1'){
+    acc.dataset.prevEmoji=acc.textContent;
+    acc.dataset.arcadeOn='1';
+    acc.textContent='⚙️';
+    acc.title='Cài đặt';
+  }
+  refreshArcadeHud();
+}
+
+function refreshArcadeHud(){
+  const root=document.getElementById('game-root');
+  if(!root || !root.classList.contains('hud-arcade')) return;
+
+  // Map ẩn 1: đánh dấu để CSS ẩn pháo giữa bàn
+  root.classList.toggle('map-secret1', !!(typeof secretMode!=='undefined' && secretMode));
+
+  const cap=document.getElementById('level-cap');
+  if(cap) cap.style.display='block';
+  const lb=document.getElementById('level-box');
+  if(lb) lb.textContent=String(typeof playerLevel==='number' ? playerLevel : (typeof level==='number' ? level : 1));
+
+  const targets=document.getElementById('header-targets');
+  if(!targets) return;
+
+  let val='';
+  if(typeof secretMode!=='undefined' && secretMode){
+    const need=typeof TEST_UNLOCK_SCORE==='number' ? TEST_UNLOCK_SCORE : 100;
+    const got=Math.min((typeof secret1Gained==='number' ? secret1Gained : 0)|0, need);
+    const lives=(typeof secretLives==='number' ? secretLives : 3)|0;
+    val='❤️ '+lives+'/3 · '+got.toLocaleString()+'/'+need.toLocaleString();
+  } else if(document.getElementById('grid-wrap')?.classList.contains('secret-mode')){
+    const badge=document.getElementById('mode-badge');
+    val=(badge && badge.textContent ? badge.textContent.replace(/^🧩\s*/,'').trim() : 'MAP ẨN') || 'MAP ẨN';
+  } else {
+    const bc=document.getElementById('burst-count');
+    const progress=(bc && bc.textContent && bc.style.display!=='none') ? bc.textContent.trim() : '';
+    const bestN=Math.round(typeof best==='number' ? best : 0).toLocaleString();
+    val=progress || ('🏆 Best '+bestN);
+  }
+
+  targets.innerHTML=
+    '<div class="arcade-targets">'+
+      '<span class="arcade-targets-label">TARGETS</span>'+
+      '<span class="arcade-targets-val">'+val+'</span>'+
+    '</div>';
+}

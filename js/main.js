@@ -152,6 +152,7 @@ function updateBurstCount(){
   if(unlockDeferred){
     bc.textContent=t('unlockWaiting');
     bc.classList.add('unlock-pending');
+    if(typeof refreshArcadeHud==='function') refreshArcadeHud();
     return;
   }
   bc.classList.remove('unlock-pending');
@@ -172,6 +173,7 @@ function updateBurstCount(){
     bc.textContent=
       consecutiveBursts>=3?t('unlockReady'):t('burstCount', consecutiveBursts);
   }
+  if(typeof refreshArcadeHud==='function') refreshArcadeHud();
 }
 
 function afterPlace(){
@@ -374,9 +376,7 @@ function updateScoreUI(){
   }
   document.getElementById('best-box').textContent=t('bestLabel', Math.round(best).toLocaleString());
   document.getElementById('lines-cleared').textContent='Hàng xóa: '+linesCleared;
-  if(secretMode && document.getElementById('game-root')?.classList.contains('hud-arcade')){
-    const lb=document.getElementById('level-box');
-    if(lb) lb.textContent=String(typeof playerLevel==='number'?playerLevel:level);
+  if(document.getElementById('game-root')?.classList.contains('hud-arcade')){
     if(typeof refreshArcadeHud==='function') refreshArcadeHud();
   } else {
     document.getElementById('level-box').textContent=t('levelLabel', level);
@@ -400,6 +400,7 @@ function checkScoreMilestone(){
 
 function updateComboUI(){
   document.getElementById('combo-box').textContent=combo>1?'🔥 Combo x'+combo:'';
+  if(typeof refreshArcadeHud==='function') refreshArcadeHud();
 }
 
 
@@ -605,6 +606,7 @@ function startGame(){
   document.getElementById('unlock-overlay').classList.remove('show');
   updateScoreUI(); updateComboUI(); updateBurstCount();
   initBoard(); refillPieces(); renderGrid(); renderPieces();
+  if(typeof enableArcadeHud==='function') enableArcadeHud();
 }
 
 document.getElementById('restart-btn').addEventListener('click', ()=>{ sfxClick(); startGame(); });
@@ -645,6 +647,7 @@ function setActiveHiddenMap(key){
   activeHiddenMapKey = key;
   const btn = document.getElementById('hiddenmap-help-btn');
   if(btn) btn.style.display = key ? 'flex' : 'none';
+  if(typeof refreshArcadeHud==='function') refreshArcadeHud();
 }
 
 let currentUser = null; // { username, role }
@@ -698,11 +701,8 @@ function hardResetAllModes(){
   secretCells=null;
   document.getElementById('secret-stage')?.classList.remove('active');
   document.getElementById('grid-wrap')?.classList.remove('theme-garden');
-  document.getElementById('game-root')?.classList.remove('hud-arcade');
-  const _acc=document.getElementById('account-btn');
-  if(_acc && _acc.dataset.prevEmoji){ _acc.textContent=_acc.dataset.prevEmoji; delete _acc.dataset.prevEmoji; }
-  const _targets=document.getElementById('header-targets'); if(_targets) _targets.innerHTML='';
-  const _lcap=document.getElementById('level-cap'); if(_lcap) _lcap.style.display='none';
+  // Giữ HUD arcade thống nhất — chỉ làm mới nội dung
+  if(typeof enableArcadeHud==='function') enableArcadeHud();
 
   // Trả UI chính về trạng thái mặc định
   const grid=document.getElementById('grid');             if(grid)   grid.style.display='';
@@ -724,6 +724,7 @@ function hardResetAllModes(){
    'space-autofire-btn'].forEach(id=>{ // nút Tự bắn của Map 17 trước đây bị sót, lộ sang map khác khi chuyển map trực tiếp
     const el=document.getElementById(id); if(el) el.style.display='none';
   });
+  if(typeof refreshArcadeHud==='function') refreshArcadeHud();
 }
 
 
