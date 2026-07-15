@@ -204,13 +204,17 @@ function originFromPointer(x,y,piece,forceType){
 function buildGhost(piece){
   const maxC=Math.max(...piece.shape.map(p=>p[1]));
   const maxR=Math.max(...piece.shape.map(p=>p[0]));
-  ghostEl.style.gridTemplateColumns=`repeat(${maxC+1},44px)`;
+  const g=gridGeom();
+  ghostEl.style.gridTemplateColumns=`repeat(${maxC+1},${g.stepX}px)`;
+  ghostEl.style.gap=`${g.stepX - g.cell}px`; // Giữ đúng tỉ lệ khoảng cách ô
   ghostEl.innerHTML='';
   const cells=Array((maxR+1)*(maxC+1)).fill(null);
   piece.shape.forEach(([r,c])=>cells[r*(maxC+1)+c]=piece.color);
   cells.forEach(color=>{
     const d=document.createElement('div');
     d.className='g-cell';
+    d.style.width=g.cell+'px';
+    d.style.height=g.cell+'px';
     if(color){ d.style.background=color; }
     else { d.style.visibility='hidden'; }
     ghostEl.appendChild(d);
@@ -290,18 +294,18 @@ function onSlotPointerDown(e, idx){
     return;
   }
   e.preventDefault();
+  e.stopPropagation(); // Ngăn sự kiện chạm lan ra nền để không bị bỏ chọn nhầm
 
   if (selected === idx) {
     // Nếu chạm vào chính khối đang chọn -> Xoay khối
     rotatePiece(idx);
-    return;
+    // Vẫn tiếp tục xử lý drag để người chơi có thể kéo sau khi xoay
   }
 
   const isTouch=(e.pointerType==='touch'||e.pointerType==='pen');
   drag.active=true; drag.moved=false;
   drag.sx=e.clientX; drag.sy=e.clientY;
   drag.pointerType=e.pointerType||'mouse';
-  drag.wasSelected=false; // Reset state để logic cũ không gây nhiễu
   selected=idx;
   rotateLocked=false;
   sfxSelect();
@@ -309,7 +313,6 @@ function onSlotPointerDown(e, idx){
   // Touch: chọn ngay + ghost hiện ngay (không cần giữ/kéo)
   hoverMode=isTouch;
   highlightSlot(idx);
-  showRotateBar(true);
   showGhost(piece);
   moveGhost(e.clientX,e.clientY);
   updatePreview(e.clientX,e.clientY);
@@ -342,14 +345,14 @@ function onDocPointerUp(e){
   if(selected===null) return;
   const piece=pieces[selected];
 
-  if(!drag.moved){
-    // Không xử lý đặt khối khi click tại chỗ trên khay (đã xử lý xoay ở PointerDown)
-    return;
-  }
-  // Kéo thật → thả nếu đáp vào chỗ hợp lệ, ngược lại huỷ
+  // Nếu là tap (không di chuyển) vào slot thì không làm gì (vì đã xoay ở PointerDown)
+  if(!drag.moved && e.target.closest('.piece-slot')) return;
+
+  // Kéo thật hoặc tap vào lưới -> thả nếu đáp vào chỗ hợp lệ
   const o=originFromPointer(e.clientX,e.clientY,piece);
   if(o && canPlace(piece,o.R,o.C)) placeAt(o.R,o.C);
-  else { sfxInvalid(); endDrag(); }
+  else if (drag.moved) { sfxInvalid(); endDrag(); }
+  // Nếu tap vào lưới mà không đặt được thì vẫn giữ piece đang chọn (không gọi endDrag)
 }
 
 function onDocPointerCancel(){ if(drag.active||hoverMode) endDrag(); }
@@ -374,11 +377,16 @@ document.getElementById('grid').addEventListener('pointerdown', e=>{
 });
 
 function showRotateBar(show){
-  // visibility (không phải display) — thanh luôn giữ chỗ, hiện/ẩn không làm layout nhảy
-  const bar=document.getElementById('rotate-bar');
-  bar.style.visibility = show ? 'visible' : 'hidden';
-  bar.style.pointerEvents = show ? 'auto' : 'none';
+  // Thanh xoay đã bị tắt
 }
+document.addEventListener('pointerdown', e => {
+  if (selected === null || secretMode) return;
+  // Nếu chạm vào nền (không phải slot, không phải lưới, không phải UI buttons) -> Bỏ chọn
+  if (!e.target.closest('.piece-slot') && !e.target.closest('.cell') && !e.target.closest('#game-controls')) {
+    endDrag();
+  }
+});
+
 document.addEventListener('pointermove', onDocPointerMove, {passive:false});
 document.addEventListener('pointerup', onDocPointerUp);
 document.addEventListener('pointercancel', onDocPointerCancel);

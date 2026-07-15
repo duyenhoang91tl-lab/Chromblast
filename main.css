@@ -1098,7 +1098,7 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
 }
 #drag-ghost.active { display: grid; }
 #drag-ghost .g-cell {
-  width: 44px; height: 44px; border-radius: 8px;
+  border-radius: 8px;
   opacity: 0.92;
 }
 /* Preview cells on grid when dragging */
