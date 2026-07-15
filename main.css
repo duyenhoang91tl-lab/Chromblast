@@ -1726,15 +1726,34 @@ body:has(#secret-stage.active) .streak-dot.lit{
 }
 .lang-pick-btn.active{ border-color:#ffd54a; background:rgba(255,213,74,0.15); color:#ffd54a; font-weight:700; }
 
-/* ── ⚔️ Đấu 1-1 song song (versus.js) ── */
-#versus-arena{ position:fixed; inset:0; z-index:9500; background:#12122a; display:flex; flex-direction:column; }
+/* ── ⚔️ Đấu 1-1 song song (versus.js) — cùng nền bàn với map thường ── */
+#versus-arena{ position:fixed; inset:0; z-index:9500; background:#1a1a2e; display:flex; flex-direction:column; }
 .vs-half{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; position:relative; padding:6px; min-height:0; }
 .vs-top{ transform:rotate(180deg); border-bottom:2px solid rgba(255,213,74,0.5); }
 .vs-hud{ display:flex; gap:12px; align-items:center; font-weight:800; color:#fff; font-size:14px; }
 .vs-hud .vs-score{ color:#ffd54a; font-size:16px; }
 .vs-hud .vs-combo{ color:#ff8a3c; font-size:12px; }
-.vs-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:2px; width:min(46vh,92vw,300px); aspect-ratio:1; }
-.vs-cell{ background:rgba(90,55,25,0.12); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:12px; touch-action:none; position:relative; overflow:visible; border:1px solid rgba(110,70,30,0.15); box-shadow:inset 0 1px 2px rgba(60,35,10,0.12); }
+.vs-grid{
+  display:grid; grid-template-columns:repeat(7,1fr); gap:3px;
+  width:min(46vh,92vw,300px); aspect-ratio:1; box-sizing:border-box;
+  background:
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.03) 0 1px, transparent 1px 11px),
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 11px),
+    linear-gradient(165deg, #4A4458 0%, #3A3548 45%, #2E2A3A 100%);
+  border: 2px solid #5A5468;
+  border-radius: 18px; padding: 8px;
+  box-shadow:
+    inset 0 2px 0 rgba(255,255,255,0.08),
+    inset 0 -3px 10px rgba(0,0,0,0.25),
+    0 8px 18px rgba(0,0,0,0.28);
+}
+.vs-cell{
+  border-radius:10px; display:flex; align-items:center; justify-content:center;
+  font-size:12px; touch-action:none; position:relative; overflow:visible;
+  background: rgba(0,0,0,0.22);
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.35);
+}
 .vs-cell.vs-filled{
   --cc: #888;
   border: none;
@@ -1759,8 +1778,14 @@ body:has(#secret-stage.active) .streak-dot.lit{
 .vs-cell.vs-ice{ outline:2px solid #9adcff; outline-offset:-2px; }
 .vs-cell.vs-prev{ opacity:0.55; transform:scale(0.88); } /* ô mờ xem trước chỗ đáp — giống map thường */
 .vs-tray{ display:flex; gap:10px; align-items:center; justify-content:center; min-height:44px; }
-.vs-piece{ width:52px; height:44px; border-radius:8px; background:rgba(255,255,255,0.06); border:2px solid transparent; display:flex; align-items:center; justify-content:center; touch-action:none; }
-.vs-piece.sel{ border-color:#ffd54a; background:rgba(255,213,74,0.12); }
+.vs-piece{
+  width:52px; height:44px; border-radius:10px;
+  background: linear-gradient(165deg, #4A4458 0%, #3A3548 100%);
+  border: 2px solid #5A5468;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 3px 8px rgba(0,0,0,0.25);
+  display:flex; align-items:center; justify-content:center; touch-action:none;
+}
+.vs-piece.sel{ border-color:#5BB0FF; background:linear-gradient(165deg, rgba(55,100,160,0.95) 0%, rgba(40,70,120,0.9) 100%); box-shadow:0 0 0 2px rgba(91,176,255,0.25); }
 .vs-piece.used{ opacity:0.15; pointer-events:none; }
 .vs-mini{ display:grid; gap:2px; }
 .vs-mini-candy{
