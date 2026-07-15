@@ -1417,3 +1417,37 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
   border-radius:16px; color:#dfe6f2; font-size:12px; padding:5px 10px; cursor:pointer;
 }
 .lang-pick-btn.active{ border-color:#ffd54a; background:rgba(255,213,74,0.15); color:#ffd54a; font-weight:700; }
+
+/* ── ⚔️ Đấu 1-1 song song (versus.js) ── */
+#versus-arena{ position:fixed; inset:0; z-index:9500; background:#12122a; display:flex; flex-direction:column; }
+.vs-half{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; position:relative; padding:6px; min-height:0; }
+.vs-top{ transform:rotate(180deg); border-bottom:2px solid rgba(255,213,74,0.5); }
+.vs-hud{ display:flex; gap:12px; align-items:center; font-weight:800; color:#fff; font-size:14px; }
+.vs-hud .vs-score{ color:#ffd54a; font-size:16px; }
+.vs-hud .vs-combo{ color:#ff8a3c; font-size:12px; }
+.vs-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:2px; width:min(46vh,92vw,300px); aspect-ratio:1; }
+.vs-cell{ background:rgba(255,255,255,0.07); border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:12px; touch-action:none; }
+.vs-cell.vs-filled{ box-shadow:inset 0 -2px 4px rgba(0,0,0,0.25); }
+.vs-cell.vs-rock{ background:#4a4a55 !important; }
+.vs-cell.vs-ice{ outline:2px solid #9adcff; outline-offset:-2px; }
+.vs-tray{ display:flex; gap:10px; align-items:center; justify-content:center; min-height:44px; }
+.vs-piece{ width:52px; height:44px; border-radius:8px; background:rgba(255,255,255,0.06); border:2px solid transparent; display:flex; align-items:center; justify-content:center; touch-action:none; }
+.vs-piece.sel{ border-color:#ffd54a; background:rgba(255,213,74,0.12); }
+.vs-piece.used{ opacity:0.15; pointer-events:none; }
+.vs-mini{ display:grid; gap:2px; width:34px; height:30px; }
+.vs-cards{ display:none; position:absolute; inset:0; z-index:5; background:rgba(10,10,26,0.88); flex-direction:column; align-items:center; justify-content:center; gap:10px; }
+.vs-cards.show{ display:flex; }
+.vs-cards-title{ color:#ffd54a; font-weight:800; font-size:14px; text-align:center; padding:0 12px; }
+.vs-cards-row{ display:flex; gap:10px; }
+.vs-card{ width:86px; padding:10px 4px; border-radius:12px; border:2px solid #ffd54a; background:linear-gradient(160deg,#2a2a4e,#1a1a34); color:#fff; cursor:pointer; }
+.vs-card-emoji{ font-size:28px; }
+.vs-card-name{ font-size:11px; font-weight:700; margin-top:4px; }
+.vs-note{ display:none; position:absolute; top:8px; left:50%; transform:translateX(-50%); z-index:6; background:rgba(226,75,74,0.92); color:#fff; font-weight:800; font-size:12px; padding:5px 12px; border-radius:14px; white-space:nowrap; }
+.vs-note.show{ display:block; }
+#vs-mid-timer{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:8; background:#1a1a2e; border:2px solid #ffd54a; color:#ffd54a; font-weight:900; font-size:18px; width:52px; height:52px; border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 0 16px rgba(255,213,74,0.4); }
+#vs-mid-timer.danger{ color:#ff5252; border-color:#ff5252; animation:vsPulse 0.5s infinite alternate; }
+@keyframes vsPulse{ from{transform:translate(-50%,-50%) scale(1);} to{transform:translate(-50%,-50%) scale(1.15);} }
+#vs-countdown{ display:none; position:absolute; inset:0; z-index:20; background:rgba(10,10,26,0.7); align-items:center; justify-content:center; font-size:90px; font-weight:900; color:#ffd54a; }
+#vs-quit-btn{ position:absolute; top:50%; right:10px; transform:translateY(-50%); z-index:9; width:34px; height:34px; border-radius:50%; border:1px solid rgba(255,255,255,0.3); background:rgba(255,255,255,0.08); color:#fff; font-size:14px; cursor:pointer; }
+.vs-shake{ animation:vsShake 0.5s; }
+@keyframes vsShake{ 0%,100%{translate:0} 20%{translate:-8px 0} 40%{translate:8px 0} 60%{translate:-5px 0} 80%{translate:5px 0} }
