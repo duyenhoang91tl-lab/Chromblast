@@ -805,7 +805,7 @@ function renderPieces(){
     });
     slot.appendChild(g);
     const label=document.createElement('div');
-    label.style.cssText='font-size:10px;color:#555;margin-top:4px;';
+    label.style.cssText='font-size:10px;color:#6b4a28;margin-top:4px;font-weight:700;';
     const ci=COLORS.indexOf(piece.color);
     label.textContent=ci>=0?COLOR_NAMES[ci]:'';
     slot.appendChild(label);

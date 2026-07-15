@@ -11,6 +11,21 @@
 <link rel="stylesheet" href="main.css">
 </head>
 <body>
+<!-- SVG filter: texture lông xù / pom-pom fluffy cho ô gạch -->
+<svg aria-hidden="true" width="0" height="0" style="position:absolute;overflow:hidden">
+  <defs>
+    <filter id="plush-fur" x="-40%" y="-40%" width="180%" height="180%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="1.35" numOctaves="4" seed="7" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="5.5" xChannelSelector="R" yChannelSelector="G" result="displaced"/>
+      <feGaussianBlur in="displaced" stdDeviation="0.55" result="soft"/>
+      <feBlend in="soft" in2="SourceGraphic" mode="normal"/>
+    </filter>
+    <filter id="plush-fur-sm" x="-45%" y="-45%" width="190%" height="190%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="1.9" numOctaves="3" seed="3" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="3.2" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+</svg>
 <div id="auth-screen">
   <div class="start-bg"></div>
   <div class="auth-card">
