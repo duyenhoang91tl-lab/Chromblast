@@ -10,6 +10,7 @@ function renderSecretHearts(){
   const el=document.getElementById('secret-hearts');
   if(!el) return;
   el.textContent='❤️'.repeat(Math.max(0,secretLives))+'🖤'.repeat(Math.max(0,3-secretLives));
+  if(typeof refreshArcadeHud==='function' && secretMode) refreshArcadeHud();
 }
 
 function enterSecretMode(){
@@ -47,11 +48,16 @@ function enterSecretMode(){
   document.getElementById('mode-badge').classList.add('secret');
   document.getElementById('burst-count').textContent='Nhân: x1';
 
-  // (đã bỏ vòng lặp lấp lánh viền liên tục 60ms — tốn hiệu năng, gây giật máy ở Map ẩn 1)
+  // HUD kiểu arcade (SCORE / LEVEL badge / pause) như minh họa
+  document.getElementById('game-root')?.classList.add('hud-arcade');
+  const acc=document.getElementById('account-btn');
+  if(acc){ acc.dataset.prevEmoji=acc.textContent; acc.textContent='⚙️'; acc.title='Cài đặt'; }
+  refreshArcadeHud();
 
   // reset fire on enter
   if(fireInterval){ clearInterval(fireInterval); fireInterval=null; }
   document.getElementById('grid-wrap').classList.remove('fire-low','fire-high');
+  _sparklerT=0;
 
   initSecretBoard();
   renderSecretGrid();
@@ -93,7 +99,34 @@ function exitSecretMode(){
   document.getElementById('burst-count').textContent='Chuỗi nổ: 0/3';
   updateBurstCount();
 
+  document.getElementById('game-root')?.classList.remove('hud-arcade');
+  const acc=document.getElementById('account-btn');
+  if(acc){ acc.textContent=acc.dataset.prevEmoji||'👤'; acc.title=t?t('ttAccount'):'Tài khoản'; }
+  const targets=document.getElementById('header-targets');
+  if(targets) targets.innerHTML='';
+  // khôi phục nhãn level thường
+  document.getElementById('level-box').textContent=t('levelLabel', level);
+  document.getElementById('level-cap').style.display='none';
+
   renderPieces();
+}
+
+function refreshArcadeHud(){
+  if(!secretMode) return;
+  const cap=document.getElementById('level-cap');
+  if(cap) cap.style.display='block';
+  const lb=document.getElementById('level-box');
+  if(lb) lb.textContent=String(typeof playerLevel==='number'?playerLevel:level);
+  const targets=document.getElementById('header-targets');
+  if(targets){
+    const need=typeof TEST_UNLOCK_SCORE==='number'?TEST_UNLOCK_SCORE:10000;
+    const got=Math.min(secret1Gained|0, need);
+    targets.innerHTML=
+      '<div class="arcade-targets">'+
+        '<span class="arcade-targets-label">TARGETS</span>'+
+        '<span class="arcade-targets-val">❤️ '+secretLives+'/3 · '+got.toLocaleString()+'/'+need.toLocaleString()+'</span>'+
+      '</div>';
+  }
 }
 
 // Fill board with random colors (no null) — chỉ dùng 5 màu bí ẩn
@@ -275,10 +308,11 @@ function onSCClick(e){
   const _ctr=clearCentroid(group, getSC);
   showScorePop(finalPts, _ctr.x, _ctr.y, secretStreak);
   showShockwave(_ctr.x, _ctr.y, secretStreak);
-  secretBurstFX(ci, ultraJustTriggered || secretUltra);  // 🎆 pháo hoa viền + bàn cờ sáng
+  secretBurstFX(ci, ultraJustTriggered || secretUltra || secretStreak>=3, secretStreak);  // 🎆 pháo hoa viền + tâm
   secretColorRing(_ctr.x, _ctr.y, ci);                   // 💠 vòng sóng màu lan ra
   secretSparkleBurst(group, ci);                         // ✨ tia lấp lánh ở từng ô
   if(!ultraJustTriggered && shouldPraise(secretStreak)) showPraise(praiseLevelForStreak(secretStreak));
+  refreshArcadeHud();
 
   // Animate pop
   group.forEach(([gr,gc])=>{

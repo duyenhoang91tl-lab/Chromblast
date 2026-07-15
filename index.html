@@ -121,20 +121,24 @@
 </div>
 <div id="game-root">
   <div id="header">
-    <div>
+    <div id="header-score">
       <div id="score-label" data-i18n="scoreLabel">ĐIỂM SỐ</div>
       <div id="score-box">0</div>
       <div id="best-box">Kỷ lục: 0</div>
     </div>
-    <div style="text-align:center">
+    <div id="header-center" style="text-align:center">
       <div id="combo-box"></div>
-      <div id="level-box">Cấp độ 1</div>
+      <div id="level-badge">
+        <div id="level-cap">LEVEL</div>
+        <div id="level-box">1</div>
+      </div>
       <div id="player-level-box" style="font-size:11px;color:#ffd700;margin-top:2px;white-space:nowrap;"></div>
     </div>
-    <div style="text-align:right">
+    <div id="header-right" style="text-align:right">
       <div id="adventure-avatar" style="display:none;">🧑‍🚀</div>
       <div id="mode-badge">BÌNH THƯỜNG</div>
-      <div style="font-size:10px;color:#555;margin-top:4px">ChromaBlast</div>
+      <div id="header-brand" style="font-size:10px;color:#555;margin-top:4px">ChromaBlast</div>
+      <div id="header-targets"></div>
     </div>
     <div id="game-controls" style="display:flex;gap:6px;align-items:center;">
       <button id="hiddenmap-menu-btn" title="Chọn map ẩn đã chơi qua" data-i18n-title="ttHiddenMap" style="display:none;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;align-items:center;justify-content:center;padding:0;">🗺️</button>
