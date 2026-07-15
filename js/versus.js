@@ -139,12 +139,13 @@ function _vsBuildArena(){
     P.el.cards=half.querySelector('.vs-cards');
     P.el.note=half.querySelector('.vs-note');
     
-    // lưới ô
+    // lưới ô — chạm xuống chỉ HIỆN Ô MỜ xem trước; kéo để căn chỉnh; THẢ RA mới đặt
+    // (giống cơ chế kéo-thả của map thường; trước đây chạm phát là đặt luôn, không căn được)
     P.el.cells=[];
     for(let r=0;r<VS_N;r++){ P.el.cells[r]=[];
       for(let c=0;c<VS_N;c++){
         const d=document.createElement('div'); d.className='vs-cell';
-        d.addEventListener('pointerdown',ev=>{ ev.preventDefault(); _vsCellTap(P,r,c); });
+        d.addEventListener('pointerdown',ev=>{ ev.preventDefault(); _vsDragStart(P,ev,r,c); });
         P.el.grid.appendChild(d); P.el.cells[r][c]=d;
       }
     }
@@ -209,13 +210,13 @@ function _vsRenderTray(P){
       mini.appendChild(b);
     }
     s.appendChild(mini);
-    s.addEventListener('pointerdown',ev=>{ ev.preventDefault(); _vsPieceTap(P,i); });
+    s.addEventListener('pointerdown',ev=>{ ev.preventDefault(); _vsPieceTap(P,i,ev); });
     P.el.tray.appendChild(s);
   });
 }
 
 // ── Thao tác ──
-function _vsPieceTap(P,i){
+function _vsPieceTap(P,i,ev){
   if(!versusMode||P.done||P.pieces[i].used) return;
   if(P.el.cards.classList.contains('show')) return; // đang chọn thẻ
   if(P.selected===i){ // chạm lại → xoay
@@ -223,7 +224,70 @@ function _vsPieceTap(P,i){
     try{ sfxClick(); }catch(e){}
   } else { P.selected=i; }
   _vsRenderTray(P);
+  // giữ ngón tay và kéo thẳng từ khay lên bàn cờ để căn ô mờ rồi thả — như map thường
+  if(ev) _vsDrags.set(ev.pointerId!==undefined?ev.pointerId:-1, {P, R:-1, C:-1});
 }
+
+/* ── Kéo-thả + ô mờ xem trước (mỗi người chơi 1 con trỏ riêng — theo pointerId) ── */
+const _vsDrags=new Map(); // pointerId -> {P, R, C} (R,C = ô gốc đang preview; -1 = chưa vào lưới)
+function _vsCellAt(P,x,y){
+  for(let r=0;r<VS_N;r++)for(let c=0;c<VS_N;c++){
+    const b=P.el.cells[r][c].getBoundingClientRect();
+    if(x>=b.left&&x<b.right&&y>=b.top&&y<b.bottom) return {r,c};
+  }
+  return null;
+}
+function _vsClearPreview(P){
+  if(!P._prev) return;
+  P._prev.forEach(([r,c])=>{
+    const d=P.el.cells[r][c];
+    d.classList.remove('vs-prev');
+    if(!P.board[r][c]) d.style.background='';
+  });
+  P._prev=null;
+}
+function _vsShowPreview(P,R,C){
+  _vsClearPreview(P);
+  if(P.selected<0) return;
+  const pc=P.pieces[P.selected];
+  if(!pc||pc.used) return;
+  if(!_vsCanPlace(P,pc.shape,R,C)) return; // chỗ không đặt được → không tô gì
+  P._prev=pc.shape.map(([dr,dc])=>[R+dr,C+dc]);
+  P._prev.forEach(([r,c])=>{
+    const d=P.el.cells[r][c];
+    d.classList.add('vs-prev');
+    d.style.background=pc.color;
+  });
+}
+function _vsDragStart(P,ev,r,c){
+  if(!versusMode||P.done||P.selected<0) return;
+  if(P.el.cards.classList.contains('show')) return;
+  _vsDrags.set(ev.pointerId!==undefined?ev.pointerId:-1, {P, R:r, C:c});
+  _vsShowPreview(P,r,c);
+}
+document.addEventListener('pointermove',ev=>{
+  if(!versusMode) return;
+  const dr=_vsDrags.get(ev.pointerId!==undefined?ev.pointerId:-1);
+  if(!dr) return;
+  const hit=_vsCellAt(dr.P,ev.clientX,ev.clientY);
+  if(hit && (hit.r!==dr.R||hit.c!==dr.C)){ dr.R=hit.r; dr.C=hit.c; _vsShowPreview(dr.P,hit.r,hit.c); }
+});
+function _vsDragEnd(ev){
+  const id=ev.pointerId!==undefined?ev.pointerId:-1;
+  const dr=_vsDrags.get(id);
+  if(!dr) return;
+  _vsDrags.delete(id);
+  if(!versusMode) return;
+  _vsClearPreview(dr.P);
+  const hit=_vsCellAt(dr.P,ev.clientX,ev.clientY);
+  if(hit) _vsCellTap(dr.P,hit.r,hit.c); // thả trên lưới → đặt; thả ngoài lưới → giữ nguyên khối đang chọn
+}
+document.addEventListener('pointerup',_vsDragEnd);
+document.addEventListener('pointercancel',ev=>{
+  const id=ev.pointerId!==undefined?ev.pointerId:-1;
+  const dr=_vsDrags.get(id);
+  if(dr){ _vsDrags.delete(id); _vsClearPreview(dr.P); }
+});
 function _vsCanPlace(P,shape,R,C){
   return shape.every(([dr,dc])=>{
     const r=R+dr,c=C+dc;
