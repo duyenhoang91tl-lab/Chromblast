@@ -53,6 +53,14 @@ function enterSecretMode(){
   const acc=document.getElementById('account-btn');
   if(acc){ acc.dataset.prevEmoji=acc.textContent; acc.textContent='⚙️'; acc.title='Cài đặt'; }
   refreshArcadeHud();
+  // Xoá sạch pháo cũ còn sót trên bàn
+  const fx=document.getElementById('sc-fx');
+  if(fx){ fx.innerHTML=''; fx.classList.remove('active'); }
+  const cbs=document.getElementById('combo-border-sparks');
+  // giữ cbs cho sparkler viền — chỉ dọn hạt cũ
+  if(cbs) cbs.innerHTML='';
+  document.getElementById('combo-flash')?.classList.remove('show');
+  document.getElementById('combo-count-flash')?.classList.remove('show');
 
   // reset fire on enter
   if(fireInterval){ clearInterval(fireInterval); fireInterval=null; }
