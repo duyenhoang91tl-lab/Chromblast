@@ -82,8 +82,19 @@ function initStartScreen(){
     screen.classList.add('hide');
     setTimeout(()=>{ screen.style.display='none'; }, 500);
   }
-  if(btn) btn.addEventListener('click', function(e){ e.stopPropagation(); sfxClick(); hideStart(); });
-  if(screen) screen.addEventListener('click', ()=>{ sfxClick(); hideStart(); });
+  function beginFromStart(){
+    sfxClick();
+    if(typeof maybeShowStarterBrickPicker==='function'){
+      maybeShowStarterBrickPicker(hideStart);
+    } else {
+      hideStart();
+    }
+  }
+  if(btn) btn.addEventListener('click', function(e){ e.stopPropagation(); beginFromStart(); });
+  if(screen) screen.addEventListener('click', function(e){
+    if(e.target.closest && e.target.closest('#start-btn')) return;
+    beginFromStart();
+  });
 }
 
 function togglePause(){
@@ -448,6 +459,7 @@ function refreshArcadeHud(){
 function closeAllSettingsOverlays(){
   ['settings-panel','settings-more-panel','settings-lang-panel','settings-cup-panel','settings-text-panel']
     .forEach(id=>{ const el=document.getElementById(id); if(el) el.classList.remove('show'); });
+  try{ if(typeof closeBrickSkinPanel==='function') closeBrickSkinPanel(); }catch(e){}
 }
 
 function openSettingsPanel(){

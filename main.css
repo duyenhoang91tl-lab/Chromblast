@@ -2147,3 +2147,9 @@ body:has(#secret-stage.active) .streak-dot.lit{
 .cup-badge .set-dot{ top:-2px; right:-2px; }
 .cup-award-name{ font-size:10px; font-weight:800; color:#fff; line-height:1.2; }
 .cup-award-prog{ font-size:10px; font-weight:800; color:rgba(255,255,255,0.55); margin-top:2px; }
+
+.start-brick-hint{
+  margin-top:10px; font-size:12px; font-weight:800; color:rgba(255,255,255,0.65);
+  font-family:'Nunito',system-ui,sans-serif;
+}
+.set-c-brick{ background:linear-gradient(180deg,#E07A5F,#C45C3E); }
