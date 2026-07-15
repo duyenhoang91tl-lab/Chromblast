@@ -191,24 +191,17 @@ function _vsRenderTray(P){
     const s=document.createElement('div');
     s.className='vs-piece'+(pc.used?' used':'')+(P.selected===i?' sel':'');
     
-    // Vẽ mini khối 4x4
+    // Vẽ mini khối: mọi viên gạch dùng CÙNG một kích thước cố định (như khay map
+    // thường) — trước đây dùng track `1fr` trong khung 34×30 cố định nên viên gạch
+    // to/nhỏ khác nhau tuỳ hình khối, thậm chí chồng lên nhau làm khối "mất ô".
     const mini=document.createElement('div'); mini.className='vs-mini';
-    
-    // Ép khối căn giữa để không bị kéo giãn trong Grid
-    mini.style.display = 'grid';
-    mini.style.placeContent = 'center'; 
-    
     const cells=pc.shape;
     const maxR=Math.max(...cells.map(x=>x[0])), maxC=Math.max(...cells.map(x=>x[1]));
-    mini.style.gridTemplateRows='repeat('+(maxR+1)+',1fr)';
-    mini.style.gridTemplateColumns='repeat('+(maxC+1)+',1fr)';
-    
+    const CS=9; // px mỗi viên — khối dài nhất 4 ô: 4×9 + 3×2 khe = 42px, vừa khay 52×44
+    mini.style.gridTemplateRows='repeat('+(maxR+1)+','+CS+'px)';
+    mini.style.gridTemplateColumns='repeat('+(maxC+1)+','+CS+'px)';
     for(let r=0;r<=maxR;r++)for(let c=0;c<=maxC;c++){
       const b=document.createElement('div');
-      
-      // Fix méo ô (Ép thành hình vuông tuyệt đối)
-      b.style.aspectRatio = '1 / 1';
-      
       if(cells.some(([rr,cc])=>rr===r&&cc===c)){ 
          b.style.background=pc.color; 
          b.style.borderRadius='2px'; 
@@ -294,16 +287,15 @@ function _vsResolveClears(P){
     if(seen.has(k)||!P.board[r][c]||P.ice.has(k)) continue;
     const color=P.board[r][c], group=[], st=[[r,c]];
     while(st.length){
-      const [rr,cc]=st.pop(), kk=rr+cc; // Đã bỏ phần kk=rr+','+cc để tối ưu (hoặc tuỳ code ban đầu)
-      const kk_str = rr+','+cc;
-      if(seen.has(kk_str)) continue;
+      const [rr,cc]=st.pop(), kk=rr+','+cc;
+      if(seen.has(kk)) continue;
       if(rr<0||rr>=VS_N||cc<0||cc>=VS_N) continue;
-      if(P.board[rr]&&P.board[rr][cc]===color&&!P.ice.has(kk_str)){
-        seen.add(kk_str); group.push(kk_str);
+      if(P.board[rr]&&P.board[rr][cc]===color&&!P.ice.has(kk)){
+        seen.add(kk); group.push(kk);
         st.push([rr+1,cc],[rr-1,cc],[rr,cc+1],[rr,cc-1]);
       }
     }
-    if(group.length>=VS_GROUP_MIN) group.forEach(kk_str=>kill.add(kk_str));
+    if(group.length>=VS_GROUP_MIN) group.forEach(kk=>kill.add(kk));
   }
   kill.forEach(k=>{
     const [r,c]=k.split(',').map(Number);
