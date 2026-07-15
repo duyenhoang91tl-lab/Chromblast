@@ -50,10 +50,8 @@ registerMapModule({
   tapY_isBack(x, y){ return x != null && x < 60 && y < 40; },
 
   draw(ctx, api){
-    // nền
-    const g = ctx.createLinearGradient(0, 0, 0, api.H);
-    g.addColorStop(0, '#12203a'); g.addColorStop(1, '#0a1226');
-    ctx.fillStyle = g; ctx.fillRect(0, 0, api.W, api.H);
+    // nền đêm Map 4
+    scenicNightFull(ctx, api.W, api.H, Date.now() * 0.001);
 
     // mục tiêu
     const tg = ctx.createRadialGradient(this.target.x, this.target.y, 2, this.target.x, this.target.y, this.target.r);

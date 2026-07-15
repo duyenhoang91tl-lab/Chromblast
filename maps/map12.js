@@ -139,14 +139,12 @@ function floodLoop(){
 function drawFlood(ctx,W,H){
   ctx.clearRect(0,0,W,H);
   const fT=Date.now()*0.0003;
-  const bg=ctx.createLinearGradient(0,0,W,H);
-  bg.addColorStop(0,'#fff6e8'); bg.addColorStop(0.5,'#f5eef8'); bg.addColorStop(1,'#eaf3fb');
-  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
-  // giọt màu bồng bềnh trang trí kiểu bảng vẽ nghệ thuật
+  // Sân vườn Map 4 + giọt màu trang trí
+  scenicDayFull(ctx,W,H,fT*10,{hillY:H*0.82,fence:false,stripY:H-6});
   FLOOD_COLORS.forEach((col,i)=>{
     const dx=(Math.sin(fT*0.7+i*1.7)*0.5+0.5)*W;
-    const dy=(Math.cos(fT*0.5+i*2.3)*0.5+0.5)*H*0.28+H*0.02;
-    ctx.save(); ctx.globalAlpha=0.12;
+    const dy=(Math.cos(fT*0.5+i*2.3)*0.5+0.5)*H*0.22+H*0.02;
+    ctx.save(); ctx.globalAlpha=0.18;
     ctx.fillStyle=col;
     ctx.beginPath(); ctx.arc(dx,dy,16+Math.sin(fT*2+i)*4,0,Math.PI*2); ctx.fill();
     ctx.restore();
@@ -168,11 +166,15 @@ function drawFlood(ctx,W,H){
       if(isFlooded){
         ctx.shadowColor=FLOOD_COLORS[ci]; ctx.shadowBlur=6;
       }
-      ctx.fillRect(x,y,cellSize,cellSize);
+      // ô màu kiểu kẹo bóng
+      roundRect(ctx,x,y,cellSize,cellSize,6);
+      ctx.fill();
       ctx.shadowBlur=0;
+      ctx.fillStyle='rgba(255,255,255,0.35)';
+      roundRect(ctx,x+2,y+2,cellSize*0.45,cellSize*0.35,4); ctx.fill();
       if(isFlooded){
-        ctx.fillStyle='rgba(255,255,255,0.25)';
-        ctx.fillRect(x,y,cellSize,cellSize);
+        ctx.fillStyle='rgba(255,255,255,0.2)';
+        roundRect(ctx,x,y,cellSize,cellSize,6); ctx.fill();
       }
     }
   }

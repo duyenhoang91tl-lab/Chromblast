@@ -97,22 +97,8 @@ function memoryLoop(now){
 
 function drawMemory(ctx,W,H){
   ctx.clearRect(0,0,W,H);
-  // Background: pastel park
-  const bg=ctx.createLinearGradient(0,0,0,H);
-  bg.addColorStop(0,'#aee4f8'); bg.addColorStop(0.5,'#c8eef8');
-  bg.addColorStop(0.51,'#7ecf50'); bg.addColorStop(1,'#3a8a20');
-  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
-
-  // nắng + mây (phong cách Map ẩn 4)
-  beeDrawSun(ctx,memoryElapsed);
-  [[W*0.12,30,40],[W*0.5,24,52],[W*0.82,34,36]].forEach(([cx,cy,cr])=>{
-    ctx.fillStyle='rgba(255,255,255,0.9)';
-    ctx.beginPath(); ctx.arc(cx,cy,cr,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(cx+cr*0.55,cy+5,cr*0.7,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(cx-cr*0.5,cy+6,cr*0.62,0,Math.PI*2); ctx.fill();
-  });
-  // dải vườn hoa dưới đáy
-  cuteGardenStrip(ctx,W,H,memoryElapsed,H-24);
+  // sân vườn Map 4 đầy đủ
+  scenicDayFull(ctx,W,H,memoryElapsed,{hillY:H*0.55,fence:false,stripY:H-8,butterflies:true});
 
   // Card layout: 4 cols × 3 rows, each ~76×100, gap 8, centered
   const cardW=76, cardH=100, gapX=8, gapY=8;

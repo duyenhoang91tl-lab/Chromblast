@@ -659,6 +659,119 @@ function cuteGardenStrip(ctx,W,H,t,baseY,withButterflies=true){
   }
 }
 
+function roundRect(ctx,x,y,w,h,r){
+  r=Math.min(r||0,w/2,h/2);
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+
+/* ── Đồi + hàng rào + sân vườn đầy đủ (cùng chất lượng Map 4) ── */
+function scenicHills(ctx,W,H,baseY){
+  const y=baseY!=null?baseY:H*0.56;
+  ctx.beginPath(); ctx.moveTo(-10,y);
+  ctx.bezierCurveTo(W*0.15,y-H*0.14,W*0.35,y-H*0.08,W*0.5,y-H*0.03);
+  ctx.bezierCurveTo(W*0.7,y-H*0.12,W*0.85,y-H*0.1,W+10,y-H*0.04);
+  ctx.lineTo(W+10,y+H*0.06); ctx.lineTo(-10,y+H*0.06); ctx.closePath();
+  ctx.fillStyle='#7EC882'; ctx.fill();
+  ctx.beginPath(); ctx.moveTo(-10,y+H*0.03);
+  ctx.bezierCurveTo(W*0.2,y-H*0.04,W*0.45,y-H*0.01,W*0.65,y-H*0.03);
+  ctx.bezierCurveTo(W*0.8,y-H*0.06,W*0.95,y-H*0.02,W+10,y);
+  ctx.lineTo(W+10,y+H*0.1); ctx.lineTo(-10,y+H*0.1); ctx.closePath();
+  ctx.fillStyle='#5EB862'; ctx.fill();
+}
+function scenicGrass(ctx,W,H,fromY){
+  const y=fromY!=null?fromY:H*0.56;
+  const g=ctx.createLinearGradient(0,y,0,H);
+  g.addColorStop(0,'#4CAF50'); g.addColorStop(0.35,'#43A047');
+  g.addColorStop(0.7,'#388E3C'); g.addColorStop(1,'#2E7D32');
+  ctx.fillStyle=g; ctx.fillRect(0,y,W,H-y);
+}
+function scenicFence(ctx,W,H,fy){
+  const y=fy!=null?fy:H*0.93, posts=7, pw=6, ph=28, spacing=W/(posts+1);
+  ctx.fillStyle='#A0784A'; ctx.fillRect(0,y-18,W,4); ctx.fillRect(0,y-6,W,4);
+  for(let i=1;i<=posts;i++){
+    const px=spacing*i-pw/2;
+    ctx.fillStyle='#8B6539'; ctx.fillRect(px,y-ph,pw,ph);
+    ctx.beginPath(); ctx.moveTo(px,y-ph); ctx.lineTo(px+pw/2,y-ph-5); ctx.lineTo(px+pw,y-ph); ctx.closePath();
+    ctx.fillStyle='#7A5830'; ctx.fill();
+  }
+}
+// Nền ngày đầy đủ kiểu Map 4: trời + đồi + cỏ + hàng rào + hoa (dùng cho map còn phẳng)
+function scenicDayFull(ctx,W,H,t,opts){
+  const o=opts||{};
+  cuteDayBg(ctx,W,H,t);
+  const hillY=o.hillY!=null?o.hillY:H*0.58;
+  scenicHills(ctx,W,H,hillY);
+  scenicGrass(ctx,W,H,hillY);
+  if(o.fence!==false) scenicFence(ctx,W,H,o.fenceY!=null?o.fenceY:H*0.94);
+  cuteGardenStrip(ctx,W,H,t,o.stripY!=null?o.stripY:H-10,o.butterflies!==false);
+}
+// Nền đêm giàu hơn: nebulas + sao lấp lánh + mây tím
+function scenicNightFull(ctx,W,H,t){
+  cuteNightBg(ctx,W,H,t);
+  // sương mù đáy ấm
+  const mist=ctx.createLinearGradient(0,H*0.7,0,H);
+  mist.addColorStop(0,'rgba(152,120,200,0)'); mist.addColorStop(1,'rgba(80,50,120,0.35)');
+  ctx.fillStyle=mist; ctx.fillRect(0,H*0.7,W,H*0.3);
+  // đồi đêm silhouette
+  ctx.fillStyle='rgba(40,30,70,0.45)';
+  ctx.beginPath(); ctx.moveTo(0,H);
+  for(let x=0;x<=W;x+=10) ctx.lineTo(x, H*0.78+Math.sin(x*0.02)*10);
+  ctx.lineTo(W,H); ctx.closePath(); ctx.fill();
+}
+// Sân khấu tiệc ánh sáng (Rhythm) — vẫn cùng ngôn ngữ pastel Map 4
+function scenicPartyBg(ctx,W,H,t){
+  const bg=ctx.createLinearGradient(0,0,0,H);
+  bg.addColorStop(0,'#FF9AD5'); bg.addColorStop(0.35,'#C58BFF');
+  bg.addColorStop(0.7,'#7EC8E3'); bg.addColorStop(1,'#B8F0C8');
+  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+  beeDrawSun(ctx,t);
+  beeDrawCloud(ctx,90+Math.sin(t*0.1)*14,48,0.85);
+  beeDrawCloud(ctx,250+Math.sin(t*0.07+1)*18,72,0.65);
+  // confetti bay
+  for(let i=0;i<18;i++){
+    const x=(Math.sin(i*41.3+t*0.4)*0.5+0.5)*W;
+    const y=((i*37+t*40)%(H+20))-10;
+    ctx.fillStyle=['#FF6B8A','#FFD700','#7EC8E3','#C58FFF','#FF8C42'][i%5];
+    ctx.save(); ctx.translate(x,y); ctx.rotate(t+i);
+    ctx.fillRect(-3,-2,6,4); ctx.restore();
+  }
+  scenicHills(ctx,W,H,H*0.72);
+  scenicGrass(ctx,W,H,H*0.72);
+  cuteGardenStrip(ctx,W,H,t,H-8,true);
+}
+// Bão lũ giàu chi tiết (Map 22)
+function scenicStormBg(ctx,W,H,t){
+  const sky=ctx.createLinearGradient(0,0,0,H*0.32);
+  sky.addColorStop(0,'#1a2238'); sky.addColorStop(0.6,'#2c3d5c'); sky.addColorStop(1,'#4a5f7a');
+  ctx.fillStyle=sky; ctx.fillRect(0,0,W,H*0.32);
+  // mây bão
+  ctx.fillStyle='rgba(30,40,60,0.55)';
+  [[60,40,50],[160,28,60],[260,48,55],[320,35,40]].forEach(([x,y,r],i)=>{
+    ctx.beginPath(); ctx.ellipse(x+Math.sin(t*0.3+i)*6,y,r,r*0.45,0,0,Math.PI*2); ctx.fill();
+  });
+  // nước lũ đục
+  const water=ctx.createLinearGradient(0,H*0.28,0,H);
+  water.addColorStop(0,'#8B7355'); water.addColorStop(0.4,'#6B5330'); water.addColorStop(1,'#3A2C18');
+  ctx.fillStyle=water; ctx.fillRect(0,H*0.28,W,H*0.72);
+  // gợn sóng nhiều lớp
+  for(let layer=0;layer<4;layer++){
+    ctx.strokeStyle=`rgba(255,255,255,${0.08+layer*0.03})`; ctx.lineWidth=2;
+    const y0=H*0.34+layer*38;
+    ctx.beginPath();
+    for(let x=0;x<=W;x+=8){
+      const yy=y0+Math.sin((x+t*70+layer*40)*0.045)*5;
+      x===0?ctx.moveTo(x,yy):ctx.lineTo(x,yy);
+    }
+    ctx.stroke();
+  }
+}
+
 /* ══════════════════════════════════════════
    ĐIỂM BAY + CÂU KHEN + HIỆU ỨNG PHÁT SÁNG
 ══════════════════════════════════════════ */

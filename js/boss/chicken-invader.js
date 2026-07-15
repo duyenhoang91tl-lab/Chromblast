@@ -183,20 +183,8 @@ function bossLoop(now){
 
 function drawBoss(ctx,W,H){
   ctx.clearRect(0,0,W,H);
-  // bầu trời pastel ban ngày dễ thương (đồng bộ phong cách Map ẩn 4)
-  const bg=ctx.createLinearGradient(0,0,0,H);
-  bg.addColorStop(0,'#7EC8E3'); bg.addColorStop(0.4,'#ADE0F2'); bg.addColorStop(0.75,'#D4F0FF'); bg.addColorStop(1,'#E8F8E0');
-  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
-  beeDrawSun(ctx,bossElapsed);
-  // mây trôi ngang
-  [[W*0.2,H*0.15,30],[W*0.7,H*0.25,38],[W*0.45,H*0.35,26]].forEach(([cx0,cy,cr],i)=>{
-    const cx=(cx0+bossElapsed*10*(i+1))%(W+80)-40;
-    ctx.fillStyle='rgba(255,255,255,0.8)';
-    ctx.beginPath(); ctx.arc(cx,cy,cr,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(cx+cr*0.7,cy+4,cr*0.7,0,Math.PI*2); ctx.fill();
-  });
-  // dải cỏ nông trại nhỏ sát đáy
-  cuteGardenStrip(ctx,W,H,bossElapsed,H-14,false);
+  // sân vườn nông trại Map 4
+  scenicDayFull(ctx,W,H,bossElapsed,{hillY:H*0.82,fenceY:H*0.96,stripY:H-8,butterflies:false});
 
   const timePct=Math.max(0,1-bossElapsed/BOSS_TIME);
   drawHudTop(ctx,W,{left:'🐔 ĐỢT '+Math.min(bossWave,BOSS_TOTAL_WAVES)+'/'+BOSS_TOTAL_WAVES, center:'⭐ '+bossScore, right:'❤️'.repeat(Math.max(0,bossDogLives)), progress:timePct, progressColor:'#ffd700'});

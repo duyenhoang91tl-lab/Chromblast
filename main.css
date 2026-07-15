@@ -1075,7 +1075,7 @@ body:has(#secret-stage.active) .streak-dot.lit{
 /* ── MAP ẨN 2: DODGE CANVAS (mode C) ── */
 #dodge-canvas {
   display: none; width: 100%; max-width: 393px;
-  aspect-ratio: 360 / 460; background: #020012;
+  aspect-ratio: 360 / 460; background: linear-gradient(180deg,#7EC8E3 0%,#ADE0F2 45%,#E8F8E0 100%);
   border-radius: 14px; touch-action: none; margin: 0 auto;
 }
 #dodge-canvas.active { display: block; }
@@ -1094,7 +1094,7 @@ body:has(#secret-stage.active) .streak-dot.lit{
 /* ── MAP ẨN 4: BEE CANVAS (mode D) ── */
 #bee-canvas {
   display: none; width: 100%; max-width: 393px;
-  aspect-ratio: 360 / 460; background: #050d0a;
+  aspect-ratio: 360 / 460; background: linear-gradient(180deg,#7EC8E3 0%,#ADE0F2 45%,#E8F8E0 100%);
   border-radius: 14px; touch-action: none; margin: 0 auto;
 }
 #bee-canvas.active { display: block; }
@@ -1121,80 +1121,80 @@ body:has(#secret-stage.active) .streak-dot.lit{
 /* ── MAP ẨN 3: FRUIT CANVAS (mode E) ── */
 #fruit-canvas {
   display: none; width: 100%; max-width: 393px;
-  aspect-ratio: 360 / 460; background: #030008;
+  aspect-ratio: 360 / 460; background: linear-gradient(180deg,#7EC8E3 0%,#ADE0F2 45%,#E8F8E0 100%);
   border-radius: 14px; touch-action: none; margin: 0 auto;
 }
 #fruit-canvas.active { display: block; }
 /* ── MAP ẨN 5: GOLD CANVAS (mode F) ── */
 #gold-canvas {
   display: none; width: 100%; max-width: 393px;
-  aspect-ratio: 360 / 460; background: #0d0800;
+  aspect-ratio: 360 / 460; background: linear-gradient(180deg,#7EC8E3 0%,#ADE0F2 12%,#3E2723 12%,#1a0e05 100%);
   border-radius: 14px; touch-action: none; margin: 0 auto;
 }
 #gold-canvas.active { display: block; }
 /* ── MAP ẨN 6: MOLE CANVAS ── */
 #mole-canvas {
   display: none; width: 100%; max-width: 393px;
-  aspect-ratio: 360 / 460; background: #111a0d;
+  aspect-ratio: 360 / 460; background: linear-gradient(180deg,#7EC8E3 0%,#ADE0F2 45%,#E8F8E0 100%);
   border-radius: 14px; touch-action: none; margin: 0 auto;
 }
 #mole-canvas.active { display: block; }
 /* ── MAP ẨN 7: MEMORY CANVAS ── */
 #memory-canvas {
   display: none; width: 100%; max-width: 393px;
-  aspect-ratio: 360 / 460; background: #aee4f8;
+  aspect-ratio: 360 / 460; background: linear-gradient(180deg,#7EC8E3 0%,#ADE0F2 45%,#E8F8E0 100%);
   border-radius: 14px; touch-action: none; margin: 0 auto;
 }
 #memory-canvas.active { display: block; }
 /* ── MAP ẨN 8: BUBBLE CANVAS ── */
 #bubble-canvas {
   display: none; width: 100%; max-width: 393px;
-  aspect-ratio: 360 / 460; background: #dff1fb;
+  aspect-ratio: 360 / 460; background: linear-gradient(180deg,#7EC8E3 0%,#ADE0F2 45%,#E8F8E0 100%);
   border-radius: 14px; touch-action: none; margin: 0 auto;
 }
 #bubble-canvas.active { display: block; }
 /* ── MAP ẨN 9: STACK CANVAS ── */
 #stack-canvas {
   display: none; width: 100%; max-width: 393px;
-  aspect-ratio: 360 / 460; background: #87ceeb;
+  aspect-ratio: 360 / 460; background: linear-gradient(180deg,#7EC8E3 0%,#ADE0F2 45%,#E8F8E0 100%);
   border-radius: 14px; touch-action: none; margin: 0 auto;
 }
 #stack-canvas.active { display: block; }
 /* ── MAP ẨN 10: BOSS CANVAS ── */
 #boss-canvas {
   display: none; width: 100%; max-width: 393px;
-  aspect-ratio: 360 / 460; background: #1a0030;
+  aspect-ratio: 360 / 460; background: linear-gradient(180deg,#7EC8E3 0%,#ADE0F2 45%,#E8F8E0 100%);
   border-radius: 14px; touch-action: none; margin: 0 auto;
 }
 #boss-canvas.active { display: block; }
 /* ── MAP ẨN 11: CATCH CANVAS ── */
-#catch-canvas { display:none; width:100%; max-width:393px; aspect-ratio:360/460; background:#87ceeb; border-radius:14px; touch-action:none; margin:0 auto; }
+#catch-canvas { display:none; width:100%; max-width:393px; aspect-ratio:360/460; background:linear-gradient(180deg,#7EC8E3 0%,#ADE0F2 45%,#E8F8E0 100%); border-radius:14px; touch-action:none; margin:0 auto; }
 #catch-canvas.active { display:block; }
 /* ── MAP ẨN 12: FLOOD CANVAS ── */
-#flood-canvas { display:none; width:100%; max-width:393px; aspect-ratio:360/460; background:#f0f0f0; border-radius:14px; touch-action:none; margin:0 auto; }
+#flood-canvas { display:none; width:100%; max-width:393px; aspect-ratio:360/460; background:linear-gradient(180deg,#7EC8E3 0%,#ADE0F2 45%,#E8F8E0 100%); border-radius:14px; touch-action:none; margin:0 auto; }
 #flood-canvas.active { display:block; }
 /* ── MAP ẨN 13: ARENA CANVAS ── */
-#arena-canvas { display:none; width:100%; max-width:393px; aspect-ratio:360/460; background:#050010; border-radius:14px; touch-action:none; margin:0 auto; }
+#arena-canvas { display:none; width:100%; max-width:393px; aspect-ratio:360/460; background:linear-gradient(180deg,#FF9AD5 0%,#C58BFF 50%,#B8F0C8 100%); border-radius:14px; touch-action:none; margin:0 auto; }
 #arena-canvas.active { display:block; }
 /* ── MAP ẨN 14: SNAKE CANVAS ── */
-#snake-canvas  { display:none; width:100%; max-width:393px; aspect-ratio:360/460; background:#0a1a0a; border-radius:14px; touch-action:none; margin:0 auto; }
+#snake-canvas  { display:none; width:100%; max-width:393px; aspect-ratio:360/460; background:linear-gradient(180deg,#7EC8E3 0%,#ADE0F2 45%,#E8F8E0 100%); border-radius:14px; touch-action:none; margin:0 auto; }
 #snake-canvas.active  { display:block; }
 /* ── MAP ẨN 15: BRICK CANVAS ── */
-#brick-canvas  { display:none; width:100%; max-width:393px; aspect-ratio:360/460; background:#050015; border-radius:14px; touch-action:none; margin:0 auto; }
+#brick-canvas  { display:none; width:100%; max-width:393px; aspect-ratio:360/460; background:linear-gradient(180deg,#4a3f7e 0%,#6a55a2 55%,#9878c8 100%); border-radius:14px; touch-action:none; margin:0 auto; }
 #brick-canvas.active  { display:block; }
 /* ── MAP ẨN 16: RUNNER CANVAS ── */
-#runner-canvas { display:none; width:100%; max-width:393px; aspect-ratio:360/460; background:#87ceeb; border-radius:14px; touch-action:none; margin:0 auto; }
+#runner-canvas { display:none; width:100%; max-width:393px; aspect-ratio:360/460; background:linear-gradient(180deg,#7EC8E3 0%,#ADE0F2 45%,#E8F8E0 100%); border-radius:14px; touch-action:none; margin:0 auto; }
 #runner-canvas.active { display:block; }
-#space-canvas  { display:none; width:100%; max-width:393px; aspect-ratio:360/460; background:#000010; border-radius:14px; touch-action:none; margin:0 auto; }
+#space-canvas  { display:none; width:100%; max-width:393px; aspect-ratio:360/460; background:linear-gradient(180deg,#4a3f7e 0%,#6a55a2 55%,#9878c8 100%); border-radius:14px; touch-action:none; margin:0 auto; }
 #space-canvas.active  { display:block; }
-#rhythm-canvas { display:none; width:100%; max-width:393px; aspect-ratio:360/460; background:#1a001a; border-radius:14px; touch-action:none; margin:0 auto; }
+#rhythm-canvas { display:none; width:100%; max-width:393px; aspect-ratio:360/460; background:linear-gradient(180deg,#FF9AD5 0%,#C58BFF 50%,#B8F0C8 100%); border-radius:14px; touch-action:none; margin:0 auto; }
 #rhythm-canvas.active { display:block; }
-#maze-canvas   { display:none; width:100%; max-width:393px; aspect-ratio:360/460; background:#0d0d2b; border-radius:14px; touch-action:none; margin:0 auto; }
+#maze-canvas   { display:none; width:100%; max-width:393px; aspect-ratio:360/460; background:linear-gradient(180deg,#4a3f7e 0%,#6a55a2 55%,#9878c8 100%); border-radius:14px; touch-action:none; margin:0 auto; }
 #maze-canvas.active   { display:block; }
-#mega-canvas   { display:none; width:100%; max-width:393px; aspect-ratio:360/460; background:#100005; border-radius:14px; touch-action:none; margin:0 auto; }
+#mega-canvas   { display:none; width:100%; max-width:393px; aspect-ratio:360/460; background:linear-gradient(180deg,#4a3f7e 0%,#6a55a2 55%,#9878c8 100%); border-radius:14px; touch-action:none; margin:0 auto; }
 #mega-canvas.active   { display:block; }
 /* Canvas dùng chung cho mọi plugin-map (maps/mapNN.js chuẩn init/update/draw) */
-#plugin-canvas { display:none; width:100%; max-width:393px; aspect-ratio:360/460; background:#0a0a1e; border-radius:14px; touch-action:none; margin:0 auto; }
+#plugin-canvas { display:none; width:100%; max-width:393px; aspect-ratio:360/460; background:linear-gradient(180deg,#4a3f7e 0%,#6a55a2 55%,#9878c8 100%); border-radius:14px; touch-action:none; margin:0 auto; }
 #plugin-canvas.active { display:block; }
 .sc {
   width: 44px; height: 44px; border-radius: 8px;

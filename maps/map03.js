@@ -200,11 +200,8 @@ function fruitLoop(now){
 function drawFruit(ctx,W,H,now){
   ctx.clearRect(0,0,W,H);
 
-  // ── vườn ban ngày pastel dễ thương (đồng bộ phong cách Map ẩn 4) ──
-  cuteDayBg(ctx,W,H,now*0.001);
-
-  // ── dải vườn hoa dưới đáy (phong cách Map ẩn 4) ──
-  cuteGardenStrip(ctx,W,H,now*0.001,H-26);
+  // ── sân vườn Map 4 đầy đủ ──
+  scenicDayFull(ctx,W,H,now*0.001,{hillY:H*0.78,fence:false,stripY:H-8,butterflies:true});
 
   // ── draw slice FX (petals, juice, slash) ──
   for(const fx of fruitFx){

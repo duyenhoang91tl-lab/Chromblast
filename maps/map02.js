@@ -241,27 +241,8 @@ function spawnShootingStar(W,H){
 function drawDodge(ctx,W,H){
   ctx.clearRect(0,0,W,H);
 
-  // ── nền vườn ban ngày pastel dễ thương (đồng bộ phong cách Map ẩn 4) ──
-  cuteDayBg(ctx,W,H,dodgeElapsed*0.001);
-
-  // ── đồi cỏ xanh mềm mại ──
-  const groundY=H-50;
-  ['#5EB862','#4CAF50'].forEach((col,li)=>{
-    ctx.fillStyle=col;
-    ctx.beginPath(); ctx.moveTo(0,H);
-    for(let x=0;x<=W;x+=6){
-      const y=groundY+li*10+Math.sin(x*0.025+0.5+li)*12+Math.sin(x*0.01)*8;
-      ctx.lineTo(x,y);
-    }
-    ctx.lineTo(W,H); ctx.closePath(); ctx.fill();
-  });
-  // hoa nhỏ chấm phá trên cỏ
-  [[W*0.12,'#ff88cc'],[W*0.35,'#ffee66'],[W*0.6,'#ffffff'],[W*0.85,'#ffaa66']].forEach(([fx0,fc])=>{
-    const fy=groundY+22;
-    ctx.fillStyle=fc;
-    for(let k=0;k<5;k++){ const fa=k/5*Math.PI*2; ctx.beginPath(); ctx.ellipse(fx0+Math.cos(fa)*4,fy+Math.sin(fa)*4,3,2,fa,0,Math.PI*2); ctx.fill(); }
-    ctx.fillStyle='#ffe066'; ctx.beginPath(); ctx.arc(fx0,fy,2.5,0,Math.PI*2); ctx.fill();
-  });
+  // ── sân vườn Map 4 đầy đủ ──
+  scenicDayFull(ctx,W,H,dodgeElapsed*0.001,{hillY:H-70,fenceY:H-8,stripY:H-6,butterflies:true});
 
   drawRabbit(ctx,rabbit.x,rabbit.y,rabbit.w,rabbit.h,dodgeElapsed*0.001);
   for(const c of carrots) drawCarrot(ctx,c.x,c.y,c.r);
