@@ -14,25 +14,22 @@
 <!-- SVG filter: texture lông xù / pom-pom fluffy cho ô gạch -->
 <svg aria-hidden="true" width="0" height="0" style="position:absolute;overflow:hidden">
   <defs>
-    <filter id="plush-fur" x="-50%" y="-50%" width="200%" height="200%" color-interpolation-filters="sRGB">
-      <feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="3" seed="7" result="noise"/>
-      <!-- phình trước khi displace → không để lộ lỗ đen trong suốt -->
-      <feMorphology in="SourceGraphic" operator="dilate" radius="2.2" result="fat"/>
-      <feDisplacementMap in="fat" in2="noise" scale="7" xChannelSelector="R" yChannelSelector="G" result="fur"/>
-      <feGaussianBlur in="fur" stdDeviation="0.55" result="softFur"/>
+    <filter id="plush-fur" x="-30%" y="-30%" width="160%" height="160%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="1.4" numOctaves="2" seed="7" result="noise"/>
+      <feMorphology in="SourceGraphic" operator="dilate" radius="0.8" result="fat"/>
+      <feDisplacementMap in="fat" in2="noise" scale="2.4" xChannelSelector="R" yChannelSelector="G" result="fur"/>
       <feMerge>
         <feMergeNode in="SourceGraphic"/>
-        <feMergeNode in="softFur"/>
+        <feMergeNode in="fur"/>
       </feMerge>
     </filter>
-    <filter id="plush-fur-sm" x="-55%" y="-55%" width="210%" height="210%" color-interpolation-filters="sRGB">
-      <feTurbulence type="fractalNoise" baseFrequency="1.55" numOctaves="3" seed="3" result="noise"/>
-      <feMorphology in="SourceGraphic" operator="dilate" radius="1.6" result="fat"/>
-      <feDisplacementMap in="fat" in2="noise" scale="4.2" xChannelSelector="R" yChannelSelector="G" result="fur"/>
-      <feGaussianBlur in="fur" stdDeviation="0.4" result="softFur"/>
+    <filter id="plush-fur-sm" x="-35%" y="-35%" width="170%" height="170%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="1.8" numOctaves="2" seed="3" result="noise"/>
+      <feMorphology in="SourceGraphic" operator="dilate" radius="0.5" result="fat"/>
+      <feDisplacementMap in="fat" in2="noise" scale="1.6" xChannelSelector="R" yChannelSelector="G" result="fur"/>
       <feMerge>
         <feMergeNode in="SourceGraphic"/>
-        <feMergeNode in="softFur"/>
+        <feMergeNode in="fur"/>
       </feMerge>
     </filter>
   </defs>
