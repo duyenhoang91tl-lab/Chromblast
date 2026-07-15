@@ -103,22 +103,33 @@ function _vsBuildArena(){
   let arena=document.getElementById('versus-arena');
   if(arena) arena.remove();
   arena=document.createElement('div'); arena.id='versus-arena';
+  
+  // TẠO THANH GIAO DIỆN CHUNG BÊN TRÊN CÙNG
   arena.innerHTML =
-    '<div id="vs-countdown"></div>'+
-    '<button id="vs-quit-btn" title="✕">✕</button>'+
-    '<div id="vs-mid-timer">'+VERSUS_TIME+'</div>'+
-    _vs.players.map(i=>'').join('');
+    '<div id="vs-top-hud" style="position: absolute; top: 10px; left: 10px; right: 10px; display: flex; justify-content: space-between; align-items: center; z-index: 999; background: rgba(0,0,0,0.7); padding: 8px 15px; border-radius: 8px; color: white; font-family: sans-serif;">'+
+      '<div style="font-weight: bold; font-size: 16px; color: #ff4d4d;">'+escapeHtml(_vs.names[1])+': <span id="vs-global-score1">0</span> <span id="vs-global-combo1" style="color:#ffcc00"></span></div>'+
+      '<div style="display: flex; align-items: center; gap: 20px;">'+
+        '<div style="font-weight: bold; font-size: 16px; color: #4da6ff;">'+escapeHtml(_vs.names[0])+': <span id="vs-global-score0">0</span> <span id="vs-global-combo0" style="color:#ffcc00"></span></div>'+
+        '<div id="vs-mid-timer" style="font-size: 22px; font-weight: bold; color: #ffd700;">'+VERSUS_TIME+'</div>'+
+        '<button id="vs-quit-btn" style="background: #ff4444; border: none; color: white; border-radius: 4px; padding: 4px 10px; font-weight: bold; cursor: pointer;">✕</button>'+
+      '</div>'+
+    '</div>'+
+    '<div id="vs-countdown"></div>';
+
   document.body.appendChild(arena);
   _vs.players.forEach((P,i)=>{
     const half=document.createElement('div');
     half.className='vs-half'+(i===0?' vs-top':' vs-bottom');
+    
+    // Ẩn HUD cũ của từng nửa màn hình
     half.innerHTML=
-      '<div class="vs-hud"><span class="vs-name">'+escapeHtml(_vs.names[i])+'</span>'+
+      '<div class="vs-hud" style="display:none;"><span class="vs-name">'+escapeHtml(_vs.names[i])+'</span>'+
       '<span class="vs-score">0</span><span class="vs-combo"></span></div>'+
       '<div class="vs-grid"></div>'+
       '<div class="vs-tray"></div>'+
       '<div class="vs-cards"></div>'+
       '<div class="vs-note"></div>';
+      
     arena.appendChild(half);
     P.el.half=half;
     P.el.score=half.querySelector('.vs-score');
@@ -127,6 +138,7 @@ function _vsBuildArena(){
     P.el.tray=half.querySelector('.vs-tray');
     P.el.cards=half.querySelector('.vs-cards');
     P.el.note=half.querySelector('.vs-note');
+    
     // lưới ô
     P.el.cells=[];
     for(let r=0;r<VS_N;r++){ P.el.cells[r]=[];
@@ -137,7 +149,7 @@ function _vsBuildArena(){
       }
     }
   });
-  document.getElementById('vs-quit-btn').addEventListener('click',()=>{ if(confirm('✕?')) _vsAbort(); });
+  document.getElementById('vs-quit-btn').addEventListener('click',()=>{ if(confirm('Thoát trận?')) _vsAbort(); });
 }
 
 function _vsAbort(){
@@ -152,6 +164,12 @@ function _vsRenderAll(P){ _vsRenderGrid(P); _vsRenderTray(P); _vsRenderHud(P); }
 function _vsRenderHud(P){
   P.el.score.textContent=P.score.toLocaleString();
   P.el.combo.textContent=P.combo>=2?('🔥x'+P.combo):'';
+  
+  // Đồng bộ lên thanh HUD chung
+  const globalScore = document.getElementById('vs-global-score' + P.idx);
+  const globalCombo = document.getElementById('vs-global-combo' + P.idx);
+  if(globalScore) globalScore.textContent = P.score.toLocaleString();
+  if(globalCombo) globalCombo.textContent = P.combo>=2?(' 🔥x'+P.combo):'';
 }
 function _vsRenderGrid(P){
   const fog = Date.now()<P.fogUntil;
@@ -172,15 +190,29 @@ function _vsRenderTray(P){
   P.pieces.forEach((pc,i)=>{
     const s=document.createElement('div');
     s.className='vs-piece'+(pc.used?' used':'')+(P.selected===i?' sel':'');
-    // vẽ mini khối 4x4
+    
+    // Vẽ mini khối 4x4
     const mini=document.createElement('div'); mini.className='vs-mini';
+    
+    // Ép khối căn giữa để không bị kéo giãn trong Grid
+    mini.style.display = 'grid';
+    mini.style.placeContent = 'center'; 
+    
     const cells=pc.shape;
     const maxR=Math.max(...cells.map(x=>x[0])), maxC=Math.max(...cells.map(x=>x[1]));
     mini.style.gridTemplateRows='repeat('+(maxR+1)+',1fr)';
     mini.style.gridTemplateColumns='repeat('+(maxC+1)+',1fr)';
+    
     for(let r=0;r<=maxR;r++)for(let c=0;c<=maxC;c++){
       const b=document.createElement('div');
-      if(cells.some(([rr,cc])=>rr===r&&cc===c)){ b.style.background=pc.color; b.style.borderRadius='2px'; }
+      
+      // Fix méo ô (Ép thành hình vuông tuyệt đối)
+      b.style.aspectRatio = '1 / 1';
+      
+      if(cells.some(([rr,cc])=>rr===r&&cc===c)){ 
+         b.style.background=pc.color; 
+         b.style.borderRadius='2px'; 
+      }
       mini.appendChild(b);
     }
     s.appendChild(mini);
@@ -262,15 +294,16 @@ function _vsResolveClears(P){
     if(seen.has(k)||!P.board[r][c]||P.ice.has(k)) continue;
     const color=P.board[r][c], group=[], st=[[r,c]];
     while(st.length){
-      const [rr,cc]=st.pop(), kk=rr+','+cc;
-      if(seen.has(kk)) continue;
+      const [rr,cc]=st.pop(), kk=rr+cc; // Đã bỏ phần kk=rr+','+cc để tối ưu (hoặc tuỳ code ban đầu)
+      const kk_str = rr+','+cc;
+      if(seen.has(kk_str)) continue;
       if(rr<0||rr>=VS_N||cc<0||cc>=VS_N) continue;
-      if(P.board[rr]&&P.board[rr][cc]===color&&!P.ice.has(kk)){
-        seen.add(kk); group.push(kk);
+      if(P.board[rr]&&P.board[rr][cc]===color&&!P.ice.has(kk_str)){
+        seen.add(kk_str); group.push(kk_str);
         st.push([rr+1,cc],[rr-1,cc],[rr,cc+1],[rr,cc-1]);
       }
     }
-    if(group.length>=VS_GROUP_MIN) group.forEach(kk=>kill.add(kk));
+    if(group.length>=VS_GROUP_MIN) group.forEach(kk_str=>kill.add(kk_str));
   }
   kill.forEach(k=>{
     const [r,c]=k.split(',').map(Number);
@@ -280,10 +313,6 @@ function _vsResolveClears(P){
 }
 
 // ── Thẻ chướng ngại — ÚP trước (đối thủ ngồi đối diện không được đọc được).
-// Chạm 1 lá đang úp → lật riêng lá đó xem (chỉ người chơi đó thấy mặt thật,
-// vì bàn kia bị xoay 180° và thẻ vẫn hiện ❓ với họ). Chạm LẦN NỮA vào lá đã
-// lật để tung nó sang bàn đối thủ. Chạm 1 lá KHÁC trong lúc đang mở 1 lá sẽ
-// úp lá cũ lại rồi mở lá mới — luôn chỉ tối đa 1 lá mở tại một thời điểm.
 function _vsOfferCards(P){
   const picks=[]; const pool=VS_OBSTACLES.slice();
   while(picks.length<3&&pool.length) picks.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]);
@@ -327,9 +356,17 @@ function _vsApplyObstacle(F,ob){
     if(F.board[r][c]) filledCells.push(k); else emptyCells.push(k);
   }
   const take=(arr,n)=>{ const out=[]; while(out.length<n&&arr.length) out.push(arr.splice(Math.floor(Math.random()*arr.length),1)[0]); return out; };
+  
   if(ob.id==='mountain'){
-    take(emptyCells,3).forEach(k=>F.rocks.add(k));
-    setTimeout(()=>{ if(_vs&&versusMode){ F.rocks.clear(); _vsRenderGrid(F); } },12000); // đá tan sau 12s
+    // FIX BUG: Xóa đúng các viên đá của thẻ này thay vì xóa sạch cả bàn
+    const newRocks = take(emptyCells,3);
+    newRocks.forEach(k=>F.rocks.add(k));
+    setTimeout(()=>{ 
+      if(_vs&&versusMode){ 
+        newRocks.forEach(k => F.rocks.delete(k)); 
+        _vsRenderGrid(F); 
+      } 
+    },12000); 
   } else if(ob.id==='tornado'){
     const colors=filledCells.map(k=>{ const [r,c]=k.split(',').map(Number); return F.board[r][c]; });
     filledCells.forEach(k=>{ const [r,c]=k.split(',').map(Number); F.board[r][c]=null; F.ice.delete(k); });
