@@ -278,7 +278,7 @@ function drawMole(ctx,W,H,now,timeLeft){
     const pts=h.animal.pts;
     const badgeCol=pts>0?'#22cc22':'#cc2222';
     ctx.fillStyle=badgeCol;
-    ctx.font='bold 10px system-ui';
+    ctx.font='bold 10px Nunito,system-ui';
     ctx.fillText((pts>0?'+':'')+pts, hx+h.r*0.6, hy-h.r*0.7);
 
     ctx.restore();
@@ -309,11 +309,11 @@ function drawMole(ctx,W,H,now,timeLeft){
     const a=1-f.t/0.8;
     ctx.save();
     ctx.globalAlpha=a;
-    ctx.font='bold 18px system-ui';
+    ctx.font='bold 18px Nunito,system-ui';
     ctx.textAlign='center';
     ctx.fillStyle=f.color;
     ctx.fillText(f.label, f.x, f.y-f.t*60);
-    ctx.font='22px system-ui';
+    ctx.font='22px Nunito,system-ui';
     ctx.fillText(f.emoji, f.x, f.y-f.t*60-24);
     ctx.restore();
   }
@@ -323,7 +323,7 @@ function drawMole(ctx,W,H,now,timeLeft){
     ctx.save();
     ctx.translate(moleHammerX, moleHammerY);
     ctx.rotate(-Math.PI/4*(1-moleHammerAnim)*0.6 - Math.PI/6);
-    ctx.font='32px system-ui';
+    ctx.font='32px Nunito,system-ui';
     ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.fillText('🔨', 0, 0);
     ctx.restore();

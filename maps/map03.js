@@ -370,7 +370,7 @@ function drawFruit(ctx,W,H,now){
     ctx.save();
     ctx.globalAlpha=a;
     ctx.fillStyle='#ff5555';
-    ctx.font='bold 22px system-ui';
+    ctx.font='bold 22px Nunito,system-ui';
     ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.shadowColor='rgba(255,0,0,0.7)'; ctx.shadowBlur=8;
     ctx.fillText(p.text, p.x, p.y);
@@ -381,7 +381,7 @@ function drawFruit(ctx,W,H,now){
   if(fruitMissStreak>0){
     ctx.save();
     ctx.fillStyle = fruitMissStreak>=4 ? '#ff3333' : 'rgba(255,180,80,0.9)';
-    ctx.font='bold 14px system-ui'; ctx.textAlign='right'; ctx.textBaseline='top';
+    ctx.font='bold 14px Nunito,system-ui'; ctx.textAlign='right'; ctx.textBaseline='top';
     ctx.shadowColor='rgba(0,0,0,0.6)'; ctx.shadowBlur=6;
     ctx.fillText('Trượt: '+fruitMissStreak+'/5', W-12, 10);
     ctx.restore();

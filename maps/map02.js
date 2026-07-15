@@ -259,7 +259,7 @@ function drawDodge(ctx,W,H){
     ctx.fill();
     ctx.strokeStyle=pu.color; ctx.lineWidth=2;
     ctx.stroke();
-    ctx.font='20px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.font='20px Nunito,sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.shadowBlur=0;
     ctx.fillText(pu.emoji,pu.x,pu.y);
     ctx.restore();
@@ -282,7 +282,7 @@ function drawDodge(ctx,W,H){
     ctx.save();
     ctx.fillStyle=`rgba(100,0,180,${Math.min(0.12,dodgeSlowTime*0.04)})`;
     ctx.fillRect(0,0,W,H);
-    ctx.font='bold 14px sans-serif'; ctx.fillStyle='#cc88ff';
+    ctx.font='bold 14px Nunito,sans-serif'; ctx.fillStyle='#cc88ff';
     ctx.textAlign='center'; ctx.shadowBlur=0;
     ctx.fillText(`⏳ ${dodgeSlowTime.toFixed(1)}s`,W/2,30);
     ctx.restore();
@@ -305,7 +305,7 @@ function roundRect(ctx,x,y,w,h,r){
 }
 
 // Thanh HUD chuẩn dùng chung cho mọi map ẩn: 1 dải bo góc trên cùng canvas,
-// chữ trắng bold 14px system-ui, tối đa 3 mục trái/giữa/phải, có thể kèm vạch tiến trình.
+// chữ trắng 800 14px Nunito, tối đa 3 mục trái/giữa/phải, có thể kèm vạch tiến trình.
 function drawHudTop(ctx,W,opts){
   const barH=26, y=8, x=10, w=W-20;
   ctx.save();
@@ -320,7 +320,7 @@ function drawHudTop(ctx,W,opts){
     ctx.restore();
   }
   ctx.fillStyle='#ffffff';
-  ctx.font='bold 14px system-ui';
+  ctx.font='800 14px Nunito,system-ui';
   ctx.textBaseline='middle';
   ctx.shadowColor='rgba(0,0,0,0.6)'; ctx.shadowBlur=3;
   const ty=y+barH/2;

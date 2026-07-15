@@ -190,7 +190,7 @@ registerMapModule({
         ctx.beginPath(); ctx.fillStyle = 'rgba(255,215,80,0.35)';
         ctx.arc(o.x, y, 20, 0, Math.PI * 2); ctx.fill();
       }
-      ctx.font = '26px sans-serif';
+      ctx.font = '26px Nunito,sans-serif';
       ctx.fillText(o.emoji, o.x, y);
     }
 
@@ -210,20 +210,20 @@ registerMapModule({
     ctx.stroke();
 
     if (this.carrying) {
-      ctx.font = '24px sans-serif';
+      ctx.font = '24px Nunito,sans-serif';
       ctx.fillText(this.carrying.emoji, this.craneX, this.clawY + 16);
     }
 
     // ── thông báo mở màn ──
     if (this.msgTimer > 0) {
       ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(20, 190, W - 40, 40);
-      ctx.fillStyle = '#fff'; ctx.font = 'bold 14px system-ui';
+      ctx.fillStyle = '#fff'; ctx.font = 'bold 14px Nunito,system-ui';
       ctx.fillText(this.msg, W / 2, 210);
     }
 
     // ── HUD ──
     ctx.textBaseline = 'top';
-    ctx.fillStyle = '#fff'; ctx.font = 'bold 15px system-ui';
+    ctx.fillStyle = '#fff'; ctx.font = 'bold 15px Nunito,system-ui';
     ctx.textAlign = 'left'; ctx.fillText('✕', 12, 10);
     ctx.textAlign = 'center';
     ctx.fillText('🐷 ' + this.saved + '/' + this.goal + '   😢 ' + this.missed + '/' + this.maxMissed, W / 2, 10);

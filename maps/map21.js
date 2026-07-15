@@ -61,7 +61,7 @@ registerMapModule({
     ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 2; ctx.stroke();
 
     // HUD
-    ctx.fillStyle = '#fff'; ctx.font = 'bold 15px system-ui'; ctx.textBaseline = 'top';
+    ctx.fillStyle = '#fff'; ctx.font = 'bold 15px Nunito,system-ui'; ctx.textBaseline = 'top';
     ctx.textAlign = 'left';  ctx.fillText('✕', 12, 10);
     ctx.textAlign = 'center';ctx.fillText('🎯 ' + this.hits + '/' + this.goal, api.W / 2, 10);
     ctx.textAlign = 'right'; ctx.fillText('⏱ ' + Math.max(0, Math.ceil(this.timeLeft)) + 's', api.W - 12, 10);

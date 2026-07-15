@@ -153,7 +153,7 @@ function drawMemory(ctx,W,H){
       ctx.shadowBlur=0;
 
       // name
-      ctx.font='bold 11px system-ui'; ctx.fillStyle='rgba(0,0,0,0.7)';
+      ctx.font='bold 11px Nunito,system-ui'; ctx.fillStyle='rgba(0,0,0,0.7)';
       ctx.fillText(c.animal.name,0,cardH/2-14);
     } else {
       // Back: dark gradient + question pattern
@@ -171,7 +171,7 @@ function drawMemory(ctx,W,H){
       ctx.strokeStyle='rgba(180,140,255,0.5)'; ctx.lineWidth=1.5; ctx.stroke();
 
       // "?" pattern
-      ctx.font='bold 28px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.font='bold 28px Nunito,system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
       ctx.fillStyle='rgba(180,140,255,0.7)';
       ctx.fillText('?',0,0);
     }

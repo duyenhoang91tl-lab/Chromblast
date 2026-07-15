@@ -162,7 +162,7 @@ function drawBrick(ctx,W,H,pw,paddleY){
     drawSoftCandyCell(ctx,b.x+1,b.y+1,b.w-2,b.h-2,b.color,{r:7,glowBlur:3});
     if(b.maxHp===2&&b.hp===2){
       ctx.fillStyle='rgba(255,255,255,0.92)';
-      ctx.font='bold 11px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.font='bold 11px Nunito,system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
       ctx.fillText('2',b.x+b.w/2,b.y+b.h/2);
     }
   });
@@ -185,7 +185,7 @@ function drawBrick(ctx,W,H,pw,paddleY){
   // Fx
   brickFx.forEach(f=>{
     ctx.globalAlpha=1-f.t;
-    ctx.fillStyle='#ffcc00'; ctx.font='bold 14px system-ui';
+    ctx.fillStyle='#ffcc00'; ctx.font='bold 14px Nunito,system-ui';
     ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.fillText(f.text,f.x,f.y-f.t*30);
     ctx.globalAlpha=1;
