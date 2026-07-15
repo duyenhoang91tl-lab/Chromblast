@@ -1055,16 +1055,16 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
   50%{ box-shadow: 0 0 0 4px #FFF3B0, 0 0 0 8px rgba(126,200,130,0.7), 0 14px 34px rgba(46,120,60,0.32); }
 }
 
-/* Khay kẹo trên sân vườn — nền đất ấm + viền gỗ */
+/* Khay kẹo trên sân vườn — gỗ nhạt để gạch nổi */
 #grid-wrap.theme-garden #secret-grid{
   background:
-    linear-gradient(180deg, rgba(255,255,255,0.18) 0%, transparent 40%),
-    linear-gradient(160deg, #C4A574 0%, #A0784A 55%, #8B6539 100%);
-  border: 3px solid #6E4B2A;
+    linear-gradient(180deg, rgba(255,255,255,0.28) 0%, transparent 40%),
+    linear-gradient(160deg, #F3E8D4 0%, #E8D8BC 55%, #DCC9A8 100%);
+  border: 2px solid #D4C2A4;
   box-shadow:
-    inset 0 2px 0 rgba(255,255,255,0.35),
-    inset 0 -4px 10px rgba(0,0,0,0.18),
-    0 8px 18px rgba(60,40,10,0.28);
+    inset 0 2px 0 rgba(255,255,255,0.5),
+    inset 0 -3px 8px rgba(140,110,70,0.1),
+    0 8px 18px rgba(60,40,10,0.16);
   padding: 10px;
   border-radius: 16px;
   gap: 3px;
@@ -1075,13 +1075,13 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
 #grid-wrap.theme-garden #secret-grid .sc{
   width: auto; height: auto; aspect-ratio: 1;
 }
-/* Ô trống: đất vườn mềm */
+/* Ô trống: gỗ nhạt lõm nhẹ */
 #grid-wrap.theme-garden .sc:not(.gem){
   background:
-    radial-gradient(circle at 30% 28%, rgba(255,255,255,0.22) 0%, transparent 45%),
-    linear-gradient(160deg, #E8D5B0 0%, #D2B48C 100%) !important;
+    radial-gradient(circle at 30% 28%, rgba(255,255,255,0.28) 0%, transparent 45%),
+    linear-gradient(160deg, #F6EFE3 0%, #EDE2CE 100%) !important;
   border: none !important;
-  box-shadow: inset 0 1px 2px rgba(255,255,255,0.35), inset 0 -2px 3px rgba(90,60,20,0.18);
+  box-shadow: inset 0 1px 2px rgba(255,255,255,0.4), inset 0 -2px 3px rgba(140,110,70,0.1);
 }
 
 /* HUD Map ẩn 1 — pill mềm giống Map 4 */
