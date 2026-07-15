@@ -800,12 +800,12 @@ function renderPieces(){
       d.style.height='100%';
       
       if(color){ d.style.setProperty('--cc',color); d.style.border='none'; }
-      else { d.style.background='#0f0f23'; d.style.border='1px solid #2a2a4a'; }
+      else { d.style.background='rgba(0,0,0,0.28)'; d.style.border='1px solid rgba(255,255,255,0.06)'; }
       g.appendChild(d);
     });
     slot.appendChild(g);
     const label=document.createElement('div');
-    label.style.cssText='font-size:10px;color:#6b4a28;margin-top:4px;font-weight:700;';
+    label.style.cssText='font-size:10px;color:#b8b0c8;margin-top:4px;font-weight:700;';
     const ci=COLORS.indexOf(piece.color);
     label.textContent=ci>=0?COLOR_NAMES[ci]:'';
     slot.appendChild(label);

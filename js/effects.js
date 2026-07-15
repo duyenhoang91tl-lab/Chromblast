@@ -684,11 +684,11 @@ function drawSoftCandyCell(ctx,x,y,w,h,color,opts){
   ctx.fillStyle=color; ctx.fill();
   ctx.shadowBlur=0; ctx.shadowOffsetY=0;
 
-  // lõi sáng mềm (không specular cứng)
+  // lõi sáng mềm (không phủ đen cứng)
   const core=ctx.createRadialGradient(cx-w*0.12,cy-h*0.18,0,cx,cy,Math.max(w,h)*0.7);
-  core.addColorStop(0,'rgba(255,255,255,0.38)');
-  core.addColorStop(0.45,'rgba(255,255,255,0.08)');
-  core.addColorStop(1,'rgba(0,0,0,0.12)');
+  core.addColorStop(0,'rgba(255,255,255,0.4)');
+  core.addColorStop(0.5,'rgba(255,255,255,0.08)');
+  core.addColorStop(1,'rgba(255,255,255,0)');
   ctx.fillStyle=core; roundRect(ctx,x,y,w,h,r); ctx.fill();
 
   // sợi lông xù quanh viền (nhiều hơn)
