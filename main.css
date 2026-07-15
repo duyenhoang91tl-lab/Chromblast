@@ -1986,20 +1986,20 @@ body:has(#secret-stage.active) .streak-dot.lit{
   box-shadow: 0 0 10px rgba(80,160,255,0.65), inset 0 1px 0 rgba(255,255,255,0.45);
   font-size: 15px !important;
 }
-#game-root.hud-arcade #combo-flash,
-#game-root.hud-arcade #combo-count-flash {
+#game-root.hud-arcade.map-secret1 #combo-flash,
+#game-root.hud-arcade.map-secret1 #combo-count-flash {
   display: none !important;
   animation: none !important;
 }
-/* Ẩn lớp pháo sc-fx trên map ẩn 1 — chỉ dùng sparkler viền */
-#game-root.hud-arcade #sc-fx {
+/* Ẩn lớp pháo sc-fx chỉ trên map ẩn 1 — các map khác vẫn dùng được */
+#game-root.hud-arcade.map-secret1 #sc-fx {
   display: none !important;
 }
-#game-root.hud-arcade #sc-fx * {
+#game-root.hud-arcade.map-secret1 #sc-fx * {
   display: none !important;
 }
-/* Tim đã hiện trong TARGETS — ẩn hàng tim trùng */
-#game-root.hud-arcade #secret-hearts { display: none !important; }
+/* Tim đã hiện trong TARGETS — ẩn hàng tim trùng (map ẩn 1) */
+#game-root.hud-arcade.map-secret1 #secret-hearts { display: none !important; }
 @media (max-width: 380px) {
   #game-root.hud-arcade #header {
     grid-template-columns: 1fr auto auto;
