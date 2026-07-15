@@ -4,6 +4,7 @@
 // diện). Cùng chuỗi khối từ CÙNG hạt giống (PRNG riêng mỗi người → công bằng
 // tuyệt đối dù tốc độ đặt khác nhau). Đặt khối chạm-chọn → chạm-ô; chạm lại
 // khối đang chọn để xoay.
+// Nổ khi lấp đầy 1 hàng/cột, hoặc cụm cùng màu >= VS_GROUP_MIN (8) ô nối liền.
 // Đạt combo bội số 5 → rút 1 trong 3 THẺ CHƯỚNG NGẠI ngẫu nhiên, hiệu lực
 // lên bàn ĐỐI THỦ: ⛰️ núi đá · 🌪️ lốc xoáy · 🧊 băng giá · 🌫️ sương mù ·
 // 🐿️ sóc ăn ô · 💣 bom.
@@ -15,7 +16,7 @@ const VERSUS_MIN_LEVEL = 10;   // cấp (XP) tối thiểu để mở phòng
 const VERSUS_WIN_XP = 30;
 const VS_N = 7;                // bàn 7×7
 const VS_COLORS = COLORS.slice(0, 5);
-const VS_GROUP_MIN = 5;        // cụm cùng màu >= 5 thì nổ
+const VS_GROUP_MIN = 8;        // cụm cùng màu >= 8 ô mới nổ (5 quá dễ — vừa đặt vào đã phá)
 const VS_CARD_EVERY = 5;       // mỗi 5 combo được rút thẻ
 // Bộ chướng ngại: id ↔ chỉ số tên trong MECH_NAME (i18n sẵn có)
 const VS_OBSTACLES = [
