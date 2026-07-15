@@ -1564,8 +1564,8 @@ body:has(#secret-stage.active) .streak-dot.lit{
 
 /* ── Ô sáng nhẹ dần theo streak — plush glow ── */
 .sc.gem.glow-1 { filter: url(#plush-fur) brightness(1.05) saturate(1.08); }
-.sc.gem.glow-2 { filter: url(#plush-fur) brightness(1.1) saturate(1.15); box-shadow: 0 0 0 1px color-mix(in srgb, var(--cc,#888) 75%, #fff), 0 0 8px 3px color-mix(in srgb, var(--cc,#888) 60%, transparent), inset 0 3px 6px rgba(255,255,255,0.3), 0 5px 10px rgba(40,25,10,0.22); }
-.sc.gem.glow-3 { filter: url(#plush-fur) brightness(1.18) saturate(1.22); box-shadow: 0 0 0 1px color-mix(in srgb, var(--cc,#888) 75%, #fff), 0 0 14px 4px color-mix(in srgb, var(--cc,#888) 70%, transparent), inset 0 3px 6px rgba(255,255,255,0.32), 0 5px 10px rgba(40,25,10,0.22); }
+.sc.gem.glow-2 { filter: url(#plush-fur) brightness(1.1) saturate(1.12); box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--cc,#888) 55%, #fff), 0 0 6px 2px color-mix(in srgb, var(--cc,#888) 50%, transparent), inset 0 2px 3px rgba(255,255,255,0.35), 0 3px 6px rgba(0,0,0,0.3); }
+.sc.gem.glow-3 { filter: url(#plush-fur) brightness(1.15) saturate(1.18); box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--cc,#888) 55%, #fff), 0 0 8px 2px color-mix(in srgb, var(--cc,#888) 60%, transparent), inset 0 2px 3px rgba(255,255,255,0.35), 0 3px 6px rgba(0,0,0,0.3); }
 .sc.gem.glow-4 { filter: url(#plush-fur) brightness(1.25) saturate(1.3); animation: gemPulse4 0.7s ease-in-out infinite alternate; }
 @keyframes gemPulse4 {
   from { filter: url(#plush-fur) brightness(1.2) saturate(1.25); }
