@@ -19,7 +19,7 @@
     try {
       await AdMob.initialize({
         testingDevices: [], // để trống khi đã publish thật
-        initializeForTesting: true, // ĐANG TEST — đổi thành false khi publish thật
+        initializeForTesting: false, // ĐANG TEST — đổi thành false khi publish thật
       });
     } catch (e) {
       console.error('AdMob Initialization Error:', e);
@@ -32,7 +32,7 @@
     try {
       await AdMob.prepareInterstitial({
         adId: 'ca-app-pub-9093176034842025/6573161096',
-        isTesting: true, // ĐANG TEST — đổi false khi publish thật
+        isTesting: false, // ĐANG TEST — đổi false khi publish thật
       });
       await AdMob.showInterstitial();
     } catch (e) {
