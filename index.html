@@ -147,9 +147,113 @@
       <button id="leaderboard-btn" title="Bảng xếp hạng" data-i18n-title="ttLeaderboard">🏆</button>
       <button id="roundguide-btn" title="Hướng dẫn cơ chế vòng hiện tại" data-i18n-title="ttRoundGuide" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">📖</button>
       <button id="adventure-toggle-btn" title="Chế độ Adventure" data-i18n-title="ttAdventure">🚀 ADV</button>
-      <button id="account-btn" title="Tài khoản" data-i18n-title="ttAccount">👤</button>
+      <button id="account-btn" title="Cài đặt" data-i18n-title="ttSettings">⚙️</button>
       <button id="mute-btn" title="Tắt/bật âm thanh" data-i18n-title="ttMute" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">🔊</button>
       <button id="pause-btn" title="Tạm dừng" data-i18n-title="ttPause" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">⏸</button>
+    </div>
+  </div>
+
+  <!-- ══ SETTINGS HUB ══ -->
+  <div id="settings-panel" class="settings-overlay">
+    <div class="settings-modal">
+      <div class="settings-head">
+        <span data-i18n="settingsTitle">Settings</span>
+        <button type="button" class="settings-x" id="settings-close-btn" aria-label="Close">✕</button>
+      </div>
+      <div class="settings-inner">
+        <div class="settings-toggles">
+          <button type="button" class="set-toggle" id="set-sfx-toggle">
+            <span class="set-toggle-ico" id="set-sfx-ico">🔊</span>
+            <span class="set-toggle-lab" data-i18n="setSound">Sound</span>
+          </button>
+          <button type="button" class="set-toggle" id="set-bgm-toggle">
+            <span class="set-toggle-ico" id="set-bgm-ico">🎵</span>
+            <span class="set-toggle-lab" data-i18n="setBgm">BGM</span>
+          </button>
+        </div>
+        <div class="settings-actions">
+          <button type="button" class="set-action set-c-purple" id="set-btn-account"><span class="set-act-ico">👤</span><span data-i18n="setAccount">Account</span></button>
+          <button type="button" class="set-action set-c-teal" id="set-btn-lang"><span class="set-act-ico">🌐</span><span data-i18n="setLanguage">Language</span></button>
+          <button type="button" class="set-action set-c-blue" id="set-btn-map"><span class="set-act-ico">🗺️</span><span data-i18n="setMap">Map</span></button>
+          <button type="button" class="set-action set-c-gold" id="set-btn-cup"><span class="set-act-ico">🏆</span><span data-i18n="setCup">Cup</span></button>
+          <button type="button" class="set-action set-c-green" id="set-btn-more"><span class="set-act-ico">⚙️</span><span data-i18n="setMore">More Settings</span><span class="set-dot"></span></button>
+          <button type="button" class="set-action set-c-lime" id="set-btn-home"><span class="set-act-ico">🏠</span><span data-i18n="setHome">Home</span></button>
+          <button type="button" class="set-action set-c-lime" id="set-btn-replay"><span class="set-act-ico">🔁</span><span data-i18n="setReplay">Replay</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MORE SETTINGS ══ -->
+  <div id="settings-more-panel" class="settings-overlay">
+    <div class="settings-modal">
+      <div class="settings-head">
+        <span data-i18n="setMoreTitle">More Settings</span>
+        <button type="button" class="settings-x" id="settings-more-close-btn" aria-label="Close">✕</button>
+      </div>
+      <div class="settings-inner settings-more-inner">
+        <div class="settings-appinfo">
+          <div class="settings-appico" aria-hidden="true">🧩</div>
+          <div>
+            <div class="settings-appname">ChromaBlast</div>
+            <div class="settings-appver">Version: 1.0.0</div>
+          </div>
+        </div>
+        <button type="button" class="settings-row" id="set-contact-btn"><span data-i18n="setContact">Contact Us</span><span class="settings-chev">›</span><span class="set-dot set-dot-inline"></span></button>
+        <button type="button" class="settings-row" id="set-share-btn"><span data-i18n="setShare">Share with Friends</span><span class="settings-chev">›</span></button>
+        <div class="settings-social">
+          <a class="soc-btn soc-tt" href="https://www.tiktok.com/" target="_blank" rel="noopener" title="TikTok">♪</a>
+          <a class="soc-btn soc-dc" href="https://discord.com/" target="_blank" rel="noopener" title="Discord">☺</a>
+          <a class="soc-btn soc-x" href="https://x.com/" target="_blank" rel="noopener" title="X">𝕏</a>
+          <a class="soc-btn soc-fb" href="https://facebook.com/" target="_blank" rel="noopener" title="Facebook">f</a>
+          <a class="soc-btn soc-yt" href="https://youtube.com/" target="_blank" rel="noopener" title="YouTube">▶</a>
+        </div>
+        <button type="button" class="settings-row" id="set-terms-btn"><span data-i18n="setTerms">Terms of Service</span><span class="settings-chev">›</span></button>
+        <button type="button" class="settings-row" id="set-privacy-btn"><span data-i18n="setPrivacy">Privacy Policy</span><span class="settings-chev">›</span></button>
+        <button type="button" class="settings-row" id="set-about-btn"><span data-i18n="setAbout">About Us</span><span class="settings-chev">›</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ LANGUAGE ══ -->
+  <div id="settings-lang-panel" class="settings-overlay">
+    <div class="settings-modal settings-modal-sm">
+      <div class="settings-head">
+        <span data-i18n="setLanguage">Language</span>
+        <button type="button" class="settings-x" id="settings-lang-close-btn" aria-label="Close">✕</button>
+      </div>
+      <div class="settings-inner">
+        <div id="lang-picker-settings" class="lang-picker"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ CUP / ACHIEVEMENT ══ -->
+  <div id="settings-cup-panel" class="settings-overlay">
+    <div class="settings-modal settings-modal-tall">
+      <div class="settings-head">
+        <button type="button" class="settings-back" id="settings-cup-back-btn" aria-label="Back">‹</button>
+        <span data-i18n="setCupTitle">Achievement</span>
+        <button type="button" class="settings-x" id="settings-cup-close-btn" aria-label="Close">✕</button>
+      </div>
+      <div class="settings-inner cup-inner">
+        <div class="cup-stats" id="cup-stats"></div>
+        <div class="cup-awards-title" data-i18n="setAwards">Awards</div>
+        <div class="cup-awards" id="cup-awards"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ ABOUT / TERMS TEXT ══ -->
+  <div id="settings-text-panel" class="settings-overlay">
+    <div class="settings-modal">
+      <div class="settings-head">
+        <span id="settings-text-title">About</span>
+        <button type="button" class="settings-x" id="settings-text-close-btn" aria-label="Close">✕</button>
+      </div>
+      <div class="settings-inner">
+        <div class="settings-text-body" id="settings-text-body"></div>
+      </div>
     </div>
   </div>
 

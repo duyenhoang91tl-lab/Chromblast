@@ -45,6 +45,7 @@
   const CLOSABLE_PANELS = [
     'maphelp-panel','roundguide-panel','hiddenmap-menu-panel',
     'daily-panel','leaderboard-panel','account-panel','help-panel','unlock-overlay',
+    'settings-panel','settings-more-panel','settings-lang-panel','settings-cup-panel','settings-text-panel',
   ];
 
   function anyHiddenMapActive(){

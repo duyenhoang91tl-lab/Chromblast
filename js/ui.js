@@ -277,14 +277,16 @@ function doChangePassword(oldPass, newPass, newPass2){
 }
 
 function initAccountPanel(){
+  // Nút ⚙️ mở Settings hub (không mở thẳng account)
   const accountBtn = document.getElementById('account-btn');
   const panel = document.getElementById('account-panel');
-  accountBtn.addEventListener('click', ()=>{
-    sfxClick();
-    document.getElementById('cp-msg').textContent = '';
-    document.getElementById('cp-msg').className = 'account-msg';
-    panel.classList.add('show');
-  });
+  if(accountBtn){
+    accountBtn.addEventListener('click', ()=>{
+      sfxClick();
+      if(typeof openSettingsPanel==='function') openSettingsPanel();
+      else panel.classList.add('show');
+    });
+  }
   document.getElementById('account-close-btn').addEventListener('click', ()=>{
     panel.classList.remove('show');
   });
@@ -299,6 +301,7 @@ function initAccountPanel(){
   document.getElementById('logout-btn').addEventListener('click', ()=>{
     doLogout();
   });
+  if(typeof initSettingsMenu==='function') initSettingsMenu();
 }
 
 function initHelpPanel(){
@@ -438,4 +441,211 @@ function refreshArcadeHud(){
       '<span class="arcade-targets-label">TARGETS</span>'+
       '<span class="arcade-targets-val">'+val+'</span>'+
     '</div>';
+}
+
+/* ════════════════════════════════════════════════════════
+   SETTINGS MENU — hub + More Settings + Cup + Language
+════════════════════════════════════════════════════════ */
+function closeAllSettingsOverlays(){
+  ['settings-panel','settings-more-panel','settings-lang-panel','settings-cup-panel','settings-text-panel']
+    .forEach(id=>{ const el=document.getElementById(id); if(el) el.classList.remove('show'); });
+}
+
+function openSettingsPanel(){
+  syncSettingsToggles();
+  document.getElementById('settings-panel')?.classList.add('show');
+}
+
+function syncSettingsToggles(){
+  const sfxBtn=document.getElementById('set-sfx-toggle');
+  const bgmBtn=document.getElementById('set-bgm-toggle');
+  const sfxIco=document.getElementById('set-sfx-ico');
+  const bgmIco=document.getElementById('set-bgm-ico');
+  const muted=!!(typeof sfxMuted!=='undefined' && sfxMuted);
+  const bgmOff=!!(typeof bgmMuted!=='undefined' && bgmMuted);
+  if(sfxBtn) sfxBtn.classList.toggle('is-off', muted);
+  if(bgmBtn) bgmBtn.classList.toggle('is-off', bgmOff);
+  if(sfxIco) sfxIco.textContent = muted ? '🔇' : '🔊';
+  if(bgmIco) bgmIco.textContent = bgmOff ? '🎵' : '🎵';
+  const muteBtn=document.getElementById('mute-btn');
+  if(muteBtn) muteBtn.textContent = muted ? '🔇' : '🔊';
+}
+
+function toggleSfxSetting(){
+  if(typeof sfxMuted==='undefined') return;
+  sfxMuted=!sfxMuted;
+  if(sfxMuted){ try{ stopBgm(); stopRhythmBgm(); }catch(e){} }
+  else { try{ if(!bgmMuted && typeof resumeContextBgm==='function') resumeContextBgm(); }catch(e){} }
+  syncSettingsToggles();
+  try{ sfxClick(); }catch(e){}
+}
+
+function toggleBgmSetting(){
+  if(typeof bgmMuted==='undefined') return;
+  bgmMuted=!bgmMuted;
+  if(bgmMuted){ try{ stopBgm(); stopRhythmBgm(); }catch(e){} }
+  else if(!sfxMuted){ try{ if(typeof resumeContextBgm==='function') resumeContextBgm(); }catch(e){} }
+  syncSettingsToggles();
+  try{ sfxClick(); }catch(e){}
+}
+
+function openSettingsAccount(){
+  closeAllSettingsOverlays();
+  const panel=document.getElementById('account-panel');
+  if(!panel) return;
+  const msg=document.getElementById('cp-msg');
+  if(msg){ msg.textContent=''; msg.className='account-msg'; }
+  panel.classList.add('show');
+}
+
+function openSettingsLang(){
+  document.getElementById('settings-panel')?.classList.remove('show');
+  if(!document.getElementById('lang-picker-settings')?.childElementCount){
+    try{ buildLangPicker('lang-picker-settings'); }catch(e){}
+  }
+  document.getElementById('settings-lang-panel')?.classList.add('show');
+}
+
+function openSettingsMap(){
+  closeAllSettingsOverlays();
+  try{ renderHiddenMapMenu(); }catch(e){}
+  document.getElementById('hiddenmap-menu-panel')?.classList.add('show');
+}
+
+function renderCupPanel(){
+  const stats=document.getElementById('cup-stats');
+  const awards=document.getElementById('cup-awards');
+  if(!stats||!awards) return;
+  let loginDays=1;
+  try{
+    const st=(typeof getDailyStatus==='function')?getDailyStatus():null;
+    if(st && st.streakDay) loginDays=st.streakDay;
+  }catch(e){}
+  const bestN=Math.round(typeof best==='number'?best:0);
+  const rounds=(typeof clearedHiddenMaps!=='undefined' && clearedHiddenMaps)?clearedHiddenMaps.size:0;
+  const comboHi=Math.max(
+    (typeof consecutiveBursts==='number'?consecutiveBursts:0),
+    (typeof combo==='number'?combo:0),
+    (typeof secretStreak==='number'?secretStreak:0)
+  );
+  stats.innerHTML=
+    '<div class="cup-stat"><div class="cup-stat-num">'+comboHi+'</div><div class="cup-stat-lab">'+(t('cupHighestCombo')||'Highest Combo')+'</div></div>'+
+    '<div class="cup-stat"><div class="cup-stat-num">'+bestN.toLocaleString()+'</div><div class="cup-stat-lab">'+(t('cupBestScore')||'Best Score')+'</div></div>'+
+    '<div class="cup-stat"><div class="cup-stat-num">'+rounds+'</div><div class="cup-stat-lab">'+(t('cupRounds')||'Rounds')+'</div></div>'+
+    '<div class="cup-stat"><div class="cup-stat-num">'+loginDays+'</div><div class="cup-stat-lab">'+(t('cupLoginDays')||'Login Days')+'</div></div>';
+
+  const icons={
+    first_burst:'💥', combo5:'🔥', score1000:'⭐', score5000:'🌟',
+    secret1:'🗺️', ultra:'⚡', fruit50:'🍉', survive60:'🐢',
+    level5:'📈', level10:'🏆'
+  };
+  const list=(typeof ACHIEVEMENTS==='object' && ACHIEVEMENTS)?Object.values(ACHIEVEMENTS):[];
+  awards.innerHTML=list.map(a=>{
+    const done=!!a.done;
+    return '<div class="cup-award">'+
+      '<div class="cup-badge'+(done?' done':'')+'">'+(icons[a.id]||'🎖️')+(done?'<span class="set-dot"></span>':'')+'</div>'+
+      '<div class="cup-award-name">'+a.label.replace(/^[^A-Za-zÀ-ỹ0-9]+/,'')+'</div>'+
+      '<div class="cup-award-prog">'+(done?'1/1':'0/1')+'</div>'+
+    '</div>';
+  }).join('');
+}
+
+function openSettingsCup(){
+  document.getElementById('settings-panel')?.classList.remove('show');
+  renderCupPanel();
+  document.getElementById('settings-cup-panel')?.classList.add('show');
+}
+
+function openSettingsMore(){
+  document.getElementById('settings-panel')?.classList.remove('show');
+  document.getElementById('settings-more-panel')?.classList.add('show');
+}
+
+function openSettingsText(title, body){
+  document.getElementById('settings-more-panel')?.classList.remove('show');
+  const tEl=document.getElementById('settings-text-title');
+  const bEl=document.getElementById('settings-text-body');
+  if(tEl) tEl.textContent=title;
+  if(bEl) bEl.textContent=body;
+  document.getElementById('settings-text-panel')?.classList.add('show');
+}
+
+function settingsGoHome(){
+  closeAllSettingsOverlays();
+  try{ hardResetAllModes(); }catch(e){}
+  const screen=document.getElementById('start-screen');
+  if(screen){ screen.style.display='flex'; screen.classList.remove('hidden'); }
+}
+
+function settingsReplay(){
+  closeAllSettingsOverlays();
+  try{ sfxClick(); }catch(e){}
+  if(typeof startGame==='function') startGame();
+}
+
+function initSettingsMenu(){
+  const close=id=>()=>{ document.getElementById(id)?.classList.remove('show'); };
+  document.getElementById('settings-close-btn')?.addEventListener('click', close('settings-panel'));
+  document.getElementById('settings-more-close-btn')?.addEventListener('click', ()=>{
+    close('settings-more-panel')();
+    openSettingsPanel();
+  });
+  document.getElementById('settings-lang-close-btn')?.addEventListener('click', ()=>{
+    close('settings-lang-panel')();
+    openSettingsPanel();
+  });
+  document.getElementById('settings-cup-close-btn')?.addEventListener('click', close('settings-cup-panel'));
+  document.getElementById('settings-cup-back-btn')?.addEventListener('click', ()=>{
+    close('settings-cup-panel')();
+    openSettingsPanel();
+  });
+  document.getElementById('settings-text-close-btn')?.addEventListener('click', ()=>{
+    close('settings-text-panel')();
+    document.getElementById('settings-more-panel')?.classList.add('show');
+  });
+
+  document.getElementById('set-sfx-toggle')?.addEventListener('click', toggleSfxSetting);
+  document.getElementById('set-bgm-toggle')?.addEventListener('click', toggleBgmSetting);
+  document.getElementById('set-btn-account')?.addEventListener('click', ()=>{ sfxClick(); openSettingsAccount(); });
+  document.getElementById('set-btn-lang')?.addEventListener('click', ()=>{ sfxClick(); openSettingsLang(); });
+  document.getElementById('set-btn-map')?.addEventListener('click', ()=>{ sfxClick(); openSettingsMap(); });
+  document.getElementById('set-btn-cup')?.addEventListener('click', ()=>{ sfxClick(); openSettingsCup(); });
+  document.getElementById('set-btn-more')?.addEventListener('click', ()=>{ sfxClick(); openSettingsMore(); });
+  document.getElementById('set-btn-home')?.addEventListener('click', ()=>{ sfxClick(); settingsGoHome(); });
+  document.getElementById('set-btn-replay')?.addEventListener('click', settingsReplay);
+
+  document.getElementById('set-contact-btn')?.addEventListener('click', ()=>{
+    sfxClick();
+    openSettingsText(t('setContact')||'Contact Us', 'Email: duyenhoang.tl@gmail.com\nChromaBlast support');
+  });
+  document.getElementById('set-share-btn')?.addEventListener('click', ()=>{
+    sfxClick();
+    const text='Play ChromaBlast with me!';
+    if(navigator.share){ navigator.share({ title:'ChromaBlast', text }).catch(()=>{}); }
+    else { try{ navigator.clipboard.writeText(text); }catch(e){} openSettingsText(t('setShare')||'Share', text); }
+  });
+  document.getElementById('set-terms-btn')?.addEventListener('click', ()=>{
+    sfxClick();
+    openSettingsText(t('setTerms')||'Terms of Service',
+      'ChromaBlast is provided for entertainment.\nPlease play fairly and respect other players.\nLocal progress is stored on your device.');
+  });
+  document.getElementById('set-privacy-btn')?.addEventListener('click', ()=>{
+    sfxClick();
+    window.open('privacy-policy.html', '_blank', 'noopener');
+  });
+  document.getElementById('set-about-btn')?.addEventListener('click', ()=>{
+    sfxClick();
+    openSettingsText(t('setAbout')||'About Us',
+      'ChromaBlast\nVersion 1.0.0\nA colorful block puzzle adventure with hidden mini-games.\nThanks for playing!');
+  });
+
+  // click backdrop to close
+  ['settings-panel','settings-more-panel','settings-lang-panel','settings-cup-panel','settings-text-panel'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    el.addEventListener('click', e=>{ if(e.target===el) el.classList.remove('show'); });
+  });
+
+  try{ buildLangPicker('lang-picker-settings'); }catch(e){}
+  syncSettingsToggles();
 }
