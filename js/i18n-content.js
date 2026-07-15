@@ -547,3 +547,46 @@ function MILESTONE_MSG(tier){ const c=_i18nContent(); const a=c.milestones||I18N
   };
   Object.keys(extra2).forEach(l=>{ if(I18N[l]) Object.assign(I18N[l], extra2[l]); });
 })();
+
+// ── BỔ SUNG: chuỗi chế độ ĐẤU 1-1 (versus.js) ──
+(function(){
+  const vs = {
+  vi:{ ttVersus:'Đấu 1-1 (mở từ Lv.10)', vsTitle:'⚔️ Đấu 1-1', vsSub:'Hai người chơi thi đấu trên máy này — cùng bộ khối, 90 giây mỗi lượt, điểm cao hơn thắng.',
+       vsP1:'Người chơi 1', vsP2:'Người chơi 2', vsStart:'⚔️ BẮT ĐẦU TRẬN ĐẤU', vsReady:'▶ SẴN SÀNG!', vsAgain:'🔁 Đấu lại', vsClose:'✕ Đóng',
+       vsNeedLevel:'⚔️ Đạt Cấp {0} để mở phòng đấu 1-1!', vsHandoffTitle:'⚔️ Đến lượt {0}',
+       vsHandoffFirst:'Bạn có {0} giây — ghi điểm cao nhất có thể! Bấm khi đã cầm máy.',
+       vsHandoffSecond:'{0} đạt {1} điểm. Đưa máy cho đối thủ — cùng bộ khối, vượt qua đi!',
+       vsWin:'🏆 {0} THẮNG!', vsDraw:'🤝 HÒA!', vsXpNote:'Người thắng +{0} XP · điểm thắng được ghi vào bảng xếp hạng' },
+  en:{ ttVersus:'1v1 Duel (unlocks at Lv.10)', vsTitle:'⚔️ 1v1 Duel', vsSub:'Two players compete on this device — same pieces, 90 seconds each, higher score wins.',
+       vsP1:'Player 1', vsP2:'Player 2', vsStart:'⚔️ START MATCH', vsReady:'▶ READY!', vsAgain:'🔁 Rematch', vsClose:'✕ Close',
+       vsNeedLevel:'⚔️ Reach Level {0} to host a 1v1 duel!', vsHandoffTitle:'⚔️ {0}\'s turn',
+       vsHandoffFirst:'You have {0} seconds — score as high as you can! Tap when you have the device.',
+       vsHandoffSecond:'{0} scored {1} points. Hand the device over — same pieces, beat it!',
+       vsWin:'🏆 {0} WINS!', vsDraw:'🤝 DRAW!', vsXpNote:'Winner gets +{0} XP · winning score goes to the leaderboard' },
+  ko:{ ttVersus:'1대1 대결 (Lv.10 해금)', vsTitle:'⚔️ 1대1 대결', vsSub:'이 기기에서 두 명이 대결 — 같은 블록, 각 90초, 높은 점수가 승리.',
+       vsP1:'플레이어 1', vsP2:'플레이어 2', vsStart:'⚔️ 대결 시작', vsReady:'▶ 준비 완료!', vsAgain:'🔁 재대결', vsClose:'✕ 닫기',
+       vsNeedLevel:'⚔️ 레벨 {0} 달성 시 1대1 방을 만들 수 있어요!', vsHandoffTitle:'⚔️ {0} 차례',
+       vsHandoffFirst:'{0}초 동안 최대한 높은 점수를! 기기를 들었으면 탭하세요.',
+       vsHandoffSecond:'{0}님이 {1}점 기록. 기기를 넘겨주세요 — 같은 블록으로 넘어서 보세요!',
+       vsWin:'🏆 {0} 승리!', vsDraw:'🤝 무승부!', vsXpNote:'승자 +{0} XP · 승리 점수는 리더보드에 기록' },
+  ja:{ ttVersus:'1対1バトル（Lv.10で解放）', vsTitle:'⚔️ 1対1バトル', vsSub:'この端末で2人対戦 — 同じブロック、各90秒、高得点が勝ち。',
+       vsP1:'プレイヤー1', vsP2:'プレイヤー2', vsStart:'⚔️ 対戦開始', vsReady:'▶ 準備OK！', vsAgain:'🔁 再戦', vsClose:'✕ 閉じる',
+       vsNeedLevel:'⚔️ レベル{0}で1対1ルームを作成できます！', vsHandoffTitle:'⚔️ {0}の番',
+       vsHandoffFirst:'{0}秒間で最高得点を狙え！端末を持ったらタップ。',
+       vsHandoffSecond:'{0}は{1}点。端末を渡して — 同じブロックで超えろ！',
+       vsWin:'🏆 {0}の勝ち！', vsDraw:'🤝 引き分け！', vsXpNote:'勝者+{0} XP · 勝利スコアはランキングに記録' },
+  zh:{ ttVersus:'1对1对战（Lv.10解锁）', vsTitle:'⚔️ 1对1对战', vsSub:'两名玩家在本机对战 — 相同方块，各90秒，分高者胜。',
+       vsP1:'玩家1', vsP2:'玩家2', vsStart:'⚔️ 开始对战', vsReady:'▶ 准备好了！', vsAgain:'🔁 再来一局', vsClose:'✕ 关闭',
+       vsNeedLevel:'⚔️ 达到{0}级即可创建1对1房间！', vsHandoffTitle:'⚔️ 轮到{0}',
+       vsHandoffFirst:'你有{0}秒 — 尽量拿高分！拿到手机后点击。',
+       vsHandoffSecond:'{0}拿到{1}分。把手机交给对手 — 同样的方块，超过它！',
+       vsWin:'🏆 {0}获胜！', vsDraw:'🤝 平局！', vsXpNote:'胜者+{0} XP · 获胜分数计入排行榜' },
+  es:{ ttVersus:'Duelo 1v1 (se abre en Nv.10)', vsTitle:'⚔️ Duelo 1v1', vsSub:'Dos jugadores compiten en este dispositivo — mismas piezas, 90 segundos cada uno, gana la mayor puntuación.',
+       vsP1:'Jugador 1', vsP2:'Jugador 2', vsStart:'⚔️ EMPEZAR DUELO', vsReady:'▶ ¡LISTO!', vsAgain:'🔁 Revancha', vsClose:'✕ Cerrar',
+       vsNeedLevel:'⚔️ ¡Llega al Nivel {0} para crear un duelo 1v1!', vsHandoffTitle:'⚔️ Turno de {0}',
+       vsHandoffFirst:'Tienes {0} segundos — ¡puntúa lo máximo! Toca cuando tengas el dispositivo.',
+       vsHandoffSecond:'{0} logró {1} puntos. Pasa el dispositivo — ¡mismas piezas, supéralo!',
+       vsWin:'🏆 ¡GANA {0}!', vsDraw:'🤝 ¡EMPATE!', vsXpNote:'El ganador recibe +{0} XP · la puntuación va a la clasificación' },
+  };
+  Object.keys(vs).forEach(l=>{ if(I18N[l]) Object.assign(I18N[l], vs[l]); });
+})();

@@ -116,6 +116,7 @@
     <div id="game-controls" style="display:flex;gap:6px;align-items:center;">
       <button id="hiddenmap-menu-btn" title="Chọn map ẩn đã chơi qua" data-i18n-title="ttHiddenMap" style="display:none;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;align-items:center;justify-content:center;padding:0;">🗺️</button>
       <button id="daily-btn" title="Điểm danh nhận quà" data-i18n-title="ttDaily">🎁</button>
+      <button id="versus-btn" title="Đấu 1-1 (mở từ Lv.10)" data-i18n-title="ttVersus">⚔️</button>
       <button id="leaderboard-btn" title="Bảng xếp hạng" data-i18n-title="ttLeaderboard">🏆</button>
       <button id="roundguide-btn" title="Hướng dẫn cơ chế vòng hiện tại" data-i18n-title="ttRoundGuide" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">📖</button>
       <button id="adventure-toggle-btn" title="Chế độ Adventure" data-i18n-title="ttAdventure">🚀 ADV</button>
@@ -173,6 +174,35 @@
       <div id="leaderboard-my-rank" class="lb-my-rank"></div>
     </div>
   </div>
+
+  <div id="versus-setup-panel" class="admin-panel-like">
+    <div class="admin-card">
+      <div class="admin-title"><span data-i18n="vsTitle">⚔️ Đấu 1-1</span><button class="admin-close" id="vs-cancel-btn">✕</button></div>
+      <div class="admin-sub" data-i18n="vsSub">Hai người chơi thi đấu trên máy này — cùng bộ khối, 90 giây mỗi lượt, điểm cao hơn thắng.</div>
+      <div class="auth-field"><label data-i18n="vsP1">Người chơi 1</label><input type="text" id="vs-name1" maxlength="16"></div>
+      <div class="auth-field"><label data-i18n="vsP2">Người chơi 2</label><input type="text" id="vs-name2" maxlength="16"></div>
+      <button id="vs-start-btn" class="auth-submit-btn" data-i18n="vsStart">⚔️ BẮT ĐẦU TRẬN ĐẤU</button>
+    </div>
+  </div>
+
+  <div id="versus-handoff-panel" class="admin-panel-like">
+    <div class="admin-card" style="text-align:center;">
+      <div class="admin-title"><span id="vs-handoff-title">⚔️</span></div>
+      <div class="admin-sub" id="vs-handoff-desc"></div>
+      <button id="vs-ready-btn" class="auth-submit-btn" data-i18n="vsReady">▶ SẴN SÀNG!</button>
+    </div>
+  </div>
+
+  <div id="versus-result-panel" class="admin-panel-like">
+    <div class="admin-card">
+      <div class="admin-title"><span id="vs-result-title">🏆</span></div>
+      <div id="vs-result-body"></div>
+      <button id="vs-again-btn" class="auth-submit-btn" data-i18n="vsAgain" style="margin-top:12px;">🔁 Đấu lại</button>
+      <button id="vs-close-btn" class="auth-submit-btn" data-i18n="vsClose" style="background:rgba(255,255,255,0.12);margin-top:8px;">✕ Đóng</button>
+    </div>
+  </div>
+
+  <div id="versus-timer" style="display:none;position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:9000;background:rgba(20,20,40,0.92);border:1px solid #ffd54a;border-radius:20px;padding:6px 16px;font-weight:800;color:#ffd54a;font-size:14px;box-shadow:0 2px 12px rgba(255,213,74,0.35);pointer-events:none;"></div>
 
   <div id="hiddenmap-menu-panel" class="admin-panel-like">
     <div class="admin-card">
@@ -381,5 +411,6 @@
 <script src="js/main.js"></script>
 <script src="js/map-manager.js"></script>
 <script src="js/native.js"></script>
+<script src="js/versus.js"></script>
 </body>
 </html>
