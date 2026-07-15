@@ -48,6 +48,8 @@ function enterDodgeMode(){
   // dọn UI map ẩn 1
   const sg=document.getElementById('secret-grid');
   sg.classList.remove('active'); sg.innerHTML=''; secretCells=null;
+  document.getElementById('secret-stage')?.classList.remove('active');
+  document.getElementById('grid-wrap').classList.remove('theme-garden');
   document.getElementById('timer-bar-wrap').classList.remove('active');
   document.getElementById('secret-streak-bar').classList.remove('active');
   document.getElementById('grid-wrap').classList.remove('ultra-glow');

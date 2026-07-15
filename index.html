@@ -223,8 +223,19 @@
     <!-- MODE A: Normal grid -->
     <div id="grid"></div>
 
-    <!-- MODE B: Secret color-match grid -->
-    <div id="secret-grid"></div>
+    <!-- MODE B: Secret color-match — sân vườn (cùng phong cách Map 4) -->
+    <div id="secret-stage" class="secret-stage">
+      <div class="secret-sky" aria-hidden="true"></div>
+      <div class="secret-hills" aria-hidden="true"></div>
+      <div class="secret-fence" aria-hidden="true"></div>
+      <div class="secret-flowers" aria-hidden="true"></div>
+      <div class="secret-butterflies" aria-hidden="true">
+        <span class="sfly sfly-1">🦋</span>
+        <span class="sfly sfly-2">🦋</span>
+        <span class="sfly sfly-3">🐝</span>
+      </div>
+      <div id="secret-grid"></div>
+    </div>
 
     <!-- MODE C: Map ẩn 2 — rùa né cà rốt -->
     <canvas id="dodge-canvas" width="720" height="920"></canvas>
