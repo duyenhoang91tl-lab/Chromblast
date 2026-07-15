@@ -87,36 +87,153 @@ function mainBurstFX(cells, streak){
   twinkles.forEach(t=>setTimeout(()=>t.remove(),740));
 }
 
-function secretBurstFX(ci, big){
+function secretBurstFX(ci, big, streak){
   const grid=document.getElementById('secret-grid');
   if(grid){
     // bàn cờ sáng lên một nhịp (restart animation)
     grid.classList.remove('board-flash'); void grid.offsetWidth; grid.classList.add('board-flash');
   }
-  spawnBorderFireworks(ci, big);
+  const st = streak|| (typeof secretStreak==='number' ? secretStreak : 1);
+  spawnBorderFireworks(ci, big || st>=3, st);
+  if(st >= 2) spawnCenterFireworkBlast(st, ci);
 }
 
-function spawnBorderFireworks(ci, big){
+/** Điểm trên chu vi khung (t = 0..1), kèm góc bắn ra ngoài */
+function perimeterPoint(W, H, t){
+  const peri = 2*(W+H);
+  let d = ((t%1)+1)%1 * peri;
+  if(d < W) return { x:d, y:0, ang:-90 };
+  d -= W;
+  if(d < H) return { x:W, y:d, ang:0 };
+  d -= H;
+  if(d < W) return { x:W-d, y:H, ang:90 };
+  d -= W;
+  return { x:0, y:H-d, ang:180 };
+}
+
+let _sparklerT = 0;
+/** Pháo hoa đốt chạy quanh viền (kiểu sparkler / ngòi cháy) */
+function spawnSparklerBorder(){
+  const wrap=document.getElementById('grid-wrap');
+  const cbDiv=document.getElementById('combo-border-sparks');
+  if(!wrap||!cbDiv||!secretMode) return;
+  const W=wrap.clientWidth, H=wrap.clientHeight;
+  if(W<8||H<8) return;
+  cbDiv.classList.add('active');
+  const ultra = secretUltra || secretStreak>=4;
+  const speed = ultra ? 0.035 : 0.022;
+  _sparklerT = (_sparklerT + speed) % 1;
+  const heads = ultra ? 2 : 1;
+  const cols = ultra
+    ? ['#ffffff','#fffde0','#ffd700','#ffe566','#ff9900','#ffec5c']
+    : ['#fff8c8','#ffd700','#ffec5c','#ffffff','#ffb000'];
+  const frag=document.createDocumentFragment();
+  const doomed=[];
+  for(let h=0;h<heads;h++){
+    const baseT = (_sparklerT + h*0.5) % 1;
+    const nTrail = ultra ? 5 : 3;
+    for(let k=0;k<nTrail;k++){
+      const pt = perimeterPoint(W, H, baseT - k*0.012);
+      const ang = pt.ang + (Math.random()*70-35);
+      const dist = (ultra?22:14) + Math.random()*(ultra?48:32);
+      const len = (ultra?5:3) + Math.random()*7;
+      const dur = 140 + Math.random()*180;
+      const s=document.createElement('div');
+      s.className='cb-spark sparkler-spark';
+      s.style.left=pt.x+'px'; s.style.top=pt.y+'px';
+      s.style.setProperty('--ang', ang+'deg');
+      s.style.setProperty('--dist', dist+'px');
+      s.style.setProperty('--len', len+'px');
+      s.style.setProperty('--col', cols[(Math.random()*cols.length)|0]);
+      s.style.setProperty('--dur', dur+'ms');
+      frag.appendChild(s);
+      doomed.push([s, dur]);
+    }
+    // đốm đầu ngòi cháy
+    const head=perimeterPoint(W,H,baseT);
+    const tip=document.createElement('div');
+    tip.className='sparkler-head';
+    tip.style.left=head.x+'px'; tip.style.top=head.y+'px';
+    frag.appendChild(tip);
+    doomed.push([tip, 160]);
+  }
+  cbDiv.appendChild(frag);
+  doomed.forEach(([el,dur])=>setTimeout(()=>{
+    el.remove();
+    if(!cbDiv.children.length) cbDiv.classList.remove('active');
+  }, dur+40));
+}
+
+/** Pháo nổ tâm bàn — to dần theo combo liên tiếp (kiểu BLAST!) */
+function spawnCenterFireworkBlast(streak, ci){
   const fx=document.getElementById('sc-fx');
   const wrap=document.getElementById('grid-wrap');
   if(!fx||!wrap) return;
   fx.classList.add('active');
   const W=wrap.clientWidth, H=wrap.clientHeight;
+  const cx=W/2, cy=H*0.48;
+  const st=Math.max(1, streak|0);
+  const base=(ci!=null && SECRET_COLORS[ci]) ? SECRET_COLORS[ci] : '#ffd24a';
+  const palette=[base, '#ff4d4d', '#378ADD', '#ff9900', '#ffffff', '#ffd700', '#ff66cc', '#00e5ff'];
+  const rings = st>=6 ? 3 : (st>=3 ? 2 : 1);
+  const perRing = Math.min(18 + st*4, 48);
+  const frag=document.createDocumentFragment();
+  const doomed=[];
+  for(let ring=0; ring<rings; ring++){
+    for(let i=0;i<perRing;i++){
+      const ang = (360/perRing)*i + ring*8 + (Math.random()*10-5);
+      const dist = (55 + st*10 + ring*28) + Math.random()*(40+st*6);
+      const len = 16 + st*2 + Math.random()*22;
+      const dur = 520 + Math.random()*380 + ring*80;
+      const col = palette[(Math.random()*palette.length)|0];
+      const s=document.createElement('div');
+      s.className='spark blast-spark';
+      s.style.left=cx+'px'; s.style.top=cy+'px';
+      s.style.setProperty('--ang', ang+'deg');
+      s.style.setProperty('--dist', dist+'px');
+      s.style.setProperty('--len', len+'px');
+      s.style.setProperty('--col', col);
+      s.style.animationDuration=dur+'ms';
+      frag.appendChild(s);
+      doomed.push([s,dur]);
+    }
+  }
+  // lõi sáng + vài đốm twinkle
+  const core=document.createElement('div');
+  core.className='blast-core';
+  core.style.left=cx+'px'; core.style.top=cy+'px';
+  frag.appendChild(core);
+  doomed.push([core, 700]);
+  fx.appendChild(frag);
+  doomed.forEach(([el,dur])=>setTimeout(()=>{
+    el.remove();
+    if(!fx.children.length) fx.classList.remove('active');
+  }, dur+80));
+}
+
+function spawnBorderFireworks(ci, big, streak){
+  const fx=document.getElementById('sc-fx');
+  const wrap=document.getElementById('grid-wrap');
+  if(!fx||!wrap) return;
+  fx.classList.add('active');
+  const W=wrap.clientWidth, H=wrap.clientHeight;
+  const st = streak||1;
   const base=(ci!=null && SECRET_COLORS[ci]) ? SECRET_COLORS[ci] : '#ffd24a';
   const palette=[base, base, '#ffd24a', '#ff7a3c', '#ffffff', '#ffe9a8', '#a8f0ff', '#ff88dd'];
-  const N = big ? 40 : 22; // giảm còn một nửa để đỡ giật máy
+  const N = big ? Math.min(36 + st*6, 72) : Math.min(22 + st*2, 40);
+  const frag=document.createDocumentFragment();
+  const doomed=[];
   for(let i=0;i<N;i++){
     const side=i%4;
     const t=Math.random();
     let x,y,ang;
-    // angles now point OUTWARD from the border
-    if(side===0){ x=t*W; y=0;     ang=-90; }   // top → shoot upward
-    else if(side===1){ x=W; y=t*H; ang=0;   }   // right → shoot right
-    else if(side===2){ x=t*W; y=H; ang=90;  }   // bottom → shoot downward
-    else           { x=0;   y=t*H; ang=180; }   // left → shoot left
-    ang += Math.random()*50-25;                  // spread ±25°
-    const dist=(big?55:35)+Math.random()*(big?90:60);
-    const len =14+Math.random()*28;
+    if(side===0){ x=t*W; y=0;     ang=-90; }
+    else if(side===1){ x=W; y=t*H; ang=0;   }
+    else if(side===2){ x=t*W; y=H; ang=90;  }
+    else           { x=0;   y=t*H; ang=180; }
+    ang += Math.random()*50-25;
+    const dist=(big?60:35)+Math.random()*(big?100:60)+st*3;
+    const len =14+Math.random()*28+st;
     const dur =400+Math.random()*350;
     const col =palette[(Math.random()*palette.length)|0];
     const s=document.createElement('div');
@@ -127,9 +244,14 @@ function spawnBorderFireworks(ci, big){
     s.style.setProperty('--len', len+'px');
     s.style.setProperty('--col', col);
     s.style.animationDuration=dur+'ms';
-    fx.appendChild(s);
-    setTimeout(()=>s.remove(), dur+60);
+    frag.appendChild(s);
+    doomed.push([s,dur]);
   }
+  fx.appendChild(frag);
+  doomed.forEach(([s,dur])=>setTimeout(()=>{
+    s.remove();
+    if(!fx.children.length) fx.classList.remove('active');
+  }, dur+60));
 }
 
 function spawnContinuousBorderSparks(){
@@ -223,13 +345,22 @@ function updateFireBorder(){
     if(!wasHigh){
       wrap.classList.remove('fire-low'); wrap.classList.add('fire-high');
       if(fireInterval){ clearInterval(fireInterval); fireInterval=null; }
-      fireInterval = setInterval(()=>{ if(secretMode) spawnFireBorder(true); }, 130);
+      // Pháo hoa đốt chạy quanh viền + hạt lửa phụ
+      fireInterval = setInterval(()=>{
+        if(!secretMode) return;
+        spawnSparklerBorder();
+        spawnFireBorder(true);
+      }, 55);
     }
   } else if(secretStreak >= 1){
     if(!wasLow){
       wrap.classList.remove('fire-high'); wrap.classList.add('fire-low');
       if(fireInterval){ clearInterval(fireInterval); fireInterval=null; }
-      fireInterval = setInterval(()=>{ if(secretMode) spawnFireBorder(false); }, 220);
+      fireInterval = setInterval(()=>{
+        if(!secretMode) return;
+        spawnSparklerBorder();
+        if(Math.random()<0.45) spawnFireBorder(false);
+      }, 70);
     }
   } else {
     wrap.classList.remove('fire-low','fire-high');
@@ -926,6 +1057,11 @@ function showPraise(level){
   }
 
   el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+
+  // Map ẩn 1: kèm pháo nổ tâm to khi khen combo
+  if(typeof secretMode!=='undefined' && secretMode && typeof spawnCenterFireworkBlast==='function'){
+    spawnCenterFireworkBlast(Math.max(3, (typeof secretStreak==='number'?secretStreak:level)), null);
+  }
 
   // Screen shake at LEGENDARY(7) and GODLIKE(8)
   if(i>=7){

@@ -374,7 +374,13 @@ function updateScoreUI(){
   }
   document.getElementById('best-box').textContent=t('bestLabel', Math.round(best).toLocaleString());
   document.getElementById('lines-cleared').textContent='Hàng xóa: '+linesCleared;
-  document.getElementById('level-box').textContent=t('levelLabel', level);
+  if(secretMode && document.getElementById('game-root')?.classList.contains('hud-arcade')){
+    const lb=document.getElementById('level-box');
+    if(lb) lb.textContent=String(typeof playerLevel==='number'?playerLevel:level);
+    if(typeof refreshArcadeHud==='function') refreshArcadeHud();
+  } else {
+    document.getElementById('level-box').textContent=t('levelLabel', level);
+  }
   // mỗi điểm ghi thêm = 1 XP người chơi (điểm giảm/reset không trừ XP)
   if(score>_xpLastScore) addPlayerXP(score-_xpLastScore);
   _xpLastScore=score;
@@ -692,6 +698,11 @@ function hardResetAllModes(){
   secretCells=null;
   document.getElementById('secret-stage')?.classList.remove('active');
   document.getElementById('grid-wrap')?.classList.remove('theme-garden');
+  document.getElementById('game-root')?.classList.remove('hud-arcade');
+  const _acc=document.getElementById('account-btn');
+  if(_acc && _acc.dataset.prevEmoji){ _acc.textContent=_acc.dataset.prevEmoji; delete _acc.dataset.prevEmoji; }
+  const _targets=document.getElementById('header-targets'); if(_targets) _targets.innerHTML='';
+  const _lcap=document.getElementById('level-cap'); if(_lcap) _lcap.style.display='none';
 
   // Trả UI chính về trạng thái mặc định
   const grid=document.getElementById('grid');             if(grid)   grid.style.display='';

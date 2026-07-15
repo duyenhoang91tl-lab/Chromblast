@@ -101,6 +101,13 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   font-size: 10px; font-weight: 800; color: #aab0c4;
   letter-spacing: 1.6px; text-transform: uppercase;
 }
+#level-cap {
+  display: none;
+  font-size: 9px; font-weight: 800; letter-spacing: 1.4px;
+  color: #ffe08a; text-transform: uppercase;
+}
+#level-badge { display: inline-block; }
+#header-targets { display: none; }
 #best-box { font-size: 11px; font-weight: 800; color: #8e94ad; margin-top: 3px; letter-spacing: 0.2px; }
 #combo-box {
   font-size: 14px; color: #FFC14A; font-weight: 900; min-height: 20px;
@@ -618,15 +625,61 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
   100% { opacity: 0;   transform: scaleX(0.2) scaleY(0.5) translateY(var(--fdy)) translateX(calc(var(--fdx,0px)*1.5)) rotate(calc(var(--frot,0deg)*2.5)); filter: blur(3px) brightness(1); }
 }
 #grid-wrap.fire-low {
-  box-shadow: 0 0 0 3px #ff6600, 0 0 15px rgba(255,100,0,0.7), 0 0 35px rgba(255,50,0,0.4) !important;
+  box-shadow:
+    0 0 0 3px #ffe566,
+    0 0 0 6px rgba(255,200,40,0.55),
+    0 0 22px rgba(255,180,0,0.65),
+    0 0 48px rgba(255,120,0,0.35) !important;
+  animation: sparklerFrameLow 0.9s ease-in-out infinite alternate !important;
 }
 #grid-wrap.fire-high {
-  box-shadow: 0 0 0 5px #fff0a0, 0 0 25px rgba(255,220,0,1), 0 0 60px rgba(255,140,0,0.7), 0 0 100px rgba(255,60,0,0.4) !important;
-  animation: fireHighPulse 0.3s ease-in-out infinite !important;
+  box-shadow:
+    0 0 0 4px #fff6a8,
+    0 0 0 8px rgba(255,220,80,0.75),
+    0 0 28px rgba(255,210,0,0.95),
+    0 0 70px rgba(255,140,0,0.55),
+    0 0 110px rgba(255,60,0,0.3) !important;
+  animation: fireHighPulse 0.35s ease-in-out infinite !important;
+}
+@keyframes sparklerFrameLow {
+  from { box-shadow: 0 0 0 3px #ffd24a, 0 0 0 5px rgba(255,200,40,0.4), 0 0 18px rgba(255,160,0,0.5); }
+  to   { box-shadow: 0 0 0 4px #fff3b0, 0 0 0 7px rgba(255,220,80,0.7), 0 0 32px rgba(255,180,0,0.75); }
 }
 @keyframes fireHighPulse {
   0%,100% { box-shadow: 0 0 0 4px #ffdd00, 0 0 22px rgba(255,200,0,0.9), 0 0 55px rgba(255,120,0,0.6), 0 0 100px rgba(255,50,0,0.3); }
   50%     { box-shadow: 0 0 0 7px #ffffff, 0 0 40px rgba(255,240,100,1),  0 0 85px rgba(255,180,0,0.8), 0 0 150px rgba(255,80,0,0.45); }
+}
+
+.sparkler-spark {
+  height: 2.5px !important;
+  filter: blur(0.3px) brightness(2.2) drop-shadow(0 0 3px var(--col,#ffd700)) !important;
+}
+.sparkler-head {
+  position: absolute; width: 10px; height: 10px; margin: -5px 0 0 -5px;
+  border-radius: 50%; pointer-events: none; z-index: 24;
+  background: radial-gradient(circle, #fff 0%, #ffe566 40%, rgba(255,140,0,0) 72%);
+  box-shadow: 0 0 10px 3px rgba(255,220,80,0.95), 0 0 18px 6px rgba(255,140,0,0.55);
+  animation: sparklerHeadPulse 0.14s ease-out forwards;
+}
+@keyframes sparklerHeadPulse {
+  0% { opacity: 1; transform: scale(1.15); }
+  100% { opacity: 0.35; transform: scale(0.55); }
+}
+.blast-spark {
+  height: 5px !important;
+  filter: drop-shadow(0 0 6px var(--col,#ffd24a)) drop-shadow(0 0 2px #fff) !important;
+}
+.blast-core {
+  position: absolute; width: 28px; height: 28px; margin: -14px 0 0 -14px;
+  border-radius: 50%; pointer-events: none; z-index: 25;
+  background: radial-gradient(circle, #fff 0%, #ffe08a 35%, rgba(255,100,40,0.5) 60%, transparent 75%);
+  box-shadow: 0 0 24px 8px rgba(255,200,60,0.75), 0 0 48px 16px rgba(255,80,40,0.35);
+  animation: blastCore 0.65s ease-out forwards;
+}
+@keyframes blastCore {
+  0%   { opacity: 1; transform: scale(0.4); }
+  35%  { opacity: 1; transform: scale(1.35); }
+  100% { opacity: 0; transform: scale(2.2); }
 }
 
 /* ── MAIN GRID — nền hơi tối để gạch màu nổi ── */
@@ -1846,4 +1899,121 @@ body:has(#secret-stage.active) .streak-dot.lit{
     filter: none !important;
   }
   body.is-dragging .cell.filled { filter: none !important; }
+}
+
+/* ════════════════════════════════════════════════════════
+   HUD ARCADE — Map ẩn 1 (SCORE / LEVEL badge / TARGETS / pause)
+   theo minh họa pháo hoa viền vàng
+════════════════════════════════════════════════════════ */
+#game-root.hud-arcade #header {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  align-items: center;
+  gap: 8px 10px;
+  background:
+    linear-gradient(180deg, rgba(160,70,200,0.55) 0%, rgba(90,30,140,0.72) 100%);
+  border: 2.5px solid #ffd54a;
+  border-radius: 18px;
+  padding: 8px 12px 8px 14px;
+  margin-bottom: 12px;
+  box-shadow:
+    0 0 0 1px rgba(255,240,160,0.35),
+    0 0 16px rgba(255,200,60,0.45),
+    inset 0 1px 0 rgba(255,255,255,0.25);
+}
+#game-root.hud-arcade #header-score { min-width: 0; }
+#game-root.hud-arcade #score-label {
+  color: #ffe08a; font-size: 11px; letter-spacing: 2px;
+  text-shadow: 0 0 8px rgba(255,200,60,0.5);
+}
+#game-root.hud-arcade #score-box {
+  font-size: clamp(22px, 6vw, 30px); font-weight: 900;
+  color: #ffd700;
+  text-shadow:
+    0 0 10px rgba(255,210,60,0.85),
+    0 2px 0 rgba(100,50,0,0.55),
+    0 3px 10px rgba(0,0,0,0.45);
+}
+#game-root.hud-arcade #best-box,
+#game-root.hud-arcade #combo-box,
+#game-root.hud-arcade #player-level-box,
+#game-root.hud-arcade #mode-badge,
+#game-root.hud-arcade #header-brand,
+#game-root.hud-arcade #adventure-avatar {
+  display: none !important;
+}
+#game-root.hud-arcade #header-center {
+  justify-self: center;
+}
+#game-root.hud-arcade #level-badge {
+  width: 64px; min-height: 70px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background:
+    radial-gradient(circle at 50% 28%, rgba(255,255,255,0.35) 0%, transparent 45%),
+    linear-gradient(165deg, #ffe08a 0%, #f0b429 42%, #c47a10 100%);
+  border: 2px solid #fff3b0;
+  border-radius: 14px 14px 18px 18px;
+  clip-path: polygon(8% 0, 92% 0, 100% 18%, 92% 100%, 8% 100%, 0 18%);
+  box-shadow:
+    0 0 12px rgba(255,200,60,0.75),
+    inset 0 2px 0 rgba(255,255,255,0.45),
+    0 4px 10px rgba(0,0,0,0.35);
+  padding: 6px 4px 10px;
+}
+#game-root.hud-arcade #level-cap {
+  display: block !important;
+  color: #6a3a00; font-size: 8px; letter-spacing: 1.6px;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.35);
+}
+#game-root.hud-arcade #level-box {
+  font-size: 26px; font-weight: 900; color: #3a1a00; line-height: 1;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.4);
+  letter-spacing: -0.5px;
+}
+#game-root.hud-arcade #header-right {
+  display: block !important;
+  text-align: right;
+  max-width: 120px;
+}
+#game-root.hud-arcade #header-targets {
+  display: block !important;
+}
+#game-root.hud-arcade .arcade-targets-label {
+  display: block; font-size: 9px; font-weight: 800; letter-spacing: 1.4px;
+  color: #ffe08a; text-transform: uppercase;
+}
+#game-root.hud-arcade .arcade-targets-val {
+  display: block; font-size: 11px; font-weight: 800; color: #fff;
+  line-height: 1.25; margin-top: 2px;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+}
+#game-root.hud-arcade #game-controls {
+  gap: 8px;
+}
+#game-root.hud-arcade #game-controls > button:not(#pause-btn):not(#account-btn):not(#mute-btn) {
+  display: none !important;
+}
+#game-root.hud-arcade #pause-btn,
+#game-root.hud-arcade #account-btn,
+#game-root.hud-arcade #mute-btn {
+  width: 36px; height: 36px; border-radius: 50% !important;
+  background: radial-gradient(circle at 35% 30%, #7ec8ff 0%, #2f6fd6 55%, #1a4a9e 100%) !important;
+  border: 2px solid #b8e0ff !important;
+  box-shadow: 0 0 10px rgba(80,160,255,0.65), inset 0 1px 0 rgba(255,255,255,0.45);
+  font-size: 15px !important;
+}
+#game-root.hud-arcade #combo-flash {
+  font-size: clamp(30px, 9vw, 42px);
+  -webkit-text-stroke: 1.2px #7a3a00;
+  color: #ffd24a !important;
+}
+/* Tim đã hiện trong TARGETS — ẩn hàng tim trùng */
+#game-root.hud-arcade #secret-hearts { display: none !important; }
+@media (max-width: 380px) {
+  #game-root.hud-arcade #header {
+    grid-template-columns: 1fr auto auto;
+    row-gap: 6px;
+  }
+  #game-root.hud-arcade #header-right { display: none !important; }
+  #game-root.hud-arcade #game-controls { grid-column: 3; }
 }
