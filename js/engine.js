@@ -708,6 +708,8 @@ function checkGameOverA(){
     document.getElementById('go-score').textContent=t('finalScore', score.toLocaleString());
     document.getElementById('game-over-overlay').classList.add('show');
     if(typeof submitScoreToLeaderboard==='function') submitScoreToLeaderboard(score);
+   window._adGameOverCount = (window._adGameOverCount||0) + 1;
+       if(typeof showInterstitialAd==='function' && window._adGameOverCount % 2 === 0) showInterstitialAd();
     return true; // đã báo thua
   }
   return false;

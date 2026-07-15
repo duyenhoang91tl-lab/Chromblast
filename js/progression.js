@@ -45,6 +45,8 @@ let unlockGateBaseline = 0;     // mốc điểm map thường lúc bắt đầu
 let unlockGateActive = true;    // đang tích điểm map thường để mở map ẩn tiếp theo?
 function triggerStageUnlock(stageKey){
   // Dispatch qua MapManager (đã thay chuỗi switch cũ).
+  window._adStageCount = (window._adStageCount||0) + 1;
+  if(typeof showInterstitialAd==='function' && window._adStageCount % 2 === 0) showInterstitialAd();
   return triggerMapUnlock(stageKey);
 }
 // Gọi khi vừa THẮNG map ẩn ở vị trí clearedIdx (0-based) trong UNLOCK_STAGE_ORDER —
