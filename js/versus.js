@@ -99,10 +99,22 @@ function _vsNewPlayer(idx,seed){
     rocks:new Set(), ice:new Set(), fogUntil:0, done:false, el:{} };
 }
 
+// Nút trợ giúp ❓ nổi (z-index cao hơn đấu trường) đè lên điểm người chơi trên
+// thanh HUD chung → ẩn đi trong suốt trận đấu, trả lại khi trận kết thúc.
+function _vsToggleGlobalUI(hide){
+  ['help-btn','hiddenmap-help-btn'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    if(hide){ el.dataset.vsHidden=el.style.display||''; el.style.display='none'; }
+    else if('vsHidden' in el.dataset){ el.style.display=el.dataset.vsHidden; delete el.dataset.vsHidden; }
+  });
+}
+
 // ── Dựng giao diện 2 nửa màn ──
 function _vsBuildArena(){
   let arena=document.getElementById('versus-arena');
   if(arena) arena.remove();
+  _vsToggleGlobalUI(true);
   arena=document.createElement('div'); arena.id='versus-arena';
   
   // TẠO THANH GIAO DIỆN CHUNG BÊN TRÊN CÙNG
@@ -112,7 +124,7 @@ function _vsBuildArena(){
       '<div style="display: flex; align-items: center; gap: 20px;">'+
         '<div style="font-weight: bold; font-size: 16px; color: #4da6ff;">'+escapeHtml(_vs.names[0])+': <span id="vs-global-score0">0</span> <span id="vs-global-combo0" style="color:#ffcc00"></span></div>'+
         '<div id="vs-mid-timer" style="font-size: 22px; font-weight: bold; color: #ffd700;">'+VERSUS_TIME+'</div>'+
-        '<button id="vs-quit-btn" style="background: #ff4444; border: none; color: white; border-radius: 4px; padding: 4px 10px; font-weight: bold; cursor: pointer;">✕</button>'+
+        '<button id="vs-quit-btn" style="position: static; transform: none; width: auto; height: auto; background: #ff4444; border: none; color: white; border-radius: 4px; padding: 4px 10px; font-weight: bold; cursor: pointer;">✕</button>'+
       '</div>'+
     '</div>'+
     '<div id="vs-countdown"></div>';
@@ -157,6 +169,7 @@ function _vsBuildArena(){
 function _vsAbort(){
   if(_vs && _vs.timer) clearInterval(_vs.timer);
   const a=document.getElementById('versus-arena'); if(a) a.remove();
+  _vsToggleGlobalUI(false);
   versusMode=false; _vs=null;
   try{ startBgm('main'); }catch(e){}
 }
@@ -490,6 +503,7 @@ function _vsEndMatch(){
   if(_vs.timer){ clearInterval(_vs.timer); _vs.timer=null; }
   versusMode=false;
   const a=document.getElementById('versus-arena'); if(a) a.remove();
+  _vsToggleGlobalUI(false);
   try{ startBgm('main'); }catch(e){}
   const [P0,P1]=_vs.players, [n1,n2]=_vs.names;
   const s1=P0.score, s2=P1.score;
