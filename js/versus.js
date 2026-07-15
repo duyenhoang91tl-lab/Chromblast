@@ -259,18 +259,38 @@ function _vsShowPreview(P,R,C){
     d.style.background=pc.color;
   });
 }
+// Ô chạm là TÂM của khối (không phải góc trên-trái như trước): căn giữa khung bao của
+// khối vào ô dưới con trỏ rồi GHIM vào trong biên bàn — y hệt originFromPointer của map
+// thường. Nhờ vậy đặt được vào bất cứ chỗ nào miễn khít (kể cả sát mép dưới/phải), không
+// còn cảnh "còn ô trống mà không đặt được" vì bắt buộc chạm đúng ô cao nhất của khối.
+function _vsOriginFromHit(P,hitR,hitC){
+  if(P.selected<0) return null;
+  const pc=P.pieces[P.selected];
+  if(!pc||pc.used) return null;
+  const maxR=Math.max(...pc.shape.map(s=>s[0])), maxC=Math.max(...pc.shape.map(s=>s[1]));
+  let R=hitR-(maxR>>1), C=hitC-(maxC>>1);
+  R=Math.max(0,Math.min(VS_N-1-maxR,R));
+  C=Math.max(0,Math.min(VS_N-1-maxC,C));
+  return {R,C};
+}
 function _vsDragStart(P,ev,r,c){
   if(!versusMode||P.done||P.selected<0) return;
   if(P.el.cards.classList.contains('show')) return;
   _vsDrags.set(ev.pointerId!==undefined?ev.pointerId:-1, {P, R:r, C:c});
-  _vsShowPreview(P,r,c);
+  const o=_vsOriginFromHit(P,r,c);
+  if(o) _vsShowPreview(P,o.R,o.C);
 }
 document.addEventListener('pointermove',ev=>{
   if(!versusMode) return;
   const dr=_vsDrags.get(ev.pointerId!==undefined?ev.pointerId:-1);
   if(!dr) return;
   const hit=_vsCellAt(dr.P,ev.clientX,ev.clientY);
-  if(hit && (hit.r!==dr.R||hit.c!==dr.C)){ dr.R=hit.r; dr.C=hit.c; _vsShowPreview(dr.P,hit.r,hit.c); }
+  if(!hit){ _vsClearPreview(dr.P); dr.R=-1; dr.C=-1; return; } // rời khỏi bàn → tắt ô mờ
+  if(hit.r!==dr.R||hit.c!==dr.C){
+    dr.R=hit.r; dr.C=hit.c;
+    const o=_vsOriginFromHit(dr.P,hit.r,hit.c);
+    if(o) _vsShowPreview(dr.P,o.R,o.C);
+  }
 });
 function _vsDragEnd(ev){
   const id=ev.pointerId!==undefined?ev.pointerId:-1;
@@ -280,7 +300,10 @@ function _vsDragEnd(ev){
   if(!versusMode) return;
   _vsClearPreview(dr.P);
   const hit=_vsCellAt(dr.P,ev.clientX,ev.clientY);
-  if(hit) _vsCellTap(dr.P,hit.r,hit.c); // thả trên lưới → đặt; thả ngoài lưới → giữ nguyên khối đang chọn
+  if(hit){ // thả trên lưới → đặt tại vị trí ô mờ; thả ngoài lưới → giữ nguyên khối đang chọn
+    const o=_vsOriginFromHit(dr.P,hit.r,hit.c);
+    if(o) _vsCellTap(dr.P,o.R,o.C);
+  }
 }
 document.addEventListener('pointerup',_vsDragEnd);
 document.addEventListener('pointercancel',ev=>{
