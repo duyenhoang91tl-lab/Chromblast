@@ -98,8 +98,9 @@ function applyLevelDifficulty(){
     lb.style.transform = 'scale(1.3)';
     setTimeout(()=>{ lb.style.color=''; lb.style.textShadow=''; lb.style.transform=''; }, 800);
   }
-  if(level === 5)  unlockAchievement('level5');
-  if(level === 10) unlockAchievement('level10');
+  if(level >= 15 || level >= 25 || level >= 40){
+    try{ if(typeof checkRunCups==='function') checkRunCups(); }catch(e){}
+  }
 }
 
 let awaitingSecretUnlock=true;  // mở map ẩn 1 khi đạt TEST_UNLOCK_SCORE điểm từ map thường
@@ -414,9 +415,9 @@ function updateComboUI(){
 ══════════════════════════════════════════ */
 function startGame(){
   startBgm('main');
-  // Reset achievements for new game session
-  Object.values(ACHIEVEMENTS).forEach(a=>{ a.done=false; });
-  fruitSlicedTotal=0; survive60Unlocked=false;
+  // Cup thử thách lưu bền — không reset mỗi ván
+  fruitSlicedTotal=0;
+  survive60Unlocked=false; survive120Unlocked=false; survive300Unlocked=false;
   score=0; linesCleared=0; level=1; combo=0; consecutiveBursts=0; _xpLastScore=0; lastMilestoneScore=0;
   hiddenMapEntryScore=0;
   secretStreak=0; secretMultiplier=1; secretUltra=false;

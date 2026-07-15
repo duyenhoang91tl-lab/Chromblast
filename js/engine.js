@@ -501,21 +501,20 @@ function processClears(){
   // Track consecutive bursts for unlock
   consecutiveBursts++;
   updateBurstCount();
-  unlockAchievement('first_burst'); // first burst ever
-
   combo++;
-  if(combo>=5) unlockAchievement('combo5');
+  try{ if(typeof checkRunCups==='function') checkRunCups(); }catch(e){}
   // Quy tắc: phá 1 ô = 1 điểm. Phá liên tiếp (combo) từ lần thứ 3 → x2 điểm, từ lần thứ 6 → x3 điểm.
   const scoreMult=comboScoreMultiplier(combo);
   const pts=totalKeys.size*scoreMult;
   sfxMatch(colorKeys.size); if(combo>1) sfxComboUp(combo, pIdx(consecutiveBursts));
   score+=pts; if(score>best) best=score;
-  if(score>=1000 && score-pts<1000) unlockAchievement('score1000');
-  if(score>=5000 && score-pts<5000) unlockAchievement('score5000');
+  try{ if(typeof checkRunCups==='function') checkRunCups(); }catch(e){}
+  try{ if(typeof checkPersistentCups==='function') checkPersistentCups(); }catch(e){}
   const clearedRows=new Set([...lineKeys].map(k=>k.split(',')[0]));
   linesCleared+=clearedRows.size;
   const prevLevel=level; level=Math.floor(linesCleared/5)+1;
   if(level>prevLevel) setTimeout(()=>applyLevelDifficulty(), 600);
+  try{ if(typeof checkRunCups==='function') checkRunCups(); }catch(e){}
   updateScoreUI(); updateComboUI();
   const _ctr=clearCentroid([...totalKeys].map(k=>k.split(',').map(Number)), getCell);
   showScorePop(totalKeys.size, pts, _ctr.x, _ctr.y, consecutiveBursts);

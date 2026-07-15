@@ -51,6 +51,7 @@ function claimDailyReward(){
   st.streak = status.streakDay;
   saveDailyState(st);
   if(typeof addPlayerXP === 'function') addPlayerXP(xp);
+  try{ if(typeof noteCupLoginClaim==='function') noteCupLoginClaim(); }catch(e){}
   return { day: status.streakDay, xp };
 }
 
