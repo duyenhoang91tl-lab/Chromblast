@@ -192,12 +192,14 @@ function _vsRenderGrid(P){
     const d=P.el.cells[r][c], k=r+','+c, v=P.board[r][c];
     d.className='vs-cell';
     d.textContent='';
+    d.style.background='';
+    d.style.removeProperty('--cc');
     if(P.rocks.has(k)){ d.classList.add('vs-rock'); d.textContent='⛰️'; }
     else if(v){
       d.classList.add('vs-filled');
-      d.style.background = fog ? '#5a5f6e' : v;
+      d.style.setProperty('--cc', fog ? '#5a5f6e' : v);
       if(P.ice.has(k)){ d.classList.add('vs-ice'); d.textContent='🧊'; }
-    } else d.style.background='';
+    }
   }
 }
 function _vsRenderTray(P){
@@ -218,8 +220,8 @@ function _vsRenderTray(P){
     for(let r=0;r<=maxR;r++)for(let c=0;c<=maxC;c++){
       const b=document.createElement('div');
       if(cells.some(([rr,cc])=>rr===r&&cc===c)){ 
-         b.style.background=pc.color; 
-         b.style.borderRadius='2px'; 
+         b.className='vs-mini-candy';
+         b.style.setProperty('--cc',pc.color);
       }
       mini.appendChild(b);
     }
@@ -255,8 +257,8 @@ function _vsClearPreview(P){
   if(!P._prev) return;
   P._prev.forEach(([r,c])=>{
     const d=P.el.cells[r][c];
-    d.classList.remove('vs-prev');
-    if(!P.board[r][c]) d.style.background='';
+    d.classList.remove('vs-prev','vs-filled');
+    if(!P.board[r][c]){ d.style.background=''; d.style.removeProperty('--cc'); }
   });
   P._prev=null;
 }
@@ -269,8 +271,9 @@ function _vsShowPreview(P,R,C){
   P._prev=pc.shape.map(([dr,dc])=>[R+dr,C+dc]);
   P._prev.forEach(([r,c])=>{
     const d=P.el.cells[r][c];
-    d.classList.add('vs-prev');
-    d.style.background=pc.color;
+    d.classList.add('vs-prev','vs-filled');
+    d.style.setProperty('--cc',pc.color);
+    d.style.background='';
   });
 }
 // Ô chạm là TÂM của khối (không phải góc trên-trái như trước): căn giữa khung bao của

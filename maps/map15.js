@@ -156,21 +156,12 @@ function brickLoop(now){
 function drawBrick(ctx,W,H,pw,paddleY){
   // đêm Map 4 giàu chi tiết
   scenicNightFull(ctx,W,H,Date.now()*0.001);
-  // Bricks
+  // Bricks — kẹo bông mềm
   brickBricks.forEach(b=>{
     if(!b.alive) return;
-    const g=ctx.createLinearGradient(b.x,b.y,b.x,b.y+b.h);
-    g.addColorStop(0,b.color+'ff');
-    g.addColorStop(1,b.color+'99');
-    ctx.fillStyle=g;
-    ctx.beginPath();
-    ctx.roundRect(b.x+1,b.y+1,b.w-2,b.h-2,5);
-    ctx.fill();
-    ctx.strokeStyle='rgba(255,255,255,0.3)';
-    ctx.lineWidth=1;
-    ctx.stroke();
+    drawSoftCandyCell(ctx,b.x+1,b.y+1,b.w-2,b.h-2,b.color,{r:7,glowBlur:3});
     if(b.maxHp===2&&b.hp===2){
-      ctx.fillStyle='rgba(255,255,255,0.85)';
+      ctx.fillStyle='rgba(255,255,255,0.92)';
       ctx.font='bold 11px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
       ctx.fillText('2',b.x+b.w/2,b.y+b.h/2);
     }

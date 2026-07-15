@@ -155,27 +155,14 @@ function drawFlood(ctx,W,H){
   const gridH=rows*cellSize+(rows-1)*gap;
   const offX=(W-gridW)/2, offY=48;
 
-  // Draw grid
+  // Draw grid — ô kẹo bông mềm
   const regionSet=new Set(getFloodRegion().map(([r,c])=>r+','+c));
   for(let r=0;r<rows;r++){
     for(let c=0;c<cols;c++){
       const x=offX+c*(cellSize+gap), y=offY+r*(cellSize+gap);
       const ci=floodGrid[r][c];
       const isFlooded=regionSet.has(r+','+c);
-      ctx.fillStyle=FLOOD_COLORS[ci];
-      if(isFlooded){
-        ctx.shadowColor=FLOOD_COLORS[ci]; ctx.shadowBlur=6;
-      }
-      // ô màu kiểu kẹo bóng
-      roundRect(ctx,x,y,cellSize,cellSize,6);
-      ctx.fill();
-      ctx.shadowBlur=0;
-      ctx.fillStyle='rgba(255,255,255,0.35)';
-      roundRect(ctx,x+2,y+2,cellSize*0.45,cellSize*0.35,4); ctx.fill();
-      if(isFlooded){
-        ctx.fillStyle='rgba(255,255,255,0.2)';
-        roundRect(ctx,x,y,cellSize,cellSize,6); ctx.fill();
-      }
+      drawSoftCandyCell(ctx,x,y,cellSize,cellSize,FLOOD_COLORS[ci],{glow:isFlooded,glowBlur:isFlooded?8:3});
     }
   }
 

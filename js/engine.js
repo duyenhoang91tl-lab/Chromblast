@@ -138,7 +138,14 @@ function renderGrid(){
     // 👻 ô bị ma nhập hiển thị MÀU GIẢ — logic game vẫn dùng màu thật trong board
     let bg=board[r][c]||'';
     if(ghostCell&&ghostCell.r===r&&ghostCell.c===c&&bg) bg=ghostCell.disguise;
-    if(cell.style.background!==bg) cell.style.background=bg;
+    // Màu qua --cc để CSS vẽ kiểu kẹo bông (không ghi đè background shorthand)
+    const prev=cell.style.getPropertyValue('--cc');
+    if(bg){
+      if(prev!==bg){ cell.style.setProperty('--cc',bg); cell.style.background=''; }
+    } else if(prev || cell.style.background){
+      cell.style.removeProperty('--cc');
+      cell.style.background='';
+    }
   }
 }
 
@@ -213,10 +220,10 @@ function buildGhost(piece){
   piece.shape.forEach(([r,c])=>cells[r*(maxC+1)+c]=piece.color);
   cells.forEach(color=>{
     const d=document.createElement('div');
-    d.className='g-cell';
+    d.className='g-cell'+(color?' candy':'');
     d.style.width=g.cell+'px';
     d.style.height=g.cell+'px';
-    if(color){ d.style.background=color; }
+    if(color){ d.style.setProperty('--cc',color); }
     else { d.style.visibility='hidden'; }
     ghostEl.appendChild(d);
   });
@@ -235,7 +242,13 @@ function moveGhost(x,y){
 
 let previewedCells = []; // ô đang được tô preview — tránh phải quét lại toàn bộ DOM mỗi lần di chuột
 function clearPreview(){
-  for(const c of previewedCells){ c.classList.remove('preview-ok'); c.style.background=''; }
+  for(const c of previewedCells){
+    c.classList.remove('preview-ok');
+    if(!c.classList.contains('filled')){
+      c.style.removeProperty('--cc');
+      c.style.background='';
+    }
+  }
   previewedCells.length=0;
 }
 
@@ -249,7 +262,12 @@ function updatePreview(x,y){
   if(!o || !canPlace(piece,o.R,o.C)) return;
   piece.shape.forEach(([dr,dc])=>{
     const cell=getCell(o.R+dr,o.C+dc);
-    if(cell){ cell.classList.add('preview-ok'); cell.style.background=piece.color; previewedCells.push(cell); }
+    if(cell){
+      cell.classList.add('preview-ok');
+      cell.style.setProperty('--cc',piece.color);
+      cell.style.background='';
+      previewedCells.push(cell);
+    }
   });
 }
 
@@ -774,15 +792,15 @@ function renderPieces(){
     piece.shape.forEach(([r,c])=>cells[r*(maxC+1)+c]=piece.color);
     cells.forEach(color=>{
       const d=document.createElement('div');
-      d.className='p-cell';
+      d.className='p-cell'+(color?' candy':'');
       
       // --- CHỈNH SỬA TẠI ĐÂY: Ép tỷ lệ ô luôn luôn vuông 1:1 ---
       d.style.aspectRatio='1 / 1';
       d.style.width='100%';
       d.style.height='100%';
       
-      d.style.background=color||'#0f0f23';
-      d.style.border=color?'none':'1px solid #2a2a4a';
+      if(color){ d.style.setProperty('--cc',color); d.style.border='none'; }
+      else { d.style.background='#0f0f23'; d.style.border='1px solid #2a2a4a'; }
       g.appendChild(d);
     });
     slot.appendChild(g);
