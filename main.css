@@ -1273,11 +1273,11 @@ body:has(#secret-stage.active) .streak-dot.lit{
 .piece-slot:hover { border-color: rgba(255,255,255,0.15); }
 .piece-slot.used { opacity: 0.15; pointer-events: none; }
 .piece-slot.selected { border: 2px solid #378ADD; background: rgba(55,138,221,0.12); opacity: 0.45; }
-.p-cell { width: 14px; height: 14px; border-radius: 5px; }
+.p-cell { width: 14px; height: 14px; border-radius: 4px; }
 .p-cell.candy {
   --cc: #888;
   border: none !important;
-  border-radius: 6px;
+  border-radius: 4px;
   position: relative;
   overflow: hidden;
   background:
