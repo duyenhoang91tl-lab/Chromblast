@@ -2010,6 +2010,7 @@ body:has(#secret-stage.active) .streak-dot.lit{
   grid-template-columns: 1fr auto auto auto;
   align-items: center;
   gap: 8px 10px;
+  overflow: visible;
   background:
     linear-gradient(180deg, rgba(160,70,200,0.55) 0%, rgba(90,30,140,0.72) 100%);
   border: 2.5px solid #ffd54a;
@@ -2045,9 +2046,6 @@ body:has(#secret-stage.active) .streak-dot.lit{
 #game-root.hud-arcade #header-center {
   justify-self: start;
   margin-left: 18px; /* đẩy badge sang phải, tránh che ô điểm */
-  overflow: visible;
-}
-#game-root.hud-arcade #header {
   overflow: visible;
 }
 #game-root.hud-arcade #level-badge.level-crown,
