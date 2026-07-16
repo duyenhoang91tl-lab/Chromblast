@@ -106,7 +106,7 @@ function markMapCleared(key){
   clearedHiddenMaps.add(aliased);
   localStorage.setItem('chromablast_cleared_maps', JSON.stringify([...clearedHiddenMaps]));
   renderHiddenMapMenu();
-  try{ if(typeof onHiddenMapClearedForBrick==='function') onHiddenMapClearedForBrick(); }catch(e){}
+  try{ if(typeof onHiddenMapClearedForBrick==='function') onHiddenMapClearedForBrick(aliased); }catch(e){}
   try{ if(typeof onHiddenMapClearedForBoard==='function') onHiddenMapClearedForBoard(); }catch(e){}
 }
 
