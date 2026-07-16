@@ -2014,7 +2014,7 @@ body:has(#secret-stage.active) .streak-dot.lit{
     linear-gradient(180deg, rgba(160,70,200,0.55) 0%, rgba(90,30,140,0.72) 100%);
   border: 2.5px solid #ffd54a;
   border-radius: 18px;
-  padding: 8px 12px 8px 14px;
+  padding: 12px 12px 8px 14px; /* thêm chút top cho đỉnh vương miện */
   margin-bottom: 12px;
   box-shadow:
     0 0 0 1px rgba(255,240,160,0.35),
@@ -2043,30 +2043,97 @@ body:has(#secret-stage.active) .streak-dot.lit{
   display: none !important;
 }
 #game-root.hud-arcade #header-center {
-  justify-self: center;
+  justify-self: start;
+  margin-left: 18px; /* đẩy badge sang phải, tránh che ô điểm */
+  overflow: visible;
 }
+#game-root.hud-arcade #header {
+  overflow: visible;
+}
+#game-root.hud-arcade #level-badge.level-crown,
 #game-root.hud-arcade #level-badge {
-  width: 64px; min-height: 70px;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  position: relative;
+  width: 46px;
+  min-height: 0;
+  height: 50px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
   background:
-    radial-gradient(circle at 50% 28%, rgba(255,255,255,0.35) 0%, transparent 45%),
-    linear-gradient(165deg, #ffe08a 0%, #f0b429 42%, #c47a10 100%);
-  border: 2px solid #fff3b0;
-  border-radius: 14px 14px 18px 18px;
-  clip-path: polygon(8% 0, 92% 0, 100% 18%, 92% 100%, 8% 100%, 0 18%);
+    radial-gradient(circle at 50% 72%, rgba(255,255,255,0.28) 0%, transparent 42%),
+    linear-gradient(180deg, #ffe9a8 0%, #f0b429 48%, #c47a10 100%);
+  border: 1.5px solid #fff3b0;
+  border-radius: 5px 5px 9px 9px;
+  clip-path: none;
   box-shadow:
-    0 0 12px rgba(255,200,60,0.75),
-    inset 0 2px 0 rgba(255,255,255,0.45),
-    0 4px 10px rgba(0,0,0,0.35);
-  padding: 6px 4px 10px;
+    0 0 10px rgba(255,200,60,0.65),
+    inset 0 1px 0 rgba(255,255,255,0.5),
+    0 3px 8px rgba(0,0,0,0.35);
+  padding: 0 3px 5px;
+  overflow: visible;
+}
+/* Đỉnh vương miện — 3 nhọn + ngọc */
+#game-root.hud-arcade #level-badge .level-crown-top {
+  position: absolute;
+  left: 50%; top: -10px;
+  transform: translateX(-50%);
+  width: 46px; height: 18px;
+  pointer-events: none;
+}
+#game-root.hud-arcade #level-badge .peak {
+  position: absolute;
+  bottom: 0;
+  display: block;
+  width: 14px; height: 16px;
+}
+#game-root.hud-arcade #level-badge .peak-l { left: 0; }
+#game-root.hud-arcade #level-badge .peak-c { left: 50%; transform: translateX(-50%); width: 16px; height: 18px; z-index: 1; }
+#game-root.hud-arcade #level-badge .peak-r { right: 0; }
+#game-root.hud-arcade #level-badge .peak i {
+  position: absolute;
+  left: 50%; bottom: 0;
+  transform: translateX(-50%);
+  width: 0; height: 0;
+  border-style: solid;
+  border-width: 0 7px 14px 7px;
+  border-color: transparent transparent #f0b429 transparent;
+  filter: drop-shadow(0 0 2px rgba(255,210,80,0.65));
+}
+#game-root.hud-arcade #level-badge .peak-c i {
+  border-width: 0 8px 17px 8px;
+  border-color: transparent transparent #ffe9a8 transparent;
+}
+#game-root.hud-arcade #level-badge .peak::after {
+  content: '';
+  position: absolute;
+  left: 50%; top: -1px;
+  transform: translateX(-50%);
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #fff 0%, #ff6b9a 55%, #c2185b 100%);
+  box-shadow: 0 0 4px rgba(255,100,150,0.85);
+  z-index: 2;
+}
+#game-root.hud-arcade #level-badge .peak-c::after {
+  width: 6px; height: 6px; top: -2px;
+  background: radial-gradient(circle at 30% 30%, #fff 0%, #7fd3ff 50%, #1565c0 100%);
+  box-shadow: 0 0 5px rgba(100,180,255,0.9);
 }
 #game-root.hud-arcade #level-cap {
   display: block !important;
-  color: #6a3a00; font-size: 8px; letter-spacing: 1.6px;
+  color: #6a3a00;
+  font-size: 7px;
+  letter-spacing: 1.2px;
+  line-height: 1;
+  margin-bottom: 1px;
   text-shadow: 0 1px 0 rgba(255,255,255,0.35);
 }
 #game-root.hud-arcade #level-box {
-  font-size: 26px; font-weight: 900; color: #3a1a00; line-height: 1;
+  font-size: 18px;
+  font-weight: 900;
+  color: #3a1a00;
+  line-height: 1;
   text-shadow: 0 1px 0 rgba(255,255,255,0.4);
   letter-spacing: -0.5px;
 }
