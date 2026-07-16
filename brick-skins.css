@@ -60,7 +60,7 @@
 /* Swatch previews per-skin (picker) — reuse same overrides via nested data-brick-skin on swatch */
 .brick-swatch[data-brick-skin="classic"]{ border-radius:3px!important; background:linear-gradient(180deg, color-mix(in srgb, var(--cc) 55%, #fff) 0%, var(--cc) 42%, color-mix(in srgb, var(--cc) 55%, #000) 100%)!important; box-shadow:inset 0 2px 0 rgba(255,255,255,0.5), inset 0 -3px 5px rgba(0,0,0,0.4), 0 2px 4px rgba(0,0,0,0.35)!important; border:1px solid rgba(0,0,0,0.25)!important; filter:none!important; }
 .brick-swatch[data-brick-skin="glass"]{ border-radius:4px!important; background:linear-gradient(145deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 55%, transparent) 55%, color-mix(in srgb, var(--cc) 40%, #fff) 100%)!important; box-shadow:inset 0 1px 0 rgba(255,255,255,0.7), inset 0 -1px 0 rgba(255,255,255,0.2), 0 0 0 1px rgba(255,255,255,0.35), 0 4px 12px color-mix(in srgb, var(--cc) 30%, transparent)!important; border:1px solid rgba(255,255,255,0.45)!important; filter:none!important; }
-.brick-swatch[data-brick-skin="neon"]{ border-radius:3px!important; background:radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--cc) 40%, #111) 0%, #0a0a12 78%)!important; box-shadow:0 0 0 2px var(--cc), 0 0 10px 2px color-mix(in srgb, var(--cc) 70%, transparent), inset 0 0 12px color-mix(in srgb, var(--cc) 45%, transparent)!important; border:none!important; filter:none!important; }
+.brick-swatch[data-brick-skin="neon"]{ /* see neon animals section below */ }
 .brick-swatch[data-brick-skin="metal"]{ border-radius:2px!important; background:linear-gradient(115deg, color-mix(in srgb, var(--cc) 30%, #eee) 0%, var(--cc) 28%, color-mix(in srgb, var(--cc) 40%, #fff) 42%, var(--cc) 58%, color-mix(in srgb, var(--cc) 35%, #222) 100%)!important; box-shadow:inset 0 1px 0 rgba(255,255,255,0.55), inset 0 -2px 3px rgba(0,0,0,0.45), 0 2px 3px rgba(0,0,0,0.4)!important; border:1px solid rgba(0,0,0,0.3)!important; filter:none!important; }
 .brick-swatch[data-brick-skin="wood"]{ border-radius:3px!important; background:repeating-linear-gradient(90deg, color-mix(in srgb, var(--cc) 75%, #5a3a1a) 0 3px, color-mix(in srgb, var(--cc) 90%, #3a2410) 3px 6px)!important; box-shadow:inset 0 2px 0 rgba(255,220,160,0.25), inset 0 -2px 4px rgba(0,0,0,0.35), 0 2px 4px rgba(0,0,0,0.3)!important; border:1px solid rgba(40,20,5,0.35)!important; filter:none!important; }
 .brick-swatch[data-brick-skin="crystal"]{ border-radius:4px!important; background:linear-gradient(135deg, color-mix(in srgb, var(--cc) 30%, #fff) 0%, var(--cc) 38%, color-mix(in srgb, var(--cc) 50%, #fff) 52%, var(--cc) 100%)!important; box-shadow:0 0 0 1px color-mix(in srgb, var(--cc) 40%, #fff), inset 0 0 10px rgba(255,255,255,0.35), 0 0 14px color-mix(in srgb, var(--cc) 40%, transparent)!important; border:none!important; filter:none!important; }
@@ -171,45 +171,202 @@ html[data-brick-skin="glass"] .sc.gem.glow-5 {
   animation: none !important;
 }
 
-/* ── neon ── */
+/* ── neon — cute colored animals ── */
+:root{
+  --neon-animal-0:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Cpath%20fill%3D%22%23FF6B6B%22%20d%3D%22M10%2022L22%208l6%2012z%22%2F%3E%3Cpath%20fill%3D%22%23FF6B6B%22%20d%3D%22M54%2022L42%208l-6%2012z%22%2F%3E%3Cellipse%20fill%3D%22%23FF6B6B%22%20cx%3D%2232%22%20cy%3D%2234%22%20rx%3D%2218%22%20ry%3D%2216%22%2F%3E%3Ccircle%20fill%3D%22%231a1020%22%20cx%3D%2224%22%20cy%3D%2230%22%20r%3D%223.2%22%2F%3E%3Ccircle%20fill%3D%22%231a1020%22%20cx%3D%2240%22%20cy%3D%2230%22%20r%3D%223.2%22%2F%3E%3Ccircle%20fill%3D%22%23fff%22%20cx%3D%2225%22%20cy%3D%2229%22%20r%3D%221%22%2F%3E%3Ccircle%20fill%3D%22%23fff%22%20cx%3D%2241%22%20cy%3D%2229%22%20r%3D%221%22%2F%3E%3Cellipse%20fill%3D%22%23FFB4A8%22%20cx%3D%2232%22%20cy%3D%2238%22%20rx%3D%224%22%20ry%3D%223%22%2F%3E%3Cpath%20fill%3D%22none%22%20stroke%3D%22%231a1020%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20d%3D%22M26%2044q6%206%2012%200%22%2F%3E%3C%2Fsvg%3E");
+  --neon-animal-1:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Cellipse%20fill%3D%22%235EB3FF%22%20cx%3D%2230%22%20cy%3D%2232%22%20rx%3D%2218%22%20ry%3D%2212%22%2F%3E%3Cpath%20fill%3D%22%235EB3FF%22%20d%3D%22M48%2032l12-12-4%2012%204%2012z%22%2F%3E%3Ccircle%20fill%3D%22%231a1020%22%20cx%3D%2222%22%20cy%3D%2230%22%20r%3D%223%22%2F%3E%3Ccircle%20fill%3D%22%23fff%22%20cx%3D%2223%22%20cy%3D%2229%22%20r%3D%221%22%2F%3E%3Cellipse%20fill%3D%22%23FFB0C8%22%20cx%3D%2218%22%20cy%3D%2236%22%20rx%3D%223%22%20ry%3D%222%22%2F%3E%3Cpath%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-opacity%3D%22.55%22%20stroke-width%3D%222%22%20d%3D%22M30%2022q4-4%208%200%22%2F%3E%3C%2Fsvg%3E");
+  --neon-animal-2:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Cellipse%20fill%3D%22%234ADE80%22%20cx%3D%2232%22%20cy%3D%2238%22%20rx%3D%2220%22%20ry%3D%2214%22%2F%3E%3Ccircle%20fill%3D%22%234ADE80%22%20cx%3D%2220%22%20cy%3D%2222%22%20r%3D%229%22%2F%3E%3Ccircle%20fill%3D%22%234ADE80%22%20cx%3D%2244%22%20cy%3D%2222%22%20r%3D%229%22%2F%3E%3Ccircle%20fill%3D%22%231a1020%22%20cx%3D%2220%22%20cy%3D%2222%22%20r%3D%223.5%22%2F%3E%3Ccircle%20fill%3D%22%231a1020%22%20cx%3D%2244%22%20cy%3D%2222%22%20r%3D%223.5%22%2F%3E%3Ccircle%20fill%3D%22%23fff%22%20cx%3D%2221%22%20cy%3D%2221%22%20r%3D%221.1%22%2F%3E%3Ccircle%20fill%3D%22%23fff%22%20cx%3D%2245%22%20cy%3D%2221%22%20r%3D%221.1%22%2F%3E%3Cellipse%20fill%3D%22%231a1020%22%20fill-opacity%3D%22.3%22%20cx%3D%2232%22%20cy%3D%2240%22%20rx%3D%226%22%20ry%3D%223.5%22%2F%3E%3Cpath%20fill%3D%22%234ADE80%22%20d%3D%22M12%2042q-4%2010%204%208%22%2F%3E%3Cpath%20fill%3D%22%234ADE80%22%20d%3D%22M52%2042q4%2010-4%208%22%2F%3E%3C%2Fsvg%3E");
+  --neon-animal-3:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Ccircle%20fill%3D%22%23FFD54A%22%20cx%3D%2232%22%20cy%3D%2228%22%20r%3D%2214%22%2F%3E%3Cellipse%20fill%3D%22%23FFD54A%22%20cx%3D%2232%22%20cy%3D%2246%22%20rx%3D%2212%22%20ry%3D%2210%22%2F%3E%3Ccircle%20fill%3D%22%231a1020%22%20cx%3D%2227%22%20cy%3D%2226%22%20r%3D%222.5%22%2F%3E%3Ccircle%20fill%3D%22%231a1020%22%20cx%3D%2237%22%20cy%3D%2226%22%20r%3D%222.5%22%2F%3E%3Ccircle%20fill%3D%22%23fff%22%20cx%3D%2227.8%22%20cy%3D%2225.2%22%20r%3D%22.8%22%2F%3E%3Ccircle%20fill%3D%22%23fff%22%20cx%3D%2237.8%22%20cy%3D%2225.2%22%20r%3D%22.8%22%2F%3E%3Cpath%20fill%3D%22%23FF8A1F%22%20d%3D%22M32%2030l6%204-6%202z%22%2F%3E%3Cpath%20fill%3D%22%23FFD54A%22%20d%3D%22M44%2020q10-4%206%206%22%2F%3E%3Cellipse%20fill%3D%22%23FF8A1F%22%20cx%3D%2226%22%20cy%3D%2250%22%20rx%3D%223%22%20ry%3D%222%22%2F%3E%3Cellipse%20fill%3D%22%23FF8A1F%22%20cx%3D%2238%22%20cy%3D%2250%22%20rx%3D%223%22%20ry%3D%222%22%2F%3E%3C%2Fsvg%3E");
+  --neon-animal-4:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Cellipse%20fill%3D%22%23FF8FBF%22%20cx%3D%2222%22%20cy%3D%2216%22%20rx%3D%227%22%20ry%3D%2216%22%2F%3E%3Cellipse%20fill%3D%22%23FF8FBF%22%20cx%3D%2242%22%20cy%3D%2216%22%20rx%3D%227%22%20ry%3D%2216%22%2F%3E%3Cellipse%20fill%3D%22%23FFB0C8%22%20cx%3D%2222%22%20cy%3D%2216%22%20rx%3D%223.5%22%20ry%3D%2210%22%2F%3E%3Cellipse%20fill%3D%22%23FFB0C8%22%20cx%3D%2242%22%20cy%3D%2216%22%20rx%3D%223.5%22%20ry%3D%2210%22%2F%3E%3Ccircle%20fill%3D%22%23FF8FBF%22%20cx%3D%2232%22%20cy%3D%2236%22%20r%3D%2216%22%2F%3E%3Ccircle%20fill%3D%22%231a1020%22%20cx%3D%2226%22%20cy%3D%2234%22%20r%3D%222.8%22%2F%3E%3Ccircle%20fill%3D%22%231a1020%22%20cx%3D%2238%22%20cy%3D%2234%22%20r%3D%222.8%22%2F%3E%3Ccircle%20fill%3D%22%23fff%22%20cx%3D%2226.8%22%20cy%3D%2233.2%22%20r%3D%22.9%22%2F%3E%3Ccircle%20fill%3D%22%23fff%22%20cx%3D%2238.8%22%20cy%3D%2233.2%22%20r%3D%22.9%22%2F%3E%3Cellipse%20fill%3D%22%23FFB0C8%22%20cx%3D%2232%22%20cy%3D%2242%22%20rx%3D%224%22%20ry%3D%223%22%2F%3E%3Ccircle%20fill%3D%22%23FFB0C8%22%20fill-opacity%3D%22.75%22%20cx%3D%2218%22%20cy%3D%2240%22%20r%3D%224%22%2F%3E%3Ccircle%20fill%3D%22%23FFB0C8%22%20fill-opacity%3D%22.75%22%20cx%3D%2246%22%20cy%3D%2240%22%20r%3D%224%22%2F%3E%3C%2Fsvg%3E");
+  --neon-animal-5:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Cpath%20fill%3D%22%23B4A7FF%22%20d%3D%22M14%2028L20%208l8%2016z%22%2F%3E%3Cpath%20fill%3D%22%23B4A7FF%22%20d%3D%22M50%2028L44%208l-8%2016z%22%2F%3E%3Ccircle%20fill%3D%22%23B4A7FF%22%20cx%3D%2232%22%20cy%3D%2236%22%20r%3D%2218%22%2F%3E%3Cellipse%20fill%3D%22%231a1020%22%20cx%3D%2224%22%20cy%3D%2234%22%20rx%3D%223%22%20ry%3D%224%22%2F%3E%3Cellipse%20fill%3D%22%231a1020%22%20cx%3D%2240%22%20cy%3D%2234%22%20rx%3D%223%22%20ry%3D%224%22%2F%3E%3Ccircle%20fill%3D%22%23fff%22%20cx%3D%2224.8%22%20cy%3D%2232.5%22%20r%3D%221%22%2F%3E%3Ccircle%20fill%3D%22%23fff%22%20cx%3D%2240.8%22%20cy%3D%2232.5%22%20r%3D%221%22%2F%3E%3Cpath%20fill%3D%22%23FFB0A0%22%20d%3D%22M32%2036l-4%206%204-2%204%202z%22%2F%3E%3Cpath%20fill%3D%22none%22%20stroke%3D%22%23B4A7FF%22%20stroke-width%3D%221.5%22%20d%3D%22M20%2040q-6%202-2%206%22%2F%3E%3Cpath%20fill%3D%22none%22%20stroke%3D%22%23B4A7FF%22%20stroke-width%3D%221.5%22%20d%3D%22M44%2040q6%202%202%206%22%2F%3E%3C%2Fsvg%3E");
+  --neon-animal-6:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Ccircle%20fill%3D%22%23FF9A56%22%20cx%3D%2216%22%20cy%3D%2218%22%20r%3D%229%22%2F%3E%3Ccircle%20fill%3D%22%23FF9A56%22%20cx%3D%2248%22%20cy%3D%2218%22%20r%3D%229%22%2F%3E%3Ccircle%20fill%3D%22%23FF9A56%22%20cx%3D%2232%22%20cy%3D%2234%22%20r%3D%2220%22%2F%3E%3Ccircle%20fill%3D%22%23FFE0C0%22%20cx%3D%2232%22%20cy%3D%2240%22%20r%3D%2210%22%2F%3E%3Ccircle%20fill%3D%22%231a1020%22%20cx%3D%2224%22%20cy%3D%2230%22%20r%3D%223%22%2F%3E%3Ccircle%20fill%3D%22%231a1020%22%20cx%3D%2240%22%20cy%3D%2230%22%20r%3D%223%22%2F%3E%3Ccircle%20fill%3D%22%23fff%22%20cx%3D%2225%22%20cy%3D%2229%22%20r%3D%221%22%2F%3E%3Ccircle%20fill%3D%22%23fff%22%20cx%3D%2241%22%20cy%3D%2229%22%20r%3D%221%22%2F%3E%3Cellipse%20fill%3D%22%231a1020%22%20cx%3D%2232%22%20cy%3D%2240%22%20rx%3D%224%22%20ry%3D%223%22%2F%3E%3Ccircle%20fill%3D%22%23FFE0C0%22%20cx%3D%2216%22%20cy%3D%2218%22%20r%3D%224%22%2F%3E%3Ccircle%20fill%3D%22%23FFE0C0%22%20cx%3D%2248%22%20cy%3D%2218%22%20r%3D%224%22%2F%3E%3C%2Fsvg%3E");
+  --neon-animal-7:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Cellipse%20fill%3D%22%235EEAD4%22%20cx%3D%2232%22%20cy%3D%2236%22%20rx%3D%2216%22%20ry%3D%2220%22%2F%3E%3Cellipse%20fill%3D%22%23F0FBFF%22%20cx%3D%2232%22%20cy%3D%2240%22%20rx%3D%2210%22%20ry%3D%2214%22%2F%3E%3Ccircle%20fill%3D%22%231a1020%22%20cx%3D%2226%22%20cy%3D%2228%22%20r%3D%222.5%22%2F%3E%3Ccircle%20fill%3D%22%231a1020%22%20cx%3D%2238%22%20cy%3D%2228%22%20r%3D%222.5%22%2F%3E%3Ccircle%20fill%3D%22%23fff%22%20cx%3D%2226.7%22%20cy%3D%2227.3%22%20r%3D%22.8%22%2F%3E%3Ccircle%20fill%3D%22%23fff%22%20cx%3D%2238.7%22%20cy%3D%2227.3%22%20r%3D%22.8%22%2F%3E%3Cpath%20fill%3D%22%23FF8A1F%22%20d%3D%22M32%2030l4%204-4%201z%22%2F%3E%3Cpath%20fill%3D%22%235EEAD4%22%20d%3D%22M14%2034q-6%206%200%2012%22%2F%3E%3Cpath%20fill%3D%22%235EEAD4%22%20d%3D%22M50%2034q6%206%200%2012%22%2F%3E%3Cellipse%20fill%3D%22%23FF8A1F%22%20cx%3D%2226%22%20cy%3D%2254%22%20rx%3D%225%22%20ry%3D%222.5%22%2F%3E%3Cellipse%20fill%3D%22%23FF8A1F%22%20cx%3D%2238%22%20cy%3D%2254%22%20rx%3D%225%22%20ry%3D%222.5%22%2F%3E%3C%2Fsvg%3E");
+}
+
 html[data-brick-skin="neon"] .cell.filled,
 html[data-brick-skin="neon"] .cell.preview-ok,
 html[data-brick-skin="neon"] .sc.gem,
-html[data-brick-skin="neon"] .vs-cell.vs-filled {
-  border: none !important;
-  border-radius: 8px !important;
-  background: radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--cc) 40%, #111) 0%, #0a0a12 78%) !important;
-  box-shadow: 0 0 0 2px var(--cc), 0 0 10px 2px color-mix(in srgb, var(--cc) 70%, transparent), inset 0 0 12px color-mix(in srgb, var(--cc) 45%, transparent) !important;
-  filter: none !important;
+html[data-brick-skin="neon"] .vs-cell.vs-filled{
+  border:none !important;
+  border-radius:8px !important;
+  overflow:hidden !important;
+  isolation:isolate;
+  background-color:#0a0a14 !important;
+  background-image:var(--neon-animal-0), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
+  background-size:62% 62%, auto !important;
+  background-position:center 46%, center !important;
+  background-repeat:no-repeat, no-repeat !important;
+  box-shadow:0 0 0 2px var(--cc), 0 0 12px 2px color-mix(in srgb, var(--cc) 75%, transparent), inset 0 0 14px color-mix(in srgb, var(--cc) 50%, transparent) !important;
+  filter:none !important;
 }
-html[data-brick-skin="neon"] .cell.filled::before,
-html[data-brick-skin="neon"] .cell.preview-ok::before,
+html[data-brick-skin="neon"] .cell.filled:not(.bomb-cell):not(.cloud-cell):not(.squirrel-cell)::before,
+html[data-brick-skin="neon"] .cell.preview-ok:not(.bomb-cell):not(.cloud-cell):not(.squirrel-cell)::before,
 html[data-brick-skin="neon"] .sc.gem::before,
-html[data-brick-skin="neon"] .vs-cell.vs-filled::before {
-  opacity: 0 !important;
-  content: none !important;
+html[data-brick-skin="neon"] .vs-cell.vs-filled::before{
+  opacity:0 !important;
+  content:none !important;
+}
+html[data-brick-skin="neon"] .cell.filled[data-ci="0"],
+html[data-brick-skin="neon"] .cell.preview-ok[data-ci="0"],
+html[data-brick-skin="neon"] .sc.gem[data-ci="0"],
+html[data-brick-skin="neon"] .vs-cell.vs-filled[data-ci="0"]{
+  background-image:var(--neon-animal-0), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
+}
+html[data-brick-skin="neon"] .cell.filled[data-ci="1"],
+html[data-brick-skin="neon"] .cell.preview-ok[data-ci="1"],
+html[data-brick-skin="neon"] .sc.gem[data-ci="1"],
+html[data-brick-skin="neon"] .vs-cell.vs-filled[data-ci="1"]{
+  background-image:var(--neon-animal-1), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
+}
+html[data-brick-skin="neon"] .cell.filled[data-ci="2"],
+html[data-brick-skin="neon"] .cell.preview-ok[data-ci="2"],
+html[data-brick-skin="neon"] .sc.gem[data-ci="2"],
+html[data-brick-skin="neon"] .vs-cell.vs-filled[data-ci="2"]{
+  background-image:var(--neon-animal-2), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
+}
+html[data-brick-skin="neon"] .cell.filled[data-ci="3"],
+html[data-brick-skin="neon"] .cell.preview-ok[data-ci="3"],
+html[data-brick-skin="neon"] .sc.gem[data-ci="3"],
+html[data-brick-skin="neon"] .vs-cell.vs-filled[data-ci="3"]{
+  background-image:var(--neon-animal-3), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
+}
+html[data-brick-skin="neon"] .cell.filled[data-ci="4"],
+html[data-brick-skin="neon"] .cell.preview-ok[data-ci="4"],
+html[data-brick-skin="neon"] .sc.gem[data-ci="4"],
+html[data-brick-skin="neon"] .vs-cell.vs-filled[data-ci="4"]{
+  background-image:var(--neon-animal-4), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
+}
+html[data-brick-skin="neon"] .cell.filled[data-ci="5"],
+html[data-brick-skin="neon"] .cell.preview-ok[data-ci="5"],
+html[data-brick-skin="neon"] .sc.gem[data-ci="5"],
+html[data-brick-skin="neon"] .vs-cell.vs-filled[data-ci="5"]{
+  background-image:var(--neon-animal-5), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
+}
+html[data-brick-skin="neon"] .cell.filled[data-ci="6"],
+html[data-brick-skin="neon"] .cell.preview-ok[data-ci="6"],
+html[data-brick-skin="neon"] .sc.gem[data-ci="6"],
+html[data-brick-skin="neon"] .vs-cell.vs-filled[data-ci="6"]{
+  background-image:var(--neon-animal-6), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
+}
+html[data-brick-skin="neon"] .cell.filled[data-ci="7"],
+html[data-brick-skin="neon"] .cell.preview-ok[data-ci="7"],
+html[data-brick-skin="neon"] .sc.gem[data-ci="7"],
+html[data-brick-skin="neon"] .vs-cell.vs-filled[data-ci="7"]{
+  background-image:var(--neon-animal-7), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
 }
 html[data-brick-skin="neon"] .p-cell.candy,
 html[data-brick-skin="neon"] #drag-ghost .g-cell.candy,
-html[data-brick-skin="neon"] .vs-mini-candy {
-  border: none !important;
-  border-radius: 3px !important;
-  background: radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--cc) 40%, #111) 0%, #0a0a12 78%) !important;
-  box-shadow: 0 0 0 2px var(--cc), 0 0 10px 2px color-mix(in srgb, var(--cc) 70%, transparent), inset 0 0 12px color-mix(in srgb, var(--cc) 45%, transparent) !important;
-  filter: none !important;
+html[data-brick-skin="neon"] .vs-mini-candy,
+html[data-brick-skin="neon"] .vs-g-cell.candy{
+  border:none !important;
+  border-radius:4px !important;
+  overflow:hidden !important;
+  position:relative !important;
+  background-color:#0a0a14 !important;
+  background-image:var(--neon-animal-0), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
+  background-size:68% 68%, auto !important;
+  background-position:center 48%, center !important;
+  background-repeat:no-repeat, no-repeat !important;
+  box-shadow:0 0 0 2px var(--cc), 0 0 12px 2px color-mix(in srgb, var(--cc) 75%, transparent), inset 0 0 14px color-mix(in srgb, var(--cc) 50%, transparent) !important;
+  filter:none !important;
 }
 html[data-brick-skin="neon"] .p-cell.candy::after,
-html[data-brick-skin="neon"] #drag-ghost .g-cell.candy::before {
-  opacity: 0.1 !important;
-  content: none !important;
+html[data-brick-skin="neon"] #drag-ghost .g-cell.candy::before,
+html[data-brick-skin="neon"] .vs-g-cell.candy::before{
+  opacity:0 !important;
+  content:none !important;
+}
+html[data-brick-skin="neon"] .p-cell.candy[data-ci="0"],
+html[data-brick-skin="neon"] #drag-ghost .g-cell.candy[data-ci="0"],
+html[data-brick-skin="neon"] .vs-g-cell.candy[data-ci="0"],
+html[data-brick-skin="neon"] .vs-mini-candy[data-ci="0"]{
+  background-image:var(--neon-animal-0), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
+}
+html[data-brick-skin="neon"] .p-cell.candy[data-ci="1"],
+html[data-brick-skin="neon"] #drag-ghost .g-cell.candy[data-ci="1"],
+html[data-brick-skin="neon"] .vs-g-cell.candy[data-ci="1"],
+html[data-brick-skin="neon"] .vs-mini-candy[data-ci="1"]{
+  background-image:var(--neon-animal-1), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
+}
+html[data-brick-skin="neon"] .p-cell.candy[data-ci="2"],
+html[data-brick-skin="neon"] #drag-ghost .g-cell.candy[data-ci="2"],
+html[data-brick-skin="neon"] .vs-g-cell.candy[data-ci="2"],
+html[data-brick-skin="neon"] .vs-mini-candy[data-ci="2"]{
+  background-image:var(--neon-animal-2), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
+}
+html[data-brick-skin="neon"] .p-cell.candy[data-ci="3"],
+html[data-brick-skin="neon"] #drag-ghost .g-cell.candy[data-ci="3"],
+html[data-brick-skin="neon"] .vs-g-cell.candy[data-ci="3"],
+html[data-brick-skin="neon"] .vs-mini-candy[data-ci="3"]{
+  background-image:var(--neon-animal-3), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
+}
+html[data-brick-skin="neon"] .p-cell.candy[data-ci="4"],
+html[data-brick-skin="neon"] #drag-ghost .g-cell.candy[data-ci="4"],
+html[data-brick-skin="neon"] .vs-g-cell.candy[data-ci="4"],
+html[data-brick-skin="neon"] .vs-mini-candy[data-ci="4"]{
+  background-image:var(--neon-animal-4), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
+}
+html[data-brick-skin="neon"] .p-cell.candy[data-ci="5"],
+html[data-brick-skin="neon"] #drag-ghost .g-cell.candy[data-ci="5"],
+html[data-brick-skin="neon"] .vs-g-cell.candy[data-ci="5"],
+html[data-brick-skin="neon"] .vs-mini-candy[data-ci="5"]{
+  background-image:var(--neon-animal-5), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
+}
+html[data-brick-skin="neon"] .p-cell.candy[data-ci="6"],
+html[data-brick-skin="neon"] #drag-ghost .g-cell.candy[data-ci="6"],
+html[data-brick-skin="neon"] .vs-g-cell.candy[data-ci="6"],
+html[data-brick-skin="neon"] .vs-mini-candy[data-ci="6"]{
+  background-image:var(--neon-animal-6), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
+}
+html[data-brick-skin="neon"] .p-cell.candy[data-ci="7"],
+html[data-brick-skin="neon"] #drag-ghost .g-cell.candy[data-ci="7"],
+html[data-brick-skin="neon"] .vs-g-cell.candy[data-ci="7"],
+html[data-brick-skin="neon"] .vs-mini-candy[data-ci="7"]{
+  background-image:var(--neon-animal-7), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
 }
 html[data-brick-skin="neon"] .sc.gem.glow-1,
 html[data-brick-skin="neon"] .sc.gem.glow-2,
 html[data-brick-skin="neon"] .sc.gem.glow-3,
 html[data-brick-skin="neon"] .sc.gem.glow-4,
-html[data-brick-skin="neon"] .sc.gem.glow-5 {
-  filter: none !important;
-  animation: none !important;
+html[data-brick-skin="neon"] .sc.gem.glow-5{
+  filter:none !important;
+  animation:none !important;
+}
+.brick-swatch[data-brick-skin="neon"]{
+  border-radius:6px !important;
+  overflow:hidden !important;
+  background-color:#0a0a14 !important;
+  background-image:var(--neon-animal-0), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
+  background-size:70% 70%, auto !important;
+  background-position:center 48%, center !important;
+  background-repeat:no-repeat, no-repeat !important;
+  box-shadow:0 0 0 2px var(--cc), 0 0 12px 2px color-mix(in srgb, var(--cc) 75%, transparent), inset 0 0 14px color-mix(in srgb, var(--cc) 50%, transparent) !important;
+  border:none !important;
+  filter:none !important;
+}
+.brick-swatch[data-brick-skin="neon"][data-ci="0"]{
+  background-image:var(--neon-animal-0), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
+}
+.brick-swatch[data-brick-skin="neon"][data-ci="1"]{
+  background-image:var(--neon-animal-1), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
+}
+.brick-swatch[data-brick-skin="neon"][data-ci="2"]{
+  background-image:var(--neon-animal-2), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
+}
+.brick-swatch[data-brick-skin="neon"][data-ci="3"]{
+  background-image:var(--neon-animal-3), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
+}
+.brick-swatch[data-brick-skin="neon"][data-ci="4"]{
+  background-image:var(--neon-animal-4), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
+}
+.brick-swatch[data-brick-skin="neon"][data-ci="5"]{
+  background-image:var(--neon-animal-5), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
+}
+.brick-swatch[data-brick-skin="neon"][data-ci="6"]{
+  background-image:var(--neon-animal-6), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
+}
+.brick-swatch[data-brick-skin="neon"][data-ci="7"]{
+  background-image:var(--neon-animal-7), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
 }
 
 /* ── metal ── */

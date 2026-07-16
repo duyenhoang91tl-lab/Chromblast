@@ -13,7 +13,7 @@
     { id: "plush", name: "Plush", desc: "Bông xù hiện tại", starter: true },
     { id: "chroma", name: "Chroma", desc: "Kẹo bóng + icon như feature graphic", starter: true },
     { id: "glass", name: "Glass", desc: "Thủy tinh trong" },
-    { id: "neon", name: "Neon", desc: "Viền phát sáng" },
+    { id: "neon", name: "Neon", desc: "Viền neon + thú dễ thương theo màu" },
     { id: "metal", name: "Metal", desc: "Kim loại xước" },
     { id: "wood", name: "Wood", desc: "Gỗ vân ấm" },
     { id: "crystal", name: "Crystal", desc: "Pha lê đa giác" },
