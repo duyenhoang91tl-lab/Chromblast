@@ -40,6 +40,29 @@
     }
   };
 
+  // Quảng cáo có thưởng (xem để nhận +1 tim)
+  window.showRewardedAd = async function(onReward, onFail) {
+    if (!AdMob) {
+      if (typeof onFail === 'function') onFail();
+      return;
+    }
+    try {
+      await AdMob.prepareRewardVideoAd({
+        adId: 'ca-app-pub-9093176034842025/6573161096',
+        isTesting: false,
+      });
+      const result = await AdMob.showRewardVideoAd();
+      if (result && (result.rewarded || result.type)) {
+        if (typeof onReward === 'function') onReward(result);
+      } else if (typeof onReward === 'function') {
+        onReward(result);
+      }
+    } catch (e) {
+      console.error('AdMob Rewarded Error:', e);
+      if (typeof onFail === 'function') onFail(e);
+    }
+  };
+
   if(!App) return;
 
   const CLOSABLE_PANELS = [
@@ -47,6 +70,7 @@
     'daily-panel','leaderboard-panel','account-panel','help-panel','unlock-overlay',
     'settings-panel','settings-more-panel','settings-lang-panel','settings-cup-panel','settings-text-panel',
     'brick-skin-panel',
+    'spin-panel',
   ];
 
   function anyHiddenMapActive(){
