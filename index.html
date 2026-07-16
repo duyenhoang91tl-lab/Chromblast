@@ -10,6 +10,7 @@
 <title>ChromaBlast</title>
 <link rel="stylesheet" href="main.css">
 <link rel="stylesheet" href="brick-skins.css">
+<link rel="stylesheet" href="map-boards.css">
 </head>
 <body>
 <!-- SVG filter: texture lông xù / pom-pom fluffy cho ô gạch -->
@@ -90,7 +91,7 @@
       <span data-i18n="startBtn">▶ BẮT ĐẦU CHƠI</span>
     </button>
     <div class="start-hint" data-i18n="startHint">Chạm hoặc nhấp để bắt đầu</div>
-    <div class="start-brick-hint">🧱 Lần đầu sẽ chọn gạch Classic hoặc Plush</div>
+    <div class="start-brick-hint">🧱🗺️ Lần đầu chọn gạch + nền bàn (Classic / hiện tại)</div>
   </div>
 </div>
 <button id="help-btn" title="Hướng dẫn chơi" data-i18n-title="ttHelp">❓</button>
@@ -147,6 +148,7 @@
       <button id="hiddenmap-menu-btn" title="Chọn map ẩn đã chơi qua" data-i18n-title="ttHiddenMap" style="display:none;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;align-items:center;justify-content:center;padding:0;">🗺️</button>
       <button id="daily-btn" title="Điểm danh nhận quà" data-i18n-title="ttDaily">🎁</button>
       <button id="brick-skin-btn" title="Kho gạch" data-i18n-title="ttBricks" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">🧱</button>
+      <button id="board-skin-btn" title="Kho nền bàn" data-i18n-title="ttBoards" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">🗺️</button>
       <button id="spin-btn-hdr" title="Vòng quay may mắn" data-i18n-title="ttSpin" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">🎡</button>
       <button id="versus-btn" title="Đấu 1-1 (mở từ Lv.10)" data-i18n-title="ttVersus">⚔️</button>
       <button id="leaderboard-btn" title="Bảng xếp hạng" data-i18n-title="ttLeaderboard">🏆</button>
@@ -182,6 +184,7 @@
           <button type="button" class="set-action set-c-blue" id="set-btn-map"><span class="set-act-ico">🗺️</span><span data-i18n="setMap">Map</span></button>
           <button type="button" class="set-action set-c-gold" id="set-btn-cup"><span class="set-act-ico">🏆</span><span data-i18n="setCup">Cup</span></button>
           <button type="button" class="set-action set-c-brick" id="set-btn-bricks"><span class="set-act-ico">🧱</span><span data-i18n="setBricks">Bricks</span></button>
+          <button type="button" class="set-action set-c-board" id="set-btn-boards"><span class="set-act-ico">🗺️</span><span data-i18n="setBoards">Boards</span></button>
           <button type="button" class="set-action set-c-spin" id="set-btn-spin"><span class="set-act-ico">🎡</span><span data-i18n="setSpin">Lucky Spin</span></button>
           <button type="button" class="set-action set-c-green" id="set-btn-more"><span class="set-act-ico">⚙️</span><span data-i18n="setMore">More Settings</span><span class="set-dot"></span></button>
           <button type="button" class="set-action set-c-lime" id="set-btn-home"><span class="set-act-ico">🏠</span><span data-i18n="setHome">Home</span></button>
@@ -546,6 +549,7 @@
 <script src="js/audio.js"></script>
 <script src="js/save.js"></script>
 <script src="js/brick-skins.js"></script>
+<script src="js/map-boards.js"></script>
 <script src="js/daily-rewards.js"></script>
 <script src="js/leaderboard.js"></script>
 <script src="js/mech-config.js"></script>

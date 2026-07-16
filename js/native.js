@@ -70,6 +70,7 @@
     'daily-panel','leaderboard-panel','account-panel','help-panel','unlock-overlay',
     'settings-panel','settings-more-panel','settings-lang-panel','settings-cup-panel','settings-text-panel',
     'brick-skin-panel',
+    'board-skin-panel',
     'spin-panel',
   ];
 
@@ -90,6 +91,7 @@
       if(el && el.classList.contains('show')){
         // Lần đầu chọn gạch — không đóng bằng nút Back
         if(id==='brick-skin-panel' && el.dataset.mode==='starter') return;
+        if(id==='board-skin-panel' && el.dataset.mode==='starter') return;
         el.classList.remove('show'); return;
       }
     }

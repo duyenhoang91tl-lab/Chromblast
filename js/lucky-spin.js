@@ -106,7 +106,7 @@
     }
     if (hint) {
       hint.textContent = free
-        ? "1 lượt quay miễn phí mỗi ngày · 2% ra gạch mới"
+        ? "1 lượt quay miễn phí mỗi ngày · 2% gạch / nền"
         : "Quay lại vào ngày mai để nhận lượt miễn phí";
     }
     if (timer) {
@@ -152,6 +152,18 @@
       } catch (_) {}
       try {
         if (typeof g.sfxUnlock === "function") g.sfxUnlock();
+      } catch (_) {}
+      // Bonus hiếm: 2% mở khóa gạch mới (ngoài phần thưởng vòng quay)
+      try {
+        if (typeof g.tryUnlockRandomBrickFromSpin === "function") {
+          g.tryUnlockRandomBrickFromSpin(0.02);
+        }
+      } catch (_) {}
+      // Bonus hiếm: 2% mở khóa nền bàn mới
+      try {
+        if (typeof g.tryUnlockRandomBoardFromSpin === "function") {
+          g.tryUnlockRandomBoardFromSpin(0.02);
+        }
       } catch (_) {}
     }, 4300);
   }
