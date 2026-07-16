@@ -88,8 +88,7 @@ function mainBurstFX(cells, streak){
 }
 
 function secretBurstFX(ci, big, streak){
-  // Map ẩn 1 không còn burst pháo (giữa hay viền) — chỉ sparkler liên tục ở updateFireBorder.
-  // Giữ hàm no-op để chỗ gọi cũ (nếu có) không vỡ.
+  // Map ẩn 1: không burst pháo/tia DOM — chỉ CSS glow qua updateFireBorder.
   return;
 }
 
@@ -108,121 +107,16 @@ function perimeterPoint(W, H, t){
 
 let _sparklerT = 0;
 /**
- * Pháo sáng kiểu sparkler thật: đầu cháy trên viền + chùm tia kim dài
- * bắn toả ra (trắng–vàng–cam), mạnh dần theo secretStreak.
+ * Map ẩn 1: đã bỏ chùm tia sparkler DOM (gây lag nặng ở combo cao).
+ * Giữ hàm no-op + dọn particle còn sót để chỗ gọi cũ không vỡ.
  */
 function spawnSparklerBorder(){
-  const wrap=document.getElementById('grid-wrap');
   const cbDiv=document.getElementById('combo-border-sparks');
-  if(!wrap||!cbDiv||!secretMode) return;
-  const W=wrap.clientWidth, H=wrap.clientHeight;
-  if(W<8||H<8) return;
-
-  const st = Math.max(1, (typeof secretStreak==='number' ? secretStreak : 1)|0);
-  const ultra = !!(secretUltra || st >= 9);
-  let tier = 0;
-  if(st >= 12 || ultra) tier = 4;
-  else if(st >= 8) tier = 3;
-  else if(st >= 5) tier = 2;
-  else if(st >= 3) tier = 1;
-
-  const maxDom = [80, 120, 180, 260, 340][tier];
-  if(cbDiv.childElementCount > maxDom) return;
-  cbDiv.classList.add('active');
-
-  // Đầu cháy chạy quanh chu vi
-  const speed = [0.014, 0.02, 0.028, 0.038, 0.05][tier];
-  _sparklerT = (_sparklerT + speed) % 1;
-  const tips = [1, 2, 3, 4, 5][tier];
-  // Số tia mỗi đầu — kiểu sparkler: nhiều tia kim toả ra
-  const raysPerTip = [10, 16, 24, 34, 48][tier];
-  const lenMin = [18, 26, 36, 48, 62][tier];
-  const lenMax = [42, 60, 85, 120, 160][tier];
-  const cols = tier >= 3
-    ? ['#ffffff','#fffef0','#fff8c0','#ffe566','#ffd700','#ffb020','#ff8800']
-    : ['#ffffff','#fffde8','#ffe9a0','#ffd700','#ffcc44','#ffaa22'];
-
-  const frag=document.createDocumentFragment();
-  const doomed=[];
-
-  for(let h=0; h<tips; h++){
-    const t = (_sparklerT + h / tips) % 1;
-    const tip = perimeterPoint(W, H, t);
-    // Góc bắn ra ngoài + một ít tia loạn quanh (giống sparkler thật)
-    const outAng = tip.ang;
-
-    // Đầu cháy sáng
-    const head=document.createElement('div');
-    head.className='sparkler-tip'+(tier>=3?' sparkler-tip-hot':'')+(tier>=4?' sparkler-tip-max':'');
-    head.style.left=tip.x+'px';
-    head.style.top=tip.y+'px';
-    frag.appendChild(head);
-    doomed.push([head, 160 + tier*20]);
-
-    for(let r=0; r<raysPerTip; r++){
-      // Phân bố: phần lớn tia ra ngoài (±70°), vài tia loạn 360°
-      let ang;
-      if(r < raysPerTip * 0.72){
-        ang = outAng + (Math.random()*140 - 70);
-      } else {
-        ang = Math.random() * 360;
-      }
-      const len = lenMin + Math.random() * (lenMax - lenMin);
-      // Tia bay ra gần bằng chiều dài (sparkler needles)
-      const dist = len * (0.55 + Math.random() * 0.65);
-      const thick = (tier >= 3 ? 1.2 : 0.9) + Math.random() * (tier >= 4 ? 1.8 : 1.1);
-      const dur = 220 + Math.random() * (180 + tier * 40);
-      const col = cols[(Math.random()*cols.length)|0];
-      const delay = Math.random() * 40;
-
-      const s=document.createElement('div');
-      s.className='sparkler-ray'+(tier>=3?' sparkler-ray-hot':'')+(tier>=4?' sparkler-ray-max':'');
-      s.style.left=tip.x+'px';
-      s.style.top=tip.y+'px';
-      s.style.setProperty('--ang', ang+'deg');
-      s.style.setProperty('--dist', dist+'px');
-      s.style.setProperty('--len', len+'px');
-      s.style.setProperty('--thick', thick+'px');
-      s.style.setProperty('--col', col);
-      s.style.setProperty('--dur', dur+'ms');
-      s.style.setProperty('--delay', delay+'ms');
-      frag.appendChild(s);
-      doomed.push([s, dur + delay + 40]);
-    }
+  if(!cbDiv) return;
+  if(cbDiv.childElementCount){
+    cbDiv.innerHTML='';
+    cbDiv.classList.remove('active');
   }
-
-  // Combo cao: thêm 1–2 cụm nổ phụ ở góc khung
-  if(tier >= 2){
-    const extras = tier >= 4 ? 2 : 1;
-    for(let e=0; e<extras; e++){
-      const pt = perimeterPoint(W, H, Math.random());
-      const n = 8 + tier * 4;
-      for(let i=0;i<n;i++){
-        const ang = pt.ang + (Math.random()*160 - 80);
-        const len = lenMin*0.7 + Math.random()*lenMax*0.7;
-        const dist = len * (0.5 + Math.random()*0.7);
-        const dur = 200 + Math.random()*200;
-        const s=document.createElement('div');
-        s.className='sparkler-ray'+(tier>=3?' sparkler-ray-hot':'');
-        s.style.left=pt.x+'px'; s.style.top=pt.y+'px';
-        s.style.setProperty('--ang', ang+'deg');
-        s.style.setProperty('--dist', dist+'px');
-        s.style.setProperty('--len', len+'px');
-        s.style.setProperty('--thick', (1+Math.random()*1.4)+'px');
-        s.style.setProperty('--col', cols[(Math.random()*cols.length)|0]);
-        s.style.setProperty('--dur', dur+'ms');
-        s.style.setProperty('--delay', (Math.random()*30)+'ms');
-        frag.appendChild(s);
-        doomed.push([s, dur+50]);
-      }
-    }
-  }
-
-  cbDiv.appendChild(frag);
-  doomed.forEach(([el,dur])=>setTimeout(()=>{
-    el.remove();
-    if(!cbDiv.children.length) cbDiv.classList.remove('active');
-  }, dur));
 }
 
 function spawnBorderFireworks(ci, big, streak){
@@ -349,35 +243,24 @@ function spawnFireBorder(ultra){
 function updateFireBorder(){
   const wrap = document.getElementById('grid-wrap');
   if(!wrap) return;
+  // Dừng interval + dọn tia DOM (không còn spawn particle — chỉ CSS glow)
+  if(fireInterval){ clearInterval(fireInterval); fireInterval=null; }
+  spawnSparklerBorder();
   if(!secretMode){
     wrap.classList.remove('fire-low','fire-mid','fire-high','fire-max');
-    if(fireInterval){ clearInterval(fireInterval); fireInterval=null; }
     return;
   }
   const st = Math.max(0, (typeof secretStreak==='number' ? secretStreak : 0)|0);
   let cls = '';
-  let interval = 0;
-  if(st >= 12 || secretUltra){ cls = 'fire-max'; interval = 55; }
-  else if(st >= 8){ cls = 'fire-high'; interval = 75; }
-  else if(st >= 5){ cls = 'fire-mid'; interval = 100; }
-  else if(st >= 1){ cls = 'fire-low'; interval = 150; }
+  if(st >= 12 || secretUltra) cls = 'fire-max';
+  else if(st >= 8) cls = 'fire-high';
+  else if(st >= 5) cls = 'fire-mid';
+  else if(st >= 1) cls = 'fire-low';
 
   ['fire-low','fire-mid','fire-high','fire-max'].forEach(c=>{
     if(c !== cls) wrap.classList.remove(c);
   });
-  if(!cls){
-    if(fireInterval){ clearInterval(fireInterval); fireInterval=null; }
-    return;
-  }
-  wrap.classList.add(cls);
-  const want = interval;
-  if(!fireInterval || fireInterval._ms !== want){
-    if(fireInterval){ clearInterval(fireInterval); fireInterval=null; }
-    fireInterval = setInterval(()=>{
-      if(secretMode) spawnSparklerBorder();
-    }, want);
-    fireInterval._ms = want;
-  }
+  if(cls) wrap.classList.add(cls);
 }
 
 function secretSparkleBurst(group, ci){
@@ -553,7 +436,7 @@ function updateComboBorderGlow(streak){
   else if(streak>=1) wrap.classList.add('combo-glow-1');
   // Re-render tiles với glow class mới (chỉ khi đang ở map ẩn)
   if(secretMode) renderSecretGrid();
-  // Map ẩn 1 đã có sparkler viền liên tục — bỏ burst sparks chồng thêm (gây giật)
+  // Map ẩn 1: không spawn tia DOM ở viền (tránh lag)
   if(streak>=2 && !secretMode) spawnComboBorderSparks(streak);
 }
 
