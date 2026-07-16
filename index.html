@@ -9,6 +9,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>ChromaBlast</title>
 <link rel="stylesheet" href="main.css">
+<link rel="stylesheet" href="brick-skins.css">
+<link rel="stylesheet" href="map-boards.css">
 </head>
 <body>
 <!-- SVG filter: texture lông xù / pom-pom fluffy cho ô gạch -->
@@ -89,6 +91,7 @@
       <span data-i18n="startBtn">▶ BẮT ĐẦU CHƠI</span>
     </button>
     <div class="start-hint" data-i18n="startHint">Chạm hoặc nhấp để bắt đầu</div>
+    <div class="start-brick-hint">🧱🗺️ Lần đầu chọn gạch + nền bàn (Classic / hiện tại)</div>
   </div>
 </div>
 <button id="help-btn" title="Hướng dẫn chơi" data-i18n-title="ttHelp">❓</button>
@@ -133,6 +136,7 @@
         <div id="level-box">1</div>
       </div>
       <div id="player-level-box" style="font-size:11px;color:#ffd700;margin-top:2px;white-space:nowrap;"></div>
+      <div id="inv-hud" class="inv-hud" aria-label="Inventory"></div>
     </div>
     <div id="header-right" style="text-align:right">
       <div id="adventure-avatar" style="display:none;">🧑‍🚀</div>
@@ -143,6 +147,9 @@
     <div id="game-controls" style="display:flex;gap:6px;align-items:center;">
       <button id="hiddenmap-menu-btn" title="Chọn map ẩn đã chơi qua" data-i18n-title="ttHiddenMap" style="display:none;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;align-items:center;justify-content:center;padding:0;">🗺️</button>
       <button id="daily-btn" title="Điểm danh nhận quà" data-i18n-title="ttDaily">🎁</button>
+      <button id="brick-skin-btn" title="Kho gạch" data-i18n-title="ttBricks" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">🧱</button>
+      <button id="board-skin-btn" title="Kho nền bàn" data-i18n-title="ttBoards" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">🗺️</button>
+      <button id="spin-btn-hdr" title="Vòng quay may mắn" data-i18n-title="ttSpin" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">🎡</button>
       <button id="versus-btn" title="Đấu 1-1 (mở từ Lv.10)" data-i18n-title="ttVersus">⚔️</button>
       <button id="leaderboard-btn" title="Bảng xếp hạng" data-i18n-title="ttLeaderboard">🏆</button>
       <button id="roundguide-btn" title="Hướng dẫn cơ chế vòng hiện tại" data-i18n-title="ttRoundGuide" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">📖</button>
@@ -176,6 +183,9 @@
           <button type="button" class="set-action set-c-teal" id="set-btn-lang"><span class="set-act-ico">🌐</span><span data-i18n="setLanguage">Language</span></button>
           <button type="button" class="set-action set-c-blue" id="set-btn-map"><span class="set-act-ico">🗺️</span><span data-i18n="setMap">Map</span></button>
           <button type="button" class="set-action set-c-gold" id="set-btn-cup"><span class="set-act-ico">🏆</span><span data-i18n="setCup">Cup</span></button>
+          <button type="button" class="set-action set-c-brick" id="set-btn-bricks"><span class="set-act-ico">🧱</span><span data-i18n="setBricks">Bricks</span></button>
+          <button type="button" class="set-action set-c-board" id="set-btn-boards"><span class="set-act-ico">🗺️</span><span data-i18n="setBoards">Boards</span></button>
+          <button type="button" class="set-action set-c-spin" id="set-btn-spin"><span class="set-act-ico">🎡</span><span data-i18n="setSpin">Lucky Spin</span></button>
           <button type="button" class="set-action set-c-green" id="set-btn-more"><span class="set-act-ico">⚙️</span><span data-i18n="setMore">More Settings</span><span class="set-dot"></span></button>
           <button type="button" class="set-action set-c-lime" id="set-btn-home"><span class="set-act-ico">🏠</span><span data-i18n="setHome">Home</span></button>
           <button type="button" class="set-action set-c-lime" id="set-btn-replay"><span class="set-act-ico">🔁</span><span data-i18n="setReplay">Replay</span></button>
@@ -254,6 +264,39 @@
       <div class="settings-inner">
         <div class="settings-text-body" id="settings-text-body"></div>
       </div>
+    </div>
+  </div>
+
+  <!-- ══ LUCKY SPIN ══ -->
+  <div id="spin-panel" class="settings-overlay spin-overlay">
+    <div class="spin-modal" role="dialog" aria-labelledby="spin-title">
+      <button type="button" class="spin-x" data-close-spin aria-label="Close">✕</button>
+      <div class="spin-title" id="spin-title">
+        <span class="spin-title-slide">Slide</span>
+        <span class="spin-title-lucky" data-i18n="spinTitle">Lucky Spin</span>
+      </div>
+      <div class="spin-wheel-wrap">
+        <div class="spin-pointer" aria-hidden="true"></div>
+        <div id="spin-wheel" class="spin-wheel"></div>
+        <div class="spin-hub" aria-hidden="true"></div>
+      </div>
+      <div class="spin-timer-box">
+        <span aria-hidden="true">⏱</span>
+        <span id="spin-timer">00:00:00</span>
+      </div>
+      <button type="button" id="spin-btn" class="spin-go-btn">Quay</button>
+      <div id="spin-hint" class="spin-hint">1 lượt quay miễn phí mỗi ngày</div>
+      <div id="spin-reward-layer" class="spin-reward-layer" hidden>
+        <div class="spin-reward-box">
+          <div class="spin-reward-title">Chúc mừng!</div>
+          <div id="spin-reward-icon" class="spin-reward-icon">🎁</div>
+          <div id="spin-reward-text" class="spin-reward-text">Bạn nhận được phần thưởng</div>
+          <div id="spin-reward-extra" class="spin-reward-extra"></div>
+          <div id="spin-reward-inv" class="spin-reward-inv"></div>
+          <button type="button" id="spin-reward-ok" class="spin-go-btn spin-reward-ok">Xác nhận</button>
+        </div>
+      </div>
+      <button type="button" class="spin-close-round" data-close-spin aria-label="Close">✕</button>
     </div>
   </div>
 
@@ -456,6 +499,11 @@
   </div>
 
   <!-- Mode A pieces -->
+  <div id="skill-bar" class="skill-bar" style="display:none;" aria-label="Skills">
+    <button type="button" id="skill-btn-10" class="skill-btn locked" title="Lv.10 — Sét (+80 điểm, 1⚡)">⚡ <span class="skill-lab">Sét</span></button>
+    <button type="button" id="skill-btn-20" class="skill-btn locked" title="Lv.20 — Cưa hàng (1🪚)">🪚 <span class="skill-lab">Cưa</span></button>
+    <button type="button" id="inv-ad-heart-btn" class="skill-btn skill-ad" title="Xem QC +1 tim">📺 +❤️</button>
+  </div>
   <div id="pieces-area"></div>
 
   <!-- Map ẩn 2 controls -->
@@ -510,10 +558,14 @@
 <script src="js/i18n-content.js"></script>
 <script src="js/audio.js"></script>
 <script src="js/save.js"></script>
+<script src="js/brick-skins.js"></script>
+<script src="js/map-boards.js"></script>
 <script src="js/daily-rewards.js"></script>
 <script src="js/leaderboard.js"></script>
 <script src="js/mech-config.js"></script>
 <script src="js/progression.js"></script>
+<script src="js/inventory.js"></script>
+<script src="js/lucky-spin.js"></script>
 <script src="js/effects.js"></script>
 <script src="js/ui.js"></script>
 <script src="maps/map01.js"></script>

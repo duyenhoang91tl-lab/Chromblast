@@ -502,7 +502,8 @@ function processClears(){
   consecutiveBursts++;
   updateBurstCount();
   combo++;
-  try{ if(typeof checkRunCups==='function') checkRunCups(); }catch(e){}
+  if(combo>=5) unlockAchievement('combo5');
+  try{ if(typeof onComboSkillMilestone==='function') onComboSkillMilestone(combo); }catch(e){}
   // Quy tắc: phá 1 ô = 1 điểm. Phá liên tiếp (combo) từ lần thứ 3 → x2 điểm, từ lần thứ 6 → x3 điểm.
   const scoreMult=comboScoreMultiplier(combo);
   const pts=totalKeys.size*scoreMult;
