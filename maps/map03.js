@@ -430,7 +430,7 @@ function exitFruitToMain(){
   document.getElementById('mode-badge').textContent='BÌNH THƯỜNG';
   document.getElementById('mode-badge').classList.remove('secret');
   document.getElementById('burst-count').textContent='Chuỗi nổ: 0/3';
-  document.getElementById('combo-box').textContent='';
+  resetFruitCombo();
   consecutiveBursts=0; updateBurstCount();
   document.getElementById('hint-bar').textContent='Chạm khối → ghost hiện · Di ngón → ghost bám · Thả trên ô → đặt · Thả vùng trống → xoay';
   // TEST: luôn mở khoá Map ẩn 4 ngay khi rời map ẩn 3
