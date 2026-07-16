@@ -380,6 +380,44 @@
     });
   }
 
+  /** Lucky Spin: 2% mở khóa 1 gạch chưa có (random). Trả về skin id hoặc null. */
+  function tryUnlockRandomBrickFromSpin(chance) {
+    if (typeof chance !== "number") chance = 0.02;
+    if (Math.random() >= chance) return null;
+    const locked = UNLOCK_ORDER.filter(function (id) {
+      return !isUnlocked(id);
+    });
+    // Nếu đã mở hết unlock-order, thử mọi skin còn khóa (phòng hờ)
+    const pool =
+      locked.length > 0
+        ? locked
+        : BRICK_SKINS.map(function (s) {
+            return s.id;
+          }).filter(function (id) {
+            return !isUnlocked(id);
+          });
+    if (!pool.length) return null;
+    const id = pool[Math.floor(Math.random() * pool.length)];
+    if (!unlockBrickSkin(id)) return null;
+    setTimeout(function () {
+      openBrickSkinPanel("unlock", id);
+      try {
+        if (typeof sfxUnlock === "function") sfxUnlock();
+      } catch (_) {}
+      try {
+        if (typeof showComboFlash === "function") {
+          const s = getSkin(id);
+          showComboFlash(
+            0,
+            false,
+            "🧱 Spin hiếm! Mở khóa gạch: " + (s ? s.name : id)
+          );
+        }
+      } catch (_) {}
+    }, 700);
+    return id;
+  }
+
   g.BRICK_SKINS = BRICK_SKINS;
   g.applyBrickSkin = applyBrickSkin;
   g.unlockBrickSkin = unlockBrickSkin;
@@ -387,6 +425,7 @@
   g.closeBrickSkinPanel = closeBrickSkinPanel;
   g.maybeShowStarterBrickPicker = maybeShowStarterBrickPicker;
   g.onHiddenMapClearedForBrick = onHiddenMapClearedForBrick;
+  g.tryUnlockRandomBrickFromSpin = tryUnlockRandomBrickFromSpin;
   g.initBrickSkins = initBrickSkins;
   g.getActiveBrickSkin = function () {
     return state.active;

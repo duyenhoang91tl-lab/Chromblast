@@ -457,7 +457,7 @@ function refreshArcadeHud(){
    SETTINGS MENU — hub + More Settings + Cup + Language
 ════════════════════════════════════════════════════════ */
 function closeAllSettingsOverlays(){
-  ['settings-panel','settings-more-panel','settings-lang-panel','settings-cup-panel','settings-text-panel']
+  ['settings-panel','settings-more-panel','settings-lang-panel','settings-cup-panel','settings-text-panel','spin-panel']
     .forEach(id=>{ const el=document.getElementById(id); if(el) el.classList.remove('show'); });
   try{ if(typeof closeBrickSkinPanel==='function') closeBrickSkinPanel(); }catch(e){}
 }
@@ -621,6 +621,10 @@ function initSettingsMenu(){
   document.getElementById('set-btn-lang')?.addEventListener('click', ()=>{ sfxClick(); openSettingsLang(); });
   document.getElementById('set-btn-map')?.addEventListener('click', ()=>{ sfxClick(); openSettingsMap(); });
   document.getElementById('set-btn-cup')?.addEventListener('click', ()=>{ sfxClick(); openSettingsCup(); });
+  document.getElementById('set-btn-spin')?.addEventListener('click', ()=>{
+    sfxClick();
+    if(typeof openLuckySpin==='function') openLuckySpin();
+  });
   document.getElementById('set-btn-more')?.addEventListener('click', ()=>{ sfxClick(); openSettingsMore(); });
   document.getElementById('set-btn-home')?.addEventListener('click', ()=>{ sfxClick(); settingsGoHome(); });
   document.getElementById('set-btn-replay')?.addEventListener('click', settingsReplay);
@@ -651,7 +655,7 @@ function initSettingsMenu(){
   });
 
   // click backdrop to close
-  ['settings-panel','settings-more-panel','settings-lang-panel','settings-cup-panel','settings-text-panel'].forEach(id=>{
+  ['settings-panel','settings-more-panel','settings-lang-panel','settings-cup-panel','settings-text-panel','spin-panel'].forEach(id=>{
     const el=document.getElementById(id);
     if(!el) return;
     el.addEventListener('click', e=>{ if(e.target===el) el.classList.remove('show'); });

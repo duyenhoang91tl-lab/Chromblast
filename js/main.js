@@ -740,6 +740,12 @@ initStartScreen();
 initDailyRewardPanel();
 initLeaderboardPanel();
 try{ if(typeof initBrickSkins==='function') initBrickSkins(); }catch(e){}
+try{ if(typeof initInventoryUI==='function') initInventoryUI(); }catch(e){}
+try{ if(typeof initLuckySpin==='function') initLuckySpin(); }catch(e){}
+document.getElementById('spin-btn-hdr')?.addEventListener('click', ()=>{
+  try{ sfxClick(); }catch(e){}
+  if(typeof openLuckySpin==='function') openLuckySpin();
+});
 // Chọn đúng nhạc nền theo map đang chơi — dùng khi bật lại âm thanh hoặc thoát tạm dừng
 function resumeContextBgm(){
   if(rhythmMode){ startRhythmBgm(); return; }
