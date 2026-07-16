@@ -166,7 +166,7 @@
 
     card.appendChild(preview);
     card.appendChild(name);
-    card.appendChild(desc);
+    if (!opts.hideDesc) card.appendChild(desc);
     if (!opts.locked && typeof opts.onPick === "function") {
       card.addEventListener("click", function () {
         try {
