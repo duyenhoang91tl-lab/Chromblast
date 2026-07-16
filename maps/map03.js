@@ -167,7 +167,8 @@ function fruitLoop(now){
         if(f.isBomb){ sfxBomb(); boomed=true; spawnBoomFx(f.x,f.y); }
         else {
           fruitSlicedTotal++;
-          if(fruitSlicedTotal===50) unlockAchievement('fruit50');
+          if(fruitSlicedTotal>=150) unlockAchievement('fruit150');
+          if(fruitSlicedTotal>=400) unlockAchievement('fruit400');
           fruitMissStreak=0; // chém trúng → reset chuỗi trượt
           fruitCombo++;
           if(fruitComboTimer) clearTimeout(fruitComboTimer);
