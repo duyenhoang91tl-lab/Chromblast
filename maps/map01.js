@@ -15,7 +15,6 @@ function renderSecretHearts(){
 
 function enterSecretMode(){
   setActiveHiddenMap('secret1');
-  unlockAchievement('secret1');
   endDrag();
   sfxUnlock();
   startBgm('mystery');
@@ -269,6 +268,7 @@ function onSCClick(e){
     unlockAchievement('ultra');
     sfxUltra();
   }
+  try{ if(typeof checkRunCups==='function') checkRunCups(); }catch(e){}
 
   const finalPts=Math.round(basePoints*secretMultiplier*(secretUltra?2:1));
   score+=finalPts; if(score>best) best=score;
