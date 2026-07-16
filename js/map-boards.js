@@ -341,7 +341,7 @@
     return last;
   }
 
-  function tryUnlockRandomBoardFromSpin(chance) {
+  function tryUnlockRandomBoardFromSpin(chance, quiet) {
     if (typeof chance !== "number") chance = 0.02;
     if (Math.random() >= chance) return null;
     const locked = UNLOCK_ORDER.filter(function (id) {
@@ -358,6 +358,7 @@
     if (!pool.length) return null;
     const id = pool[Math.floor(Math.random() * pool.length)];
     if (!unlockBoardSkin(id)) return null;
+    if (quiet) return id;
     setTimeout(function () {
       openBoardSkinPanel("unlock", id);
       try {

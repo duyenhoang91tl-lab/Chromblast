@@ -227,7 +227,7 @@
     grid.innerHTML = "";
     if (mode === "starter") {
       title.textContent = "Chọn gạch khởi đầu";
-      sub.textContent = "Classic (cổ điển) hoặc Plush (bông xù hiện tại)";
+      sub.textContent = "";
       ok.textContent = "Bắt đầu chơi";
       ok.style.display = "none";
       closeBtn.style.display = "none";
@@ -236,6 +236,7 @@
         grid.appendChild(
           makeSkinCard(skin, {
             active: state.active === id,
+            hideDesc: true,
             onPick: function (sid) {
               state.starterPicked = true;
               applyBrickSkin(sid);
@@ -380,14 +381,13 @@
     });
   }
 
-  /** Lucky Spin: 2% mở khóa 1 gạch chưa có (random). Trả về skin id hoặc null. */
-  function tryUnlockRandomBrickFromSpin(chance) {
+  /** Lucky Spin: 2% mở khóa 1 gạch chưa có (random). quiet=true → chỉ unlock, không mở panel. */
+  function tryUnlockRandomBrickFromSpin(chance, quiet) {
     if (typeof chance !== "number") chance = 0.02;
     if (Math.random() >= chance) return null;
     const locked = UNLOCK_ORDER.filter(function (id) {
       return !isUnlocked(id);
     });
-    // Nếu đã mở hết unlock-order, thử mọi skin còn khóa (phòng hờ)
     const pool =
       locked.length > 0
         ? locked
@@ -399,6 +399,7 @@
     if (!pool.length) return null;
     const id = pool[Math.floor(Math.random() * pool.length)];
     if (!unlockBrickSkin(id)) return null;
+    if (quiet) return id;
     setTimeout(function () {
       openBrickSkinPanel("unlock", id);
       try {
