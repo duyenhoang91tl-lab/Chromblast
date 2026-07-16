@@ -404,6 +404,41 @@ function _vsBeginDrag(P,ev){
   });
 }
 
+/** Bỏ chọn khối — giống endDrag() map thường */
+function _vsDeselect(P){
+  if(!P) return;
+  P.selected=-1;
+  _vsClearPreview(P);
+  _vsHideGhost(P);
+  if(P.el && P.el.tray){
+    P.el.tray.querySelectorAll('.vs-piece').forEach(el=>{
+      el.classList.remove('dragging-src','sel');
+    });
+  }
+}
+
+// Chạm ra ngoài khay/lưới/thẻ/nút → bỏ chọn (giống map thường)
+document.addEventListener('pointerdown', ev=>{
+  if(!versusMode||!_vs) return;
+  const t=ev.target;
+  if(!t || !t.closest) return;
+  // Giữ chọn khi chạm khối, bàn cờ, thẻ chướng ngại, nút thoát
+  if(t.closest('.vs-piece') || t.closest('.vs-grid') || t.closest('.vs-cards') ||
+     t.closest('#vs-quit-btn') || t.closest('#vs-top-hud')) return;
+  // Huỷ mọi drag đang mở của pointer này
+  const id=ev.pointerId!==undefined?ev.pointerId:-1;
+  const dr=_vsDrags.get(id);
+  if(dr){
+    _vsDrags.delete(id);
+    _vsDeselect(dr.P);
+    return;
+  }
+  // Bỏ chọn mọi người đang chọn (tap nền / mép màn hình)
+  _vs.players.forEach(P=>{
+    if(P.selected>=0) _vsDeselect(P);
+  });
+});
+
 document.addEventListener('pointermove',ev=>{
   if(!versusMode) return;
   const id=ev.pointerId!==undefined?ev.pointerId:-1;
@@ -439,6 +474,7 @@ function _vsDragEnd(ev){
       }
     }
     try{ sfxInvalid(); }catch(e){}
+    _vsDeselect(P); // thả chỗ không hợp lệ / ra rìa → bỏ chọn như map thường
     return;
   }
 
