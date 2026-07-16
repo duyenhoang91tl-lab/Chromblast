@@ -107,7 +107,10 @@ function perimeterPoint(W, H, t){
 }
 
 let _sparklerT = 0;
-/** Pháo hoa đốt chạy quanh viền — mạnh dần theo secretStreak */
+/**
+ * Pháo sáng kiểu sparkler thật: đầu cháy trên viền + chùm tia kim dài
+ * bắn toả ra (trắng–vàng–cam), mạnh dần theo secretStreak.
+ */
 function spawnSparklerBorder(){
   const wrap=document.getElementById('grid-wrap');
   const cbDiv=document.getElementById('combo-border-sparks');
@@ -117,84 +120,109 @@ function spawnSparklerBorder(){
 
   const st = Math.max(1, (typeof secretStreak==='number' ? secretStreak : 1)|0);
   const ultra = !!(secretUltra || st >= 9);
-  // Tier theo combo: 1–2 nhẹ · 3–4 vừa · 5–7 mạnh · 8–11 rất mạnh · 12+ / ultra cực đại
   let tier = 0;
   if(st >= 12 || ultra) tier = 4;
   else if(st >= 8) tier = 3;
   else if(st >= 5) tier = 2;
   else if(st >= 3) tier = 1;
 
-  const maxDom = [48, 70, 100, 140, 180][tier];
+  const maxDom = [80, 120, 180, 260, 340][tier];
   if(cbDiv.childElementCount > maxDom) return;
   cbDiv.classList.add('active');
 
-  const speed = [0.016, 0.024, 0.034, 0.048, 0.062][tier];
+  // Đầu cháy chạy quanh chu vi
+  const speed = [0.014, 0.02, 0.028, 0.038, 0.05][tier];
   _sparklerT = (_sparklerT + speed) % 1;
-  const heads = [1, 2, 3, 4, 6][tier];
-  const nTrail = [2, 3, 4, 5, 7][tier];
-  const distBase = [12, 18, 26, 36, 48][tier];
-  const distRand = [22, 32, 48, 64, 90][tier];
-  const lenBase = [3, 4, 5, 7, 9][tier];
-  const lenRand = [4, 6, 8, 11, 14][tier];
+  const tips = [1, 2, 3, 4, 5][tier];
+  // Số tia mỗi đầu — kiểu sparkler: nhiều tia kim toả ra
+  const raysPerTip = [10, 16, 24, 34, 48][tier];
+  const lenMin = [18, 26, 36, 48, 62][tier];
+  const lenMax = [42, 60, 85, 120, 160][tier];
   const cols = tier >= 3
-    ? ['#ffffff','#fffde0','#ffd700','#ffe566','#ff9900','#ff4400','#ff66ff','#66ffff']
-    : tier >= 2
-      ? ['#ffffff','#fffde0','#ffd700','#ffe566','#ff9900','#ff6600']
-      : ['#fff8c8','#ffd700','#ffec5c','#ffffff','#ffcc66'];
+    ? ['#ffffff','#fffef0','#fff8c0','#ffe566','#ffd700','#ffb020','#ff8800']
+    : ['#ffffff','#fffde8','#ffe9a0','#ffd700','#ffcc44','#ffaa22'];
 
   const frag=document.createDocumentFragment();
   const doomed=[];
-  for(let h=0;h<heads;h++){
-    const baseT = (_sparklerT + h / heads) % 1;
-    for(let k=0;k<nTrail;k++){
-      const pt = perimeterPoint(W, H, baseT - k * (0.010 + tier * 0.003));
-      const ang = pt.ang + (Math.random() * (48 + tier * 18) - (24 + tier * 9));
-      const dist = distBase + Math.random() * distRand;
-      const len = lenBase + Math.random() * lenRand;
-      const dur = Math.max(120, 200 - tier * 12) + Math.random() * (120 + tier * 20);
+
+  for(let h=0; h<tips; h++){
+    const t = (_sparklerT + h / tips) % 1;
+    const tip = perimeterPoint(W, H, t);
+    // Góc bắn ra ngoài + một ít tia loạn quanh (giống sparkler thật)
+    const outAng = tip.ang;
+
+    // Đầu cháy sáng
+    const head=document.createElement('div');
+    head.className='sparkler-tip'+(tier>=3?' sparkler-tip-hot':'')+(tier>=4?' sparkler-tip-max':'');
+    head.style.left=tip.x+'px';
+    head.style.top=tip.y+'px';
+    frag.appendChild(head);
+    doomed.push([head, 160 + tier*20]);
+
+    for(let r=0; r<raysPerTip; r++){
+      // Phân bố: phần lớn tia ra ngoài (±70°), vài tia loạn 360°
+      let ang;
+      if(r < raysPerTip * 0.72){
+        ang = outAng + (Math.random()*140 - 70);
+      } else {
+        ang = Math.random() * 360;
+      }
+      const len = lenMin + Math.random() * (lenMax - lenMin);
+      // Tia bay ra gần bằng chiều dài (sparkler needles)
+      const dist = len * (0.55 + Math.random() * 0.65);
+      const thick = (tier >= 3 ? 1.2 : 0.9) + Math.random() * (tier >= 4 ? 1.8 : 1.1);
+      const dur = 220 + Math.random() * (180 + tier * 40);
+      const col = cols[(Math.random()*cols.length)|0];
+      const delay = Math.random() * 40;
+
       const s=document.createElement('div');
-      s.className='cb-spark sparkler-spark'+(tier>=3?' sparkler-spark-hot':'')+(tier>=4?' sparkler-spark-max':'');
-      s.style.left=pt.x+'px'; s.style.top=pt.y+'px';
+      s.className='sparkler-ray'+(tier>=3?' sparkler-ray-hot':'')+(tier>=4?' sparkler-ray-max':'');
+      s.style.left=tip.x+'px';
+      s.style.top=tip.y+'px';
       s.style.setProperty('--ang', ang+'deg');
       s.style.setProperty('--dist', dist+'px');
       s.style.setProperty('--len', len+'px');
-      s.style.setProperty('--col', cols[(Math.random()*cols.length)|0]);
+      s.style.setProperty('--thick', thick+'px');
+      s.style.setProperty('--col', col);
       s.style.setProperty('--dur', dur+'ms');
+      s.style.setProperty('--delay', delay+'ms');
       frag.appendChild(s);
-      doomed.push([s, dur]);
+      doomed.push([s, dur + delay + 40]);
     }
-    const head=perimeterPoint(W,H,baseT);
-    const tip=document.createElement('div');
-    tip.className='sparkler-head'+(tier>=3?' sparkler-head-hot':'')+(tier>=4?' sparkler-head-max':'');
-    tip.style.left=head.x+'px'; tip.style.top=head.y+'px';
-    frag.appendChild(tip);
-    doomed.push([tip, tier>=3 ? 180 : 140]);
+  }
 
-    // Combo cao: thêm chùm tia phụ nổ ra từ đầu tip
-    if(tier >= 2){
-      const burstN = tier >= 4 ? 5 : (tier >= 3 ? 3 : 2);
-      for(let b=0;b<burstN;b++){
-        const ang2 = head.ang + (Math.random()*160-80);
-        const dist2 = distBase*0.7 + Math.random()*distRand*0.8;
-        const dur2 = 140 + Math.random()*160;
-        const s2=document.createElement('div');
-        s2.className='cb-spark sparkler-spark'+(tier>=3?' sparkler-spark-hot':'');
-        s2.style.left=head.x+'px'; s2.style.top=head.y+'px';
-        s2.style.setProperty('--ang', ang2+'deg');
-        s2.style.setProperty('--dist', dist2+'px');
-        s2.style.setProperty('--len', (lenBase+Math.random()*lenRand)+'px');
-        s2.style.setProperty('--col', cols[(Math.random()*cols.length)|0]);
-        s2.style.setProperty('--dur', dur2+'ms');
-        frag.appendChild(s2);
-        doomed.push([s2, dur2]);
+  // Combo cao: thêm 1–2 cụm nổ phụ ở góc khung
+  if(tier >= 2){
+    const extras = tier >= 4 ? 2 : 1;
+    for(let e=0; e<extras; e++){
+      const pt = perimeterPoint(W, H, Math.random());
+      const n = 8 + tier * 4;
+      for(let i=0;i<n;i++){
+        const ang = pt.ang + (Math.random()*160 - 80);
+        const len = lenMin*0.7 + Math.random()*lenMax*0.7;
+        const dist = len * (0.5 + Math.random()*0.7);
+        const dur = 200 + Math.random()*200;
+        const s=document.createElement('div');
+        s.className='sparkler-ray'+(tier>=3?' sparkler-ray-hot':'');
+        s.style.left=pt.x+'px'; s.style.top=pt.y+'px';
+        s.style.setProperty('--ang', ang+'deg');
+        s.style.setProperty('--dist', dist+'px');
+        s.style.setProperty('--len', len+'px');
+        s.style.setProperty('--thick', (1+Math.random()*1.4)+'px');
+        s.style.setProperty('--col', cols[(Math.random()*cols.length)|0]);
+        s.style.setProperty('--dur', dur+'ms');
+        s.style.setProperty('--delay', (Math.random()*30)+'ms');
+        frag.appendChild(s);
+        doomed.push([s, dur+50]);
       }
     }
   }
+
   cbDiv.appendChild(frag);
   doomed.forEach(([el,dur])=>setTimeout(()=>{
     el.remove();
     if(!cbDiv.children.length) cbDiv.classList.remove('active');
-  }, dur+40));
+  }, dur));
 }
 
 function spawnBorderFireworks(ci, big, streak){
