@@ -2002,43 +2002,39 @@ body:has(#secret-stage.active) .streak-dot.lit{
 }
 
 /* ════════════════════════════════════════════════════════
-   HUD ARCADE — gọn ≈ chiều cao 3 ô gạch (44px×3)
+   HUD ARCADE — khung to như ban đầu · không TARGETS
 ════════════════════════════════════════════════════════ */
 #game-root.hud-arcade #header {
-  --hud-cell: 44px; /* khớp .cell */
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
-  column-gap: 10px;
+  column-gap: 16px;
   overflow: visible;
   font-family: 'Nunito', system-ui, sans-serif;
-  /* Chiều cao khung ≈ 3 ô gạch */
-  height: calc(var(--hud-cell) * 3);
-  max-height: calc(var(--hud-cell) * 3);
-  box-sizing: border-box;
   background:
     linear-gradient(180deg, rgba(186,110,210,0.62) 0%, rgba(110,48,150,0.78) 100%);
-  border: 2px solid #ffd97a;
-  border-radius: 14px;
-  padding: 6px 10px;
-  margin-bottom: 8px;
+  border: 2.5px solid #ffd97a;
+  border-radius: 20px;
+  padding: 14px 14px 12px;
+  margin-bottom: 12px;
+  min-height: 88px;
   box-shadow:
-    0 0 0 1px rgba(255,240,180,0.35),
-    0 0 12px rgba(255,190,90,0.35),
-    inset 0 1px 0 rgba(255,255,255,0.25);
+    0 0 0 1px rgba(255,240,180,0.4),
+    0 0 18px rgba(255,190,90,0.4),
+    inset 0 1px 0 rgba(255,255,255,0.28);
 }
-/* Ô điểm — căn giữa, vừa 1 cột */
+/* Ô điểm — căn giữa trong khung */
 #game-root.hud-arcade #header-score {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-width: 64px;
-  padding: 4px 10px;
+  min-width: 92px;
+  padding: 8px 16px 7px;
   background:
     linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(255,230,160,0.12) 100%);
   border: 1.5px solid rgba(255,230,150,0.55);
-  border-radius: 10px;
+  border-radius: 14px;
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.35);
   text-align: center;
 }
@@ -2046,23 +2042,26 @@ body:has(#secret-stage.active) .streak-dot.lit{
   display: block;
   width: 100%;
   color: #ffe9b8;
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.4px;
-  line-height: 1.1;
+  letter-spacing: 0.6px;
+  line-height: 1.2;
   white-space: nowrap;
   text-align: center !important;
+  text-shadow: 0 1px 0 rgba(80,30,0,0.25);
 }
 #game-root.hud-arcade #score-box {
   display: block;
   width: 100%;
-  font-size: 20px;
+  font-size: clamp(24px, 6vw, 30px);
   font-weight: 900;
   color: #fff4c4;
   text-align: center !important;
-  line-height: 1;
-  margin-top: 1px;
-  text-shadow: 0 0 8px rgba(255,220,100,0.7);
+  line-height: 1.05;
+  margin-top: 2px;
+  text-shadow:
+    0 0 10px rgba(255,220,100,0.75),
+    0 2px 0 rgba(120,60,0,0.35);
   font-variant-numeric: tabular-nums;
 }
 #game-root.hud-arcade #best-box,
@@ -2075,26 +2074,22 @@ body:has(#secret-stage.active) .streak-dot.lit{
 #game-root.hud-arcade #header-targets {
   display: none !important;
 }
-/* Giữa: vương miện + inventory cùng một hàng ngang */
+/* Giữa: vương miện trên, inventory dưới */
 #game-root.hud-arcade #header-center {
   justify-self: center;
   margin: 0;
   overflow: visible;
   display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
+  gap: 6px;
   text-align: center;
-  max-height: 100%;
 }
 #game-root.hud-arcade #level-badge.level-crown,
 #game-root.hud-arcade #level-badge {
   position: relative;
-  width: 40px;
-  height: 40px;
-  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2102,88 +2097,94 @@ body:has(#secret-stage.active) .streak-dot.lit{
   background:
     radial-gradient(circle at 50% 70%, rgba(255,255,255,0.4) 0%, transparent 45%),
     linear-gradient(180deg, #fff0b8 0%, #ffc94a 45%, #e09018 100%);
-  border: 1.5px solid #fff6d0;
-  border-radius: 7px 7px 9px 9px;
+  border: 2px solid #fff6d0;
+  border-radius: 10px 10px 14px 14px;
   box-shadow:
-    0 0 8px rgba(255,200,70,0.65),
-    inset 0 1px 0 rgba(255,255,255,0.5);
-  padding: 0 2px 3px;
+    0 0 14px rgba(255,200,70,0.75),
+    inset 0 2px 0 rgba(255,255,255,0.55),
+    0 3px 8px rgba(0,0,0,0.28);
+  padding: 0 3px 6px;
   overflow: visible;
 }
 #game-root.hud-arcade #level-badge .level-crown-top {
   position: absolute;
-  left: 50%; top: -8px;
+  left: 50%; top: -12px;
   transform: translateX(-50%);
-  width: 40px; height: 14px;
+  width: 56px; height: 20px;
   pointer-events: none;
 }
 #game-root.hud-arcade #level-badge .peak {
   position: absolute;
   bottom: 0;
   display: block;
-  width: 12px; height: 13px;
+  width: 17px; height: 18px;
 }
-#game-root.hud-arcade #level-badge .peak-l { left: 0; }
-#game-root.hud-arcade #level-badge .peak-c { left: 50%; transform: translateX(-50%); width: 14px; height: 15px; z-index: 1; }
-#game-root.hud-arcade #level-badge .peak-r { right: 0; }
+#game-root.hud-arcade #level-badge .peak-l { left: 1px; }
+#game-root.hud-arcade #level-badge .peak-c { left: 50%; transform: translateX(-50%); width: 19px; height: 21px; z-index: 1; }
+#game-root.hud-arcade #level-badge .peak-r { right: 1px; }
 #game-root.hud-arcade #level-badge .peak i {
   position: absolute;
   left: 50%; bottom: 0;
   transform: translateX(-50%);
   width: 0; height: 0;
   border-style: solid;
-  border-width: 0 6px 12px 6px;
+  border-width: 0 8px 16px 8px;
   border-color: transparent transparent #ffc94a transparent;
+  filter: drop-shadow(0 0 2px rgba(255,210,80,0.7));
 }
 #game-root.hud-arcade #level-badge .peak-c i {
-  border-width: 0 7px 14px 7px;
+  border-width: 0 9px 19px 9px;
   border-color: transparent transparent #fff0b8 transparent;
 }
 #game-root.hud-arcade #level-badge .peak::after {
   content: '';
   position: absolute;
-  left: 50%; top: 0;
+  left: 50%; top: -1px;
   transform: translateX(-50%);
-  width: 5px; height: 5px;
+  width: 6px; height: 6px;
   border-radius: 50%;
   background: radial-gradient(circle at 30% 30%, #fff 0%, #ff7aad 55%, #d81b60 100%);
+  box-shadow: 0 0 5px rgba(255,110,160,0.9);
   z-index: 2;
 }
 #game-root.hud-arcade #level-badge .peak-c::after {
-  width: 6px; height: 6px; top: -1px;
+  width: 7px; height: 7px; top: -2px;
   background: radial-gradient(circle at 30% 30%, #fff 0%, #8ed8ff 50%, #1e88e5 100%);
+  box-shadow: 0 0 6px rgba(100,190,255,0.95);
 }
 #game-root.hud-arcade #level-cap {
   display: block !important;
   color: #7a4208;
-  font-size: 7px;
+  font-size: 9px;
   font-weight: 900;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.8px;
   line-height: 1;
+  margin-bottom: 1px;
   text-align: center;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.45);
 }
 #game-root.hud-arcade #level-box {
-  font-size: 15px;
+  font-size: 22px;
   font-weight: 900;
   color: #4a2200;
   line-height: 1;
   text-align: center;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.45);
 }
 #game-root.hud-arcade .inv-hud {
-  margin: 0;
-  gap: 4px;
+  margin-top: 0;
+  gap: 5px;
   justify-content: center;
-  flex-wrap: nowrap;
 }
 #game-root.hud-arcade .inv-chip {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 900;
-  padding: 2px 6px;
+  padding: 3px 8px;
   border-radius: 999px;
   background: rgba(40,16,60,0.55);
-  border: 1px solid rgba(255,255,255,0.28);
+  border: 1.5px solid rgba(255,255,255,0.28);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.25);
   color: #fff;
-  white-space: nowrap;
 }
 #game-root.hud-arcade .inv-heart {
   border-color: rgba(255,120,140,0.55);
@@ -2198,7 +2199,7 @@ body:has(#secret-stage.active) .streak-dot.lit{
   background: rgba(100,60,20,0.45);
 }
 #game-root.hud-arcade #game-controls {
-  gap: 6px;
+  gap: 8px;
   justify-self: end;
   align-self: center;
 }
@@ -2211,23 +2212,23 @@ body:has(#secret-stage.active) .streak-dot.lit{
 #game-root.hud-arcade #pause-btn,
 #game-root.hud-arcade #account-btn,
 #game-root.hud-arcade #mute-btn {
-  width: 34px; height: 34px; border-radius: 50% !important;
+  width: 40px; height: 40px; border-radius: 50% !important;
   display: flex !important; align-items: center; justify-content: center;
-  font-size: 15px !important;
+  font-size: 18px !important;
   padding: 0;
   line-height: 1;
 }
 #game-root.hud-arcade #versus-btn.vs-unlocked {
   background: radial-gradient(circle at 35% 30%, #ffe08a 0%, #f0a820 55%, #c87800 100%) !important;
   border: 2px solid #fff0c0 !important;
-  box-shadow: 0 0 8px rgba(255,180,40,0.65);
+  box-shadow: 0 0 10px rgba(255,180,40,0.7), inset 0 1px 0 rgba(255,255,255,0.5);
 }
 #game-root.hud-arcade #pause-btn,
 #game-root.hud-arcade #account-btn,
 #game-root.hud-arcade #mute-btn {
   background: radial-gradient(circle at 35% 28%, #9ad4ff 0%, #4a90e8 52%, #2560b8 100%) !important;
-  border: 2px solid #d0ecff !important;
-  box-shadow: 0 0 8px rgba(90,170,255,0.6);
+  border: 2.5px solid #d0ecff !important;
+  box-shadow: 0 0 12px rgba(90,170,255,0.7), inset 0 1px 0 rgba(255,255,255,0.55);
 }
 #game-root.hud-arcade.map-secret1 #combo-flash,
 #game-root.hud-arcade.map-secret1 #combo-count-flash {
@@ -2240,10 +2241,10 @@ body:has(#secret-stage.active) .streak-dot.lit{
 }
 #game-root.hud-arcade.map-secret1 #secret-hearts { display: none !important; }
 @media (max-width: 360px) {
-  #game-root.hud-arcade #header { column-gap: 6px; padding: 5px 8px; }
-  #game-root.hud-arcade #header-score { min-width: 56px; padding: 3px 7px; }
-  #game-root.hud-arcade #score-box { font-size: 18px; }
-  #game-root.hud-arcade .inv-chip { padding: 2px 5px; font-size: 10px; }
+  #game-root.hud-arcade #header { column-gap: 10px; padding: 12px 10px; min-height: 80px; }
+  #game-root.hud-arcade #header-score { min-width: 78px; padding: 6px 10px; }
+  #game-root.hud-arcade #level-badge.level-crown,
+  #game-root.hud-arcade #level-badge { width: 50px; height: 50px; }
 }
 
 /* ════════════════════════════════════════════════════════
