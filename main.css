@@ -2002,56 +2002,61 @@ body:has(#secret-stage.active) .streak-dot.lit{
 }
 
 /* ════════════════════════════════════════════════════════
-   HUD ARCADE — SCORE / LEVEL crown / TARGETS / controls
-   Căn đều · font Nunito dễ thương · icon rõ
+   HUD ARCADE — SCORE · LEVEL crown · controls (không TARGETS)
 ════════════════════════════════════════════════════════ */
 #game-root.hud-arcade #header {
   display: grid;
-  grid-template-columns: minmax(84px, auto) auto minmax(0, 1fr) auto;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  column-gap: 14px;
-  row-gap: 8px;
+  column-gap: 16px;
+  row-gap: 6px;
   overflow: visible;
   font-family: 'Nunito', system-ui, sans-serif;
   background:
     linear-gradient(180deg, rgba(186,110,210,0.62) 0%, rgba(110,48,150,0.78) 100%);
   border: 2.5px solid #ffd97a;
   border-radius: 20px;
-  padding: 14px 12px 10px 12px;
+  padding: 14px 14px 10px;
   margin-bottom: 12px;
   box-shadow:
     0 0 0 1px rgba(255,240,180,0.4),
     0 0 18px rgba(255,190,90,0.4),
     inset 0 1px 0 rgba(255,255,255,0.28);
 }
-/* Ô điểm — căn giữa trong khung, không dính mép trái */
+/* Ô điểm — flex căn giữa tuyệt đối */
 #game-root.hud-arcade #header-score {
-  min-width: 84px;
-  max-width: 110px;
-  text-align: center;
-  justify-self: start;
-  padding: 6px 12px 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 88px;
+  padding: 7px 14px 6px;
   background:
-    linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,230,160,0.1) 100%);
+    linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(255,230,160,0.12) 100%);
   border: 1.5px solid rgba(255,230,150,0.55);
   border-radius: 14px;
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.35);
+  text-align: center;
 }
 #game-root.hud-arcade #score-label {
+  display: block;
+  width: 100%;
   color: #ffe9b8;
   font-size: 10px;
   font-weight: 800;
-  letter-spacing: 0.6px;
-  line-height: 1.15;
+  letter-spacing: 0.5px;
+  line-height: 1.2;
   white-space: nowrap;
-  text-align: center;
+  text-align: center !important;
   text-shadow: 0 1px 0 rgba(80,30,0,0.25);
 }
 #game-root.hud-arcade #score-box {
+  display: block;
+  width: 100%;
   font-size: clamp(22px, 5.5vw, 28px);
   font-weight: 900;
   color: #fff4c4;
-  text-align: center;
+  text-align: center !important;
   line-height: 1.05;
   margin-top: 2px;
   text-shadow:
@@ -2064,26 +2069,27 @@ body:has(#secret-stage.active) .streak-dot.lit{
 #game-root.hud-arcade #player-level-box,
 #game-root.hud-arcade #mode-badge,
 #game-root.hud-arcade #header-brand,
-#game-root.hud-arcade #adventure-avatar {
+#game-root.hud-arcade #adventure-avatar,
+#game-root.hud-arcade #header-right,
+#game-root.hud-arcade #header-targets {
   display: none !important;
 }
-/* Vương miện — cột riêng, cách rõ ô điểm */
+/* Vương miện + inventory giữa */
 #game-root.hud-arcade #header-center {
   justify-self: center;
-  margin-left: 0;
+  margin: 0;
   overflow: visible;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   text-align: center;
 }
 #game-root.hud-arcade #level-badge.level-crown,
 #game-root.hud-arcade #level-badge {
   position: relative;
-  width: 48px;
-  min-height: 0;
-  height: 48px;
+  width: 50px;
+  height: 50px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2092,20 +2098,19 @@ body:has(#secret-stage.active) .streak-dot.lit{
     radial-gradient(circle at 50% 70%, rgba(255,255,255,0.4) 0%, transparent 45%),
     linear-gradient(180deg, #fff0b8 0%, #ffc94a 45%, #e09018 100%);
   border: 2px solid #fff6d0;
-  border-radius: 8px 8px 11px 11px;
-  clip-path: none;
+  border-radius: 8px 8px 12px 12px;
   box-shadow:
     0 0 12px rgba(255,200,70,0.7),
     inset 0 2px 0 rgba(255,255,255,0.55),
     0 3px 8px rgba(0,0,0,0.28);
-  padding: 0 3px 4px;
+  padding: 0 3px 5px;
   overflow: visible;
 }
 #game-root.hud-arcade #level-badge .level-crown-top {
   position: absolute;
   left: 50%; top: -11px;
   transform: translateX(-50%);
-  width: 48px; height: 18px;
+  width: 50px; height: 18px;
   pointer-events: none;
 }
 #game-root.hud-arcade #level-badge .peak {
@@ -2114,9 +2119,9 @@ body:has(#secret-stage.active) .streak-dot.lit{
   display: block;
   width: 15px; height: 16px;
 }
-#game-root.hud-arcade #level-badge .peak-l { left: 0; }
+#game-root.hud-arcade #level-badge .peak-l { left: 1px; }
 #game-root.hud-arcade #level-badge .peak-c { left: 50%; transform: translateX(-50%); width: 17px; height: 19px; z-index: 1; }
-#game-root.hud-arcade #level-badge .peak-r { right: 0; }
+#game-root.hud-arcade #level-badge .peak-r { right: 1px; }
 #game-root.hud-arcade #level-badge .peak i {
   position: absolute;
   left: 50%; bottom: 0;
@@ -2155,6 +2160,7 @@ body:has(#secret-stage.active) .streak-dot.lit{
   letter-spacing: 0.8px;
   line-height: 1;
   margin-bottom: 1px;
+  text-align: center;
   text-shadow: 0 1px 0 rgba(255,255,255,0.45);
 }
 #game-root.hud-arcade #level-box {
@@ -2162,13 +2168,14 @@ body:has(#secret-stage.active) .streak-dot.lit{
   font-weight: 900;
   color: #4a2200;
   line-height: 1;
+  text-align: center;
   text-shadow: 0 1px 0 rgba(255,255,255,0.45);
   letter-spacing: -0.3px;
 }
-/* Inventory chips dưới vương miện — to, rõ */
 #game-root.hud-arcade .inv-hud {
   margin-top: 0;
-  gap: 4px;
+  gap: 5px;
+  justify-content: center;
 }
 #game-root.hud-arcade .inv-chip {
   font-size: 12px;
@@ -2192,47 +2199,14 @@ body:has(#secret-stage.active) .streak-dot.lit{
   border-color: rgba(255,190,100,0.55);
   background: rgba(100,60,20,0.45);
 }
-#game-root.hud-arcade #header-right {
-  display: block !important;
-  text-align: center;
-  max-width: none;
-  min-width: 0;
-  justify-self: stretch;
-}
-#game-root.hud-arcade #header-targets {
-  display: block !important;
-  text-align: center;
-  padding: 4px 8px;
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,230,150,0.35);
-  border-radius: 12px;
-}
-#game-root.hud-arcade .arcade-targets-label {
-  display: block;
-  font-size: 10px;
-  font-weight: 900;
-  letter-spacing: 1px;
-  color: #ffe9b8;
-  text-transform: uppercase;
-}
-#game-root.hud-arcade .arcade-targets-val {
-  display: block;
-  font-size: 12px;
-  font-weight: 800;
-  color: #fff;
-  line-height: 1.3;
-  margin-top: 2px;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.45);
-  word-break: break-word;
-}
 #game-root.hud-arcade #game-controls {
   gap: 7px;
   justify-self: end;
+  align-self: center;
 }
 #game-root.hud-arcade #game-controls > button:not(#pause-btn):not(#account-btn):not(#mute-btn):not(#versus-btn) {
   display: none !important;
 }
-/* ⚔️ Đấu đôi — hiện từ Lv.10 */
 #versus-btn { display: none; }
 #versus-btn.vs-unlocked { display: flex !important; align-items: center; justify-content: center; }
 #game-root.hud-arcade #versus-btn.vs-unlocked,
@@ -2262,21 +2236,17 @@ body:has(#secret-stage.active) .streak-dot.lit{
   display: none !important;
   animation: none !important;
 }
-#game-root.hud-arcade.map-secret1 #sc-fx {
-  display: none !important;
-}
+#game-root.hud-arcade.map-secret1 #sc-fx,
 #game-root.hud-arcade.map-secret1 #sc-fx * {
   display: none !important;
 }
 #game-root.hud-arcade.map-secret1 #secret-hearts { display: none !important; }
-@media (max-width: 380px) {
+@media (max-width: 360px) {
   #game-root.hud-arcade #header {
-    grid-template-columns: minmax(72px, auto) auto auto;
     column-gap: 10px;
+    padding: 12px 10px 8px;
   }
-  #game-root.hud-arcade #header-right { display: none !important; }
-  #game-root.hud-arcade #game-controls { grid-column: 3; }
-  #game-root.hud-arcade #header-score { min-width: 72px; padding: 5px 8px; }
+  #game-root.hud-arcade #header-score { min-width: 76px; padding: 6px 10px 5px; }
 }
 
 /* ════════════════════════════════════════════════════════
