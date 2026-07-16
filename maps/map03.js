@@ -7,6 +7,8 @@
 let fruitMode=false, fruitRAF=null, fruitLast=0, fruitElapsed=0, fruitSpawnTimer=0;
 let fruits=[], fruitTrail=[], fruitTimeLeft=60;
 let fruitCombo=0, fruitComboTimer=0;
+const FRUIT_COMBO_MIN=3; // chém liên tiếp từ quả thứ 3 mới tính combo (x2 / hiện HUD)
+const FRUIT_COMBO_WINDOW_MS=1100; // cửa sổ giữa 2 nhát chém để giữ chuỗi
 let fruitMissStreak=0; // số lần chém trượt (quả rơi hết màn hình mà không chém trúng) liên tiếp
 let fruitLives=5; // chém trúng bom trừ 1 mạng thay vì thua ngay
 let fruitFx=[]; // slice effects: juice drops + petals + slash lines
@@ -47,7 +49,7 @@ function enterFruitMode(){
   document.getElementById('grid').style.display='none';
   document.getElementById('pieces-area').style.display='none';
   document.getElementById('hint-bar').style.display='';
-  document.getElementById('hint-bar').textContent='Vuốt để chém quả — tránh chém vào 💣 bom!';
+  document.getElementById('hint-bar').textContent='Vuốt chém quả — 3 quả liên tiếp = COMBO · tránh 💣 bom!';
   FCV().classList.add('active');
   document.getElementById('grid-wrap').classList.add('secret-mode');
   document.getElementById('mode-badge').textContent='🍉 MAP ẨN 3';
@@ -60,10 +62,18 @@ function enterFruitMode(){
   fruitRAF=requestAnimationFrame(fruitLoop);
 }
 
+function resetFruitCombo(){
+  fruitCombo=0;
+  if(fruitComboTimer){ clearTimeout(fruitComboTimer); fruitComboTimer=0; }
+  const box=document.getElementById('combo-box');
+  if(box) box.textContent='';
+}
+
 function initFruit(){
   fruits=[]; fruitTrail=[]; fruitFx=[]; fruitTrailPetals=[]; fruitMissPopups=[];
   fruitElapsed=0; fruitSpawnTimer=0; fruitTimeLeft=60; fruitMissStreak=0;
   fruitLives=5; // 5 mạng — chém trúng bom chỉ trừ 1 mạng thay vì thua ngay
+  resetFruitCombo();
 }
 
 function fruitDiff(){
@@ -119,8 +129,9 @@ function fruitLoop(now){
   fruits=fruits.filter(f=>{
     const alive=!f.sliced && f.y<H+60;
     if(!alive && !f.sliced && !f.isBomb){
-      // Quả rơi hết màn hình mà không chém trúng → tính là 1 lần trượt
+      // Quả rơi hết màn hình mà không chém trúng → tính là 1 lần trượt + đứt combo
       fruitMissStreak++;
+      resetFruitCombo();
       const penalty=10*fruitMissStreak; // trừ điểm tăng dần theo số lần trượt liên tiếp
       score=Math.max(0,score-penalty);
       sfxInvalid();
@@ -164,17 +175,24 @@ function fruitLoop(now){
       if(f.sliced) continue;
       if(distPtSeg2(f.x,f.y,a.x,a.y,b.x,b.y) < f.r+8){
         f.sliced=true;
-        if(f.isBomb){ sfxBomb(); boomed=true; spawnBoomFx(f.x,f.y); }
-        else {
+        if(f.isBomb){
+          sfxBomb(); boomed=true; spawnBoomFx(f.x,f.y);
+          resetFruitCombo(); // dính bom → đứt chuỗi combo
+        } else {
           fruitSlicedTotal++;
           if(fruitSlicedTotal===50) unlockAchievement('fruit50');
           fruitMissStreak=0; // chém trúng → reset chuỗi trượt
           fruitCombo++;
           if(fruitComboTimer) clearTimeout(fruitComboTimer);
-          fruitComboTimer=setTimeout(()=>{ fruitCombo=0; fruitComboTimer=0; document.getElementById('combo-box').textContent=''; },800);
-          document.getElementById('combo-box').textContent=fruitCombo>1?'🍉 x'+fruitCombo:'';
+          fruitComboTimer=setTimeout(()=>{ resetFruitCombo(); }, FRUIT_COMBO_WINDOW_MS);
+          // Combo chỉ tính từ quả thứ 3 liên tiếp (cùng quy tắc x2/x3 với map thường)
+          const isCombo=fruitCombo>=FRUIT_COMBO_MIN;
+          document.getElementById('combo-box').textContent=isCombo?'🍉 COMBO x'+fruitCombo:'';
           const earnedPts=f.pts*comboScoreMultiplier(fruitCombo);
           score+=earnedPts; if(score>best) best=score;
+          if(isCombo && (fruitCombo===FRUIT_COMBO_MIN || fruitCombo%3===0)){
+            try{ showComboFlash(fruitCombo,false); }catch(e){}
+          }
           sfxFruitSlice();
           spawnSliceFx(f.x,f.y,f.juice,f.petals,a,b);
         }
