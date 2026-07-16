@@ -215,7 +215,7 @@
     grid.innerHTML = "";
     if (mode === "starter") {
       title.textContent = "Chọn nền bàn khởi đầu";
-      sub.textContent = "Classic (tối phẳng) hoặc Slate (nền hiện tại)";
+      sub.textContent = "";
       ok.style.display = "none";
       closeBtn.style.display = "none";
       STARTER_IDS.forEach(function (id) {
