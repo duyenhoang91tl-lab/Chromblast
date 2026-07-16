@@ -7,11 +7,11 @@
 
   const KEY = "chromablast_brick_skins";
 
-  /** classic + plush + chroma mở sẵn; còn lại mở dần khi phá map ẩn */
+  /** classic + plush mở sẵn; chroma mở sau map ẩn 7; còn lại mở dần khi phá map ẩn */
   const BRICK_SKINS = [
     { id: "classic", name: "Classic", desc: "Gạch bevel cổ điển", starter: true },
     { id: "plush", name: "Plush", desc: "Bông xù hiện tại", starter: true },
-    { id: "chroma", name: "Chroma", desc: "Kẹo bóng + icon như feature graphic", starter: true },
+    { id: "chroma", name: "Chroma", desc: "Kẹo bóng + icon — thắng map ẩn 7", unlockMap: "memory" },
     { id: "glass", name: "Glass", desc: "Thủy tinh trong" },
     { id: "neon", name: "Neon", desc: "Viền phát sáng" },
     { id: "metal", name: "Metal", desc: "Kim loại xước" },
@@ -47,8 +47,9 @@
   }).map(function (s) {
     return s.id;
   });
+  /** Tuần tự mỗi map ẩn — không gồm skin gắn map cụ thể (vd. chroma → map 7) */
   const UNLOCK_ORDER = BRICK_SKINS.filter(function (s) {
-    return !s.starter;
+    return !s.starter && !s.unlockMap;
   }).map(function (s) {
     return s.id;
   });
@@ -131,6 +132,60 @@
     return null;
   }
 
+  function isHiddenMapCleared(key) {
+    if (typeof clearedHiddenMaps === "undefined" || !clearedHiddenMaps) return false;
+    if (clearedHiddenMaps.has(key)) return true;
+    try {
+      if (typeof CLEARED_MAPS_ALIAS !== "undefined" && CLEARED_MAPS_ALIAS) {
+        if (CLEARED_MAPS_ALIAS[key] && clearedHiddenMaps.has(CLEARED_MAPS_ALIAS[key]))
+          return true;
+        for (const k in CLEARED_MAPS_ALIAS) {
+          if (CLEARED_MAPS_ALIAS[k] === key && clearedHiddenMaps.has(k)) return true;
+        }
+      }
+    } catch (_) {}
+    return false;
+  }
+
+  /** Mở/thu hồi skin gắn map (chroma sau map ẩn 7). Trả id vừa mở khóa hoặc null. */
+  function syncMapGatedBrickSkins() {
+    let justUnlocked = null;
+    BRICK_SKINS.forEach(function (skin) {
+      if (!skin.unlockMap) return;
+      if (isHiddenMapCleared(skin.unlockMap)) {
+        if (unlockBrickSkin(skin.id)) justUnlocked = skin.id;
+      } else if (isUnlocked(skin.id)) {
+        state.unlocked = state.unlocked.filter(function (id) {
+          return id !== skin.id;
+        });
+        if (state.active === skin.id) {
+          state.active = "plush";
+          document.documentElement.setAttribute("data-brick-skin", "plush");
+          const root = document.getElementById("game-root");
+          if (root) root.setAttribute("data-brick-skin", "plush");
+        }
+        saveState();
+      }
+    });
+    return justUnlocked;
+  }
+
+  function announceBrickUnlock(id) {
+    if (!id) return;
+    setTimeout(function () {
+      openBrickSkinPanel("unlock", id);
+      try {
+        if (typeof sfxUnlock === "function") sfxUnlock();
+      } catch (_) {}
+      try {
+        if (typeof showComboFlash === "function") {
+          const s = getSkin(id);
+          showComboFlash(0, false, "🧱 Mở khóa gạch: " + (s ? s.name : id));
+        }
+      } catch (_) {}
+    }, 600);
+  }
+
   function makeSwatch(skinId, color) {
     const d = document.createElement("div");
     d.className = "brick-swatch";
@@ -167,7 +222,13 @@
 
     const desc = document.createElement("div");
     desc.className = "brick-skin-desc";
-    desc.textContent = opts.locked ? "🔒 Chưa mở khóa" : skin.desc;
+    if (opts.locked) {
+      desc.textContent = skin.unlockMap
+        ? "🔒 Thắng map ẩn 7"
+        : "🔒 Chưa mở khóa";
+    } else {
+      desc.textContent = skin.desc;
+    }
 
     card.appendChild(preview);
     card.appendChild(name);
@@ -310,7 +371,7 @@
     if (panel) panel.classList.remove("show");
   }
 
-  /** Lần đầu: bắt buộc chọn classic / plush / chroma trước khi vào game */
+  /** Lần đầu: bắt buộc chọn classic / plush trước khi vào game */
   function maybeShowStarterBrickPicker(thenFn) {
     if (state.starterPicked) {
       if (typeof thenFn === "function") thenFn();
@@ -320,7 +381,9 @@
   }
 
   /** Thắng map ẩn mới → mở khóa gạch mới (1–2 kiểu nếu còn nhiều hơn số map còn lại) */
-  function onHiddenMapClearedForBrick() {
+  function onHiddenMapClearedForBrick(mapKey) {
+    const gated = syncMapGatedBrickSkins();
+
     let mapsLeft = 0;
     try {
       const total =
@@ -348,25 +411,17 @@
       unlockBrickSkin(next);
       last = next;
     }
-    if (!last) return null;
 
-    setTimeout(function () {
-      openBrickSkinPanel("unlock", last);
-      try {
-        if (typeof sfxUnlock === "function") sfxUnlock();
-      } catch (_) {}
-      try {
-        if (typeof showComboFlash === "function") {
-          const s = getSkin(last);
-          showComboFlash(0, false, "🧱 Mở khóa gạch: " + (s ? s.name : last));
-        }
-      } catch (_) {}
-    }, 600);
-    return last;
+    // Ưu tiên thông báo skin gắn map (chroma sau map 7) nếu vừa mở
+    const highlight = gated || last;
+    if (!highlight) return null;
+    announceBrickUnlock(highlight);
+    return highlight;
   }
 
   function initBrickSkins() {
     loadState();
+    syncMapGatedBrickSkins();
     applyBrickSkin(state.active);
     ensurePanel();
     document.getElementById("brick-skin-btn")?.addEventListener("click", function () {
