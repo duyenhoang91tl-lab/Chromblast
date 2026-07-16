@@ -1940,7 +1940,29 @@ body:has(#secret-stage.active) .streak-dot.lit{
 }
 .vs-piece.sel{ border-color:#5BB0FF; background:linear-gradient(165deg, rgba(55,100,160,0.95) 0%, rgba(40,70,120,0.9) 100%); box-shadow:0 0 0 2px rgba(91,176,255,0.25); }
 .vs-piece.used{ opacity:0.15; pointer-events:none; }
+.vs-piece.dragging-src{ opacity:0.2; }
 .vs-mini{ display:grid; gap:2px; }
+/* Ghost kéo-thả — giống #drag-ghost map thường */
+.vs-ghost{
+  position:fixed; pointer-events:none; z-index:9600;
+  display:none; gap:3px;
+  transform:translate(-50%,-50%);
+  will-change:left,top;
+}
+.vs-ghost.active{ display:grid; }
+.vs-ghost.vs-ghost-flip{ transform:translate(-50%,-50%) rotate(180deg); }
+.vs-ghost .vs-g-cell{ border-radius:10px; opacity:0.98; }
+.vs-ghost .vs-g-cell.candy{
+  --cc:#888; position:relative; overflow:visible;
+  background:
+    radial-gradient(ellipse 70% 55% at 32% 26%, color-mix(in srgb, var(--cc) 45%, #fff) 0%, transparent 52%),
+    radial-gradient(circle at 50% 48%, color-mix(in srgb, var(--cc) 88%, #fff) 0%, var(--cc) 85%);
+  box-shadow:
+    0 0 0 1.5px color-mix(in srgb, var(--cc) 55%, #fff),
+    0 0 4px 1px color-mix(in srgb, var(--cc) 45%, transparent),
+    inset 0 2px 3px rgba(255,255,255,0.3),
+    0 3px 6px rgba(0,0,0,0.25);
+}
 .vs-mini-candy{
   --cc:#888;
   border-radius:3px;

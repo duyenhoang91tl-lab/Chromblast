@@ -2,11 +2,10 @@
 // js/versus.js — ĐẤU 1-1 SONG SONG (mở khoá từ Level 10)
 // Hai bàn cờ 7×7 trên cùng màn hình (bàn trên xoay 180° — 2 người ngồi đối
 // diện). Cùng chuỗi khối từ CÙNG hạt giống (PRNG riêng mỗi người → công bằng
-// tuyệt đối dù tốc độ đặt khác nhau). Đặt khối chạm-chọn → chạm-ô; chạm lại
-// khối đang chọn để xoay.
+// tuyệt đối dù tốc độ đặt khác nhau).
+// Xoay/đặt giống map thường: chạm chọn · chạm lại xoay · kéo ghost + ô mờ · thả đặt.
 // Nổ khi lấp đầy 1 hàng/cột, hoặc cụm cùng màu >= VS_GROUP_MIN (8) ô nối liền.
-// Đạt 3 lần ăn điểm (phá hàng/cột/cụm — không cần liên tiếp) → hiện 3 THẺ
-// chướng ngại úp để chọn 1 lá dùng lên bàn ĐỐI THỦ:
+// Cứ 3 lần ăn (không cần liên tiếp) → rút thẻ chướng ngại lên bàn ĐỐI THỦ.
 // ⛰️ núi đá · 🌪️ lốc xoáy · 🧊 băng giá · 🌫️ sương mù · 🐿️ sóc ăn ô · 💣 bom.
 // Tự chứa 100%: không đụng board/pieces/score của bàn chính.
 // GHI CHÚ ONLINE: đồng bộ {seed, nước đi, thẻ} qua server là đấu được 2 máy.
@@ -69,7 +68,14 @@ function _vsMakePiece(P){
 }
 function _vsRefill(P){ P.pieces=[_vsMakePiece(P),_vsMakePiece(P),_vsMakePiece(P)]; P.selected=-1; }
 
-function _rotShape(s){ const maxR=Math.max(...s.map(([r])=>r)); return s.map(([r,c])=>[c,maxR-r]); }
+function _rotShape(s){
+  const maxR=Math.max(...s.map(([r])=>r));
+  let next=s.map(([r,c])=>[c, maxR-r]);
+  // Chuẩn hoá như map thường: góc trên-trái về (0,0)
+  const minR=Math.min(...next.map(([r])=>r));
+  const minC=Math.min(...next.map(([,c])=>c));
+  return next.map(([r,c])=>[r-minR, c-minC]);
+}
 
 // ── Khởi tạo trận ──
 function openVersusSetup(){
@@ -167,16 +173,25 @@ function _vsBuildArena(){
     P.el.cards=half.querySelector('.vs-cards');
     P.el.note=half.querySelector('.vs-note');
     
-    // lưới ô — chạm xuống chỉ HIỆN Ô MỜ xem trước; kéo để căn chỉnh; THẢ RA mới đặt
-    // (giống cơ chế kéo-thả của map thường; trước đây chạm phát là đặt luôn, không căn được)
+    // lưới ô — pointerdown bắt đầu kéo tinh chỉnh khi đã chọn khối (giống map thường)
     P.el.cells=[];
     for(let r=0;r<VS_N;r++){ P.el.cells[r]=[];
       for(let c=0;c<VS_N;c++){
         const d=document.createElement('div'); d.className='vs-cell';
-        d.addEventListener('pointerdown',ev=>{ ev.preventDefault(); _vsDragStart(P,ev,r,c); });
+        d.addEventListener('pointerdown',ev=>{
+          if(!versusMode||P.done||P.selected<0) return;
+          if(P.el.cards.classList.contains('show')) return;
+          ev.preventDefault();
+          _vsBeginDrag(P, ev);
+        });
         P.el.grid.appendChild(d); P.el.cells[r][c]=d;
       }
     }
+    // Ghost kéo-thả riêng cho mỗi nửa bàn (nửa trên xoay 180°)
+    const ghost=document.createElement('div');
+    ghost.className='vs-ghost';
+    half.appendChild(ghost);
+    P.el.ghost=ghost;
   });
   document.getElementById('vs-quit-btn').addEventListener('click',()=>{ if(confirm('Thoát trận?')) _vsAbort(); });
 }
@@ -246,28 +261,101 @@ function _vsRenderTray(P){
   });
 }
 
-// ── Thao tác ──
+// ── Thao tác — giống map thường: chạm chọn / chạm lại xoay / kéo ghost + ô mờ / thả đặt ──
 function _vsPieceTap(P,i,ev){
   if(!versusMode||P.done||P.pieces[i].used) return;
-  if(P.el.cards.classList.contains('show')) return; // đang chọn thẻ
-  if(P.selected===i){ // chạm lại → xoay
+  if(P.el.cards.classList.contains('show')) return;
+  if(ev){ ev.preventDefault(); ev.stopPropagation(); }
+
+  if(P.selected===i){
+    // Chạm lại khối đang chọn → xoay (như map thường)
     P.pieces[i].shape=_rotShape(P.pieces[i].shape);
-    try{ sfxClick(); }catch(e){}
-  } else { P.selected=i; }
+    try{ sfxRotate(); }catch(e){ try{ sfxClick(); }catch(e2){} }
+  } else {
+    P.selected=i;
+    try{ sfxSelect(); }catch(e){ try{ sfxClick(); }catch(e2){} }
+  }
   _vsRenderTray(P);
-  // giữ ngón tay và kéo thẳng từ khay lên bàn cờ để căn ô mờ rồi thả — như map thường
-  if(ev) _vsDrags.set(ev.pointerId!==undefined?ev.pointerId:-1, {P, R:-1, C:-1});
+  if(ev) _vsBeginDrag(P, ev);
 }
 
-/* ── Kéo-thả + ô mờ xem trước (mỗi người chơi 1 con trỏ riêng — theo pointerId) ── */
-const _vsDrags=new Map(); // pointerId -> {P, R, C} (R,C = ô gốc đang preview; -1 = chưa vào lưới)
-function _vsCellAt(P,x,y){
-  for(let r=0;r<VS_N;r++)for(let c=0;c<VS_N;c++){
-    const b=P.el.cells[r][c].getBoundingClientRect();
-    if(x>=b.left&&x<b.right&&y>=b.top&&y<b.bottom) return {r,c};
-  }
-  return null;
+/* ── Kéo-thả + ghost + ô mờ (mỗi người 1 pointerId) ── */
+const _vsDrags=new Map(); // pointerId -> {P, sx, sy, moved, pointerType}
+
+function _vsGridGeom(P){
+  const a=P.el.cells[0][0].getBoundingClientRect();
+  const b=P.el.cells[0][1].getBoundingClientRect();
+  const c=P.el.cells[1][0].getBoundingClientRect();
+  return {
+    x0:a.left, y0:a.top, cell:a.width,
+    stepX:(b.left-a.left)||a.width,
+    stepY:(c.top-a.top)||a.height,
+  };
 }
+function _vsPieceBox(P,pc){
+  const maxR=Math.max(...pc.shape.map(p=>p[0]));
+  const maxC=Math.max(...pc.shape.map(p=>p[1]));
+  const g=_vsGridGeom(P);
+  const stepX=Math.abs(g.stepX), stepY=Math.abs(g.stepY);
+  return { maxR, maxC, g, stepX, stepY, bbW:maxC*stepX+g.cell, bbH:maxR*stepY+g.cell };
+}
+function _vsGhostAnchor(x,y,bbH,ptype){
+  if(ptype==='touch'||ptype==='pen') return [x, y-40-bbH/2];
+  return [x, y];
+}
+/** Quy đổi con trỏ → ô gốc (góc trên-trái khung bao) — cùng công thức map thường */
+function _vsOriginFromPointer(P,x,y,ptype){
+  if(P.selected<0) return null;
+  const pc=P.pieces[P.selected];
+  if(!pc||pc.used) return null;
+  const {g,bbW,bbH,maxR,maxC}=_vsPieceBox(P,pc);
+  const [ax,ay]=_vsGhostAnchor(x,y,bbH,ptype);
+  const ox=ax-bbW/2, oy=ay-bbH/2;
+  let C=Math.round((ox-g.x0)/g.stepX);
+  let R=Math.round((oy-g.y0)/g.stepY);
+  if(R<-1-maxR||C<-1-maxC||R>VS_N+maxR||C>VS_N+maxC) return null;
+  R=Math.max(0,Math.min(VS_N-1-maxR,R));
+  C=Math.max(0,Math.min(VS_N-1-maxC,C));
+  return {R,C};
+}
+
+function _vsBuildGhost(P){
+  const gEl=P.el.ghost; if(!gEl||P.selected<0) return;
+  const pc=P.pieces[P.selected]; if(!pc||pc.used){ _vsHideGhost(P); return; }
+  const {g,maxR,maxC,stepX}=_vsPieceBox(P,pc);
+  const gap=Math.max(0, stepX-g.cell);
+  gEl.style.gridTemplateColumns=`repeat(${maxC+1},${g.cell}px)`;
+  gEl.style.gap=gap+'px';
+  gEl.innerHTML='';
+  const cells=Array((maxR+1)*(maxC+1)).fill(null);
+  pc.shape.forEach(([r,c])=>{ cells[r*(maxC+1)+c]=pc.color; });
+  cells.forEach(color=>{
+    const d=document.createElement('div');
+    d.className='vs-g-cell'+(color?' candy':'');
+    d.style.width=g.cell+'px';
+    d.style.height=g.cell+'px';
+    if(color) d.style.setProperty('--cc',color);
+    else d.style.visibility='hidden';
+    gEl.appendChild(d);
+  });
+  gEl.classList.add('active');
+  // Nửa trên xoay 180° — ghost cố định viewport nên xoay lại cho khớp
+  gEl.classList.toggle('vs-ghost-flip', P.idx===0);
+}
+function _vsHideGhost(P){
+  const gEl=P.el.ghost; if(!gEl) return;
+  gEl.classList.remove('active','vs-ghost-flip');
+  gEl.innerHTML='';
+}
+function _vsMoveGhost(P,x,y,ptype){
+  const gEl=P.el.ghost; if(!gEl||!gEl.classList.contains('active')||P.selected<0) return;
+  const pc=P.pieces[P.selected]; if(!pc) return;
+  const {bbH}=_vsPieceBox(P,pc);
+  const [ax,ay]=_vsGhostAnchor(x,y,bbH,ptype);
+  gEl.style.left=ax+'px';
+  gEl.style.top=ay+'px';
+}
+
 function _vsClearPreview(P){
   if(!P._prev) return;
   P._prev.forEach(([r,c])=>{
@@ -277,12 +365,12 @@ function _vsClearPreview(P){
   });
   P._prev=null;
 }
-function _vsShowPreview(P,R,C){
+function _vsShowPreviewAt(P,R,C){
   _vsClearPreview(P);
   if(P.selected<0) return;
   const pc=P.pieces[P.selected];
   if(!pc||pc.used) return;
-  if(!_vsCanPlace(P,pc.shape,R,C)) return; // chỗ không đặt được → không tô gì
+  if(!_vsCanPlace(P,pc.shape,R,C)) return;
   P._prev=pc.shape.map(([dr,dc])=>[R+dr,C+dc]);
   P._prev.forEach(([r,c])=>{
     const d=P.el.cells[r][c];
@@ -291,57 +379,84 @@ function _vsShowPreview(P,R,C){
     d.style.background='';
   });
 }
-// Ô chạm là TÂM của khối (không phải góc trên-trái như trước): căn giữa khung bao của
-// khối vào ô dưới con trỏ rồi GHIM vào trong biên bàn — y hệt originFromPointer của map
-// thường. Nhờ vậy đặt được vào bất cứ chỗ nào miễn khít (kể cả sát mép dưới/phải), không
-// còn cảnh "còn ô trống mà không đặt được" vì bắt buộc chạm đúng ô cao nhất của khối.
-function _vsOriginFromHit(P,hitR,hitC){
-  if(P.selected<0) return null;
-  const pc=P.pieces[P.selected];
-  if(!pc||pc.used) return null;
-  const maxR=Math.max(...pc.shape.map(s=>s[0])), maxC=Math.max(...pc.shape.map(s=>s[1]));
-  let R=hitR-(maxR>>1), C=hitC-(maxC>>1);
-  R=Math.max(0,Math.min(VS_N-1-maxR,R));
-  C=Math.max(0,Math.min(VS_N-1-maxC,C));
-  return {R,C};
+function _vsUpdatePreview(P,x,y,ptype){
+  const o=_vsOriginFromPointer(P,x,y,ptype);
+  if(!o){ _vsClearPreview(P); return; }
+  _vsShowPreviewAt(P,o.R,o.C);
 }
-function _vsDragStart(P,ev,r,c){
+
+function _vsBeginDrag(P,ev){
   if(!versusMode||P.done||P.selected<0) return;
   if(P.el.cards.classList.contains('show')) return;
-  _vsDrags.set(ev.pointerId!==undefined?ev.pointerId:-1, {P, R:r, C:c});
-  const o=_vsOriginFromHit(P,r,c);
-  if(o) _vsShowPreview(P,o.R,o.C);
+  const id=ev.pointerId!==undefined?ev.pointerId:-1;
+  _vsDrags.set(id,{
+    P,
+    sx:ev.clientX, sy:ev.clientY,
+    moved:false,
+    pointerType:ev.pointerType||'mouse',
+  });
+  _vsBuildGhost(P);
+  _vsMoveGhost(P,ev.clientX,ev.clientY,ev.pointerType);
+  _vsUpdatePreview(P,ev.clientX,ev.clientY,ev.pointerType);
+  // Làm mờ khối trên khay khi đang kéo
+  P.el.tray.querySelectorAll('.vs-piece').forEach((el,i)=>{
+    el.classList.toggle('dragging-src', i===P.selected);
+  });
 }
+
 document.addEventListener('pointermove',ev=>{
   if(!versusMode) return;
-  const dr=_vsDrags.get(ev.pointerId!==undefined?ev.pointerId:-1);
+  const id=ev.pointerId!==undefined?ev.pointerId:-1;
+  const dr=_vsDrags.get(id);
   if(!dr) return;
-  const hit=_vsCellAt(dr.P,ev.clientX,ev.clientY);
-  if(!hit){ _vsClearPreview(dr.P); dr.R=-1; dr.C=-1; return; } // rời khỏi bàn → tắt ô mờ
-  if(hit.r!==dr.R||hit.c!==dr.C){
-    dr.R=hit.r; dr.C=hit.c;
-    const o=_vsOriginFromHit(dr.P,hit.r,hit.c);
-    if(o) _vsShowPreview(dr.P,o.R,o.C);
-  }
+  if(!dr.moved && Math.hypot(ev.clientX-dr.sx, ev.clientY-dr.sy)>6) dr.moved=true;
+  _vsMoveGhost(dr.P, ev.clientX, ev.clientY, dr.pointerType);
+  _vsUpdatePreview(dr.P, ev.clientX, ev.clientY, dr.pointerType);
 });
+
 function _vsDragEnd(ev){
   const id=ev.pointerId!==undefined?ev.pointerId:-1;
   const dr=_vsDrags.get(id);
   if(!dr) return;
   _vsDrags.delete(id);
   if(!versusMode) return;
-  _vsClearPreview(dr.P);
-  const hit=_vsCellAt(dr.P,ev.clientX,ev.clientY);
-  if(hit){ // thả trên lưới → đặt tại vị trí ô mờ; thả ngoài lưới → giữ nguyên khối đang chọn
-    const o=_vsOriginFromHit(dr.P,hit.r,hit.c);
-    if(o) _vsCellTap(dr.P,o.R,o.C);
+  const P=dr.P;
+  _vsClearPreview(P);
+  _vsHideGhost(P);
+  P.el.tray.querySelectorAll('.vs-piece').forEach(el=>el.classList.remove('dragging-src'));
+
+  // Tap trên khay (không kéo) → đã xoay/chọn ở pointerdown, giữ khối đang chọn
+  if(!dr.moved && ev.target && ev.target.closest && ev.target.closest('.vs-piece')) return;
+
+  // Kéo thật → thả đặt nếu hợp lệ (giống map thường)
+  if(dr.moved){
+    const o=_vsOriginFromPointer(P, ev.clientX, ev.clientY, dr.pointerType);
+    if(o && P.selected>=0){
+      const pc=P.pieces[P.selected];
+      if(pc && !pc.used && _vsCanPlace(P,pc.shape,o.R,o.C)){
+        _vsPlaceAt(P,o.R,o.C);
+        return;
+      }
+    }
+    try{ sfxInvalid(); }catch(e){}
+    return;
+  }
+
+  // Tap trên lưới (không kéo) → đặt theo vị trí ô dưới ngón (không dùng lift cảm ứng)
+  if(ev.target && ev.target.closest && ev.target.closest('.vs-cell')){
+    const o=_vsOriginFromPointer(P, ev.clientX, ev.clientY, 'mouse');
+    if(o) _vsPlaceAt(P,o.R,o.C);
   }
 }
 document.addEventListener('pointerup',_vsDragEnd);
 document.addEventListener('pointercancel',ev=>{
   const id=ev.pointerId!==undefined?ev.pointerId:-1;
   const dr=_vsDrags.get(id);
-  if(dr){ _vsDrags.delete(id); _vsClearPreview(dr.P); }
+  if(!dr) return;
+  _vsDrags.delete(id);
+  _vsClearPreview(dr.P);
+  _vsHideGhost(dr.P);
+  dr.P.el.tray.querySelectorAll('.vs-piece').forEach(el=>el.classList.remove('dragging-src'));
 });
 function _vsCanPlace(P,shape,R,C){
   return shape.every(([dr,dc])=>{
@@ -352,7 +467,7 @@ function _vsCanPlace(P,shape,R,C){
     return true;
   });
 }
-function _vsCellTap(P,R,C){
+function _vsPlaceAt(P,R,C){
   if(!versusMode||P.done||P.selected<0) return;
   if(P.el.cards.classList.contains('show')) return;
   const pc=P.pieces[P.selected];
@@ -365,11 +480,10 @@ function _vsCellTap(P,R,C){
   const cleared=_vsResolveClears(P);
   if(cleared>0){
     P.combo++;
-    P.clears++; // tổng số lần ăn — không reset khi đặt không nổ
+    P.clears++;
     const mult=comboScoreMultiplier(P.combo);
     P.score+=cleared*mult;
     try{ sfxMatch(cleared); }catch(e){}
-    // Cứ đủ 3 lần ăn (không cần liên tiếp) → hiện thẻ chọn
     if(P.clears>=P.nextCardAt){
       P.nextCardAt+=VS_CARD_EVERY;
       _vsOfferCards(P);
@@ -377,7 +491,6 @@ function _vsCellTap(P,R,C){
   } else P.combo=0;
   if(P.pieces.every(x=>x.used)) _vsRefill(P);
   _vsRenderAll(P);
-  // hết chỗ đặt → xong sớm
   if(!_vsAnyMove(P)){ P.done=true; P.el.note.textContent=t('vsNoSpace'); P.el.note.classList.add('show');
     if(_vs.players.every(q=>q.done)) _vsEndMatch();
   }
