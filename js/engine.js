@@ -142,9 +142,13 @@ function renderGrid(){
     const prev=cell.style.getPropertyValue('--cc');
     if(bg){
       if(prev!==bg){ cell.style.setProperty('--cc',bg); cell.style.background=''; }
-    } else if(prev || cell.style.background){
+      const ci=COLORS.indexOf(bg);
+      if(ci>=0) cell.dataset.ci=String(ci);
+      else delete cell.dataset.ci;
+    } else if(prev || cell.style.background || cell.dataset.ci){
       cell.style.removeProperty('--cc');
       cell.style.background='';
+      delete cell.dataset.ci;
     }
   }
 }
@@ -223,7 +227,11 @@ function buildGhost(piece){
     d.className='g-cell'+(color?' candy':'');
     d.style.width=g.cell+'px';
     d.style.height=g.cell+'px';
-    if(color){ d.style.setProperty('--cc',color); }
+    if(color){
+      d.style.setProperty('--cc',color);
+      const ci=COLORS.indexOf(color);
+      if(ci>=0) d.dataset.ci=String(ci);
+    }
     else { d.style.visibility='hidden'; }
     ghostEl.appendChild(d);
   });
@@ -255,6 +263,7 @@ function clearPreview(){
     if(!c.classList.contains('filled')){
       c.style.removeProperty('--cc');
       c.style.background='';
+      delete c.dataset.ci;
     }
   }
   previewedCells.length=0;
@@ -274,6 +283,9 @@ function updatePreview(x,y){
       cell.classList.add('preview-ok');
       cell.style.setProperty('--cc',piece.color);
       cell.style.background='';
+      const ci=COLORS.indexOf(piece.color);
+      if(ci>=0) cell.dataset.ci=String(ci);
+      else delete cell.dataset.ci;
       previewedCells.push(cell);
     }
   });
@@ -811,7 +823,11 @@ function renderPieces(){
       d.style.width='100%';
       d.style.height='100%';
       
-      if(color){ d.style.setProperty('--cc',color); d.style.border='none'; }
+      if(color){
+        d.style.setProperty('--cc',color); d.style.border='none';
+        const pci=COLORS.indexOf(color);
+        if(pci>=0) d.dataset.ci=String(pci);
+      }
       else { d.style.background='rgba(0,0,0,0.28)'; d.style.border='1px solid rgba(255,255,255,0.06)'; }
       g.appendChild(d);
     });
