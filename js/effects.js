@@ -107,36 +107,53 @@ function perimeterPoint(W, H, t){
 }
 
 let _sparklerT = 0;
-/** Pháo hoa đốt chạy quanh viền — nhẹ để giữ mượt */
+/** Pháo hoa đốt chạy quanh viền — mạnh dần theo secretStreak */
 function spawnSparklerBorder(){
   const wrap=document.getElementById('grid-wrap');
   const cbDiv=document.getElementById('combo-border-sparks');
   if(!wrap||!cbDiv||!secretMode) return;
   const W=wrap.clientWidth, H=wrap.clientHeight;
   if(W<8||H<8) return;
-  // Giới hạn số hạt đang sống — tránh chồng DOM gây giật
-  if(cbDiv.childElementCount > 40) return;
+
+  const st = Math.max(1, (typeof secretStreak==='number' ? secretStreak : 1)|0);
+  const ultra = !!(secretUltra || st >= 9);
+  // Tier theo combo: 1–2 nhẹ · 3–4 vừa · 5–7 mạnh · 8–11 rất mạnh · 12+ / ultra cực đại
+  let tier = 0;
+  if(st >= 12 || ultra) tier = 4;
+  else if(st >= 8) tier = 3;
+  else if(st >= 5) tier = 2;
+  else if(st >= 3) tier = 1;
+
+  const maxDom = [48, 70, 100, 140, 180][tier];
+  if(cbDiv.childElementCount > maxDom) return;
   cbDiv.classList.add('active');
-  const ultra = secretUltra || secretStreak>=4;
-  const speed = ultra ? 0.028 : 0.018;
+
+  const speed = [0.016, 0.024, 0.034, 0.048, 0.062][tier];
   _sparklerT = (_sparklerT + speed) % 1;
-  const heads = ultra ? 2 : 1;
-  const cols = ultra
-    ? ['#ffffff','#fffde0','#ffd700','#ffe566','#ff9900']
-    : ['#fff8c8','#ffd700','#ffec5c','#ffffff'];
+  const heads = [1, 2, 3, 4, 6][tier];
+  const nTrail = [2, 3, 4, 5, 7][tier];
+  const distBase = [12, 18, 26, 36, 48][tier];
+  const distRand = [22, 32, 48, 64, 90][tier];
+  const lenBase = [3, 4, 5, 7, 9][tier];
+  const lenRand = [4, 6, 8, 11, 14][tier];
+  const cols = tier >= 3
+    ? ['#ffffff','#fffde0','#ffd700','#ffe566','#ff9900','#ff4400','#ff66ff','#66ffff']
+    : tier >= 2
+      ? ['#ffffff','#fffde0','#ffd700','#ffe566','#ff9900','#ff6600']
+      : ['#fff8c8','#ffd700','#ffec5c','#ffffff','#ffcc66'];
+
   const frag=document.createDocumentFragment();
   const doomed=[];
   for(let h=0;h<heads;h++){
-    const baseT = (_sparklerT + h*0.5) % 1;
-    const nTrail = ultra ? 3 : 2;
+    const baseT = (_sparklerT + h / heads) % 1;
     for(let k=0;k<nTrail;k++){
-      const pt = perimeterPoint(W, H, baseT - k*0.014);
-      const ang = pt.ang + (Math.random()*56-28);
-      const dist = (ultra?18:12) + Math.random()*(ultra?36:24);
-      const len = (ultra?4:3) + Math.random()*5;
-      const dur = 160 + Math.random()*140;
+      const pt = perimeterPoint(W, H, baseT - k * (0.010 + tier * 0.003));
+      const ang = pt.ang + (Math.random() * (48 + tier * 18) - (24 + tier * 9));
+      const dist = distBase + Math.random() * distRand;
+      const len = lenBase + Math.random() * lenRand;
+      const dur = Math.max(120, 200 - tier * 12) + Math.random() * (120 + tier * 20);
       const s=document.createElement('div');
-      s.className='cb-spark sparkler-spark';
+      s.className='cb-spark sparkler-spark'+(tier>=3?' sparkler-spark-hot':'')+(tier>=4?' sparkler-spark-max':'');
       s.style.left=pt.x+'px'; s.style.top=pt.y+'px';
       s.style.setProperty('--ang', ang+'deg');
       s.style.setProperty('--dist', dist+'px');
@@ -148,10 +165,30 @@ function spawnSparklerBorder(){
     }
     const head=perimeterPoint(W,H,baseT);
     const tip=document.createElement('div');
-    tip.className='sparkler-head';
+    tip.className='sparkler-head'+(tier>=3?' sparkler-head-hot':'')+(tier>=4?' sparkler-head-max':'');
     tip.style.left=head.x+'px'; tip.style.top=head.y+'px';
     frag.appendChild(tip);
-    doomed.push([tip, 140]);
+    doomed.push([tip, tier>=3 ? 180 : 140]);
+
+    // Combo cao: thêm chùm tia phụ nổ ra từ đầu tip
+    if(tier >= 2){
+      const burstN = tier >= 4 ? 5 : (tier >= 3 ? 3 : 2);
+      for(let b=0;b<burstN;b++){
+        const ang2 = head.ang + (Math.random()*160-80);
+        const dist2 = distBase*0.7 + Math.random()*distRand*0.8;
+        const dur2 = 140 + Math.random()*160;
+        const s2=document.createElement('div');
+        s2.className='cb-spark sparkler-spark'+(tier>=3?' sparkler-spark-hot':'');
+        s2.style.left=head.x+'px'; s2.style.top=head.y+'px';
+        s2.style.setProperty('--ang', ang2+'deg');
+        s2.style.setProperty('--dist', dist2+'px');
+        s2.style.setProperty('--len', (lenBase+Math.random()*lenRand)+'px');
+        s2.style.setProperty('--col', cols[(Math.random()*cols.length)|0]);
+        s2.style.setProperty('--dur', dur2+'ms');
+        frag.appendChild(s2);
+        doomed.push([s2, dur2]);
+      }
+    }
   }
   cbDiv.appendChild(frag);
   doomed.forEach(([el,dur])=>setTimeout(()=>{
@@ -284,33 +321,34 @@ function spawnFireBorder(ultra){
 function updateFireBorder(){
   const wrap = document.getElementById('grid-wrap');
   if(!wrap) return;
-  const wasHigh = wrap.classList.contains('fire-high');
-  const wasLow  = wrap.classList.contains('fire-low');
   if(!secretMode){
-    wrap.classList.remove('fire-low','fire-high');
+    wrap.classList.remove('fire-low','fire-mid','fire-high','fire-max');
     if(fireInterval){ clearInterval(fireInterval); fireInterval=null; }
     return;
   }
-  if(secretStreak >= 4 || secretUltra){
-    if(!wasHigh){
-      wrap.classList.remove('fire-low'); wrap.classList.add('fire-high');
-      if(fireInterval){ clearInterval(fireInterval); fireInterval=null; }
-      // Chỉ sparkler viền — bỏ fire-particle blur (nặng)
-      fireInterval = setInterval(()=>{
-        if(secretMode) spawnSparklerBorder();
-      }, 140);
-    }
-  } else if(secretStreak >= 1){
-    if(!wasLow){
-      wrap.classList.remove('fire-high'); wrap.classList.add('fire-low');
-      if(fireInterval){ clearInterval(fireInterval); fireInterval=null; }
-      fireInterval = setInterval(()=>{
-        if(secretMode) spawnSparklerBorder();
-      }, 180);
-    }
-  } else {
-    wrap.classList.remove('fire-low','fire-high');
+  const st = Math.max(0, (typeof secretStreak==='number' ? secretStreak : 0)|0);
+  let cls = '';
+  let interval = 0;
+  if(st >= 12 || secretUltra){ cls = 'fire-max'; interval = 55; }
+  else if(st >= 8){ cls = 'fire-high'; interval = 75; }
+  else if(st >= 5){ cls = 'fire-mid'; interval = 100; }
+  else if(st >= 1){ cls = 'fire-low'; interval = 150; }
+
+  ['fire-low','fire-mid','fire-high','fire-max'].forEach(c=>{
+    if(c !== cls) wrap.classList.remove(c);
+  });
+  if(!cls){
     if(fireInterval){ clearInterval(fireInterval); fireInterval=null; }
+    return;
+  }
+  wrap.classList.add(cls);
+  const want = interval;
+  if(!fireInterval || fireInterval._ms !== want){
+    if(fireInterval){ clearInterval(fireInterval); fireInterval=null; }
+    fireInterval = setInterval(()=>{
+      if(secretMode) spawnSparklerBorder();
+    }, want);
+    fireInterval._ms = want;
   }
 }
 
