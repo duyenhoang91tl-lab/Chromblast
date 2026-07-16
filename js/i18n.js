@@ -14,7 +14,7 @@ vi: {
   langName:'Tiếng Việt',
   // Màn hình đăng nhập
   authSub:'🔐 Đăng nhập để bắt đầu chơi',
-  guestPlay:'▶ CHƠI NGAY (KHÔNG CẦN ĐĂNG NHẬP)',
+  guestPlay:'Chơi Ngay',
   orDivider:'— hoặc —',
   lblUsername:'Tên đăng nhập', lblPassword:'Mật khẩu', lblPassword2:'Nhập lại mật khẩu',
   btnLogin:'ĐĂNG NHẬP', btnRegister:'ĐĂNG KÝ',
@@ -75,7 +75,7 @@ vi: {
 en: {
   langName:'English',
   authSub:'🔐 Sign in to start playing',
-  guestPlay:'▶ PLAY NOW (NO SIGN-IN NEEDED)',
+  guestPlay:'Play Now',
   orDivider:'— or —',
   lblUsername:'Username', lblPassword:'Password', lblPassword2:'Confirm password',
   btnLogin:'SIGN IN', btnRegister:'SIGN UP',
@@ -130,7 +130,7 @@ en: {
 ko: {
   langName:'한국어',
   authSub:'🔐 로그인하고 게임을 시작하세요',
-  guestPlay:'▶ 바로 플레이 (로그인 불필요)',
+  guestPlay:'지금 플레이',
   orDivider:'— 또는 —',
   lblUsername:'아이디', lblPassword:'비밀번호', lblPassword2:'비밀번호 확인',
   btnLogin:'로그인', btnRegister:'회원가입',
@@ -185,7 +185,7 @@ ko: {
 ja: {
   langName:'日本語',
   authSub:'🔐 ログインしてプレイ開始',
-  guestPlay:'▶ 今すぐプレイ（ログイン不要）',
+  guestPlay:'今すぐプレイ',
   orDivider:'— または —',
   lblUsername:'ユーザー名', lblPassword:'パスワード', lblPassword2:'パスワード（確認）',
   btnLogin:'ログイン', btnRegister:'新規登録',
@@ -240,7 +240,7 @@ ja: {
 zh: {
   langName:'中文',
   authSub:'🔐 登录后开始游戏',
-  guestPlay:'▶ 立即游玩（无需登录）',
+  guestPlay:'立即游玩',
   orDivider:'— 或 —',
   lblUsername:'用户名', lblPassword:'密码', lblPassword2:'确认密码',
   btnLogin:'登录', btnRegister:'注册',
@@ -295,7 +295,7 @@ zh: {
 es: {
   langName:'Español',
   authSub:'🔐 Inicia sesión para jugar',
-  guestPlay:'▶ JUGAR AHORA (SIN CUENTA)',
+  guestPlay:'Jugar ahora',
   orDivider:'— o —',
   lblUsername:'Usuario', lblPassword:'Contraseña', lblPassword2:'Confirmar contraseña',
   btnLogin:'INICIAR SESIÓN', btnRegister:'REGISTRARSE',
