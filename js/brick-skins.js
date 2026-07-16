@@ -7,10 +7,11 @@
 
   const KEY = "chromablast_brick_skins";
 
-  /** 30 skins: classic + plush (hiện tại) mở sẵn; còn lại mở dần khi phá map ẩn */
+  /** classic + plush + chroma mở sẵn; còn lại mở dần khi phá map ẩn */
   const BRICK_SKINS = [
     { id: "classic", name: "Classic", desc: "Gạch bevel cổ điển", starter: true },
     { id: "plush", name: "Plush", desc: "Bông xù hiện tại", starter: true },
+    { id: "chroma", name: "Chroma", desc: "Kẹo bóng + icon như feature graphic", starter: true },
     { id: "glass", name: "Glass", desc: "Thủy tinh trong" },
     { id: "neon", name: "Neon", desc: "Viền phát sáng" },
     { id: "metal", name: "Metal", desc: "Kim loại xước" },
@@ -55,7 +56,7 @@
   const SAMPLE_COLORS = ["#E24B4A", "#378ADD", "#1D9E75", "#EF9F27", "#7F77DD", "#D4537E"];
 
   let state = {
-    active: "plush",
+    active: "chroma",
     unlocked: STARTER_IDS.slice(),
     starterPicked: false,
   };
@@ -75,7 +76,7 @@
         );
       }
       state.starterPicked = !!raw.starterPicked;
-      if (state.unlocked.indexOf(state.active) < 0) state.active = "plush";
+      if (state.unlocked.indexOf(state.active) < 0) state.active = "chroma";
     } catch (_) {}
   }
 
@@ -102,7 +103,7 @@
   }
 
   function applyBrickSkin(id) {
-    if (!getSkin(id)) id = "plush";
+    if (!getSkin(id)) id = "chroma";
     state.active = id;
     document.documentElement.setAttribute("data-brick-skin", id);
     const root = document.getElementById("game-root");
@@ -134,7 +135,11 @@
     const d = document.createElement("div");
     d.className = "brick-swatch";
     d.setAttribute("data-brick-skin", skinId);
-    d.style.setProperty("--cc", color || SAMPLE_COLORS[0]);
+    const cc = color || SAMPLE_COLORS[0];
+    d.style.setProperty("--cc", cc);
+    const palette = typeof COLORS !== "undefined" ? COLORS : SAMPLE_COLORS;
+    const ci = palette.indexOf(cc);
+    if (ci >= 0) d.dataset.ci = String(ci);
     return d;
   }
 

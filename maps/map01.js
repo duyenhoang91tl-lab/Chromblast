@@ -140,8 +140,8 @@ function renderSecretGrid(){
     const ci=secretBoard[r][c];
     d.className='sc'+(ci===null?'':' gem'+(glowCls?' '+glowCls:''));
     d.dataset.gem = ci===null ? '0' : '1';
-    if(ci===null){ d.style.background=''; d.style.border=''; d.style.removeProperty('--cc'); } // ô trống: style từ CSS sân vườn
-    else { const col=SECRET_COLORS[ci]; d.style.border=''; d.style.background=''; d.style.setProperty('--cc',col); }
+    if(ci===null){ d.style.background=''; d.style.border=''; d.style.removeProperty('--cc'); delete d.dataset.ci; } // ô trống: style từ CSS sân vườn
+    else { const col=SECRET_COLORS[ci]; d.style.border=''; d.style.background=''; d.style.setProperty('--cc',col); d.dataset.ci=String(ci); }
   }
 }
 
