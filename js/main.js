@@ -710,7 +710,7 @@ function hardResetAllModes(){
   const pieces=document.getElementById('pieces-area');    if(pieces) pieces.style.display='';
   const hint=document.getElementById('hint-bar');         if(hint)   hint.style.display='';
   document.getElementById('grid-wrap').classList.remove('secret-mode','ultra-glow',
-    'combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5','fire-low','fire-high','theme-garden');
+    'combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5','fire-low','fire-mid','fire-high','fire-max','theme-garden');
   document.getElementById('mode-badge').textContent=t('badgeNormal');
   document.getElementById('mode-badge').classList.remove('secret');
   document.getElementById('unlock-overlay').classList.remove('show');
@@ -740,6 +740,14 @@ initHelpPanel();
 initStartScreen();
 initDailyRewardPanel();
 initLeaderboardPanel();
+try{ if(typeof initBrickSkins==='function') initBrickSkins(); }catch(e){}
+try{ if(typeof initBoardSkins==='function') initBoardSkins(); }catch(e){}
+try{ if(typeof initInventoryUI==='function') initInventoryUI(); }catch(e){}
+try{ if(typeof initLuckySpin==='function') initLuckySpin(); }catch(e){}
+document.getElementById('spin-btn-hdr')?.addEventListener('click', ()=>{
+  try{ sfxClick(); }catch(e){}
+  if(typeof openLuckySpin==='function') openLuckySpin();
+});
 // Chọn đúng nhạc nền theo map đang chơi — dùng khi bật lại âm thanh hoặc thoát tạm dừng
 function resumeContextBgm(){
   if(rhythmMode){ startRhythmBgm(); return; }

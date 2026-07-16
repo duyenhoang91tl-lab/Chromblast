@@ -59,7 +59,7 @@ function enterSecretMode(){
 
   // reset fire on enter
   if(fireInterval){ clearInterval(fireInterval); fireInterval=null; }
-  document.getElementById('grid-wrap').classList.remove('fire-low','fire-high');
+  document.getElementById('grid-wrap').classList.remove('fire-low','fire-mid','fire-high','fire-max');
   _sparklerT=0;
 
   initSecretBoard();
@@ -74,7 +74,7 @@ function exitSecretMode(){
   document.getElementById('secret-hearts').style.display='none';
   if(borderSparkInterval){ clearInterval(borderSparkInterval); borderSparkInterval=null; }
   if(fireInterval){ clearInterval(fireInterval); fireInterval=null; }
-  document.getElementById('grid-wrap').classList.remove('fire-low','fire-high');
+  document.getElementById('grid-wrap').classList.remove('fire-low','fire-mid','fire-high','fire-max');
   clearSecretTimer();
   secretStreak=0;
   secretMultiplier=1;
@@ -257,6 +257,7 @@ function onSCClick(e){
     secretUltra=false;
     document.getElementById('grid-wrap').classList.remove('ultra-glow');
   }
+  try{ if(typeof onComboSkillMilestone==='function') onComboSkillMilestone(secretStreak); }catch(e){}
   secretMultiplier=comboScoreMultiplier(secretStreak); // x2 từ streak 3, x3 từ streak 6
 
   // Ultra mode: 9 consecutive hits
