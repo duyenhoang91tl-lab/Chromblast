@@ -92,6 +92,7 @@
         // Lần đầu chọn gạch — không đóng bằng nút Back
         if(id==='brick-skin-panel' && el.dataset.mode==='starter') return;
         if(id==='board-skin-panel' && el.dataset.mode==='starter') return;
+        if(id==='spin-panel' && el.dataset.rewardPending==='1') return;
         el.classList.remove('show'); return;
       }
     }
