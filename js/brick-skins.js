@@ -56,7 +56,7 @@
   const SAMPLE_COLORS = ["#E24B4A", "#378ADD", "#1D9E75", "#EF9F27", "#7F77DD", "#D4537E"];
 
   let state = {
-    active: "chroma",
+    active: "plush",
     unlocked: STARTER_IDS.slice(),
     starterPicked: false,
   };
@@ -76,7 +76,7 @@
         );
       }
       state.starterPicked = !!raw.starterPicked;
-      if (state.unlocked.indexOf(state.active) < 0) state.active = "chroma";
+      if (state.unlocked.indexOf(state.active) < 0) state.active = "plush";
     } catch (_) {}
   }
 
@@ -103,7 +103,7 @@
   }
 
   function applyBrickSkin(id) {
-    if (!getSkin(id)) id = "chroma";
+    if (!getSkin(id)) id = "plush";
     state.active = id;
     document.documentElement.setAttribute("data-brick-skin", id);
     const root = document.getElementById("game-root");
@@ -310,7 +310,7 @@
     if (panel) panel.classList.remove("show");
   }
 
-  /** Lần đầu: bắt buộc chọn classic / plush trước khi vào game */
+  /** Lần đầu: bắt buộc chọn classic / plush / chroma trước khi vào game */
   function maybeShowStarterBrickPicker(thenFn) {
     if (state.starterPicked) {
       if (typeof thenFn === "function") thenFn();
