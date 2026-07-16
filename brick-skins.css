@@ -1,4 +1,4 @@
-/* brick-skins.css — 29 overrides (plush = default trong main.css) */
+/* brick-skins.css — skin overrides (plush = default trong main.css; chroma = feature graphic) */
 
 /* Picker UI */
 .brick-skin-overlay{
@@ -1276,4 +1276,210 @@ html[data-brick-skin="chrome"] .sc.gem.glow-4,
 html[data-brick-skin="chrome"] .sc.gem.glow-5 {
   filter: none !important;
   animation: none !important;
+}
+
+/* ── chroma — flush candy + embossed icons (feature graphic) ── */
+:root{
+  --chroma-icon-heart:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Cpath%20fill%3D%22%23fff%22%20fill-opacity%3D%22.95%22%20d%3D%22M32%2054S8%2038%208%2022C8%2013%2015%208%2022%208c5%200%208%203%2010%206%202-3%205-6%2010-6%207%200%2014%205%2014%2014%200%2016-24%2032-24%2032z%22%2F%3E%3C%2Fsvg%3E");
+  --chroma-icon-star:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Cpath%20fill%3D%22%23fff%22%20fill-opacity%3D%22.95%22%20d%3D%22M32%206l6.5%2018.5H58L42.5%2036l6%2018.5L32%2043.5%2015.5%2054.5l6-18.5L6%2024.5h19.5z%22%2F%3E%3C%2Fsvg%3E");
+  --chroma-icon-leaf:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Cpath%20fill%3D%22%23fff%22%20fill-opacity%3D%22.95%22%20d%3D%22M50%2012C28%2012%2012%2028%2012%2050c22%200%2038-16%2038-38z%22%2F%3E%3Cpath%20stroke%3D%22%23fff%22%20stroke-opacity%3D%22.55%22%20stroke-width%3D%222.5%22%20fill%3D%22none%22%20d%3D%22M18%2046c10-10%2018-18%2028-28%22%2F%3E%3C%2Fsvg%3E");
+  --chroma-icon-drop:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Cpath%20fill%3D%22%23fff%22%20fill-opacity%3D%22.95%22%20d%3D%22M32%206S14%2028%2014%2040c0%2010%208%2016%2018%2016s18-6%2018-16C50%2028%2032%206%2032%206z%22%2F%3E%3C%2Fsvg%3E");
+  --chroma-icon-flower:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Cg%20fill%3D%22%23fff%22%20fill-opacity%3D%22.95%22%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2218%22%20r%3D%229%22%2F%3E%3Ccircle%20cx%3D%2245%22%20cy%3D%2226%22%20r%3D%229%22%2F%3E%3Ccircle%20cx%3D%2245%22%20cy%3D%2242%22%20r%3D%229%22%2F%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2250%22%20r%3D%229%22%2F%3E%3Ccircle%20cx%3D%2219%22%20cy%3D%2242%22%20r%3D%229%22%2F%3E%3Ccircle%20cx%3D%2219%22%20cy%3D%2226%22%20r%3D%229%22%2F%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2234%22%20r%3D%226.5%22%20fill-opacity%3D%22.7%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+}
+
+html[data-brick-skin="chroma"] #grid{
+  gap:2px !important;
+  padding:8px !important;
+  border-radius:16px !important;
+}
+html[data-brick-skin="chroma"] .cell{
+  border-radius:10px !important;
+}
+html[data-brick-skin="chroma"] #pieces-area .piece-slot > div{
+  gap:1px !important;
+}
+html[data-brick-skin="chroma"] .cell.filled,
+html[data-brick-skin="chroma"] .cell.preview-ok,
+html[data-brick-skin="chroma"] .sc.gem,
+html[data-brick-skin="chroma"] .vs-cell.vs-filled{
+  border:none !important;
+  border-radius:10px !important;
+  overflow:hidden !important;
+  isolation:isolate;
+  background-color:var(--cc) !important;
+  background-image:var(--chroma-icon-heart), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
+  background-size:42% 42%, auto !important;
+  background-position:center, center !important;
+  background-repeat:no-repeat, no-repeat !important;
+  box-shadow:inset 0 2px 0 rgba(255,255,255,0.55), inset 0 -3px 6px rgba(0,0,0,0.22), 0 1px 0 rgba(255,255,255,0.25), 0 3px 6px rgba(0,0,0,0.28) !important;
+  filter:none !important;
+}
+html[data-brick-skin="chroma"] .cell.filled:not(.bomb-cell):not(.cloud-cell):not(.squirrel-cell)::before,
+html[data-brick-skin="chroma"] .cell.preview-ok:not(.bomb-cell):not(.cloud-cell):not(.squirrel-cell)::before,
+html[data-brick-skin="chroma"] .sc.gem::before,
+html[data-brick-skin="chroma"] .vs-cell.vs-filled::before{
+  opacity:0 !important;
+  content:none !important;
+}
+html[data-brick-skin="chroma"] .cell.filled[data-ci="0"],
+html[data-brick-skin="chroma"] .cell.preview-ok[data-ci="0"],
+html[data-brick-skin="chroma"] .sc.gem[data-ci="0"],
+html[data-brick-skin="chroma"] .vs-cell.vs-filled[data-ci="0"]{
+  background-image:var(--chroma-icon-heart), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
+}
+html[data-brick-skin="chroma"] .cell.filled[data-ci="1"],
+html[data-brick-skin="chroma"] .cell.preview-ok[data-ci="1"],
+html[data-brick-skin="chroma"] .sc.gem[data-ci="1"],
+html[data-brick-skin="chroma"] .vs-cell.vs-filled[data-ci="1"]{
+  background-image:var(--chroma-icon-drop), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
+}
+html[data-brick-skin="chroma"] .cell.filled[data-ci="2"],
+html[data-brick-skin="chroma"] .cell.preview-ok[data-ci="2"],
+html[data-brick-skin="chroma"] .sc.gem[data-ci="2"],
+html[data-brick-skin="chroma"] .vs-cell.vs-filled[data-ci="2"]{
+  background-image:var(--chroma-icon-leaf), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
+}
+html[data-brick-skin="chroma"] .cell.filled[data-ci="3"],
+html[data-brick-skin="chroma"] .cell.preview-ok[data-ci="3"],
+html[data-brick-skin="chroma"] .sc.gem[data-ci="3"],
+html[data-brick-skin="chroma"] .vs-cell.vs-filled[data-ci="3"]{
+  background-image:var(--chroma-icon-star), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
+}
+html[data-brick-skin="chroma"] .cell.filled[data-ci="4"],
+html[data-brick-skin="chroma"] .cell.preview-ok[data-ci="4"],
+html[data-brick-skin="chroma"] .sc.gem[data-ci="4"],
+html[data-brick-skin="chroma"] .vs-cell.vs-filled[data-ci="4"]{
+  background-image:var(--chroma-icon-flower), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
+}
+html[data-brick-skin="chroma"] .cell.filled[data-ci="5"],
+html[data-brick-skin="chroma"] .cell.preview-ok[data-ci="5"],
+html[data-brick-skin="chroma"] .sc.gem[data-ci="5"],
+html[data-brick-skin="chroma"] .vs-cell.vs-filled[data-ci="5"]{
+  background-image:var(--chroma-icon-flower), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
+}
+html[data-brick-skin="chroma"] .cell.filled[data-ci="6"],
+html[data-brick-skin="chroma"] .cell.preview-ok[data-ci="6"],
+html[data-brick-skin="chroma"] .sc.gem[data-ci="6"],
+html[data-brick-skin="chroma"] .vs-cell.vs-filled[data-ci="6"]{
+  background-image:var(--chroma-icon-star), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
+}
+html[data-brick-skin="chroma"] .cell.filled[data-ci="7"],
+html[data-brick-skin="chroma"] .cell.preview-ok[data-ci="7"],
+html[data-brick-skin="chroma"] .sc.gem[data-ci="7"],
+html[data-brick-skin="chroma"] .vs-cell.vs-filled[data-ci="7"]{
+  background-image:var(--chroma-icon-leaf), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
+}
+html[data-brick-skin="chroma"] .p-cell.candy,
+html[data-brick-skin="chroma"] #drag-ghost .g-cell.candy,
+html[data-brick-skin="chroma"] .vs-mini-candy,
+html[data-brick-skin="chroma"] .vs-g-cell.candy{
+  border:none !important;
+  border-radius:6px !important;
+  overflow:hidden !important;
+  position:relative !important;
+  background-color:var(--cc) !important;
+  background-image:var(--chroma-icon-heart), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
+  background-size:44% 44%, auto !important;
+  background-position:center, center !important;
+  background-repeat:no-repeat, no-repeat !important;
+  box-shadow:inset 0 2px 0 rgba(255,255,255,0.55), inset 0 -3px 6px rgba(0,0,0,0.22), 0 1px 0 rgba(255,255,255,0.25), 0 3px 6px rgba(0,0,0,0.28) !important;
+  filter:none !important;
+}
+html[data-brick-skin="chroma"] .p-cell.candy::after,
+html[data-brick-skin="chroma"] #drag-ghost .g-cell.candy::before,
+html[data-brick-skin="chroma"] .vs-g-cell.candy::before{
+  opacity:0 !important;
+  content:none !important;
+}
+html[data-brick-skin="chroma"] .p-cell.candy[data-ci="0"],
+html[data-brick-skin="chroma"] #drag-ghost .g-cell.candy[data-ci="0"],
+html[data-brick-skin="chroma"] .vs-g-cell.candy[data-ci="0"],
+html[data-brick-skin="chroma"] .vs-mini-candy[data-ci="0"]{
+  background-image:var(--chroma-icon-heart), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
+}
+html[data-brick-skin="chroma"] .p-cell.candy[data-ci="1"],
+html[data-brick-skin="chroma"] #drag-ghost .g-cell.candy[data-ci="1"],
+html[data-brick-skin="chroma"] .vs-g-cell.candy[data-ci="1"],
+html[data-brick-skin="chroma"] .vs-mini-candy[data-ci="1"]{
+  background-image:var(--chroma-icon-drop), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
+}
+html[data-brick-skin="chroma"] .p-cell.candy[data-ci="2"],
+html[data-brick-skin="chroma"] #drag-ghost .g-cell.candy[data-ci="2"],
+html[data-brick-skin="chroma"] .vs-g-cell.candy[data-ci="2"],
+html[data-brick-skin="chroma"] .vs-mini-candy[data-ci="2"]{
+  background-image:var(--chroma-icon-leaf), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
+}
+html[data-brick-skin="chroma"] .p-cell.candy[data-ci="3"],
+html[data-brick-skin="chroma"] #drag-ghost .g-cell.candy[data-ci="3"],
+html[data-brick-skin="chroma"] .vs-g-cell.candy[data-ci="3"],
+html[data-brick-skin="chroma"] .vs-mini-candy[data-ci="3"]{
+  background-image:var(--chroma-icon-star), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
+}
+html[data-brick-skin="chroma"] .p-cell.candy[data-ci="4"],
+html[data-brick-skin="chroma"] #drag-ghost .g-cell.candy[data-ci="4"],
+html[data-brick-skin="chroma"] .vs-g-cell.candy[data-ci="4"],
+html[data-brick-skin="chroma"] .vs-mini-candy[data-ci="4"]{
+  background-image:var(--chroma-icon-flower), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
+}
+html[data-brick-skin="chroma"] .p-cell.candy[data-ci="5"],
+html[data-brick-skin="chroma"] #drag-ghost .g-cell.candy[data-ci="5"],
+html[data-brick-skin="chroma"] .vs-g-cell.candy[data-ci="5"],
+html[data-brick-skin="chroma"] .vs-mini-candy[data-ci="5"]{
+  background-image:var(--chroma-icon-flower), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
+}
+html[data-brick-skin="chroma"] .p-cell.candy[data-ci="6"],
+html[data-brick-skin="chroma"] #drag-ghost .g-cell.candy[data-ci="6"],
+html[data-brick-skin="chroma"] .vs-g-cell.candy[data-ci="6"],
+html[data-brick-skin="chroma"] .vs-mini-candy[data-ci="6"]{
+  background-image:var(--chroma-icon-star), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
+}
+html[data-brick-skin="chroma"] .p-cell.candy[data-ci="7"],
+html[data-brick-skin="chroma"] #drag-ghost .g-cell.candy[data-ci="7"],
+html[data-brick-skin="chroma"] .vs-g-cell.candy[data-ci="7"],
+html[data-brick-skin="chroma"] .vs-mini-candy[data-ci="7"]{
+  background-image:var(--chroma-icon-leaf), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
+}
+html[data-brick-skin="chroma"] .sc.gem.glow-1,
+html[data-brick-skin="chroma"] .sc.gem.glow-2,
+html[data-brick-skin="chroma"] .sc.gem.glow-3,
+html[data-brick-skin="chroma"] .sc.gem.glow-4,
+html[data-brick-skin="chroma"] .sc.gem.glow-5{
+  filter:none !important;
+  animation:none !important;
+}
+.brick-swatch[data-brick-skin="chroma"]{
+  border-radius:8px !important;
+  overflow:hidden !important;
+  background-color:var(--cc) !important;
+  background-image:var(--chroma-icon-heart), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
+  background-size:48% 48%, auto !important;
+  background-position:center, center !important;
+  background-repeat:no-repeat, no-repeat !important;
+  box-shadow:inset 0 2px 0 rgba(255,255,255,0.55), inset 0 -3px 6px rgba(0,0,0,0.22), 0 1px 0 rgba(255,255,255,0.25), 0 3px 6px rgba(0,0,0,0.28) !important;
+  border:none !important;
+  filter:none !important;
+}
+.brick-swatch[data-brick-skin="chroma"][data-ci="0"]{
+  background-image:var(--chroma-icon-heart), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
+}
+.brick-swatch[data-brick-skin="chroma"][data-ci="1"]{
+  background-image:var(--chroma-icon-drop), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
+}
+.brick-swatch[data-brick-skin="chroma"][data-ci="2"]{
+  background-image:var(--chroma-icon-leaf), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
+}
+.brick-swatch[data-brick-skin="chroma"][data-ci="3"]{
+  background-image:var(--chroma-icon-star), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
+}
+.brick-swatch[data-brick-skin="chroma"][data-ci="4"]{
+  background-image:var(--chroma-icon-flower), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
+}
+.brick-swatch[data-brick-skin="chroma"][data-ci="5"]{
+  background-image:var(--chroma-icon-flower), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
+}
+.brick-swatch[data-brick-skin="chroma"][data-ci="6"]{
+  background-image:var(--chroma-icon-star), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
+}
+.brick-swatch[data-brick-skin="chroma"][data-ci="7"]{
+  background-image:var(--chroma-icon-leaf), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
 }

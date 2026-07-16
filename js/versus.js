@@ -224,10 +224,15 @@ function _vsRenderGrid(P){
     d.textContent='';
     d.style.background='';
     d.style.removeProperty('--cc');
+    delete d.dataset.ci;
     if(P.rocks.has(k)){ d.classList.add('vs-rock'); d.textContent='⛰️'; }
     else if(v){
       d.classList.add('vs-filled');
       d.style.setProperty('--cc', fog ? '#5a5f6e' : v);
+      if(!fog){
+        const ci=COLORS.indexOf(v);
+        if(ci>=0) d.dataset.ci=String(ci);
+      }
       if(P.ice.has(k)){ d.classList.add('vs-ice'); d.textContent='🧊'; }
     }
   }
@@ -252,6 +257,8 @@ function _vsRenderTray(P){
       if(cells.some(([rr,cc])=>rr===r&&cc===c)){ 
          b.className='vs-mini-candy';
          b.style.setProperty('--cc',pc.color);
+         const ci=COLORS.indexOf(pc.color);
+         if(ci>=0) b.dataset.ci=String(ci);
       }
       mini.appendChild(b);
     }
@@ -334,7 +341,11 @@ function _vsBuildGhost(P){
     d.className='vs-g-cell'+(color?' candy':'');
     d.style.width=g.cell+'px';
     d.style.height=g.cell+'px';
-    if(color) d.style.setProperty('--cc',color);
+    if(color){
+      d.style.setProperty('--cc',color);
+      const ci=COLORS.indexOf(color);
+      if(ci>=0) d.dataset.ci=String(ci);
+    }
     else d.style.visibility='hidden';
     gEl.appendChild(d);
   });
@@ -361,7 +372,7 @@ function _vsClearPreview(P){
   P._prev.forEach(([r,c])=>{
     const d=P.el.cells[r][c];
     d.classList.remove('vs-prev','vs-filled');
-    if(!P.board[r][c]){ d.style.background=''; d.style.removeProperty('--cc'); }
+    if(!P.board[r][c]){ d.style.background=''; d.style.removeProperty('--cc'); delete d.dataset.ci; }
   });
   P._prev=null;
 }
@@ -377,6 +388,9 @@ function _vsShowPreviewAt(P,R,C){
     d.classList.add('vs-prev','vs-filled');
     d.style.setProperty('--cc',pc.color);
     d.style.background='';
+    const ci=COLORS.indexOf(pc.color);
+    if(ci>=0) d.dataset.ci=String(ci);
+    else delete d.dataset.ci;
   });
 }
 function _vsUpdatePreview(P,x,y,ptype){
