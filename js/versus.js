@@ -490,9 +490,7 @@ document.addEventListener('pointercancel',ev=>{
   const dr=_vsDrags.get(id);
   if(!dr) return;
   _vsDrags.delete(id);
-  _vsClearPreview(dr.P);
-  _vsHideGhost(dr.P);
-  dr.P.el.tray.querySelectorAll('.vs-piece').forEach(el=>el.classList.remove('dragging-src'));
+  _vsDeselect(dr.P);
 });
 function _vsCanPlace(P,shape,R,C){
   return shape.every(([dr,dc])=>{
