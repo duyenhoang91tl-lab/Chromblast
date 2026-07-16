@@ -5,9 +5,9 @@
 // tuyệt đối dù tốc độ đặt khác nhau). Đặt khối chạm-chọn → chạm-ô; chạm lại
 // khối đang chọn để xoay.
 // Nổ khi lấp đầy 1 hàng/cột, hoặc cụm cùng màu >= VS_GROUP_MIN (8) ô nối liền.
-// Đạt combo bội số 5 → rút 1 trong 3 THẺ CHƯỚNG NGẠI ngẫu nhiên, hiệu lực
-// lên bàn ĐỐI THỦ: ⛰️ núi đá · 🌪️ lốc xoáy · 🧊 băng giá · 🌫️ sương mù ·
-// 🐿️ sóc ăn ô · 💣 bom.
+// Đạt 3 lần ăn điểm (phá hàng/cột/cụm — không cần liên tiếp) → hiện 3 THẺ
+// chướng ngại úp để chọn 1 lá dùng lên bàn ĐỐI THỦ:
+// ⛰️ núi đá · 🌪️ lốc xoáy · 🧊 băng giá · 🌫️ sương mù · 🐿️ sóc ăn ô · 💣 bom.
 // Tự chứa 100%: không đụng board/pieces/score của bàn chính.
 // GHI CHÚ ONLINE: đồng bộ {seed, nước đi, thẻ} qua server là đấu được 2 máy.
 // Nạp SAU main.js. ═══════════════════════════════════════════════
@@ -17,7 +17,7 @@ const VERSUS_WIN_XP = 30;
 const VS_N = 7;                // bàn 7×7
 const VS_COLORS = COLORS.slice(0, 5);
 const VS_GROUP_MIN = 8;        // cụm cùng màu >= 8 ô mới nổ (5 quá dễ — vừa đặt vào đã phá)
-const VS_CARD_EVERY = 5;       // mỗi 5 combo được rút thẻ
+const VS_CARD_EVERY = 3;       // cứ 3 lần ăn (không cần liên tiếp) → rút thẻ
 // Bộ chướng ngại: id ↔ chỉ số tên trong MECH_NAME (i18n sẵn có)
 const VS_OBSTACLES = [
   { id:'mountain', nameIdx:2,  emoji:'⛰️' },
@@ -110,7 +110,7 @@ function startVersusMatch(){
 
 function _vsNewPlayer(idx,seed){
   return { idx, prng:_mulberry32(seed), board:Array.from({length:VS_N},()=>Array(VS_N).fill(null)),
-    pieces:[], selected:-1, score:0, combo:0, nextCardAt:VS_CARD_EVERY,
+    pieces:[], selected:-1, score:0, combo:0, clears:0, nextCardAt:VS_CARD_EVERY,
     rocks:new Set(), ice:new Set(), fogUntil:0, done:false, el:{} };
 }
 
@@ -365,10 +365,15 @@ function _vsCellTap(P,R,C){
   const cleared=_vsResolveClears(P);
   if(cleared>0){
     P.combo++;
+    P.clears++; // tổng số lần ăn — không reset khi đặt không nổ
     const mult=comboScoreMultiplier(P.combo);
     P.score+=cleared*mult;
     try{ sfxMatch(cleared); }catch(e){}
-    if(P.combo>=P.nextCardAt){ P.nextCardAt+=VS_CARD_EVERY; _vsOfferCards(P); }
+    // Cứ đủ 3 lần ăn (không cần liên tiếp) → hiện thẻ chọn
+    if(P.clears>=P.nextCardAt){
+      P.nextCardAt+=VS_CARD_EVERY;
+      _vsOfferCards(P);
+    }
   } else P.combo=0;
   if(P.pieces.every(x=>x.used)) _vsRefill(P);
   _vsRenderAll(P);
