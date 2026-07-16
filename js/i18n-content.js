@@ -594,17 +594,17 @@ function MILESTONE_MSG(tier){ const c=_i18nContent(); const a=c.milestones||I18N
 // ── BỔ SUNG: đấu song song + thẻ chướng ngại ──
 (function(){
   const vs2 = {
-  vi:{ vsSub:'Hai người chơi CÙNG LÚC trên 2 bàn cờ (2 nửa màn hình, ngồi đối diện) — cùng bộ khối, 90 giây. Đạt combo x5 được rút thẻ chướng ngại ném sang bàn đối thủ!',
+  vi:{ vsSub:'Hai người chơi CÙNG LÚC trên 2 bàn cờ (2 nửa màn hình, ngồi đối diện) — cùng bộ khối, 90 giây. Cứ ăn được 3 lần (không cần liên tiếp) thì rút thẻ chướng ngại ném sang bàn đối thủ!',
        vsPickCard:'⚔️ Chọn 1 thẻ chướng ngại tặng đối thủ!', vsNoSpace:'🚫 Hết chỗ đặt!', vsHit:'💥 Trúng {0}!' },
-  en:{ vsSub:'Two players play AT THE SAME TIME on 2 boards (split screen, sit facing each other) — same pieces, 90 seconds. Hit a x5 combo to draw an obstacle card and throw it at your opponent!',
+  en:{ vsSub:'Two players play AT THE SAME TIME on 2 boards (split screen, sit facing each other) — same pieces, 90 seconds. Every 3 clears (not necessarily in a row) draws an obstacle card to throw at your opponent!',
        vsPickCard:'⚔️ Pick 1 obstacle card for your opponent!', vsNoSpace:'🚫 No space left!', vsHit:'💥 Hit by {0}!' },
-  ko:{ vsSub:'두 명이 동시에 2개의 보드에서 대결 (화면 분할, 마주 앉기) — 같은 블록, 90초. x5 콤보 달성 시 방해 카드를 뽑아 상대에게 던지세요!',
+  ko:{ vsSub:'두 명이 동시에 2개의 보드에서 대결 (화면 분할, 마주 앉기) — 같은 블록, 90초. 3번 클리어할 때마다(연속 아니어도 됨) 방해 카드를 뽑아 상대에게 던지세요!',
        vsPickCard:'⚔️ 상대에게 줄 방해 카드 1장을 고르세요!', vsNoSpace:'🚫 놓을 곳이 없어요!', vsHit:'💥 {0} 피격!' },
-  ja:{ vsSub:'2人が同時に2つの盤面で対戦（画面分割・向かい合わせ）— 同じブロック、90秒。x5コンボで妨害カードを引いて相手に投げつけろ！',
+  ja:{ vsSub:'2人が同時に2つの盤面で対戦（画面分割・向かい合わせ）— 同じブロック、90秒。3回消すたび（連続でなくてOK）妨害カードを引いて相手に投げつけろ！',
        vsPickCard:'⚔️ 相手への妨害カードを1枚選べ！', vsNoSpace:'🚫 置く場所がない！', vsHit:'💥 {0}を受けた！' },
-  zh:{ vsSub:'两名玩家同时在2个棋盘上对战（分屏、面对面坐）— 相同方块，90秒。达成x5连击可抽干扰卡扔给对手！',
+  zh:{ vsSub:'两名玩家同时在2个棋盘上对战（分屏、面对面坐）— 相同方块，90秒。每消除3次（不必连续）可抽干扰卡扔给对手！',
        vsPickCard:'⚔️ 选1张干扰卡送给对手！', vsNoSpace:'🚫 无处可放！', vsHit:'💥 被{0}击中！' },
-  es:{ vsSub:'Dos jugadores juegan A LA VEZ en 2 tableros (pantalla dividida, sentados frente a frente) — mismas piezas, 90 segundos. ¡Logra un combo x5 para robar una carta de obstáculo y lanzarla a tu rival!',
+  es:{ vsSub:'Dos jugadores juegan A LA VEZ en 2 tableros (pantalla dividida, sentados frente a frente) — mismas piezas, 90 segundos. Cada 3 eliminaciones (no hace falta seguidas) robas una carta de obstáculo para tu rival!',
        vsPickCard:'⚔️ ¡Elige 1 carta de obstáculo para tu rival!', vsNoSpace:'🚫 ¡Sin espacio!', vsHit:'💥 ¡Golpeado por {0}!' },
   };
   Object.keys(vs2).forEach(l=>{ if(I18N[l]) Object.assign(I18N[l], vs2[l]); });
