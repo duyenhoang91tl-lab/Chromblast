@@ -289,7 +289,7 @@ function onSCClick(e){
   updateFireBorder();
   const _ctr=clearCentroid(group, getSC);
   showScorePop(basePoints, finalPts, _ctr.x, _ctr.y, secretStreak);
-  // Map ẩn 1: KHÔNG pháo/chữ nổ giữa bàn — chỉ sparkler viền (updateFireBorder)
+  // Map ẩn 1: không pháo/tia DOM — chỉ viền CSS theo combo (updateFireBorder)
   // Giữ lồng tiếng khen, bỏ flash chữ giữa lưới
   if(!ultraJustTriggered && shouldPraise(secretStreak)){
     try{ speakPraise(praiseLevelForStreak(secretStreak)); }catch(e){}
