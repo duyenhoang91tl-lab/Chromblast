@@ -2298,3 +2298,44 @@ body:has(#secret-stage.active) .streak-dot.lit{
   font-size:18px; font-weight:900; cursor:pointer;
   box-shadow:0 2px 8px rgba(0,0,0,0.35);
 }
+.spin-modal{ position:relative; }
+.spin-reward-layer{
+  position:absolute; inset:0; z-index:20;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(20,10,50,0.82); border-radius:22px;
+  padding:16px; animation:spinRewardIn .35s ease;
+}
+.spin-reward-layer[hidden]{ display:none !important; }
+@keyframes spinRewardIn{
+  from{ opacity:0; transform:scale(.94); }
+  to{ opacity:1; transform:scale(1); }
+}
+.spin-reward-box{
+  width:100%; max-width:280px; text-align:center;
+  background:linear-gradient(180deg,#6B4FD8 0%,#3A2878 100%);
+  border-radius:18px; padding:18px 16px 16px;
+  box-shadow:0 8px 28px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.2);
+  border:2px solid rgba(255,220,100,0.45);
+}
+.spin-reward-title{
+  font-size:20px; font-weight:900; color:#ffe566;
+  text-shadow:0 2px 0 rgba(0,0,0,0.25); margin-bottom:8px;
+}
+.spin-reward-icon{
+  font-size:52px; line-height:1.1; margin:6px 0 10px;
+  filter:drop-shadow(0 4px 8px rgba(0,0,0,0.35));
+}
+.spin-reward-text{
+  font-size:15px; font-weight:900; color:#fff; margin-bottom:6px;
+}
+.spin-reward-extra{
+  font-size:12px; font-weight:800; color:#b8ffcf; min-height:0;
+  margin-bottom:8px; line-height:1.35;
+}
+.spin-reward-extra:empty{ display:none; }
+.spin-reward-inv{
+  font-size:12px; font-weight:800; color:rgba(255,255,255,0.88);
+  background:rgba(0,0,0,0.22); border-radius:999px;
+  padding:6px 12px; margin:0 auto 14px; display:inline-block;
+}
+.spin-reward-ok{ width:min(200px,80%); margin-top:4px; }
