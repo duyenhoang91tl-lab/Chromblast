@@ -632,27 +632,65 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
     0 0 48px rgba(255,120,0,0.35) !important;
   animation: sparklerFrameLow 0.9s ease-in-out infinite alternate !important;
 }
+#grid-wrap.fire-mid {
+  box-shadow:
+    0 0 0 4px #fff3a0,
+    0 0 0 8px rgba(255,210,60,0.7),
+    0 0 32px rgba(255,190,0,0.85),
+    0 0 70px rgba(255,130,0,0.5),
+    0 0 110px rgba(255,80,0,0.28) !important;
+  animation: sparklerFrameMid 0.5s ease-in-out infinite alternate !important;
+}
 #grid-wrap.fire-high {
   box-shadow:
-    0 0 0 4px #fff6a8,
-    0 0 0 8px rgba(255,220,80,0.75),
-    0 0 28px rgba(255,210,0,0.95),
-    0 0 70px rgba(255,140,0,0.55),
-    0 0 110px rgba(255,60,0,0.3) !important;
-  animation: fireHighPulse 0.35s ease-in-out infinite !important;
+    0 0 0 5px #fff6a8,
+    0 0 0 10px rgba(255,220,80,0.85),
+    0 0 40px rgba(255,210,0,1),
+    0 0 90px rgba(255,140,0,0.7),
+    0 0 150px rgba(255,60,0,0.4) !important;
+  animation: fireHighPulse 0.28s ease-in-out infinite !important;
+}
+#grid-wrap.fire-max {
+  box-shadow:
+    0 0 0 6px #ffffff,
+    0 0 0 12px rgba(255,240,120,0.95),
+    0 0 50px rgba(255,220,0,1),
+    0 0 110px rgba(255,120,0,0.85),
+    0 0 180px rgba(255,40,0,0.55),
+    0 0 260px rgba(255,0,120,0.3) !important;
+  animation: fireMaxPulse 0.18s linear infinite !important;
 }
 @keyframes sparklerFrameLow {
   from { box-shadow: 0 0 0 3px #ffd24a, 0 0 0 5px rgba(255,200,40,0.4), 0 0 18px rgba(255,160,0,0.5); }
   to   { box-shadow: 0 0 0 4px #fff3b0, 0 0 0 7px rgba(255,220,80,0.7), 0 0 32px rgba(255,180,0,0.75); }
 }
+@keyframes sparklerFrameMid {
+  from { box-shadow: 0 0 0 4px #ffdd55, 0 0 28px rgba(255,190,0,0.75), 0 0 60px rgba(255,120,0,0.45); }
+  to   { box-shadow: 0 0 0 7px #ffffff, 0 0 45px rgba(255,230,80,1), 0 0 95px rgba(255,140,0,0.7); }
+}
 @keyframes fireHighPulse {
-  0%,100% { box-shadow: 0 0 0 4px #ffdd00, 0 0 22px rgba(255,200,0,0.9), 0 0 55px rgba(255,120,0,0.6), 0 0 100px rgba(255,50,0,0.3); }
-  50%     { box-shadow: 0 0 0 7px #ffffff, 0 0 40px rgba(255,240,100,1),  0 0 85px rgba(255,180,0,0.8), 0 0 150px rgba(255,80,0,0.45); }
+  0%,100% { box-shadow: 0 0 0 5px #ffdd00, 0 0 35px rgba(255,200,0,1), 0 0 80px rgba(255,120,0,0.75), 0 0 140px rgba(255,50,0,0.4); }
+  50%     { box-shadow: 0 0 0 9px #ffffff, 0 0 55px rgba(255,240,100,1), 0 0 120px rgba(255,160,0,0.9), 0 0 200px rgba(255,60,0,0.55); }
+}
+@keyframes fireMaxPulse {
+  0%   { box-shadow: 0 0 0 6px #ff4444, 0 0 50px rgba(255,80,0,1), 0 0 120px rgba(255,40,0,0.7), 0 0 220px rgba(255,0,80,0.35); }
+  25%  { box-shadow: 0 0 0 8px #ffdd00, 0 0 60px rgba(255,220,0,1), 0 0 140px rgba(255,140,0,0.8), 0 0 240px rgba(255,80,0,0.4); }
+  50%  { box-shadow: 0 0 0 10px #ffffff, 0 0 70px rgba(255,255,200,1), 0 0 160px rgba(255,180,0,0.9), 0 0 280px rgba(255,60,120,0.45); }
+  75%  { box-shadow: 0 0 0 8px #66ffff, 0 0 60px rgba(100,255,255,1), 0 0 140px rgba(255,100,200,0.75), 0 0 240px rgba(255,40,0,0.4); }
+  100% { box-shadow: 0 0 0 6px #ff4444, 0 0 50px rgba(255,80,0,1), 0 0 120px rgba(255,40,0,0.7), 0 0 220px rgba(255,0,80,0.35); }
 }
 
 .sparkler-spark {
   height: 2.5px !important;
   filter: blur(0.3px) brightness(2.2) drop-shadow(0 0 3px var(--col,#ffd700)) !important;
+}
+.sparkler-spark-hot {
+  height: 3.5px !important;
+  filter: blur(0.2px) brightness(2.8) drop-shadow(0 0 6px var(--col,#ffd700)) drop-shadow(0 0 12px rgba(255,120,0,0.8)) !important;
+}
+.sparkler-spark-max {
+  height: 4.5px !important;
+  filter: blur(0.15px) brightness(3.2) drop-shadow(0 0 8px #fff) drop-shadow(0 0 16px var(--col,#ffd700)) drop-shadow(0 0 28px rgba(255,40,0,0.85)) !important;
 }
 .sparkler-head {
   position: absolute; width: 10px; height: 10px; margin: -5px 0 0 -5px;
@@ -661,9 +699,23 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
   box-shadow: 0 0 10px 3px rgba(255,220,80,0.95), 0 0 18px 6px rgba(255,140,0,0.55);
   animation: sparklerHeadPulse 0.14s ease-out forwards;
 }
+.sparkler-head-hot {
+  width: 16px; height: 16px; margin: -8px 0 0 -8px;
+  box-shadow: 0 0 14px 5px rgba(255,240,120,1), 0 0 28px 10px rgba(255,140,0,0.85), 0 0 40px 14px rgba(255,60,0,0.45);
+}
+.sparkler-head-max {
+  width: 22px; height: 22px; margin: -11px 0 0 -11px;
+  background: radial-gradient(circle, #fff 0%, #ffe566 30%, #ff6600 55%, rgba(255,0,80,0) 75%);
+  box-shadow: 0 0 18px 7px #fff, 0 0 36px 14px rgba(255,200,0,1), 0 0 60px 22px rgba(255,60,0,0.7), 0 0 90px 30px rgba(255,0,120,0.35);
+  animation: sparklerHeadPulseMax 0.16s ease-out forwards;
+}
 @keyframes sparklerHeadPulse {
   0% { opacity: 1; transform: scale(1.15); }
   100% { opacity: 0.35; transform: scale(0.55); }
+}
+@keyframes sparklerHeadPulseMax {
+  0% { opacity: 1; transform: scale(1.35); }
+  100% { opacity: 0.4; transform: scale(0.5); }
 }
 
 /* ── MAIN GRID — nền hơi tối để gạch màu nổi ── */
