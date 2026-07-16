@@ -2155,8 +2155,19 @@ body:has(#secret-stage.active) .streak-dot.lit{
 #game-root.hud-arcade #game-controls {
   gap: 8px;
 }
-#game-root.hud-arcade #game-controls > button:not(#pause-btn):not(#account-btn):not(#mute-btn) {
+#game-root.hud-arcade #game-controls > button:not(#pause-btn):not(#account-btn):not(#mute-btn):not(#versus-btn) {
   display: none !important;
+}
+/* ⚔️ Đấu đôi — hiện từ Lv.10 (class .vs-unlocked), cùng style nút tròn HUD */
+#versus-btn { display: none; }
+#versus-btn.vs-unlocked { display: flex !important; align-items: center; justify-content: center; }
+#game-root.hud-arcade #versus-btn.vs-unlocked {
+  width: 36px; height: 36px; border-radius: 50% !important;
+  background: radial-gradient(circle at 35% 30%, #ffd76a 0%, #e89a12 55%, #b86a00 100%) !important;
+  border: 2px solid #ffe9a8 !important;
+  box-shadow: 0 0 10px rgba(255,180,40,0.7), inset 0 1px 0 rgba(255,255,255,0.45);
+  font-size: 15px !important;
+  padding: 0;
 }
 #game-root.hud-arcade #pause-btn,
 #game-root.hud-arcade #account-btn,

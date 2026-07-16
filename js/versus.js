@@ -44,6 +44,21 @@ function canHostVersus(){ return (typeof playerLevel!=='undefined' && playerLeve
 function _vsShow(id){ const el=document.getElementById(id); if(el) el.classList.add('show'); }
 function _vsHide(id){ const el=document.getElementById(id); if(el) el.classList.remove('show'); }
 
+/** Hiện/ẩn nút ⚔️ theo Lv.10 — gọi khi vào game và mỗi lần lên cấp */
+function refreshVersusButton(){
+  const ok=canHostVersus();
+  const btn=document.getElementById('versus-btn');
+  if(btn){
+    btn.classList.toggle('vs-unlocked', ok);
+    btn.setAttribute('aria-hidden', ok ? 'false' : 'true');
+    btn.title = ok
+      ? (typeof t==='function' ? t('ttVersus') : 'Đấu 1-1')
+      : (typeof t==='function' ? t('vsNeedLevel', VERSUS_MIN_LEVEL) : ('Đạt Lv.'+VERSUS_MIN_LEVEL+' để mở'));
+  }
+  const setBtn=document.getElementById('set-btn-versus');
+  if(setBtn) setBtn.style.display = ok ? '' : 'none';
+}
+
 // ── Sinh khối: mỗi người 1 PRNG cùng seed → cùng chuỗi khối ──
 function _vsMakePiece(P){
   const R = P.prng;
@@ -548,4 +563,5 @@ function _vsCloseResult(rematch){
   if(again) again.addEventListener('click', ()=>_vsCloseResult(true));
   const close=document.getElementById('vs-close-btn');
   if(close) close.addEventListener('click', ()=>_vsCloseResult(false));
+  refreshVersusButton();
 })();

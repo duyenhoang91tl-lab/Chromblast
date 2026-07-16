@@ -92,6 +92,7 @@ let playerXP=0, playerLevel=1, _xpLastScore=0;
 function xpNeeded(lv){ return 100+(lv-1)*50; } // cấp càng cao càng cần nhiều XP
 function addPlayerXP(n){
   if(!(n>0)) return;
+  const prevLevel=playerLevel;
   playerXP+=n;
   let leveled=false;
   while(playerXP>=xpNeeded(playerLevel)){ playerXP-=xpNeeded(playerLevel); playerLevel++; leveled=true; }
@@ -100,6 +101,11 @@ function addPlayerXP(n){
     try{ showComboFlash(0,false,t('levelUp', playerLevel)); }catch(e){}
     try{ if(typeof grantHearts==='function') grantHearts(1, 'Lên cấp'); }catch(e){}
     try{ if(typeof unlockSkillByLevel==='function') unlockSkillByLevel(playerLevel); }catch(e){}
+    try{ if(typeof refreshVersusButton==='function') refreshVersusButton(); }catch(e){}
+    // Vừa vượt mốc Lv.10 → mở chế độ đấu đôi
+    if(prevLevel < 10 && playerLevel >= 10){
+      try{ showComboFlash(0,false,'⚔️ Đấu 1-1 đã mở khóa!'); }catch(e){}
+    }
   }
   savePlayerXP(); renderPlayerXP();
 }

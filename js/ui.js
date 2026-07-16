@@ -459,6 +459,7 @@ function refreshArcadeHud(){
       '<span class="arcade-targets-label">TARGETS</span>'+
       '<span class="arcade-targets-val">'+val+'</span>'+
     '</div>';
+  try{ if(typeof refreshVersusButton==='function') refreshVersusButton(); }catch(e){}
 }
 
 /* ════════════════════════════════════════════════════════
@@ -635,6 +636,11 @@ function initSettingsMenu(){
   document.getElementById('set-btn-spin')?.addEventListener('click', ()=>{
     sfxClick();
     if(typeof openLuckySpin==='function') openLuckySpin();
+  });
+  document.getElementById('set-btn-versus')?.addEventListener('click', ()=>{
+    sfxClick();
+    closeAllSettingsOverlays();
+    if(typeof openVersusSetup==='function') openVersusSetup();
   });
   document.getElementById('set-btn-more')?.addEventListener('click', ()=>{ sfxClick(); openSettingsMore(); });
   document.getElementById('set-btn-home')?.addEventListener('click', ()=>{ sfxClick(); settingsGoHome(); });
