@@ -588,7 +588,7 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
 
 /* Tia lấp lánh bay ra ở viền theo combo — lớp canvas-free */
 #combo-border-sparks {
-  position: absolute; inset: -20px; pointer-events: none; z-index: 23; overflow: visible; display: block;
+  position: absolute; inset: -80px; pointer-events: none; z-index: 23; overflow: visible; display: block;
 }
 .cb-spark {
   position: absolute;
@@ -606,6 +606,73 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
   0%   { opacity: 1; transform: rotate(var(--ang)) translateX(0); }
   50%  { opacity: 1; }
   100% { opacity: 0; transform: rotate(var(--ang)) translateX(var(--dist)); }
+}
+
+/* ═══ SPARKLER RAYS — tia kim pháo sáng thật ═══ */
+.sparkler-ray{
+  position:absolute;
+  left:0; top:0;
+  width: var(--len, 40px);
+  height: var(--thick, 1.5px);
+  margin-top: calc(var(--thick, 1.5px) / -2);
+  pointer-events:none;
+  transform-origin: 0 50%;
+  border-radius: 40% 2px 2px 40%;
+  background: linear-gradient(90deg,
+    #fff 0%,
+    var(--col, #ffd700) 35%,
+    color-mix(in srgb, var(--col, #ffd700) 55%, transparent) 75%,
+    transparent 100%);
+  box-shadow:
+    0 0 2px 0.5px #fff,
+    0 0 6px 1px var(--col, #ffd700),
+    0 0 12px 2px color-mix(in srgb, var(--col, #ffd700) 50%, transparent);
+  mix-blend-mode: screen;
+  opacity:0;
+  animation: sparklerRayFly var(--dur, 320ms) cubic-bezier(0.12, 0.7, 0.2, 1) var(--delay, 0ms) forwards;
+  z-index:24;
+  will-change: transform, opacity;
+}
+.sparkler-ray-hot{
+  box-shadow:
+    0 0 3px 1px #fff,
+    0 0 10px 2px var(--col, #ffd700),
+    0 0 20px 4px rgba(255,140,0,0.7);
+}
+.sparkler-ray-max{
+  box-shadow:
+    0 0 4px 1.5px #fff,
+    0 0 14px 3px var(--col, #ffd700),
+    0 0 28px 6px rgba(255,100,0,0.85),
+    0 0 40px 8px rgba(255,40,0,0.4);
+}
+@keyframes sparklerRayFly{
+  0%   { opacity: 1;    transform: rotate(var(--ang)) translateX(0) scaleX(0.35); filter: brightness(3); }
+  18%  { opacity: 1;    transform: rotate(var(--ang)) translateX(calc(var(--dist) * 0.25)) scaleX(1); filter: brightness(2.6); }
+  55%  { opacity: 0.95; transform: rotate(var(--ang)) translateX(calc(var(--dist) * 0.7)) scaleX(1); filter: brightness(2); }
+  100% { opacity: 0;   transform: rotate(var(--ang)) translateX(var(--dist)) scaleX(0.55); filter: brightness(1.2); }
+}
+
+.sparkler-tip{
+  position:absolute; width:8px; height:8px; margin:-4px 0 0 -4px;
+  border-radius:50%; pointer-events:none; z-index:25;
+  background: radial-gradient(circle, #fff 0%, #ffe566 40%, rgba(255,140,0,0) 72%);
+  box-shadow: 0 0 8px 3px rgba(255,240,160,1), 0 0 16px 6px rgba(255,160,0,0.7);
+  animation: sparklerTipPulse 0.18s ease-out forwards;
+  mix-blend-mode: screen;
+}
+.sparkler-tip-hot{
+  width:14px; height:14px; margin:-7px 0 0 -7px;
+  box-shadow: 0 0 12px 5px #fff, 0 0 24px 10px rgba(255,200,0,0.95), 0 0 36px 14px rgba(255,100,0,0.55);
+}
+.sparkler-tip-max{
+  width:20px; height:20px; margin:-10px 0 0 -10px;
+  background: radial-gradient(circle, #fff 0%, #ffe566 28%, #ff8800 55%, rgba(255,40,0,0) 75%);
+  box-shadow: 0 0 16px 6px #fff, 0 0 32px 12px rgba(255,220,0,1), 0 0 52px 20px rgba(255,80,0,0.75);
+}
+@keyframes sparklerTipPulse{
+  0% { opacity:1; transform:scale(1.25); }
+  100% { opacity:0.25; transform:scale(0.4); }
 }
 
 /* ══════════════ FIRE BORDER — Map ẩn 1 combo ══════════════ */
