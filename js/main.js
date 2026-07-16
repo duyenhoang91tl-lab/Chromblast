@@ -740,6 +740,7 @@ initStartScreen();
 initDailyRewardPanel();
 initLeaderboardPanel();
 try{ if(typeof initBrickSkins==='function') initBrickSkins(); }catch(e){}
+try{ if(typeof initBoardSkins==='function') initBoardSkins(); }catch(e){}
 try{ if(typeof initInventoryUI==='function') initInventoryUI(); }catch(e){}
 try{ if(typeof initLuckySpin==='function') initLuckySpin(); }catch(e){}
 document.getElementById('spin-btn-hdr')?.addEventListener('click', ()=>{

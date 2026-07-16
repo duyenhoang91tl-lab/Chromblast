@@ -84,10 +84,18 @@ function initStartScreen(){
   }
   function beginFromStart(){
     sfxClick();
+    function afterCosmetics(){ hideStart(); }
+    function afterBricks(){
+      if(typeof maybeShowStarterBoardPicker==='function'){
+        maybeShowStarterBoardPicker(afterCosmetics);
+      } else {
+        afterCosmetics();
+      }
+    }
     if(typeof maybeShowStarterBrickPicker==='function'){
-      maybeShowStarterBrickPicker(hideStart);
+      maybeShowStarterBrickPicker(afterBricks);
     } else {
-      hideStart();
+      afterBricks();
     }
   }
   if(btn) btn.addEventListener('click', function(e){ e.stopPropagation(); beginFromStart(); });
@@ -460,6 +468,7 @@ function closeAllSettingsOverlays(){
   ['settings-panel','settings-more-panel','settings-lang-panel','settings-cup-panel','settings-text-panel','spin-panel']
     .forEach(id=>{ const el=document.getElementById(id); if(el) el.classList.remove('show'); });
   try{ if(typeof closeBrickSkinPanel==='function') closeBrickSkinPanel(); }catch(e){}
+  try{ if(typeof closeBoardSkinPanel==='function') closeBoardSkinPanel(); }catch(e){}
 }
 
 function openSettingsPanel(){
