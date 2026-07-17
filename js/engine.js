@@ -23,6 +23,8 @@ function initBoard(){
   board=Array.from({length:ROWS},()=>Array(COLS).fill(null));
   placeCounter=0; cellPlacedAt={}; pendingClearKeys.clear();
   powerCells.clear(); powerClearWaves=0; // 🔥🫧💨 ván mới — logo cũ không mang theo
+  powerBusy=false;
+  if(typeof cancelSkillAim==='function') cancelSkillAim();
   resetMechanicState();
   // ván mới vẫn giữ tier đã đạt — kích hoạt lại ĐÚNG 1 cơ chế của vòng đó
   if(typeof mainHardTier!=='undefined' && mainHardTier>0) setTimeout(()=>applyRoundMechanics(), 50);
@@ -336,6 +338,7 @@ function endDrag(){
 /* ── bộ xử lý pointer ── */
 function onSlotPointerDown(e, idx){
   if(secretMode) return;
+  if(pendingSkill) cancelSkillAim();
   const piece=pieces[idx];
   if(piece.used) return;
   if(spiderWebbedIdx===idx && spiderWebbedLeft>0){
@@ -445,7 +448,16 @@ function showRotateBar(show){
   // Thanh xoay đã bị tắt
 }
 document.addEventListener('pointerdown', e => {
-  if (selected === null || secretMode) return;
+  if (secretMode) return;
+  // Đang nhắm skill: chạm ngoài bàn / ngoài skill-bar → hủy
+  if (pendingSkill) {
+    if (!e.target.closest('#grid-wrap') && !e.target.closest('#skill-bar')) {
+      cancelSkillAim();
+      try{ showHint('Đã hủy skill'); }catch(err){}
+    }
+    return;
+  }
+  if (selected === null) return;
   // Nếu chạm vào nền (không phải slot, không phải VÙNG lưới, không phải UI buttons) -> Bỏ chọn.
   // Dùng #grid-wrap thay vì .cell: chạm vào khe/viền giữa các ô (đệm 10px + khe 3px của
   // lưới) trước đây cũng bị tính là "nền" và huỷ chọn ngay — không căn ô mờ để đặt được.
@@ -458,16 +470,22 @@ document.addEventListener('pointermove', onDocPointerMove, {passive:false});
 document.addEventListener('pointerup', onDocPointerUp);
 document.addEventListener('pointercancel', onDocPointerCancel);
 
-// Chạm vào ô lưới (sau khi đã chọn khối) → đặt tại ô vừa chạm
+// Chạm vào ô lưới: skill đang nhắm → kích hoạt ngay; hoặc đặt khối đã chọn
 function onCellClick(e){
+  const R=+e.currentTarget.dataset.r;
+  const C=+e.currentTarget.dataset.c;
+  if(pendingSkill){
+    castPlayerSkill(R, C);
+    return;
+  }
   if(selected===null) return;
   const piece=pieces[selected];
   if(piece.used) return;
   const o=originFromPointer(e.clientX,e.clientY,piece,'mouse');
-  const R=o?o.R:+e.currentTarget.dataset.r;
-  const C=o?o.C:+e.currentTarget.dataset.c;
-  if(!canPlace(piece,R,C)){ sfxInvalid(); showHint(t('hintCantPlace')); return; }
-  placeAt(R,C);
+  const placeR=o?o.R:R;
+  const placeC=o?o.C:C;
+  if(!canPlace(piece,placeR,placeC)){ sfxInvalid(); showHint(t('hintCantPlace')); return; }
+  placeAt(placeR,placeC);
 }
 
 // Ô đã được tính nổ và đang chờ animation gỡ khỏi board (board vẫn giữ màu suốt
@@ -483,12 +501,65 @@ const pendingClearKeys=new Set();
      🔥 lửa: cháy 3×3 quanh ô (gồm cả chướng ngại) — tính như 1 lần phá
      🫧 bong bóng: nổ toàn bộ ô cùng màu
      💨 gió: thổi bay hàng ngang/dọc chứa ô (ưu tiên hàng nhiều ô hơn)
-   - Nút 🔥/🫧/💨 dưới khay: tiêu 1 vật phẩm → đặt logo lên bàn theo ý người chơi
+   - Nút 🔥/🫧/💨 dưới khay (skill người chơi): bấm → chạm ô → kích hoạt NGAY
 ══════════════════════════════════════════ */
 const POWER_SPAWN_EVERY = 15;      // số lần phá để tự sinh 1 logo
 const POWER_KINDS = ['fire','bubble','wind'];
 const powerCells = new Map();      // 'r,c' → 'fire' | 'bubble' | 'wind'
 let powerClearWaves = 0;           // đếm số lần phá (chỉ map thường)
+var pendingSkill = null;           // 'fire'|'bubble'|'wind' | null — skill đang nhắm
+let powerBusy = false;             // đang chạy hàng đợi skill / logo
+
+/** Bắt đầu nhắm skill: chạm ô trên bàn để kích hoạt ngay */
+function beginSkillAim(type){
+  if(secretMode || powerBusy) return;
+  if(!POWER_KINDS.includes(type)) return;
+  pendingSkill = type;
+  if(selected!==null) endDrag();
+  const wrap=document.getElementById('grid-wrap');
+  if(wrap){
+    wrap.classList.add('skill-aiming');
+    wrap.dataset.skillAim=type;
+  }
+  if(typeof renderInventoryHud==='function') renderInventoryHud();
+  const msg = type==='fire' ? '🔥 Chạm ô để đốt 3×3'
+            : type==='bubble' ? '🫧 Chạm ô màu để xóa cùng màu'
+            : '💨 Chạm ô để thổi hàng/cột';
+  try{ showHint(msg); }catch(e){}
+}
+
+function cancelSkillAim(){
+  if(!pendingSkill) return;
+  pendingSkill = null;
+  const wrap=document.getElementById('grid-wrap');
+  if(wrap){
+    wrap.classList.remove('skill-aiming');
+    delete wrap.dataset.skillAim;
+  }
+  if(typeof renderInventoryHud==='function') renderInventoryHud();
+}
+
+/** Skill người chơi: tiêu 1 vật phẩm và kích hoạt ngay tại ô (r,c) */
+function castPlayerSkill(r, c){
+  if(!pendingSkill || secretMode || powerBusy) return;
+  const type = pendingSkill;
+  if(r<0||r>=ROWS||c<0||c>=COLS) return;
+  if(type==='bubble'){
+    if(board[r][c]==null){
+      try{ showHint('🫧 Chạm ô có màu'); }catch(e){}
+      return;
+    }
+  }
+  if(typeof spendPower!=='function' || !spendPower(type, 1)){
+    cancelSkillAim();
+    return;
+  }
+  cancelSkillAim();
+  powerBusy = true;
+  const queue = [{ type, r, c, color: board[r][c] }];
+  try{ sfxPowerUp(); }catch(e){}
+  runPowerQueue(queue);
+}
 
 function powerEligibleKeys(){
   const out=[];
@@ -594,6 +665,7 @@ function activatePower(p, queue){
 /** Chạy lần lượt các vật phẩm vừa bị phá trúng, xong quay lại chuỗi nổ thường */
 function runPowerQueue(queue){
   if(!queue.length){
+    powerBusy = false;
     setTimeout(()=>{
       renderGrid();
       if(consecutiveBursts>=3 && !secretMode) triggerUnlock();
@@ -601,6 +673,7 @@ function runPowerQueue(queue){
     }, 120);
     return;
   }
+  powerBusy = true;
   const p=queue.shift();
   activatePower(p, queue);
   setTimeout(()=>{ renderGrid(); setTimeout(()=>runPowerQueue(queue), 200); }, 320);

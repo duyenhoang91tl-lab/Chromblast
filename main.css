@@ -2455,11 +2455,34 @@ body:has(#secret-stage.active) .streak-dot.lit{
 }
 /* Hết vật phẩm hoặc đang chờ QC — vẫn bấm được để xem lý do/cách nhận */
 .skill-btn.no-res{ opacity:0.6; filter:saturate(0.6); }
+.skill-btn.aiming{
+  outline:2px solid rgba(255,255,255,0.95);
+  box-shadow:0 0 0 3px rgba(255,220,120,0.45), 0 3px 0 rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.35);
+  transform:translateY(-2px);
+  animation:skillAimPulse 0.85s ease-in-out infinite alternate;
+}
+@keyframes skillAimPulse{
+  from{ filter:brightness(1); }
+  to{ filter:brightness(1.12); }
+}
 .pw-fire{ background:linear-gradient(180deg,#ff8a50,#e8481f); color:#2a0e00; }
 .pw-bubble{ background:linear-gradient(180deg,#6fd8ff,#2a8fd8); color:#04263a; }
 .pw-wind{ background:linear-gradient(180deg,#8ef0c8,#2ab88a); color:#04301f; }
 .skill-ad{ background:linear-gradient(180deg,#ff6b8a,#d63a5c) !important; }
 .skill-lab{ font-size:12px; }
+
+/* Đang nhắm skill: con trỏ + viền bàn gợi ý chạm ô */
+#grid-wrap.skill-aiming{
+  cursor:crosshair;
+  box-shadow:0 0 0 3px rgba(255,200,80,0.55), 0 8px 28px rgba(0,0,0,0.35);
+  border-radius:14px;
+}
+#grid-wrap.skill-aiming .cell{ cursor:crosshair; }
+#grid-wrap.skill-aiming .cell:hover{
+  outline:2px solid rgba(255,255,255,0.75);
+  outline-offset:-2px;
+  z-index:2;
+}
 
 /* 🔥🫧💨 logo vật phẩm nổi trên ô gạch */
 .cell.filled[data-power]::after{

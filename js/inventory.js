@@ -2,14 +2,12 @@
 // inventory.js — Tim + vật phẩm 🔥 Lửa / 🫧 Bong bóng / 💨 Gió
 // Nạp SAU save.js + progression.js, TRƯỚC ui.js / engine.js
 //
-// Vật phẩm (power):
-//  - 🔥 Lửa: cháy cụm 3×3 quanh ô chứa logo (gồm cả chướng ngại) — tính như 1 lần phá
-//  - 🫧 Bong bóng: nổ toàn bộ ô cùng màu với ô chứa logo
-//  - 💨 Gió: thổi bay hàng ngang/dọc chứa logo (ưu tiên hàng nhiều ô hơn)
-// Cách dùng: bấm nút → đặt logo lên 1 ô gạch ngẫu nhiên trên bàn;
-// phá ô chứa logo để kích hoạt. Mỗi ô chỉ có tối đa 1 logo.
-// Nhận vật phẩm: mỗi 15 lần phá tự sinh 1 logo trên bàn (engine.js),
-// combo x5/x10 tặng random 1 vật phẩm, và Vòng quay may mắn.
+// Skill người chơi (nút dưới khay):
+//  - 🔥 Lửa: chọn ô → cháy 3×3 ngay (gồm cả chướng ngại)
+//  - 🫧 Bong bóng: chọn ô màu → nổ toàn bộ ô cùng màu ngay
+//  - 💨 Gió: chọn ô → thổi hàng/cột (ưu tiên bên nhiều ô hơn) ngay
+// Logo tự sinh trên bàn (mỗi 15 lần phá) vẫn kích hoạt khi phá ô đó.
+// Nhận vật phẩm: combo x5/x10, Vòng quay may mắn, logo 15-clear.
 // ═══════════════════════════════════════════════════════════════
 
 const INV_KEY = 'chromablast_inventory';
@@ -151,6 +149,7 @@ function renderInventoryHud(){
       const cnt = inv[info.field]|0;
       b.disabled = false; // nút disabled nuốt click → không phản hồi; luôn cho bấm để hiện lý do
       b.classList.toggle('no-res', cnt<1);
+      b.classList.toggle('aiming', typeof pendingSkill!=='undefined' && pendingSkill===type);
       const lab = b.querySelector('.skill-lab');
       if(lab) lab.textContent = info.name.split(' ')[0]+' ×'+cnt;
     });
@@ -160,7 +159,10 @@ function renderInventoryHud(){
   }
 }
 
-/** Bấm nút vật phẩm → đặt logo lên 1 ô gạch ngẫu nhiên trên bàn chính */
+/**
+ * Skill người chơi: bấm nút → chọn ô trên bàn → kích hoạt NGAY.
+ * Bấm lại cùng nút / chạm ngoài bàn để hủy.
+ */
 function usePowerItem(type){
   const info = POWER_INFO[type];
   if(!info) return;
@@ -172,14 +174,14 @@ function usePowerItem(type){
     try{ showComboFlash(0,false,'Thiếu '+info.icon+' — đạt combo x5/x10, phá 15 lần hoặc Vòng quay 🎡'); }catch(e){}
     return;
   }
-  if(typeof spawnPowerCell !== 'function'){ return; }
-  const k = spawnPowerCell(type);
-  if(!k){
-    try{ showComboFlash(0,false,'Bàn chưa có ô gạch trống logo để đặt '+info.icon); }catch(e){}
+  if(typeof beginSkillAim!=='function'){ return; }
+  // Bấm lại cùng skill → hủy chọn
+  if(typeof pendingSkill!=='undefined' && pendingSkill===type){
+    cancelSkillAim();
+    try{ showHint('Đã hủy skill'); }catch(e){}
     return;
   }
-  spendPower(type, 1);
-  try{ sfxPowerUp(); showComboFlash(0,false,info.icon+' Đã đặt lên bàn — phá ô đó để kích hoạt!'); }catch(e){}
+  beginSkillAim(type);
 }
 
 let _adHeartBusy = false;
@@ -237,6 +239,7 @@ window.Inventory = {
   // alias tương thích cũ
   addEnergy: function(n, reason){ grantPower('fire', n, reason||''); },
   addSaws: function(n, reason){ grantPower('wind', n, reason||''); },
+  spendPower: spendPower,
   grantDailyHeartsIfNeeded: grantDailyHeartsIfNeeded,
   unlockSkillByLevel: unlockSkillByLevel,
   onComboSkillMilestone: onComboSkillMilestone,
