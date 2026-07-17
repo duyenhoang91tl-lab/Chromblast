@@ -1,10 +1,10 @@
 // ═══════════════════════════════════════════════════════════════
-// inventory.js — Tim + vật phẩm 🔥 Lửa / 🫧 Bong bóng / 💨 Gió
+// inventory.js — Tim + vật phẩm 🔥 Lửa / 🫧 Bóng bóng / 💨 Gió
 // Nạp SAU save.js + progression.js, TRƯỚC ui.js / engine.js
 //
 // Skill người chơi (nút dưới khay):
 //  - 🔥 Lửa: chọn ô → cháy 3×3 ngay (gồm cả chướng ngại)
-//  - 🫧 Bong bóng: chọn ô màu → nổ toàn bộ ô cùng màu ngay
+//  - 🫧 Bóng bóng: chọn ô màu → nổ toàn bộ ô cùng màu ngay
 //  - 💨 Gió: chọn ô → thổi hàng/cột (ưu tiên bên nhiều ô hơn) ngay
 // Logo tự sinh trên bàn (mỗi 15 lần phá) vẫn kích hoạt khi phá ô đó.
 // Nhận vật phẩm: combo x5/x10, Vòng quay may mắn, logo 15-clear.
@@ -49,7 +49,7 @@ function saveInventory(){
 
 const POWER_INFO = {
   fire:   { field:'fires',   icon:'🔥', name:'Lửa' },
-  bubble: { field:'bubbles', icon:'🫧', name:'Bong bóng' },
+  bubble: { field:'bubbles', icon:'🫧', name:'Bóng' },
   wind:   { field:'winds',   icon:'💨', name:'Gió' },
 };
 
@@ -131,7 +131,7 @@ function renderInventoryHud(){
     el.innerHTML =
       '<span class="inv-chip inv-heart" title="Tim">❤️ '+(inv.hearts|0)+'</span>'+
       '<span class="inv-chip inv-fire" title="Lửa">🔥 '+(inv.fires|0)+'</span>'+
-      '<span class="inv-chip inv-bubble" title="Bong bóng">🫧 '+(inv.bubbles|0)+'</span>'+
+      '<span class="inv-chip inv-bubble" title="Bóng bóng">🫧 '+(inv.bubbles|0)+'</span>'+
       '<span class="inv-chip inv-wind" title="Gió">💨 '+(inv.winds|0)+'</span>';
   }
   const sk = document.getElementById('skill-bar');
@@ -171,14 +171,14 @@ function usePowerItem(type){
                    (typeof versusMode!=='undefined' && versusMode);
   if(inHidden){ try{ showComboFlash(0,false,'Chỉ dùng ở bàn chính'); }catch(e){} return; }
   if((inv[info.field]|0) < 1){
-    try{ showComboFlash(0,false,'Thiếu '+info.icon+' — đạt combo x5/x10, phá 15 lần hoặc Vòng quay 🎡'); }catch(e){}
+    try{ showComboFlash(0,false,'Thiếu '+info.icon+' — combo x5/x10, phá 15 lần hoặc 🎡'); }catch(e){}
     return;
   }
   if(typeof beginSkillAim!=='function'){ return; }
   // Bấm lại cùng skill → hủy chọn
   if(typeof pendingSkill!=='undefined' && pendingSkill===type){
     cancelSkillAim();
-    try{ showHint('Đã hủy skill'); }catch(e){}
+    try{ showHint('Đã hủy'); }catch(e){}
     return;
   }
   beginSkillAim(type);
