@@ -51,11 +51,32 @@ function showComboFlash(n, isColor, customText){
   el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
 }
 
-function showHint(msg){
+function showHint(msg, opts){
   const el=document.getElementById('hint-bar');
-  el.style.display='';
+  if(!el) return;
+  const hold=(opts&&opts.hold)|0 || 1800;
+  const sticky=!!(opts&&opts.sticky);
+  const aim=!!(opts&&opts.aim);
+  el.classList.remove('hint-flash','hint-aim');
+  void el.offsetWidth;
   el.textContent=msg;
-  setTimeout(()=>{ el.textContent=t('hintDefault'); },1600);
+  el.classList.add('hint-flash');
+  if(aim) el.classList.add('hint-aim');
+  if(window._hintTimer) clearTimeout(window._hintTimer);
+  if(sticky) return;
+  window._hintTimer=setTimeout(()=>{
+    if(typeof pendingSkill!=='undefined' && pendingSkill) return;
+    el.textContent=t('hintDefault');
+    el.classList.remove('hint-flash','hint-aim');
+  }, hold);
+}
+
+function clearHintFlash(){
+  const el=document.getElementById('hint-bar');
+  if(!el) return;
+  if(window._hintTimer) clearTimeout(window._hintTimer);
+  el.textContent=t('hintDefault');
+  el.classList.remove('hint-flash','hint-aim');
 }
 
 function initStartScreen(){

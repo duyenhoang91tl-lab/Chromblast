@@ -171,14 +171,14 @@ function usePowerItem(type){
                    (typeof versusMode!=='undefined' && versusMode);
   if(inHidden){ try{ showComboFlash(0,false,'Chỉ dùng ở bàn chính'); }catch(e){} return; }
   if((inv[info.field]|0) < 1){
-    try{ showComboFlash(0,false,'Thiếu '+info.icon+' — đạt combo x5/x10, phá 15 lần hoặc Vòng quay 🎡'); }catch(e){}
+    try{ showComboFlash(0,false,'Thiếu '+info.icon+' — combo x5/x10, phá 15 lần hoặc 🎡'); }catch(e){}
     return;
   }
   if(typeof beginSkillAim!=='function'){ return; }
   // Bấm lại cùng skill → hủy chọn
   if(typeof pendingSkill!=='undefined' && pendingSkill===type){
     cancelSkillAim();
-    try{ showHint('Đã hủy skill'); }catch(e){}
+    try{ showHint('Đã hủy'); }catch(e){}
     return;
   }
   beginSkillAim(type);
