@@ -26,12 +26,20 @@
     }
   }
 
+  // ⚠️ ID đơn vị quảng cáo (AdMob console → Ad units):
+  //  - Interstitial dùng id riêng.
+  //  - Rewarded PHẢI là ad unit loại "Rewarded" — dùng id interstitial sẽ
+  //    luôn load fail → nút "Xem QC +1 tim" không bao giờ chạy được.
+  //    Tạo ad unit Rewarded trong AdMob console rồi thay id dưới đây.
+  const AD_UNIT_INTERSTITIAL = 'ca-app-pub-9093176034842025/6573161096';
+  const AD_UNIT_REWARDED = 'ca-app-pub-9093176034842025/6573161096'; // TODO: thay bằng id Rewarded thật
+
   // Hàm hiển thị quảng cáo interstitial
   window.showInterstitialAd = async function() {
     if (!AdMob) return;
     try {
       await AdMob.prepareInterstitial({
-        adId: 'ca-app-pub-9093176034842025/6573161096',
+        adId: AD_UNIT_INTERSTITIAL,
         isTesting: false, // ĐANG TEST — đổi false khi publish thật
       });
       await AdMob.showInterstitial();
@@ -48,7 +56,7 @@
     }
     try {
       await AdMob.prepareRewardVideoAd({
-        adId: 'ca-app-pub-9093176034842025/6573161096',
+        adId: AD_UNIT_REWARDED,
         isTesting: false,
       });
       const result = await AdMob.showRewardVideoAd();

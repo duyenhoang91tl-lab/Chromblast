@@ -153,15 +153,30 @@ function renderInventoryHud(){
     sk.style.display = 'flex';
     const b10 = document.getElementById('skill-btn-10');
     const b20 = document.getElementById('skill-btn-20');
-    if(b10){ b10.disabled = !inv.skill10 || (inv.energy|0)<1; b10.classList.toggle('locked', !inv.skill10); }
-    if(b20){ b20.disabled = !inv.skill20 || (inv.saws|0)<1; b20.classList.toggle('locked', !inv.skill20); }
+    // KHÔNG dùng disabled — nút disabled nuốt luôn sự kiện click nên bấm vào
+    // không có phản hồi gì (người chơi tưởng nút hỏng). Giữ nút bấm được và
+    // hiện thông báo lý do trong useSkillLightning/useSkillSaw.
+    if(b10){
+      b10.disabled = false;
+      b10.classList.toggle('locked', !inv.skill10);
+      b10.classList.toggle('no-res', inv.skill10 && (inv.energy|0)<1);
+      const lab = b10.querySelector('.skill-lab');
+      if(lab) lab.textContent = inv.skill10 ? ('Sét ×'+(inv.energy|0)) : 'Sét';
+    }
+    if(b20){
+      b20.disabled = false;
+      b20.classList.toggle('locked', !inv.skill20);
+      b20.classList.toggle('no-res', inv.skill20 && (inv.saws|0)<1);
+      const lab = b20.querySelector('.skill-lab');
+      if(lab) lab.textContent = inv.skill20 ? ('Cưa ×'+(inv.saws|0)) : 'Cưa';
+    }
   }
 }
 
 /** Kỹ năng Lv10: tiêu 1⚡ → +80 điểm */
 function useSkillLightning(){
-  if(!inv.skill10){ try{ showComboFlash(0,false,'Cần Lv.10'); }catch(e){} return; }
-  if(!spendEnergy(1)){ try{ showComboFlash(0,false,'Thiếu ⚡'); }catch(e){} return; }
+  if(!inv.skill10){ try{ showComboFlash(0,false,'🔒 Cần Lv.10 để mở khóa Sét'); }catch(e){} return; }
+  if(!spendEnergy(1)){ try{ showComboFlash(0,false,'Thiếu ⚡ — đạt combo x5 hoặc Vòng quay 🎡'); }catch(e){} return; }
   if(typeof score==='number'){
     score += 80;
     if(score>best) best=score;
@@ -172,9 +187,9 @@ function useSkillLightning(){
 
 /** Kỹ năng Lv20: tiêu 1🪚 → xóa 1 hàng có nhiều ô nhất trên bàn chính */
 function useSkillSaw(){
-  if(!inv.skill20){ try{ showComboFlash(0,false,'Cần Lv.20'); }catch(e){} return; }
+  if(!inv.skill20){ try{ showComboFlash(0,false,'🔒 Cần Lv.20 để mở khóa Cưa'); }catch(e){} return; }
   if(typeof secretMode!=='undefined' && secretMode){ try{ showComboFlash(0,false,'Chỉ dùng ở map thường'); }catch(e){} return; }
-  if(!spendSaws(1)){ try{ showComboFlash(0,false,'Thiếu 🪚'); }catch(e){} return; }
+  if(!spendSaws(1)){ try{ showComboFlash(0,false,'Thiếu 🪚 — nhận từ Vòng quay 🎡'); }catch(e){} return; }
   try{
     if(typeof board==='undefined' || !board) return;
     let bestR=0, bestN=-1;
@@ -196,12 +211,35 @@ function useSkillSaw(){
   }
 }
 
+let _adHeartBusy = false;
+let _adHeartFallbackAt = 0;
+const AD_HEART_FALLBACK_COOLDOWN = 90 * 1000; // QC lỗi vẫn +1 tim, tối đa ~1 lần/90s
+
 function watchAdForHeart(){
-  const done = ()=>{ grantHearts(1, 'Xem quảng cáo'); };
+  if(_adHeartBusy) return; // chặn bấm liên tục khi QC đang mở
+  const btn = document.getElementById('inv-ad-heart-btn');
+  const setBusy = (b)=>{
+    _adHeartBusy = b;
+    if(btn) btn.classList.toggle('no-res', b);
+  };
+  const done = ()=>{ setBusy(false); grantHearts(1, 'Xem quảng cáo'); };
+  const fail = ()=>{
+    setBusy(false);
+    // QC chưa cấu hình xong / không có fill: vẫn tặng tim nhưng giới hạn
+    // tần suất để nút không bị lạm dụng vô hạn.
+    const now = Date.now();
+    if(now - _adHeartFallbackAt >= AD_HEART_FALLBACK_COOLDOWN){
+      _adHeartFallbackAt = now;
+      grantHearts(1, 'Tặng thêm');
+    } else {
+      try{ showComboFlash(0,false,'Quảng cáo chưa sẵn sàng — thử lại sau nhé'); }catch(e){}
+    }
+  };
+  setBusy(true);
   if(typeof showRewardedAd==='function'){
-    showRewardedAd(done, ()=>{ try{ showComboFlash(0,false,'Quảng cáo chưa sẵn sàng'); }catch(e){} });
+    showRewardedAd(done, fail);
   } else {
-    // Stub: giả lập xem QC thành công
+    // Web/không có AdMob: giả lập xem QC thành công
     setTimeout(done, 600);
   }
 }
