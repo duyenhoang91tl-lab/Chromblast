@@ -85,39 +85,39 @@
     <div class="start-logo">
       <span class="logo-chroma">CHROMA</span><span class="logo-blast">BLAST</span>
     </div>
-    <div class="start-subtitle" data-i18n="startSubtitle">🎮 Phá màu · Khám phá · Chinh phục</div>
+    <div class="start-subtitle" data-i18n="startSubtitle">Phá màu · Combo · Chinh phục</div>
     <div class="start-chars">🟥🟧🟨🟩🟦🟪</div>
     <button id="start-btn" class="start-btn">
-      <span data-i18n="startBtn">▶ BẮT ĐẦU CHƠI</span>
+      <span data-i18n="startBtn">BẮT ĐẦU</span>
     </button>
-    <div class="start-hint" data-i18n="startHint">Chạm hoặc nhấp để bắt đầu</div>
+    <div class="start-hint" data-i18n="startHint">Chạm để bắt đầu</div>
   </div>
 </div>
 <button id="help-btn" title="Hướng dẫn chơi" data-i18n-title="ttHelp">❓</button>
 <div id="help-panel">
-  <div class="admin-card">
-    <div class="admin-title"><span data-i18n="helpTitle">📖 Hướng dẫn chơi</span><button class="admin-close" id="help-close-btn">✕</button></div>
+  <div class="admin-card help-card">
+    <div class="admin-title"><span data-i18n="helpTitle">Cách chơi</span><button class="admin-close" id="help-close-btn" aria-label="Close">✕</button></div>
     <div class="help-body">
-      <h4 data-i18n="hpGoal">🎯 Mục tiêu</h4>
+      <h4 data-i18n="hpGoal">Cách chơi</h4>
       <ul data-i18n-html="hpGoalBody"></ul>
-      <h4 data-i18n="hpCombo">⭐ Tính điểm & Combo</h4>
+      <h4 data-i18n="hpCombo">Điểm & Combo</h4>
       <ul data-i18n-html="hpComboBody"></ul>
-      <h4 data-i18n="hpHidden">🔥 Map ẩn (chế độ bí mật)</h4>
+      <h4 data-i18n="hpHidden">Map ẩn</h4>
       <ul data-i18n-html="hpHiddenBody"></ul>
-      <h4 data-i18n="hpMech">🌟 Cơ chế đặc biệt</h4>
+      <h4 data-i18n="hpMech">Cơ chế đặc biệt</h4>
       <p style="margin:0 0 6px;color:rgba(255,255,255,0.7);" data-i18n-html="hpMechBody"></p>
       <div class="help-map-list" id="round-help-list"></div>
 
-      <h4 data-i18n="hpEnd">💀 Kết thúc</h4>
+      <h4 data-i18n="hpEnd">Kết thúc</h4>
       <ul data-i18n-html="hpEndBody"></ul>
 
-      <h4 data-i18n="hpMaps">🗺️ Cách chơi từng map ẩn</h4>
+      <h4 data-i18n="hpMaps">Map ẩn — luật riêng</h4>
       <p style="margin:0 0 6px;color:rgba(255,255,255,0.7);" data-i18n-html="hpMapsBody"></p>
 
       <label id="help-agree-label">
         <input type="checkbox" id="help-agree-chk"> <span data-i18n="helpAgree">Tôi đã đọc và hiểu luật chơi</span>
       </label>
-      <button id="help-ok-btn" data-i18n="helpOk">✅ Đã hiểu, bắt đầu chơi!</button>
+      <button id="help-ok-btn" data-i18n="helpOk">Bắt đầu chơi</button>
     </div>
   </div>
 </div>
@@ -506,7 +506,7 @@
   <!-- Mode A pieces -->
   <div id="skill-bar" class="skill-bar" style="display:none;" aria-label="Powers">
     <button type="button" id="skill-btn-fire" class="skill-btn pw-fire" title="Lửa — chạm ô để đốt 3×3 ngay (gồm cả chướng ngại)">🔥 <span class="skill-lab">Lửa</span></button>
-    <button type="button" id="skill-btn-bubble" class="skill-btn pw-bubble" title="Bong bóng — chạm ô màu để nổ toàn bộ ô cùng màu ngay">🫧 <span class="skill-lab">Bóng</span></button>
+    <button type="button" id="skill-btn-bubble" class="skill-btn pw-bubble" title="Bóng bóng — chạm ô màu để nổ toàn bộ ô cùng màu ngay">🫧 <span class="skill-lab">Bóng</span></button>
     <button type="button" id="skill-btn-wind" class="skill-btn pw-wind" title="Gió — chạm ô để thổi bay hàng/cột nhiều ô hơn ngay">💨 <span class="skill-lab">Gió</span></button>
     <button type="button" id="inv-ad-heart-btn" class="skill-btn skill-ad" title="Xem QC +1 tim" style="display:none;">📺 +❤️</button>
   </div>
@@ -518,7 +518,7 @@
     <button class="dctrl" id="dctrl-right" aria-label="phải">▶</button>
   </div>
 
-  <div id="hint-bar" data-i18n="hintDefault">Chạm khối → ghost hiện · Di ngón → ghost bám · Thả trên ô → đặt · Thả vùng trống → xoay</div>
+  <div id="hint-bar" data-i18n="hintDefault">Chạm khối · Kéo vào bàn · Thả để đặt</div>
 
   <!-- 🪞 V41 — Mirror Break: chỉ hiện khi đang ở vòng Thế giới gương -->
   <div style="display:flex;justify-content:center;margin-top:6px;">
