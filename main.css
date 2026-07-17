@@ -2448,6 +2448,8 @@ body:has(#secret-stage.active) .streak-dot.lit{
 .skill-btn:disabled, .skill-btn.locked{
   opacity:0.45; filter:grayscale(0.4); cursor:not-allowed;
 }
+/* Đã mở khóa nhưng hết tài nguyên (⚡/🪚) hoặc đang chờ QC — vẫn bấm được để xem lý do */
+.skill-btn.no-res{ opacity:0.6; filter:saturate(0.6); }
 #skill-btn-20{ background:linear-gradient(180deg,#ffb14a,#e07a10); color:#2a1500; }
 .skill-ad{ background:linear-gradient(180deg,#ff6b8a,#d63a5c) !important; }
 .skill-lab{ font-size:12px; }
