@@ -453,7 +453,7 @@ document.addEventListener('pointerdown', e => {
   if (pendingSkill) {
     if (!e.target.closest('#grid-wrap') && !e.target.closest('#skill-bar')) {
       cancelSkillAim();
-      try{ showHint('Đã hủy skill'); }catch(err){}
+      try{ showHint('Đã hủy'); }catch(err){}
     }
     return;
   }
@@ -522,10 +522,10 @@ function beginSkillAim(type){
     wrap.dataset.skillAim=type;
   }
   if(typeof renderInventoryHud==='function') renderInventoryHud();
-  const msg = type==='fire' ? '🔥 Chạm ô để đốt 3×3'
-            : type==='bubble' ? '🫧 Chạm ô màu để xóa cùng màu'
-            : '💨 Chạm ô để thổi hàng/cột';
-  try{ showHint(msg); }catch(e){}
+  const msg = type==='fire' ? '🔥 Chạm 1 ô để đốt 3×3'
+            : type==='bubble' ? '🫧 Chạm ô màu để nổ cùng màu'
+            : '💨 Chạm 1 ô để thổi hàng/cột';
+  try{ showHint(msg, { sticky:true, aim:true }); }catch(e){}
 }
 
 function cancelSkillAim(){
@@ -537,6 +537,7 @@ function cancelSkillAim(){
     delete wrap.dataset.skillAim;
   }
   if(typeof renderInventoryHud==='function') renderInventoryHud();
+  try{ if(typeof clearHintFlash==='function') clearHintFlash(); }catch(e){}
 }
 
 /** Skill người chơi: tiêu 1 vật phẩm và kích hoạt ngay tại ô (r,c) */
