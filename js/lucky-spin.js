@@ -78,7 +78,7 @@
   function prizeDetail(seg) {
     if (seg.kind === "heart") return "+" + seg.amount + " Tim";
     if (seg.kind === "fire") return "+" + seg.amount + " Lửa";
-    if (seg.kind === "bubble") return "+" + seg.amount + " Bong bóng";
+    if (seg.kind === "bubble") return "+" + seg.amount + " Bóng bóng";
     if (seg.kind === "wind") return "+" + seg.amount + " Gió";
     return seg.label;
   }
