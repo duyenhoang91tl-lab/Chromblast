@@ -22,6 +22,7 @@ function getSC(r,c){ return secretCells && secretCells[r] ? secretCells[r][c] : 
 function initBoard(){
   board=Array.from({length:ROWS},()=>Array(COLS).fill(null));
   placeCounter=0; cellPlacedAt={}; pendingClearKeys.clear();
+  powerCells.clear(); powerClearWaves=0; // 🔥🫧💨 ván mới — logo cũ không mang theo
   resetMechanicState();
   // ván mới vẫn giữ tier đã đạt — kích hoạt lại ĐÚNG 1 cơ chế của vòng đó
   if(typeof mainHardTier!=='undefined' && mainHardTier>0) setTimeout(()=>applyRoundMechanics(), 50);
@@ -149,6 +150,14 @@ function renderGrid(){
       cell.style.removeProperty('--cc');
       cell.style.background='';
       delete cell.dataset.ci;
+    }
+    // 🔥🫧💨 logo vật phẩm trên ô gạch
+    if(board[r][c] && powerCells.has(thornKey)){
+      const pw=powerCells.get(thornKey);
+      if(cell.dataset.power!==pw) cell.dataset.power=pw;
+    } else {
+      if(cell.dataset.power) delete cell.dataset.power;
+      if(!board[r][c]) powerCells.delete(thornKey); // dọn logo mồ côi (ô bị sóc ăn, lốc cuốn...)
     }
   }
 }
@@ -466,6 +475,136 @@ function onCellClick(e){
 // đó, lần tính nổ mới phải coi các ô này là TRỐNG — nếu không, hàng/cột/cụm "đầy ảo"
 // nhờ các ô sắp biến mất sẽ nổ oan, làm mất cả những ô của hàng CHƯA đủ gạch.
 const pendingClearKeys=new Set();
+
+/* ══════════════════════════════════════════
+   🔥🫧💨 Ô VẬT PHẨM (power cells) — map thường
+   - Mỗi 15 lần phá tự sinh 1 logo lên ô gạch ngẫu nhiên (tối đa 1 logo/ô)
+   - Phá ô chứa logo → kích hoạt:
+     🔥 lửa: cháy 3×3 quanh ô (gồm cả chướng ngại) — tính như 1 lần phá
+     🫧 bong bóng: nổ toàn bộ ô cùng màu
+     💨 gió: thổi bay hàng ngang/dọc chứa ô (ưu tiên hàng nhiều ô hơn)
+   - Nút 🔥/🫧/💨 dưới khay: tiêu 1 vật phẩm → đặt logo lên bàn theo ý người chơi
+══════════════════════════════════════════ */
+const POWER_SPAWN_EVERY = 15;      // số lần phá để tự sinh 1 logo
+const POWER_KINDS = ['fire','bubble','wind'];
+const powerCells = new Map();      // 'r,c' → 'fire' | 'bubble' | 'wind'
+let powerClearWaves = 0;           // đếm số lần phá (chỉ map thường)
+
+function powerEligibleKeys(){
+  const out=[];
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
+    const k=`${r},${c}`;
+    if(board[r][c]==null) continue;
+    if(powerCells.has(k) || pendingClearKeys.has(k)) continue;
+    // tránh đè logo lên ô đặc biệt đang có hiệu ứng riêng
+    if(thornCells.has(k) || iceCells.has(k) || slimeCells.has(k) || bittenCells.has(k)) continue;
+    out.push(k);
+  }
+  return out;
+}
+
+/** Sinh logo `type` (không truyền → random) lên 1 ô gạch ngẫu nhiên. Trả key hoặc null. */
+function spawnPowerCell(type){
+  const keys=powerEligibleKeys();
+  if(!keys.length) return null;
+  const k=keys[rnd(keys.length)];
+  powerCells.set(k, POWER_KINDS.includes(type) ? type : POWER_KINDS[rnd(POWER_KINDS.length)]);
+  renderGrid();
+  return k;
+}
+
+/** Danh sách ô bị hiệu ứng quét trúng */
+function powerTargets(p){
+  const keys=new Set();
+  if(p.type==='fire'){
+    for(let dr=-1;dr<=1;dr++) for(let dc=-1;dc<=1;dc++){
+      const r=p.r+dr, c=p.c+dc;
+      if(r>=0&&r<ROWS&&c>=0&&c<COLS) keys.add(`${r},${c}`);
+    }
+  } else if(p.type==='bubble'){
+    if(p.color) for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++)
+      if(board[r][c]===p.color) keys.add(`${r},${c}`);
+  } else { // wind — hàng ngang vs cột dọc: chọn bên nhiều ô hơn
+    let rowN=0, colN=0;
+    for(let c=0;c<COLS;c++) if(board[p.r][c]!=null) rowN++;
+    for(let r=0;r<ROWS;r++) if(board[r][p.c]!=null) colN++;
+    if(rowN>=colN){ for(let c=0;c<COLS;c++) keys.add(`${p.r},${c}`); }
+    else { for(let r=0;r<ROWS;r++) keys.add(`${r},${p.c}`); }
+  }
+  return keys;
+}
+
+/** Kích hoạt 1 vật phẩm — tính như 1 lần phá. Logo khác bị quét trúng nối vào queue. */
+function activatePower(p, queue){
+  const keys=powerTargets(p);
+  let cleared=0;
+  const clearedCells=[];
+  keys.forEach(k=>{
+    const [r,c]=k.split(',').map(Number);
+    // dây chuyền: quét trúng logo khác → kích hoạt tiếp sau
+    if(powerCells.has(k) && !(r===p.r && c===p.c)){
+      queue.push({ type:powerCells.get(k), r, c, color:board[r][c] });
+    }
+    powerCells.delete(k);
+    let obstacleRemoved=false;
+    if(p.type==='fire'){ // lửa đốt cả chướng ngại nặng trong vùng 3×3
+      if(mountainCells.has(k)){ mountainCells.delete(k); obstacleRemoved=true; }
+      if(wallCells.has(k)){ wallCells.delete(k); obstacleRemoved=true; }
+    }
+    if(thornCells.has(k)){ thornCells.delete(k); obstacleRemoved=true; }
+    if(iceCells.has(k)){ iceCells.delete(k); obstacleRemoved=true; }
+    if(slimeCells.has(k)){ slimeCells.delete(k); obstacleRemoved=true; }
+    if(bittenCells.has(k)){ bittenCells.delete(k); obstacleRemoved=true; }
+    mirrorCells.delete(k);
+    if(board[r][c]!=null){
+      board[r][c]=null;
+      delete cellPlacedAt[k];
+      pendingClearKeys.delete(k);
+      cleared++; clearedCells.push([r,c]);
+      const cell=getCell(r,c);
+      if(cell){ cell.classList.remove('filled'); cell.classList.add('pop-color'); }
+    } else if(obstacleRemoved){
+      cleared++; clearedCells.push([r,c]);
+    }
+  });
+  if(cleared<=0) return false;
+
+  // "tính như 1 lần phá": nối chuỗi combo + điểm theo hệ số hiện hành
+  consecutiveBursts++; combo++;
+  updateBurstCount();
+  if(combo>=5) unlockAchievement('combo5');
+  try{ if(typeof onComboSkillMilestone==='function') onComboSkillMilestone(combo); }catch(e){}
+  const pts=cleared*comboScoreMultiplier(combo);
+  score+=pts; if(score>best) best=score;
+  updateScoreUI(); updateComboUI();
+  try{ sfxMatch(cleared); if(combo>1) sfxComboUp(combo, pIdx(consecutiveBursts)); }catch(e){}
+  const ctr=clearCentroid(clearedCells, getCell);
+  showScorePop(cleared, pts, ctr.x, ctr.y, consecutiveBursts);
+  showShockwave(ctr.x, ctr.y, consecutiveBursts);
+  showComboCountFlash(combo);
+  updateComboBorderGlow(consecutiveBursts);
+  try{ mainBurstFX(clearedCells, consecutiveBursts); }catch(e){}
+  const label = p.type==='fire' ? '🔥 Lửa cháy 3×3!'
+              : p.type==='bubble' ? '🫧 Nổ sạch một màu!'
+              : '💨 Gió thổi bay cả hàng!';
+  try{ showComboFlash(0,false,label+' +'+pts); }catch(e){}
+  return true;
+}
+
+/** Chạy lần lượt các vật phẩm vừa bị phá trúng, xong quay lại chuỗi nổ thường */
+function runPowerQueue(queue){
+  if(!queue.length){
+    setTimeout(()=>{
+      renderGrid();
+      if(consecutiveBursts>=3 && !secretMode) triggerUnlock();
+      else processClears();
+    }, 120);
+    return;
+  }
+  const p=queue.shift();
+  activatePower(p, queue);
+  setTimeout(()=>{ renderGrid(); setTimeout(()=>runPowerQueue(queue), 200); }, 320);
+}
 function processClears(){
   const cellAlive=(r,c)=> board[r][c]!==null && !pendingClearKeys.has(`${r},${c}`);
   let lineKeys=new Set();
@@ -516,6 +655,27 @@ function processClears(){
   combo++;
   if(combo>=5) unlockAchievement('combo5');
   try{ if(typeof onComboSkillMilestone==='function') onComboSkillMilestone(combo); }catch(e){}
+
+  // 🔥🫧💨 vật phẩm bị phá trúng trong đợt này → kích hoạt sau khi đợt nổ xong
+  const triggeredPowers=[];
+  totalKeys.forEach(k=>{
+    if(powerCells.has(k)){
+      const [pr,pc]=k.split(',').map(Number);
+      triggeredPowers.push({ type:powerCells.get(k), r:pr, c:pc, color:board[pr][pc] });
+      powerCells.delete(k);
+    }
+  });
+  // Mỗi 15 lần phá ở map thường → tự sinh 1 logo ngẫu nhiên lên bàn
+  if(!secretMode){
+    powerClearWaves++;
+    if(powerClearWaves>=POWER_SPAWN_EVERY){
+      powerClearWaves=0;
+      setTimeout(()=>{
+        const k=spawnPowerCell();
+        if(k){ try{ sfxPowerUp(); showComboFlash(0,false,'✨ Ô vật phẩm xuất hiện trên bàn!'); }catch(e){} }
+      }, 650);
+    }
+  }
   // Quy tắc: phá 1 ô = 1 điểm. Phá liên tiếp (combo) từ lần thứ 3 → x2 điểm, từ lần thứ 6 → x3 điểm.
   const scoreMult=comboScoreMultiplier(combo);
   const pts=totalKeys.size*scoreMult;
@@ -740,6 +900,12 @@ function processClears(){
       }
     });
     renderGrid();
+
+    // 🔥🫧💨 có vật phẩm bị phá trúng → chạy hiệu ứng trước, xong mới nối chuỗi
+    if(triggeredPowers.length){
+      setTimeout(()=>runPowerQueue(triggeredPowers), 150);
+      return;
+    }
 
     // Check unlock BEFORE continuing chain
     if(consecutiveBursts>=3 && !secretMode){

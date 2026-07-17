@@ -1,14 +1,14 @@
-/* Lucky Spin — 1 free spin / day. Prizes: heart, energy, saw ×2/×3. */
+/* Lucky Spin — 1 free spin / day. Prizes: heart, fire, bubble, wind ×2/×3. */
 (function (g) {
   "use strict";
 
   const KEY_SPIN = "chromablast_lucky_spin";
   const SEGMENTS = [
-    { kind: "energy", amount: 2, label: "⚡×2", color: "#c4b5fd" },
-    { kind: "saw", amount: 2, label: "🪚×2", color: "#f8fafc" },
+    { kind: "fire", amount: 2, label: "🔥×2", color: "#c4b5fd" },
+    { kind: "bubble", amount: 2, label: "🫧×2", color: "#f8fafc" },
     { kind: "heart", amount: 2, label: "❤️×2", color: "#ddd6fe" },
-    { kind: "energy", amount: 3, label: "⚡×3", color: "#f8fafc" },
-    { kind: "saw", amount: 3, label: "🪚×3", color: "#c4b5fd" },
+    { kind: "wind", amount: 2, label: "💨×2", color: "#f8fafc" },
+    { kind: "fire", amount: 3, label: "🔥×3", color: "#c4b5fd" },
     { kind: "heart", amount: 3, label: "❤️×3", color: "#f8fafc" },
   ];
   const SEG = 360 / SEGMENTS.length;
@@ -77,17 +77,19 @@
 
   function prizeDetail(seg) {
     if (seg.kind === "heart") return "+" + seg.amount + " Tim";
-    if (seg.kind === "energy") return "+" + seg.amount + " Năng lượng";
-    if (seg.kind === "saw") return "+" + seg.amount + " Cưa";
+    if (seg.kind === "fire") return "+" + seg.amount + " Lửa";
+    if (seg.kind === "bubble") return "+" + seg.amount + " Bong bóng";
+    if (seg.kind === "wind") return "+" + seg.amount + " Gió";
     return seg.label;
   }
 
   function invSummary() {
     if (!g.Inventory) return "";
     const h = g.Inventory.hearts | 0;
-    const e = g.Inventory.energy | 0;
-    const s = g.Inventory.saws | 0;
-    return "❤️ " + h + "  ·  ⚡ " + e + "  ·  🪚 " + s;
+    const f = g.Inventory.fires | 0;
+    const b = g.Inventory.bubbles | 0;
+    const w = g.Inventory.winds | 0;
+    return "❤️ " + h + "  ·  🔥 " + f + "  ·  🫧 " + b + "  ·  💨 " + w;
   }
 
   function buildWheel() {
@@ -144,8 +146,9 @@
   function grantPrize(seg) {
     if (!g.Inventory) return;
     if (seg.kind === "heart") g.Inventory.addHearts(seg.amount);
-    else if (seg.kind === "energy") g.Inventory.addEnergy(seg.amount);
-    else if (seg.kind === "saw") g.Inventory.addSaws(seg.amount);
+    else if (seg.kind === "fire") g.Inventory.addFires(seg.amount);
+    else if (seg.kind === "bubble") g.Inventory.addBubbles(seg.amount);
+    else if (seg.kind === "wind") g.Inventory.addWinds(seg.amount);
     try {
       if (typeof g.Inventory.render === "function") g.Inventory.render();
     } catch (_) {}
