@@ -268,10 +268,10 @@ function drawArena(ctx,W,H){
   // Carrots
   arenaCarrots.forEach(c=>{ ctx.fillText('🥕',c.x,c.y); });
 
-  // Snake boss
+  // Snake boss — hình vẽ vector dễ thương thay vì emoji
   if((arenaWave===2||arenaWave===3)&&arenaSnake&&arenaSnake.hp>0){
-    ctx.font='60px Nunito,system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText('🐍',arenaSnake.x,arenaSnake.y);
+    const boxSize=80;
+    drawSnake(ctx,arenaSnake.x-boxSize/2,arenaSnake.y-boxSize/2,boxSize,boxSize,Date.now()*0.001);
     // HP bar
     const hpPct=arenaSnake.hp/100;
     ctx.fillStyle='rgba(200,0,0,0.4)'; ctx.fillRect(arenaSnake.x-40,arenaSnake.y-50,80,8);

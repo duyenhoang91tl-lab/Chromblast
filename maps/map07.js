@@ -281,25 +281,22 @@ function drawMemory(ctx,W,H){
         ctx.strokeStyle='rgba(255,255,255,0.6)'; ctx.lineWidth=1.5; ctx.stroke();
       }
 
-      // emoji (con chó dùng hình vẽ vector của Map 4)
-      if(c.animal.emoji==='🐶'){
-        ctx.save();
-        ctx.translate(0,-8);
-        ctx.scale(0.78,0.78);
-        ctx.shadowColor='rgba(0,0,0,0.3)'; ctx.shadowBlur=4/0.78;
-        drawDog(ctx,performance.now()*0.001,{x:0,y:0,vx:0,vy:0,facing:1,panicLevel:0});
-        ctx.shadowBlur=0;
-        ctx.restore();
-      } else {
-        ctx.font='40px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
-        ctx.fillStyle='#000'; // shadow trick
+      // hình con vật — vector dễ thương theo phong cách Map 4, fallback emoji nếu chưa có
+      {
+        const boxSize=52;
         ctx.shadowColor='rgba(0,0,0,0.3)'; ctx.shadowBlur=4;
-        ctx.fillText(c.animal.emoji,0,-8);
+        const drew=drawCuteAnimal(ctx,c.animal.emoji,-boxSize/2,-8-boxSize/2,boxSize,boxSize,performance.now()*0.001);
+        if(!drew){
+          ctx.font='40px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+          ctx.fillStyle='#000'; // shadow trick
+          ctx.fillText(c.animal.emoji,0,-8);
+        }
         ctx.shadowBlur=0;
       }
 
       // name
       ctx.font='bold 11px Nunito,system-ui'; ctx.fillStyle='rgba(0,0,0,0.7)';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
       ctx.fillText(c.animal.name,0,cardH/2-14);
     } else {
       // Back: dark gradient + question pattern
