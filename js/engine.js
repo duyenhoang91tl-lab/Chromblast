@@ -606,7 +606,12 @@ function powerTargets(p){
   return keys;
 }
 
-/** Kích hoạt 1 vật phẩm — tính như 1 lần phá. Logo khác bị quét trúng nối vào queue. */
+/** Kích hoạt 1 vật phẩm — tính như 1 lần phá (1 combo).
+ *  Chướng ngại bảo vệ ô màu giống nổ thường:
+ *  🌿 dây leo/gai → chỉ gỡ gai, giữ gạch
+ *  🧊 băng → lần 1 nứt, lần 2 mới vỡ kèm gạch
+ *  🔥 lửa vẫn đốt núi/tường (chướng ngại nặng không phải lớp giáp trên gạch)
+ */
 function activatePower(p, queue){
   const keys=powerTargets(p);
   let cleared=0;
@@ -618,15 +623,33 @@ function activatePower(p, queue){
       queue.push({ type:powerCells.get(k), r, c, color:board[r][c] });
     }
     powerCells.delete(k);
+
+    // 🌿 dây leo: 1 lần phá chỉ gỡ gai — chưa đụng gạch bên dưới
+    if(thornCells.has(k)){
+      thornCells.delete(k);
+      cleared++; clearedCells.push([r,c]);
+      return;
+    }
+    // 🧊 băng: lần đầu chỉ nứt; lần sau mới vỡ và xóa ô màu
+    if(iceCells.has(k)){
+      const stage=iceCells.get(k);
+      if(stage>=2){
+        iceCells.set(k,1);
+        cleared++; clearedCells.push([r,c]);
+        try{ sfxClick(); }catch(e){}
+        return;
+      }
+      iceCells.delete(k);
+      // stage 1 → rơi xuống xóa gạch bên dưới
+    }
+
     let obstacleRemoved=false;
-    if(p.type==='fire'){ // lửa đốt cả chướng ngại nặng trong vùng 3×3
+    if(p.type==='fire'){ // lửa đốt chướng ngại nặng (núi / tường) trong vùng 3×3
       if(mountainCells.has(k)){ mountainCells.delete(k); obstacleRemoved=true; }
       if(wallCells.has(k)){ wallCells.delete(k); obstacleRemoved=true; }
     }
-    if(thornCells.has(k)){ thornCells.delete(k); obstacleRemoved=true; }
-    if(iceCells.has(k)){ iceCells.delete(k); obstacleRemoved=true; }
     if(slimeCells.has(k)){ slimeCells.delete(k); obstacleRemoved=true; }
-    if(bittenCells.has(k)){ bittenCells.delete(k); obstacleRemoved=true; }
+    if(bittenCells.has(k)){ bittenCells.delete(k); }
     mirrorCells.delete(k);
     if(board[r][c]!=null){
       board[r][c]=null;

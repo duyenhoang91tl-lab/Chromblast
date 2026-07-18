@@ -1813,13 +1813,24 @@ body:has(#secret-stage.active) .streak-dot.lit{
   justify-content:center; gap:14px; color:#fff; z-index:50;
 }
 #game-over-overlay.show { display:flex; }
-#go-title { font-size:26px; font-weight:700; }
-#go-score { font-size:16px; color:#ccc; }
-#restart-btn {
-  background:#378ADD; color:#fff; border:none; border-radius:10px;
-  padding:11px 30px; font-size:15px; font-weight:700; cursor:pointer; margin-top:4px;
+#go-title {
+  font-family: 'Nunito', system-ui, sans-serif;
+  font-size: clamp(24px, 6vw, 28px); font-weight: 900;
+  letter-spacing: 0.4px;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.35);
 }
-#restart-btn:hover { background:#2a6db5; }
+#go-score {
+  font-size: 15px; font-weight: 800; color: #d8deee;
+  letter-spacing: 0.2px;
+}
+#restart-btn {
+  background: linear-gradient(180deg,#6ec0ff,#2f7fd4); color:#fff; border:none;
+  border-radius:14px; padding:12px 28px; font-size:15px; font-weight:900; cursor:pointer;
+  margin-top:4px; letter-spacing:0.3px;
+  border:1.5px solid rgba(255,255,255,0.35);
+  box-shadow: 0 4px 14px rgba(40,120,220,0.4), inset 0 1px 0 rgba(255,255,255,0.35);
+}
+#restart-btn:hover { filter: brightness(1.06); }
 
 /* ── MISC ── */
 #status-bar { display:none; }
@@ -2371,11 +2382,12 @@ body:has(#secret-stage.active) .streak-dot.lit{
   justify-self: end;
   align-self: center;
 }
-#game-root.hud-arcade #game-controls > button:not(#pause-btn):not(#account-btn):not(#mute-btn):not(#versus-btn) {
+#game-root.hud-arcade #game-controls > button:not(#pause-btn):not(#account-btn):not(#mute-btn):not(#versus-btn):not(#admin-btn) {
   display: none !important;
 }
 #versus-btn { display: none; }
 #versus-btn.vs-unlocked { display: flex !important; align-items: center; justify-content: center; }
+#game-root.hud-arcade #admin-btn.admin-on,
 #game-root.hud-arcade #versus-btn.vs-unlocked,
 #game-root.hud-arcade #pause-btn,
 #game-root.hud-arcade #account-btn,
@@ -2385,6 +2397,14 @@ body:has(#secret-stage.active) .streak-dot.lit{
   font-size: 18px !important;
   padding: 0;
   line-height: 1;
+}
+#game-root.hud-arcade #admin-btn.admin-on {
+  width: auto; min-width: 40px; height: 40px; border-radius: 20px !important;
+  padding: 0 10px !important; font-size: 11px !important;
+  background: linear-gradient(135deg,#ff6b35,#f7c948) !important;
+  border: 2px solid #fff0c0 !important;
+  color: #1a0a00 !important;
+  box-shadow: 0 0 10px rgba(255,160,40,0.7), inset 0 1px 0 rgba(255,255,255,0.5);
 }
 #game-root.hud-arcade #versus-btn.vs-unlocked {
   background: radial-gradient(circle at 35% 30%, #ffe08a 0%, #f0a820 55%, #c87800 100%) !important;
@@ -2649,11 +2669,20 @@ body:has(#secret-stage.active) .streak-dot.lit{
 .set-c-spin{ background:linear-gradient(180deg,#FF9F43,#E67E22); color:#2a1200; }
 
 .spin-overlay{ z-index:10030; }
-.spin-modal{
+/* Lucky Spin — khu vườn đáng yêu: màu đa dạng + dây hoa + kim lá */
+.spin-modal,
+.spin-modal-floral{
   position:relative; width:min(340px,92vw);
-  background:linear-gradient(180deg,#5BA8E8 0%,#7B5BB8 45%,#5A3A9A 100%);
-  border-radius:22px; padding:18px 16px 22px;
-  box-shadow:0 16px 48px rgba(0,0,0,0.5);
+  background:
+    radial-gradient(circle at 18% 12%, rgba(255,255,255,0.55) 0 2px, transparent 3px),
+    radial-gradient(circle at 82% 18%, rgba(255,255,255,0.4) 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 70% 88%, rgba(255,255,255,0.35) 0 1px, transparent 2px),
+    linear-gradient(165deg, #FFF3C4 0%, #FFD6E8 28%, #C8F0FF 58%, #D8F8D0 100%);
+  border-radius:24px; padding:18px 16px 22px;
+  border:3px solid rgba(255,255,255,0.65);
+  box-shadow:
+    0 16px 48px rgba(40,80,120,0.35),
+    inset 0 1px 0 rgba(255,255,255,0.7);
   display:flex; flex-direction:column; align-items:center;
   font-family:'Nunito',system-ui,sans-serif;
   animation:spinModalIn 0.35s ease;
@@ -2663,106 +2692,155 @@ body:has(#secret-stage.active) .streak-dot.lit{
   to{ opacity:1; transform:scale(1) translateY(0); }
 }
 .spin-x{
-  position:absolute; top:10px; right:10px; width:32px; height:32px;
-  border:none; border-radius:50%; background:rgba(255,255,255,0.2);
+  position:absolute; top:10px; right:10px; width:34px; height:34px;
+  border:2px solid rgba(255,255,255,0.7); border-radius:50%;
+  background:linear-gradient(180deg,#FF8FAB,#F43F7A);
   color:#fff; font-size:16px; font-weight:900; cursor:pointer; z-index:2;
+  box-shadow:0 3px 10px rgba(244,63,122,0.35), inset 0 1px 0 rgba(255,255,255,0.45);
 }
 .spin-title{
-  display:flex; flex-direction:column; align-items:center; line-height:1;
-  margin-bottom:10px; margin-top:4px;
+  display:flex; flex-direction:column; align-items:center; line-height:0.95;
+  margin-bottom:8px; margin-top:6px;
 }
 .spin-title-slide{
-  font-size:28px; font-weight:900; color:#4da3ff;
-  -webkit-text-stroke:2px #ffe566; text-shadow:0 3px 0 #2a4a8a;
-  letter-spacing:1px;
+  font-size:30px; font-weight:900; color:#FFC93C;
+  -webkit-text-stroke:3px #5B2C8A;
+  paint-order:stroke fill;
+  text-shadow:0 3px 0 #3B1A5C;
+  letter-spacing:0.5px;
 }
 .spin-title-lucky{
-  font-size:26px; font-weight:900; color:#ffe566;
-  -webkit-text-stroke:2px #6b3fa0; text-shadow:0 3px 0 #3a2060;
-  margin-top:2px;
+  font-size:28px; font-weight:900; color:#FF9F1C;
+  -webkit-text-stroke:3px #5B2C8A;
+  paint-order:stroke fill;
+  text-shadow:0 3px 0 #3B1A5C;
+  margin-top:0;
 }
 .spin-wheel-wrap{
-  position:relative; width:220px; height:220px; margin:6px 0 14px;
+  position:relative; width:230px; height:230px; margin:10px 0 16px;
+}
+.spin-vine-ring{
+  position:absolute; inset:-14px; z-index:1; pointer-events:none;
+}
+.spin-vine-svg{
+  width:100%; height:100%; display:block;
+  filter:drop-shadow(0 2px 4px rgba(22,101,52,0.25));
+  animation:spinVineSway 5s ease-in-out infinite alternate;
+}
+@keyframes spinVineSway{
+  from{ transform:rotate(-2deg); }
+  to{ transform:rotate(2deg); }
+}
+.spin-flower, .spin-leaf{
+  position:absolute; line-height:1; pointer-events:none;
+  filter:drop-shadow(0 2px 3px rgba(0,0,0,0.2));
+}
+.spin-flower{ font-size:20px; animation:spinFlowerBob 2.4s ease-in-out infinite alternate; }
+.spin-leaf{ font-size:16px; opacity:0.95; }
+.sf-1{ top:2%; left:46%; animation-delay:0s; }
+.sf-2{ top:18%; right:0%; animation-delay:0.3s; }
+.sf-3{ top:48%; right:-2%; animation-delay:0.6s; }
+.sf-4{ bottom:14%; right:6%; animation-delay:0.2s; }
+.sf-5{ bottom:0%; left:44%; animation-delay:0.5s; }
+.sf-6{ bottom:16%; left:2%; animation-delay:0.8s; }
+.sf-7{ top:46%; left:-4%; animation-delay:0.1s; }
+.sf-8{ top:14%; left:4%; animation-delay:0.7s; }
+.sl-1{ top:32%; right:2%; transform:rotate(25deg); }
+.sl-2{ bottom:32%; left:0%; transform:rotate(-30deg); }
+.sl-3{ top:8%; right:18%; transform:rotate(40deg); font-size:14px; }
+.sl-4{ bottom:8%; left:18%; transform:rotate(-45deg); }
+@keyframes spinFlowerBob{
+  from{ transform:translateY(0) scale(1); }
+  to{ transform:translateY(-3px) scale(1.08); }
 }
 .spin-wheel{
   width:100%; height:100%; border-radius:50%;
-  border:10px solid #6b3fa0;
+  border:8px solid #fff;
   box-shadow:
-    0 0 0 4px #ffe566,
-    inset 0 0 0 3px rgba(255,255,255,0.35),
-    0 8px 24px rgba(0,0,0,0.35);
-  position:relative;
+    0 0 0 5px #86EFAC,
+    0 0 0 9px #F9A8D4,
+    inset 0 0 0 3px rgba(255,255,255,0.55),
+    0 10px 28px rgba(40,80,60,0.28);
+  position:relative; z-index:2;
   will-change:transform;
 }
-.spin-wheel::before{
-  content:''; position:absolute; inset:-14px; border-radius:50%;
-  background:radial-gradient(circle at 12px 12px,#ffe566 3px,transparent 4px) 0 0 / 36px 36px;
-  pointer-events:none; opacity:0.95; z-index:-1;
-  animation:spinLights 2.4s linear infinite;
-}
-@keyframes spinLights{ to{ transform:rotate(360deg); } }
 .spin-seg-label{
   position:absolute; left:50%; top:50%;
-  width:56px; margin-left:-28px; margin-top:-10px;
-  text-align:center; font-size:13px; font-weight:900;
-  color:#3a2060; pointer-events:none; line-height:1.1;
-  text-shadow:0 1px 0 #fff;
+  width:58px; margin-left:-29px; margin-top:-14px;
+  text-align:center; font-weight:900;
+  color:#3b2a1a; pointer-events:none; line-height:1.05;
+  display:flex; flex-direction:column; align-items:center; gap:1px;
+  text-shadow:0 1px 0 rgba(255,255,255,0.7);
 }
-.spin-pointer{
-  position:absolute; left:50%; top:-6px; z-index:3;
-  width:0; height:0; margin-left:-12px;
-  border-left:12px solid transparent;
-  border-right:12px solid transparent;
-  border-top:22px solid #ffb020;
-  filter:drop-shadow(0 2px 3px rgba(0,0,0,0.35));
+.spin-seg-ico{ font-size:18px; line-height:1; filter:drop-shadow(0 1px 1px rgba(0,0,0,0.2)); }
+.spin-seg-amt{
+  font-size:12px; font-weight:900; color:#5b2c0a;
+  background:rgba(255,255,255,0.55); border-radius:999px;
+  padding:1px 6px; letter-spacing:0.2px;
 }
-.spin-pointer::after{
-  content:''; position:absolute; left:-7px; top:-26px;
-  width:14px; height:14px; border-radius:50%;
-  background:radial-gradient(circle at 35% 35%,#ffe08a,#e07a10);
-  box-shadow:0 0 0 3px #ffe566;
+/* Kim chỉ = chiếc lá (đỉnh vòng, hướng xuống) */
+.spin-pointer,
+.spin-pointer-leaf{
+  position:absolute; left:50%; top:-18px; z-index:5;
+  width:36px; height:46px; margin-left:-18px;
+  filter:drop-shadow(0 3px 4px rgba(0,0,0,0.28));
+  animation:spinLeafWiggle 2.2s ease-in-out infinite alternate;
+}
+.spin-pointer-leaf svg{ display:block; width:100%; height:100%; }
+@keyframes spinLeafWiggle{
+  from{ transform:rotate(-4deg); }
+  to{ transform:rotate(4deg); }
 }
 .spin-hub{
-  position:absolute; left:50%; top:50%; width:28px; height:28px;
-  margin:-14px 0 0 -14px; border-radius:50%;
-  background:radial-gradient(circle at 35% 30%,#ffe08a,#e07a10 60%,#a05000);
-  box-shadow:0 0 0 4px #ffe566, 0 2px 8px rgba(0,0,0,0.35);
-  z-index:2;
+  position:absolute; left:50%; top:50%; width:36px; height:36px;
+  margin:-18px 0 0 -18px; border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#fff,#F9A8D4 55%,#FB7185);
+  box-shadow:0 0 0 4px #fff, 0 0 0 7px #86EFAC, 0 3px 10px rgba(0,0,0,0.25);
+  z-index:4;
+  display:flex; align-items:center; justify-content:center;
+  font-size:16px; line-height:1;
 }
 .spin-timer-box{
   display:flex; align-items:center; gap:6px;
-  background:rgba(60,30,100,0.85); color:#fff;
-  border-radius:999px; padding:6px 14px; font-weight:800; font-size:14px;
+  background:linear-gradient(180deg,rgba(255,255,255,0.75),rgba(255,255,255,0.45));
+  color:#5b3a6e;
+  border:2px solid rgba(255,255,255,0.8);
+  border-radius:999px; padding:7px 16px; font-weight:900; font-size:14px;
   margin-bottom:12px;
+  box-shadow:0 3px 10px rgba(80,40,100,0.12);
 }
 .spin-go-btn{
-  width:min(200px,70%); border:none; border-radius:999px;
-  padding:12px 24px; font-size:20px; font-weight:900; cursor:pointer;
+  width:min(210px,72%); border:none; border-radius:999px;
+  padding:13px 24px; font-size:22px; font-weight:900; cursor:pointer;
   font-family:inherit; color:#fff;
-  background:linear-gradient(180deg,#ffd24a,#f0a000);
-  text-shadow:0 1px 0 rgba(0,0,0,0.2);
-  box-shadow:0 4px 0 #c07800, inset 0 1px 0 rgba(255,255,255,0.4);
+  background:linear-gradient(180deg,#FFE566 0%,#FFB020 55%,#FF8A00 100%);
+  text-shadow:0 1px 0 rgba(120,50,0,0.35);
+  border:2px solid rgba(255,255,255,0.65);
+  box-shadow:0 5px 0 #D97706, inset 0 1px 0 rgba(255,255,255,0.55);
 }
-.spin-go-btn:active{ transform:translateY(2px); box-shadow:0 2px 0 #c07800; }
+.spin-go-btn:active{ transform:translateY(3px); box-shadow:0 2px 0 #D97706; }
 .spin-go-btn:disabled{
-  opacity:0.55; cursor:not-allowed; filter:grayscale(0.3);
+  opacity:0.55; cursor:not-allowed; filter:grayscale(0.25);
 }
 .spin-hint{
-  margin-top:10px; color:rgba(255,255,255,0.92);
-  font-size:12px; font-weight:800; text-align:center;
+  margin-top:10px; color:#2f6b45;
+  font-size:12.5px; font-weight:900; text-align:center;
+  letter-spacing:0.15px;
+  text-shadow:0 1px 0 rgba(255,255,255,0.55);
 }
 .spin-close-round{
-  margin-top:14px; width:40px; height:40px; border-radius:50%;
-  border:none; background:rgba(20,10,40,0.75); color:#fff;
+  margin-top:14px; width:42px; height:42px; border-radius:50%;
+  border:2px solid rgba(255,255,255,0.55);
+  background:linear-gradient(180deg,#A78BFA,#7C3AED); color:#fff;
   font-size:18px; font-weight:900; cursor:pointer;
-  box-shadow:0 2px 8px rgba(0,0,0,0.35);
+  box-shadow:0 3px 10px rgba(124,58,237,0.35);
 }
-.spin-modal{ position:relative; }
 .spin-reward-layer{
   position:absolute; inset:0; z-index:20;
   display:flex; align-items:center; justify-content:center;
-  background:rgba(20,10,50,0.82); border-radius:22px;
+  background:rgba(40,60,80,0.55); border-radius:24px;
   padding:16px; animation:spinRewardIn .35s ease;
+  backdrop-filter:blur(3px);
 }
 .spin-reward-layer[hidden]{ display:none !important; }
 @keyframes spinRewardIn{
@@ -2771,30 +2849,31 @@ body:has(#secret-stage.active) .streak-dot.lit{
 }
 .spin-reward-box{
   width:100%; max-width:280px; text-align:center;
-  background:linear-gradient(180deg,#6B4FD8 0%,#3A2878 100%);
+  background:linear-gradient(165deg,#FFF7D6 0%,#FFD6E8 45%,#C8F0FF 100%);
   border-radius:18px; padding:18px 16px 16px;
-  box-shadow:0 8px 28px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.2);
-  border:2px solid rgba(255,220,100,0.45);
+  box-shadow:0 8px 28px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.7);
+  border:2.5px solid rgba(255,255,255,0.8);
 }
 .spin-reward-title{
-  font-size:20px; font-weight:900; color:#ffe566;
-  text-shadow:0 2px 0 rgba(0,0,0,0.25); margin-bottom:8px;
+  font-size:22px; font-weight:900; color:#E11D48;
+  text-shadow:0 1px 0 rgba(255,255,255,0.7); margin-bottom:8px;
 }
 .spin-reward-icon{
   font-size:52px; line-height:1.1; margin:6px 0 10px;
-  filter:drop-shadow(0 4px 8px rgba(0,0,0,0.35));
+  filter:drop-shadow(0 4px 8px rgba(0,0,0,0.2));
 }
 .spin-reward-text{
-  font-size:15px; font-weight:900; color:#fff; margin-bottom:6px;
+  font-size:15px; font-weight:900; color:#3b2a1a; margin-bottom:6px;
 }
 .spin-reward-extra{
-  font-size:12px; font-weight:800; color:#b8ffcf; min-height:0;
+  font-size:12px; font-weight:800; color:#15803d; min-height:0;
   margin-bottom:8px; line-height:1.35;
 }
 .spin-reward-extra:empty{ display:none; }
 .spin-reward-inv{
-  font-size:12px; font-weight:800; color:rgba(255,255,255,0.88);
-  background:rgba(0,0,0,0.22); border-radius:999px;
+  font-size:12px; font-weight:800; color:#5b3a6e;
+  background:rgba(255,255,255,0.65); border-radius:999px;
   padding:6px 12px; margin:0 auto 14px; display:inline-block;
+  border:1px solid rgba(255,255,255,0.9);
 }
 .spin-reward-ok{ width:min(200px,80%); margin-top:4px; }

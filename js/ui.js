@@ -188,20 +188,26 @@ function togglePause(){
 }
 
 // 📖 Hướng dẫn cơ chế theo VÒNG độ khó của map thường.
-// Người chơi chỉ đọc được cơ chế của các vòng ĐÃ CHẠM tới (tới vòng nào biết vòng đó).
+// Người chơi thường: chỉ vòng đã chạm tới. Admin: xem tất cả (1–41).
 function showRoundGuide(){
+  const isAdmin = !!(currentUser && currentUser.role==='admin');
   const reached = (typeof highestReachedTier==='function') ? highestReachedTier() : 0;
   const cur = (typeof mainHardTier!=='undefined' ? (mainHardTier|0) : 0);
-  const maxTier = reached;
+  const maxTier = isAdmin ? 41 : reached;
   const title = document.getElementById('roundguide-title');
   const body  = document.getElementById('roundguide-body');
-  title.textContent = t('roundGuideTitle');
+  title.textContent = isAdmin ? '📖 Cơ chế TẤT CẢ các vòng (admin)' : t('roundGuideTitle');
   if(maxTier < 1){
     body.innerHTML = '<p style="font-size:13px;line-height:1.5;color:#dfe6f2;">'+t('rgNone')+'</p>';
     document.getElementById('roundguide-panel').classList.add('show');
     return;
   }
-  let html = '<p style="font-size:12px;color:#9aa7bd;margin:0 0 10px;">'+t('rgYouAt', cur||1)+'</p>';
+  let html = '';
+  if(!isAdmin){
+    html += '<p style="font-size:12px;color:#9aa7bd;margin:0 0 10px;">'+t('rgYouAt', cur||1)+'</p>';
+  } else {
+    html += '<p style="font-size:12px;color:#9aa7bd;margin:0 0 10px;">Chế độ admin — đang xem toàn bộ vòng 1–41. Vòng hiện tại: <b style="color:#ffd54a;">'+(cur||1)+'</b>.</p>';
+  }
   for(let v=1; v<=maxTier; v++){
     const desc = roundMechDescFor(v);
     if(!desc) continue;
@@ -227,22 +233,28 @@ function renderHiddenMapMenu(){
   const btn=document.getElementById('hiddenmap-menu-btn');
   const list=document.getElementById('hiddenmap-menu-list');
   if(!btn||!list) return;
-  btn.style.display = clearedHiddenMaps.size>0 ? 'flex' : 'none';
+  const isAdmin = !!(currentUser && currentUser.role==='admin');
+  const maps = (typeof HIDDEN_MAP_LIST!=='undefined') ? HIDDEN_MAP_LIST
+             : (typeof ADMIN_MAPS!=='undefined' ? ADMIN_MAPS : []);
+  btn.style.display = (isAdmin || clearedHiddenMaps.size>0) ? 'flex' : 'none';
   list.innerHTML='';
-  HIDDEN_MAP_LIST.forEach(m=>{
-    const cleared = clearedHiddenMaps.has(m.key);
+  maps.forEach(m=>{
+    const cleared = isAdmin || clearedHiddenMaps.has(m.key);
     const row = document.createElement('div');
     row.className = 'admin-map-row';
     const item = document.createElement('button');
     item.className = 'admin-map-btn'+(cleared?'':' locked');
     item.style.flex = '1 1 auto';
-    item.innerHTML = (cleared?'▶ ':'🔒 ')+'<b>'+m.label.split(' — ')[0]+'</b> — '+m.label.split(' — ')[1];
+    const parts = (m.label||'').split(' — ');
+    item.innerHTML = (cleared?'▶ ':'🔒 ')+'<b>'+(parts[0]||m.key)+'</b>'+(parts[1]?' — '+parts[1]:'');
     if(cleared){
       item.addEventListener('click', ()=>{
         document.getElementById('hiddenmap-menu-panel').classList.remove('show');
         const startScreen = document.getElementById('start-screen');
-        startScreen.classList.add('hide');
-        setTimeout(()=>{ startScreen.style.display='none'; }, 500);
+        if(startScreen){
+          startScreen.classList.add('hide');
+          setTimeout(()=>{ startScreen.style.display='none'; }, 500);
+        }
         sfxClick();
         hardResetAllModes();
         startGame();
@@ -265,8 +277,84 @@ function renderHiddenMapMenu(){
   });
 }
 
+function initAdminPanel(){
+  const list = document.getElementById('admin-map-list');
+  const maps = (typeof HIDDEN_MAP_LIST!=='undefined') ? HIDDEN_MAP_LIST
+             : (typeof ADMIN_MAPS!=='undefined' ? ADMIN_MAPS : []);
+  if(list){
+    list.innerHTML = '';
+    maps.forEach(m=>{
+      const btn = document.createElement('button');
+      btn.className = 'admin-map-btn';
+      const parts = (m.label||'').split(' — ');
+      btn.innerHTML = '<b>'+(parts[0]||m.key)+'</b>'+(parts[1]?' — '+parts[1]:'');
+      btn.addEventListener('click', ()=>{
+        document.getElementById('admin-panel').classList.remove('show');
+        const startScreen = document.getElementById('start-screen');
+        if(startScreen){
+          startScreen.classList.add('hide');
+          setTimeout(()=>{ startScreen.style.display='none'; }, 500);
+        }
+        sfxClick();
+        hardResetAllModes();
+        startGame();
+        m.run();
+      });
+      list.appendChild(btn);
+    });
+  }
+
+  const adminBtn = document.getElementById('admin-btn');
+  if(adminBtn){
+    adminBtn.addEventListener('click', ()=>{
+      if(!(currentUser && currentUser.role==='admin')) return;
+      sfxClick();
+      document.getElementById('admin-panel').classList.add('show');
+    });
+  }
+  const adminClose = document.getElementById('admin-close-btn');
+  if(adminClose){
+    adminClose.addEventListener('click', ()=>{
+      document.getElementById('admin-panel').classList.remove('show');
+    });
+  }
+
+  // Test map thường theo vòng 1–41
+  const roundList=document.getElementById('admin-round-list');
+  if(roundList){
+    roundList.innerHTML='';
+    for(let v=1; v<=41; v++){
+      const rb=document.createElement('button');
+      rb.className='admin-map-btn';
+      rb.style.cssText='padding:6px 4px;text-align:center;font-size:12px;'+(v>20?'border-color:#c084fc;':'');
+      rb.innerHTML='<b>V'+v+'</b>';
+      const mechLabel = (typeof MECH_NAME==='function')
+        ? (v<=20 ? MECH_NAME(v) : (v<=40 && typeof comboPairForTier==='function'
+            ? (()=>{ const [a,b]=comboPairForTier(v); return MECH_NAME(a)+' + '+MECH_NAME(b); })()
+            : MECH_NAME(21)))
+        : ('Vòng '+v);
+      rb.title = 'Map thường — vòng '+v+' ('+mechLabel+')';
+      rb.addEventListener('click', ()=>{
+        document.getElementById('admin-panel').classList.remove('show');
+        const startScreen=document.getElementById('start-screen');
+        if(startScreen){
+          startScreen.classList.add('hide');
+          setTimeout(()=>{ startScreen.style.display='none'; }, 500);
+        }
+        sfxClick();
+        hardResetAllModes();
+        startGame();
+        mainHardTier=v;
+        resetMechanicState();
+        applyRoundMechanics();
+        try{ showComboFlash(0,false,'🎯 Test vòng '+v+(mechLabel?(' — '+mechLabel):'')); }catch(e){}
+      });
+      roundList.appendChild(rb);
+    }
+  }
+}
+
 // Khởi tạo các panel dùng chung của game (menu map ẩn, hướng dẫn, adventure).
-// Bản phát hành CH Play: đã GỠ toàn bộ bảng admin / test vòng / chỉnh "Nhịp & Thưởng".
 function initGamePanels(){
   document.getElementById('hiddenmap-menu-btn').addEventListener('click', ()=>{
     sfxClick();
@@ -405,12 +493,13 @@ function renderRoundHelp(){
   const list = document.getElementById('round-help-list');
   if(!list) return;
   const reached = clearedHiddenMaps.size; // số map ẩn từng thắng ~ số vòng cơ chế từng mở khoá
+  const isAdmin = !!(currentUser && currentUser.role==='admin');
   list.innerHTML='';
   ROUND_HELP.forEach((r,i)=>{
     // Vòng 1-20 (i<20): mở dần từng vòng theo số map ẩn đã thắng.
     // Vòng 21-40 (i>=20, cơ chế đôi): mở TUẦN TỰ từng vòng một — phải vượt qua vòng
     // trước (đạt đủ điểm mốc trên bàn cờ thường) mới mở khoá vòng kế tiếp.
-    const unlocked = i<20 ? (i<reached) : (reached>=20 && (i+1)<=maxComboTierReached);
+    const unlocked = isAdmin || (i<20 ? (i<reached) : (reached>=20 && (i+1)<=maxComboTierReached));
     if(unlocked){
       const det = document.createElement('details');
       det.innerHTML = '<summary>'+r.title+'</summary><div class="map-detail-body">'+r.body+'</div>';
@@ -440,6 +529,12 @@ function enableArcadeHud(){
     acc.textContent='⚙️';
     acc.title=(typeof t==='function'?t('ttSettings'):'Cài đặt');
     acc.dataset.arcadeOn='1';
+  }
+  // Giữ nút ADMIN hiện nếu đang đăng nhập admin
+  const adminBtn=document.getElementById('admin-btn');
+  if(adminBtn && currentUser && currentUser.role==='admin'){
+    adminBtn.style.display='flex';
+    adminBtn.classList.add('admin-on');
   }
   refreshArcadeHud();
 }
