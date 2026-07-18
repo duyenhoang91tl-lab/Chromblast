@@ -417,7 +417,7 @@ function startGame(){
   startBgm('main');
   // Cup thử thách lưu bền — không reset mỗi ván
   fruitSlicedTotal=0;
-  survive60Unlocked=false; survive120Unlocked=false; survive300Unlocked=false;
+  survive60Unlocked=false; survive180Unlocked=false; survive120Unlocked=false; survive300Unlocked=false;
   score=0; linesCleared=0; level=1; combo=0; consecutiveBursts=0; _xpLastScore=0; lastMilestoneScore=0;
   hiddenMapEntryScore=0;
   secretStreak=0; secretMultiplier=1; secretUltra=false;

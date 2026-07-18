@@ -79,7 +79,7 @@ function initDodge(){
   dodgePowerUps=[]; dodgePowerSpawnTimer=5;
   dodgeShield=0; dodgeSlowTime=0;
   dodgeElapsed=0; dodgeSpawnTimer=0; dodgeAccum=0;
-  survive60Unlocked=false; survive120Unlocked=false; survive300Unlocked=false;
+  survive60Unlocked=false; survive180Unlocked=false; survive120Unlocked=false; survive300Unlocked=false;
   dodgeKeys.left=dodgeKeys.right=false;
 }
 
@@ -98,10 +98,10 @@ function dodgeLoop(now){
   if(!dodgeMode) return;
   const dt=Math.min(0.05,Math.max(0,(now-dodgeLast)/1000));
   dodgeLast=now; dodgeElapsed+=dt*1000;
+  if(dodgeElapsed>=60000 && !survive60Unlocked){ survive60Unlocked=true; unlockAchievement('survive60'); }
+  if(dodgeElapsed>=180000 && !survive180Unlocked){ survive180Unlocked=true; unlockAchievement('survive180'); }
   if(dodgeElapsed>=120000 && !survive120Unlocked){ survive120Unlocked=true; unlockAchievement('survive120'); }
   if(dodgeElapsed>=300000 && !survive300Unlocked){ survive300Unlocked=true; unlockAchievement('survive300'); }
-  // legacy flag (không còn cup 60s — giữ biến để không lỗi chỗ khác)
-  if(dodgeElapsed>=60000 && !survive60Unlocked){ survive60Unlocked=true; }
   const cv=DCV(), ctx=cv.getContext('2d'), W=360, H=460; ctx.setTransform(2,0,0,2,0,0);
   const d=dodgeDiff();
 

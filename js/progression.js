@@ -158,9 +158,32 @@ const ACHIEVEMENTS = {
   login21:     { id:'login21',     icon:'🗓️', label:'21 lần điểm danh',    desc:'Tổng cộng điểm danh 21 lần', done:false },
   lines200:    { id:'lines200',    icon:'🧱', label:'200 hàng',            desc:'Xóa 200 hàng trong 1 ván', done:false },
   burst50:     { id:'burst50',     icon:'💥', label:'50 nổ liên tiếp',     desc:'Chuỗi 50 vụ nổ liên tiếp không đứt', done:false },
+
+  // ── 20 cup ẩn mới ──
+  combo5:      { id:'combo5',      icon:'🎯', label:'Combo x5',            desc:'Đạt combo 5 liên tiếp trong 1 ván', done:false },
+  combo30:     { id:'combo30',     icon:'🌈', label:'Combo x30',           desc:'Đạt combo 30 liên tiếp trong 1 ván', done:false },
+  score5k:     { id:'score5k',     icon:'🎯', label:'5.000 điểm',          desc:'Ghi 5.000 điểm trong 1 ván', done:false },
+  score150k:   { id:'score150k',   icon:'💎', label:'150.000 điểm',        desc:'Ghi 150.000 điểm trong 1 ván', done:false },
+  score200k:   { id:'score200k',   icon:'👑', label:'200.000 điểm',        desc:'Ghi 200.000 điểm trong 1 ván', done:false },
+  best75k:     { id:'best75k',     icon:'🏆', label:'Kỷ lục 75K',          desc:'Đạt kỷ lục 75.000 điểm', done:false },
+  best100k:    { id:'best100k',    icon:'💎', label:'Kỷ lục 100K',         desc:'Đạt kỷ lục 100.000 điểm', done:false },
+  level10:     { id:'level10',     icon:'🔰', label:'Level 10',            desc:'Đạt cấp 10 map thường trong 1 ván', done:false },
+  level20:     { id:'level20',     icon:'📶', label:'Level 20',            desc:'Đạt cấp 20 map thường trong 1 ván', done:false },
+  level30:     { id:'level30',     icon:'🚀', label:'Level 30',            desc:'Đạt cấp 30 map thường trong 1 ván', done:false },
+  level50:     { id:'level50',     icon:'🌠', label:'Level 50',            desc:'Đạt cấp 50 map thường trong 1 ván', done:false },
+  player10:    { id:'player10',    icon:'🔰', label:'Người chơi Lv.10',    desc:'Đạt cấp tài khoản 10', done:false },
+  player20:    { id:'player20',    icon:'📶', label:'Người chơi Lv.20',    desc:'Đạt cấp tài khoản 20', done:false },
+  player30:    { id:'player30',    icon:'🚀', label:'Người chơi Lv.30',    desc:'Đạt cấp tài khoản 30', done:false },
+  player50:    { id:'player50',    icon:'👑', label:'Người chơi Lv.50',    desc:'Đạt cấp tài khoản 50', done:false },
+  survive60:   { id:'survive60',   icon:'🐣', label:'Sống 1 phút',         desc:'Sống sót 60 giây ở map ẩn 2', done:false },
+  survive180:  { id:'survive180',  icon:'🦉', label:'Sống 3 phút',         desc:'Sống sót 180 giây ở map ẩn 2', done:false },
+  lines100:    { id:'lines100',    icon:'🧱', label:'100 hàng',            desc:'Xóa 100 hàng trong 1 ván', done:false },
+  lines500:    { id:'lines500',    icon:'🏗️', label:'500 hàng',            desc:'Xóa 500 hàng trong 1 ván', done:false },
+  maps1:       { id:'maps1',       icon:'🗝️', label:'Map ẩn đầu tiên',     desc:'Thắng map ẩn đầu tiên', done:false },
 };
 let fruitSlicedTotal = 0;
 let survive60Unlocked = false;
+let survive180Unlocked = false;
 let survive120Unlocked = false;
 let survive300Unlocked = false;
 let cupLoginClaims = 0;
@@ -224,16 +247,23 @@ function checkPersistentCups(){
     const bestN = (typeof best==='number') ? best : 0;
     if(bestN >= 25000) unlockAchievement('best25k');
     if(bestN >= 50000) unlockAchievement('best50k');
+    if(bestN >= 75000) unlockAchievement('best75k');
+    if(bestN >= 100000) unlockAchievement('best100k');
   }catch(e){}
   try{
     if(typeof playerLevel==='number'){
+      if(playerLevel >= 10) unlockAchievement('player10');
       if(playerLevel >= 15) unlockAchievement('player15');
+      if(playerLevel >= 20) unlockAchievement('player20');
       if(playerLevel >= 25) unlockAchievement('player25');
+      if(playerLevel >= 30) unlockAchievement('player30');
       if(playerLevel >= 40) unlockAchievement('player40');
+      if(playerLevel >= 50) unlockAchievement('player50');
     }
   }catch(e){}
   try{
     const n = (typeof clearedHiddenMaps!=='undefined' && clearedHiddenMaps) ? clearedHiddenMaps.size : 0;
+    if(n >= 1) unlockAchievement('maps1');
     if(n >= 5) unlockAchievement('maps5');
     if(n >= 10) unlockAchievement('maps10');
     if(n >= 15) unlockAchievement('maps15');
@@ -256,23 +286,33 @@ function checkRunCups(){
     if(c >= 15) unlockAchievement('combo15');
     if(c >= 20) unlockAchievement('combo20');
     if(c >= 25) unlockAchievement('combo25');
+    if(c >= 30) unlockAchievement('combo30');
   }catch(e){}
   try{
     const s = (typeof score==='number') ? score : 0;
+    if(s >= 5000) unlockAchievement('score5k');
     if(s >= 10000) unlockAchievement('score10k');
     if(s >= 25000) unlockAchievement('score25k');
     if(s >= 50000) unlockAchievement('score50k');
     if(s >= 100000) unlockAchievement('score100k');
+    if(s >= 150000) unlockAchievement('score150k');
+    if(s >= 200000) unlockAchievement('score200k');
   }catch(e){}
   try{
     const lv = (typeof level==='number') ? level : 0;
+    if(lv >= 10) unlockAchievement('level10');
     if(lv >= 15) unlockAchievement('level15');
+    if(lv >= 20) unlockAchievement('level20');
     if(lv >= 25) unlockAchievement('level25');
+    if(lv >= 30) unlockAchievement('level30');
     if(lv >= 40) unlockAchievement('level40');
+    if(lv >= 50) unlockAchievement('level50');
   }catch(e){}
   try{
     const lines = (typeof linesCleared==='number') ? linesCleared : 0;
+    if(lines >= 100) unlockAchievement('lines100');
     if(lines >= 200) unlockAchievement('lines200');
+    if(lines >= 500) unlockAchievement('lines500');
   }catch(e){}
   try{
     const b = (typeof consecutiveBursts==='number') ? consecutiveBursts : 0;
