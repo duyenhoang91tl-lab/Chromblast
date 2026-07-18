@@ -733,6 +733,7 @@ function hardResetAllModes(){
 
 
 initAuthScreen();
+initAdminPanel();
 initGamePanels();
 initAccountPanel();
 

@@ -2382,11 +2382,12 @@ body:has(#secret-stage.active) .streak-dot.lit{
   justify-self: end;
   align-self: center;
 }
-#game-root.hud-arcade #game-controls > button:not(#pause-btn):not(#account-btn):not(#mute-btn):not(#versus-btn) {
+#game-root.hud-arcade #game-controls > button:not(#pause-btn):not(#account-btn):not(#mute-btn):not(#versus-btn):not(#admin-btn) {
   display: none !important;
 }
 #versus-btn { display: none; }
 #versus-btn.vs-unlocked { display: flex !important; align-items: center; justify-content: center; }
+#game-root.hud-arcade #admin-btn.admin-on,
 #game-root.hud-arcade #versus-btn.vs-unlocked,
 #game-root.hud-arcade #pause-btn,
 #game-root.hud-arcade #account-btn,
@@ -2396,6 +2397,14 @@ body:has(#secret-stage.active) .streak-dot.lit{
   font-size: 18px !important;
   padding: 0;
   line-height: 1;
+}
+#game-root.hud-arcade #admin-btn.admin-on {
+  width: auto; min-width: 40px; height: 40px; border-radius: 20px !important;
+  padding: 0 10px !important; font-size: 11px !important;
+  background: linear-gradient(135deg,#ff6b35,#f7c948) !important;
+  border: 2px solid #fff0c0 !important;
+  color: #1a0a00 !important;
+  box-shadow: 0 0 10px rgba(255,160,40,0.7), inset 0 1px 0 rgba(255,255,255,0.5);
 }
 #game-root.hud-arcade #versus-btn.vs-unlocked {
   background: radial-gradient(circle at 35% 30%, #ffe08a 0%, #f0a820 55%, #c87800 100%) !important;
@@ -2694,17 +2703,17 @@ body:has(#secret-stage.active) .streak-dot.lit{
   margin-bottom:8px; margin-top:6px;
 }
 .spin-title-slide{
-  font-size:30px; font-weight:900;
-  background:linear-gradient(180deg,#FFF7AE 0%,#FFB020 55%,#FF7A1A 100%);
-  -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
-  filter:drop-shadow(0 2px 0 #5B2C8A) drop-shadow(0 3px 0 #3B1A5C);
+  font-size:30px; font-weight:900; color:#FFC93C;
+  -webkit-text-stroke:3px #5B2C8A;
+  paint-order:stroke fill;
+  text-shadow:0 3px 0 #3B1A5C;
   letter-spacing:0.5px;
 }
 .spin-title-lucky{
-  font-size:28px; font-weight:900;
-  background:linear-gradient(180deg,#FFE566 0%,#FF9F1C 60%,#FF6B35 100%);
-  -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
-  filter:drop-shadow(0 2px 0 #5B2C8A) drop-shadow(0 3px 0 #3B1A5C);
+  font-size:28px; font-weight:900; color:#FF9F1C;
+  -webkit-text-stroke:3px #5B2C8A;
+  paint-order:stroke fill;
+  text-shadow:0 3px 0 #3B1A5C;
   margin-top:0;
 }
 .spin-wheel-wrap{
