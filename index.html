@@ -274,16 +274,51 @@
 
   <!-- ══ LUCKY SPIN ══ -->
   <div id="spin-panel" class="settings-overlay spin-overlay">
-    <div class="spin-modal" role="dialog" aria-labelledby="spin-title">
+    <div class="spin-modal spin-modal-floral" role="dialog" aria-labelledby="spin-title">
       <button type="button" class="spin-x" data-close-spin aria-label="Close">✕</button>
       <div class="spin-title" id="spin-title">
         <span class="spin-title-slide">Slide</span>
         <span class="spin-title-lucky" data-i18n="spinTitle">Lucky Spin</span>
       </div>
       <div class="spin-wheel-wrap">
-        <div class="spin-pointer" aria-hidden="true"></div>
+        <!-- Dây hoa bao quanh vòng xoay -->
+        <div class="spin-vine-ring" aria-hidden="true">
+          <svg class="spin-vine-svg" viewBox="0 0 240 240" width="240" height="240">
+            <defs>
+              <linearGradient id="vineStroke" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#4ade80"/>
+                <stop offset="50%" stop-color="#22c55e"/>
+                <stop offset="100%" stop-color="#16a34a"/>
+              </linearGradient>
+            </defs>
+            <circle cx="120" cy="120" r="108" fill="none" stroke="url(#vineStroke)" stroke-width="5" stroke-linecap="round" stroke-dasharray="14 10 6 10"/>
+            <circle cx="120" cy="120" r="102" fill="none" stroke="#86efac" stroke-width="2" opacity="0.55" stroke-dasharray="3 9"/>
+          </svg>
+          <span class="spin-flower sf-1">🌸</span>
+          <span class="spin-flower sf-2">🌼</span>
+          <span class="spin-flower sf-3">🌺</span>
+          <span class="spin-flower sf-4">🌷</span>
+          <span class="spin-flower sf-5">🌻</span>
+          <span class="spin-flower sf-6">🌸</span>
+          <span class="spin-flower sf-7">💮</span>
+          <span class="spin-flower sf-8">🌼</span>
+          <span class="spin-leaf sl-1">🍃</span>
+          <span class="spin-leaf sl-2">🍃</span>
+          <span class="spin-leaf sl-3">🌿</span>
+          <span class="spin-leaf sl-4">🍃</span>
+        </div>
+        <!-- Kim chỉ = chiếc lá -->
+        <div class="spin-pointer spin-pointer-leaf" aria-hidden="true">
+          <svg viewBox="0 0 40 52" width="36" height="46">
+            <ellipse cx="20" cy="28" rx="14" ry="20" fill="#4ade80" stroke="#166534" stroke-width="2"/>
+            <path d="M20 8 C20 8 20 46 20 48" stroke="#166534" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <path d="M20 18 C12 22 10 28 12 34" stroke="#86efac" stroke-width="1.5" fill="none" opacity="0.9"/>
+            <path d="M20 22 C28 26 30 32 28 38" stroke="#86efac" stroke-width="1.5" fill="none" opacity="0.9"/>
+            <circle cx="20" cy="8" r="4" fill="#f472b6" stroke="#fff" stroke-width="1.5"/>
+          </svg>
+        </div>
         <div id="spin-wheel" class="spin-wheel"></div>
-        <div class="spin-hub" aria-hidden="true"></div>
+        <div class="spin-hub" aria-hidden="true"><span>🌸</span></div>
       </div>
       <div class="spin-timer-box">
         <span aria-hidden="true">⏱</span>
