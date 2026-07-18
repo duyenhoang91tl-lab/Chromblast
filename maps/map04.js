@@ -111,7 +111,7 @@ function initBee(){
 }
 
 function updateBeeHUD(){
-  document.getElementById('bee-scoreUI').textContent=score;
+  document.getElementById('bee-scoreUI').textContent=Math.round(score).toLocaleString();
   document.getElementById('bee-waveUI').textContent='Đợt '+gdWave;
   const el=document.getElementById('bee-hearts'); el.innerHTML='';
   for(let i=0;i<gdMaxHearts;i++){
@@ -603,12 +603,14 @@ function beeHandleTap(clientX,clientY){
   });
 
   if(hitBee){
+    // 1 ong = 1 điểm; combo ×2/×3 (chuỗi ≥3 / ≥6) → 2 / 3 điểm — cộng vào điểm tổng
     hitBee.alive=false; beeCombo++; beeComboTimer=1.5;
-    const pts=1*comboScoreMultiplier(beeCombo);
+    const mult=(typeof comboScoreMultiplier==='function')?comboScoreMultiplier(beeCombo):1;
+    const pts=1*mult;
     score+=pts; if(score>best) best=score;
     updateScoreUI(); updateBeeHUD();
     spawnSwatParticles(hitBee.x,hitBee.y);
-    if(beeCombo>=2) beeShowComboFloat(hitBee.x,hitBee.y,beeCombo);
+    beeShowComboFloat(hitBee.x,hitBee.y,mult,pts);
     sfxBeeKill();
   } else {
     const bnd=beeDogBounds(360,460);
