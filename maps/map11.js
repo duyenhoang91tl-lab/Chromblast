@@ -147,16 +147,16 @@ function drawCatch(ctx,W,H,basketY,basketW,basketH){
   catchAnimals.forEach(a=>{
     ctx.save();
     ctx.translate(a.x,a.y);
-    ctx.shadowColor=a.isBad?'rgba(220,50,50,0.55)':'rgba(0,0,0,0.4)';
-    ctx.shadowBlur=a.isBad?8:5; ctx.shadowOffsetY=1;
     const boxSize=52;
     const drew=drawCuteAnimal(ctx,a.emoji,-boxSize/2,-boxSize/2,boxSize,boxSize,Date.now()*0.001);
     if(!drew){
       // Icon con vật giữ nguyên hướng, không còn vòng tròn nền che phía sau
       ctx.font='40px Nunito,system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.shadowColor=a.isBad?'rgba(220,50,50,0.55)':'rgba(0,0,0,0.4)';
+      ctx.shadowBlur=a.isBad?8:5; ctx.shadowOffsetY=1;
       ctx.fillText(a.emoji,0,0);
+      ctx.shadowBlur=0; ctx.shadowOffsetY=0;
     }
-    ctx.shadowBlur=0; ctx.shadowOffsetY=0;
     ctx.restore();
   });
   // Basket

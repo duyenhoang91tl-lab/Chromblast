@@ -293,15 +293,15 @@ function drawMole(ctx,W,H,now,timeLeft){
     const peeking=h.riseT<1 && rise>0;
     const boxSize=h.r*(fullyOut?2.1:1.7);
     ctx.globalAlpha=peeking ? 0.92 : 1;
-    ctx.shadowColor='rgba(0,0,0,0.45)'; ctx.shadowBlur=5; ctx.shadowOffsetY=2;
     const drew=drawCuteAnimal(ctx,h.animal.emoji,hx-boxSize/2,hy-boxSize/2,boxSize,boxSize,now*0.001);
     if(!drew){
+      ctx.shadowColor='rgba(0,0,0,0.45)'; ctx.shadowBlur=5; ctx.shadowOffsetY=2;
       ctx.font=(h.r*(fullyOut?1.95:1.55))+'px system-ui';
       ctx.textAlign='center'; ctx.textBaseline='middle';
       ctx.fillText(h.animal.emoji, hx, hy);
+      ctx.shadowBlur=0; ctx.shadowOffsetY=0;
     }
     ctx.globalAlpha=1;
-    ctx.shadowBlur=0; ctx.shadowOffsetY=0;
 
     ctx.restore();
 
