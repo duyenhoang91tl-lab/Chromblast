@@ -173,15 +173,27 @@ let cupLoginClaims = 0;
         if(ACHIEVEMENTS[id] && raw.done[id]) ACHIEVEMENTS[id].done = true;
       });
     }
+    if(raw && raw.seen){
+      Object.keys(raw.seen).forEach(id=>{
+        if(ACHIEVEMENTS[id] && raw.seen[id]) ACHIEVEMENTS[id].seen = true;
+      });
+    }
+    // Cup đã xong từ bản cũ (chưa có seen) → coi như chưa xem để còn dấu đỏ
+    Object.keys(ACHIEVEMENTS).forEach(id=>{
+      if(ACHIEVEMENTS[id].done && ACHIEVEMENTS[id].seen==null) ACHIEVEMENTS[id].seen = false;
+    });
     cupLoginClaims = Math.max(0, (raw && raw.loginClaims)|0);
   }catch(e){}
 })();
 
 function saveCups(){
   try{
-    const done = {};
-    Object.keys(ACHIEVEMENTS).forEach(id=>{ done[id] = !!ACHIEVEMENTS[id].done; });
-    const payload = JSON.stringify({ done, loginClaims: cupLoginClaims|0 });
+    const done = {}, seen = {};
+    Object.keys(ACHIEVEMENTS).forEach(id=>{
+      done[id] = !!ACHIEVEMENTS[id].done;
+      seen[id] = !!ACHIEVEMENTS[id].seen;
+    });
+    const payload = JSON.stringify({ done, seen, loginClaims: cupLoginClaims|0 });
     if(typeof safeSet==='function') safeSet(CUP_KEY, payload);
     else localStorage.setItem(CUP_KEY, payload);
   }catch(e){}
@@ -191,9 +203,19 @@ function unlockAchievement(id){
   const a = ACHIEVEMENTS[id];
   if(!a || a.done) return;
   a.done = true;
+  a.seen = false; // dấu đỏ cho đến khi người chơi bấm xem giải thích
   saveCups();
   try{ showAchievementToast(a); }catch(e){}
   try { sfxScoreMilestone(); } catch(e){ try { sfxStreak(5); } catch(e2){} }
+}
+
+/** Đánh dấu cup đã xem → gỡ dấu đỏ */
+function markCupSeen(id){
+  const a = ACHIEVEMENTS[id];
+  if(!a || !a.done || a.seen) return false;
+  a.seen = true;
+  saveCups();
+  return true;
 }
 
 /** Kiểm tra cup theo tiến trình bền (kỷ lục, map, cấp TK, điểm danh) */
