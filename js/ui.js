@@ -572,13 +572,36 @@ function renderCupPanel(){
   const list=(typeof ACHIEVEMENTS==='object' && ACHIEVEMENTS)?Object.values(ACHIEVEMENTS):[];
   awards.innerHTML=list.map(a=>{
     const done=!!a.done;
+    const showDot=done && !a.seen;
     const ico=a.icon||'🎖️';
-    return '<div class="cup-award'+(done?' is-done':'')+'" title="'+(a.desc||'')+'">'+
-      '<div class="cup-badge'+(done?' done':'')+'">'+ico+(done?'<span class="set-dot"></span>':'')+'</div>'+
+    return '<button type="button" class="cup-award'+(done?' is-done':'')+'" data-cup-id="'+a.id+'" aria-label="'+(a.label||a.id)+'">'+
+      '<div class="cup-badge'+(done?' done':'')+'">'+ico+(showDot?'<span class="set-dot"></span>':'')+'</div>'+
       '<div class="cup-award-name">'+(a.label||a.id)+'</div>'+
       '<div class="cup-award-prog">'+(done?'✓':'…')+'</div>'+
-    '</div>';
+    '</button>';
   }).join('');
+
+  awards.querySelectorAll('[data-cup-id]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const id=el.getAttribute('data-cup-id');
+      const a=(typeof ACHIEVEMENTS==='object' && ACHIEVEMENTS)?ACHIEVEMENTS[id]:null;
+      if(!a) return;
+      try{ sfxClick(); }catch(e){}
+      // Hiện giải thích ý nghĩa cup
+      try{
+        showAchievementToast({
+          label:(a.icon?a.icon+' ':'')+(a.label||a.id),
+          desc:a.desc||'',
+        });
+      }catch(e){
+        try{ showComboFlash(0,false,(a.label||'')+' — '+(a.desc||'')); }catch(e2){}
+      }
+      // Có dấu đỏ → đánh dấu đã xem và gỡ dấu
+      if(typeof markCupSeen==='function' && markCupSeen(id)){
+        el.querySelector('.set-dot')?.remove();
+      }
+    });
+  });
 }
 
 function openSettingsCup(){
