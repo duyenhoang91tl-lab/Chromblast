@@ -120,10 +120,9 @@ function loadUsers(){
   let users;
   try { users = JSON.parse(safeGet(AUTH_USERS_KEY) || 'null'); } catch(e){ users = null; }
   if(!users || typeof users !== 'object'){ users = {}; }
-  // TEMP (dev/test): mở khóa tài khoản admin — admin / admin123
-  // TODO: gỡ trước khi lên CH Play bản chính thức
-  if(!users['admin'] || users['admin'].role !== 'admin' || users['admin'].password !== 'admin123'){
-    users['admin'] = { password: 'admin123', role: 'admin' };
+  // Gỡ tài khoản admin test (nếu còn từ bản cũ) trước khi lên CH Play
+  if(users['admin']){
+    delete users['admin'];
     saveUsers(users);
   }
   return users;
