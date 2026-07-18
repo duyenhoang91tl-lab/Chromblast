@@ -43,7 +43,7 @@ function enterMoleMode(){
   document.getElementById('grid').style.display='none';
   document.getElementById('pieces-area').style.display='none';
   document.getElementById('hint-bar').style.display='';
-  document.getElementById('hint-bar').textContent='Chỉ đập khi thú bay trên không! Lúc lộ đầu chỉ nhìn. Tránh 🦔🐍!';
+  document.getElementById('hint-bar').textContent='Chỉ đập khi thú bay lên! Đập trống / chưa bay lên = −1 điểm. Tránh 🦔🐍!';
   MCV().classList.add('active');
   document.getElementById('grid-wrap').classList.add('secret-mode');
   document.getElementById('mode-badge').textContent='🔨 MAP ẨN 6';
@@ -161,48 +161,64 @@ function moleRise(h){
 function tapMole(ex,ey){
   if(!moleMode) return;
   moleHammerX=ex; moleHammerY=ey; moleHammerVis=true; moleHammerAnim=1;
-  let hit=false;
-  let tappedPeek=false; // chạm lúc mới lộ đầu — thấy được nhưng chưa đập được
-  for(const h of moleHoles){
-    if(!h.animal || h.fallT>=0 || h.hit) continue;
-    const rise=moleRise(h);
-    if(rise<=0) continue;
-    const yOff=(1-rise)*h.r*1.8;
-    const hx=h.x, hy=h.y-yOff;
-    if(Math.hypot(ex-hx, ey-hy)>=h.r+12) continue;
 
-    // Chưa bay hết ra khỏi hố → chỉ nhìn thấy, không đập được (không tính miss)
-    if(h.riseT<1){
-      tappedPeek=true;
-      continue;
+  // Chỉ đập được khi thú đã bay HẾT lên (riseT≥1 và chiều cao ≥98%).
+  // Đập ô trống / thú còn trong hố → trừ 1 điểm.
+  let hit=false;
+  let tappedHole=false;
+
+  for(const h of moleHoles){
+    // Chạm vùng hố (hoặc thú đang hiện)
+    const rise=h.animal ? moleRise(h) : 0;
+    const yOff=h.animal ? (1-rise)*h.r*1.8 : 0;
+    const hx=h.x, hy=h.y-yOff;
+    const onHole=Math.hypot(ex-h.x, ey-h.y)<h.r+10;
+    const onAnimal=h.animal && rise>0 && Math.hypot(ex-hx, ey-hy)<h.r+12;
+    if(!onHole && !onAnimal) continue;
+    tappedHole=true;
+
+    const fullyAirborne = !!(h.animal && h.fallT<0 && !h.hit && h.riseT>=1 && rise>=0.98);
+    if(fullyAirborne){
+      h.hit=true; h.fallT=0;
+      const basePts=h.animal.pts;
+      let pts=basePts;
+      if(basePts>0){
+        const now2=performance.now();
+        if(now2-moleLastHitTime<2000){ moleComboCount++; } else { moleComboCount=1; }
+        moleLastHitTime=now2;
+        pts=basePts*comboScoreMultiplier(moleComboCount);
+        if(moleComboCount===3||moleComboCount===6) showComboFlash(0,false,'COMBO! x'+moleComboCount);
+      } else { moleComboCount=0; }
+      moleScore+=pts; if(moleScore+score>best) best=moleScore+score;
+      if(pts>0){ sfxHammer(); } else { sfxPenalty(); }
+      const col=pts>0?'#f7c948':'#ff4444';
+      moleFx.push({x:hx,y:hy,t:0,label:(pts>0?'+':'')+pts,color:col,emoji:h.animal.emoji});
+      hit=true;
+      moleMissStreak=0;
+      break;
     }
 
-    // Đã bay ra khỏi hố — mới được đập
-    h.hit=true; h.fallT=0;
-    const basePts=h.animal.pts;
-    let pts=basePts;
-    if(basePts>0){
-      const now2=performance.now();
-      if(now2-moleLastHitTime<2000){ moleComboCount++; } else { moleComboCount=1; }
-      moleLastHitTime=now2;
-      pts=basePts*comboScoreMultiplier(moleComboCount); // liên tiếp 3 lần → x2, 6 lần → x3
-      if(moleComboCount===3||moleComboCount===6) showComboFlash(0,false,'COMBO! x'+moleComboCount);
-    } else { moleComboCount=0; }
-    moleScore+=pts; if(moleScore+score>best) best=moleScore+score;
-    if(pts>0){ sfxHammer(); } else { sfxPenalty(); }
-    const col=pts>0?'#f7c948':'#ff4444';
-    moleFx.push({x:hx,y:hy,t:0,label:(pts>0?'+':'')+pts,color:col,emoji:h.animal.emoji});
-    hit=true;
-    moleMissStreak=0;
-    break;
-  }
-  if(tappedPeek && !hit){
-    // Feedback nhẹ: còn đang trong hố
-    showComboFlash(0,false,'👀 Chưa bay ra — đợi đập!');
+    // Ô trống hoặc thú chưa bay lên → trừ 1 điểm
+    moleComboCount=0;
+    moleScore=Math.max(0, moleScore-1);
+    sfxInvalid();
+    moleFx.push({x:h.x, y:h.y-20, t:0, label:'-1', color:'#ff5555', emoji:''});
+    moleMissStreak++;
+    if(moleMissStreak>=3){
+      moleMissStreak=0;
+      moleLives--;
+      showComboFlash(0,false,'💔 Trượt 3 lần! Còn '+Math.max(0,moleLives)+' tim');
+      if(moleLives<=0){ moleDone(true); return; }
+    }
     return;
   }
-  if(!hit){
-    sfxHammer(); // missed tap
+
+  if(!hit && !tappedHole){
+    // Đập ngoài mọi hố — cũng trừ 1 điểm
+    moleComboCount=0;
+    moleScore=Math.max(0, moleScore-1);
+    sfxHammer();
+    moleFx.push({x:ex, y:ey-16, t:0, label:'-1', color:'#ff5555', emoji:''});
     moleMissStreak++;
     if(moleMissStreak>=3){
       moleMissStreak=0;

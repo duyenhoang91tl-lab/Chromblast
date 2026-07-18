@@ -10,14 +10,8 @@ function applyLoggedInUser(username){
   if(!u) return false;
   currentUser = { username, role: u.role || 'user' };
   setSession(username);
-  const adminBtn = document.getElementById('admin-btn');
-  if(adminBtn){
-    const isAdm = currentUser.role === 'admin';
-    adminBtn.style.display = isAdm ? 'flex' : 'none';
-    adminBtn.classList.toggle('admin-on', isAdm);
-  }
   const nameBox = document.getElementById('account-username-box');
-  if(nameBox) nameBox.textContent = username + (currentUser.role === 'admin' ? ' (admin)' : '');
+  if(nameBox) nameBox.textContent = username;
   if(typeof updateDailyBadge === 'function') updateDailyBadge(); // khoá lưu quà đổi theo tài khoản
   return true;
 }
@@ -58,7 +52,7 @@ function hideAuthScreen(){
 }
 
 function initAuthScreen(){
-  loadUsers(); // seed tài khoản admin/admin123 (tạm thời để test)
+  loadUsers();
 
   if(storageBlocked){
     const sub = document.querySelector('.auth-sub');
