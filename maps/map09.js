@@ -6,11 +6,16 @@
 const STACK_TIME=90, STACK_KPI=15;
 const STACK_COLORS=['#e84040','#e88040','#e8c040','#40c040','#4080e8','#9040c8','#e84080','#40c8c8'];
 const BLOCK_H=28, BLOCK_BASE_W=180;
+/** Độ khó lắc tháp bắt đầu từ viên gạch thứ 20 (đếm từ đáy, gồm nền) */
+const STACK_SWAY_START_LEN=20;
+const STACK_SWAY_BASE_AMP=14;
+const STACK_SWAY_AMP_PER_TIER=1.35;
+const STACK_SWAY_SPEED_BASE=1.35;
 
 let stackMode=false, stackRAF=null, stackLast=0, stackElapsed=0;
 let stackBlocks=[], stackMoving={x:0,w:0,color:'#e84040'};
 let stackDir=1, stackSpeed=80, stackScore=0, stackCount=0, stackPerfectStreak=0;
-let stackCameraY=0, stackFx=[];
+let stackCameraY=0, stackFx=[], stackSwayPhase=0;
 
 const STCV=()=>document.getElementById('stack-canvas');
 
@@ -23,6 +28,7 @@ function triggerStackUnlock(){
     'Một khối đang di chuyển qua lại. Chạm → thả xuống!<br>'+
     'Phần thừa bị cắt đi. Trượt hết → game over!<br>'+
     'Xếp <b>'+STACK_KPI+' tầng</b> trong <b>'+STACK_TIME+'s</b> để thắng!<br>'+
+    'Từ <b>gạch thứ 20</b> gió thổi — tháp lắc lư, càng cao càng khó canh!<br>'+
     'Căn giữa hoàn hảo → Thưởng điểm PERFECT!';
   document.getElementById('unlock-btn').textContent='🏗️ XẾP THÔI!';
   showUnlockOverlay();
@@ -51,10 +57,34 @@ function enterStackMode(){
 function initStack(){
   const cv=STCV(), W=360, H=460;
   stackScore=0; stackCount=0; stackElapsed=0; stackFx=[]; stackCameraY=0; stackPerfectStreak=0;
+  stackSwayPhase=0;
   stackDir=1; stackSpeed=80;
   // base block at bottom
   stackBlocks=[{x:(W-BLOCK_BASE_W)/2, y:H-BLOCK_H, w:BLOCK_BASE_W, color:'#888'}];
   stackMoving={x:0, w:BLOCK_BASE_W, color:STACK_COLORS[0]};
+}
+
+/** Lắc tháp theo gió — bắt đầu khi xếp gạch thứ 20, càng cao càng mạnh */
+function getStackSway(dt){
+  const n=stackBlocks.length;
+  const swayMinLen=STACK_SWAY_START_LEN-1; // 19 tầng → đang xếp gạch thứ 20
+  if(n<swayMinLen) return {x:0, amp:0, active:false};
+  if(dt>0){
+    const tiersAbove=Math.max(1, n-swayMinLen+1);
+    const speed=STACK_SWAY_SPEED_BASE+tiersAbove*0.07;
+    stackSwayPhase+=dt*speed;
+  }
+  const tiersAbove=Math.max(1, n-swayMinLen+1);
+  const amp=STACK_SWAY_BASE_AMP+tiersAbove*STACK_SWAY_AMP_PER_TIER;
+  const gust=0.82+0.18*Math.sin(stackSwayPhase*0.37+1.1);
+  return {x:Math.sin(stackSwayPhase)*amp*gust, amp, active:true};
+}
+
+/** Độ lệch ngang của từng tầng (chân tháp cố định, đỉnh lắc mạnh nhất) */
+function stackBlockSwayX(blockIdx, swayX){
+  const n=stackBlocks.length;
+  if(n<=1 || !swayX) return 0;
+  return swayX*(blockIdx/(n-1));
 }
 
 function stackLoop(now){
@@ -62,6 +92,8 @@ function stackLoop(now){
   const dt=Math.min(0.08,Math.max(0,(now-(stackLast||now))/1000));
   stackLast=now;
   stackElapsed+=dt;
+
+  const sway=getStackSway(dt);
 
   const cv=STCV(), W=360;
   // move the platform
@@ -74,7 +106,7 @@ function stackLoop(now){
   stackFx=stackFx.filter(f=>f.t<1.2);
 
   const ctx=cv.getContext('2d'); ctx.setTransform(2,0,0,2,0,0);
-  drawStack(ctx,W,460);
+  drawStack(ctx,W,460,sway);
 
   const timeLeft=Math.max(0,STACK_TIME-stackElapsed);
   document.getElementById('burst-count').textContent='🏗️ '+stackCount+'/'+STACK_KPI+'  ⏱'+timeLeft.toFixed(0)+'s';
@@ -88,10 +120,13 @@ function stackLoop(now){
 function dropStack(){
   if(!stackMode||stackMoving.w<=0) return;
   const cv=STCV(), W=360, H=460;
-  // top block
+  const sway=getStackSway(0);
+  // top block (tính lệch gió khi canh khối)
   const top=stackBlocks[stackBlocks.length-1];
-  const overlapL=Math.max(stackMoving.x, top.x);
-  const overlapR=Math.min(stackMoving.x+stackMoving.w, top.x+top.w);
+  const topIdx=stackBlocks.length-1;
+  const topX=top.x+stackBlockSwayX(topIdx, sway.x);
+  const overlapL=Math.max(stackMoving.x, topX);
+  const overlapR=Math.min(stackMoving.x+stackMoving.w, topX+top.w);
   const overlapW=overlapR-overlapL;
   if(overlapW<=0){
     // missed completely
@@ -103,7 +138,7 @@ function dropStack(){
 
   // check perfect alignment
   const center1=stackMoving.x+stackMoving.w/2;
-  const center2=top.x+top.w/2;
+  const center2=topX+top.w/2;
   const isPerfect=Math.abs(center1-center2)<5;
 
   const newBlock={x:overlapL, y:newY, w:overlapW, color:STACK_COLORS[stackCount%STACK_COLORS.length]};
@@ -130,21 +165,26 @@ function dropStack(){
   sfxWaveWin();
 
   // cut piece falls off
-  const hasCut=(stackMoving.x<top.x)||(stackMoving.x+stackMoving.w>top.x+top.w);
+  const hasCut=(stackMoving.x<topX)||(stackMoving.x+stackMoving.w>topX+top.w);
   if(hasCut && !isPerfect && !sfxMuted) sfxStackCut();
-  if(stackMoving.x<top.x){
-    stackFx.push({x:stackMoving.x, y:newY, w:top.x-stackMoving.x, color:newBlock.color, t:0, type:'cut', vy:-20});
+  if(stackMoving.x<topX){
+    stackFx.push({x:stackMoving.x, y:newY, w:topX-stackMoving.x, color:newBlock.color, t:0, type:'cut', vy:-20});
   }
-  if(stackMoving.x+stackMoving.w>top.x+top.w){
-    const cx=top.x+top.w;
+  if(stackMoving.x+stackMoving.w>topX+top.w){
+    const cx=topX+top.w;
     stackFx.push({x:cx, y:newY, w:(stackMoving.x+stackMoving.w)-cx, color:newBlock.color, t:0, type:'cut', vy:-20});
+  }
+
+  if(sway.active && stackCount===STACK_SWAY_START_LEN-2){
+    try{ showComboFlash(0,false,'💨 Gió thổi! Canh theo nhịp lắc tháp'); }catch(e){}
   }
 
   // next moving block same width as new block
   stackMoving={x:0, w:overlapW, color:STACK_COLORS[stackCount%STACK_COLORS.length]};
 }
 
-function drawStack(ctx,W,H){
+function drawStack(ctx,W,H,sway){
+  sway=sway||getStackSway(0);
   ctx.clearRect(0,0,W,H);
   // Sky + sân vườn Map 4, giữ dãy nhà pastel phía sau
   cuteDayBg(ctx,W,H,stackElapsed);
@@ -163,15 +203,35 @@ function drawStack(ctx,W,H){
 
   const camOff=stackCameraY;
 
-  // draw stacked blocks — kẹo bông mềm
-  stackBlocks.forEach(b=>{
+  // gió nhẹ khi tháp cao — gợi ý độ khó
+  if(sway.active){
+    const windA=Math.min(0.22, sway.amp/120);
+    ctx.save();
+    ctx.globalAlpha=windA;
+    ctx.strokeStyle='rgba(200,235,255,0.85)';
+    ctx.lineWidth=1.5;
+    for(let i=0;i<4;i++){
+      const wy=H*0.12+i*H*0.08+Math.sin(stackSwayPhase*1.4+i)*6;
+      const wx=W*0.08+((stackSwayPhase*40+i*70)% (W*0.84));
+      ctx.beginPath();
+      ctx.moveTo(wx,wy);
+      ctx.quadraticCurveTo(wx+18+sway.amp*0.2, wy-4, wx+36+sway.amp*0.35, wy);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  // draw stacked blocks — kẹo bông mềm (lắc từ chân tháp, đỉnh lệch nhiều nhất)
+  stackBlocks.forEach((b,i)=>{
     const by=b.y-camOff;
-    drawSoftCandyCell(ctx,b.x,by,b.w,BLOCK_H,b.color,{r:8,glowBlur:4});
+    const bx=b.x+stackBlockSwayX(i, sway.x);
+    drawSoftCandyCell(ctx,bx,by,b.w,BLOCK_H,b.color,{r:8,glowBlur:4});
   });
 
   // draw moving block with glow
   const mb=stackMoving;
-  const mby=stackBlocks[stackBlocks.length-1].y-BLOCK_H*1.5-camOff;
+  const topIdx=stackBlocks.length-1;
+  const mby=stackBlocks[topIdx].y-BLOCK_H*1.5-camOff;
   drawSoftCandyCell(ctx,mb.x,mby,mb.w,BLOCK_H,mb.color,{r:8,glow:true,glowBlur:12});
 
   // fx
@@ -179,7 +239,8 @@ function drawStack(ctx,W,H){
     if(f.type==='cut'){
       ctx.globalAlpha=Math.max(0,1-f.t);
       ctx.fillStyle=f.color;
-      ctx.fillRect(f.x,f.y-camOff,f.w,BLOCK_H);
+      const cutSway=stackBlockSwayX(topIdx, sway.x);
+      ctx.fillRect(f.x+cutSway,f.y-camOff,f.w,BLOCK_H);
       ctx.globalAlpha=1;
     } else if(f.type==='perfect'){
       ctx.globalAlpha=Math.max(0,1-f.t*1.5);
@@ -192,7 +253,10 @@ function drawStack(ctx,W,H){
   });
 
   const sTimeLeft=Math.max(0,STACK_TIME-stackElapsed);
-  drawHudTop(ctx,W,{left:'🏗️ '+stackCount+'/'+STACK_KPI+' tầng', right:'⏱ '+sTimeLeft.toFixed(0)+'s'});
+  drawHudTop(ctx,W,{
+    left:'🏗️ '+stackCount+'/'+STACK_KPI+' tầng',
+    right:(sway.active?'💨 ':'⏱ ')+sTimeLeft.toFixed(0)+'s',
+  });
 }
 
 function stackDone(won){
