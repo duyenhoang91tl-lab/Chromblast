@@ -43,7 +43,7 @@ function enterMoleMode(){
   document.getElementById('grid').style.display='none';
   document.getElementById('pieces-area').style.display='none';
   document.getElementById('hint-bar').style.display='';
-  document.getElementById('hint-bar').textContent='Chỉ đập khi thú đã bay ra khỏi hố! Lúc mới lộ đầu chỉ nhìn được, chưa đập. Tránh 🦔🐍!';
+  document.getElementById('hint-bar').textContent='Chỉ đập khi thú bay trên không! Lúc lộ đầu chỉ nhìn. Tránh 🦔🐍!';
   MCV().classList.add('active');
   document.getElementById('grid-wrap').classList.add('secret-mode');
   document.getElementById('mode-badge').textContent='🔨 MAP ẨN 6';
@@ -105,8 +105,8 @@ function moleLoop(now){
         h.animal=chosen;
         h.showT=0;
         h.airT=0;
-        // Cửa sổ đập khi đã bay HẾT ra khỏi hố — dài hơn một chút để kịp đập
-        h.maxAir=Math.max(2.0, 3.8-moleElapsed/24000);
+        // Cửa sổ đập khi đã bay HẾT ra khỏi hố — dài hơn để kịp đập
+        h.maxAir=Math.max(3.2, 5.2-moleElapsed/28000);
         h.riseT=0; h.fallT=-1; h.hit=false;
         if(!sfxMuted) sfxMoleAppear();
       }
@@ -280,7 +280,7 @@ function drawMole(ctx,W,H,now,timeLeft){
     ctx.rect(h.x-h.r-5, h.y-80, h.r*2+10, 80);
     ctx.clip();
 
-    // Thân thú = emoji thật (không còn quả cầu sáng / ball of light)
+    // Thân thú = emoji thật (không vòng tròn quanh)
     const fullyOut=h.riseT>=1 && h.fallT<0 && !h.hit;
     const peeking=h.riseT<1 && rise>0;
     ctx.font=(h.r*(fullyOut?1.95:1.55))+'px system-ui';
@@ -290,27 +290,37 @@ function drawMole(ctx,W,H,now,timeLeft){
     ctx.globalAlpha=1;
     ctx.shadowBlur=0; ctx.shadowOffsetY=0;
 
-    // badge điểm — chỉ hiện khi đã bay ra (đập được)
+    // Điểm thú — rõ hơn khi đã bay trên không (đập được)
     if(fullyOut){
       const pts=h.animal.pts;
-      const badgeCol=pts>0?'#22cc22':'#cc2222';
-      ctx.fillStyle=badgeCol;
-      ctx.font='bold 10px Nunito,system-ui';
-      ctx.fillText((pts>0?'+':'')+pts, hx+h.r*0.55, hy-h.r*0.65);
+      const label=(pts>0?'+':'')+pts;
+      const bx=hx, by=hy-h.r*0.85;
+      ctx.font='bold 15px Nunito,system-ui';
+      const tw=ctx.measureText(label).width;
+      const padX=7, padY=4, bw=tw+padX*2, bh=20;
+      // nền pill
+      ctx.fillStyle=pts>0?'rgba(20,120,40,0.92)':'rgba(160,30,30,0.92)';
+      ctx.beginPath();
+      const rr=8, x0=bx-bw/2, y0=by-bh/2;
+      ctx.moveTo(x0+rr,y0);
+      ctx.arcTo(x0+bw,y0,x0+bw,y0+bh,rr);
+      ctx.arcTo(x0+bw,y0+bh,x0,y0+bh,rr);
+      ctx.arcTo(x0,y0+bh,x0,y0,rr);
+      ctx.arcTo(x0,y0,x0+bw,y0,rr);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,0.85)';
+      ctx.lineWidth=1.5;
+      ctx.stroke();
+      // chữ điểm
+      ctx.fillStyle='#fff';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.shadowColor='rgba(0,0,0,0.5)'; ctx.shadowBlur=3;
+      ctx.fillText(label, bx, by+0.5);
+      ctx.shadowBlur=0;
     }
 
     ctx.restore();
-
-    // Gợi ý đập được: viền mỏng (không phải quả cầu sáng)
-    if(fullyOut){
-      ctx.save();
-      ctx.strokeStyle=h.animal.pts>0?'rgba(255,255,255,0.55)':'rgba(255,120,100,0.55)';
-      ctx.lineWidth=1.5;
-      ctx.setLineDash([4,3]);
-      ctx.beginPath(); ctx.arc(h.x, h.y-yOff, h.r+3, Math.PI*1.05, -0.05); ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.restore();
-    }
 
     // grass rim on top of animal
     ctx.fillStyle='#5aaa30';
