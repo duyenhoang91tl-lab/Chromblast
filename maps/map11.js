@@ -147,21 +147,10 @@ function drawCatch(ctx,W,H,basketY,basketW,basketH){
   catchAnimals.forEach(a=>{
     ctx.save();
     ctx.translate(a.x,a.y);
-    // Nền tròn xoay nhẹ theo cảm giác rơi, nhưng icon con vật luôn đứng thẳng để dễ nhận biết
-    ctx.save();
-    ctx.rotate(a.rot);
-    ctx.shadowColor=a.color; ctx.shadowBlur=10;
-    ctx.beginPath(); ctx.arc(0,0,26,0,Math.PI*2);
-    ctx.fillStyle=a.isBad?'rgba(220,50,50,0.45)':'rgba(255,255,255,0.55)';
-    ctx.fill();
-    ctx.lineWidth=2;
-    ctx.strokeStyle=a.isBad?'rgba(255,120,120,0.9)':'rgba(255,255,255,0.95)';
-    ctx.stroke();
-    ctx.restore();
-    ctx.shadowBlur=0;
-    // Icon con vật giữ nguyên hướng, kích thước lớn hơn để nhìn rõ
+    // Icon con vật giữ nguyên hướng, không còn vòng tròn nền che phía sau
     ctx.font='40px Nunito,system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.shadowColor='rgba(0,0,0,0.35)'; ctx.shadowBlur=4; ctx.shadowOffsetY=1;
+    ctx.shadowColor=a.isBad?'rgba(220,50,50,0.55)':'rgba(0,0,0,0.4)';
+    ctx.shadowBlur=a.isBad?8:5; ctx.shadowOffsetY=1;
     ctx.fillText(a.emoji,0,0);
     ctx.shadowBlur=0; ctx.shadowOffsetY=0;
     ctx.restore();
