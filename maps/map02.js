@@ -797,12 +797,8 @@ function drawCuteAnimal(ctx,emoji,x,y,w,h,t){
       drawBee(ctx,{x:x+w/2,y:y+h/2,size:16*s,wingPhase:t*10,angle:0},t);
       return true;
     }
-    case '🦫': drawCapybara(ctx,x,y,w,h,t); return true;
-    case '🐰': drawRabbit(ctx,x,y,w,h,t); return true;
-    case '🐢': drawTurtle(ctx,x,y,w,h,t,0,0); return true;
-    case '🐱': drawCat(ctx,x,y,w,h,t); return true;
-    case '🦔': drawHedgehog(ctx,x,y,w,h,t); return true;
-    case '🐍': drawSnake(ctx,x,y,w,h,t); return true;
+    // Capybara, thỏ, rùa, mèo, nhím, rắn: bỏ vector (gây đơ máy khi nhân với nhiều hố/khung hình),
+    // quay lại vẽ emoji nhẹ — capybara vì vậy cũng trở về đúng hình dạng cũ trước khi có vector.
     default: return false;
   }
 }
