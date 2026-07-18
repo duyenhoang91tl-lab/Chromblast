@@ -342,7 +342,16 @@ function megaLoop(){
     s.won=false; s.gameOver=true;
   } else if(s.gameOver){
     if(!s._forfeited){
-      s._forfeited=true; forfeitHiddenMapScore();
+      s._forfeited=true;
+      // Boss CUỐI (Rồng Huyền Thoại) — thua thì KHÔNG được coi là "đã qua vòng 20":
+      // mở lại đúng cổng của map Rồng (không advance sang vòng kế) để bắt buộc
+      // phải diệt được rồng mới đi tiếp. Vẫn giữ nguyên toàn bộ điểm đã kiếm.
+      unlockGateStageIndex = 19; // vẫn là vòng Rồng (index cuối trong UNLOCK_STAGE_ORDER)
+      unlockGateBaseline = score;
+      unlockGateActive = true;
+      consecutiveBursts = 0;
+      if(typeof updateBurstCount==='function') updateBurstCount();
+      if(typeof updateScoreUI==='function') updateScoreUI();
       setTimeout(()=>exitMegaToMain(), 300);
     }
   }
