@@ -464,18 +464,19 @@ function drawFruit(ctx,W,H,now){
   for(const f of fruits){
     ctx.save();
     ctx.translate(f.x,f.y); ctx.rotate(f.rot);
-    // Lõi quả (vùng CRITICAL) — vòng sáng nhỏ giữa tâm
+    // Lõi CRITICAL không hiện viền/vòng sáng nữa — chỉ còn hoa quả tự nhiên
+    // (vùng chém CRITICAL ×5 vẫn hoạt động ngầm theo FRUIT_CORE_FRAC, xem fruitLoop())
+    // Glow mềm phía sau để hoa quả nổi rõ trên nền cảnh (không phải vòng lõi — không viền, không cạnh sắc)
     if(!f.isBomb){
-      ctx.beginPath();
-      ctx.arc(0,0,f.r*FRUIT_CORE_FRAC,0,Math.PI*2);
-      ctx.fillStyle='rgba(255,255,255,0.22)';
-      ctx.fill();
-      ctx.strokeStyle='rgba(255,230,120,0.55)';
-      ctx.lineWidth=1.2;
-      ctx.stroke();
+      const glow=ctx.createRadialGradient(0,0,0,0,0,f.r*1.15);
+      glow.addColorStop(0,'rgba(255,255,255,0.32)');
+      glow.addColorStop(0.7,'rgba(255,255,255,0.12)');
+      glow.addColorStop(1,'rgba(255,255,255,0)');
+      ctx.fillStyle=glow;
+      ctx.beginPath(); ctx.arc(0,0,f.r*1.15,0,Math.PI*2); ctx.fill();
     }
     ctx.font=(f.r*1.9)+'px system-ui';
-    ctx.shadowColor='rgba(0,0,0,0.7)'; ctx.shadowBlur=8; ctx.shadowOffsetY=3;
+    ctx.shadowColor='rgba(0,0,0,0.85)'; ctx.shadowBlur=10; ctx.shadowOffsetY=3;
     ctx.fillText(f.emoji,0,0);
     ctx.restore();
   }

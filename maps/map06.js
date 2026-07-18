@@ -105,8 +105,8 @@ function moleLoop(now){
         h.animal=chosen;
         h.showT=0;
         h.airT=0;
-        // Cửa sổ đập khi đã bay HẾT ra khỏi hố — dài hơn để kịp đập
-        h.maxAir=Math.max(3.2, 5.2-moleElapsed/28000);
+        // Cửa sổ đập khi đã bay HẾT ra khỏi hố — dài hơn nữa để kịp đập
+        h.maxAir=Math.max(4.6, 6.6-moleElapsed/24000);
         h.riseT=0; h.fallT=-1; h.hit=false;
         if(!sfxMuted) sfxMoleAppear();
       }
@@ -118,7 +118,7 @@ function moleLoop(now){
         // Phase 1 (0→0.3): tease peek — lộ đầu, CHỈ NHÌN, chưa đập được
         // Phase 2 (0.3→0.5): hụp xuống
         // Phase 3 (0.5→1): bay lên khỏi hố — chỉ khi riseT≥1 mới đập được
-        const speed = h.riseT < 0.3 ? 1.0 : h.riseT < 0.5 ? 2.6 : 1.7;
+        const speed = h.riseT < 0.3 ? 2.3 : h.riseT < 0.5 ? 2.6 : 1.7; // nhô lên (peek) nhanh hơn
         h.riseT=Math.min(1, h.riseT+dt*speed);
         h.showT+=dt;
         if(h.riseT>=1){
@@ -248,19 +248,11 @@ function drawMole(ctx,W,H,now,timeLeft){
    [W*0.78+Math.sin(bt*1.3+3)*W*0.18, H*0.26+Math.sin(bt*1.9+1)*16]
   ].forEach(([bx,by])=>{ ctx.fillText('🦋',bx,by); });
 
-  // draw holes (behind animals)
+  // draw holes (behind animals) — bỏ viền/vòng tối quanh miệng hố, chỉ còn bóng mờ nhẹ tự nhiên
   for(const h of moleHoles){
     const hx=h.x, hy=h.y;
-    // hole shadow
-    ctx.fillStyle='rgba(0,0,0,0.5)';
-    ctx.beginPath(); ctx.ellipse(hx,hy,h.r+4,h.r*0.48,0,0,Math.PI*2); ctx.fill();
-    // hole dark
-    ctx.fillStyle='#1a0e00';
-    ctx.beginPath(); ctx.ellipse(hx,hy,h.r,h.r*0.4,0,0,Math.PI*2); ctx.fill();
-    // hole rim
-    const rimG=ctx.createRadialGradient(hx,hy,0,hx,hy,h.r);
-    rimG.addColorStop(0.6,'rgba(0,0,0,0)'); rimG.addColorStop(1,'rgba(60,35,10,0.55)');
-    ctx.fillStyle=rimG; ctx.beginPath(); ctx.ellipse(hx,hy,h.r,h.r*0.45,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='rgba(0,0,0,0.28)';
+    ctx.beginPath(); ctx.ellipse(hx,hy,h.r*0.85,h.r*0.32,0,0,Math.PI*2); ctx.fill();
   }
 
   // draw animals
@@ -295,9 +287,9 @@ function drawMole(ctx,W,H,now,timeLeft){
       const pts=h.animal.pts;
       const label=(pts>0?'+':'')+pts;
       const bx=hx, by=hy-h.r*0.85;
-      ctx.font='bold 15px Nunito,system-ui';
+      ctx.font='bold 20px Nunito,system-ui';
       const tw=ctx.measureText(label).width;
-      const padX=7, padY=4, bw=tw+padX*2, bh=20;
+      const padX=11, padY=6, bw=tw+padX*2, bh=28;
       // nền pill
       ctx.fillStyle=pts>0?'rgba(20,120,40,0.92)':'rgba(160,30,30,0.92)';
       ctx.beginPath();
@@ -309,13 +301,13 @@ function drawMole(ctx,W,H,now,timeLeft){
       ctx.arcTo(x0,y0,x0+bw,y0,rr);
       ctx.closePath();
       ctx.fill();
-      ctx.strokeStyle='rgba(255,255,255,0.85)';
-      ctx.lineWidth=1.5;
+      ctx.strokeStyle='rgba(255,255,255,0.9)';
+      ctx.lineWidth=2;
       ctx.stroke();
       // chữ điểm
       ctx.fillStyle='#fff';
       ctx.textAlign='center'; ctx.textBaseline='middle';
-      ctx.shadowColor='rgba(0,0,0,0.5)'; ctx.shadowBlur=3;
+      ctx.shadowColor='rgba(0,0,0,0.6)'; ctx.shadowBlur=4;
       ctx.fillText(label, bx, by+0.5);
       ctx.shadowBlur=0;
     }
