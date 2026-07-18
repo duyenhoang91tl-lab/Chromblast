@@ -128,11 +128,9 @@ function onComboSkillMilestone(streak){
 function renderInventoryHud(){
   const el = document.getElementById('inv-hud');
   if(el){
+    // Chỉ hiện tim trên thanh tiêu đề; Lửa/Bóng/Gió còn ở skill-bar phía dưới
     el.innerHTML =
-      '<span class="inv-chip inv-heart" title="Tim">❤️ '+(inv.hearts|0)+'</span>'+
-      '<span class="inv-chip inv-fire" title="Lửa">🔥 '+(inv.fires|0)+'</span>'+
-      '<span class="inv-chip inv-bubble" title="Bóng bóng">🫧 '+(inv.bubbles|0)+'</span>'+
-      '<span class="inv-chip inv-wind" title="Gió">💨 '+(inv.winds|0)+'</span>';
+      '<span class="inv-chip inv-heart" title="Tim">❤️ '+(inv.hearts|0)+'</span>';
   }
   const sk = document.getElementById('skill-bar');
   if(sk){
