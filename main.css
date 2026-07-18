@@ -2957,3 +2957,56 @@ body:has(#secret-stage.active) .streak-dot.lit{
   border:1px solid rgba(255,255,255,0.9);
 }
 .spin-reward-ok{ width:min(200px,80%); margin-top:4px; }
+
+/* ══════════════════ FIX: đồng bộ 3 nốt cài đặt / loa / tạm dừng ══════════════════
+   Đảm bảo #account-btn (⚙️), #mute-btn (🔊), #pause-btn (⏸/▶) luôn cùng
+   kích thước, hình dạng, màu sắc trong HUD arcade — tránh lệch to/nhỏ,
+   vuông/tròn, hoặc màu khác nhau do các rule inline/cũ ghi đè lẻ tẻ. */
+#game-root.hud-arcade #game-controls #pause-btn,
+#game-root.hud-arcade #game-controls #account-btn,
+#game-root.hud-arcade #game-controls #mute-btn {
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px !important;
+  min-height: 40px !important;
+  max-width: 40px !important;
+  max-height: 40px !important;
+  border-radius: 50% !important;
+  font-size: 18px !important;
+  line-height: 1 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  flex: 0 0 auto !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+  background: radial-gradient(circle at 35% 28%, #9ad4ff 0%, #4a90e8 52%, #2560b8 100%) !important;
+  border: 2.5px solid #d0ecff !important;
+  box-shadow: 0 0 12px rgba(90,170,255,0.7), inset 0 1px 0 rgba(255,255,255,0.55) !important;
+}
+#game-root.hud-arcade #game-controls {
+  align-items: center !important;
+  gap: 10px !important;
+}
+/* Chế độ HUD mặc định (không phải arcade): 3 nút vẫn phải đều nhau */
+#game-root:not(.hud-arcade) #game-controls #pause-btn,
+#game-root:not(.hud-arcade) #game-controls #account-btn,
+#game-root:not(.hud-arcade) #game-controls #mute-btn {
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  min-height: 32px !important;
+  font-size: 16px !important;
+  line-height: 1 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 8px !important;
+  background: rgba(255,255,255,0.1) !important;
+  border: 1px solid rgba(255,255,255,0.2) !important;
+  box-shadow: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+}
