@@ -12,6 +12,7 @@
 let beeMode=false, beeRAF=null, beeLast=0, beeElapsed=0;
 let bees=[], beeParticles=[], butterflies=[], gardenFlowers=[];
 let gdHearts=5, gdMaxHearts=5, gdWave=1, gdWaveTimer=0, gdWaveDuration=13, gdSpawnTimer=0;
+const GD_MAX_WAVE=10;
 let beeCombo=0, beeComboTimer=0;
 let gdShakeX=0, gdShakeY=0, gdShakeDur=0, gdDogHit=0, gdGameTime=0;
 let gdPointerDown=false;
@@ -128,7 +129,8 @@ function spawnBee(W,H){
   else if(side===1){ x=W+20; y=40+Math.random()*(H*0.5); }
   else if(side===2){ x=Math.random()*W; y=-20; }
   else { x=Math.random()*W; y=H+20; }
-  const speed=35+gdWave*5+Math.random()*20;
+  const waveEff=Math.min(gdWave, GD_MAX_WAVE);
+  const speed=35+waveEff*5+Math.random()*20;
   bees.push({
     x,y,speed, wobbleAmp:15+Math.random()*20,
     wobbleFreq:2+Math.random()*3,
@@ -452,16 +454,20 @@ function beeUpdate(dt,W,H){
   gdGameTime+=dt; gdWaveTimer+=dt;
 
   if(gdWaveTimer>=gdWaveDuration){
-    gdWaveTimer=0; gdWave++;
+    gdWaveTimer=0;
+    if(gdWave<GD_MAX_WAVE) gdWave++;
     document.getElementById('bee-waveUI').textContent='Đợt '+gdWave;
   }
 
-  const spawnInterval=Math.max(0.35,1.8-gdWave*0.12);
+  const waveEff=Math.min(gdWave, GD_MAX_WAVE);
+  const spawnInterval=Math.max(0.35, 1.8-(waveEff-1)*(1.8-0.35)/(GD_MAX_WAVE-1));
   gdSpawnTimer+=dt;
   if(gdSpawnTimer>=spawnInterval){
-    gdSpawnTimer=0; spawnBee(W,H);
-    if(gdWave>=3 && Math.random()<0.3) spawnBee(W,H);
-    if(gdWave>=6 && Math.random()<0.3) spawnBee(W,H);
+    gdSpawnTimer=0;
+    spawnBee(W,H); spawnBee(W,H); // gấp đôi số ong mỗi lần sinh
+    if(waveEff>=3 && Math.random()<0.3){ spawnBee(W,H); spawnBee(W,H); }
+    if(waveEff>=6 && Math.random()<0.3){ spawnBee(W,H); spawnBee(W,H); }
+    if(waveEff>=GD_MAX_WAVE && Math.random()<0.4){ spawnBee(W,H); spawnBee(W,H); }
   }
 
   bees.forEach(bee=>{
