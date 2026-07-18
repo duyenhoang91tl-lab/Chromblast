@@ -282,14 +282,18 @@ function drawMole(ctx,W,H,now,timeLeft){
     ctx.globalAlpha=1;
     ctx.shadowBlur=0; ctx.shadowOffsetY=0;
 
-    // Điểm thú — rõ hơn khi đã bay trên không (đập được)
+    ctx.restore();
+
+    // Điểm thú — đặt CẠNH thú (trái/phải tùy vị trí trên canvas), không che thú
     if(fullyOut){
       const pts=h.animal.pts;
       const label=(pts>0?'+':'')+pts;
-      const bx=hx, by=hy-h.r*0.85;
       ctx.font='bold 20px Nunito,system-ui';
       const tw=ctx.measureText(label).width;
       const padX=11, padY=6, bw=tw+padX*2, bh=28;
+      const side = hx < W/2 ? 1 : -1; // bên nào rộng chỗ hơn thì đặt bên đó, tránh tràn mép canvas
+      const bx = hx + side*(h.r + bw/2 + 8);
+      const by = hy - h.r*0.15;
       // nền pill
       ctx.fillStyle=pts>0?'rgba(20,120,40,0.92)':'rgba(160,30,30,0.92)';
       ctx.beginPath();
@@ -311,8 +315,6 @@ function drawMole(ctx,W,H,now,timeLeft){
       ctx.fillText(label, bx, by+0.5);
       ctx.shadowBlur=0;
     }
-
-    ctx.restore();
 
     // grass rim on top of animal
     ctx.fillStyle='#5aaa30';
