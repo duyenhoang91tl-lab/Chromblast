@@ -120,11 +120,10 @@ function loadUsers(){
   let users;
   try { users = JSON.parse(safeGet(AUTH_USERS_KEY) || 'null'); } catch(e){ users = null; }
   if(!users || typeof users !== 'object'){ users = {}; }
-  // Bản phát hành công khai (CH Play): KHÔNG còn tài khoản admin cài sẵn.
-  // Gỡ bỏ tài khoản admin/role admin cũ nếu còn sót trong localStorage từ bản dev.
-  if(users['admin'] || Object.values(users).some(u=>u && u.role==='admin')){
-    delete users['admin'];
-    Object.keys(users).forEach(k=>{ if(users[k] && users[k].role==='admin') users[k].role='user'; });
+  // TEMP (dev/test): mở khóa tài khoản admin — admin / admin123
+  // TODO: gỡ trước khi lên CH Play bản chính thức
+  if(!users['admin'] || users['admin'].role !== 'admin' || users['admin'].password !== 'admin123'){
+    users['admin'] = { password: 'admin123', role: 'admin' };
     saveUsers(users);
   }
   return users;
