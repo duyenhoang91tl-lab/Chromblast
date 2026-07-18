@@ -282,44 +282,133 @@
         <span class="spin-title-lucky" data-i18n="spinTitle">Lucky Spin</span>
       </div>
       <div class="spin-wheel-wrap">
-        <!-- Dây hoa bao quanh vòng xoay -->
+        <!-- Dây hoa bao quanh vòng xoay (SVG) -->
         <div class="spin-vine-ring" aria-hidden="true">
-          <svg class="spin-vine-svg" viewBox="0 0 240 240" width="240" height="240">
+          <svg class="spin-vine-svg" viewBox="0 0 260 260" width="260" height="260">
             <defs>
               <linearGradient id="vineStroke" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#4ade80"/>
-                <stop offset="50%" stop-color="#22c55e"/>
-                <stop offset="100%" stop-color="#16a34a"/>
+                <stop offset="0%" stop-color="#86efac"/>
+                <stop offset="45%" stop-color="#22c55e"/>
+                <stop offset="100%" stop-color="#15803d"/>
+              </linearGradient>
+              <radialGradient id="petalPink" cx="35%" cy="35%" r="65%">
+                <stop offset="0%" stop-color="#fff1f2"/>
+                <stop offset="55%" stop-color="#fb7185"/>
+                <stop offset="100%" stop-color="#e11d48"/>
+              </radialGradient>
+              <radialGradient id="petalPeach" cx="35%" cy="35%" r="65%">
+                <stop offset="0%" stop-color="#fff7ed"/>
+                <stop offset="55%" stop-color="#fb923c"/>
+                <stop offset="100%" stop-color="#ea580c"/>
+              </radialGradient>
+              <radialGradient id="petalLav" cx="35%" cy="35%" r="65%">
+                <stop offset="0%" stop-color="#f5f3ff"/>
+                <stop offset="55%" stop-color="#c4b5fd"/>
+                <stop offset="100%" stop-color="#7c3aed"/>
+              </radialGradient>
+              <radialGradient id="petalSky" cx="35%" cy="35%" r="65%">
+                <stop offset="0%" stop-color="#f0f9ff"/>
+                <stop offset="55%" stop-color="#7dd3fc"/>
+                <stop offset="100%" stop-color="#0284c7"/>
+              </radialGradient>
+              <radialGradient id="petalGold" cx="35%" cy="35%" r="65%">
+                <stop offset="0%" stop-color="#fffbeb"/>
+                <stop offset="55%" stop-color="#fbbf24"/>
+                <stop offset="100%" stop-color="#d97706"/>
+              </radialGradient>
+            </defs>
+            <!-- dây leo quanh vành -->
+            <circle cx="130" cy="130" r="118" fill="none" stroke="url(#vineStroke)" stroke-width="6" stroke-linecap="round" stroke-dasharray="18 8 5 8"/>
+            <circle cx="130" cy="130" r="111" fill="none" stroke="#bbf7d0" stroke-width="2.5" opacity="0.7" stroke-dasharray="4 10"/>
+            <!-- hoa cách điệu quanh vòng -->
+            <g class="spin-bloom" transform="translate(130,12)">
+              <ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalPink)" transform="rotate(0)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalPink)" transform="rotate(72)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalPink)" transform="rotate(144)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalPink)" transform="rotate(216)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalPink)" transform="rotate(288)"/>
+              <circle cx="0" cy="0" r="4" fill="#fde047" stroke="#fff" stroke-width="1"/>
+            </g>
+            <g class="spin-bloom" transform="translate(214,48) rotate(45)">
+              <ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalGold)" transform="rotate(0)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalGold)" transform="rotate(72)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalGold)" transform="rotate(144)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalGold)" transform="rotate(216)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalGold)" transform="rotate(288)"/>
+              <circle cx="0" cy="0" r="4" fill="#fff7ed" stroke="#fff" stroke-width="1"/>
+            </g>
+            <g class="spin-bloom" transform="translate(248,130) rotate(90)">
+              <ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalSky)" transform="rotate(0)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalSky)" transform="rotate(72)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalSky)" transform="rotate(144)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalSky)" transform="rotate(216)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalSky)" transform="rotate(288)"/>
+              <circle cx="0" cy="0" r="4" fill="#fef08a" stroke="#fff" stroke-width="1"/>
+            </g>
+            <g class="spin-bloom" transform="translate(214,212) rotate(135)">
+              <ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalLav)" transform="rotate(0)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalLav)" transform="rotate(72)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalLav)" transform="rotate(144)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalLav)" transform="rotate(216)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalLav)" transform="rotate(288)"/>
+              <circle cx="0" cy="0" r="4" fill="#fde68a" stroke="#fff" stroke-width="1"/>
+            </g>
+            <g class="spin-bloom" transform="translate(130,248) rotate(180)">
+              <ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalPeach)" transform="rotate(0)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalPeach)" transform="rotate(72)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalPeach)" transform="rotate(144)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalPeach)" transform="rotate(216)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalPeach)" transform="rotate(288)"/>
+              <circle cx="0" cy="0" r="4" fill="#fef9c3" stroke="#fff" stroke-width="1"/>
+            </g>
+            <g class="spin-bloom" transform="translate(46,212) rotate(225)">
+              <ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalPink)" transform="rotate(0)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalPink)" transform="rotate(72)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalPink)" transform="rotate(144)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalPink)" transform="rotate(216)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalPink)" transform="rotate(288)"/>
+              <circle cx="0" cy="0" r="4" fill="#fde047" stroke="#fff" stroke-width="1"/>
+            </g>
+            <g class="spin-bloom" transform="translate(12,130) rotate(270)">
+              <ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalGold)" transform="rotate(0)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalGold)" transform="rotate(72)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalGold)" transform="rotate(144)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalGold)" transform="rotate(216)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalGold)" transform="rotate(288)"/>
+              <circle cx="0" cy="0" r="4" fill="#fff" stroke="#fff" stroke-width="1"/>
+            </g>
+            <g class="spin-bloom" transform="translate(46,48) rotate(315)">
+              <ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalSky)" transform="rotate(0)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalSky)" transform="rotate(72)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalSky)" transform="rotate(144)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalSky)" transform="rotate(216)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalSky)" transform="rotate(288)"/>
+              <circle cx="0" cy="0" r="4" fill="#fef08a" stroke="#fff" stroke-width="1"/>
+            </g>
+            <!-- lá phụ trên dây -->
+            <ellipse cx="178" cy="28" rx="7" ry="3.5" fill="#4ade80" stroke="#166534" stroke-width="0.8" transform="rotate(35 178 28)"/>
+            <ellipse cx="232" cy="88" rx="7" ry="3.5" fill="#86efac" stroke="#166534" stroke-width="0.8" transform="rotate(70 232 88)"/>
+            <ellipse cx="232" cy="172" rx="7" ry="3.5" fill="#4ade80" stroke="#166534" stroke-width="0.8" transform="rotate(110 232 172)"/>
+            <ellipse cx="178" cy="232" rx="7" ry="3.5" fill="#86efac" stroke="#166534" stroke-width="0.8" transform="rotate(155 178 232)"/>
+            <ellipse cx="82" cy="232" rx="7" ry="3.5" fill="#4ade80" stroke="#166534" stroke-width="0.8" transform="rotate(205 82 232)"/>
+            <ellipse cx="28" cy="172" rx="7" ry="3.5" fill="#86efac" stroke="#166534" stroke-width="0.8" transform="rotate(250 28 172)"/>
+            <ellipse cx="28" cy="88" rx="7" ry="3.5" fill="#4ade80" stroke="#166534" stroke-width="0.8" transform="rotate(290 28 88)"/>
+            <ellipse cx="82" cy="28" rx="7" ry="3.5" fill="#86efac" stroke="#166534" stroke-width="0.8" transform="rotate(335 82 28)"/>
+          </svg>
+        </div>
+        <!-- Kim chỉ = chiếc lá cách điệu -->
+        <div class="spin-pointer spin-pointer-leaf" aria-hidden="true">
+          <svg viewBox="0 0 48 64" width="42" height="56">
+            <defs>
+              <linearGradient id="leafFill" x1="20%" y1="10%" x2="80%" y2="90%">
+                <stop offset="0%" stop-color="#bbf7d0"/>
+                <stop offset="40%" stop-color="#4ade80"/>
+                <stop offset="100%" stop-color="#15803d"/>
+              </linearGradient>
+              <linearGradient id="leafTip" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#fda4af"/>
+                <stop offset="100%" stop-color="#e11d48"/>
               </linearGradient>
             </defs>
-            <circle cx="120" cy="120" r="108" fill="none" stroke="url(#vineStroke)" stroke-width="5" stroke-linecap="round" stroke-dasharray="14 10 6 10"/>
-            <circle cx="120" cy="120" r="102" fill="none" stroke="#86efac" stroke-width="2" opacity="0.55" stroke-dasharray="3 9"/>
-          </svg>
-          <span class="spin-flower sf-1">🌸</span>
-          <span class="spin-flower sf-2">🌼</span>
-          <span class="spin-flower sf-3">🌺</span>
-          <span class="spin-flower sf-4">🌷</span>
-          <span class="spin-flower sf-5">🌻</span>
-          <span class="spin-flower sf-6">🌸</span>
-          <span class="spin-flower sf-7">💮</span>
-          <span class="spin-flower sf-8">🌼</span>
-          <span class="spin-leaf sl-1">🍃</span>
-          <span class="spin-leaf sl-2">🍃</span>
-          <span class="spin-leaf sl-3">🌿</span>
-          <span class="spin-leaf sl-4">🍃</span>
-        </div>
-        <!-- Kim chỉ = chiếc lá -->
-        <div class="spin-pointer spin-pointer-leaf" aria-hidden="true">
-          <svg viewBox="0 0 40 52" width="36" height="46">
-            <ellipse cx="20" cy="28" rx="14" ry="20" fill="#4ade80" stroke="#166534" stroke-width="2"/>
-            <path d="M20 8 C20 8 20 46 20 48" stroke="#166534" stroke-width="2" fill="none" stroke-linecap="round"/>
-            <path d="M20 18 C12 22 10 28 12 34" stroke="#86efac" stroke-width="1.5" fill="none" opacity="0.9"/>
-            <path d="M20 22 C28 26 30 32 28 38" stroke="#86efac" stroke-width="1.5" fill="none" opacity="0.9"/>
-            <circle cx="20" cy="8" r="4" fill="#f472b6" stroke="#fff" stroke-width="1.5"/>
+            <!-- cuống -->
+            <path d="M24 6 C24 18 24 50 24 58" stroke="#14532d" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+            <!-- thân lá -->
+            <path d="M24 10
+              C34 14 42 24 40 36
+              C38 48 30 56 24 58
+              C18 56 10 48 8 36
+              C6 24 14 14 24 10 Z"
+              fill="url(#leafFill)" stroke="#14532d" stroke-width="1.8" stroke-linejoin="round"/>
+            <!-- gân lá -->
+            <path d="M24 16 C24 16 24 52 24 54" stroke="#166534" stroke-width="1.4" fill="none" opacity="0.85"/>
+            <path d="M24 24 C16 28 13 34 12 40" stroke="#86efac" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+            <path d="M24 30 C32 34 35 40 36 46" stroke="#86efac" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+            <path d="M24 38 C17 41 15 46 14 50" stroke="#bbf7d0" stroke-width="1.1" fill="none" stroke-linecap="round" opacity="0.9"/>
+            <path d="M24 42 C31 45 33 49 34 52" stroke="#bbf7d0" stroke-width="1.1" fill="none" stroke-linecap="round" opacity="0.9"/>
+            <!-- nụ hoa trên cuống -->
+            <circle cx="24" cy="7" r="5.5" fill="url(#leafTip)" stroke="#fff" stroke-width="1.6"/>
+            <circle cx="22.5" cy="5.5" r="1.6" fill="#fff" opacity="0.75"/>
           </svg>
         </div>
         <div id="spin-wheel" class="spin-wheel"></div>
-        <div class="spin-hub" aria-hidden="true"><span>🌸</span></div>
+        <div class="spin-hub" aria-hidden="true">
+          <svg viewBox="0 0 36 36" width="28" height="28">
+            <ellipse cx="18" cy="10" rx="5" ry="8" fill="#fb7185" transform="rotate(0 18 18)"/>
+            <ellipse cx="18" cy="10" rx="5" ry="8" fill="#f472b6" transform="rotate(72 18 18)"/>
+            <ellipse cx="18" cy="10" rx="5" ry="8" fill="#fb7185" transform="rotate(144 18 18)"/>
+            <ellipse cx="18" cy="10" rx="5" ry="8" fill="#f472b6" transform="rotate(216 18 18)"/>
+            <ellipse cx="18" cy="10" rx="5" ry="8" fill="#fb7185" transform="rotate(288 18 18)"/>
+            <circle cx="18" cy="18" r="4.5" fill="#fde047" stroke="#fff" stroke-width="1"/>
+          </svg>
+        </div>
       </div>
       <div class="spin-timer-box">
         <span aria-hidden="true">⏱</span>

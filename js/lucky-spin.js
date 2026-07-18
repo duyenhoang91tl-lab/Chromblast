@@ -95,10 +95,10 @@
   function buildWheel() {
     const wheel = document.getElementById("spin-wheel");
     if (!wheel) return;
-    // floral-v2: rebuild nếu phiên bản cũ còn cache DOM
-    if (wheel.dataset.built === "floral-v2") return;
+    // floral-v3: nhãn hướng đáy vào tâm (radial)
+    if (wheel.dataset.built === "floral-v3") return;
     wheel.innerHTML = "";
-    wheel.dataset.built = "floral-v2";
+    wheel.dataset.built = "floral-v3";
     const stops = SEGMENTS.map((_, i) => {
       const a0 = i * SEG;
       const a1 = (i + 1) * SEG;
@@ -109,11 +109,11 @@
     SEGMENTS.forEach(function (seg, i) {
       const label = document.createElement("div");
       label.className = "spin-seg-label";
+      // mid góc tâm ô; chỉ xoay theo bán kính — đáy (×N) hướng vào tâm
       const mid = i * SEG + SEG / 2 - 90;
-      label.style.transform =
-        "rotate(" + mid + "deg) translateY(-74px) rotate(" + -mid + "deg)";
+      label.style.transform = "rotate(" + mid + "deg) translateY(-70px)";
       label.innerHTML =
-        '<span class="spin-seg-ico">' +
+        '<span class="spin-seg-ico" aria-hidden="true">' +
         (seg.icon || "") +
         '</span><span class="spin-seg-amt">×' +
         seg.amount +
