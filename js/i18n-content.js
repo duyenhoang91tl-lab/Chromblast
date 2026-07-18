@@ -35,7 +35,7 @@ vi: {
   mapHelp:{
     secret1:{title:'🔥 Map ẩn 1 — Nổ màu bí mật', body:'Bấm vào <b>3+ ô cùng màu liền kề</b> để nổ. Nổ tiếp trong 2.5 giây để giữ chuỗi. Bấm sai 3 lần hoặc để hết giờ → mất 1 tim; hết 3 tim ❤️ là kết thúc.'},
     dodge:{title:'🐢 Map ẩn 2 — Rùa né cà rốt', body:'Kéo trái/phải (hoặc bấm ◀ ▶) cho Rùa né cà rốt Thỏ bắn ra. Sống càng lâu càng tốt.'},
-    fruit:{title:'🍉 Map ẩn 3 — Chém hoa quả', body:'Vuốt chém quả trong 60 giây. Số quả tăng dần mỗi lần chém; combo làm quả bay nhiều hơn; mỗi bom kèm 2–3 quả. Chém trúng lõi = CRITICAL (điểm thưởng). Tránh 💣 bom.'},
+    fruit:{title:'🍉 Map ẩn 3 — Chém hoa quả', body:'Mỗi đợt random 1–3 quả, bom 1–2 xen kẽ. Combo 2–3 quả → đợt sau nhiều hơn; chém trúng >70% đợt quả nhiều mới tăng tiếp. Chém trung tâm = CRITICAL ×5. Tránh 💣.'},
     bee:{title:'🐝 Map ẩn 4 — Chó trốn ong', body:'Chạm màn hình để chỉ đường cho chó chạy trốn, chạm vào ong để đập bay. Đừng để ong chích chó hết tim.'},
     gold:{title:'⛏️ Map ẩn 5 — Mèo đào vàng', body:'Chạm ô đất cạnh mèo để đào vàng trong 30 giây, chạm xa hơn để dẫn mèo đi. Bắt chuột 💎 được thưởng lớn.'},
     mole:{title:'🔨 Map ẩn 6 — Vườn thú bí ẩn', body:'Thú lộ đầu rồi bay ra khỏi hố — chỉ đập được khi đã bay hết ra; lúc mới nhô chỉ nhìn được. Tránh đập 🦔 nhím và 🐍 rắn. Đập trượt 3 lần liên tiếp mất 1 tim.'},
@@ -83,7 +83,7 @@ en: {
   mapHelp:{
     secret1:{title:'🔥 Hidden Map 1 — Secret Color Blast', body:'Tap <b>3+ adjacent same-color cells</b> to pop them. Keep popping within 2.5s to hold the chain. 3 wrong taps or a timeout costs 1 heart; lose all 3 ❤️ and it\'s over.'},
     dodge:{title:'🐢 Hidden Map 2 — Turtle Dodge', body:'Drag left/right (or tap ◀ ▶) to dodge the carrots the Rabbit shoots. Survive as long as you can.'},
-    fruit:{title:'🍉 Hidden Map 3 — Fruit Slash', body:'Swipe to slash fruit for 60s. Fruit count rises with each hit; combos spawn more; each bomb brings 2–3 extra fruit. Hit the core for CRITICAL bonus. Avoid 💣 bombs.'},
+    fruit:{title:'🍉 Hidden Map 3 — Fruit Slash', body:'Each wave: random 1–3 fruits, with 0–2 bombs mixed in. Combo 2–3 → bigger waves; hit >70% of a big wave to grow further. Center hit = CRITICAL ×5. Avoid 💣.'},
     bee:{title:'🐝 Hidden Map 4 — Dog vs Bees', body:'Tap the screen to guide the dog away, tap bees to swat them. Don\'t let the bees sting the dog too much.'},
     gold:{title:'⛏️ Hidden Map 5 — Gold Miner Cat', body:'Tap ground next to the cat to dig gold for 30 seconds; tap farther to move the cat. Catch the 💎 mouse for a big bonus.'},
     mole:{title:'🔨 Hidden Map 6 — Whack-a-Pet', body:'Pets peek then launch out of holes — hit only when fully out; early peek is visible but not hittable. Avoid 🦔 hedgehogs and 🐍 snakes. 3 misses in a row costs 1 heart.'},
