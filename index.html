@@ -136,7 +136,6 @@
       <div id="header-targets"></div>
     </div>
     <div id="game-controls" style="display:flex;gap:6px;align-items:center;">
-      <button id="admin-btn" type="button" title="Bảng admin — test mọi map" style="display:none;">🛠️ ADMIN</button>
       <button id="hiddenmap-menu-btn" title="Chọn map ẩn đã chơi qua" data-i18n-title="ttHiddenMap" style="display:none;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;align-items:center;justify-content:center;padding:0;">🗺️</button>
       <button id="daily-btn" title="Điểm danh nhận quà" data-i18n-title="ttDaily">🎁</button>
       <button id="brick-skin-btn" title="Kho gạch" data-i18n-title="ttBricks" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">🧱</button>
@@ -486,17 +485,6 @@
   </div>
 
   <div id="versus-timer" style="display:none;position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:9000;background:rgba(20,20,40,0.92);border:1px solid #ffd54a;border-radius:20px;padding:6px 16px;font-weight:800;color:#ffd54a;font-size:14px;box-shadow:0 2px 12px rgba(255,213,74,0.35);pointer-events:none;"></div>
-
-  <!-- TEMP: bảng admin test mọi map / vòng (tk admin / admin123) -->
-  <div id="admin-panel">
-    <div class="admin-card">
-      <div class="admin-title"><span>🛠️ Admin — test mọi màn</span><button class="admin-close" id="admin-close-btn">✕</button></div>
-      <div class="admin-sub">Tạm thời · Đăng nhập <b>admin</b> / <b>admin123</b>. Bấm map để vào chơi ngay.</div>
-      <div id="admin-map-list"></div>
-      <div class="admin-sub" style="margin-top:10px;">🎯 Test <b>map thường</b> theo vòng độ khó (bật sẵn cơ chế vòng đó):</div>
-      <div id="admin-round-list" style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px;"></div>
-    </div>
-  </div>
 
   <div id="hiddenmap-menu-panel" class="admin-panel-like">
     <div class="admin-card">
