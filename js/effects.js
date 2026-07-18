@@ -368,10 +368,13 @@ function drawBeeParticles(ctx,dt){
   beeParticles=beeParticles.filter(p=>p.life>0);
 }
 
-function beeShowComboFloat(x,y,c){
+/** Hiện điểm thật vừa cộng (1 ong = 1đ; ×2 → +2; ×3 → +3) — khớp score+=pts */
+function beeShowComboFloat(x,y,mult,pts){
   const el=document.createElement('div');
   el.className='bee-combo-float';
-  el.textContent='x'+c+' +'+(10*Math.min(c,10));
+  const m=(mult|0)>1?mult:1;
+  const p=Math.max(1, pts|0);
+  el.textContent=(m>1?('x'+m+' '):'')+'+'+p;
   el.style.left=(x/360*100)+'%'; el.style.top=(y/460*100)+'%';
   document.getElementById('grid-wrap').appendChild(el);
   setTimeout(()=>el.remove(),800);
