@@ -14,6 +14,8 @@ const MOLE_ANIMALS = [
 ];
 const MOLE_COLS=4, MOLE_ROWS=2, MOLE_HOLES=8;
 const MOLE_TIME=45, MOLE_KPI=32;
+/** Tổng thời gian nhô đầu → hụp → bay lên (giây) */
+const MOLE_RISE_DUR=0.5;
 
 let moleMode=false, moleRAF=null, moleLast=0, moleElapsed=0;
 let moleHoles=[], moleFx=[], moleScore=0;
@@ -105,8 +107,8 @@ function moleLoop(now){
         h.animal=chosen;
         h.showT=0;
         h.airT=0;
-        // Cửa sổ đập khi đã bay HẾT ra khỏi hố — dài hơn nữa để kịp đập
-        h.maxAir=Math.max(4.6, 6.6-moleElapsed/24000);
+        // Cửa sổ đập khi đã bay HẾT ra khỏi hố — thêm 1–2s mỗi con
+        h.maxAir=Math.max(5.6, 7.6-moleElapsed/24000)+1+Math.random();
         h.riseT=0; h.fallT=-1; h.hit=false;
         if(!sfxMuted) sfxMoleAppear();
       }
@@ -115,11 +117,9 @@ function moleLoop(now){
         h.fallT+=dt*3;
         if(h.fallT>=1){ h.animal=null; h.nextSpawn=Math.random()*2+0.8; }
       } else {
-        // Phase 1 (0→0.3): tease peek — lộ đầu, CHỈ NHÌN, chưa đập được
-        // Phase 2 (0.3→0.5): hụp xuống
-        // Phase 3 (0.5→1): bay lên khỏi hố — chỉ khi riseT≥1 mới đập được
-        const speed = h.riseT < 0.3 ? 2.3 : h.riseT < 0.5 ? 2.6 : 1.7; // nhô lên (peek) nhanh hơn
-        h.riseT=Math.min(1, h.riseT+dt*speed);
+        // Phase 1 (0→0.3): nhô đầu nhanh · Phase 2 (0.3→0.5): hụp · Phase 3 (0.5→1): bay lên
+        const riseSpeed=1/MOLE_RISE_DUR; // ~0.5s tổng để lên hết
+        h.riseT=Math.min(1, h.riseT+dt*riseSpeed);
         h.showT+=dt;
         if(h.riseT>=1){
           h.airT+=dt;
