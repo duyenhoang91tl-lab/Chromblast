@@ -90,6 +90,7 @@ function enterMapModule(mod){
   document.getElementById('grid-wrap').classList.add('secret-mode');
   PGCV().classList.add('active');
   if(typeof startBgm==='function') startBgm(mod.bgm||'action');
+  if(typeof enableArcadeHud==='function') enableArcadeHud();
   _activeMapModule = mod;
   mod._api = _makeMapApi(mod);
   if(typeof mod.init==='function') try{ mod.init(mod._api); }catch(e){ console.error('[map '+mod.id+'] init lỗi', e); }
@@ -123,6 +124,7 @@ function exitMapModule(mod, won){
   if(typeof mod.onExit==='function') try{ mod.onExit(won, mod._api); }catch(e){}
   if(typeof renderPieces==='function') renderPieces();
   if(typeof checkGameOverA==='function') checkGameOverA();
+  if(typeof enableArcadeHud==='function') enableArcadeHud();
 }
 
 // Input dùng chung: pointer trên plugin-canvas → cập nhật api.input + gọi hook map.

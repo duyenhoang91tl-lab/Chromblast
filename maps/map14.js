@@ -192,11 +192,8 @@ function drawSnake(ctx, W, H, now){
   const gridW=SNAKE_COLS*SNAKE_CELL, gridH=SNAKE_ROWS*SNAKE_CELL;
   const t=(now||0)*0.0012;
 
-  // ── nền vườn hoa đáng yêu: trời + nắng + mây + đồi ──
-  const bg=ctx.createLinearGradient(0,0,0,H);
-  bg.addColorStop(0,'#dff6e0'); bg.addColorStop(0.35,'#c8ecc4'); bg.addColorStop(1,'#a8dba0');
-  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
-  drawSnakeSky(ctx,W,H,t);
+  // ── sân vườn Map 4 đầy đủ ──
+  scenicDayFull(ctx,W,H,t,{hillY:H*0.22,fence:false,stripY:H-6,butterflies:true});
 
   // hoa trang trí quanh viền, đung đưa nhẹ
   SNAKE_FLOWER_BORDER.forEach(([fx,fy,fc],fi)=>{
@@ -313,7 +310,7 @@ function drawSnake(ctx, W, H, now){
     const alpha=1-f.t;
     ctx.globalAlpha=alpha;
     ctx.fillStyle=f.special?'#ffcc00':'#2f5d2a';
-    ctx.font='bold 14px system-ui';
+    ctx.font='bold 14px Nunito,system-ui';
     ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.fillText(f.text, f.x, f.y-f.t*30);
     ctx.globalAlpha=1;

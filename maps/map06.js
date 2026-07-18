@@ -14,6 +14,8 @@ const MOLE_ANIMALS = [
 ];
 const MOLE_COLS=4, MOLE_ROWS=2, MOLE_HOLES=8;
 const MOLE_TIME=45, MOLE_KPI=32;
+/** Tổng thời gian nhô đầu → hụp → bay lên (giây) */
+const MOLE_RISE_DUR=0.5;
 
 let moleMode=false, moleRAF=null, moleLast=0, moleElapsed=0;
 let moleHoles=[], moleFx=[], moleScore=0;
@@ -28,9 +30,9 @@ function triggerMoleUnlock(){
   document.getElementById('unlock-title').textContent='🔨 MAP ẨN 6 MỞ KHÓA!';
   document.getElementById('unlock-desc').innerHTML=
     '🌿 <b>Vườn thú bí ẩn!</b><br><br>'+
-    '8 ô trong vườn — động vật ẩn hiện. <b>Chạm/ấn</b> để đập!<br>'+
-    '🦫+20 🐰+5 🐢+10 🐶+30 🐱+15 🦔-20 🐍-40<br>'+
-    '⚠️ Đập nhím hoặc rắn bị <b>trừ điểm</b>! Cần <b>'+MOLE_KPI+' điểm</b> trong '+MOLE_TIME+'s!';
+    '8 hố trong vườn — thú lộ đầu rồi bay ra. <b>Chỉ đập khi đã bay hết ra khỏi hố</b>!<br>'+
+    'Lúc mới nhô lên chỉ nhìn được, chưa đập được. Thời gian bay trên không dài hơn để kịp đập.<br>'+
+    '🦫🐰🐢🐶🐱 cộng điểm · 🦔🐍 trừ điểm. Cần <b>'+MOLE_KPI+' điểm</b> trong '+MOLE_TIME+'s!';
   document.getElementById('unlock-btn').textContent='🔨 ĐẬP THÔI!';
   showUnlockOverlay();
 }
@@ -43,7 +45,7 @@ function enterMoleMode(){
   document.getElementById('grid').style.display='none';
   document.getElementById('pieces-area').style.display='none';
   document.getElementById('hint-bar').style.display='';
-  document.getElementById('hint-bar').textContent='Chạm/ấn vào con vật để đập! Tránh nhím 🦔 và rắn 🐍!';
+  document.getElementById('hint-bar').textContent='Chỉ đập khi thú bay lên! Đập trống / chưa bay lên = −1 điểm. Tránh 🦔🐍!';
   MCV().classList.add('active');
   document.getElementById('grid-wrap').classList.add('secret-mode');
   document.getElementById('mode-badge').textContent='🔨 MAP ẨN 6';
@@ -69,8 +71,9 @@ function initMole(){
         x: hx0+c*hxStep, y: hy0+r*hyStep,
         r: 28,
         animal: null,   // current animal object or null
-        showT: 0,       // time animal has been visible (s)
-        maxShow: 0,     // how long it stays up
+        showT: 0,       // thời gian từ lúc xuất hiện (peek + bay lên)
+        airT: 0,        // thời gian đã bay ra khỏi hố hoàn toàn (mới đập được)
+        maxAir: 0,      // cửa sổ đập khi đã bay hết ra
         riseT: 0,       // animation: 0→1 rise in
         fallT: -1,      // animation: -1=not falling, else 0→1
         hit: false,     // was tapped this show
@@ -103,9 +106,9 @@ function moleLoop(now){
         for(let i=0;i<pool.length;i++){ rnd-=weights[i]; if(rnd<=0){chosen=pool[i];break;} }
         h.animal=chosen;
         h.showT=0;
-        // thời gian con thú "bay lên" hiển thị trên mặt đất — dài hơn để dễ đập,
-        // vẫn giảm dần theo độ khó (thời gian chơi càng lâu càng ngắn lại)
-        h.maxShow=Math.max(1.6, 3.6-moleElapsed/22000);
+        h.airT=0;
+        // Cửa sổ đập khi đã bay HẾT ra khỏi hố — thêm 1–2s mỗi con
+        h.maxAir=Math.max(5.6, 7.6-moleElapsed/24000)+1+Math.random();
         h.riseT=0; h.fallT=-1; h.hit=false;
         if(!sfxMuted) sfxMoleAppear();
       }
@@ -114,13 +117,14 @@ function moleLoop(now){
         h.fallT+=dt*3;
         if(h.fallT>=1){ h.animal=null; h.nextSpawn=Math.random()*2+0.8; }
       } else {
-        // Phase 1 (0→0.3): tease peek — pokes head out a little
-        // Phase 2 (0.3→0.5): hụp xuống — ducks back fully out of sight
-        // Phase 3 (0.5→1): bay lên — launches fully up to 100%, only now hittable
-        const speed = h.riseT < 0.3 ? 1.2 : h.riseT < 0.5 ? 3.0 : 2.0;
-        h.riseT=Math.min(1, h.riseT+dt*speed);
+        // Phase 1 (0→0.3): nhô đầu nhanh · Phase 2 (0.3→0.5): hụp · Phase 3 (0.5→1): bay lên
+        const riseSpeed=1/MOLE_RISE_DUR; // ~0.5s tổng để lên hết
+        h.riseT=Math.min(1, h.riseT+dt*riseSpeed);
         h.showT+=dt;
-        if(h.showT>=h.maxShow && !h.hit){ h.fallT=0; }
+        if(h.riseT>=1){
+          h.airT+=dt;
+          if(h.airT>=h.maxAir && !h.hit){ h.fallT=0; }
+        }
       }
     }
   }
@@ -157,14 +161,24 @@ function moleRise(h){
 function tapMole(ex,ey){
   if(!moleMode) return;
   moleHammerX=ex; moleHammerY=ey; moleHammerVis=true; moleHammerAnim=1;
+
+  // Chỉ đập được khi thú đã bay HẾT lên (riseT≥1 và chiều cao ≥98%).
+  // Đập ô trống / thú còn trong hố → trừ 1 điểm.
   let hit=false;
+  let tappedHole=false;
+
   for(const h of moleHoles){
-    // chỉ hittable khi con thú đã bay lên đúng 100% ra khỏi hố
-    if(!h.animal || h.fallT>=0 || h.hit || h.riseT<1) continue;
-    const rise=moleRise(h);
-    const yOff=(1-rise)*h.r*1.8;
+    // Chạm vùng hố (hoặc thú đang hiện)
+    const rise=h.animal ? moleRise(h) : 0;
+    const yOff=h.animal ? (1-rise)*h.r*1.8 : 0;
     const hx=h.x, hy=h.y-yOff;
-    if(Math.hypot(ex-hx, ey-hy)<h.r+12){
+    const onHole=Math.hypot(ex-h.x, ey-h.y)<h.r+10;
+    const onAnimal=h.animal && rise>0 && Math.hypot(ex-hx, ey-hy)<h.r+12;
+    if(!onHole && !onAnimal) continue;
+    tappedHole=true;
+
+    const fullyAirborne = !!(h.animal && h.fallT<0 && !h.hit && h.riseT>=1 && rise>=0.98);
+    if(fullyAirborne){
       h.hit=true; h.fallT=0;
       const basePts=h.animal.pts;
       let pts=basePts;
@@ -172,7 +186,7 @@ function tapMole(ex,ey){
         const now2=performance.now();
         if(now2-moleLastHitTime<2000){ moleComboCount++; } else { moleComboCount=1; }
         moleLastHitTime=now2;
-        pts=basePts*comboScoreMultiplier(moleComboCount); // liên tiếp 3 lần → x2, 6 lần → x3
+        pts=basePts*comboScoreMultiplier(moleComboCount);
         if(moleComboCount===3||moleComboCount===6) showComboFlash(0,false,'COMBO! x'+moleComboCount);
       } else { moleComboCount=0; }
       moleScore+=pts; if(moleScore+score>best) best=moleScore+score;
@@ -183,9 +197,28 @@ function tapMole(ex,ey){
       moleMissStreak=0;
       break;
     }
+
+    // Ô trống hoặc thú chưa bay lên → trừ 1 điểm
+    moleComboCount=0;
+    moleScore=Math.max(0, moleScore-1);
+    sfxInvalid();
+    moleFx.push({x:h.x, y:h.y-20, t:0, label:'-1', color:'#ff5555', emoji:''});
+    moleMissStreak++;
+    if(moleMissStreak>=3){
+      moleMissStreak=0;
+      moleLives--;
+      showComboFlash(0,false,'💔 Trượt 3 lần! Còn '+Math.max(0,moleLives)+' tim');
+      if(moleLives<=0){ moleDone(true); return; }
+    }
+    return;
   }
-  if(!hit){
-    sfxHammer(); // missed tap
+
+  if(!hit && !tappedHole){
+    // Đập ngoài mọi hố — cũng trừ 1 điểm
+    moleComboCount=0;
+    moleScore=Math.max(0, moleScore-1);
+    sfxHammer();
+    moleFx.push({x:ex, y:ey-16, t:0, label:'-1', color:'#ff5555', emoji:''});
     moleMissStreak++;
     if(moleMissStreak>=3){
       moleMissStreak=0;
@@ -201,29 +234,11 @@ function easeOut(t){ return 1-(1-t)*(1-t); }
 function drawMole(ctx,W,H,now,timeLeft){
   ctx.clearRect(0,0,W,H);
 
-  // ── lush garden background ──
-  const bg=ctx.createLinearGradient(0,0,0,H);
-  bg.addColorStop(0,'#87CEEB'); bg.addColorStop(0.45,'#b8e8f0');
-  bg.addColorStop(0.46,'#5aaa30'); bg.addColorStop(1,'#2a7010');
-  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+  // ── sân vườn đầy đủ phong cách Map 4 ──
+  const t=now*0.001;
+  scenicDayFull(ctx,W,H,t,{hillY:H*0.38,fenceY:H*0.97,stripY:H-6,butterflies:true});
 
-  // clouds
-  [[W*0.15,H*0.1,45],[W*0.55,H*0.07,55],[W*0.82,H*0.13,38]].forEach(([cx,cy,cr])=>{
-    ctx.fillStyle='rgba(255,255,255,0.88)';
-    ctx.beginPath(); ctx.arc(cx,cy,cr,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(cx+cr*0.6,cy+5,cr*0.72,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(cx-cr*0.55,cy+6,cr*0.65,0,Math.PI*2); ctx.fill();
-  });
-
-  // grass ground
-  ctx.fillStyle='#5aaa30';
-  ctx.fillRect(0,H*0.38,W,H*0.62);
-  // grass shading
-  const gsh=ctx.createLinearGradient(0,H*0.38,0,H*0.55);
-  gsh.addColorStop(0,'rgba(255,255,255,0.15)'); gsh.addColorStop(1,'rgba(0,0,0,0.15)');
-  ctx.fillStyle=gsh; ctx.fillRect(0,H*0.38,W,H*0.17);
-
-  // flowers scattered
+  // flowers scattered (giữ điểm hoa quanh lỗ)
   const flowers=[
     [W*0.06,H*0.40,'#ff88cc'],[W*0.18,H*0.43,'#ffee44'],[W*0.88,H*0.41,'#ff7799'],
     [W*0.76,H*0.44,'#ffffff'],[W*0.32,H*0.95,'#ffaa44'],[W*0.62,H*0.93,'#cc88ff'],
@@ -249,19 +264,11 @@ function drawMole(ctx,W,H,now,timeLeft){
    [W*0.78+Math.sin(bt*1.3+3)*W*0.18, H*0.26+Math.sin(bt*1.9+1)*16]
   ].forEach(([bx,by])=>{ ctx.fillText('🦋',bx,by); });
 
-  // draw holes (behind animals)
+  // draw holes (behind animals) — bỏ viền/vòng tối quanh miệng hố, chỉ còn bóng mờ nhẹ tự nhiên
   for(const h of moleHoles){
     const hx=h.x, hy=h.y;
-    // hole shadow
-    ctx.fillStyle='rgba(0,0,0,0.5)';
-    ctx.beginPath(); ctx.ellipse(hx,hy,h.r+4,h.r*0.48,0,0,Math.PI*2); ctx.fill();
-    // hole dark
-    ctx.fillStyle='#1a0e00';
-    ctx.beginPath(); ctx.ellipse(hx,hy,h.r,h.r*0.4,0,0,Math.PI*2); ctx.fill();
-    // hole rim
-    const rimG=ctx.createRadialGradient(hx,hy,0,hx,hy,h.r);
-    rimG.addColorStop(0.6,'rgba(0,0,0,0)'); rimG.addColorStop(1,'rgba(60,35,10,0.55)');
-    ctx.fillStyle=rimG; ctx.beginPath(); ctx.ellipse(hx,hy,h.r,h.r*0.45,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='rgba(0,0,0,0.28)';
+    ctx.beginPath(); ctx.ellipse(hx,hy,h.r*0.85,h.r*0.32,0,0,Math.PI*2); ctx.fill();
   }
 
   // draw animals
@@ -281,37 +288,22 @@ function drawMole(ctx,W,H,now,timeLeft){
     ctx.rect(h.x-h.r-5, h.y-80, h.r*2+10, 80);
     ctx.clip();
 
-    // animal body circle
-    const col=h.animal.color;
-    ctx.fillStyle=col;
-    ctx.shadowColor='rgba(0,0,0,0.3)'; ctx.shadowBlur=8; ctx.shadowOffsetY=3;
-    ctx.beginPath(); ctx.arc(hx,hy,h.r-2,0,Math.PI*2); ctx.fill();
-    ctx.shadowBlur=0; ctx.shadowOffsetY=0;
-
-    // emoji face
-    ctx.font=(h.r*1.4)+'px system-ui';
-    ctx.fillText(h.animal.emoji, hx, hy);
-
-    // score badge on animal
-    const pts=h.animal.pts;
-    const badgeCol=pts>0?'#22cc22':'#cc2222';
-    ctx.fillStyle=badgeCol;
-    ctx.font='bold 10px system-ui';
-    ctx.fillText((pts>0?'+':'')+pts, hx+h.r*0.6, hy-h.r*0.7);
+    // Thân thú = vector dễ thương (theo phong cách Map 4); fallback emoji nếu chưa có bản vẽ
+    const fullyOut=h.riseT>=1 && h.fallT<0 && !h.hit;
+    const peeking=h.riseT<1 && rise>0;
+    const boxSize=h.r*(fullyOut?2.1:1.7);
+    ctx.globalAlpha=peeking ? 0.92 : 1;
+    const drew=drawCuteAnimal(ctx,h.animal.emoji,hx-boxSize/2,hy-boxSize/2,boxSize,boxSize,now*0.001);
+    if(!drew){
+      ctx.shadowColor='rgba(0,0,0,0.45)'; ctx.shadowBlur=5; ctx.shadowOffsetY=2;
+      ctx.font=(h.r*(fullyOut?1.95:1.55))+'px system-ui';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(h.animal.emoji, hx, hy);
+      ctx.shadowBlur=0; ctx.shadowOffsetY=0;
+    }
+    ctx.globalAlpha=1;
 
     ctx.restore();
-
-    // hiện viền sáng có thể đập khi đã bay lên đúng 100%
-    if(h.riseT>=1 && h.fallT<0 && !h.hit){
-      const pulse=0.55+0.45*Math.sin(now*0.008);
-      ctx.save();
-      ctx.shadowColor=h.animal.pts>0?'rgba(255,230,60,0.9)':'rgba(255,80,80,0.9)';
-      ctx.shadowBlur=14*pulse;
-      ctx.strokeStyle=h.animal.pts>0?'rgba(255,220,40,0.7)':'rgba(255,80,60,0.7)';
-      ctx.lineWidth=3;
-      ctx.beginPath(); ctx.arc(h.x, h.y-yOff, h.r+2, Math.PI, 0); ctx.stroke();
-      ctx.restore();
-    }
 
     // grass rim on top of animal
     ctx.fillStyle='#5aaa30';
@@ -327,11 +319,11 @@ function drawMole(ctx,W,H,now,timeLeft){
     const a=1-f.t/0.8;
     ctx.save();
     ctx.globalAlpha=a;
-    ctx.font='bold 18px system-ui';
+    ctx.font='bold 18px Nunito,system-ui';
     ctx.textAlign='center';
     ctx.fillStyle=f.color;
     ctx.fillText(f.label, f.x, f.y-f.t*60);
-    ctx.font='22px system-ui';
+    ctx.font='22px Nunito,system-ui';
     ctx.fillText(f.emoji, f.x, f.y-f.t*60-24);
     ctx.restore();
   }
@@ -341,7 +333,7 @@ function drawMole(ctx,W,H,now,timeLeft){
     ctx.save();
     ctx.translate(moleHammerX, moleHammerY);
     ctx.rotate(-Math.PI/4*(1-moleHammerAnim)*0.6 - Math.PI/6);
-    ctx.font='32px system-ui';
+    ctx.font='32px Nunito,system-ui';
     ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.fillText('🔨', 0, 0);
     ctx.restore();

@@ -9,10 +9,12 @@
 const BOSS_TIME=90, BOSS_TOTAL_WAVES=3;
 
 let bossMode=false, bossRAF=null, bossLast=0, bossElapsed=0;
-let bossDogX=180, bossDogLives=3;
+let bossDogX=180, bossDogTargetX=180, bossDogLives=3;
 let bossChickens=[], bossProjectiles=[], bossVenom=[];
 let bossFx=[], bossScore=0, bossFireTimer=0, bossVenomTimer=0;
 let bossWave=0, bossWaveCleared=true;
+/** Tốc độ tối đa máy bay trượt ngang (px/s) — không nhảy tức thì theo ngón tay */
+const BOSS_PLANE_SPEED=280;
 
 const BOSCV=()=>document.getElementById('boss-canvas');
 
@@ -23,7 +25,7 @@ function triggerBossUnlock(){
   document.getElementById('unlock-desc').innerHTML=
     '🚀 <b>Phi Cơ Bắn Gà!</b><br><br>'+
     'Điều khiển phi cơ bắn hạ đàn gà xâm lăng!<br>'+
-    'Kéo ngón tay để lái — phi cơ tự động bắn liên tục!<br>'+
+    'Kéo ngón tay để lái — phi cơ trượt dần sang hai bên (không nhảy tức thì) và tự động bắn!<br>'+
     'Né trứng gà rơi xuống — bạn có <b>3 mạng ❤️</b>!<br>'+
     'Tiêu diệt hết <b>'+BOSS_TOTAL_WAVES+' đợt gà</b> trước <b>'+BOSS_TIME+'s</b> để chiến thắng!';
   document.getElementById('unlock-btn').textContent='🐔 CHIẾN ĐẤU!';
@@ -38,7 +40,7 @@ function enterBossMode(){
   document.getElementById('grid').style.display='none';
   document.getElementById('pieces-area').style.display='none';
   document.getElementById('hint-bar').style.display='';
-  document.getElementById('hint-bar').textContent='Kéo ngón tay để lái phi cơ! Tự động bắn — né trứng gà rơi!';
+  document.getElementById('hint-bar').textContent='Kéo để lái — máy bay trượt dần sang 2 bên · tự bắn · né trứng!';
   BOSCV().classList.add('active');
   document.getElementById('grid-wrap').classList.add('secret-mode');
   document.getElementById('mode-badge').textContent='🐔 MAP ẨN 10';
@@ -65,7 +67,7 @@ function spawnChickenWave(){
 
 function initBoss(){
   const cv=BOSCV();
-  bossDogX=180; bossDogLives=3;
+  bossDogX=180; bossDogTargetX=180; bossDogLives=3;
   bossChickens=[]; bossProjectiles=[]; bossVenom=[]; bossFx=[];
   bossScore=0; bossElapsed=0; bossFireTimer=0; bossVenomTimer=0;
   bossWave=0; bossWaveCleared=true;
@@ -78,6 +80,15 @@ function bossLoop(now){
   bossElapsed+=dt;
 
   const cv=BOSCV(), W=360, H=460;
+
+  // Máy bay trượt dần về phía mục tiêu (2 bên) — không dịch chuyển tức thì
+  const dx=bossDogTargetX-bossDogX;
+  if(Math.abs(dx)>0.5){
+    const step=Math.sign(dx)*Math.min(Math.abs(dx), BOSS_PLANE_SPEED*dt);
+    bossDogX=Math.max(30, Math.min(330, bossDogX+step));
+  } else {
+    bossDogX=bossDogTargetX;
+  }
 
   if(bossWaveCleared && bossWave<BOSS_TOTAL_WAVES){
     spawnChickenWave();
@@ -183,26 +194,14 @@ function bossLoop(now){
 
 function drawBoss(ctx,W,H){
   ctx.clearRect(0,0,W,H);
-  // bầu trời pastel ban ngày dễ thương (đồng bộ phong cách Map ẩn 4)
-  const bg=ctx.createLinearGradient(0,0,0,H);
-  bg.addColorStop(0,'#7EC8E3'); bg.addColorStop(0.4,'#ADE0F2'); bg.addColorStop(0.75,'#D4F0FF'); bg.addColorStop(1,'#E8F8E0');
-  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
-  beeDrawSun(ctx,bossElapsed);
-  // mây trôi ngang
-  [[W*0.2,H*0.15,30],[W*0.7,H*0.25,38],[W*0.45,H*0.35,26]].forEach(([cx0,cy,cr],i)=>{
-    const cx=(cx0+bossElapsed*10*(i+1))%(W+80)-40;
-    ctx.fillStyle='rgba(255,255,255,0.8)';
-    ctx.beginPath(); ctx.arc(cx,cy,cr,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(cx+cr*0.7,cy+4,cr*0.7,0,Math.PI*2); ctx.fill();
-  });
-  // dải cỏ nông trại nhỏ sát đáy
-  cuteGardenStrip(ctx,W,H,bossElapsed,H-14,false);
+  // sân vườn nông trại Map 4
+  scenicDayFull(ctx,W,H,bossElapsed,{hillY:H*0.82,fenceY:H*0.96,stripY:H-8,butterflies:false});
 
   const timePct=Math.max(0,1-bossElapsed/BOSS_TIME);
   drawHudTop(ctx,W,{left:'🐔 ĐỢT '+Math.min(bossWave,BOSS_TOTAL_WAVES)+'/'+BOSS_TOTAL_WAVES, center:'⭐ '+bossScore, right:'❤️'.repeat(Math.max(0,bossDogLives)), progress:timePct, progressColor:'#ffd700'});
 
   // chickens
-  ctx.font='30px system-ui';
+  ctx.font='30px Nunito,system-ui';
   ctx.textAlign='center'; ctx.textBaseline='middle';
   bossChickens.forEach(c=>{ ctx.fillText(c.emoji, c.x, c.y); });
 
@@ -215,11 +214,11 @@ function drawBoss(ctx,W,H){
   });
 
   // falling eggs
-  ctx.font='18px system-ui';
+  ctx.font='18px Nunito,system-ui';
   bossVenom.forEach(v=>{ ctx.fillText('🥚', v.x, v.y); });
 
   // player plane at bottom
-  ctx.font='42px system-ui';
+  ctx.font='42px Nunito,system-ui';
   ctx.fillText('🛩️', bossDogX, H-40);
 
 
@@ -232,7 +231,7 @@ function drawBoss(ctx,W,H){
       ctx.beginPath(); ctx.arc(f.x,f.y,18*(1+prog),0,Math.PI*2); ctx.stroke();
     } else if(f.type==='dmg'){
       ctx.fillStyle='#ff4444';
-      ctx.font='bold 22px system-ui';
+      ctx.font='bold 22px Nunito,system-ui';
       ctx.textAlign='center';
       ctx.fillText('💥', f.x, f.y-prog*28);
     }
@@ -276,7 +275,8 @@ function bossHandlePointer(e){
   const rect=BOSCV().getBoundingClientRect();
   const scaleX=360/rect.width;
   const tx=(e.clientX-rect.left)*scaleX;
-  bossDogX=Math.max(30,Math.min(330,tx));
+  // Chỉ đặt mục tiêu — máy bay sẽ trượt dần trong bossLoop
+  bossDogTargetX=Math.max(30,Math.min(330,tx));
 }
 BOSCV().addEventListener('pointerdown', bossHandlePointer);
 BOSCV().addEventListener('pointermove', bossHandlePointer);

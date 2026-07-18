@@ -141,41 +141,22 @@ function catchLoop(now){
 
 function drawCatch(ctx,W,H,basketY,basketW,basketH){
   ctx.clearRect(0,0,W,H);
-  // Sky background
-  const sky=ctx.createLinearGradient(0,0,0,H);
-  sky.addColorStop(0,'#87ceeb'); sky.addColorStop(1,'#c8e8ff');
-  ctx.fillStyle=sky; ctx.fillRect(0,0,W,H);
-  // nắng + mây (phong cách Map ẩn 4)
-  beeDrawSun(ctx,Date.now()*0.001);
-  ctx.fillStyle='rgba(255,255,255,0.8)';
-  [[60,40,50],[200,25,40],[310,55,35],[130,80,28]].forEach(([cx,cy,r])=>{
-    ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(cx+r*0.6,cy+5,r*0.7,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(cx-r*0.5,cy+5,r*0.65,0,Math.PI*2); ctx.fill();
-  });
-  // dải vườn hoa sát đáy
-  cuteGardenStrip(ctx,W,H,Date.now()*0.001,H-18,false);
+  // Sân vườn Map 4 đầy đủ
+  scenicDayFull(ctx,W,H,Date.now()*0.001,{hillY:H*0.7,fence:false,stripY:H-18,butterflies:true});
   // Animals
   catchAnimals.forEach(a=>{
     ctx.save();
     ctx.translate(a.x,a.y);
-    // Nền tròn xoay nhẹ theo cảm giác rơi, nhưng icon con vật luôn đứng thẳng để dễ nhận biết
-    ctx.save();
-    ctx.rotate(a.rot);
-    ctx.shadowColor=a.color; ctx.shadowBlur=10;
-    ctx.beginPath(); ctx.arc(0,0,26,0,Math.PI*2);
-    ctx.fillStyle=a.isBad?'rgba(220,50,50,0.45)':'rgba(255,255,255,0.55)';
-    ctx.fill();
-    ctx.lineWidth=2;
-    ctx.strokeStyle=a.isBad?'rgba(255,120,120,0.9)':'rgba(255,255,255,0.95)';
-    ctx.stroke();
-    ctx.restore();
-    ctx.shadowBlur=0;
-    // Icon con vật giữ nguyên hướng, kích thước lớn hơn để nhìn rõ
-    ctx.font='40px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.shadowColor='rgba(0,0,0,0.35)'; ctx.shadowBlur=4; ctx.shadowOffsetY=1;
-    ctx.fillText(a.emoji,0,0);
-    ctx.shadowBlur=0; ctx.shadowOffsetY=0;
+    const boxSize=52;
+    const drew=drawCuteAnimal(ctx,a.emoji,-boxSize/2,-boxSize/2,boxSize,boxSize,Date.now()*0.001);
+    if(!drew){
+      // Icon con vật giữ nguyên hướng, không còn vòng tròn nền che phía sau
+      ctx.font='40px Nunito,system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.shadowColor=a.isBad?'rgba(220,50,50,0.55)':'rgba(0,0,0,0.4)';
+      ctx.shadowBlur=a.isBad?8:5; ctx.shadowOffsetY=1;
+      ctx.fillText(a.emoji,0,0);
+      ctx.shadowBlur=0; ctx.shadowOffsetY=0;
+    }
     ctx.restore();
   });
   // Basket
@@ -191,16 +172,16 @@ function drawCatch(ctx,W,H,basketY,basketW,basketH){
     const prog=f.t/0.7;
     ctx.globalAlpha=Math.max(0,1-prog);
     if(f.type==='good'){
-      ctx.font='bold 18px system-ui'; ctx.textAlign='center';
+      ctx.font='bold 18px Nunito,system-ui'; ctx.textAlign='center';
       ctx.fillStyle='#ffdd00';
       ctx.fillText('+'+f.pts, f.x, basketY-30-prog*40);
-      ctx.font='16px system-ui';
+      ctx.font='16px Nunito,system-ui';
       ['⭐','⭐','⭐'].forEach((_,i)=>{
         const ang=f.t*6+i*2.1;
         ctx.fillText('⭐',f.x+Math.cos(ang)*20*prog*2,basketY+Math.sin(ang)*15*prog*2);
       });
     } else {
-      ctx.font='bold 20px system-ui'; ctx.textAlign='center';
+      ctx.font='bold 20px Nunito,system-ui'; ctx.textAlign='center';
       ctx.fillStyle='#ff4444';
       ctx.fillText('💥', f.x, basketY-prog*35);
     }

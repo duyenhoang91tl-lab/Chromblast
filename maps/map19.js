@@ -160,8 +160,8 @@ function mazeLoop(){
     }
   }
   const mzT=Date.now()*0.0005;
-  // đêm lavender pastel dễ thương + trăng cười (đồng bộ phong cách Map ẩn 4)
-  cuteNightBg(ctx,W,H,mzT*2);
+  // đêm Map 4 giàu chi tiết
+  scenicNightFull(ctx,W,H,mzT*2);
   // hạt sáng huyền ảo trôi nổi
   for(let i=0;i<26;i++){
     const fx=(Math.sin(i*91.7+mzT*0.6)*0.5+0.5)*W;

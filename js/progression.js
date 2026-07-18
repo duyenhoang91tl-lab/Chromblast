@@ -92,12 +92,20 @@ let playerXP=0, playerLevel=1, _xpLastScore=0;
 function xpNeeded(lv){ return 100+(lv-1)*50; } // cấp càng cao càng cần nhiều XP
 function addPlayerXP(n){
   if(!(n>0)) return;
+  const prevLevel=playerLevel;
   playerXP+=n;
   let leveled=false;
   while(playerXP>=xpNeeded(playerLevel)){ playerXP-=xpNeeded(playerLevel); playerLevel++; leveled=true; }
   if(leveled){
     try{ sfxUnlock(); }catch(e){}
     try{ showComboFlash(0,false,t('levelUp', playerLevel)); }catch(e){}
+    try{ if(typeof grantHearts==='function') grantHearts(1, 'Lên cấp'); }catch(e){}
+    try{ if(typeof unlockSkillByLevel==='function') unlockSkillByLevel(playerLevel); }catch(e){}
+    try{ if(typeof refreshVersusButton==='function') refreshVersusButton(); }catch(e){}
+    // Vừa vượt mốc Lv.10 → mở chế độ đấu đôi
+    if(prevLevel < 10 && playerLevel >= 10){
+      try{ showComboFlash(0,false,'⚔️ Đấu 1-1 đã mở khóa!'); }catch(e){}
+    }
   }
   savePlayerXP(); renderPlayerXP();
 }
@@ -115,27 +123,217 @@ const MILESTONE_STEP = 1000; // cứ mỗi 1000 điểm lại ăn mừng 1 lần
 // Câu chúc cột mốc đa ngôn ngữ: xem MILESTONE_MSG (js/i18n-content.js).
 function milestoneMsgFor(tier){ return MILESTONE_MSG(tier); }
 /* ══════════════════════════════════════════
-   ACHIEVEMENT SYSTEM
+   ACHIEVEMENT / CUP SYSTEM (~30 thử thách khó)
+   Lưu bền trong localStorage — không reset mỗi ván.
 ══════════════════════════════════════════ */
+const CUP_KEY = 'chromablast_cups';
 const ACHIEVEMENTS = {
-  first_burst: { id:'first_burst', label:'💥 Vụ nổ đầu tiên!',   desc:'Phá được nhóm màu đầu tiên',    done:false },
-  combo5:      { id:'combo5',      label:'🔥 Combo x5!',          desc:'Đạt combo 5 lần liên tiếp',     done:false },
-  score1000:   { id:'score1000',   label:'⭐ 1000 điểm!',         desc:'Ghi được 1000 điểm',            done:false },
-  score5000:   { id:'score5000',   label:'🌟 5000 điểm!',         desc:'Ghi được 5000 điểm',            done:false },
-  secret1:     { id:'secret1',     label:'🔥 Map ẩn 1 mở khóa!', desc:'Khám phá map bí mật đầu tiên',  done:false },
-  ultra:       { id:'ultra',       label:'⚡ ULTRA MODE!',         desc:'Đạt Ultra trong map ẩn 1',      done:false },
-  fruit50:     { id:'fruit50',     label:'🍉 50 quả đã chém!',    desc:'Chém 50 trái cây',              done:false },
-  survive60:   { id:'survive60',   label:'🐢 Sống sót 60 giây!',  desc:'Tồn tại 60 giây trong map 2',  done:false },
-  level5:      { id:'level5',      label:'📈 Cấp độ 5!',          desc:'Đạt cấp độ 5 trong map thường', done:false },
-  level10:     { id:'level10',     label:'🏆 Cấp độ 10!',         desc:'Đạt cấp độ 10 — chuyên gia!',  done:false },
+  combo10:     { id:'combo10',     icon:'🔥', label:'Combo x10',           desc:'Đạt combo 10 liên tiếp trong 1 ván', done:false },
+  combo15:     { id:'combo15',     icon:'🔥', label:'Combo x15',           desc:'Đạt combo 15 liên tiếp trong 1 ván', done:false },
+  combo20:     { id:'combo20',     icon:'💥', label:'Combo x20',           desc:'Đạt combo 20 liên tiếp trong 1 ván', done:false },
+  combo25:     { id:'combo25',     icon:'🌪️', label:'Combo x25',           desc:'Đạt combo 25 liên tiếp trong 1 ván', done:false },
+  score10k:    { id:'score10k',    icon:'⭐', label:'10.000 điểm',         desc:'Ghi 10.000 điểm trong 1 ván', done:false },
+  score25k:    { id:'score25k',    icon:'🌟', label:'25.000 điểm',         desc:'Ghi 25.000 điểm trong 1 ván', done:false },
+  score50k:    { id:'score50k',    icon:'✨', label:'50.000 điểm',         desc:'Ghi 50.000 điểm trong 1 ván', done:false },
+  score100k:   { id:'score100k',   icon:'💫', label:'100.000 điểm',        desc:'Ghi 100.000 điểm trong 1 ván', done:false },
+  best25k:     { id:'best25k',     icon:'🏅', label:'Kỷ lục 25K',          desc:'Đạt kỷ lục 25.000 điểm', done:false },
+  best50k:     { id:'best50k',     icon:'🥇', label:'Kỷ lục 50K',          desc:'Đạt kỷ lục 50.000 điểm', done:false },
+  level15:     { id:'level15',     icon:'📈', label:'Level 15',            desc:'Đạt cấp 15 map thường trong 1 ván', done:false },
+  level25:     { id:'level25',     icon:'📊', label:'Level 25',            desc:'Đạt cấp 25 map thường trong 1 ván', done:false },
+  level40:     { id:'level40',     icon:'🏆', label:'Level 40',            desc:'Đạt cấp 40 map thường trong 1 ván', done:false },
+  player15:    { id:'player15',    icon:'⭐', label:'Người chơi Lv.15',    desc:'Đạt cấp tài khoản 15', done:false },
+  player25:    { id:'player25',    icon:'🌟', label:'Người chơi Lv.25',    desc:'Đạt cấp tài khoản 25', done:false },
+  player40:    { id:'player40',    icon:'👑', label:'Người chơi Lv.40',    desc:'Đạt cấp tài khoản 40', done:false },
+  ultra:       { id:'ultra',       icon:'⚡', label:'ULTRA MODE',          desc:'Kích hoạt Ultra ở map ẩn 1', done:false },
+  secret12:    { id:'secret12',    icon:'🔥', label:'Streak x12',          desc:'Chuỗi nổ 12 ở map ẩn 1', done:false },
+  fruit150:    { id:'fruit150',    icon:'🍉', label:'150 quả',             desc:'Chém 150 trái cây trong 1 lần chơi map 3', done:false },
+  fruit400:    { id:'fruit400',    icon:'🍎', label:'400 quả',             desc:'Chém 400 trái cây trong 1 lần chơi map 3', done:false },
+  survive120:  { id:'survive120',  icon:'🐢', label:'Sống 2 phút',         desc:'Sống sót 120 giây ở map ẩn 2', done:false },
+  survive300:  { id:'survive300',  icon:'🛡️', label:'Sống 5 phút',         desc:'Sống sót 300 giây ở map ẩn 2', done:false },
+  maps5:       { id:'maps5',       icon:'🗺️', label:'5 map ẩn',            desc:'Thắng 5 map ẩn khác nhau', done:false },
+  maps10:      { id:'maps10',      icon:'🧭', label:'10 map ẩn',           desc:'Thắng 10 map ẩn khác nhau', done:false },
+  maps15:      { id:'maps15',      icon:'🌌', label:'15 map ẩn',           desc:'Thắng 15 map ẩn khác nhau', done:false },
+  maps20:      { id:'maps20',      icon:'🚀', label:'20 map ẩn',           desc:'Thắng 20 map ẩn khác nhau', done:false },
+  login7:      { id:'login7',      icon:'📅', label:'Điểm danh 7 ngày',    desc:'Chuỗi điểm danh đủ 7 ngày', done:false },
+  login21:     { id:'login21',     icon:'🗓️', label:'21 lần điểm danh',    desc:'Tổng cộng điểm danh 21 lần', done:false },
+  lines200:    { id:'lines200',    icon:'🧱', label:'200 hàng',            desc:'Xóa 200 hàng trong 1 ván', done:false },
+  burst50:     { id:'burst50',     icon:'💥', label:'50 nổ liên tiếp',     desc:'Chuỗi 50 vụ nổ liên tiếp không đứt', done:false },
+
+  // ── 20 cup ẩn mới ──
+  combo5:      { id:'combo5',      icon:'🎯', label:'Combo x5',            desc:'Đạt combo 5 liên tiếp trong 1 ván', done:false },
+  combo30:     { id:'combo30',     icon:'🌈', label:'Combo x30',           desc:'Đạt combo 30 liên tiếp trong 1 ván', done:false },
+  score5k:     { id:'score5k',     icon:'🎯', label:'5.000 điểm',          desc:'Ghi 5.000 điểm trong 1 ván', done:false },
+  score150k:   { id:'score150k',   icon:'💎', label:'150.000 điểm',        desc:'Ghi 150.000 điểm trong 1 ván', done:false },
+  score200k:   { id:'score200k',   icon:'👑', label:'200.000 điểm',        desc:'Ghi 200.000 điểm trong 1 ván', done:false },
+  best75k:     { id:'best75k',     icon:'🏆', label:'Kỷ lục 75K',          desc:'Đạt kỷ lục 75.000 điểm', done:false },
+  best100k:    { id:'best100k',    icon:'💎', label:'Kỷ lục 100K',         desc:'Đạt kỷ lục 100.000 điểm', done:false },
+  level10:     { id:'level10',     icon:'🔰', label:'Level 10',            desc:'Đạt cấp 10 map thường trong 1 ván', done:false },
+  level20:     { id:'level20',     icon:'📶', label:'Level 20',            desc:'Đạt cấp 20 map thường trong 1 ván', done:false },
+  level30:     { id:'level30',     icon:'🚀', label:'Level 30',            desc:'Đạt cấp 30 map thường trong 1 ván', done:false },
+  level50:     { id:'level50',     icon:'🌠', label:'Level 50',            desc:'Đạt cấp 50 map thường trong 1 ván', done:false },
+  player10:    { id:'player10',    icon:'🔰', label:'Người chơi Lv.10',    desc:'Đạt cấp tài khoản 10', done:false },
+  player20:    { id:'player20',    icon:'📶', label:'Người chơi Lv.20',    desc:'Đạt cấp tài khoản 20', done:false },
+  player30:    { id:'player30',    icon:'🚀', label:'Người chơi Lv.30',    desc:'Đạt cấp tài khoản 30', done:false },
+  player50:    { id:'player50',    icon:'👑', label:'Người chơi Lv.50',    desc:'Đạt cấp tài khoản 50', done:false },
+  survive60:   { id:'survive60',   icon:'🐣', label:'Sống 1 phút',         desc:'Sống sót 60 giây ở map ẩn 2', done:false },
+  survive180:  { id:'survive180',  icon:'🦉', label:'Sống 3 phút',         desc:'Sống sót 180 giây ở map ẩn 2', done:false },
+  lines100:    { id:'lines100',    icon:'🧱', label:'100 hàng',            desc:'Xóa 100 hàng trong 1 ván', done:false },
+  lines500:    { id:'lines500',    icon:'🏗️', label:'500 hàng',            desc:'Xóa 500 hàng trong 1 ván', done:false },
+  maps1:       { id:'maps1',       icon:'🗝️', label:'Map ẩn đầu tiên',     desc:'Thắng map ẩn đầu tiên', done:false },
 };
 let fruitSlicedTotal = 0;
 let survive60Unlocked = false;
+let survive180Unlocked = false;
+let survive120Unlocked = false;
+let survive300Unlocked = false;
+let cupLoginClaims = 0;
+
+(function loadCups(){
+  try{
+    const raw = JSON.parse((typeof safeGet==='function' ? safeGet(CUP_KEY) : null) || localStorage.getItem(CUP_KEY) || '{}');
+    if(raw && raw.done){
+      Object.keys(raw.done).forEach(id=>{
+        if(ACHIEVEMENTS[id] && raw.done[id]) ACHIEVEMENTS[id].done = true;
+      });
+    }
+    if(raw && raw.seen){
+      Object.keys(raw.seen).forEach(id=>{
+        if(ACHIEVEMENTS[id] && raw.seen[id]) ACHIEVEMENTS[id].seen = true;
+      });
+    }
+    // Cup đã xong từ bản cũ (chưa có seen) → coi như chưa xem để còn dấu đỏ
+    Object.keys(ACHIEVEMENTS).forEach(id=>{
+      if(ACHIEVEMENTS[id].done && ACHIEVEMENTS[id].seen==null) ACHIEVEMENTS[id].seen = false;
+    });
+    cupLoginClaims = Math.max(0, (raw && raw.loginClaims)|0);
+  }catch(e){}
+})();
+
+function saveCups(){
+  try{
+    const done = {}, seen = {};
+    Object.keys(ACHIEVEMENTS).forEach(id=>{
+      done[id] = !!ACHIEVEMENTS[id].done;
+      seen[id] = !!ACHIEVEMENTS[id].seen;
+    });
+    const payload = JSON.stringify({ done, seen, loginClaims: cupLoginClaims|0 });
+    if(typeof safeSet==='function') safeSet(CUP_KEY, payload);
+    else localStorage.setItem(CUP_KEY, payload);
+  }catch(e){}
+}
 
 function unlockAchievement(id){
   const a = ACHIEVEMENTS[id];
   if(!a || a.done) return;
   a.done = true;
-  showAchievementToast(a);
+  a.seen = false; // dấu đỏ cho đến khi người chơi bấm xem giải thích
+  saveCups();
+  try{ showAchievementToast(a); }catch(e){}
   try { sfxScoreMilestone(); } catch(e){ try { sfxStreak(5); } catch(e2){} }
+}
+
+/** Đánh dấu cup đã xem → gỡ dấu đỏ */
+function markCupSeen(id){
+  const a = ACHIEVEMENTS[id];
+  if(!a || !a.done || a.seen) return false;
+  a.seen = true;
+  saveCups();
+  return true;
+}
+
+/** Kiểm tra cup theo tiến trình bền (kỷ lục, map, cấp TK, điểm danh) */
+function checkPersistentCups(){
+  try{
+    const bestN = (typeof best==='number') ? best : 0;
+    if(bestN >= 25000) unlockAchievement('best25k');
+    if(bestN >= 50000) unlockAchievement('best50k');
+    if(bestN >= 75000) unlockAchievement('best75k');
+    if(bestN >= 100000) unlockAchievement('best100k');
+  }catch(e){}
+  try{
+    if(typeof playerLevel==='number'){
+      if(playerLevel >= 10) unlockAchievement('player10');
+      if(playerLevel >= 15) unlockAchievement('player15');
+      if(playerLevel >= 20) unlockAchievement('player20');
+      if(playerLevel >= 25) unlockAchievement('player25');
+      if(playerLevel >= 30) unlockAchievement('player30');
+      if(playerLevel >= 40) unlockAchievement('player40');
+      if(playerLevel >= 50) unlockAchievement('player50');
+    }
+  }catch(e){}
+  try{
+    const n = (typeof clearedHiddenMaps!=='undefined' && clearedHiddenMaps) ? clearedHiddenMaps.size : 0;
+    if(n >= 1) unlockAchievement('maps1');
+    if(n >= 5) unlockAchievement('maps5');
+    if(n >= 10) unlockAchievement('maps10');
+    if(n >= 15) unlockAchievement('maps15');
+    if(n >= 20) unlockAchievement('maps20');
+  }catch(e){}
+  try{
+    if(typeof getDailyStatus==='function'){
+      const st = getDailyStatus();
+      if(st && st.streakDay >= 7) unlockAchievement('login7');
+    }
+    if((cupLoginClaims|0) >= 21) unlockAchievement('login21');
+  }catch(e){}
+}
+
+/** Gọi sau mỗi vụ nổ / lên cấp map để xét cup trong ván */
+function checkRunCups(){
+  try{
+    const c = (typeof combo==='number') ? combo : 0;
+    if(c >= 10) unlockAchievement('combo10');
+    if(c >= 15) unlockAchievement('combo15');
+    if(c >= 20) unlockAchievement('combo20');
+    if(c >= 25) unlockAchievement('combo25');
+    if(c >= 30) unlockAchievement('combo30');
+  }catch(e){}
+  try{
+    const s = (typeof score==='number') ? score : 0;
+    if(s >= 5000) unlockAchievement('score5k');
+    if(s >= 10000) unlockAchievement('score10k');
+    if(s >= 25000) unlockAchievement('score25k');
+    if(s >= 50000) unlockAchievement('score50k');
+    if(s >= 100000) unlockAchievement('score100k');
+    if(s >= 150000) unlockAchievement('score150k');
+    if(s >= 200000) unlockAchievement('score200k');
+  }catch(e){}
+  try{
+    const lv = (typeof level==='number') ? level : 0;
+    if(lv >= 10) unlockAchievement('level10');
+    if(lv >= 15) unlockAchievement('level15');
+    if(lv >= 20) unlockAchievement('level20');
+    if(lv >= 25) unlockAchievement('level25');
+    if(lv >= 30) unlockAchievement('level30');
+    if(lv >= 40) unlockAchievement('level40');
+    if(lv >= 50) unlockAchievement('level50');
+  }catch(e){}
+  try{
+    const lines = (typeof linesCleared==='number') ? linesCleared : 0;
+    if(lines >= 100) unlockAchievement('lines100');
+    if(lines >= 200) unlockAchievement('lines200');
+    if(lines >= 500) unlockAchievement('lines500');
+  }catch(e){}
+  try{
+    const b = (typeof consecutiveBursts==='number') ? consecutiveBursts : 0;
+    if(b >= 50) unlockAchievement('burst50');
+  }catch(e){}
+  try{
+    const ss = (typeof secretStreak==='number') ? secretStreak : 0;
+    if(ss >= 12) unlockAchievement('secret12');
+  }catch(e){}
+  checkPersistentCups();
+}
+
+function noteCupLoginClaim(){
+  cupLoginClaims = (cupLoginClaims|0) + 1;
+  saveCups();
+  if(cupLoginClaims >= 21) unlockAchievement('login21');
+  try{
+    const st = (typeof getDailyStatus==='function') ? getDailyStatus() : null;
+    // sau claim, streak đã lưu — đọc lại state
+    const raw = (typeof getDailyState==='function') ? getDailyState() : null;
+    if(raw && (raw.streak|0) >= 7) unlockAchievement('login7');
+  }catch(e){}
+  checkPersistentCups();
 }

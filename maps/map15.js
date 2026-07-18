@@ -154,24 +154,15 @@ function brickLoop(now){
 }
 
 function drawBrick(ctx,W,H,pw,paddleY){
-  // đêm lavender pastel dễ thương + trăng cười (đồng bộ phong cách Map ẩn 4)
-  cuteNightBg(ctx,W,H,Date.now()*0.001);
-  // Bricks
+  // đêm Map 4 giàu chi tiết
+  scenicNightFull(ctx,W,H,Date.now()*0.001);
+  // Bricks — kẹo bông mềm
   brickBricks.forEach(b=>{
     if(!b.alive) return;
-    const g=ctx.createLinearGradient(b.x,b.y,b.x,b.y+b.h);
-    g.addColorStop(0,b.color+'ff');
-    g.addColorStop(1,b.color+'99');
-    ctx.fillStyle=g;
-    ctx.beginPath();
-    ctx.roundRect(b.x+1,b.y+1,b.w-2,b.h-2,5);
-    ctx.fill();
-    ctx.strokeStyle='rgba(255,255,255,0.3)';
-    ctx.lineWidth=1;
-    ctx.stroke();
+    drawSoftCandyCell(ctx,b.x+1,b.y+1,b.w-2,b.h-2,b.color,{r:7,glowBlur:3});
     if(b.maxHp===2&&b.hp===2){
-      ctx.fillStyle='rgba(255,255,255,0.85)';
-      ctx.font='bold 11px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillStyle='rgba(255,255,255,0.92)';
+      ctx.font='bold 11px Nunito,system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
       ctx.fillText('2',b.x+b.w/2,b.y+b.h/2);
     }
   });
@@ -194,7 +185,7 @@ function drawBrick(ctx,W,H,pw,paddleY){
   // Fx
   brickFx.forEach(f=>{
     ctx.globalAlpha=1-f.t;
-    ctx.fillStyle='#ffcc00'; ctx.font='bold 14px system-ui';
+    ctx.fillStyle='#ffcc00'; ctx.font='bold 14px Nunito,system-ui';
     ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.fillText(f.text,f.x,f.y-f.t*30);
     ctx.globalAlpha=1;

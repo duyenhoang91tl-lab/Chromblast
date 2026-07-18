@@ -12,6 +12,7 @@
 let beeMode=false, beeRAF=null, beeLast=0, beeElapsed=0;
 let bees=[], beeParticles=[], butterflies=[], gardenFlowers=[];
 let gdHearts=5, gdMaxHearts=5, gdWave=1, gdWaveTimer=0, gdWaveDuration=13, gdSpawnTimer=0;
+const GD_MAX_WAVE=10;
 let beeCombo=0, beeComboTimer=0;
 let gdShakeX=0, gdShakeY=0, gdShakeDur=0, gdDogHit=0, gdGameTime=0;
 let gdPointerDown=false;
@@ -111,7 +112,7 @@ function initBee(){
 }
 
 function updateBeeHUD(){
-  document.getElementById('bee-scoreUI').textContent=score;
+  document.getElementById('bee-scoreUI').textContent=Math.round(score).toLocaleString();
   document.getElementById('bee-waveUI').textContent='Đợt '+gdWave;
   const el=document.getElementById('bee-hearts'); el.innerHTML='';
   for(let i=0;i<gdMaxHearts;i++){
@@ -128,7 +129,8 @@ function spawnBee(W,H){
   else if(side===1){ x=W+20; y=40+Math.random()*(H*0.5); }
   else if(side===2){ x=Math.random()*W; y=-20; }
   else { x=Math.random()*W; y=H+20; }
-  const speed=35+gdWave*5+Math.random()*20;
+  const waveEff=Math.min(gdWave, GD_MAX_WAVE);
+  const speed=35+waveEff*5+Math.random()*20;
   bees.push({
     x,y,speed, wobbleAmp:15+Math.random()*20,
     wobbleFreq:2+Math.random()*3,
@@ -196,10 +198,14 @@ function beeDrawButterfly(ctx,b,t){
 }
 
 /* ── chó samoyed vẽ động ── */
-function drawDog(ctx,t){
-  const {x,y,vx,vy,facing,panicLevel} = dog;
+/* drawDog: vẽ chó vector dùng chung cho mọi map. Truyền `d` = {x,y,vx,vy,facing,panicLevel,hit}
+   để dùng ở map khác; bỏ trống thì dùng biến `dog` cục bộ của Map 4 (giữ nguyên hành vi cũ). */
+function drawDog(ctx,t,d){
+  const own=!d;
+  const src=d||dog;
+  const {x,y,vx=0,vy=0,facing=1,panicLevel=0} = src;
   const speed=Math.sqrt(vx*vx+vy*vy);
-  const isRunning=speed>10;
+  const isRunning=src.running!==undefined?src.running:speed>10;
   const bob=isRunning?Math.sin(t*12)*3:Math.sin(t*2.2)*1.2;
   const blink=Math.sin(t*0.7)>0.93;
   const tailWag=Math.sin(t*(isRunning?12:5))*(isRunning?0.4:0.2);
@@ -302,7 +308,7 @@ function drawDog(ctx,t){
   });
 
   if(panicLevel>0.6){
-    ctx.font='bold 11px sans-serif';
+    ctx.font='bold 11px Nunito,sans-serif';
     ctx.textAlign='center';
     ctx.fillStyle=`rgba(255,60,60,${panicLevel})`;
     const sweatY=-32+Math.sin(t*6)*2;
@@ -310,16 +316,21 @@ function drawDog(ctx,t){
     ctx.fillText('!',headShake-6,sweatY+2);
   }
 
-  if(gdDogHit>0){
+  if(own && gdDogHit>0){
     ctx.globalAlpha=gdDogHit;
     ctx.beginPath(); ctx.arc(0,-8,28,0,Math.PI*2);
     ctx.strokeStyle='rgba(255,60,60,0.5)'; ctx.lineWidth=2; ctx.stroke();
-    ctx.font='bold 12px sans-serif'; ctx.fillStyle='#FF4444';
+    ctx.font='bold 12px Nunito,sans-serif'; ctx.fillStyle='#FF4444';
     ctx.textAlign='center'; ctx.fillText('Ối!',0,-38);
+    ctx.globalAlpha=1;
+  } else if(!own && src.hit>0){
+    ctx.globalAlpha=src.hit;
+    ctx.beginPath(); ctx.arc(0,-8,28,0,Math.PI*2);
+    ctx.strokeStyle='rgba(255,60,60,0.5)'; ctx.lineWidth=2; ctx.stroke();
     ctx.globalAlpha=1;
   }
 
-  if(isRunning && beeMode){
+  if(isRunning && (own?beeMode:src.dust)){
     for(let i=0;i<3;i++){
       const dx=-facing*(8+Math.random()*12);
       const dy=18+Math.random()*6;
@@ -443,16 +454,20 @@ function beeUpdate(dt,W,H){
   gdGameTime+=dt; gdWaveTimer+=dt;
 
   if(gdWaveTimer>=gdWaveDuration){
-    gdWaveTimer=0; gdWave++;
+    gdWaveTimer=0;
+    if(gdWave<GD_MAX_WAVE) gdWave++;
     document.getElementById('bee-waveUI').textContent='Đợt '+gdWave;
   }
 
-  const spawnInterval=Math.max(0.35,1.8-gdWave*0.12);
+  const waveEff=Math.min(gdWave, GD_MAX_WAVE);
+  const spawnInterval=Math.max(0.35, 1.8-(waveEff-1)*(1.8-0.35)/(GD_MAX_WAVE-1));
   gdSpawnTimer+=dt;
   if(gdSpawnTimer>=spawnInterval){
-    gdSpawnTimer=0; spawnBee(W,H);
-    if(gdWave>=3 && Math.random()<0.3) spawnBee(W,H);
-    if(gdWave>=6 && Math.random()<0.3) spawnBee(W,H);
+    gdSpawnTimer=0;
+    spawnBee(W,H); spawnBee(W,H); // gấp đôi số ong mỗi lần sinh
+    if(waveEff>=3 && Math.random()<0.3){ spawnBee(W,H); spawnBee(W,H); }
+    if(waveEff>=6 && Math.random()<0.3){ spawnBee(W,H); spawnBee(W,H); }
+    if(waveEff>=GD_MAX_WAVE && Math.random()<0.4){ spawnBee(W,H); spawnBee(W,H); }
   }
 
   bees.forEach(bee=>{
@@ -603,12 +618,14 @@ function beeHandleTap(clientX,clientY){
   });
 
   if(hitBee){
+    // 1 ong = 1 điểm; combo ×2/×3 (chuỗi ≥3 / ≥6) → 2 / 3 điểm — cộng vào điểm tổng
     hitBee.alive=false; beeCombo++; beeComboTimer=1.5;
-    const pts=1*comboScoreMultiplier(beeCombo);
+    const mult=(typeof comboScoreMultiplier==='function')?comboScoreMultiplier(beeCombo):1;
+    const pts=1*mult;
     score+=pts; if(score>best) best=score;
     updateScoreUI(); updateBeeHUD();
     spawnSwatParticles(hitBee.x,hitBee.y);
-    if(beeCombo>=2) beeShowComboFloat(hitBee.x,hitBee.y,beeCombo);
+    beeShowComboFloat(hitBee.x,hitBee.y,mult,pts);
     sfxBeeKill();
   } else {
     const bnd=beeDogBounds(360,460);
