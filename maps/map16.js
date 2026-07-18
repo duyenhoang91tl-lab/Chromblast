@@ -5,13 +5,30 @@
 
 const RUNNER_GROUND_Y_FRAC=0.82;
 const RuCV=()=>document.getElementById('runner-canvas');
-const RUNNER_GRAVITY=800, RUNNER_JUMP_VY=-380, RUNNER_JUMP2_VY=-300;
-const RUNNER_JUMP_BUFFER=0.1; // ấn sớm trong 0.1s trước khi chạm đất vẫn được tính, nhảy tiếp ngay khi đáp
+// Nhảy nhạy hơn: buffer + coyote dài, lực nhảy đôi đủ với sao trên cao
+const RUNNER_GRAVITY=700, RUNNER_JUMP_VY=-460, RUNNER_JUMP2_VY=-400;
+const RUNNER_JUMP_BUFFER=0.22; // ấn sớm trước khi đáp vẫn được nhớ
+const RUNNER_COYOTE=0.14;      // vừa rời đất vẫn còn cửa nhảy
 let runnerJumpBuffer=0;
+let runnerCoyote=0;
 function runnerTryJump(){
-  if(runnerJumps===0){ runnerDogVY=RUNNER_JUMP_VY; runnerJumps=1; sfxRunnerJump(); }
-  else if(runnerJumps===1){ runnerDogVY=RUNNER_JUMP2_VY; runnerJumps=2; sfxRunnerDoubleJump(); }
-  else { runnerJumpBuffer=RUNNER_JUMP_BUFFER; } // đang hết lượt nhảy → ghi nhớ cú ấn, đáp đất sẽ bật lại ngay
+  if(runnerJumps===0){
+    // Nhảy lần 1 (đất / coyote) — phản hồi tức thì
+    runnerDogVY=RUNNER_JUMP_VY;
+    runnerJumps=1;
+    runnerCoyote=0;
+    runnerJumpBuffer=0;
+    sfxRunnerJump();
+  } else if(runnerJumps===1){
+    // Nhảy đôi trên không
+    runnerDogVY=RUNNER_JUMP2_VY;
+    runnerJumps=2;
+    runnerJumpBuffer=0;
+    sfxRunnerDoubleJump();
+  } else {
+    // Hết lượt → nhớ cú ấn, đáp đất nhảy lại ngay
+    runnerJumpBuffer=RUNNER_JUMP_BUFFER;
+  }
 }
 
 // (đã chuyển khai báo biến mode lên đầu file để tránh lỗi TDZ)
@@ -26,7 +43,7 @@ function triggerRunnerUnlock(){
   markMapCleared('brick');
   pendingUnlock='runner';
   document.getElementById('unlock-title').textContent='🏃 MAP ẨN 16 MỞ KHÓA!';
-  document.getElementById('unlock-desc').innerHTML='Chạy vô tận! Chó tự chạy, chạm để nhảy né chướng ngại vật.<br>Nhảy đôi: chạm 2 lần! Sống sót <b>60 giây</b>!';
+  document.getElementById('unlock-desc').innerHTML='Chạy vô tận! Chó tự chạy, chạm để nhảy né chướng ngại.<br><b>Nhảy đôi</b> (chạm 2 lần trên không) để với sao trên cao!<br>Sống sót <b>60 giây</b>!';
   document.getElementById('unlock-btn').textContent='🏃 CHẠY THÔI!';
   showUnlockOverlay();
   sfxUnlock();
@@ -43,13 +60,13 @@ function enterRunnerMode(){
   document.getElementById('mode-badge').textContent='🏃 MAP ẨN 16';
   document.getElementById('mode-badge').classList.add('secret');
   document.getElementById('burst-count').textContent='⏱ 60s';
-  document.getElementById('hint-bar').textContent='Chạm để nhảy · Chạm 2 lần = nhảy đôi';
+  document.getElementById('hint-bar').textContent='Chạm nhanh để nhảy · Nhảy đôi trên không để ăn ⭐';
   document.getElementById('grid-wrap').classList.add('secret-mode');
   const cv=RuCV();
   const H=460;
   runnerElapsed=0; runnerScore=0; runnerLives=2; runnerSpeed=180;
   runnerDogY=H*RUNNER_GROUND_Y_FRAC-36;
-  runnerDogVY=0; runnerJumps=0; runnerJumpBuffer=0;
+  runnerDogVY=0; runnerJumps=0; runnerJumpBuffer=0; runnerCoyote=0;
   runnerObstacles=[]; runnerStars=[]; runnerFx=[];
   runnerSpawnTimer=1.5;
   runnerStarSpawnTimer=1.0;
@@ -78,10 +95,14 @@ function runnerLoop(now){
   runnerDogVY+=RUNNER_GRAVITY*dt;
   runnerDogY+=runnerDogVY*dt;
   if(runnerJumpBuffer>0) runnerJumpBuffer=Math.max(0,runnerJumpBuffer-dt);
+
   if(runnerDogY>=GROUND){
     if(runnerDogVY>50) sfxRunnerLand();
     runnerDogY=GROUND; runnerDogVY=0; runnerJumps=0;
-    if(runnerJumpBuffer>0){ runnerJumpBuffer=0; runnerTryJump(); } // cú ấn đệm → bật nhảy ngay khi đáp
+    runnerCoyote=RUNNER_COYOTE; // đứng đất → luôn sẵn sàng nhảy nhạy
+    if(runnerJumpBuffer>0){ runnerJumpBuffer=0; runnerTryJump(); }
+  } else if(runnerCoyote>0){
+    runnerCoyote=Math.max(0,runnerCoyote-dt); // vừa rời đất vẫn còn cửa nhảy lần 1
   }
 
   // Spawn obstacles
@@ -91,18 +112,29 @@ function runnerLoop(now){
     runnerObstacles.push({x:W+20, y:H*RUNNER_GROUND_Y_FRAC, emoji:types[Math.floor(Math.random()*types.length)]});
     runnerSpawnTimer=(0.8+Math.random()*0.8)/(runnerSpeed/180);
   }
-  // Spawn stars
+  // Sao chỉ đặt ở độ cao cần NHẢY ĐÔI mới với tới (trên tầm nhảy 1 lần)
   runnerStarSpawnTimer-=dt;
   if(runnerStarSpawnTimer<=0){
-    runnerStars.push({x:W+10, y:20+Math.random()*(H*RUNNER_GROUND_Y_FRAC*0.6)});
-    runnerStarSpawnTimer=0.4+Math.random()*0.8;
+    const singleReach = GROUND - 88;   // tầm nhảy 1 lần ~ đỉnh
+    const doubleReach = GROUND - 165;  // tầm nhảy đôi
+    const yHi = doubleReach + 8;
+    const yLo = singleReach - 18;      // cao hơn nhảy đơn → bắt buộc nhảy đôi
+    runnerStars.push({
+      x:W+10,
+      y: yHi + Math.random()*Math.max(12, yLo-yHi),
+      needDouble: true
+    });
+    runnerStarSpawnTimer=0.45+Math.random()*0.75;
   }
 
   // Move obstacles
   runnerObstacles=runnerObstacles.filter(o=>{ o.x-=runnerSpeed*dt; return o.x>-40; });
   runnerStars=runnerStars.filter(s=>{
     s.x-=runnerSpeed*0.6*dt;
-    if(Math.abs(s.x-80)<20 && Math.abs(s.y-runnerDogY)<24){
+    // Chỉ ăn sao khi đã nhảy đôi trên không (runnerJumps===2) hoặc đang ở độ cao nhảy đôi
+    const reachedHigh = runnerDogY <= (GROUND - 100);
+    const canCollect = runnerJumps>=2 || reachedHigh;
+    if(canCollect && Math.abs(s.x-80)<28 && Math.abs(s.y-runnerDogY)<30){
       const pts=1; runnerScore+=pts; score+=pts; if(best<score) best=score;
       runnerFx.push({x:s.x,y:s.y,t:0,text:'+'+pts});
       sfxRunnerStar(); updateScoreUI(); return false;
@@ -116,7 +148,7 @@ function runnerLoop(now){
   if(wasInvinc && runnerInvincible<=0) sfxInvincEnd();
 
   // Collision
-  const dogHB={x:80-14, y:runnerDogY, w:28, h:30};
+  const dogHB={x:80-16, y:runnerDogY, w:32, h:32};
   for(let o of runnerObstacles){
     const ob={x:o.x-14, y:o.y-28, w:28, h:28};
     if(dogHB.x<ob.x+ob.w && dogHB.x+dogHB.w>ob.x &&
