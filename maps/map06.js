@@ -284,38 +284,6 @@ function drawMole(ctx,W,H,now,timeLeft){
 
     ctx.restore();
 
-    // Điểm thú — đặt CẠNH thú (trái/phải tùy vị trí trên canvas), không che thú
-    if(fullyOut){
-      const pts=h.animal.pts;
-      const label=(pts>0?'+':'')+pts;
-      ctx.font='bold 20px Nunito,system-ui';
-      const tw=ctx.measureText(label).width;
-      const padX=11, padY=6, bw=tw+padX*2, bh=28;
-      const side = hx < W/2 ? 1 : -1; // bên nào rộng chỗ hơn thì đặt bên đó, tránh tràn mép canvas
-      const bx = hx + side*(h.r + bw/2 + 8);
-      const by = hy - h.r*0.15;
-      // nền pill
-      ctx.fillStyle=pts>0?'rgba(20,120,40,0.92)':'rgba(160,30,30,0.92)';
-      ctx.beginPath();
-      const rr=8, x0=bx-bw/2, y0=by-bh/2;
-      ctx.moveTo(x0+rr,y0);
-      ctx.arcTo(x0+bw,y0,x0+bw,y0+bh,rr);
-      ctx.arcTo(x0+bw,y0+bh,x0,y0+bh,rr);
-      ctx.arcTo(x0,y0+bh,x0,y0,rr);
-      ctx.arcTo(x0,y0,x0+bw,y0,rr);
-      ctx.closePath();
-      ctx.fill();
-      ctx.strokeStyle='rgba(255,255,255,0.9)';
-      ctx.lineWidth=2;
-      ctx.stroke();
-      // chữ điểm
-      ctx.fillStyle='#fff';
-      ctx.textAlign='center'; ctx.textBaseline='middle';
-      ctx.shadowColor='rgba(0,0,0,0.6)'; ctx.shadowBlur=4;
-      ctx.fillText(label, bx, by+0.5);
-      ctx.shadowBlur=0;
-    }
-
     // grass rim on top of animal
     ctx.fillStyle='#5aaa30';
     ctx.beginPath(); ctx.ellipse(h.x,h.y,h.r+4,h.r*0.48,0,Math.PI,Math.PI*2); ctx.fill();
