@@ -4,12 +4,12 @@
 
   const KEY_SPIN = "chromablast_lucky_spin";
   const SEGMENTS = [
-    { kind: "fire", amount: 2, label: "🔥×2", color: "#c4b5fd" },
-    { kind: "bubble", amount: 2, label: "🫧×2", color: "#f8fafc" },
-    { kind: "heart", amount: 2, label: "❤️×2", color: "#ddd6fe" },
-    { kind: "wind", amount: 2, label: "💨×2", color: "#f8fafc" },
-    { kind: "fire", amount: 3, label: "🔥×3", color: "#c4b5fd" },
-    { kind: "heart", amount: 3, label: "❤️×3", color: "#f8fafc" },
+    { kind: "fire", amount: 2, icon: "🔥", label: "🔥×2", color: "#FF9E80" },
+    { kind: "bubble", amount: 2, icon: "🫧", label: "🫧×2", color: "#7DD3FC" },
+    { kind: "heart", amount: 2, icon: "❤️", label: "❤️×2", color: "#FDA4AF" },
+    { kind: "wind", amount: 2, icon: "💨", label: "💨×2", color: "#86EFAC" },
+    { kind: "fire", amount: 3, icon: "🔥", label: "🔥×3", color: "#FCD34D" },
+    { kind: "heart", amount: 3, icon: "❤️", label: "❤️×3", color: "#C4B5FD" },
   ];
   const SEG = 360 / SEGMENTS.length;
 
@@ -94,8 +94,11 @@
 
   function buildWheel() {
     const wheel = document.getElementById("spin-wheel");
-    if (!wheel || wheel.dataset.built === "1") return;
-    wheel.dataset.built = "1";
+    if (!wheel) return;
+    // floral-v2: rebuild nếu phiên bản cũ còn cache DOM
+    if (wheel.dataset.built === "floral-v2") return;
+    wheel.innerHTML = "";
+    wheel.dataset.built = "floral-v2";
     const stops = SEGMENTS.map((_, i) => {
       const a0 = i * SEG;
       const a1 = (i + 1) * SEG;
@@ -108,8 +111,13 @@
       label.className = "spin-seg-label";
       const mid = i * SEG + SEG / 2 - 90;
       label.style.transform =
-        "rotate(" + mid + "deg) translateY(-72px) rotate(" + -mid + "deg)";
-      label.textContent = seg.label;
+        "rotate(" + mid + "deg) translateY(-74px) rotate(" + -mid + "deg)";
+      label.innerHTML =
+        '<span class="spin-seg-ico">' +
+        (seg.icon || "") +
+        '</span><span class="spin-seg-amt">×' +
+        seg.amount +
+        "</span>";
       wheel.appendChild(label);
     });
   }
@@ -173,7 +181,7 @@
 
     awaitingRewardConfirm = true;
     setSpinChromeLocked(true);
-    if (icon) icon.textContent = seg.label;
+    if (icon) icon.textContent = (seg.icon || "") + "×" + seg.amount;
     if (text) text.textContent = "Đã nhận " + prizeDetail(seg);
     if (extra) {
       const parts = [];
