@@ -9,10 +9,12 @@
 const BOSS_TIME=90, BOSS_TOTAL_WAVES=3;
 
 let bossMode=false, bossRAF=null, bossLast=0, bossElapsed=0;
-let bossDogX=180, bossDogLives=3;
+let bossDogX=180, bossDogTargetX=180, bossDogLives=3;
 let bossChickens=[], bossProjectiles=[], bossVenom=[];
 let bossFx=[], bossScore=0, bossFireTimer=0, bossVenomTimer=0;
 let bossWave=0, bossWaveCleared=true;
+/** Tốc độ tối đa máy bay trượt ngang (px/s) — không nhảy tức thì theo ngón tay */
+const BOSS_PLANE_SPEED=280;
 
 const BOSCV=()=>document.getElementById('boss-canvas');
 
@@ -23,7 +25,7 @@ function triggerBossUnlock(){
   document.getElementById('unlock-desc').innerHTML=
     '🚀 <b>Phi Cơ Bắn Gà!</b><br><br>'+
     'Điều khiển phi cơ bắn hạ đàn gà xâm lăng!<br>'+
-    'Kéo ngón tay để lái — phi cơ tự động bắn liên tục!<br>'+
+    'Kéo ngón tay để lái — phi cơ trượt dần sang hai bên (không nhảy tức thì) và tự động bắn!<br>'+
     'Né trứng gà rơi xuống — bạn có <b>3 mạng ❤️</b>!<br>'+
     'Tiêu diệt hết <b>'+BOSS_TOTAL_WAVES+' đợt gà</b> trước <b>'+BOSS_TIME+'s</b> để chiến thắng!';
   document.getElementById('unlock-btn').textContent='🐔 CHIẾN ĐẤU!';
@@ -38,7 +40,7 @@ function enterBossMode(){
   document.getElementById('grid').style.display='none';
   document.getElementById('pieces-area').style.display='none';
   document.getElementById('hint-bar').style.display='';
-  document.getElementById('hint-bar').textContent='Kéo ngón tay để lái phi cơ! Tự động bắn — né trứng gà rơi!';
+  document.getElementById('hint-bar').textContent='Kéo để lái — máy bay trượt dần sang 2 bên · tự bắn · né trứng!';
   BOSCV().classList.add('active');
   document.getElementById('grid-wrap').classList.add('secret-mode');
   document.getElementById('mode-badge').textContent='🐔 MAP ẨN 10';
@@ -65,7 +67,7 @@ function spawnChickenWave(){
 
 function initBoss(){
   const cv=BOSCV();
-  bossDogX=180; bossDogLives=3;
+  bossDogX=180; bossDogTargetX=180; bossDogLives=3;
   bossChickens=[]; bossProjectiles=[]; bossVenom=[]; bossFx=[];
   bossScore=0; bossElapsed=0; bossFireTimer=0; bossVenomTimer=0;
   bossWave=0; bossWaveCleared=true;
@@ -78,6 +80,15 @@ function bossLoop(now){
   bossElapsed+=dt;
 
   const cv=BOSCV(), W=360, H=460;
+
+  // Máy bay trượt dần về phía mục tiêu (2 bên) — không dịch chuyển tức thì
+  const dx=bossDogTargetX-bossDogX;
+  if(Math.abs(dx)>0.5){
+    const step=Math.sign(dx)*Math.min(Math.abs(dx), BOSS_PLANE_SPEED*dt);
+    bossDogX=Math.max(30, Math.min(330, bossDogX+step));
+  } else {
+    bossDogX=bossDogTargetX;
+  }
 
   if(bossWaveCleared && bossWave<BOSS_TOTAL_WAVES){
     spawnChickenWave();
@@ -264,7 +275,8 @@ function bossHandlePointer(e){
   const rect=BOSCV().getBoundingClientRect();
   const scaleX=360/rect.width;
   const tx=(e.clientX-rect.left)*scaleX;
-  bossDogX=Math.max(30,Math.min(330,tx));
+  // Chỉ đặt mục tiêu — máy bay sẽ trượt dần trong bossLoop
+  bossDogTargetX=Math.max(30,Math.min(330,tx));
 }
 BOSCV().addEventListener('pointerdown', bossHandlePointer);
 BOSCV().addEventListener('pointermove', bossHandlePointer);
