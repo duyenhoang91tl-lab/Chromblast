@@ -2717,41 +2717,29 @@ body:has(#secret-stage.active) .streak-dot.lit{
   margin-top:0;
 }
 .spin-wheel-wrap{
-  position:relative; width:230px; height:230px; margin:10px 0 16px;
+  position:relative; width:230px; height:230px; margin:14px 0 18px;
 }
 .spin-vine-ring{
-  position:absolute; inset:-14px; z-index:1; pointer-events:none;
+  position:absolute; inset:-18px; z-index:1; pointer-events:none;
 }
 .spin-vine-svg{
   width:100%; height:100%; display:block;
-  filter:drop-shadow(0 2px 4px rgba(22,101,52,0.25));
-  animation:spinVineSway 5s ease-in-out infinite alternate;
+  filter:drop-shadow(0 2px 5px rgba(22,101,52,0.28));
+  animation:spinVineSway 6s ease-in-out infinite alternate;
 }
 @keyframes spinVineSway{
-  from{ transform:rotate(-2deg); }
-  to{ transform:rotate(2deg); }
+  from{ transform:rotate(-3deg); }
+  to{ transform:rotate(3deg); }
 }
-.spin-flower, .spin-leaf{
-  position:absolute; line-height:1; pointer-events:none;
-  filter:drop-shadow(0 2px 3px rgba(0,0,0,0.2));
+.spin-vine-svg .spin-bloom{
+  transform-box: fill-box;
+  transform-origin: center;
+  animation:spinBloomPulse 2.6s ease-in-out infinite alternate;
 }
-.spin-flower{ font-size:20px; animation:spinFlowerBob 2.4s ease-in-out infinite alternate; }
-.spin-leaf{ font-size:16px; opacity:0.95; }
-.sf-1{ top:2%; left:46%; animation-delay:0s; }
-.sf-2{ top:18%; right:0%; animation-delay:0.3s; }
-.sf-3{ top:48%; right:-2%; animation-delay:0.6s; }
-.sf-4{ bottom:14%; right:6%; animation-delay:0.2s; }
-.sf-5{ bottom:0%; left:44%; animation-delay:0.5s; }
-.sf-6{ bottom:16%; left:2%; animation-delay:0.8s; }
-.sf-7{ top:46%; left:-4%; animation-delay:0.1s; }
-.sf-8{ top:14%; left:4%; animation-delay:0.7s; }
-.sl-1{ top:32%; right:2%; transform:rotate(25deg); }
-.sl-2{ bottom:32%; left:0%; transform:rotate(-30deg); }
-.sl-3{ top:8%; right:18%; transform:rotate(40deg); font-size:14px; }
-.sl-4{ bottom:8%; left:18%; transform:rotate(-45deg); }
-@keyframes spinFlowerBob{
-  from{ transform:translateY(0) scale(1); }
-  to{ transform:translateY(-3px) scale(1.08); }
+.spin-vine-svg .spin-bloom:nth-of-type(odd){ animation-delay:0.4s; }
+@keyframes spinBloomPulse{
+  from{ filter:brightness(1); }
+  to{ filter:brightness(1.12); }
 }
 .spin-wheel{
   width:100%; height:100%; border-radius:50%;
@@ -2764,42 +2752,51 @@ body:has(#secret-stage.active) .streak-dot.lit{
   position:relative; z-index:2;
   will-change:transform;
 }
+/* Nhãn radial: đáy (×N) hướng vào tâm, icon hướng ra ngoài */
 .spin-seg-label{
   position:absolute; left:50%; top:50%;
-  width:58px; margin-left:-29px; margin-top:-14px;
+  width:52px; margin-left:-26px; margin-top:-22px;
   text-align:center; font-weight:900;
   color:#3b2a1a; pointer-events:none; line-height:1.05;
-  display:flex; flex-direction:column; align-items:center; gap:1px;
-  text-shadow:0 1px 0 rgba(255,255,255,0.7);
+  display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+  gap:2px;
+  text-shadow:0 1px 0 rgba(255,255,255,0.75);
+  transform-origin: 50% 50%;
 }
-.spin-seg-ico{ font-size:18px; line-height:1; filter:drop-shadow(0 1px 1px rgba(0,0,0,0.2)); }
+.spin-seg-ico{
+  font-size:20px; line-height:1;
+  filter:drop-shadow(0 1px 2px rgba(0,0,0,0.22));
+}
 .spin-seg-amt{
-  font-size:12px; font-weight:900; color:#5b2c0a;
-  background:rgba(255,255,255,0.55); border-radius:999px;
-  padding:1px 6px; letter-spacing:0.2px;
+  font-size:11px; font-weight:900; color:#5b2c0a;
+  background:rgba(255,255,255,0.72); border-radius:999px;
+  padding:1px 7px; letter-spacing:0.15px;
+  box-shadow:0 1px 2px rgba(0,0,0,0.12);
 }
-/* Kim chỉ = chiếc lá (đỉnh vòng, hướng xuống) */
+/* Kim chỉ = chiếc lá cách điệu (đỉnh vòng, mũi hướng tâm) */
 .spin-pointer,
 .spin-pointer-leaf{
-  position:absolute; left:50%; top:-18px; z-index:5;
-  width:36px; height:46px; margin-left:-18px;
-  filter:drop-shadow(0 3px 4px rgba(0,0,0,0.28));
-  animation:spinLeafWiggle 2.2s ease-in-out infinite alternate;
+  position:absolute; left:50%; top:-22px; z-index:5;
+  width:42px; height:56px; margin-left:-21px;
+  filter:drop-shadow(0 4px 5px rgba(0,0,0,0.3));
+  animation:spinLeafWiggle 2.4s ease-in-out infinite alternate;
+  transform-origin: 50% 8%;
 }
 .spin-pointer-leaf svg{ display:block; width:100%; height:100%; }
 @keyframes spinLeafWiggle{
-  from{ transform:rotate(-4deg); }
-  to{ transform:rotate(4deg); }
+  from{ transform:rotate(-5deg); }
+  to{ transform:rotate(5deg); }
 }
 .spin-hub{
-  position:absolute; left:50%; top:50%; width:36px; height:36px;
-  margin:-18px 0 0 -18px; border-radius:50%;
+  position:absolute; left:50%; top:50%; width:40px; height:40px;
+  margin:-20px 0 0 -20px; border-radius:50%;
   background:radial-gradient(circle at 35% 30%,#fff,#F9A8D4 55%,#FB7185);
   box-shadow:0 0 0 4px #fff, 0 0 0 7px #86EFAC, 0 3px 10px rgba(0,0,0,0.25);
   z-index:4;
   display:flex; align-items:center; justify-content:center;
   font-size:16px; line-height:1;
 }
+.spin-hub svg{ display:block; }
 .spin-timer-box{
   display:flex; align-items:center; gap:6px;
   background:linear-gradient(180deg,rgba(255,255,255,0.75),rgba(255,255,255,0.45));
