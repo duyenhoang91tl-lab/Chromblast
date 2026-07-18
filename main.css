@@ -172,7 +172,8 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   max-width: 360px; width: 100%;
 }
 .start-logo {
-  font-size: 52px; font-weight: 900; letter-spacing: 2px; line-height: 1;
+  font-size: clamp(24px, 8.5vw, 34px); font-weight: 900; letter-spacing: 0.5px; line-height: 1;
+  white-space: nowrap;
   filter: drop-shadow(0 0 20px rgba(255,200,0,0.8));
   animation: logoPop 0.8s cubic-bezier(0.34,1.56,0.64,1) both;
 }

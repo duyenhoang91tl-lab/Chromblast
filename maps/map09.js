@@ -111,7 +111,7 @@ function stackLoop(now){
   const timeLeft=Math.max(0,STACK_TIME-stackElapsed);
   document.getElementById('burst-count').textContent='🏗️ '+stackCount+'/'+STACK_KPI+'  ⏱'+timeLeft.toFixed(0)+'s';
 
-  if(timeLeft<=0 || stackCount>=STACK_KPI){
+  if(timeLeft<=0){
     stackDone(stackCount>=STACK_KPI); return;
   }
   stackRAF=requestAnimationFrame(stackLoop);
