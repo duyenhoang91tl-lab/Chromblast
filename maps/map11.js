@@ -147,20 +147,16 @@ function drawCatch(ctx,W,H,basketY,basketW,basketH){
   catchAnimals.forEach(a=>{
     ctx.save();
     ctx.translate(a.x,a.y);
-    if(a.emoji==='🐶'){
-      // Con chó dùng hình vẽ vector của Map 4
-      ctx.scale(0.85,0.85);
-      ctx.shadowColor='rgba(0,0,0,0.4)'; ctx.shadowBlur=5/0.85; ctx.shadowOffsetY=1/0.85;
-      drawDog(ctx,Date.now()*0.001,{x:0,y:0,vx:0,vy:0,facing:1,panicLevel:0});
-      ctx.shadowBlur=0; ctx.shadowOffsetY=0;
-    } else {
+    ctx.shadowColor=a.isBad?'rgba(220,50,50,0.55)':'rgba(0,0,0,0.4)';
+    ctx.shadowBlur=a.isBad?8:5; ctx.shadowOffsetY=1;
+    const boxSize=52;
+    const drew=drawCuteAnimal(ctx,a.emoji,-boxSize/2,-boxSize/2,boxSize,boxSize,Date.now()*0.001);
+    if(!drew){
       // Icon con vật giữ nguyên hướng, không còn vòng tròn nền che phía sau
       ctx.font='40px Nunito,system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
-      ctx.shadowColor=a.isBad?'rgba(220,50,50,0.55)':'rgba(0,0,0,0.4)';
-      ctx.shadowBlur=a.isBad?8:5; ctx.shadowOffsetY=1;
       ctx.fillText(a.emoji,0,0);
-      ctx.shadowBlur=0; ctx.shadowOffsetY=0;
     }
+    ctx.shadowBlur=0; ctx.shadowOffsetY=0;
     ctx.restore();
   });
   // Basket

@@ -532,6 +532,281 @@ function drawRabbit(ctx,x,y,w,h,t=0){
   ctx.beginPath(); ctx.arc(cx+w*0.38,cy+h*0.22,7,0,Math.PI*2); ctx.fill();
 }
 
+/* ── Capybara chibi — cùng phong cách vẽ vector với drawTurtle/drawRabbit ── */
+function drawCapybara(ctx,x,y,w,h,t=0){
+  const cx=x+w/2, cy=y+h/2;
+  ctx.fillStyle='rgba(0,0,0,0.15)';
+  ctx.beginPath(); ctx.ellipse(cx,y+h+4,w*0.4,5,0,0,Math.PI*2); ctx.fill();
+
+  // thân bầu, mập mạp
+  const bg=ctx.createRadialGradient(cx-4,cy-2,3,cx,cy+4,w*0.46);
+  bg.addColorStop(0,'#c99a5c'); bg.addColorStop(1,'#8B6914');
+  ctx.fillStyle=bg;
+  ctx.beginPath(); ctx.ellipse(cx,cy+6,w*0.44,h*0.32,0,0,Math.PI*2); ctx.fill();
+
+  // đầu to, vuông vức đặc trưng capybara
+  const hr=w*0.32;
+  const headY=cy-h*0.1;
+  const hg=ctx.createRadialGradient(cx-4,headY-4,1,cx,headY,hr);
+  hg.addColorStop(0,'#d8ac70'); hg.addColorStop(1,'#a67a3a');
+  ctx.fillStyle=hg;
+  ctx.beginPath(); ctx.ellipse(cx,headY,hr,hr*0.92,0,0,Math.PI*2); ctx.fill();
+  // mõm dẹt phía trước
+  ctx.fillStyle='#c99a5c';
+  ctx.beginPath(); ctx.ellipse(cx,headY+hr*0.55,hr*0.62,hr*0.4,0,0,Math.PI*2); ctx.fill();
+
+  // tai nhỏ tròn
+  ctx.fillStyle='#8B6914';
+  ctx.beginPath(); ctx.arc(cx-hr*0.85,headY-hr*0.7,hr*0.22,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(cx+hr*0.85,headY-hr*0.7,hr*0.22,0,Math.PI*2); ctx.fill();
+
+  // mắt nhỏ cao trên đầu — đặc trưng capybara hiền lành
+  const blink=Math.sin(t*0.7+1)>0.94;
+  [cx-hr*0.4, cx+hr*0.4].forEach(ex=>{
+    const ey=headY-hr*0.08;
+    if(blink){
+      ctx.strokeStyle='#2a1a08'; ctx.lineWidth=1.4; ctx.lineCap='round';
+      ctx.beginPath(); ctx.moveTo(ex-hr*0.15,ey); ctx.lineTo(ex+hr*0.15,ey); ctx.stroke();
+      return;
+    }
+    ctx.fillStyle='#2a1a08';
+    ctx.beginPath(); ctx.ellipse(ex,ey,hr*0.15,hr*0.17,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#fff';
+    ctx.beginPath(); ctx.arc(ex+hr*0.05,ey-hr*0.05,hr*0.05,0,Math.PI*2); ctx.fill();
+  });
+  // mũi
+  ctx.fillStyle='#3a2410';
+  ctx.beginPath(); ctx.ellipse(cx,headY+hr*0.5,hr*0.12,hr*0.08,0,0,Math.PI*2); ctx.fill();
+  // miệng hiền, thư giãn
+  ctx.strokeStyle='rgba(50,30,10,0.55)'; ctx.lineWidth=1.4; ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(cx-hr*0.18,headY+hr*0.68); ctx.quadraticCurveTo(cx,headY+hr*0.78,cx+hr*0.18,headY+hr*0.68); ctx.stroke();
+  // má hồng
+  ctx.fillStyle='rgba(255,150,150,0.3)';
+  ctx.beginPath(); ctx.ellipse(cx-hr*0.75,headY+hr*0.35,hr*0.18,hr*0.1,0,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(cx+hr*0.75,headY+hr*0.35,hr*0.18,hr*0.1,0,0,Math.PI*2); ctx.fill();
+  // shine
+  ctx.fillStyle='rgba(255,255,255,0.25)';
+  ctx.beginPath(); ctx.ellipse(cx-hr*0.2,headY-hr*0.35,hr*0.14,hr*0.08,-0.5,0,Math.PI*2); ctx.fill();
+}
+
+/* ── Cat chibi ── */
+function drawCat(ctx,x,y,w,h,t=0){
+  const cx=x+w/2, cy=y+h/2;
+  ctx.fillStyle='rgba(0,0,0,0.15)';
+  ctx.beginPath(); ctx.ellipse(cx,y+h+4,w*0.36,5,0,0,Math.PI*2); ctx.fill();
+
+  // đuôi cong
+  const tailWag=Math.sin(t*3)*0.15;
+  ctx.strokeStyle='#ff9f40'; ctx.lineWidth=7; ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(cx+w*0.36,cy+h*0.2);
+  ctx.quadraticCurveTo(cx+w*0.58,cy-h*0.05+tailWag*10,cx+w*0.5,cy-h*0.32+tailWag*10);
+  ctx.stroke();
+
+  // thân
+  const bg=ctx.createRadialGradient(cx-4,cy-2,3,cx,cy+4,w*0.42);
+  bg.addColorStop(0,'#ffc478'); bg.addColorStop(1,'#ff9f40');
+  ctx.fillStyle=bg;
+  ctx.beginPath(); ctx.ellipse(cx,cy+5,w*0.38,h*0.34,0,0,Math.PI*2); ctx.fill();
+
+  // tai tam giác
+  ctx.fillStyle='#ff9f40';
+  ctx.beginPath(); ctx.moveTo(cx-w*0.16,y-2); ctx.lineTo(cx-w*0.28,y+16); ctx.lineTo(cx-w*0.04,y+14); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(cx+w*0.16,y-2); ctx.lineTo(cx+w*0.28,y+16); ctx.lineTo(cx+w*0.04,y+14); ctx.closePath(); ctx.fill();
+  ctx.fillStyle='#ffd6c2';
+  ctx.beginPath(); ctx.moveTo(cx-w*0.16,y+4); ctx.lineTo(cx-w*0.24,y+15); ctx.lineTo(cx-w*0.08,y+13); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(cx+w*0.16,y+4); ctx.lineTo(cx+w*0.24,y+15); ctx.lineTo(cx+w*0.08,y+13); ctx.closePath(); ctx.fill();
+
+  // đầu tròn
+  const hr=w*0.33;
+  const headY=cy-h*0.08;
+  const hg=ctx.createRadialGradient(cx-3,headY-3,1,cx,headY,hr);
+  hg.addColorStop(0,'#ffd6a0'); hg.addColorStop(1,'#ff9f40');
+  ctx.fillStyle=hg;
+  ctx.beginPath(); ctx.arc(cx,headY,hr,0,Math.PI*2); ctx.fill();
+
+  // ria mép
+  ctx.strokeStyle='rgba(120,60,20,0.5)'; ctx.lineWidth=1; ctx.lineCap='round';
+  [-1,1].forEach(s=>{
+    for(let i=0;i<3;i++){
+      ctx.beginPath(); ctx.moveTo(cx+s*hr*0.5,headY+hr*0.35+i*3-3);
+      ctx.lineTo(cx+s*hr*1.05,headY+hr*0.25+i*4-4); ctx.stroke();
+    }
+  });
+
+  // mắt to, chớp mắt
+  const blink=Math.sin(t*0.8+3)>0.94;
+  [cx-hr*0.35, cx+hr*0.35].forEach(ex=>{
+    const ey=headY+hr*0.05;
+    if(blink){
+      ctx.strokeStyle='#2a1a08'; ctx.lineWidth=1.5; ctx.lineCap='round';
+      ctx.beginPath(); ctx.arc(ex,ey,hr*0.2,0.15,Math.PI-0.15); ctx.stroke();
+      return;
+    }
+    ctx.fillStyle='#fff';
+    ctx.beginPath(); ctx.ellipse(ex,ey,hr*0.22,hr*0.25,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#3a7a3a';
+    ctx.beginPath(); ctx.ellipse(ex+1,ey+1,hr*0.13,hr*0.17,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#fff';
+    ctx.beginPath(); ctx.arc(ex+hr*0.07,ey-hr*0.07,hr*0.07,0,Math.PI*2); ctx.fill();
+  });
+  // má hồng
+  ctx.fillStyle='rgba(255,120,120,0.35)';
+  ctx.beginPath(); ctx.ellipse(cx-hr*0.6,headY+hr*0.32,hr*0.18,hr*0.1,0,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(cx+hr*0.6,headY+hr*0.32,hr*0.18,hr*0.1,0,0,Math.PI*2); ctx.fill();
+  // mũi hồng + miệng chữ W
+  ctx.fillStyle='#ff7099';
+  ctx.beginPath(); ctx.moveTo(cx-hr*0.08,headY+hr*0.28); ctx.lineTo(cx+hr*0.08,headY+hr*0.28); ctx.lineTo(cx,headY+hr*0.38); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle='rgba(120,60,40,0.6)'; ctx.lineWidth=1.4; ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(cx,headY+hr*0.38); ctx.quadraticCurveTo(cx-hr*0.14,headY+hr*0.5,cx-hr*0.28,headY+hr*0.4); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx,headY+hr*0.38); ctx.quadraticCurveTo(cx+hr*0.14,headY+hr*0.5,cx+hr*0.28,headY+hr*0.4); ctx.stroke();
+  // shine
+  ctx.fillStyle='rgba(255,255,255,0.32)';
+  ctx.beginPath(); ctx.ellipse(cx-hr*0.2,headY-hr*0.28,hr*0.14,hr*0.08,-0.5,0,Math.PI*2); ctx.fill();
+}
+/* ── Hedgehog chibi ── */
+function drawHedgehog(ctx,x,y,w,h,t=0){
+  const cx=x+w/2, cy=y+h/2;
+  ctx.fillStyle='rgba(0,0,0,0.15)';
+  ctx.beginPath(); ctx.ellipse(cx,y+h+4,w*0.38,5,0,0,Math.PI*2); ctx.fill();
+
+  // thân tròn
+  const bg=ctx.createRadialGradient(cx-4,cy-2,3,cx,cy+4,w*0.42);
+  bg.addColorStop(0,'#c48a5a'); bg.addColorStop(1,'#8B4513');
+  ctx.fillStyle=bg;
+  ctx.beginPath(); ctx.ellipse(cx,cy+5,w*0.4,h*0.34,0,0,Math.PI*2); ctx.fill();
+
+  // gai nhọn phủ nửa lưng
+  ctx.fillStyle='#5a2f0e';
+  const spikeCount=9;
+  for(let i=0;i<=spikeCount;i++){
+    const a=Math.PI*(0.95-i/spikeCount*0.9);
+    const bx=cx+Math.cos(a)*w*0.4, by=cy-h*0.06+Math.sin(a)*h*0.34;
+    const tx=cx+Math.cos(a)*w*0.56, ty=cy-h*0.2+Math.sin(a)*h*0.5;
+    ctx.beginPath();
+    ctx.moveTo(bx-3,by); ctx.lineTo(tx,ty); ctx.lineTo(bx+3,by); ctx.closePath(); ctx.fill();
+  }
+
+  // mặt tam giác nhỏ phía trước (mõm)
+  const hr=w*0.26;
+  const headY=cy+h*0.02, headX=cx-w*0.06;
+  ctx.fillStyle='#e8c49a';
+  ctx.beginPath(); ctx.ellipse(headX,headY,hr,hr*0.85,0,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(headX-hr*0.3,headY+hr*0.5); ctx.lineTo(headX-hr*1.3,headY+hr*0.75); ctx.lineTo(headX-hr*0.2,headY+hr*0.95); ctx.closePath(); ctx.fill();
+
+  // mắt
+  const blink=Math.sin(t*0.9+2)>0.94;
+  [headX-hr*0.15, headX+hr*0.45].forEach((ex,i)=>{
+    const ey=headY-hr*0.05;
+    if(blink){
+      ctx.strokeStyle='#2a1608'; ctx.lineWidth=1.3; ctx.lineCap='round';
+      ctx.beginPath(); ctx.arc(ex,ey,hr*0.18,0.15,Math.PI-0.15); ctx.stroke();
+      return;
+    }
+    ctx.fillStyle='#2a1608';
+    ctx.beginPath(); ctx.ellipse(ex,ey,hr*0.16,hr*0.19,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#fff';
+    ctx.beginPath(); ctx.arc(ex+hr*0.06,ey-hr*0.06,hr*0.06,0,Math.PI*2); ctx.fill();
+  });
+  // mũi nhỏ đầu mõm
+  ctx.fillStyle='#2a1608';
+  ctx.beginPath(); ctx.arc(headX-hr*1.25,headY+hr*0.75,hr*0.14,0,Math.PI*2); ctx.fill();
+  // má hồng
+  ctx.fillStyle='rgba(255,140,140,0.3)';
+  ctx.beginPath(); ctx.ellipse(headX+hr*0.55,headY+hr*0.35,hr*0.16,hr*0.09,0,0,Math.PI*2); ctx.fill();
+  // shine lưng
+  ctx.fillStyle='rgba(255,255,255,0.15)';
+  ctx.beginPath(); ctx.ellipse(cx+w*0.05,cy-h*0.12,w*0.12,h*0.07,-0.4,0,Math.PI*2); ctx.fill();
+}
+
+/* ── Snake chibi — thân cong chữ S bằng các vòng tròn nối tiếp ── */
+function drawSnake(ctx,x,y,w,h,t=0){
+  const cx=x+w/2, cy=y+h/2;
+  ctx.fillStyle='rgba(0,0,0,0.15)';
+  ctx.beginPath(); ctx.ellipse(cx,y+h+4,w*0.3,4,0,0,Math.PI*2); ctx.fill();
+
+  // thân uốn lượn chữ S, nhỏ dần về đuôi
+  const segs=6;
+  for(let i=segs;i>=1;i--){
+    const p=i/segs;
+    const wob=Math.sin(t*2+i*0.9)*w*0.12;
+    const sx=cx+wob*(i%2===0?1:-1)*0.6;
+    const sy=y+h*0.3+p*h*0.62;
+    const r=w*0.22*(0.55+0.45*(1-p));
+    const g=ctx.createRadialGradient(sx-r*0.3,sy-r*0.3,1,sx,sy,r);
+    g.addColorStop(0,'#5fcf5f'); g.addColorStop(1,'#2d8a2d');
+    ctx.fillStyle=g;
+    ctx.beginPath(); ctx.arc(sx,sy,r,0,Math.PI*2); ctx.fill();
+  }
+
+  // đầu to, chibi
+  const hr=w*0.3;
+  const headX=cx+Math.sin(t*2+0.9)*w*0.12*0.6, headY=y+h*0.22;
+  const hg=ctx.createRadialGradient(headX-4,headY-4,1,headX,headY,hr);
+  hg.addColorStop(0,'#7fe07f'); hg.addColorStop(1,'#2d8a2d');
+  ctx.fillStyle=hg;
+  ctx.beginPath(); ctx.arc(headX,headY,hr,0,Math.PI*2); ctx.fill();
+
+  // lưỡi chẻ đôi, thè ra
+  const tongue=0.6+Math.sin(t*6)*0.4;
+  if(tongue>0.3){
+    ctx.strokeStyle='#ff5577'; ctx.lineWidth=1.4; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(headX,headY+hr*0.85); ctx.lineTo(headX,headY+hr*(0.85+tongue*0.6));
+    ctx.moveTo(headX,headY+hr*(0.85+tongue*0.6)); ctx.lineTo(headX-3,headY+hr*(0.95+tongue*0.6));
+    ctx.moveTo(headX,headY+hr*(0.85+tongue*0.6)); ctx.lineTo(headX+3,headY+hr*(0.95+tongue*0.6));
+    ctx.stroke();
+  }
+
+  // mắt to tròn xoe, dễ thương chứ không dữ
+  const blink=Math.sin(t*0.85+1)>0.94;
+  [headX-hr*0.36, headX+hr*0.36].forEach(ex=>{
+    const ey=headY-hr*0.1;
+    if(blink){
+      ctx.strokeStyle='#0a3a0a'; ctx.lineWidth=1.4; ctx.lineCap='round';
+      ctx.beginPath(); ctx.arc(ex,ey,hr*0.2,0.15,Math.PI-0.15); ctx.stroke();
+      return;
+    }
+    ctx.fillStyle='#fff';
+    ctx.beginPath(); ctx.ellipse(ex,ey,hr*0.22,hr*0.25,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#0a3a0a';
+    ctx.beginPath(); ctx.ellipse(ex+1,ey+1,hr*0.13,hr*0.17,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#fff';
+    ctx.beginPath(); ctx.arc(ex+hr*0.07,ey-hr*0.07,hr*0.07,0,Math.PI*2); ctx.fill();
+  });
+  // má hồng nhẹ
+  ctx.fillStyle='rgba(255,150,150,0.25)';
+  ctx.beginPath(); ctx.ellipse(headX-hr*0.6,headY+hr*0.32,hr*0.16,hr*0.09,0,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(headX+hr*0.6,headY+hr*0.32,hr*0.16,hr*0.09,0,0,Math.PI*2); ctx.fill();
+  // shine
+  ctx.fillStyle='rgba(255,255,255,0.3)';
+  ctx.beginPath(); ctx.ellipse(headX-hr*0.2,headY-hr*0.28,hr*0.14,hr*0.08,-0.5,0,Math.PI*2); ctx.fill();
+}
+
+/* ── Điều phối chung: vẽ con vật vector dễ thương theo emoji + khung (x,y,w,h) ──
+   Trả về true nếu emoji có bản vẽ vector; false nếu chưa có (nơi gọi tự fallback emoji). */
+function drawCuteAnimal(ctx,emoji,x,y,w,h,t){
+  switch(emoji){
+    case '🐶': {
+      const s=Math.min(w,h)/62;
+      ctx.save(); ctx.translate(x+w/2,y+h/2); ctx.scale(s,s);
+      drawDog(ctx,t,{x:0,y:0,vx:0,vy:0,facing:1,panicLevel:0});
+      ctx.restore();
+      return true;
+    }
+    case '🐝': {
+      const s=Math.min(w,h)/40;
+      drawBee(ctx,{x:x+w/2,y:y+h/2,size:16*s,wingPhase:t*10,angle:0},t);
+      return true;
+    }
+    case '🦫': drawCapybara(ctx,x,y,w,h,t); return true;
+    case '🐰': drawRabbit(ctx,x,y,w,h,t); return true;
+    case '🐢': drawTurtle(ctx,x,y,w,h,t,0,0); return true;
+    case '🐱': drawCat(ctx,x,y,w,h,t); return true;
+    case '🦔': drawHedgehog(ctx,x,y,w,h,t); return true;
+    case '🐍': drawSnake(ctx,x,y,w,h,t); return true;
+    default: return false;
+  }
+}
+
 function drawCarrot(ctx,x,y,r){
   // shadow
   ctx.fillStyle='rgba(0,0,0,0.18)';
