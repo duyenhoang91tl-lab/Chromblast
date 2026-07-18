@@ -196,10 +196,14 @@ function beeDrawButterfly(ctx,b,t){
 }
 
 /* ── chó samoyed vẽ động ── */
-function drawDog(ctx,t){
-  const {x,y,vx,vy,facing,panicLevel} = dog;
+/* drawDog: vẽ chó vector dùng chung cho mọi map. Truyền `d` = {x,y,vx,vy,facing,panicLevel,hit}
+   để dùng ở map khác; bỏ trống thì dùng biến `dog` cục bộ của Map 4 (giữ nguyên hành vi cũ). */
+function drawDog(ctx,t,d){
+  const own=!d;
+  const src=d||dog;
+  const {x,y,vx=0,vy=0,facing=1,panicLevel=0} = src;
   const speed=Math.sqrt(vx*vx+vy*vy);
-  const isRunning=speed>10;
+  const isRunning=src.running!==undefined?src.running:speed>10;
   const bob=isRunning?Math.sin(t*12)*3:Math.sin(t*2.2)*1.2;
   const blink=Math.sin(t*0.7)>0.93;
   const tailWag=Math.sin(t*(isRunning?12:5))*(isRunning?0.4:0.2);
@@ -310,16 +314,21 @@ function drawDog(ctx,t){
     ctx.fillText('!',headShake-6,sweatY+2);
   }
 
-  if(gdDogHit>0){
+  if(own && gdDogHit>0){
     ctx.globalAlpha=gdDogHit;
     ctx.beginPath(); ctx.arc(0,-8,28,0,Math.PI*2);
     ctx.strokeStyle='rgba(255,60,60,0.5)'; ctx.lineWidth=2; ctx.stroke();
     ctx.font='bold 12px Nunito,sans-serif'; ctx.fillStyle='#FF4444';
     ctx.textAlign='center'; ctx.fillText('Ối!',0,-38);
     ctx.globalAlpha=1;
+  } else if(!own && src.hit>0){
+    ctx.globalAlpha=src.hit;
+    ctx.beginPath(); ctx.arc(0,-8,28,0,Math.PI*2);
+    ctx.strokeStyle='rgba(255,60,60,0.5)'; ctx.lineWidth=2; ctx.stroke();
+    ctx.globalAlpha=1;
   }
 
-  if(isRunning && beeMode){
+  if(isRunning && (own?beeMode:src.dust)){
     for(let i=0;i<3;i++){
       const dx=-facing*(8+Math.random()*12);
       const dy=18+Math.random()*6;

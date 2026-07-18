@@ -256,9 +256,14 @@ function drawArena(ctx,W,H){
     ctx.fillText('🦋', W*0.75+Math.sin(bt*0.6+2)*W*0.16, H*0.2+Math.sin(bt*1.8+1)*10);
   }
 
-  // Bees — bỏ shadowBlur (rất tốn hiệu năng khi có nhiều con cùng lúc → giật máy)
-  ctx.font='28px Nunito,system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
-  arenaBees.forEach(b=>{ ctx.fillText('🐝',b.x,b.y); });
+  // Bees — dùng hình vẽ vector của Map 4 (bỏ shadowBlur, tốn hiệu năng khi nhiều con)
+  {
+    const bt=Date.now()*0.001;
+    arenaBees.forEach(b=>{
+      const ang=Math.atan2(arenaDogY-b.y,arenaDogX-b.x)+Math.PI/2;
+      drawBee(ctx,{x:b.x,y:b.y,size:16,wingPhase:b.t*10,angle:ang},bt);
+    });
+  }
 
   // Carrots
   arenaCarrots.forEach(c=>{ ctx.fillText('🥕',c.x,c.y); });
@@ -279,10 +284,13 @@ function drawArena(ctx,W,H){
     ctx.beginPath(); ctx.arc(v.x,v.y,8,0,Math.PI*2); ctx.fill();
   });
 
-  // Dog (with invincibility blink)
+  // Dog (with invincibility blink) — dùng hình vẽ vector của Map 4
   if(arenaInvincible<=0||Math.floor(arenaInvincible*8)%2===0){
-    ctx.font='44px Nunito,system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText('🐶',arenaDogX,arenaDogY);
+    ctx.save();
+    ctx.translate(arenaDogX,arenaDogY);
+    ctx.scale(0.95,0.95);
+    drawDog(ctx,Date.now()*0.001,{x:0,y:0,vx:0,vy:0,facing:1,panicLevel:0});
+    ctx.restore();
   }
 
   // FX

@@ -212,10 +212,13 @@ function drawRunner(ctx,W,H,timeLeft){
   ctx.font='28px serif';
   runnerObstacles.forEach(o=> ctx.fillText(o.emoji,o.x,o.y));
 
-  // Dog (invincible: flicker)
+  // Dog (invincible: flicker) — dùng hình vẽ vector của Map 4
   if(runnerInvincible<=0 || Math.floor(runnerInvincible*8)%2===0){
-    ctx.font='36px serif'; ctx.textAlign='center'; ctx.textBaseline='bottom';
-    ctx.fillText('🐶',80,runnerDogY+36);
+    ctx.save();
+    ctx.translate(80,runnerDogY+16);
+    ctx.scale(0.9,0.9);
+    drawDog(ctx,Date.now()*0.001,{x:0,y:0,vx:0,vy:runnerDogVY,facing:1,panicLevel:0,running:Math.abs(runnerDogVY)<5});
+    ctx.restore();
   }
 
   const timePct=Math.max(0,timeLeft/60);
