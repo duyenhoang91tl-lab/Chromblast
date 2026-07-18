@@ -194,6 +194,19 @@ function _vsBuildArena(){
     P.el.ghost=ghost;
   });
   document.getElementById('vs-quit-btn').addEventListener('click',()=>{ if(confirm('Thoát trận?')) _vsAbort(); });
+  requestAnimationFrame(_vsReflowGrids);
+}
+
+/** Sau xoay màn / resize: ép lưới 7×7 tính lại kích thước ô (tránh ô đè nhau). */
+function _vsReflowGrids(){
+  if(!versusMode||!_vs) return;
+  _vs.players.forEach(P=>{
+    const g=P.el&&P.el.grid;
+    if(!g) return;
+    g.style.display='none';
+    void g.offsetHeight;
+    g.style.display='';
+  });
 }
 
 function _vsAbort(){
@@ -729,5 +742,12 @@ function _vsCloseResult(rematch){
   if(again) again.addEventListener('click', ()=>_vsCloseResult(true));
   const close=document.getElementById('vs-close-btn');
   if(close) close.addEventListener('click', ()=>_vsCloseResult(false));
+  let _vsReflowT=0;
+  const scheduleReflow=()=>{
+    clearTimeout(_vsReflowT);
+    _vsReflowT=setTimeout(_vsReflowGrids, 80);
+  };
+  window.addEventListener('resize', scheduleReflow);
+  window.addEventListener('orientationchange', ()=>setTimeout(_vsReflowGrids, 120));
   refreshVersusButton();
 })();
