@@ -146,7 +146,6 @@ function fruitResolveWaveFruit(f, hit){
       const rate=w.hit/w.spawned;
       if(rate>0.70){
         fruitSpawnTier=Math.min(3, fruitSpawnTier+1);
-        try{ showComboFlash(0,false,'🎯 >70%! Quả bay nhiều hơn (bậc '+fruitSpawnTier+')'); }catch(e){}
       } else {
         fruitSpawnTier=Math.max(0, fruitSpawnTier-1);
       }
