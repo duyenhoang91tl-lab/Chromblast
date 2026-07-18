@@ -9,10 +9,12 @@ let fruits=[], fruitTrail=[], fruitTimeLeft=60;
 let fruitCombo=0, fruitComboTimer=0;
 const FRUIT_COMBO_MIN=3; // chém liên tiếp từ quả thứ 3 mới tính combo (x2 / hiện HUD)
 const FRUIT_COMBO_WINDOW_MS=1100; // cửa sổ giữa 2 nhát chém để giữ chuỗi
+const FRUIT_CORE_FRAC=0.38; // bán kính lõi / bán kính quả — chém trong lõi = CRITICAL
 let fruitMissStreak=0; // số lần chém trượt (quả rơi hết màn hình mà không chém trúng) liên tiếp
 let fruitLives=5; // chém trúng bom trừ 1 mạng thay vì thua ngay
+let fruitWaveSize=1; // số quả mỗi đợt — tăng dần +1 mỗi lần chém trúng
 let fruitFx=[]; // slice effects: juice drops + petals + slash lines
-let fruitMissPopups=[]; // floating "-10" text khi chém trượt
+let fruitMissPopups=[]; // floating "-10" / "CRITICAL!" text
 let fruitTrailPetals=[]; // flower petal particles that fall along the slash trail
 const TRAIL_PETAL_COLORS=['#ffb3cc','#ff80aa','#ffd6e7','#ff99bb','#ffe0ec','#ffaad4','#ff66a3'];
 const FRUIT_TYPES=[
@@ -34,9 +36,10 @@ function triggerFruitUnlock(){
   document.getElementById('unlock-desc').innerHTML=
     'Bạn đã ghi thêm <b>'+TEST_UNLOCK_SCORE+' điểm</b> ở map thường!<br><br>'+
     '🍉 Hoa quả bay lên liên tục trong <b>60 giây</b>!<br>'+
-    'Vuốt ngón tay/chuột để <b>chém</b> quả, ghi điểm.<br>'+
-    'Cẩn thận <b>💣 BOM</b> — chém trúng bom là <b>thua ngay</b>!<br>'+
-    'Qua được 60s (hoặc dính bom) → về map thường, ghi thêm điểm để mở <b>Map ẩn 4</b>!';
+    'Vuốt ngón tay/chuột để <b>chém</b> quả — số quả tăng dần mỗi lần chém trúng.<br>'+
+    'Chém trúng <b>lõi</b> = <b>CRITICAL</b> (điểm thưởng)! Combo làm quả bay ra nhiều hơn.<br>'+
+    'Cẩn thận <b>💣 BOM</b> — mỗi bom kèm thêm 2–3 quả!<br>'+
+    'Qua được 60s → về map thường, ghi thêm điểm để mở <b>Map ẩn 4</b>!';
   document.getElementById('unlock-btn').textContent='🍉 CHÉM THÔI!';
   showUnlockOverlay();
 }
@@ -49,7 +52,7 @@ function enterFruitMode(){
   document.getElementById('grid').style.display='none';
   document.getElementById('pieces-area').style.display='none';
   document.getElementById('hint-bar').style.display='';
-  document.getElementById('hint-bar').textContent='Vuốt chém quả — 3 quả liên tiếp = COMBO · tránh 💣 bom!';
+  document.getElementById('hint-bar').textContent='Vuốt chém quả · trúng lõi = CRITICAL · combo tăng số quả · tránh 💣!';
   FCV().classList.add('active');
   document.getElementById('grid-wrap').classList.add('secret-mode');
   document.getElementById('mode-badge').textContent='🍉 MAP ẨN 3';
@@ -73,29 +76,52 @@ function initFruit(){
   fruits=[]; fruitTrail=[]; fruitFx=[]; fruitTrailPetals=[]; fruitMissPopups=[];
   fruitElapsed=0; fruitSpawnTimer=0; fruitTimeLeft=60; fruitMissStreak=0;
   fruitLives=5; // 5 mạng — chém trúng bom chỉ trừ 1 mạng thay vì thua ngay
+  fruitWaveSize=1; // bắt đầu 1 quả / đợt, tăng +1 mỗi lần chém trúng
   resetFruitCombo();
 }
 
+/** Độ khó spawn: số quả tăng dần + thêm khi đang combo */
 function fruitDiff(){
   const t=fruitElapsed/1000;
+  const comboExtra = fruitCombo>=FRUIT_COMBO_MIN
+    ? Math.min(3, Math.floor((fruitCombo - FRUIT_COMBO_MIN + 1) / 2))
+    : 0;
   return {
-    spawnInterval: Math.max(260, 850 - t*20),       // bay ra rất dày, nhanh ngay từ đầu
-    burst: Math.min(9, 3 + Math.floor(t/6.7)),       // số quả mỗi đợt — tăng từ 3 lên tối đa 9 (~40s)
-    bombChance: Math.min(0.28, 0.08 + t*0.0035),    // tỉ lệ ra bom tăng dần
+    spawnInterval: Math.max(300, 880 - t*16),
+    burst: Math.min(10, fruitWaveSize + comboExtra),
+    bombChance: Math.min(0.26, 0.07 + t*0.0032),
   };
 }
 
+function _pushFruitEntity(isBomb,W,H,xBias){
+  const type=isBomb
+    ? {emoji:'💣',r:22,pts:0,color:'#333',juice:'#888',petals:[]}
+    : FRUIT_TYPES[Math.floor(Math.random()*FRUIT_TYPES.length)];
+  const x = xBias!=null
+    ? Math.max(W*0.12, Math.min(W*0.88, xBias+(Math.random()*2-1)*36))
+    : W*0.18+Math.random()*W*0.64;
+  const vx=(Math.random()*2-1)*70;
+  const vy=-(580+Math.random()*180);
+  fruits.push({
+    x,y:H+30,vx,vy,r:type.r,emoji:type.emoji,pts:type.pts,isBomb,
+    color:type.color,juice:type.juice,petals:type.petals||[],
+    rot:Math.random()*Math.PI*2,rotSpeed:(Math.random()*2-1)*3.5,sliced:false,
+  });
+  return fruits[fruits.length-1];
+}
+
 function spawnFruits(n,bombChance,W,H){
+  const bombs=[];
   for(let i=0;i<n;i++){
     const isBomb=Math.random()<bombChance;
-    const type=isBomb?{emoji:'💣',r:22,pts:0,color:'#333',juice:'#888',petals:[]}:FRUIT_TYPES[Math.floor(Math.random()*FRUIT_TYPES.length)];
-    const x=W*0.18+Math.random()*W*0.64;
-    const vx=(Math.random()*2-1)*70;
-    const vy=-(580+Math.random()*180);
-    fruits.push({x,y:H+30,vx,vy,r:type.r,emoji:type.emoji,pts:type.pts,isBomb,
-      color:type.color,juice:type.juice,petals:type.petals||[],
-      rot:Math.random()*Math.PI*2,rotSpeed:(Math.random()*2-1)*3.5,sliced:false});
+    const f=_pushFruitEntity(isBomb,W,H,null);
+    if(isBomb) bombs.push(f);
   }
+  // Mỗi bom kèm thêm 2 hoặc 3 quả tươi bay gần đó
+  bombs.forEach(b=>{
+    const extra=2+Math.floor(Math.random()*2); // 2 hoặc 3
+    for(let i=0;i<extra;i++) _pushFruitEntity(false,W,H,b.x);
+  });
 }
 
 function distPtSeg2(px,py,x1,y1,x2,y2){
@@ -173,7 +199,8 @@ function fruitLoop(now){
     const a=fruitTrail[fruitTrail.length-2], b=fruitTrail[fruitTrail.length-1];
     for(const f of fruits){
       if(f.sliced) continue;
-      if(distPtSeg2(f.x,f.y,a.x,a.y,b.x,b.y) < f.r+8){
+      const hitDist=distPtSeg2(f.x,f.y,a.x,a.y,b.x,b.y);
+      if(hitDist < f.r+8){
         f.sliced=true;
         if(f.isBomb){
           sfxBomb(); boomed=true; spawnBoomFx(f.x,f.y);
@@ -183,15 +210,32 @@ function fruitLoop(now){
           if(fruitSlicedTotal>=150) unlockAchievement('fruit150');
           if(fruitSlicedTotal>=400) unlockAchievement('fruit400');
           fruitMissStreak=0; // chém trúng → reset chuỗi trượt
+          // Mỗi lần chém trúng → số quả đợt sau tăng thêm 1 (tối đa 8)
+          fruitWaveSize=Math.min(8, fruitWaveSize+1);
           fruitCombo++;
           if(fruitComboTimer) clearTimeout(fruitComboTimer);
           fruitComboTimer=setTimeout(()=>{ resetFruitCombo(); }, FRUIT_COMBO_WINDOW_MS);
-          // Combo chỉ tính từ quả thứ 3 liên tiếp (cùng quy tắc x2/x3 với map thường)
           const isCombo=fruitCombo>=FRUIT_COMBO_MIN;
           document.getElementById('combo-box').textContent=isCombo?'🍉 COMBO x'+fruitCombo:'';
-          const earnedPts=f.pts*comboScoreMultiplier(fruitCombo);
+
+          // Chém trúng lõi (gần tâm) → CRITICAL: điểm thưởng + thông báo
+          const coreR=f.r*FRUIT_CORE_FRAC;
+          const isCrit=hitDist<=coreR;
+          const mult=(typeof comboScoreMultiplier==='function')?comboScoreMultiplier(fruitCombo):1;
+          // Crit: điểm cơ bản nhân đôi trước khi nhân combo (1→2, rồi ×combo)
+          const basePts=isCrit ? (f.pts*2) : f.pts;
+          const earnedPts=basePts*mult;
           score+=earnedPts; if(score>best) best=score;
-          if(isCombo && (fruitCombo===FRUIT_COMBO_MIN || fruitCombo%3===0)){
+
+          if(isCrit){
+            fruitMissPopups.push({
+              x:f.x, y:f.y-18,
+              text:'CRITICAL! +'+earnedPts,
+              life:1.05, maxLife:1.05,
+              crit:true,
+            });
+            try{ showComboFlash(0,false,'⚡ CRITICAL! +'+earnedPts); }catch(e){}
+          } else if(isCombo && (fruitCombo===FRUIT_COMBO_MIN || fruitCombo%3===0)){
             try{ showComboFlash(fruitCombo,false); }catch(e){}
           }
           sfxFruitSlice();
@@ -374,6 +418,16 @@ function drawFruit(ctx,W,H,now){
   for(const f of fruits){
     ctx.save();
     ctx.translate(f.x,f.y); ctx.rotate(f.rot);
+    // Lõi quả (vùng CRITICAL) — vòng sáng nhỏ giữa tâm
+    if(!f.isBomb){
+      ctx.beginPath();
+      ctx.arc(0,0,f.r*FRUIT_CORE_FRAC,0,Math.PI*2);
+      ctx.fillStyle='rgba(255,255,255,0.22)';
+      ctx.fill();
+      ctx.strokeStyle='rgba(255,230,120,0.55)';
+      ctx.lineWidth=1.2;
+      ctx.stroke();
+    }
     ctx.font=(f.r*1.9)+'px system-ui';
     ctx.shadowColor='rgba(0,0,0,0.7)'; ctx.shadowBlur=8; ctx.shadowOffsetY=3;
     ctx.fillText(f.emoji,0,0);
@@ -383,15 +437,21 @@ function drawFruit(ctx,W,H,now){
 
   drawHudTop(ctx,W,{left:'⏱ '+Math.ceil(fruitTimeLeft)+'s', right:'❤️'.repeat(Math.max(0,fruitLives))});
 
-  // ── floating "-10" popup khi chém trượt ──
+  // ── floating miss / CRITICAL popup ──
   for(const p of fruitMissPopups){
     const a=Math.max(0,p.life/p.maxLife);
     ctx.save();
     ctx.globalAlpha=a;
-    ctx.fillStyle='#ff5555';
-    ctx.font='bold 22px Nunito,system-ui';
+    if(p.crit){
+      ctx.fillStyle='#ffe566';
+      ctx.font='bold 20px Nunito,system-ui';
+      ctx.shadowColor='rgba(255,180,0,0.85)'; ctx.shadowBlur=12;
+    } else {
+      ctx.fillStyle='#ff5555';
+      ctx.font='bold 22px Nunito,system-ui';
+      ctx.shadowColor='rgba(255,0,0,0.7)'; ctx.shadowBlur=8;
+    }
     ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.shadowColor='rgba(255,0,0,0.7)'; ctx.shadowBlur=8;
     ctx.fillText(p.text, p.x, p.y);
     ctx.restore();
   }
