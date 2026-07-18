@@ -19,23 +19,19 @@ function updateRhythmBg(W,H){
 }
 
 function drawRhythmBg(ctx,W,H){
-  // Nền tươi sáng hơn — hồng/tím/cam rực rỡ kiểu bữa tiệc ánh sáng thay vì tím than tối
-  const bg=ctx.createLinearGradient(0,0,0,H);
-  bg.addColorStop(0,'#ff6fb0'); bg.addColorStop(0.45,'#a855f7'); bg.addColorStop(1,'#5b21d6');
-  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
-
+  // Sân khấu tiệc ánh sáng Map 4
+  scenicPartyBg(ctx,W,H,Date.now()*0.001);
   rhythmStars.forEach(s=>{
     const tw=0.5+0.5*Math.sin(s.phase);
     ctx.fillStyle=`rgba(255,255,255,${0.25+tw*0.5})`;
     ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2); ctx.fill();
   });
-
   ctx.textAlign='center'; ctx.textBaseline='middle';
   rhythmNotes.forEach(n=>{
     ctx.save();
     ctx.globalAlpha=0.55;
     ctx.fillStyle=n.hue;
-    ctx.font='bold '+n.size+'px system-ui';
+    ctx.font='800 '+n.size+'px Nunito,system-ui';
     ctx.fillText(n.glyph,n.x,n.y);
     ctx.restore();
   });

@@ -9,14 +9,39 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>ChromaBlast</title>
 <link rel="stylesheet" href="main.css">
+<link rel="stylesheet" href="brick-skins.css">
+<link rel="stylesheet" href="map-boards.css">
 </head>
 <body>
+<!-- SVG filter: texture lông xù / pom-pom fluffy cho ô gạch -->
+<svg aria-hidden="true" width="0" height="0" style="position:absolute;overflow:hidden">
+  <defs>
+    <filter id="plush-fur" x="-18%" y="-18%" width="136%" height="136%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="1.6" numOctaves="2" seed="7" result="noise"/>
+      <feMorphology in="SourceGraphic" operator="dilate" radius="0.35" result="fat"/>
+      <feDisplacementMap in="fat" in2="noise" scale="1.15" xChannelSelector="R" yChannelSelector="G" result="fur"/>
+      <feMerge>
+        <feMergeNode in="SourceGraphic"/>
+        <feMergeNode in="fur"/>
+      </feMerge>
+    </filter>
+    <filter id="plush-fur-sm" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="2.0" numOctaves="2" seed="3" result="noise"/>
+      <feMorphology in="SourceGraphic" operator="dilate" radius="0.25" result="fat"/>
+      <feDisplacementMap in="fat" in2="noise" scale="0.85" xChannelSelector="R" yChannelSelector="G" result="fur"/>
+      <feMerge>
+        <feMergeNode in="SourceGraphic"/>
+        <feMergeNode in="fur"/>
+      </feMerge>
+    </filter>
+  </defs>
+</svg>
 <div id="auth-screen">
   <div class="start-bg"></div>
   <div class="auth-card">
     <div class="auth-logo"><span class="logo-chroma">CHROMA</span><span class="logo-blast">BLAST</span></div>
     <div class="auth-sub" data-i18n="authSub">🔐 Đăng nhập để bắt đầu chơi</div>
-    <button type="button" id="guest-play-btn" class="auth-submit-btn" style="background:linear-gradient(135deg,#56AB2F,#A8E063);margin-bottom:16px;" data-i18n="guestPlay">▶ CHƠI NGAY (KHÔNG CẦN ĐĂNG NHẬP)</button>
+    <button type="button" id="guest-play-btn" class="auth-submit-btn" style="background:linear-gradient(135deg,#56AB2F,#A8E063);margin-bottom:16px;" data-i18n="guestPlay">Chơi Ngay</button>
     <div class="auth-switch" style="margin-bottom:10px;" data-i18n="orDivider">— hoặc —</div>
     <div id="lang-picker-auth" class="lang-picker"></div>
 
@@ -60,69 +85,334 @@
     <div class="start-logo">
       <span class="logo-chroma">CHROMA</span><span class="logo-blast">BLAST</span>
     </div>
-    <div class="start-subtitle" data-i18n="startSubtitle">🎮 Phá màu · Khám phá · Chinh phục</div>
+    <div class="start-subtitle" data-i18n="startSubtitle">Phá màu · Combo · Chinh phục</div>
     <div class="start-chars">🟥🟧🟨🟩🟦🟪</div>
     <button id="start-btn" class="start-btn">
-      <span data-i18n="startBtn">▶ BẮT ĐẦU CHƠI</span>
+      <span data-i18n="startBtn">BẮT ĐẦU</span>
     </button>
-    <div class="start-hint" data-i18n="startHint">Chạm hoặc nhấp để bắt đầu</div>
+    <div class="start-hint" data-i18n="startHint">Chạm để bắt đầu</div>
   </div>
 </div>
 <button id="help-btn" title="Hướng dẫn chơi" data-i18n-title="ttHelp">❓</button>
 <div id="help-panel">
-  <div class="admin-card">
-    <div class="admin-title"><span data-i18n="helpTitle">📖 Hướng dẫn chơi</span><button class="admin-close" id="help-close-btn">✕</button></div>
+  <div class="admin-card help-card">
+    <div class="admin-title"><span data-i18n="hpMech">Cơ chế đặc biệt</span><button class="admin-close" id="help-close-btn" aria-label="Close">✕</button></div>
     <div class="help-body">
-      <h4 data-i18n="hpGoal">🎯 Mục tiêu</h4>
-      <ul data-i18n-html="hpGoalBody"></ul>
-      <h4 data-i18n="hpCombo">⭐ Tính điểm & Combo</h4>
-      <ul data-i18n-html="hpComboBody"></ul>
-      <h4 data-i18n="hpHidden">🔥 Map ẩn (chế độ bí mật)</h4>
-      <ul data-i18n-html="hpHiddenBody"></ul>
-      <h4 data-i18n="hpMech">🌟 Cơ chế đặc biệt</h4>
       <p style="margin:0 0 6px;color:rgba(255,255,255,0.7);" data-i18n-html="hpMechBody"></p>
       <div class="help-map-list" id="round-help-list"></div>
-
-      <h4 data-i18n="hpEnd">💀 Kết thúc</h4>
-      <ul data-i18n-html="hpEndBody"></ul>
-
-      <h4 data-i18n="hpMaps">🗺️ Cách chơi từng map ẩn</h4>
-      <p style="margin:0 0 6px;color:rgba(255,255,255,0.7);" data-i18n-html="hpMapsBody"></p>
 
       <label id="help-agree-label">
         <input type="checkbox" id="help-agree-chk"> <span data-i18n="helpAgree">Tôi đã đọc và hiểu luật chơi</span>
       </label>
-      <button id="help-ok-btn" data-i18n="helpOk">✅ Đã hiểu, bắt đầu chơi!</button>
+      <button id="help-ok-btn" data-i18n="helpOk">Bắt đầu chơi</button>
     </div>
   </div>
 </div>
 <div id="game-root">
   <div id="header">
-    <div>
+    <div id="header-score">
       <div id="score-label" data-i18n="scoreLabel">ĐIỂM SỐ</div>
       <div id="score-box">0</div>
       <div id="best-box">Kỷ lục: 0</div>
     </div>
-    <div style="text-align:center">
+    <div id="header-center" style="text-align:center">
       <div id="combo-box"></div>
-      <div id="level-box">Cấp độ 1</div>
+      <div id="level-badge" class="level-crown" title="Level">
+        <div class="level-crown-top" aria-hidden="true">
+          <span class="peak peak-l"><i></i></span>
+          <span class="peak peak-c"><i></i></span>
+          <span class="peak peak-r"><i></i></span>
+        </div>
+        <div id="level-cap">LEVEL</div>
+        <div id="level-box">1</div>
+      </div>
       <div id="player-level-box" style="font-size:11px;color:#ffd700;margin-top:2px;white-space:nowrap;"></div>
+      <div id="inv-hud" class="inv-hud" aria-label="Inventory"></div>
     </div>
-    <div style="text-align:right">
+    <div id="header-right" style="text-align:right">
       <div id="adventure-avatar" style="display:none;">🧑‍🚀</div>
       <div id="mode-badge">BÌNH THƯỜNG</div>
-      <div style="font-size:10px;color:#555;margin-top:4px">ChromaBlast</div>
+      <div id="header-brand" style="font-size:10px;color:#555;margin-top:4px">ChromaBlast</div>
+      <div id="header-targets"></div>
     </div>
     <div id="game-controls">
       <button id="hiddenmap-menu-btn" title="Chọn map ẩn đã chơi qua" data-i18n-title="ttHiddenMap" style="display:none;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;align-items:center;justify-content:center;padding:0;">🗺️</button>
       <button id="daily-btn" title="Điểm danh nhận quà" data-i18n-title="ttDaily">🎁</button>
+      <button id="brick-skin-btn" title="Kho gạch" data-i18n-title="ttBricks" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">🧱</button>
+      <button id="board-skin-btn" title="Kho nền bàn" data-i18n-title="ttBoards" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">🗺️</button>
+      <button id="spin-btn-hdr" title="Vòng quay may mắn" data-i18n-title="ttSpin" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">🎡</button>
       <button id="versus-btn" title="Đấu 1-1 (mở từ Lv.10)" data-i18n-title="ttVersus">⚔️</button>
       <button id="leaderboard-btn" title="Bảng xếp hạng" data-i18n-title="ttLeaderboard">🏆</button>
       <button id="roundguide-btn" title="Hướng dẫn cơ chế vòng hiện tại" data-i18n-title="ttRoundGuide" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">📖</button>
       <button id="adventure-toggle-btn" title="Chế độ Adventure" data-i18n-title="ttAdventure">🚀 ADV</button>
-      <button id="account-btn" title="Tài khoản" data-i18n-title="ttAccount">👤</button>
+      <button id="account-btn" title="Cài đặt" data-i18n-title="ttSettings">⚙️</button>
       <button id="mute-btn" title="Tắt/bật âm thanh" data-i18n-title="ttMute" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">🔊</button>
       <button id="pause-btn" title="Tạm dừng" data-i18n-title="ttPause" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">⏸</button>
+    </div>
+  </div>
+
+  <!-- ══ SETTINGS HUB ══ -->
+  <div id="settings-panel" class="settings-overlay">
+    <div class="settings-modal">
+      <div class="settings-head">
+        <span data-i18n="settingsTitle">Settings</span>
+        <button type="button" class="settings-x" id="settings-close-btn" aria-label="Close">✕</button>
+      </div>
+      <div class="settings-inner">
+        <div class="settings-toggles">
+          <button type="button" class="set-toggle" id="set-sfx-toggle">
+            <span class="set-toggle-ico" id="set-sfx-ico">🔊</span>
+            <span class="set-toggle-lab" data-i18n="setSound">Sound</span>
+          </button>
+          <button type="button" class="set-toggle" id="set-bgm-toggle">
+            <span class="set-toggle-ico" id="set-bgm-ico">🎵</span>
+            <span class="set-toggle-lab" data-i18n="setBgm">BGM</span>
+          </button>
+        </div>
+        <div class="settings-actions">
+          <button type="button" class="set-action set-c-purple" id="set-btn-account"><span class="set-act-ico">👤</span><span data-i18n="setAccount">Account</span></button>
+          <button type="button" class="set-action set-c-teal" id="set-btn-lang"><span class="set-act-ico">🌐</span><span data-i18n="setLanguage">Language</span></button>
+          <button type="button" class="set-action set-c-blue" id="set-btn-map"><span class="set-act-ico">🗺️</span><span data-i18n="setMap">Map</span></button>
+          <button type="button" class="set-action set-c-gold" id="set-btn-cup"><span class="set-act-ico">🏆</span><span data-i18n="setCup">Cup</span></button>
+          <button type="button" class="set-action set-c-brick" id="set-btn-bricks"><span class="set-act-ico">🧱</span><span data-i18n="setBricks">Bricks</span></button>
+          <button type="button" class="set-action set-c-board" id="set-btn-boards"><span class="set-act-ico">🗺️</span><span data-i18n="setBoards">Boards</span></button>
+          <button type="button" class="set-action set-c-spin" id="set-btn-spin"><span class="set-act-ico">🎡</span><span data-i18n="setSpin">Lucky Spin</span></button>
+          <button type="button" class="set-action set-c-gold" id="set-btn-versus" style="display:none"><span class="set-act-ico">⚔️</span><span data-i18n="vsTitle">Đấu 1-1</span></button>
+          <button type="button" class="set-action set-c-green" id="set-btn-more"><span class="set-act-ico">⚙️</span><span data-i18n="setMore">More Settings</span><span class="set-dot"></span></button>
+          <button type="button" class="set-action set-c-lime" id="set-btn-home"><span class="set-act-ico">🏠</span><span data-i18n="setHome">Home</span></button>
+          <button type="button" class="set-action set-c-lime" id="set-btn-replay"><span class="set-act-ico">🔁</span><span data-i18n="setReplay">Replay</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MORE SETTINGS ══ -->
+  <div id="settings-more-panel" class="settings-overlay">
+    <div class="settings-modal">
+      <div class="settings-head">
+        <span data-i18n="setMoreTitle">More Settings</span>
+        <button type="button" class="settings-x" id="settings-more-close-btn" aria-label="Close">✕</button>
+      </div>
+      <div class="settings-inner settings-more-inner">
+        <div class="settings-appinfo">
+          <div class="settings-appico" aria-hidden="true">🧩</div>
+          <div>
+            <div class="settings-appname">ChromaBlast</div>
+            <div class="settings-appver">Version: 1.0.0</div>
+          </div>
+        </div>
+        <button type="button" class="settings-row" id="set-contact-btn"><span data-i18n="setContact">Contact Us</span><span class="settings-chev">›</span><span class="set-dot set-dot-inline"></span></button>
+        <button type="button" class="settings-row" id="set-share-btn"><span data-i18n="setShare">Share with Friends</span><span class="settings-chev">›</span></button>
+        <div class="settings-social">
+          <a class="soc-btn soc-tt" href="https://www.tiktok.com/" target="_blank" rel="noopener" title="TikTok">♪</a>
+          <a class="soc-btn soc-dc" href="https://discord.com/" target="_blank" rel="noopener" title="Discord">☺</a>
+          <a class="soc-btn soc-x" href="https://x.com/" target="_blank" rel="noopener" title="X">𝕏</a>
+          <a class="soc-btn soc-fb" href="https://facebook.com/" target="_blank" rel="noopener" title="Facebook">f</a>
+          <a class="soc-btn soc-yt" href="https://youtube.com/" target="_blank" rel="noopener" title="YouTube">▶</a>
+        </div>
+        <button type="button" class="settings-row" id="set-terms-btn"><span data-i18n="setTerms">Terms of Service</span><span class="settings-chev">›</span></button>
+        <button type="button" class="settings-row" id="set-privacy-btn"><span data-i18n="setPrivacy">Privacy Policy</span><span class="settings-chev">›</span></button>
+        <button type="button" class="settings-row" id="set-about-btn"><span data-i18n="setAbout">About Us</span><span class="settings-chev">›</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ LANGUAGE ══ -->
+  <div id="settings-lang-panel" class="settings-overlay">
+    <div class="settings-modal settings-modal-sm">
+      <div class="settings-head">
+        <span data-i18n="setLanguage">Language</span>
+        <button type="button" class="settings-x" id="settings-lang-close-btn" aria-label="Close">✕</button>
+      </div>
+      <div class="settings-inner">
+        <div id="lang-picker-settings" class="lang-picker"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ CUP / ACHIEVEMENT ══ -->
+  <div id="settings-cup-panel" class="settings-overlay">
+    <div class="settings-modal settings-modal-tall">
+      <div class="settings-head">
+        <button type="button" class="settings-back" id="settings-cup-back-btn" aria-label="Back">‹</button>
+        <span data-i18n="setCupTitle">Achievement</span>
+        <button type="button" class="settings-x" id="settings-cup-close-btn" aria-label="Close">✕</button>
+      </div>
+      <div class="settings-inner cup-inner">
+        <div class="cup-stats" id="cup-stats"></div>
+        <div class="cup-awards-title" data-i18n="setAwards">Awards</div>
+        <div class="cup-awards" id="cup-awards"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ ABOUT / TERMS TEXT ══ -->
+  <div id="settings-text-panel" class="settings-overlay">
+    <div class="settings-modal">
+      <div class="settings-head">
+        <span id="settings-text-title">About</span>
+        <button type="button" class="settings-x" id="settings-text-close-btn" aria-label="Close">✕</button>
+      </div>
+      <div class="settings-inner">
+        <div class="settings-text-body" id="settings-text-body"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ LUCKY SPIN ══ -->
+  <div id="spin-panel" class="settings-overlay spin-overlay">
+    <div class="spin-modal spin-modal-floral" role="dialog" aria-labelledby="spin-title">
+      <button type="button" class="spin-x" data-close-spin aria-label="Close">✕</button>
+      <div class="spin-title" id="spin-title">
+        <span class="spin-title-slide">Slide</span>
+        <span class="spin-title-lucky" data-i18n="spinTitle">Lucky Spin</span>
+      </div>
+      <div class="spin-wheel-wrap">
+        <!-- Dây hoa bao quanh vòng xoay (SVG) -->
+        <div class="spin-vine-ring" aria-hidden="true">
+          <svg class="spin-vine-svg" viewBox="0 0 260 260" width="260" height="260">
+            <defs>
+              <linearGradient id="vineStroke" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#86efac"/>
+                <stop offset="45%" stop-color="#22c55e"/>
+                <stop offset="100%" stop-color="#15803d"/>
+              </linearGradient>
+              <radialGradient id="petalPink" cx="35%" cy="35%" r="65%">
+                <stop offset="0%" stop-color="#fff1f2"/>
+                <stop offset="55%" stop-color="#fb7185"/>
+                <stop offset="100%" stop-color="#e11d48"/>
+              </radialGradient>
+              <radialGradient id="petalPeach" cx="35%" cy="35%" r="65%">
+                <stop offset="0%" stop-color="#fff7ed"/>
+                <stop offset="55%" stop-color="#fb923c"/>
+                <stop offset="100%" stop-color="#ea580c"/>
+              </radialGradient>
+              <radialGradient id="petalLav" cx="35%" cy="35%" r="65%">
+                <stop offset="0%" stop-color="#f5f3ff"/>
+                <stop offset="55%" stop-color="#c4b5fd"/>
+                <stop offset="100%" stop-color="#7c3aed"/>
+              </radialGradient>
+              <radialGradient id="petalSky" cx="35%" cy="35%" r="65%">
+                <stop offset="0%" stop-color="#f0f9ff"/>
+                <stop offset="55%" stop-color="#7dd3fc"/>
+                <stop offset="100%" stop-color="#0284c7"/>
+              </radialGradient>
+              <radialGradient id="petalGold" cx="35%" cy="35%" r="65%">
+                <stop offset="0%" stop-color="#fffbeb"/>
+                <stop offset="55%" stop-color="#fbbf24"/>
+                <stop offset="100%" stop-color="#d97706"/>
+              </radialGradient>
+            </defs>
+            <!-- dây leo quanh vành -->
+            <circle cx="130" cy="130" r="118" fill="none" stroke="url(#vineStroke)" stroke-width="6" stroke-linecap="round" stroke-dasharray="18 8 5 8"/>
+            <circle cx="130" cy="130" r="111" fill="none" stroke="#bbf7d0" stroke-width="2.5" opacity="0.7" stroke-dasharray="4 10"/>
+            <!-- hoa cách điệu quanh vòng -->
+            <g class="spin-bloom" transform="translate(130,12)">
+              <ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalPink)" transform="rotate(0)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalPink)" transform="rotate(72)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalPink)" transform="rotate(144)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalPink)" transform="rotate(216)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalPink)" transform="rotate(288)"/>
+              <circle cx="0" cy="0" r="4" fill="#fde047" stroke="#fff" stroke-width="1"/>
+            </g>
+            <g class="spin-bloom" transform="translate(214,48) rotate(45)">
+              <ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalGold)" transform="rotate(0)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalGold)" transform="rotate(72)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalGold)" transform="rotate(144)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalGold)" transform="rotate(216)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalGold)" transform="rotate(288)"/>
+              <circle cx="0" cy="0" r="4" fill="#fff7ed" stroke="#fff" stroke-width="1"/>
+            </g>
+            <g class="spin-bloom" transform="translate(248,130) rotate(90)">
+              <ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalSky)" transform="rotate(0)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalSky)" transform="rotate(72)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalSky)" transform="rotate(144)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalSky)" transform="rotate(216)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalSky)" transform="rotate(288)"/>
+              <circle cx="0" cy="0" r="4" fill="#fef08a" stroke="#fff" stroke-width="1"/>
+            </g>
+            <g class="spin-bloom" transform="translate(214,212) rotate(135)">
+              <ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalLav)" transform="rotate(0)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalLav)" transform="rotate(72)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalLav)" transform="rotate(144)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalLav)" transform="rotate(216)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalLav)" transform="rotate(288)"/>
+              <circle cx="0" cy="0" r="4" fill="#fde68a" stroke="#fff" stroke-width="1"/>
+            </g>
+            <g class="spin-bloom" transform="translate(130,248) rotate(180)">
+              <ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalPeach)" transform="rotate(0)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalPeach)" transform="rotate(72)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalPeach)" transform="rotate(144)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalPeach)" transform="rotate(216)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalPeach)" transform="rotate(288)"/>
+              <circle cx="0" cy="0" r="4" fill="#fef9c3" stroke="#fff" stroke-width="1"/>
+            </g>
+            <g class="spin-bloom" transform="translate(46,212) rotate(225)">
+              <ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalPink)" transform="rotate(0)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalPink)" transform="rotate(72)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalPink)" transform="rotate(144)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalPink)" transform="rotate(216)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalPink)" transform="rotate(288)"/>
+              <circle cx="0" cy="0" r="4" fill="#fde047" stroke="#fff" stroke-width="1"/>
+            </g>
+            <g class="spin-bloom" transform="translate(12,130) rotate(270)">
+              <ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalGold)" transform="rotate(0)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalGold)" transform="rotate(72)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalGold)" transform="rotate(144)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalGold)" transform="rotate(216)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalGold)" transform="rotate(288)"/>
+              <circle cx="0" cy="0" r="4" fill="#fff" stroke="#fff" stroke-width="1"/>
+            </g>
+            <g class="spin-bloom" transform="translate(46,48) rotate(315)">
+              <ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalSky)" transform="rotate(0)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalSky)" transform="rotate(72)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalSky)" transform="rotate(144)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalSky)" transform="rotate(216)"/><ellipse cx="0" cy="-5" rx="5" ry="9" fill="url(#petalSky)" transform="rotate(288)"/>
+              <circle cx="0" cy="0" r="4" fill="#fef08a" stroke="#fff" stroke-width="1"/>
+            </g>
+            <!-- lá phụ trên dây -->
+            <ellipse cx="178" cy="28" rx="7" ry="3.5" fill="#4ade80" stroke="#166534" stroke-width="0.8" transform="rotate(35 178 28)"/>
+            <ellipse cx="232" cy="88" rx="7" ry="3.5" fill="#86efac" stroke="#166534" stroke-width="0.8" transform="rotate(70 232 88)"/>
+            <ellipse cx="232" cy="172" rx="7" ry="3.5" fill="#4ade80" stroke="#166534" stroke-width="0.8" transform="rotate(110 232 172)"/>
+            <ellipse cx="178" cy="232" rx="7" ry="3.5" fill="#86efac" stroke="#166534" stroke-width="0.8" transform="rotate(155 178 232)"/>
+            <ellipse cx="82" cy="232" rx="7" ry="3.5" fill="#4ade80" stroke="#166534" stroke-width="0.8" transform="rotate(205 82 232)"/>
+            <ellipse cx="28" cy="172" rx="7" ry="3.5" fill="#86efac" stroke="#166534" stroke-width="0.8" transform="rotate(250 28 172)"/>
+            <ellipse cx="28" cy="88" rx="7" ry="3.5" fill="#4ade80" stroke="#166534" stroke-width="0.8" transform="rotate(290 28 88)"/>
+            <ellipse cx="82" cy="28" rx="7" ry="3.5" fill="#86efac" stroke="#166534" stroke-width="0.8" transform="rotate(335 82 28)"/>
+          </svg>
+        </div>
+        <!-- Kim chỉ = chiếc lá cách điệu -->
+        <div class="spin-pointer spin-pointer-leaf" aria-hidden="true">
+          <svg viewBox="0 0 48 64" width="42" height="56">
+            <defs>
+              <linearGradient id="leafFill" x1="20%" y1="10%" x2="80%" y2="90%">
+                <stop offset="0%" stop-color="#bbf7d0"/>
+                <stop offset="40%" stop-color="#4ade80"/>
+                <stop offset="100%" stop-color="#15803d"/>
+              </linearGradient>
+              <linearGradient id="leafTip" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#fda4af"/>
+                <stop offset="100%" stop-color="#e11d48"/>
+              </linearGradient>
+            </defs>
+            <!-- cuống -->
+            <path d="M24 6 C24 18 24 50 24 58" stroke="#14532d" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+            <!-- thân lá -->
+            <path d="M24 10
+              C34 14 42 24 40 36
+              C38 48 30 56 24 58
+              C18 56 10 48 8 36
+              C6 24 14 14 24 10 Z"
+              fill="url(#leafFill)" stroke="#14532d" stroke-width="1.8" stroke-linejoin="round"/>
+            <!-- gân lá -->
+            <path d="M24 16 C24 16 24 52 24 54" stroke="#166534" stroke-width="1.4" fill="none" opacity="0.85"/>
+            <path d="M24 24 C16 28 13 34 12 40" stroke="#86efac" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+            <path d="M24 30 C32 34 35 40 36 46" stroke="#86efac" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+            <path d="M24 38 C17 41 15 46 14 50" stroke="#bbf7d0" stroke-width="1.1" fill="none" stroke-linecap="round" opacity="0.9"/>
+            <path d="M24 42 C31 45 33 49 34 52" stroke="#bbf7d0" stroke-width="1.1" fill="none" stroke-linecap="round" opacity="0.9"/>
+            <!-- nụ hoa trên cuống -->
+            <circle cx="24" cy="7" r="5.5" fill="url(#leafTip)" stroke="#fff" stroke-width="1.6"/>
+            <circle cx="22.5" cy="5.5" r="1.6" fill="#fff" opacity="0.75"/>
+          </svg>
+        </div>
+        <div id="spin-wheel" class="spin-wheel"></div>
+        <div class="spin-hub" aria-hidden="true">
+          <svg viewBox="0 0 36 36" width="28" height="28">
+            <ellipse cx="18" cy="10" rx="5" ry="8" fill="#fb7185" transform="rotate(0 18 18)"/>
+            <ellipse cx="18" cy="10" rx="5" ry="8" fill="#f472b6" transform="rotate(72 18 18)"/>
+            <ellipse cx="18" cy="10" rx="5" ry="8" fill="#fb7185" transform="rotate(144 18 18)"/>
+            <ellipse cx="18" cy="10" rx="5" ry="8" fill="#f472b6" transform="rotate(216 18 18)"/>
+            <ellipse cx="18" cy="10" rx="5" ry="8" fill="#fb7185" transform="rotate(288 18 18)"/>
+            <circle cx="18" cy="18" r="4.5" fill="#fde047" stroke="#fff" stroke-width="1"/>
+          </svg>
+        </div>
+      </div>
+      <div class="spin-timer-box">
+        <span aria-hidden="true">⏱</span>
+        <span id="spin-timer">00:00:00</span>
+      </div>
+      <button type="button" id="spin-btn" class="spin-go-btn">Quay</button>
+      <div id="spin-hint" class="spin-hint">1 lượt quay miễn phí mỗi ngày</div>
+      <div id="spin-reward-layer" class="spin-reward-layer" hidden>
+        <div class="spin-reward-box">
+          <div class="spin-reward-title">Chúc mừng!</div>
+          <div id="spin-reward-icon" class="spin-reward-icon">🎁</div>
+          <div id="spin-reward-text" class="spin-reward-text">Bạn nhận được phần thưởng</div>
+          <div id="spin-reward-extra" class="spin-reward-extra"></div>
+          <div id="spin-reward-inv" class="spin-reward-inv"></div>
+          <button type="button" id="spin-reward-ok" class="spin-go-btn spin-reward-ok">Xác nhận</button>
+        </div>
+      </div>
+      <button type="button" class="spin-close-round" data-close-spin aria-label="Close">✕</button>
     </div>
   </div>
 
@@ -223,8 +513,19 @@
     <!-- MODE A: Normal grid -->
     <div id="grid"></div>
 
-    <!-- MODE B: Secret color-match grid -->
-    <div id="secret-grid"></div>
+    <!-- MODE B: Secret color-match — sân vườn (cùng phong cách Map 4) -->
+    <div id="secret-stage" class="secret-stage">
+      <div class="secret-sky" aria-hidden="true"></div>
+      <div class="secret-hills" aria-hidden="true"></div>
+      <div class="secret-fence" aria-hidden="true"></div>
+      <div class="secret-flowers" aria-hidden="true"></div>
+      <div class="secret-butterflies" aria-hidden="true">
+        <span class="sfly sfly-1">🦋</span>
+        <span class="sfly sfly-2">🦋</span>
+        <span class="sfly sfly-3">🐝</span>
+      </div>
+      <div id="secret-grid"></div>
+    </div>
 
     <!-- MODE C: Map ẩn 2 — rùa né cà rốt -->
     <canvas id="dodge-canvas" width="720" height="920"></canvas>
@@ -314,6 +615,12 @@
   </div>
 
   <!-- Mode A pieces -->
+  <div id="skill-bar" class="skill-bar" style="display:none;" aria-label="Powers">
+    <button type="button" id="skill-btn-fire" class="skill-btn pw-fire" title="Lửa — chạm ô để đốt 3×3 ngay (dây leo chỉ gỡ 1 lớp)">🔥 <span class="skill-lab">Lửa</span></button>
+    <button type="button" id="skill-btn-bubble" class="skill-btn pw-bubble" title="Bóng bóng — chạm ô màu để nổ cùng màu ngay (dây leo chỉ gỡ 1 lớp)">🫧 <span class="skill-lab">Bóng</span></button>
+    <button type="button" id="skill-btn-wind" class="skill-btn pw-wind" title="Gió — chạm ô để thổi hàng/cột ngay (dây leo chỉ gỡ 1 lớp)">💨 <span class="skill-lab">Gió</span></button>
+    <button type="button" id="inv-ad-heart-btn" class="skill-btn skill-ad" title="Xem QC +1 tim" style="display:none;">📺 +❤️</button>
+  </div>
   <div id="pieces-area"></div>
 
   <!-- Map ẩn 2 controls -->
@@ -322,7 +629,7 @@
     <button class="dctrl" id="dctrl-right" aria-label="phải">▶</button>
   </div>
 
-  <div id="hint-bar" data-i18n="hintDefault">Chạm khối → ghost hiện · Di ngón → ghost bám · Thả trên ô → đặt · Thả vùng trống → xoay</div>
+  <div id="hint-bar" data-i18n="hintDefault">Chạm khối · Kéo vào bàn · Thả để đặt</div>
 
   <!-- 🪞 V41 — Mirror Break: chỉ hiện khi đang ở vòng Thế giới gương -->
   <div style="display:flex;justify-content:center;margin-top:6px;">
@@ -368,10 +675,14 @@
 <script src="js/i18n-content.js"></script>
 <script src="js/audio.js"></script>
 <script src="js/save.js"></script>
+<script src="js/brick-skins.js"></script>
+<script src="js/map-boards.js"></script>
 <script src="js/daily-rewards.js"></script>
 <script src="js/leaderboard.js"></script>
 <script src="js/mech-config.js"></script>
 <script src="js/progression.js"></script>
+<script src="js/inventory.js"></script>
+<script src="js/lucky-spin.js"></script>
 <script src="js/effects.js"></script>
 <script src="js/ui.js"></script>
 <script src="maps/map01.js"></script>

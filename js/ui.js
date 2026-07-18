@@ -51,11 +51,32 @@ function showComboFlash(n, isColor, customText){
   el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
 }
 
-function showHint(msg){
+function showHint(msg, opts){
   const el=document.getElementById('hint-bar');
-  el.style.display='';
+  if(!el) return;
+  const hold=(opts&&opts.hold)|0 || 1800;
+  const sticky=!!(opts&&opts.sticky);
+  const aim=!!(opts&&opts.aim);
+  el.classList.remove('hint-flash','hint-aim');
+  void el.offsetWidth;
   el.textContent=msg;
-  setTimeout(()=>{ el.textContent=t('hintDefault'); },1600);
+  el.classList.add('hint-flash');
+  if(aim) el.classList.add('hint-aim');
+  if(window._hintTimer) clearTimeout(window._hintTimer);
+  if(sticky) return;
+  window._hintTimer=setTimeout(()=>{
+    if(typeof pendingSkill!=='undefined' && pendingSkill) return;
+    el.textContent=t('hintDefault');
+    el.classList.remove('hint-flash','hint-aim');
+  }, hold);
+}
+
+function clearHintFlash(){
+  const el=document.getElementById('hint-bar');
+  if(!el) return;
+  if(window._hintTimer) clearTimeout(window._hintTimer);
+  el.textContent=t('hintDefault');
+  el.classList.remove('hint-flash','hint-aim');
 }
 
 function initStartScreen(){
@@ -82,8 +103,27 @@ function initStartScreen(){
     screen.classList.add('hide');
     setTimeout(()=>{ screen.style.display='none'; }, 500);
   }
-  if(btn) btn.addEventListener('click', function(e){ e.stopPropagation(); sfxClick(); hideStart(); });
-  if(screen) screen.addEventListener('click', ()=>{ sfxClick(); hideStart(); });
+  function beginFromStart(){
+    sfxClick();
+    function afterCosmetics(){ hideStart(); }
+    function afterBricks(){
+      if(typeof maybeShowStarterBoardPicker==='function'){
+        maybeShowStarterBoardPicker(afterCosmetics);
+      } else {
+        afterCosmetics();
+      }
+    }
+    if(typeof maybeShowStarterBrickPicker==='function'){
+      maybeShowStarterBrickPicker(afterBricks);
+    } else {
+      afterBricks();
+    }
+  }
+  if(btn) btn.addEventListener('click', function(e){ e.stopPropagation(); beginFromStart(); });
+  if(screen) screen.addEventListener('click', function(e){
+    if(e.target.closest && e.target.closest('#start-btn')) return;
+    beginFromStart();
+  });
 }
 
 function togglePause(){
@@ -148,7 +188,7 @@ function togglePause(){
 }
 
 // 📖 Hướng dẫn cơ chế theo VÒNG độ khó của map thường.
-// Người chơi chỉ đọc được cơ chế của các vòng ĐÃ CHẠM tới (tới vòng nào biết vòng đó).
+// Chỉ hiện vòng người chơi đã chạm tới.
 function showRoundGuide(){
   const reached = (typeof highestReachedTier==='function') ? highestReachedTier() : 0;
   const cur = (typeof mainHardTier!=='undefined' ? (mainHardTier|0) : 0);
@@ -161,7 +201,8 @@ function showRoundGuide(){
     document.getElementById('roundguide-panel').classList.add('show');
     return;
   }
-  let html = '<p style="font-size:12px;color:#9aa7bd;margin:0 0 10px;">'+t('rgYouAt', cur||1)+'</p>';
+  let html = '';
+  html += '<p style="font-size:12px;color:#9aa7bd;margin:0 0 10px;">'+t('rgYouAt', cur||1)+'</p>';
   for(let v=1; v<=maxTier; v++){
     const desc = roundMechDescFor(v);
     if(!desc) continue;
@@ -187,22 +228,26 @@ function renderHiddenMapMenu(){
   const btn=document.getElementById('hiddenmap-menu-btn');
   const list=document.getElementById('hiddenmap-menu-list');
   if(!btn||!list) return;
+  const maps = (typeof HIDDEN_MAP_LIST!=='undefined') ? HIDDEN_MAP_LIST : [];
   btn.style.display = clearedHiddenMaps.size>0 ? 'flex' : 'none';
   list.innerHTML='';
-  HIDDEN_MAP_LIST.forEach(m=>{
+  maps.forEach(m=>{
     const cleared = clearedHiddenMaps.has(m.key);
     const row = document.createElement('div');
     row.className = 'admin-map-row';
     const item = document.createElement('button');
     item.className = 'admin-map-btn'+(cleared?'':' locked');
     item.style.flex = '1 1 auto';
-    item.innerHTML = (cleared?'▶ ':'🔒 ')+'<b>'+m.label.split(' — ')[0]+'</b> — '+m.label.split(' — ')[1];
+    const parts = (m.label||'').split(' — ');
+    item.innerHTML = (cleared?'▶ ':'🔒 ')+'<b>'+(parts[0]||m.key)+'</b>'+(parts[1]?' — '+parts[1]:'');
     if(cleared){
       item.addEventListener('click', ()=>{
         document.getElementById('hiddenmap-menu-panel').classList.remove('show');
         const startScreen = document.getElementById('start-screen');
-        startScreen.classList.add('hide');
-        setTimeout(()=>{ startScreen.style.display='none'; }, 500);
+        if(startScreen){
+          startScreen.classList.add('hide');
+          setTimeout(()=>{ startScreen.style.display='none'; }, 500);
+        }
         sfxClick();
         hardResetAllModes();
         startGame();
@@ -225,8 +270,10 @@ function renderHiddenMapMenu(){
   });
 }
 
+/** Đã gỡ bảng admin test trước khi lên CH Play. */
+function initAdminPanel(){}
+
 // Khởi tạo các panel dùng chung của game (menu map ẩn, hướng dẫn, adventure).
-// Bản phát hành CH Play: đã GỠ toàn bộ bảng admin / test vòng / chỉnh "Nhịp & Thưởng".
 function initGamePanels(){
   document.getElementById('hiddenmap-menu-btn').addEventListener('click', ()=>{
     sfxClick();
@@ -277,14 +324,16 @@ function doChangePassword(oldPass, newPass, newPass2){
 }
 
 function initAccountPanel(){
+  // Nút ⚙️ mở Settings hub (không mở thẳng account)
   const accountBtn = document.getElementById('account-btn');
   const panel = document.getElementById('account-panel');
-  accountBtn.addEventListener('click', ()=>{
-    sfxClick();
-    document.getElementById('cp-msg').textContent = '';
-    document.getElementById('cp-msg').className = 'account-msg';
-    panel.classList.add('show');
-  });
+  if(accountBtn){
+    accountBtn.addEventListener('click', ()=>{
+      sfxClick();
+      if(typeof openSettingsPanel==='function') openSettingsPanel();
+      else panel.classList.add('show');
+    });
+  }
   document.getElementById('account-close-btn').addEventListener('click', ()=>{
     panel.classList.remove('show');
   });
@@ -299,6 +348,7 @@ function initAccountPanel(){
   document.getElementById('logout-btn').addEventListener('click', ()=>{
     doLogout();
   });
+  if(typeof initSettingsMenu==='function') initSettingsMenu();
 }
 
 function initHelpPanel(){
@@ -367,7 +417,7 @@ function renderRoundHelp(){
     // Vòng 1-20 (i<20): mở dần từng vòng theo số map ẩn đã thắng.
     // Vòng 21-40 (i>=20, cơ chế đôi): mở TUẦN TỰ từng vòng một — phải vượt qua vòng
     // trước (đạt đủ điểm mốc trên bàn cờ thường) mới mở khoá vòng kế tiếp.
-    const unlocked = i<20 ? (i<reached) : (reached>=20 && (i+1)<=maxComboTierReached);
+    const unlocked = (i<20 ? (i<reached) : (reached>=20 && (i+1)<=maxComboTierReached));
     if(unlocked){
       const det = document.createElement('details');
       det.innerHTML = '<summary>'+r.title+'</summary><div class="map-detail-body">'+r.body+'</div>';
@@ -382,4 +432,283 @@ function renderRoundHelp(){
       list.appendChild(locked);
     }
   });
+}
+
+/* ════════════════════════════════════════════════════════
+   HUD ARCADE — dùng chung map thường + mọi map ẩn
+   (SCORE / LEVEL badge / TARGETS / pause · cài đặt · mute)
+════════════════════════════════════════════════════════ */
+function enableArcadeHud(){
+  const root=document.getElementById('game-root');
+  if(!root) return;
+  root.classList.add('hud-arcade');
+  const acc=document.getElementById('account-btn');
+  if(acc){
+    acc.textContent='⚙️';
+    acc.title=(typeof t==='function'?t('ttSettings'):'Cài đặt');
+    acc.dataset.arcadeOn='1';
+  }
+  refreshArcadeHud();
+}
+
+function refreshArcadeHud(){
+  const root=document.getElementById('game-root');
+  if(!root || !root.classList.contains('hud-arcade')) return;
+
+  // Map ẩn 1: đánh dấu để CSS ẩn pháo giữa bàn
+  root.classList.toggle('map-secret1', !!(typeof secretMode!=='undefined' && secretMode));
+
+  const cap=document.getElementById('level-cap');
+  if(cap) cap.style.display='block';
+  const lb=document.getElementById('level-box');
+  if(lb) lb.textContent=String(typeof playerLevel==='number' ? playerLevel : (typeof level==='number' ? level : 1));
+
+  // Đã bỏ mục TARGETS trên HUD arcade
+  const targets=document.getElementById('header-targets');
+  if(targets) targets.innerHTML='';
+
+  try{ if(typeof refreshVersusButton==='function') refreshVersusButton(); }catch(e){}
+}
+
+/* ════════════════════════════════════════════════════════
+   SETTINGS MENU — hub + More Settings + Cup + Language
+════════════════════════════════════════════════════════ */
+function closeAllSettingsOverlays(){
+  ['settings-panel','settings-more-panel','settings-lang-panel','settings-cup-panel','settings-text-panel','spin-panel']
+    .forEach(id=>{ const el=document.getElementById(id); if(el) el.classList.remove('show'); });
+  try{ if(typeof closeBrickSkinPanel==='function') closeBrickSkinPanel(); }catch(e){}
+  try{ if(typeof closeBoardSkinPanel==='function') closeBoardSkinPanel(); }catch(e){}
+}
+
+function openSettingsPanel(){
+  syncSettingsToggles();
+  document.getElementById('settings-panel')?.classList.add('show');
+}
+
+function syncSettingsToggles(){
+  const sfxBtn=document.getElementById('set-sfx-toggle');
+  const bgmBtn=document.getElementById('set-bgm-toggle');
+  const sfxIco=document.getElementById('set-sfx-ico');
+  const bgmIco=document.getElementById('set-bgm-ico');
+  const muted=!!(typeof sfxMuted!=='undefined' && sfxMuted);
+  const bgmOff=!!(typeof bgmMuted!=='undefined' && bgmMuted);
+  if(sfxBtn) sfxBtn.classList.toggle('is-off', muted);
+  if(bgmBtn) bgmBtn.classList.toggle('is-off', bgmOff);
+  if(sfxIco) sfxIco.textContent = muted ? '🔇' : '🔊';
+  if(bgmIco) bgmIco.textContent = bgmOff ? '🎵' : '🎵';
+  const muteBtn=document.getElementById('mute-btn');
+  if(muteBtn) muteBtn.textContent = muted ? '🔇' : '🔊';
+}
+
+function toggleSfxSetting(){
+  if(typeof sfxMuted==='undefined') return;
+  sfxMuted=!sfxMuted;
+  if(sfxMuted){ try{ stopBgm(); stopRhythmBgm(); }catch(e){} }
+  else { try{ if(!bgmMuted && typeof resumeContextBgm==='function') resumeContextBgm(); }catch(e){} }
+  syncSettingsToggles();
+  try{ sfxClick(); }catch(e){}
+}
+
+function toggleBgmSetting(){
+  if(typeof bgmMuted==='undefined') return;
+  bgmMuted=!bgmMuted;
+  if(bgmMuted){ try{ stopBgm(); stopRhythmBgm(); }catch(e){} }
+  else if(!sfxMuted){ try{ if(typeof resumeContextBgm==='function') resumeContextBgm(); }catch(e){} }
+  syncSettingsToggles();
+  try{ sfxClick(); }catch(e){}
+}
+
+function openSettingsAccount(){
+  closeAllSettingsOverlays();
+  const panel=document.getElementById('account-panel');
+  if(!panel) return;
+  const msg=document.getElementById('cp-msg');
+  if(msg){ msg.textContent=''; msg.className='account-msg'; }
+  panel.classList.add('show');
+}
+
+function openSettingsLang(){
+  document.getElementById('settings-panel')?.classList.remove('show');
+  if(!document.getElementById('lang-picker-settings')?.childElementCount){
+    try{ buildLangPicker('lang-picker-settings'); }catch(e){}
+  }
+  document.getElementById('settings-lang-panel')?.classList.add('show');
+}
+
+function openSettingsMap(){
+  closeAllSettingsOverlays();
+  try{ renderHiddenMapMenu(); }catch(e){}
+  document.getElementById('hiddenmap-menu-panel')?.classList.add('show');
+}
+
+function renderCupPanel(){
+  try{ if(typeof checkPersistentCups==='function') checkPersistentCups(); }catch(e){}
+  const stats=document.getElementById('cup-stats');
+  const awards=document.getElementById('cup-awards');
+  if(!stats||!awards) return;
+  let loginDays=1;
+  try{
+    const st=(typeof getDailyStatus==='function')?getDailyStatus():null;
+    if(st && st.streakDay) loginDays=st.streakDay;
+  }catch(e){}
+  const bestN=Math.round(typeof best==='number'?best:0);
+  const rounds=(typeof clearedHiddenMaps!=='undefined' && clearedHiddenMaps)?clearedHiddenMaps.size:0;
+  const comboHi=Math.max(
+    (typeof consecutiveBursts==='number'?consecutiveBursts:0),
+    (typeof combo==='number'?combo:0),
+    (typeof secretStreak==='number'?secretStreak:0)
+  );
+  const doneN=(typeof ACHIEVEMENTS==='object' && ACHIEVEMENTS)
+    ? Object.values(ACHIEVEMENTS).filter(a=>a.done).length : 0;
+  const totalN=(typeof ACHIEVEMENTS==='object' && ACHIEVEMENTS)
+    ? Object.keys(ACHIEVEMENTS).length : 0;
+  stats.innerHTML=
+    '<div class="cup-stat"><div class="cup-stat-num">'+doneN+'/'+totalN+'</div><div class="cup-stat-lab">'+(t('setAwards')||'Cups')+'</div></div>'+
+    '<div class="cup-stat"><div class="cup-stat-num">'+comboHi+'</div><div class="cup-stat-lab">'+(t('cupHighestCombo')||'Highest Combo')+'</div></div>'+
+    '<div class="cup-stat"><div class="cup-stat-num">'+bestN.toLocaleString()+'</div><div class="cup-stat-lab">'+(t('cupBestScore')||'Best Score')+'</div></div>'+
+    '<div class="cup-stat"><div class="cup-stat-num">'+rounds+'</div><div class="cup-stat-lab">'+(t('cupRounds')||'Rounds')+'</div></div>'+
+    '<div class="cup-stat"><div class="cup-stat-num">'+loginDays+'</div><div class="cup-stat-lab">'+(t('cupLoginDays')||'Login Days')+'</div></div>';
+
+  const list=(typeof ACHIEVEMENTS==='object' && ACHIEVEMENTS)?Object.values(ACHIEVEMENTS):[];
+  awards.innerHTML=list.map(a=>{
+    const done=!!a.done;
+    const showDot=done && !a.seen;
+    const ico=a.icon||'🎖️';
+    return '<button type="button" class="cup-award'+(done?' is-done':'')+'" data-cup-id="'+a.id+'" aria-label="'+(a.label||a.id)+'">'+
+      '<div class="cup-badge'+(done?' done':'')+'">'+ico+(showDot?'<span class="set-dot"></span>':'')+'</div>'+
+      '<div class="cup-award-name">'+(a.label||a.id)+'</div>'+
+      '<div class="cup-award-prog">'+(done?'✓':'…')+'</div>'+
+    '</button>';
+  }).join('');
+
+  awards.querySelectorAll('[data-cup-id]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const id=el.getAttribute('data-cup-id');
+      const a=(typeof ACHIEVEMENTS==='object' && ACHIEVEMENTS)?ACHIEVEMENTS[id]:null;
+      if(!a) return;
+      try{ sfxClick(); }catch(e){}
+      // Hiện giải thích ý nghĩa cup
+      try{
+        showAchievementToast({
+          label:(a.icon?a.icon+' ':'')+(a.label||a.id),
+          desc:a.desc||'',
+        });
+      }catch(e){
+        try{ showComboFlash(0,false,(a.label||'')+' — '+(a.desc||'')); }catch(e2){}
+      }
+      // Có dấu đỏ → đánh dấu đã xem và gỡ dấu
+      if(typeof markCupSeen==='function' && markCupSeen(id)){
+        el.querySelector('.set-dot')?.remove();
+      }
+    });
+  });
+}
+
+function openSettingsCup(){
+  document.getElementById('settings-panel')?.classList.remove('show');
+  renderCupPanel();
+  document.getElementById('settings-cup-panel')?.classList.add('show');
+}
+
+function openSettingsMore(){
+  document.getElementById('settings-panel')?.classList.remove('show');
+  document.getElementById('settings-more-panel')?.classList.add('show');
+}
+
+function openSettingsText(title, body){
+  document.getElementById('settings-more-panel')?.classList.remove('show');
+  const tEl=document.getElementById('settings-text-title');
+  const bEl=document.getElementById('settings-text-body');
+  if(tEl) tEl.textContent=title;
+  if(bEl) bEl.textContent=body;
+  document.getElementById('settings-text-panel')?.classList.add('show');
+}
+
+function settingsGoHome(){
+  closeAllSettingsOverlays();
+  try{ hardResetAllModes(); }catch(e){}
+  const screen=document.getElementById('start-screen');
+  if(screen){ screen.style.display='flex'; screen.classList.remove('hidden'); }
+}
+
+function settingsReplay(){
+  closeAllSettingsOverlays();
+  try{ sfxClick(); }catch(e){}
+  if(typeof startGame==='function') startGame();
+}
+
+function initSettingsMenu(){
+  const close=id=>()=>{ document.getElementById(id)?.classList.remove('show'); };
+  document.getElementById('settings-close-btn')?.addEventListener('click', close('settings-panel'));
+  document.getElementById('settings-more-close-btn')?.addEventListener('click', ()=>{
+    close('settings-more-panel')();
+    openSettingsPanel();
+  });
+  document.getElementById('settings-lang-close-btn')?.addEventListener('click', ()=>{
+    close('settings-lang-panel')();
+    openSettingsPanel();
+  });
+  document.getElementById('settings-cup-close-btn')?.addEventListener('click', close('settings-cup-panel'));
+  document.getElementById('settings-cup-back-btn')?.addEventListener('click', ()=>{
+    close('settings-cup-panel')();
+    openSettingsPanel();
+  });
+  document.getElementById('settings-text-close-btn')?.addEventListener('click', ()=>{
+    close('settings-text-panel')();
+    document.getElementById('settings-more-panel')?.classList.add('show');
+  });
+
+  document.getElementById('set-sfx-toggle')?.addEventListener('click', toggleSfxSetting);
+  document.getElementById('set-bgm-toggle')?.addEventListener('click', toggleBgmSetting);
+  document.getElementById('set-btn-account')?.addEventListener('click', ()=>{ sfxClick(); openSettingsAccount(); });
+  document.getElementById('set-btn-lang')?.addEventListener('click', ()=>{ sfxClick(); openSettingsLang(); });
+  document.getElementById('set-btn-map')?.addEventListener('click', ()=>{ sfxClick(); openSettingsMap(); });
+  document.getElementById('set-btn-cup')?.addEventListener('click', ()=>{ sfxClick(); openSettingsCup(); });
+  document.getElementById('set-btn-spin')?.addEventListener('click', ()=>{
+    sfxClick();
+    if(typeof openLuckySpin==='function') openLuckySpin();
+  });
+  document.getElementById('set-btn-versus')?.addEventListener('click', ()=>{
+    sfxClick();
+    closeAllSettingsOverlays();
+    if(typeof openVersusSetup==='function') openVersusSetup();
+  });
+  document.getElementById('set-btn-more')?.addEventListener('click', ()=>{ sfxClick(); openSettingsMore(); });
+  document.getElementById('set-btn-home')?.addEventListener('click', ()=>{ sfxClick(); settingsGoHome(); });
+  document.getElementById('set-btn-replay')?.addEventListener('click', settingsReplay);
+
+  document.getElementById('set-contact-btn')?.addEventListener('click', ()=>{
+    sfxClick();
+    openSettingsText(t('setContact')||'Contact Us', 'Email: duyenhoang91.tl@gmail.com\nChromaBlast support');
+  });
+  document.getElementById('set-share-btn')?.addEventListener('click', ()=>{
+    sfxClick();
+    const text='Play ChromaBlast with me!';
+    if(navigator.share){ navigator.share({ title:'ChromaBlast', text }).catch(()=>{}); }
+    else { try{ navigator.clipboard.writeText(text); }catch(e){} openSettingsText(t('setShare')||'Share', text); }
+  });
+  document.getElementById('set-terms-btn')?.addEventListener('click', ()=>{
+    sfxClick();
+    openSettingsText(t('setTerms')||'Terms of Service',
+      'ChromaBlast is provided for entertainment.\nPlease play fairly and respect other players.\nLocal progress is stored on your device.');
+  });
+  document.getElementById('set-privacy-btn')?.addEventListener('click', ()=>{
+    sfxClick();
+    window.open('privacy-policy.html', '_blank', 'noopener');
+  });
+  document.getElementById('set-about-btn')?.addEventListener('click', ()=>{
+    sfxClick();
+    openSettingsText(t('setAbout')||'About Us',
+      'ChromaBlast\nVersion 1.0.0\nA colorful block puzzle adventure with hidden mini-games.\nThanks for playing!');
+  });
+
+  // click backdrop to close
+  ['settings-panel','settings-more-panel','settings-lang-panel','settings-cup-panel','settings-text-panel','spin-panel'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    el.addEventListener('click', e=>{ if(e.target===el) el.classList.remove('show'); });
+  });
+
+  try{ buildLangPicker('lang-picker-settings'); }catch(e){}
+  syncSettingsToggles();
 }

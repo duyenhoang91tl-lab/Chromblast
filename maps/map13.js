@@ -238,10 +238,8 @@ function drawArenaPetal(ctx,p){
 
 function drawArena(ctx,W,H){
   ctx.clearRect(0,0,W,H);
-  // Nền vườn anh đào nhẹ nhàng
-  const bg=ctx.createLinearGradient(0,0,0,H);
-  bg.addColorStop(0,'#ffe6ef'); bg.addColorStop(0.45,'#ffd3e2'); bg.addColorStop(1,'#f6b8cf');
-  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+  // Nền vườn anh đào phong cách Map 4
+  scenicPartyBg(ctx,W,H,Date.now()*0.001);
   // Vòng tròn ánh sáng dịu nhẹ thay cho ring đấu trường cũ
   const rings=[[W/2,H/2,80],[W/2,H/2,140],[W/2,H/2,210],[W/2,H/2,290]];
   rings.forEach(([cx,cy,r],i)=>{
@@ -258,17 +256,22 @@ function drawArena(ctx,W,H){
     ctx.fillText('🦋', W*0.75+Math.sin(bt*0.6+2)*W*0.16, H*0.2+Math.sin(bt*1.8+1)*10);
   }
 
-  // Bees — bỏ shadowBlur (rất tốn hiệu năng khi có nhiều con cùng lúc → giật máy)
-  ctx.font='28px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
-  arenaBees.forEach(b=>{ ctx.fillText('🐝',b.x,b.y); });
+  // Bees — dùng hình vẽ vector của Map 4 (bỏ shadowBlur, tốn hiệu năng khi nhiều con)
+  {
+    const bt=Date.now()*0.001;
+    arenaBees.forEach(b=>{
+      const ang=Math.atan2(arenaDogY-b.y,arenaDogX-b.x)+Math.PI/2;
+      drawBee(ctx,{x:b.x,y:b.y,size:16,wingPhase:b.t*10,angle:ang},bt);
+    });
+  }
 
   // Carrots
   arenaCarrots.forEach(c=>{ ctx.fillText('🥕',c.x,c.y); });
 
-  // Snake boss
+  // Snake boss — hình vẽ vector dễ thương thay vì emoji
   if((arenaWave===2||arenaWave===3)&&arenaSnake&&arenaSnake.hp>0){
-    ctx.font='60px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText('🐍',arenaSnake.x,arenaSnake.y);
+    const boxSize=80;
+    drawSnake(ctx,arenaSnake.x-boxSize/2,arenaSnake.y-boxSize/2,boxSize,boxSize,Date.now()*0.001);
     // HP bar
     const hpPct=arenaSnake.hp/100;
     ctx.fillStyle='rgba(200,0,0,0.4)'; ctx.fillRect(arenaSnake.x-40,arenaSnake.y-50,80,8);
@@ -281,17 +284,20 @@ function drawArena(ctx,W,H){
     ctx.beginPath(); ctx.arc(v.x,v.y,8,0,Math.PI*2); ctx.fill();
   });
 
-  // Dog (with invincibility blink)
+  // Dog (with invincibility blink) — dùng hình vẽ vector của Map 4
   if(arenaInvincible<=0||Math.floor(arenaInvincible*8)%2===0){
-    ctx.font='44px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText('🐶',arenaDogX,arenaDogY);
+    ctx.save();
+    ctx.translate(arenaDogX,arenaDogY);
+    ctx.scale(0.95,0.95);
+    drawDog(ctx,Date.now()*0.001,{x:0,y:0,vx:0,vy:0,facing:1,panicLevel:0});
+    ctx.restore();
   }
 
   // FX
   arenaFx.forEach(f=>{
     const prog=f.t/0.6;
     ctx.globalAlpha=Math.max(0,1-prog);
-    ctx.font='bold 28px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.font='bold 28px Nunito,system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.fillText('💥',f.x,f.y-prog*40);
     ctx.globalAlpha=1;
   });
@@ -302,7 +308,7 @@ function drawArena(ctx,W,H){
     ctx.globalAlpha=alpha;
     ctx.fillStyle='rgba(255,200,0,0.15)'; ctx.fillRect(0,0,W,H);
     ctx.fillStyle='#fff';
-    ctx.font='bold 22px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.font='bold 22px Nunito,system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.shadowColor='#ff8800'; ctx.shadowBlur=20;
     ctx.fillText(arenaWaveFlashText,W/2,H/2);
     ctx.shadowBlur=0;

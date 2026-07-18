@@ -8,7 +8,7 @@ function applyLoggedInUser(username){
   const users = loadUsers();
   const u = users[username];
   if(!u) return false;
-  currentUser = { username, role: 'user' }; // bản phát hành: mọi tài khoản đều là người chơi thường
+  currentUser = { username, role: u.role || 'user' };
   setSession(username);
   const nameBox = document.getElementById('account-username-box');
   if(nameBox) nameBox.textContent = username;
@@ -52,7 +52,7 @@ function hideAuthScreen(){
 }
 
 function initAuthScreen(){
-  loadUsers(); // dọn dữ liệu tài khoản cũ trong localStorage nếu cần
+  loadUsers();
 
   if(storageBlocked){
     const sub = document.querySelector('.auth-sub');

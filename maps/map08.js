@@ -244,23 +244,12 @@ function dropOrphanedBubbles(){
 
 function drawBubble(ctx,W,H){
   ctx.clearRect(0,0,W,H);
-  // Nền sáng nhẹ nhàng — bầu trời pastel
-  const bg=ctx.createLinearGradient(0,0,0,H);
-  bg.addColorStop(0,'#eaf7ff'); bg.addColorStop(0.55,'#dff1fb'); bg.addColorStop(1,'#cfe9f7');
-  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
-  // nắng + mây bồng bềnh nhẹ nhàng (phong cách Map ẩn 4)
-  beeDrawSun(ctx,bubbleElapsed);
-  ctx.fillStyle='rgba(255,255,255,0.55)';
-  const clouds=[[40,50,1.0],[300,80,0.7],[110,130,0.55],[250,180,0.8]];
-  clouds.forEach(([cx,cy,s])=>{
-    [[0,0,14],[-11,3,9],[11,3,9],[0,-5,9]].forEach(([dx,dy,r])=>{
-      ctx.beginPath(); ctx.arc(cx+dx*s,cy+dy*s,r*s,0,Math.PI*2); ctx.fill();
-    });
-  });
-  // lấp lánh nhẹ rải rác
+  // Nền sân vườn Map 4 (trời + đồi + hoa)
+  scenicDayFull(ctx,W,H,bubbleElapsed,{hillY:H*0.78,fence:false,stripY:H-8});
+  // lấp lánh nhẹ rải rác trên trời
   ctx.fillStyle='rgba(255,255,255,0.8)';
-  for(let i=0;i<24;i++){
-    const sx=((i*137+17)%W), sy=((i*79+31)%H);
+  for(let i=0;i<18;i++){
+    const sx=((i*137+17)%W), sy=((i*79+31)%(H*0.55));
     ctx.beginPath(); ctx.arc(sx,sy,1,0,Math.PI*2); ctx.fill();
   }
 

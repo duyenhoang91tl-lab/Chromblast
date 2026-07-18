@@ -10,11 +10,11 @@ function renderSecretHearts(){
   const el=document.getElementById('secret-hearts');
   if(!el) return;
   el.textContent='❤️'.repeat(Math.max(0,secretLives))+'🖤'.repeat(Math.max(0,3-secretLives));
+  if(typeof refreshArcadeHud==='function' && secretMode) refreshArcadeHud();
 }
 
 function enterSecretMode(){
   setActiveHiddenMap('secret1');
-  unlockAchievement('secret1');
   endDrag();
   sfxUnlock();
   startBgm('mystery');
@@ -35,9 +35,11 @@ function enterSecretMode(){
   document.getElementById('hint-bar').style.display='none';
   showRotateBar(false);
 
-  // Show mode B UI
+  // Show mode B UI — sân vườn cùng phong cách Map 4 (chó / ong)
+  document.getElementById('grid-wrap').classList.add('theme-garden');
   const sg=document.getElementById('secret-grid');
   sg.classList.add('active');
+  document.getElementById('secret-stage')?.classList.add('active');
   document.getElementById('grid-wrap').classList.add('secret-mode');
   document.getElementById('timer-bar-wrap').classList.add('active');
   document.getElementById('secret-streak-bar').classList.add('active');
@@ -45,11 +47,20 @@ function enterSecretMode(){
   document.getElementById('mode-badge').classList.add('secret');
   document.getElementById('burst-count').textContent='Nhân: x1';
 
-  // (đã bỏ vòng lặp lấp lánh viền liên tục 60ms — tốn hiệu năng, gây giật máy ở Map ẩn 1)
+  // HUD arcade dùng chung (SCORE / LEVEL / TARGETS)
+  if(typeof enableArcadeHud==='function') enableArcadeHud();
+  // Xoá sạch pháo cũ còn sót trên bàn
+  const fx=document.getElementById('sc-fx');
+  if(fx){ fx.innerHTML=''; fx.classList.remove('active'); }
+  const cbs=document.getElementById('combo-border-sparks');
+  if(cbs) cbs.innerHTML='';
+  document.getElementById('combo-flash')?.classList.remove('show');
+  document.getElementById('combo-count-flash')?.classList.remove('show');
 
   // reset fire on enter
   if(fireInterval){ clearInterval(fireInterval); fireInterval=null; }
-  document.getElementById('grid-wrap').classList.remove('fire-low','fire-high');
+  document.getElementById('grid-wrap').classList.remove('fire-low','fire-mid','fire-high','fire-max');
+  _sparklerT=0;
 
   initSecretBoard();
   renderSecretGrid();
@@ -63,7 +74,7 @@ function exitSecretMode(){
   document.getElementById('secret-hearts').style.display='none';
   if(borderSparkInterval){ clearInterval(borderSparkInterval); borderSparkInterval=null; }
   if(fireInterval){ clearInterval(fireInterval); fireInterval=null; }
-  document.getElementById('grid-wrap').classList.remove('fire-low','fire-high');
+  document.getElementById('grid-wrap').classList.remove('fire-low','fire-mid','fire-high','fire-max');
   clearSecretTimer();
   secretStreak=0;
   secretMultiplier=1;
@@ -79,6 +90,8 @@ function exitSecretMode(){
   sg.classList.remove('active','board-flash');
   sg.innerHTML='';
   secretCells=null; // DOM vừa bị xoá thủ công → buộc renderSecretGrid dựng lại cache lần kế tiếp
+  document.getElementById('secret-stage')?.classList.remove('active');
+  document.getElementById('grid-wrap').classList.remove('theme-garden');
   const fx=document.getElementById('sc-fx');
   if(fx){ fx.classList.remove('active'); fx.innerHTML=''; }
   document.getElementById('grid-wrap').classList.remove('secret-mode','ultra-glow','combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5');
@@ -88,6 +101,10 @@ function exitSecretMode(){
   document.getElementById('mode-badge').classList.remove('secret');
   document.getElementById('burst-count').textContent='Chuỗi nổ: 0/3';
   updateBurstCount();
+
+  // Giữ HUD arcade — chỉ làm mới TARGETS về map thường
+  if(typeof enableArcadeHud==='function') enableArcadeHud();
+  else if(typeof refreshArcadeHud==='function') refreshArcadeHud();
 
   renderPieces();
 }
@@ -123,8 +140,8 @@ function renderSecretGrid(){
     const ci=secretBoard[r][c];
     d.className='sc'+(ci===null?'':' gem'+(glowCls?' '+glowCls:''));
     d.dataset.gem = ci===null ? '0' : '1';
-    if(ci===null){ d.style.background='#0f0f23'; d.style.border='1px solid #2a2a4a'; }
-    else { const col=SECRET_COLORS[ci]; d.style.border=''; d.style.background=col; d.style.setProperty('--cc',col); }
+    if(ci===null){ d.style.background=''; d.style.border=''; d.style.removeProperty('--cc'); delete d.dataset.ci; } // ô trống: style từ CSS sân vườn
+    else { const col=SECRET_COLORS[ci]; d.style.border=''; d.style.background=''; d.style.setProperty('--cc',col); d.dataset.ci=String(ci); }
   }
 }
 
@@ -240,6 +257,7 @@ function onSCClick(e){
     secretUltra=false;
     document.getElementById('grid-wrap').classList.remove('ultra-glow');
   }
+  try{ if(typeof onComboSkillMilestone==='function') onComboSkillMilestone(secretStreak); }catch(e){}
   secretMultiplier=comboScoreMultiplier(secretStreak); // x2 từ streak 3, x3 từ streak 6
 
   // Ultra mode: 9 consecutive hits
@@ -250,10 +268,11 @@ function onSCClick(e){
     unlockAchievement('ultra');
     sfxUltra();
   }
+  try{ if(typeof checkRunCups==='function') checkRunCups(); }catch(e){}
 
   const finalPts=Math.round(basePoints*secretMultiplier*(secretUltra?2:1));
   score+=finalPts; if(score>best) best=score;
-  showComboCountFlash(secretStreak);
+  // Không showComboCountFlash giữa bàn — streak đã hiện ở thanh chấm
   sfxMatch(group.length);
   secret1Gained+=finalPts;
   if(secret1Gained>=TEST_UNLOCK_SCORE && !secret1GoalShown){
@@ -269,12 +288,13 @@ function onSCClick(e){
   updateComboBorderGlow(secretStreak);
   updateFireBorder();
   const _ctr=clearCentroid(group, getSC);
-  showScorePop(finalPts, _ctr.x, _ctr.y, secretStreak);
-  showShockwave(_ctr.x, _ctr.y, secretStreak);
-  secretBurstFX(ci, ultraJustTriggered || secretUltra);  // 🎆 pháo hoa viền + bàn cờ sáng
-  secretColorRing(_ctr.x, _ctr.y, ci);                   // 💠 vòng sóng màu lan ra
-  secretSparkleBurst(group, ci);                         // ✨ tia lấp lánh ở từng ô
-  if(!ultraJustTriggered && shouldPraise(secretStreak)) showPraise(praiseLevelForStreak(secretStreak));
+  showScorePop(basePoints, finalPts, _ctr.x, _ctr.y, secretStreak);
+  // Map ẩn 1: không pháo/tia DOM — chỉ viền CSS theo combo (updateFireBorder)
+  // Giữ lồng tiếng khen, bỏ flash chữ giữa lưới
+  if(!ultraJustTriggered && shouldPraise(secretStreak)){
+    try{ speakPraise(praiseLevelForStreak(secretStreak)); }catch(e){}
+  }
+  refreshArcadeHud();
 
   // Animate pop
   group.forEach(([gr,gc])=>{

@@ -15,8 +15,123 @@ const MEMORY_ANIMALS=[
 
 let memoryMode=false, memoryRAF=null, memoryLast=0, memoryElapsed=0;
 let memoryCards=[], memoryFlipped=[], memoryMatched=0, memoryScore=0, memoryStreak=0;
+/** Dây so sánh tạm giữa 2 thẻ đang mở — gỡ khi khớp (đổi sang Eve loop) hoặc sai (úp lại). */
+let memoryCable=null; // {a,b,life,maxLife,mode:'compare'|'snap'}
+/** Vòng ivy (Eve loop) buộc cặp đã khớp — mỗi phần tử {c0,c1,t} */
+let memoryEveLoops=[];
 
 const MMCV=()=>document.getElementById('memory-canvas');
+
+function memoryCardCenter(c,W){
+  const cardW=76, cardH=100, gapX=8, gapY=8;
+  const totalW=4*cardW+3*gapX;
+  const startX=(W-totalW)/2, startY=70;
+  return {
+    x:startX+c.col*(cardW+gapX)+cardW/2,
+    y:startY+c.row*(cardH+gapY)+cardH/2,
+  };
+}
+
+/** Vẽ móc mồi (bait hook) ở đầu dây — gợi ý có thể “gỡ dây” khi úp thẻ */
+function memoryDrawBaitHook(ctx,x,y,ang,alpha){
+  ctx.save();
+  ctx.translate(x,y);
+  ctx.rotate(ang);
+  ctx.globalAlpha=alpha;
+  ctx.strokeStyle='#c9a227';
+  ctx.fillStyle='#e8c547';
+  ctx.lineWidth=2.2;
+  ctx.lineCap='round';
+  // thân móc
+  ctx.beginPath();
+  ctx.moveTo(0,-6);
+  ctx.quadraticCurveTo(8,-2,6,6);
+  ctx.quadraticCurveTo(2,10,-2,6);
+  ctx.stroke();
+  // mắt móc
+  ctx.beginPath();
+  ctx.arc(0,-7,2.2,0,Math.PI*2);
+  ctx.fill();
+  ctx.restore();
+}
+
+/** Dây leo nối 2 thẻ đang so sánh */
+function memoryDrawCable(ctx,x1,y1,x2,y2,lifeFrac,snapping){
+  const mx=(x1+x2)/2, my=(y1+y2)/2;
+  const dx=x2-x1, dy=y2-y1;
+  const len=Math.hypot(dx,dy)||1;
+  const nx=-dy/len, ny=dx/len;
+  const sag=snapping ? 18+ (1-lifeFrac)*40 : 14;
+  const cx=mx+nx*sag, cy=my+ny*sag+8;
+  const a=Math.max(0, Math.min(1, lifeFrac));
+  ctx.save();
+  ctx.globalAlpha=a;
+  // bóng dây
+  ctx.strokeStyle='rgba(40,80,30,0.35)';
+  ctx.lineWidth=5;
+  ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.quadraticCurveTo(cx,cy+2,x2,y2); ctx.stroke();
+  // thân dây
+  ctx.strokeStyle=snapping ? '#8BC34A' : '#5D8A3A';
+  ctx.lineWidth=3.2;
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.quadraticCurveTo(cx,cy,x2,y2); ctx.stroke();
+  // gân sáng
+  ctx.strokeStyle='rgba(180,230,120,0.55)';
+  ctx.lineWidth=1.2;
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.quadraticCurveTo(cx-nx*2,cy-ny*2,x2,y2); ctx.stroke();
+  // lá nhỏ trên dây
+  for(let i=1;i<=3;i++){
+    const t=i/4;
+    const px=(1-t)*(1-t)*x1 + 2*(1-t)*t*cx + t*t*x2;
+    const py=(1-t)*(1-t)*y1 + 2*(1-t)*t*cy + t*t*y2;
+    ctx.beginPath();
+    ctx.ellipse(px,py,4,2.2,t*Math.PI,0,Math.PI*2);
+    ctx.fillStyle='rgba(100,170,60,0.75)';
+    ctx.fill();
+  }
+  const ang=Math.atan2(y2-y1,x2-x1);
+  memoryDrawBaitHook(ctx,x1,y1,ang+Math.PI*0.15,a);
+  memoryDrawBaitHook(ctx,x2,y2,ang+Math.PI+0.15,a);
+  ctx.restore();
+}
+
+/** Eve loop — vòng ivy buộc cặp đã khớp */
+function memoryDrawEveLoop(ctx,x1,y1,x2,y2,pulse){
+  const mx=(x1+x2)/2, my=(y1+y2)/2;
+  const rx=Math.max(36, Math.abs(x2-x1)*0.55+28);
+  const ry=Math.max(28, Math.abs(y2-y1)*0.55+24);
+  const rot=Math.atan2(y2-y1,x2-x1);
+  ctx.save();
+  ctx.translate(mx,my);
+  ctx.rotate(rot);
+  ctx.globalAlpha=0.85+0.15*Math.sin(pulse*3);
+  // vòng ngoài
+  ctx.strokeStyle='#6B9E3E';
+  ctx.lineWidth=3;
+  ctx.beginPath();
+  ctx.ellipse(0,0,rx,ry,0,0,Math.PI*2);
+  ctx.stroke();
+  // vòng trong sáng
+  ctx.strokeStyle='rgba(200,240,140,0.55)';
+  ctx.lineWidth=1.4;
+  ctx.beginPath();
+  ctx.ellipse(0,0,rx-4,ry-3,0,0,Math.PI*2);
+  ctx.stroke();
+  // lá + hoa quanh vòng
+  for(let i=0;i<10;i++){
+    const a=(i/10)*Math.PI*2 + pulse*0.4;
+    const lx=Math.cos(a)*rx, ly=Math.sin(a)*ry;
+    ctx.save();
+    ctx.translate(lx,ly);
+    ctx.rotate(a+0.4);
+    ctx.beginPath();
+    ctx.ellipse(0,0,5,2.5,0,0,Math.PI*2);
+    ctx.fillStyle=i%3===0 ? '#E8A0C0' : '#7CB342';
+    ctx.fill();
+    ctx.restore();
+  }
+  ctx.restore();
+}
 
 function triggerMemoryUnlock(){
   markMapCleared('mole');
@@ -25,9 +140,8 @@ function triggerMemoryUnlock(){
   document.getElementById('unlock-desc').innerHTML=
     '🌸 <b>Lật thẻ ký ức!</b><br><br>'+
     'Lưới 4×3 — 6 cặp động vật bị trộn. <b>Chạm</b> để lật thẻ!<br>'+
-    'Tìm 2 thẻ giống nhau → cặp được ghép! Sai → cả 2 úp lại.<br>'+
-    'Ghép đủ <b>6 cặp</b> trong <b>'+MEMORY_TIME+'s</b> để thắng!<br>'+
-    'Mỗi cặp = 50đ + (giây còn lại × 3)đ thưởng thời gian!';
+    'Hai thẻ đang mở được nối bằng <b>dây leo + móc mồi</b> — sai thì dây <b>gỡ</b>, úp lại.<br>'+
+    'Khớp đúng → buộc bằng <b>Eve loop</b> (vòng ivy)! Ghép đủ <b>6 cặp</b> trong <b>'+MEMORY_TIME+'s</b>.';
   document.getElementById('unlock-btn').textContent='🃏 LẬT THẺ THÔI!';
   showUnlockOverlay();
 }
@@ -40,7 +154,7 @@ function enterMemoryMode(){
   document.getElementById('grid').style.display='none';
   document.getElementById('pieces-area').style.display='none';
   document.getElementById('hint-bar').style.display='';
-  document.getElementById('hint-bar').textContent='Chạm vào thẻ để lật! Tìm 2 thẻ giống nhau để ghép cặp!';
+  document.getElementById('hint-bar').textContent='Lật 2 thẻ · dây nối khi so sánh · khớp = Eve loop · sai = gỡ dây!';
   MMCV().classList.add('active');
   document.getElementById('grid-wrap').classList.add('secret-mode');
   document.getElementById('mode-badge').textContent='🃏 MAP ẨN 7';
@@ -54,6 +168,7 @@ function enterMemoryMode(){
 
 function initMemory(){
   memoryScore=0; memoryElapsed=0; memoryMatched=0; memoryFlipped=[]; memoryStreak=0;
+  memoryCable=null; memoryEveLoops=[];
   // Create 6 pairs shuffled
   const deck=[];
   MEMORY_ANIMALS.forEach(a=>{ deck.push({...a}); deck.push({...a}); });
@@ -82,6 +197,12 @@ function memoryLoop(now){
     else if(c.flipT>target) c.flipT=Math.max(target,c.flipT-dt*spd);
   });
 
+  // Dây so sánh: fade khi snap (gỡ bằng móc sau khi sai)
+  if(memoryCable && memoryCable.mode==='snap'){
+    memoryCable.life-=dt;
+    if(memoryCable.life<=0) memoryCable=null;
+  }
+
   const cv=MMCV(), W=360, H=460;
   const ctx=cv.getContext('2d'); ctx.setTransform(2,0,0,2,0,0);
   drawMemory(ctx,W,H);
@@ -97,27 +218,28 @@ function memoryLoop(now){
 
 function drawMemory(ctx,W,H){
   ctx.clearRect(0,0,W,H);
-  // Background: pastel park
-  const bg=ctx.createLinearGradient(0,0,0,H);
-  bg.addColorStop(0,'#aee4f8'); bg.addColorStop(0.5,'#c8eef8');
-  bg.addColorStop(0.51,'#7ecf50'); bg.addColorStop(1,'#3a8a20');
-  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
-
-  // nắng + mây (phong cách Map ẩn 4)
-  beeDrawSun(ctx,memoryElapsed);
-  [[W*0.12,30,40],[W*0.5,24,52],[W*0.82,34,36]].forEach(([cx,cy,cr])=>{
-    ctx.fillStyle='rgba(255,255,255,0.9)';
-    ctx.beginPath(); ctx.arc(cx,cy,cr,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(cx+cr*0.55,cy+5,cr*0.7,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(cx-cr*0.5,cy+6,cr*0.62,0,Math.PI*2); ctx.fill();
-  });
-  // dải vườn hoa dưới đáy
-  cuteGardenStrip(ctx,W,H,memoryElapsed,H-24);
+  // sân vườn Map 4 đầy đủ
+  scenicDayFull(ctx,W,H,memoryElapsed,{hillY:H*0.55,fence:false,stripY:H-8,butterflies:true});
 
   // Card layout: 4 cols × 3 rows, each ~76×100, gap 8, centered
   const cardW=76, cardH=100, gapX=8, gapY=8;
   const totalW=4*cardW+3*gapX, totalH=3*cardH+2*gapY;
   const startX=(W-totalW)/2, startY=70;
+
+  // Eve loops — vòng ivy buộc cặp đã khớp
+  memoryEveLoops.forEach(loop=>{
+    const p0=memoryCardCenter(loop.c0,W);
+    const p1=memoryCardCenter(loop.c1,W);
+    memoryDrawEveLoop(ctx,p0.x,p0.y,p1.x,p1.y,memoryElapsed);
+  });
+
+  // Dây cable + bait hooks giữa 2 thẻ đang so sánh / đang gỡ
+  if(memoryCable && memoryCable.a && memoryCable.b){
+    const p0=memoryCardCenter(memoryCable.a,W);
+    const p1=memoryCardCenter(memoryCable.b,W);
+    const frac=memoryCable.maxLife>0 ? memoryCable.life/memoryCable.maxLife : 1;
+    memoryDrawCable(ctx,p0.x,p0.y,p1.x,p1.y,frac, memoryCable.mode==='snap');
+  }
 
   memoryCards.forEach((c,idx)=>{
     const cx=startX+c.col*(cardW+gapX)+cardW/2;
@@ -159,15 +281,22 @@ function drawMemory(ctx,W,H){
         ctx.strokeStyle='rgba(255,255,255,0.6)'; ctx.lineWidth=1.5; ctx.stroke();
       }
 
-      // emoji
-      ctx.font='40px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
-      ctx.fillStyle='#000'; // shadow trick
-      ctx.shadowColor='rgba(0,0,0,0.3)'; ctx.shadowBlur=4;
-      ctx.fillText(c.animal.emoji,0,-8);
-      ctx.shadowBlur=0;
+      // hình con vật — vector dễ thương theo phong cách Map 4, fallback emoji nếu chưa có
+      {
+        const boxSize=52;
+        const drew=drawCuteAnimal(ctx,c.animal.emoji,-boxSize/2,-8-boxSize/2,boxSize,boxSize,performance.now()*0.001);
+        if(!drew){
+          ctx.font='40px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+          ctx.fillStyle='#000'; // shadow trick
+          ctx.shadowColor='rgba(0,0,0,0.3)'; ctx.shadowBlur=4;
+          ctx.fillText(c.animal.emoji,0,-8);
+          ctx.shadowBlur=0;
+        }
+      }
 
       // name
-      ctx.font='bold 11px system-ui'; ctx.fillStyle='rgba(0,0,0,0.7)';
+      ctx.font='bold 11px Nunito,system-ui'; ctx.fillStyle='rgba(0,0,0,0.7)';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
       ctx.fillText(c.animal.name,0,cardH/2-14);
     } else {
       // Back: dark gradient + question pattern
@@ -185,7 +314,7 @@ function drawMemory(ctx,W,H){
       ctx.strokeStyle='rgba(180,140,255,0.5)'; ctx.lineWidth=1.5; ctx.stroke();
 
       // "?" pattern
-      ctx.font='bold 28px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.font='bold 28px Nunito,system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
       ctx.fillStyle='rgba(180,140,255,0.7)';
       ctx.fillText('?',0,0);
     }
@@ -197,6 +326,17 @@ function drawMemory(ctx,W,H){
 }
 
 let memoryFlipLock=false;
+
+function memoryAttachCompareCable(a,b){
+  memoryCable={ a,b, life:1, maxLife:1, mode:'compare' };
+}
+
+function memorySnapCableOff(){
+  if(!memoryCable) return;
+  memoryCable.mode='snap';
+  memoryCable.life=0.45;
+  memoryCable.maxLife=0.45;
+}
 
 function tapMemory(ex,ey){
   if(!memoryMode || memoryFlipLock) return;
@@ -213,24 +353,28 @@ function tapMemory(ex,ey){
       const openCards=memoryCards.filter(x=>x.faceUp&&!x.matched);
       if(openCards.length===2){
         memoryFlipLock=true;
+        memoryAttachCompareCable(openCards[0], openCards[1]);
         if(openCards[0].animal.emoji===openCards[1].animal.emoji){
-          // Match!
+          // Match! — gỡ dây so sánh, buộc Eve loop
           setTimeout(()=>{
             openCards.forEach(x=>{ x.matched=true; });
             memoryMatched++;
             memoryStreak++;
+            memoryCable=null;
+            memoryEveLoops.push({ c0:openCards[0], c1:openCards[1] });
             // 1 điểm/cặp ghép đúng, liên tiếp 3 cặp → x2, 6 cặp → x3 (đồng bộ map thường)
             const pts=1*comboScoreMultiplier(memoryStreak);
             memoryScore+=pts;
             score+=pts; if(score>best)best=score; updateScoreUI();
             if(!sfxMuted) sfxMemoryMatch();
-            showComboFlash(0,false,'✅ +'+pts+'đ');
+            showComboFlash(0,false,'🌿 Eve loop! +'+pts+'đ');
             memoryFlipLock=false;
           },300);
         } else {
-          // Mismatch - flip back after 0.8s
+          // Mismatch — gỡ dây bằng bait hook (snap), rồi úp thẻ
           memoryStreak=0;
           setTimeout(()=>{
+            memorySnapCableOff();
             openCards.forEach(x=>{ x.faceUp=false; });
             if(!sfxMuted) sfxMemoryMiss();
             memoryFlipLock=false;
@@ -259,6 +403,7 @@ function memoryDone(){
 function exitMemoryToMain(){
   setActiveHiddenMap(null);
   memoryMode=false;
+  memoryCable=null; memoryEveLoops=[];
   startBgm('main');
   if(memoryRAF){ cancelAnimationFrame(memoryRAF); memoryRAF=null; }
   MMCV().classList.remove('active');

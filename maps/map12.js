@@ -139,14 +139,12 @@ function floodLoop(){
 function drawFlood(ctx,W,H){
   ctx.clearRect(0,0,W,H);
   const fT=Date.now()*0.0003;
-  const bg=ctx.createLinearGradient(0,0,W,H);
-  bg.addColorStop(0,'#fff6e8'); bg.addColorStop(0.5,'#f5eef8'); bg.addColorStop(1,'#eaf3fb');
-  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
-  // giọt màu bồng bềnh trang trí kiểu bảng vẽ nghệ thuật
+  // Sân vườn Map 4 + giọt màu trang trí
+  scenicDayFull(ctx,W,H,fT*10,{hillY:H*0.82,fence:false,stripY:H-6});
   FLOOD_COLORS.forEach((col,i)=>{
     const dx=(Math.sin(fT*0.7+i*1.7)*0.5+0.5)*W;
-    const dy=(Math.cos(fT*0.5+i*2.3)*0.5+0.5)*H*0.28+H*0.02;
-    ctx.save(); ctx.globalAlpha=0.12;
+    const dy=(Math.cos(fT*0.5+i*2.3)*0.5+0.5)*H*0.22+H*0.02;
+    ctx.save(); ctx.globalAlpha=0.18;
     ctx.fillStyle=col;
     ctx.beginPath(); ctx.arc(dx,dy,16+Math.sin(fT*2+i)*4,0,Math.PI*2); ctx.fill();
     ctx.restore();
@@ -157,23 +155,14 @@ function drawFlood(ctx,W,H){
   const gridH=rows*cellSize+(rows-1)*gap;
   const offX=(W-gridW)/2, offY=48;
 
-  // Draw grid
+  // Draw grid — ô kẹo bông mềm
   const regionSet=new Set(getFloodRegion().map(([r,c])=>r+','+c));
   for(let r=0;r<rows;r++){
     for(let c=0;c<cols;c++){
       const x=offX+c*(cellSize+gap), y=offY+r*(cellSize+gap);
       const ci=floodGrid[r][c];
       const isFlooded=regionSet.has(r+','+c);
-      ctx.fillStyle=FLOOD_COLORS[ci];
-      if(isFlooded){
-        ctx.shadowColor=FLOOD_COLORS[ci]; ctx.shadowBlur=6;
-      }
-      ctx.fillRect(x,y,cellSize,cellSize);
-      ctx.shadowBlur=0;
-      if(isFlooded){
-        ctx.fillStyle='rgba(255,255,255,0.25)';
-        ctx.fillRect(x,y,cellSize,cellSize);
-      }
+      drawSoftCandyCell(ctx,x,y,cellSize,cellSize,FLOOD_COLORS[ci],{glow:isFlooded,glowBlur:isFlooded?8:3});
     }
   }
 
@@ -201,7 +190,7 @@ function drawFlood(ctx,W,H){
     const prog=Math.min(f.t,1);
     ctx.globalAlpha=Math.max(0,1-prog);
     ctx.fillStyle=FLOOD_COLORS[f.colorIdx];
-    ctx.font='bold 20px system-ui'; ctx.textAlign='center';
+    ctx.font='bold 20px Nunito,system-ui'; ctx.textAlign='center';
     ctx.fillText('✨', W/2, H/2-prog*30);
     ctx.globalAlpha=1;
   });

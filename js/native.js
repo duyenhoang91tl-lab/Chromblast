@@ -26,12 +26,20 @@
     }
   }
 
+  // ⚠️ ID đơn vị quảng cáo (AdMob console → Ad units):
+  //  - Interstitial dùng id riêng.
+  //  - Rewarded PHẢI là ad unit loại "Rewarded" — dùng id interstitial sẽ
+  //    luôn load fail → nút "Xem QC +1 tim" không bao giờ chạy được.
+  //    Tạo ad unit Rewarded trong AdMob console rồi thay id dưới đây.
+  const AD_UNIT_INTERSTITIAL = 'ca-app-pub-9093176034842025/6573161096';
+  const AD_UNIT_REWARDED = 'ca-app-pub-9093176034842025/6573161096'; // TODO: thay bằng id Rewarded thật
+
   // Hàm hiển thị quảng cáo interstitial
   window.showInterstitialAd = async function() {
     if (!AdMob) return;
     try {
       await AdMob.prepareInterstitial({
-        adId: 'ca-app-pub-9093176034842025/6573161096',
+        adId: AD_UNIT_INTERSTITIAL,
         isTesting: false, // ĐANG TEST — đổi false khi publish thật
       });
       await AdMob.showInterstitial();
@@ -40,11 +48,38 @@
     }
   };
 
+  // Quảng cáo có thưởng (xem để nhận +1 tim)
+  window.showRewardedAd = async function(onReward, onFail) {
+    if (!AdMob) {
+      if (typeof onFail === 'function') onFail();
+      return;
+    }
+    try {
+      await AdMob.prepareRewardVideoAd({
+        adId: AD_UNIT_REWARDED,
+        isTesting: false,
+      });
+      const result = await AdMob.showRewardVideoAd();
+      if (result && (result.rewarded || result.type)) {
+        if (typeof onReward === 'function') onReward(result);
+      } else if (typeof onReward === 'function') {
+        onReward(result);
+      }
+    } catch (e) {
+      console.error('AdMob Rewarded Error:', e);
+      if (typeof onFail === 'function') onFail(e);
+    }
+  };
+
   if(!App) return;
 
   const CLOSABLE_PANELS = [
     'maphelp-panel','roundguide-panel','hiddenmap-menu-panel',
     'daily-panel','leaderboard-panel','account-panel','help-panel','unlock-overlay',
+    'settings-panel','settings-more-panel','settings-lang-panel','settings-cup-panel','settings-text-panel',
+    'brick-skin-panel',
+    'board-skin-panel',
+    'spin-panel',
   ];
 
   function anyHiddenMapActive(){
@@ -61,7 +96,13 @@
     // 1. Đóng panel đang mở
     for(const id of CLOSABLE_PANELS){
       const el=document.getElementById(id);
-      if(el && el.classList.contains('show')){ el.classList.remove('show'); return; }
+      if(el && el.classList.contains('show')){
+        // Lần đầu chọn gạch — không đóng bằng nút Back
+        if(id==='brick-skin-panel' && el.dataset.mode==='starter') return;
+        if(id==='board-skin-panel' && el.dataset.mode==='starter') return;
+        if(id==='spin-panel' && el.dataset.rewardPending==='1') return;
+        el.classList.remove('show'); return;
+      }
     }
     // 2. Đang trong map ẩn → về bàn chính
     if(anyHiddenMapActive()){

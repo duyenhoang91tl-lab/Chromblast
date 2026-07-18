@@ -182,10 +182,8 @@ function goldLoop(now){
 
 function drawGold(ctx,W,H,t){
   ctx.clearRect(0,0,W,H);
-  // dải trời pastel ban ngày phía trên hầm mỏ (đồng bộ phong cách Map ẩn 4)
-  const g=ctx.createLinearGradient(0,0,0,GM_GT);
-  g.addColorStop(0,'#7EC8E3'); g.addColorStop(0.6,'#ADE0F2'); g.addColorStop(1,'#D4F0FF');
-  ctx.fillStyle=g; ctx.fillRect(0,0,W,GM_GT);
+  // dải trời Map 4 phía trên hầm mỏ (chỉ 40px — trời + nắng + mây)
+  cuteDayBg(ctx,W,GM_GT,t);
 
   for(let r=0;r<GM_ROWS;r++){
     for(let c=0;c<GM_COLS;c++){
