@@ -275,12 +275,25 @@ function drawMole(ctx,W,H,now,timeLeft){
     // Thân thú = emoji thật (không vòng tròn quanh)
     const fullyOut=h.riseT>=1 && h.fallT<0 && !h.hit;
     const peeking=h.riseT<1 && rise>0;
-    ctx.font=(h.r*(fullyOut?1.95:1.55))+'px system-ui';
-    ctx.shadowColor='rgba(0,0,0,0.45)'; ctx.shadowBlur=5; ctx.shadowOffsetY=2;
-    ctx.globalAlpha=peeking ? 0.92 : 1;
-    ctx.fillText(h.animal.emoji, hx, hy);
-    ctx.globalAlpha=1;
-    ctx.shadowBlur=0; ctx.shadowOffsetY=0;
+    if(h.animal.emoji==='🐶'){
+      // Con chó dùng hình vẽ vector của Map 4 thay vì emoji
+      const dogScale=(h.r*(fullyOut?1.95:1.55))/62;
+      ctx.save();
+      ctx.translate(hx,hy);
+      ctx.scale(dogScale,dogScale);
+      ctx.shadowColor='rgba(0,0,0,0.45)'; ctx.shadowBlur=5/dogScale; ctx.shadowOffsetY=2/dogScale;
+      ctx.globalAlpha=peeking ? 0.92 : 1;
+      drawDog(ctx,now*0.001,{x:0,y:0,vx:0,vy:0,facing:1,panicLevel:0});
+      ctx.globalAlpha=1;
+      ctx.restore();
+    } else {
+      ctx.font=(h.r*(fullyOut?1.95:1.55))+'px system-ui';
+      ctx.shadowColor='rgba(0,0,0,0.45)'; ctx.shadowBlur=5; ctx.shadowOffsetY=2;
+      ctx.globalAlpha=peeking ? 0.92 : 1;
+      ctx.fillText(h.animal.emoji, hx, hy);
+      ctx.globalAlpha=1;
+      ctx.shadowBlur=0; ctx.shadowOffsetY=0;
+    }
 
     ctx.restore();
 
