@@ -2033,29 +2033,49 @@ body:has(#secret-stage.active) .streak-dot.lit{
 .lang-pick-btn.active{ border-color:#ffd54a; background:rgba(255,213,74,0.15); color:#ffd54a; font-weight:700; }
 
 /* ── ⚔️ Đấu 1-1 song song (versus.js) — cùng nền bàn với map thường ── */
-#versus-arena{ position:fixed; inset:0; z-index:9500; background:#1a1a2e; display:flex; flex-direction:column; }
-.vs-half{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; position:relative; padding:6px; min-height:0; }
+#versus-arena{
+  position:fixed; inset:0; z-index:9500; background:#1a1a2e;
+  display:flex; flex-direction:column;
+  padding-top:max(52px, env(safe-area-inset-top));
+  box-sizing:border-box;
+  overflow:hidden;
+}
+.vs-half{
+  flex:1 1 0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:4px; position:relative; padding:4px 6px; min-height:0; min-width:0;
+  overflow:hidden;
+}
 .vs-top{ transform:rotate(180deg); border-bottom:2px solid rgba(255,213,74,0.5); }
 .vs-hud{ display:flex; gap:12px; align-items:center; font-weight:800; color:#fff; font-size:14px; }
 .vs-hud .vs-score{ color:#ffd54a; font-size:16px; }
 .vs-hud .vs-combo{ color:#ff8a3c; font-size:12px; }
 .vs-grid{
-  display:grid; grid-template-columns:repeat(7,1fr); gap:3px;
-  width:min(46vh,92vw,300px); aspect-ratio:1; box-sizing:border-box;
+  --vs-size: min(42vh, 88vw, 300px, calc(50dvh - 96px));
+  display:grid;
+  grid-template-columns:repeat(7, minmax(0, 1fr));
+  grid-template-rows:repeat(7, minmax(0, 1fr));
+  gap:2px;
+  width:var(--vs-size);
+  height:var(--vs-size);
+  max-width:100%;
+  max-height:100%;
+  box-sizing:border-box;
+  flex:0 0 auto;
   background:
     repeating-linear-gradient(90deg, rgba(255,255,255,0.03) 0 1px, transparent 1px 11px),
     repeating-linear-gradient(0deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 11px),
     linear-gradient(165deg, #4A4458 0%, #3A3548 45%, #2E2A3A 100%);
   border: 2px solid #5A5468;
-  border-radius: 18px; padding: 8px;
+  border-radius: 14px; padding: 6px;
   box-shadow:
     inset 0 2px 0 rgba(255,255,255,0.08),
     inset 0 -3px 10px rgba(0,0,0,0.25),
     0 8px 18px rgba(0,0,0,0.28);
 }
 .vs-cell{
-  border-radius:10px; display:flex; align-items:center; justify-content:center;
-  font-size:12px; touch-action:none; position:relative; overflow:visible;
+  border-radius:8px; display:flex; align-items:center; justify-content:center;
+  font-size:clamp(9px, 2.2vh, 12px); touch-action:none; position:relative;
+  min-width:0; min-height:0; width:100%; height:100%; overflow:hidden;
   background: rgba(0,0,0,0.22);
   border: 1px solid rgba(255,255,255,0.06);
   box-shadow: inset 0 1px 3px rgba(0,0,0,0.35);
@@ -2082,7 +2102,7 @@ body:has(#secret-stage.active) .streak-dot.lit{
 }
 .vs-cell.vs-rock{ background:#4a4a55 !important; filter:none; }
 .vs-cell.vs-ice{ outline:2px solid #9adcff; outline-offset:-2px; }
-.vs-cell.vs-prev{ opacity:0.55; transform:scale(0.88); } /* ô mờ xem trước chỗ đáp — giống map thường */
+.vs-cell.vs-prev{ opacity:0.55; transform:scale(0.92); } /* ô mờ xem trước chỗ đáp — giống map thường */
 .vs-tray{ display:flex; gap:10px; align-items:center; justify-content:center; min-height:44px; }
 .vs-piece{
   width:52px; height:44px; border-radius:10px;
@@ -2150,6 +2170,48 @@ body:has(#secret-stage.active) .streak-dot.lit{
 #vs-quit-btn{ position:absolute; top:50%; right:10px; transform:translateY(-50%); z-index:9; width:34px; height:34px; border-radius:50%; border:1px solid rgba(255,255,255,0.3); background:rgba(255,255,255,0.08); color:#fff; font-size:14px; cursor:pointer; }
 .vs-shake{ animation:vsShake 0.5s; }
 @keyframes vsShake{ 0%,100%{translate:0} 20%{translate:-8px 0} 40%{translate:8px 0} 60%{translate:-5px 0} 80%{translate:5px 0} }
+
+/* Versus — xoay ngang: thu lưới để hai nửa không đè ô lên nhau */
+@media (orientation: landscape){
+  #versus-arena{
+    padding-top:max(44px, env(safe-area-inset-top));
+  }
+  #vs-top-hud{
+    top:4px !important; left:6px !important; right:6px !important;
+    padding:4px 10px !important; font-size:12px !important;
+    gap:8px;
+  }
+  #vs-top-hud > div{ font-size:12px !important; }
+  #vs-mid-timer{
+    position:static !important; transform:none !important;
+    width:36px !important; height:36px !important; font-size:14px !important;
+    flex-shrink:0;
+  }
+  .vs-half{ gap:2px; padding:2px 4px; }
+  .vs-top{ border-bottom-width:1px; }
+  .vs-grid{
+    --vs-size: min(34vh, 44vw, 200px, calc(50dvh - 64px));
+    gap:1.5px; padding:4px; border-radius:10px; border-width:1.5px;
+  }
+  .vs-cell{ border-radius:5px; font-size:clamp(8px, 1.8vh, 11px); }
+  .vs-tray{ min-height:26px; gap:6px; flex-shrink:0; }
+  .vs-piece{ width:36px; height:30px; border-radius:8px; }
+  .vs-mini{ gap:1px; transform:scale(0.85); transform-origin:center; }
+  .vs-cards{ gap:6px; }
+  .vs-card{ width:64px; height:72px; }
+  .vs-card-emoji{ font-size:22px; }
+  .vs-card-name{ font-size:10px; }
+  #vs-countdown{ font-size:64px; }
+  #vs-quit-btn{ position:static !important; transform:none !important; }
+}
+@media (orientation: landscape) and (max-height: 420px){
+  .vs-grid{
+    --vs-size: min(28vh, 40vw, 160px, calc(50dvh - 52px));
+  }
+  .vs-tray{ min-height:22px; }
+  .vs-piece{ width:30px; height:26px; }
+  .vs-mini{ transform:scale(0.75); }
+}
 
 /* ── Typography polish extras ── */
 .logo-chroma, .logo-blast, .auth-logo, .start-logo {
