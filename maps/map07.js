@@ -284,14 +284,14 @@ function drawMemory(ctx,W,H){
       // hình con vật — vector dễ thương theo phong cách Map 4, fallback emoji nếu chưa có
       {
         const boxSize=52;
-        ctx.shadowColor='rgba(0,0,0,0.3)'; ctx.shadowBlur=4;
         const drew=drawCuteAnimal(ctx,c.animal.emoji,-boxSize/2,-8-boxSize/2,boxSize,boxSize,performance.now()*0.001);
         if(!drew){
           ctx.font='40px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
           ctx.fillStyle='#000'; // shadow trick
+          ctx.shadowColor='rgba(0,0,0,0.3)'; ctx.shadowBlur=4;
           ctx.fillText(c.animal.emoji,0,-8);
+          ctx.shadowBlur=0;
         }
-        ctx.shadowBlur=0;
       }
 
       // name
