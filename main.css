@@ -2626,8 +2626,14 @@ body:has(#secret-stage.active) .streak-dot.lit{
   display:grid; grid-template-columns:repeat(3,1fr); gap:10px 6px;
   max-height:min(48vh,360px); overflow:auto; padding-bottom:6px;
 }
-.cup-award{ text-align:center; opacity:0.55; }
+.cup-award{
+  text-align:center; opacity:0.55;
+  appearance:none; border:none; background:transparent; padding:0; margin:0;
+  font:inherit; color:inherit; cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
 .cup-award.is-done{ opacity:1; }
+.cup-award:active{ transform:scale(0.96); }
 .cup-badge{
   width:48px; height:48px; margin:0 auto 5px; border-radius:12px;
   background:linear-gradient(160deg,#c8d6ea,#8fa6c4);
