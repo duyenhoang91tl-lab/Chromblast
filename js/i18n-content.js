@@ -609,3 +609,24 @@ function MILESTONE_MSG(tier){ const c=_i18nContent(); const a=c.milestones||I18N
   };
   Object.keys(vs2).forEach(l=>{ if(I18N[l]) Object.assign(I18N[l], vs2[l]); });
 })();
+
+// ── BỔ SUNG: online 1v1 + BXH toàn cầu ──
+(function(){
+  const on = {
+  vi:{ vsModeLocal:'📱 Cùng máy', vsModeOnline:'🌐 Online',
+       onlineTitle:'🌐 Đấu 1-1 Online', onlineDisabled:'Chưa bật Firebase — xem docs/ONLINE_MULTIPLAYER.md để cấu hình.',
+       onlineGoogle:'Đăng nhập Google', onlineCreate:'🏠 Tạo phòng', onlineJoinLabel:'Vào phòng bằng mã', onlineJoin:'🚪 Vào phòng',
+       onlineFind:'🔍 Tìm đối thủ', onlineLobby:'🏠 Phòng chờ', onlineCode:'Mã phòng', onlineWaiting:'Đang chờ...',
+       onlineMmAuto:'Đã ghép đối thủ — chờ host bắt đầu...', onlineStart:'▶ Bắt đầu trận', onlineLeave:'✕ Rời phòng',
+       onlineSearchingTitle:'🔍 Đang tìm đối thủ', onlineSearching:'Đang tìm người chơi phù hợp...', onlineCancel:'✕ Hủy',
+       onlineRoomCreated:'Phòng đã tạo · mã {0}', onlineJoined:'Đã vào phòng!', onlineRoomNotFound:'Không tìm thấy phòng', onlineCodeShort:'Nhập mã phòng (6 ký tự)' },
+  en:{ vsModeLocal:'📱 Local', vsModeOnline:'🌐 Online',
+       onlineTitle:'🌐 Online 1v1', onlineDisabled:'Firebase not configured — see docs/ONLINE_MULTIPLAYER.md.',
+       onlineGoogle:'Sign in with Google', onlineCreate:'🏠 Create room', onlineJoinLabel:'Join with code', onlineJoin:'🚪 Join room',
+       onlineFind:'🔍 Find opponent', onlineLobby:'🏠 Lobby', onlineCode:'Room code', onlineWaiting:'Waiting...',
+       onlineMmAuto:'Matched — waiting for host to start...', onlineStart:'▶ Start match', onlineLeave:'✕ Leave room',
+       onlineSearchingTitle:'🔍 Finding opponent', onlineSearching:'Searching for a player...', onlineCancel:'✕ Cancel',
+       onlineRoomCreated:'Room created · code {0}', onlineJoined:'Joined room!', onlineRoomNotFound:'Room not found', onlineCodeShort:'Enter room code (6 chars)' },
+  };
+  Object.keys(on).forEach(l=>{ if(I18N[l]) Object.assign(I18N[l], on[l]); });
+})();
