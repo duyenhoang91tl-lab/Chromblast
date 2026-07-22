@@ -459,7 +459,12 @@
   <div id="leaderboard-panel" class="admin-panel-like">
     <div class="admin-card">
       <div class="admin-title"><span data-i18n="leaderboardTitle">🏆 Bảng xếp hạng</span><button class="admin-close" id="leaderboard-close-btn">✕</button></div>
-      <div class="admin-sub" data-i18n="lbSub">Điểm cao nhất của người chơi trên thiết bị này.</div>
+      <div class="lb-tabs">
+        <button type="button" class="lb-tab active" data-lb-mode="local" data-i18n="lbTabLocal">📱 Thiết bị</button>
+        <button type="button" class="lb-tab" data-lb-mode="global-solo" data-i18n="lbTabGlobal">🌐 Toàn cầu</button>
+        <button type="button" class="lb-tab" data-lb-mode="global-pvp" data-i18n="lbTabPvp">⚔️ PvP</button>
+      </div>
+      <div class="admin-sub" id="leaderboard-sub" data-i18n="lbSub">Điểm cao nhất của người chơi trên thiết bị này.</div>
       <div id="leaderboard-list"></div>
       <div id="leaderboard-my-rank" class="lb-my-rank"></div>
     </div>
@@ -468,10 +473,46 @@
   <div id="versus-setup-panel" class="admin-panel-like">
     <div class="admin-card">
       <div class="admin-title"><span data-i18n="vsTitle">⚔️ Đấu 1-1</span><button class="admin-close" id="vs-cancel-btn">✕</button></div>
+      <div class="vs-mode-tabs">
+        <button type="button" class="vs-mode-tab active" id="vs-local-btn" data-i18n="vsModeLocal">📱 Cùng máy</button>
+        <button type="button" class="vs-mode-tab" id="vs-online-btn" data-i18n="vsModeOnline">🌐 Online <span id="online-status-badge">📴</span></button>
+      </div>
       <div class="admin-sub" data-i18n="vsSub">Hai người chơi thi đấu trên máy này — cùng bộ khối, 90 giây mỗi lượt, điểm cao hơn thắng.</div>
       <div class="auth-field"><label data-i18n="vsP1">Người chơi 1</label><input type="text" id="vs-name1" maxlength="16"></div>
       <div class="auth-field"><label data-i18n="vsP2">Người chơi 2</label><input type="text" id="vs-name2" maxlength="16"></div>
       <button id="vs-start-btn" class="auth-submit-btn" data-i18n="vsStart">⚔️ BẮT ĐẦU TRẬN ĐẤU</button>
+    </div>
+  </div>
+
+  <div id="online-hub-panel" class="admin-panel-like">
+    <div class="admin-card">
+      <div class="admin-title"><span data-i18n="onlineTitle">🌐 Đấu 1-1 Online</span><button class="admin-close" id="online-hub-close">✕</button></div>
+      <div id="online-disabled-note" class="online-note" data-i18n="onlineDisabled">Chưa bật Firebase — xem docs/ONLINE_MULTIPLAYER.md để cấu hình trước khi phát hành online.</div>
+      <div id="online-status" class="online-status"></div>
+      <button type="button" id="online-google-btn" class="auth-submit-btn" style="background:#4285f4;margin-bottom:10px;" data-i18n="onlineGoogle">Đăng nhập Google</button>
+      <button type="button" id="online-create-btn" class="auth-submit-btn" data-i18n="onlineCreate">🏠 Tạo phòng</button>
+      <div class="auth-field" style="margin-top:12px;"><label data-i18n="onlineJoinLabel">Vào phòng bằng mã</label><input type="text" id="online-join-code" maxlength="6" placeholder="ABC123" style="text-transform:uppercase;letter-spacing:2px;text-align:center;font-weight:700;"></div>
+      <button type="button" id="online-join-btn" class="auth-submit-btn" style="background:rgba(255,255,255,0.15);" data-i18n="onlineJoin">🚪 Vào phòng</button>
+      <button type="button" id="online-find-btn" class="auth-submit-btn" style="margin-top:10px;background:linear-gradient(135deg,#7b61ff,#5a8dee);" data-i18n="onlineFind">🔍 Tìm đối thủ</button>
+    </div>
+  </div>
+
+  <div id="online-lobby-panel" class="admin-panel-like">
+    <div class="admin-card">
+      <div class="admin-title"><span data-i18n="onlineLobby">🏠 Phòng chờ</span></div>
+      <div class="online-room-code-wrap"><span data-i18n="onlineCode">Mã phòng</span>: <strong id="online-room-code">------</strong></div>
+      <div id="online-lobby-players" class="online-players"></div>
+      <div id="online-mm-auto-note" class="online-note" style="display:none" data-i18n="onlineMmAuto">Đã ghép đối thủ — chờ host bắt đầu...</div>
+      <button type="button" id="online-start-btn" class="auth-submit-btn" data-i18n="onlineStart">▶ Bắt đầu trận</button>
+      <button type="button" id="online-lobby-leave" class="auth-submit-btn" style="background:rgba(255,255,255,0.12);margin-top:8px;" data-i18n="onlineLeave">✕ Rời phòng</button>
+    </div>
+  </div>
+
+  <div id="online-matchmaking-panel" class="admin-panel-like">
+    <div class="admin-card" style="text-align:center;">
+      <div class="admin-title"><span data-i18n="onlineSearchingTitle">🔍 Đang tìm đối thủ</span></div>
+      <div id="online-mm-status" class="online-mm-pulse" data-i18n="onlineSearching">Đang tìm người chơi phù hợp...</div>
+      <button type="button" id="online-mm-cancel" class="auth-submit-btn" style="background:rgba(255,255,255,0.12);margin-top:16px;" data-i18n="onlineCancel">✕ Hủy</button>
     </div>
   </div>
 
@@ -671,6 +712,10 @@
 <!-- Floating piece that follows the cursor/finger while dragging -->
 <div id="drag-ghost"></div>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
 <script src="js/i18n.js"></script>
 <script src="js/i18n-content.js"></script>
 <script src="js/audio.js"></script>
@@ -678,6 +723,7 @@
 <script src="js/brick-skins.js"></script>
 <script src="js/map-boards.js"></script>
 <script src="js/daily-rewards.js"></script>
+<script src="js/online-services.js"></script>
 <script src="js/leaderboard.js"></script>
 <script src="js/mech-config.js"></script>
 <script src="js/progression.js"></script>
@@ -713,5 +759,6 @@
 <script src="js/map-manager.js"></script>
 <script src="js/native.js"></script>
 <script src="js/versus.js"></script>
+<script src="js/online-ui.js"></script>
 </body>
 </html>

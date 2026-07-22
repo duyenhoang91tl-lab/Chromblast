@@ -1,20 +1,9 @@
 // ═══════════════════════════════════════════════════════════════
-// js/leaderboard.js — BẢNG XẾP HẠNG TRÊN THIẾT BỊ
-//
-// Bản phát hành CH Play: lưu điểm cao nhất của từng người chơi TRÊN MÁY NÀY
-// (localStorage) — chỉ hiển thị điểm THẬT, không còn dữ liệu giả lập.
-//
-// ĐỂ NÂNG CẤP THÀNH "TOÀN CẦU" (đồng bộ mọi máy qua server, vd Firebase
-// Firestore hoặc Google Play Games Services): chỉ cần viết lại nội dung
-// bên trong 3 hàm submitScoreToLeaderboard() / fetchTopScores() /
-// fetchMyRank() để gọi API thay vì đọc/ghi localStorage. Toàn bộ phần UI
-// bên dưới và các chỗ gọi 3 hàm này (engine.js) KHÔNG cần sửa gì thêm.
-//
-// Nạp SAU save.js, TRƯỚC main.js.
+// js/leaderboard.js — BXH local + toàn cầu (Firebase) khi đã cấu hình
+// Nạp SAU save.js + online-services.js, TRƯỚC main.js.
 // ═══════════════════════════════════════════════════════════════
 
 const LEADERBOARD_KEY = 'chromablast_leaderboard_local';
-// Điểm giả lập từng seed ở bản dev — nhận diện để dọn khỏi máy đã cài bản cũ.
 const LEADERBOARD_DEV_SEED = [
   {name:'Minh',        score: 4820},
   {name:'Huyền Trang',  score: 3960},
@@ -23,19 +12,24 @@ const LEADERBOARD_DEV_SEED = [
   {name:'Nam',          score: 2340},
 ];
 
+let _lbMode = 'local'; // 'local' | 'global-solo' | 'global-pvp'
+
 function getLeaderboardEntries(){
   let entries = [];
   try{
     const raw = safeGet(LEADERBOARD_KEY);
     if(raw) entries = JSON.parse(raw) || [];
   }catch(e){ entries = []; }
-  // Dọn dữ liệu giả từ bản dev cũ (khớp đúng cả tên lẫn điểm mới xoá — không đụng người chơi thật trùng tên)
   const cleaned = entries.filter(e => !LEADERBOARD_DEV_SEED.some(s => s.name===e.name && s.score===e.score));
   if(cleaned.length !== entries.length) safeSet(LEADERBOARD_KEY, JSON.stringify(cleaned));
   return cleaned;
 }
 
 function currentPlayerName(){
+  if(typeof getOnlineDisplayName === 'function' && typeof isOnlineServicesEnabled === 'function' && isOnlineServicesEnabled() && getOnlineUid()){
+    const on = getOnlineDisplayName();
+    if(on) return on;
+  }
   if(typeof currentUser !== 'undefined' && currentUser && currentUser.username) return currentUser.username;
   let gid = safeGet('chromablast_guest_name');
   if(!gid){
@@ -45,7 +39,6 @@ function currentPlayerName(){
   return gid;
 }
 
-// Gửi điểm lên bảng — chỉ giữ điểm CAO NHẤT của mỗi tên (tránh spam nhiều dòng trùng người chơi).
 function submitScoreToLeaderboard(score){
   if(!score || score <= 0) return;
   const name = currentPlayerName();
@@ -57,8 +50,11 @@ function submitScoreToLeaderboard(score){
     entries.push({name, score});
   }
   entries.sort((a,b) => b.score - a.score);
-  entries = entries.slice(0, 100); // giữ top 100
+  entries = entries.slice(0, 100);
   safeSet(LEADERBOARD_KEY, JSON.stringify(entries));
+  if(typeof submitGlobalSoloScore === 'function'){
+    submitGlobalSoloScore(score).catch(()=>{});
+  }
 }
 
 function fetchTopScores(limit){
@@ -77,28 +73,54 @@ function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
-function renderLeaderboardPanel(){
-  const list = document.getElementById('leaderboard-list');
-  if(list){
-    const top = fetchTopScores(20);
-    const myName = currentPlayerName();
-    list.innerHTML = '';
-    if(!top.length){
-      list.innerHTML = '<div class="lb-empty">'+t('lbEmpty')+'</div>';
-    }
-    top.forEach((e,i) => {
-      const row = document.createElement('div');
-      row.className = 'lb-row' + (e.name === myName ? ' me' : '');
-      const medal = i===0 ? '🥇' : i===1 ? '🥈' : i===2 ? '🥉' : String(i+1);
-      row.innerHTML = '<span class="lb-rank">'+medal+'</span>'
-        + '<span class="lb-name">'+escapeHtml(e.name)+'</span>'
-        + '<span class="lb-score">'+e.score.toLocaleString()+'</span>';
-      list.appendChild(row);
-    });
+function _renderLbRows(list, top, myName){
+  list.innerHTML = '';
+  if(!top.length){
+    list.innerHTML = '<div class="lb-empty">'+t('lbEmpty')+'</div>';
+    return;
   }
+  top.forEach((e,i) => {
+    const row = document.createElement('div');
+    row.className = 'lb-row' + (e.name === myName ? ' me' : '');
+    const medal = i===0 ? '🥇' : i===1 ? '🥈' : i===2 ? '🥉' : String(i+1);
+    row.innerHTML = '<span class="lb-rank">'+medal+'</span>'
+      + '<span class="lb-name">'+escapeHtml(e.name)+'</span>'
+      + '<span class="lb-score">'+e.score.toLocaleString()+'</span>';
+    list.appendChild(row);
+  });
+}
+
+async function renderLeaderboardPanel(){
+  const list = document.getElementById('leaderboard-list');
   const myRankBox = document.getElementById('leaderboard-my-rank');
+  const sub = document.getElementById('leaderboard-sub');
+  const myName = currentPlayerName();
+
+  if(sub){
+    if(_lbMode === 'local') sub.textContent = t('lbSub');
+    else if(_lbMode === 'global-pvp') sub.textContent = t('lbSubPvp');
+    else sub.textContent = t('lbSubGlobal');
+  }
+
+  if(!list) return;
+  list.innerHTML = '<div class="lb-empty">'+t('lbLoading')+'</div>';
+
+  let top = [], mine = null;
+  if(_lbMode === 'local'){
+    top = fetchTopScores(20);
+    mine = fetchMyRank();
+  } else if(typeof fetchGlobalLeaderboard === 'function' && isOnlineServicesEnabled()){
+    const mode = _lbMode === 'global-pvp' ? 'pvp' : 'solo';
+    top = await fetchGlobalLeaderboard(20, mode) || [];
+    mine = await fetchMyGlobalRank(mode);
+  } else {
+    list.innerHTML = '<div class="lb-empty">'+t('lbOfflineGlobal')+'</div>';
+    if(myRankBox) myRankBox.textContent = '';
+    return;
+  }
+
+  _renderLbRows(list, top, myName);
   if(myRankBox){
-    const mine = fetchMyRank();
     myRankBox.textContent = mine
       ? t('lbMyRank', mine.rank, mine.total, mine.score.toLocaleString())
       : t('lbNoRank');
@@ -109,6 +131,16 @@ function initLeaderboardPanel(){
   const btn = document.getElementById('leaderboard-btn');
   const panel = document.getElementById('leaderboard-panel');
   if(!btn || !panel) return;
+
+  document.querySelectorAll('.lb-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.lb-tab').forEach(x => x.classList.remove('active'));
+      tab.classList.add('active');
+      _lbMode = tab.dataset.lbMode || 'local';
+      renderLeaderboardPanel();
+    });
+  });
+
   function openPanel(){
     if(typeof sfxClick === 'function') sfxClick();
     renderLeaderboardPanel();

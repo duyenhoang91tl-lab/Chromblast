@@ -570,6 +570,29 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 .lb-score { color:#ffd700; font-weight:800; flex:0 0 auto; }
 .lb-empty { text-align:center; color: rgba(255,255,255,0.5); font-size:12.5px; padding:16px 0; }
 .lb-my-rank { margin-top:10px; padding-top:10px; border-top:1px dashed rgba(255,255,255,0.15); font-size:12.5px; color:#ffd700; text-align:center; font-weight:700; }
+.lb-tabs { display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap; }
+.lb-tab {
+  flex:1; min-width:70px; padding:7px 8px; border-radius:8px; border:1px solid rgba(255,255,255,0.15);
+  background:rgba(255,255,255,0.06); color:#ccc; font-size:11px; font-weight:700; cursor:pointer;
+}
+.lb-tab.active { border-color:#f7c948; background:rgba(247,201,72,0.18); color:#ffd700; }
+
+/* ══════════════════ ONLINE 1v1 ══════════════════ */
+.vs-mode-tabs { display:flex; gap:8px; margin-bottom:12px; }
+.vs-mode-tab {
+  flex:1; padding:9px 10px; border-radius:10px; border:1px solid rgba(255,255,255,0.15);
+  background:rgba(255,255,255,0.06); color:#ddd; font-size:12px; font-weight:700; cursor:pointer;
+}
+.vs-mode-tab.active { border-color:#7b61ff; background:rgba(123,97,255,0.2); color:#fff; }
+.online-note { font-size:11px; color:#ffcc55; margin-bottom:10px; line-height:1.4; }
+.online-status { font-size:11px; color:#8ee08e; margin-bottom:10px; min-height:16px; }
+.online-status.err { color:#ff6b6b; }
+.online-room-code-wrap { text-align:center; font-size:14px; margin:12px 0; color:#ccc; }
+.online-room-code-wrap strong { font-size:22px; letter-spacing:4px; color:#ffd700; }
+.online-players { display:flex; flex-direction:column; gap:8px; margin:12px 0; }
+.online-player { padding:10px; border-radius:10px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); font-weight:700; }
+.online-mm-pulse { font-size:14px; color:#7b61ff; padding:20px 0; animation: onlinePulse 1.2s ease-in-out infinite; }
+@keyframes onlinePulse { 0%,100%{opacity:0.5} 50%{opacity:1} }
 
 /* ══════════════════ ACCOUNT / LOGOUT ══════════════════ */
 #account-btn {

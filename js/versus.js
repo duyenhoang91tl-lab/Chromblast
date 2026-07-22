@@ -88,6 +88,7 @@ function openVersusSetup(){
   const p1=document.getElementById('vs-name1');
   if(p1 && typeof currentUser!=='undefined' && currentUser && currentUser.username) p1.value=currentUser.username;
   _vsShow('versus-setup-panel');
+  _vsHide('online-hub-panel');
 }
 
 function startVersusMatch(){
@@ -284,6 +285,7 @@ function _vsRenderTray(P){
 // ── Thao tác — giống map thường: chạm chọn / chạm lại xoay / kéo ghost + ô mờ / thả đặt ──
 function _vsPieceTap(P,i,ev){
   if(!versusMode||P.done||P.pieces[i].used) return;
+  if(_vs && _vs.online && P.idx!==0) return;
   if(P.el.cards.classList.contains('show')) return;
   if(ev){ ev.preventDefault(); ev.stopPropagation(); }
 
@@ -414,6 +416,7 @@ function _vsUpdatePreview(P,x,y,ptype){
 
 function _vsBeginDrag(P,ev){
   if(!versusMode||P.done||P.selected<0) return;
+  if(_vs && _vs.online && P.idx!==0) return;
   if(P.el.cards.classList.contains('show')) return;
   const id=ev.pointerId!==undefined?ev.pointerId:-1;
   _vsDrags.set(id,{
@@ -528,12 +531,14 @@ function _vsCanPlace(P,shape,R,C){
     return true;
   });
 }
-function _vsPlaceAt(P,R,C){
+function _vsPlaceAt(P,R,C,fromNetwork){
   if(!versusMode||P.done||P.selected<0) return;
   if(P.el.cards.classList.contains('show')) return;
   const pc=P.pieces[P.selected];
   if(!pc||pc.used) return;
   if(!_vsCanPlace(P,pc.shape,R,C)){ try{ sfxInvalid(); }catch(e){} return; }
+  const pieceIndex=P.selected;
+  const shapeSnap=pc.shape.map(([r,c])=>[r,c]);
   pc.shape.forEach(([dr,dc])=>{ P.board[R+dr][C+dc]=pc.color; });
   pc.used=true; P.selected=-1;
   P.score+=pc.shape.length;
@@ -552,6 +557,9 @@ function _vsPlaceAt(P,R,C){
   } else P.combo=0;
   if(P.pieces.every(x=>x.used)) _vsRefill(P);
   _vsRenderAll(P);
+  if(!fromNetwork && _vs && _vs.online && P.idx===0){
+    _vsBroadcastMove('place', { pieceIndex, R, C, shape: shapeSnap });
+  }
   if(!_vsAnyMove(P)){ P.done=true; P.el.note.textContent=t('vsNoSpace'); P.el.note.classList.add('show');
     if(_vs.players.every(q=>q.done)) _vsEndMatch();
   }
@@ -604,6 +612,7 @@ function _vsResolveClears(P){
 
 // ── Thẻ chướng ngại — ÚP trước (đối thủ ngồi đối diện không được đọc được).
 function _vsOfferCards(P){
+  if(_vs && _vs.online && P.idx!==0) return;
   const picks=[]; const pool=VS_OBSTACLES.slice();
   while(picks.length<3&&pool.length) picks.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]);
   P.el.cards.innerHTML='<div class="vs-cards-title">'+t('vsPickCard')+'</div>'+
@@ -624,6 +633,7 @@ function _vsOfferCards(P){
         P.el.cards.classList.remove('show');
         const foe=_vs.players[1-P.idx];
         _vsApplyObstacle(foe,ob);
+        if(_vs.online && P.idx===0) _vsBroadcastMove('card', { cardId: ob.id });
         try{ sfxThorn(); }catch(e){ try{ sfxPenalty(); }catch(e2){} }
         return;
       }
@@ -698,6 +708,7 @@ function _vsTick(){
 function _vsEndMatch(){
   if(!_vs) return;
   if(_vs.timer){ clearInterval(_vs.timer); _vs.timer=null; }
+  if(_vs.online){ stopListeningRoom(); _onlineLobby=null; }
   versusMode=false;
   const a=document.getElementById('versus-arena'); if(a) a.remove();
   _vsToggleGlobalUI(false);
