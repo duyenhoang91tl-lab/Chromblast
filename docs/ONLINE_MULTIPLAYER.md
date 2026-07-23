@@ -16,7 +16,50 @@ Hướng dẫn bật **tạo phòng · tìm đối thủ · đấu online · BXH
 
 ---
 
-## Bước 1 — Firebase Console
+## Bước 1 — Firebase Console (project `chromblast-5cf77`)
+
+Đã cấu hình sẵn trong repo:
+- `android/app/google-services.json`
+- `js/firebase-config.js`
+
+**Bạn cần làm thủ công trên [Firebase Console](https://console.firebase.google.com/project/chromblast-5cf77):**
+
+### 1a. Thêm Web app (khuyến nghị)
+Project settings → **Add app** → Web `</>` → copy `appId` dạng `1:470820469898:web:...`  
+→ thay vào `js/firebase-config.js` dòng `appId` (hiện đang dùng tạm Android appId).
+
+### 1b. Authentication
+**Build → Authentication → Sign-in method:**
+| Provider | Trạng thái |
+|----------|------------|
+| Anonymous | **Bật** (bắt buộc — vào phòng nhanh) |
+| Google | Bật (tuỳ chọn — nút Đăng nhập Google) |
+
+### 1c. Firestore Database
+**Build → Firestore Database → Create database**
+- Chế độ: **Production** (hoặc Test khi dev)
+- Region: gần VN nhất (vd. `asia-southeast1`)
+
+### 1d. Deploy Security Rules
+Cài Firebase CLI (một lần):
+```bash
+npm install -g firebase-tools
+firebase login
+firebase use chromblast-5cf77
+firebase deploy --only firestore:rules
+```
+File rules: `firestore.rules` (đã có trong repo).
+
+### 1e. SHA fingerprint (cho Google Sign-In trên APK)
+```bash
+# Debug keystore
+keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android
+```
+Project settings → Android app → **Add fingerprint** → dán SHA-1 và SHA-256.
+
+---
+
+## Bước 1 — Firebase Console (chi tiết chung)
 
 1. Tạo project tại [Firebase Console](https://console.firebase.google.com/)
 2. Thêm **Web app** → copy `firebaseConfig`
