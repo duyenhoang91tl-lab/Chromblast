@@ -10,6 +10,13 @@ const CARO_EMPTY = 0;
 const CARO_BLACK = 1; // host
 const CARO_WHITE = 2; // guest
 
+/** Cấu hình AI theo độ khó */
+const CARO_AI_LEVELS = {
+  easy:   { id:'easy',   thinkMs:450, mistakeRate:0.58, radius:2, lookahead:0 },
+  medium: { id:'medium', thinkMs:700, mistakeRate:0.18, radius:3, lookahead:1 },
+  hard:   { id:'hard',   thinkMs:950, mistakeRate:0,    radius:3, lookahead:2 },
+};
+
 let caroMode = false;
 let _caro = null; // { board, turn, mySlot, roomId, online, moveSeq, names, winner, hover, metrics }
 let _caroLobby = null;
@@ -168,7 +175,7 @@ function _caroOnPointerMove(ev){
 }
 
 function _caroOnPointerDown(ev){
-  if(!caroMode || !_caro || _caro.winner) return;
+  if(!caroMode || !_caro || _caro.winner || _caro.aiThinking) return;
   ev.preventDefault();
   const pos = _caroPointerPos(ev);
   if(!pos || !_caro.metrics) return;
@@ -202,6 +209,8 @@ function _caroRender(){
     if(_caro.winner){
       info.textContent = _caro.winner==='draw' ? t('caroDraw') :
         (_caro.winner===_caro.mySlot ? t('caroYouWin') : t('caroYouLose'));
+    } else if(_caro.aiThinking){
+      info.textContent = t('caroAiThinking');
     } else {
       const mine = _caro.turn === _caro.mySlot;
       const who = _caro.turn==='host' ? _caro.names[0] : _caro.names[1];
@@ -276,6 +285,195 @@ function _caroBoardFull(board){
   return true;
 }
 
+function _caroCloneBoard(board){
+  return board.map(row => row.slice());
+}
+
+function _caroCountStones(board){
+  let n = 0;
+  for(let r=0;r<CARO_SIZE;r++) for(let c=0;c<CARO_SIZE;c++) if(board[r][c]) n++;
+  return n;
+}
+
+function _caroGetCandidates(board, radius){
+  const moves = [];
+  const seen = new Set();
+  const hasStone = _caroCountStones(board) > 0;
+  for(let r=0;r<CARO_SIZE;r++){
+    for(let c=0;c<CARO_SIZE;c++){
+      if(board[r][c]) continue;
+      if(!hasStone){
+        moves.push([r,c]);
+        continue;
+      }
+      let near = false;
+      for(let dr=-radius; dr<=radius && !near; dr++){
+        for(let dc=-radius; dc<=radius && !near; dc++){
+          if(!dr && !dc) continue;
+          const nr=r+dr, nc=c+dc;
+          if(nr>=0 && nr<CARO_SIZE && nc>=0 && nc<CARO_SIZE && board[nr][nc]) near = true;
+        }
+      }
+      if(near){
+        const key = r+','+c;
+        if(!seen.has(key)){ seen.add(key); moves.push([r,c]); }
+      }
+    }
+  }
+  return moves;
+}
+
+function _caroExtendLine(board, r, c, dr, dc, color){
+  const cells = [[r,c]];
+  let nr = r-dr, nc = c-dc;
+  while(nr>=0 && nr<CARO_SIZE && nc>=0 && nc<CARO_SIZE && board[nr][nc]===color){
+    cells.unshift([nr,nc]); nr-=dr; nc-=dc;
+  }
+  nr = r+dr; nc = c+dc;
+  while(nr>=0 && nr<CARO_SIZE && nc>=0 && nc<CARO_SIZE && board[nr][nc]===color){
+    cells.push([nr,nc]); nr+=dr; nc+=dc;
+  }
+  return cells;
+}
+
+function _caroOpenEnds(board, cells, dr, dc){
+  const [r0,c0] = cells[0], [rN,cN] = cells[cells.length-1];
+  const br=r0-dr, bc=c0-dc, ar=rN+dr, ac=cN+dc;
+  const openAt = (rr,cc)=> rr>=0 && rr<CARO_SIZE && cc>=0 && cc<CARO_SIZE && board[rr][cc]===CARO_EMPTY;
+  let open = 0;
+  if(openAt(br,bc)) open++;
+  if(openAt(ar,ac)) open++;
+  return open;
+}
+
+function _caroPatternValue(len, openEnds){
+  if(len >= 5) return 100000;
+  if(len === 4) return openEnds === 2 ? 12000 : (openEnds === 1 ? 3200 : 120);
+  if(len === 3) return openEnds === 2 ? 900 : (openEnds === 1 ? 180 : 25);
+  if(len === 2) return openEnds === 2 ? 70 : (openEnds === 1 ? 18 : 4);
+  return 2;
+}
+
+function _caroScoreCell(board, r, c, color){
+  const b = _caroCloneBoard(board);
+  b[r][c] = color;
+  if(_caroCheckWin(b, r, c, color)) return 200000;
+  let score = 0;
+  const dirs = [[0,1],[1,0],[1,1],[1,-1]];
+  for(const [dr,dc] of dirs){
+    const cells = _caroExtendLine(b, r, c, dr, dc, color);
+    score += _caroPatternValue(cells.length, _caroOpenEnds(b, cells, dr, dc));
+  }
+  const cr = (CARO_SIZE - 1) / 2, cc = cr;
+  score += Math.max(0, 10 - (Math.abs(r-cr) + Math.abs(c-cc)));
+  return score;
+}
+
+function _caroEvaluateMove(board, r, c, color, oppColor){
+  const attack = _caroScoreCell(board, r, c, color);
+  const defend = _caroScoreCell(board, r, c, oppColor);
+  return attack + defend * 1.08;
+}
+
+function _caroPickAIMove(profile){
+  if(!_caro || !_caro.ai) return null;
+  const aiSlot = _caroOpp(_caro.mySlot);
+  const aiColor = _caroStone(aiSlot);
+  const playerColor = _caroStone(_caro.mySlot);
+  const board = _caro.board;
+  const candidates = _caroGetCandidates(board, profile.radius);
+  if(!candidates.length) return null;
+
+  const scored = candidates.map(([r,c]) => {
+    let score = _caroEvaluateMove(board, r, c, aiColor, playerColor);
+    if(profile.lookahead > 0){
+      const b2 = _caroCloneBoard(board);
+      b2[r][c] = aiColor;
+      if(_caroCheckWin(b2, r, c, aiColor)) return { r, c, score: score + 50000 };
+      const oppCands = _caroGetCandidates(b2, profile.radius);
+      let bestOpp = 0;
+      for(const [or, oc] of oppCands){
+        const s = _caroEvaluateMove(b2, or, oc, playerColor, aiColor);
+        if(s > bestOpp) bestOpp = s;
+        if(profile.lookahead >= 2 && s > 50000){
+          const b3 = _caroCloneBoard(b2);
+          b3[or][oc] = playerColor;
+          const aiCands = _caroGetCandidates(b3, profile.radius);
+          let bestAi = 0;
+          for(const [ar, ac] of aiCands){
+            const s2 = _caroEvaluateMove(b3, ar, ac, aiColor, playerColor);
+            if(s2 > bestAi) bestAi = s2;
+          }
+          bestOpp = Math.max(bestOpp, s - bestAi * 0.35);
+        }
+      }
+      score -= bestOpp * (profile.lookahead >= 2 ? 0.55 : 0.38);
+    }
+    return { r, c, score };
+  }).sort((a,b)=> b.score - a.score);
+
+  if(!scored.length) return null;
+  if(Math.random() < profile.mistakeRate){
+    const pool = scored.slice(0, Math.max(3, Math.ceil(scored.length * 0.45)));
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+  const top = scored[0].score;
+  const topMoves = scored.filter(m => m.score >= top * 0.93);
+  return topMoves[Math.floor(Math.random() * topMoves.length)];
+}
+
+function _caroScheduleAI(){
+  if(!_caro || !_caro.ai || _caro.winner || _caro.turn === _caro.mySlot) return;
+  const profile = _caro.ai;
+  _caro.aiThinking = true;
+  _caroRender();
+  if(_caro.aiTimer) clearTimeout(_caro.aiTimer);
+  _caro.aiTimer = setTimeout(()=>{
+    _caro.aiTimer = null;
+    if(!_caro || !_caro.ai || _caro.winner || _caro.turn === _caro.mySlot){
+      _caro.aiThinking = false;
+      return;
+    }
+    const move = _caroPickAIMove(profile);
+    _caro.aiThinking = false;
+    if(move) _caroApplyMove(move.r, move.c, _caroOpp(_caro.mySlot), true);
+    else _caroRender();
+  }, profile.thinkMs || 500);
+}
+
+function _caroEnterAIGame(levelId){
+  const profile = CARO_AI_LEVELS[levelId] || CARO_AI_LEVELS.medium;
+  const pName = typeof currentPlayerName === 'function' ? currentPlayerName() : 'Bạn';
+  _caro = {
+    board: _caroNewBoard(),
+    turn: 'host',
+    mySlot: 'host',
+    roomId: null,
+    online: false,
+    ai: profile,
+    aiThinking: false,
+    aiTimer: null,
+    moveSeq: 0,
+    names: [pName, t('caroAiName_' + profile.id)],
+    winner: null
+  };
+  caroMode = true;
+  _caroHide('caro-ai-panel');
+  _caroHide('caro-hub-panel');
+  document.getElementById('caro-stage')?.classList.add('active');
+  document.getElementById('grid-wrap')?.classList.add('secret-mode');
+  document.getElementById('mode-badge').textContent = '⬛ CARO vs AI';
+  document.getElementById('mode-badge').classList.add('secret');
+  _caroRender();
+  try{ startBgm('action'); }catch(e){}
+}
+
+function caroStartAI(levelId){
+  try{ sfxClick(); }catch(e){}
+  if(!canPlayCaro()) return;
+  _caroEnterAIGame(levelId);
+}
+
 function _caroApplyMove(r, c, slot, fromNet){
   if(!_caro || _caro.winner) return false;
   if(_caro.board[r][c]) return false;
@@ -304,6 +502,7 @@ function _caroApplyMove(r, c, slot, fromNet){
     sendOnlineMove(_caro.roomId, { type:'caro_place', slot, r, c }).catch(()=>{});
     updateOnlineRoomTurn(_caro.roomId, _caro.turn).catch(()=>{});
   }
+  if(!fromNet && _caro.ai && !_caro.winner) _caroScheduleAI();
   return true;
 }
 
@@ -366,38 +565,49 @@ function _caroEnterGame(roomData){
 function _caroEndGame(winnerSlot, fromRemote){
   if(!_caro) return;
   _caro.winner = winnerSlot;
+  _caro.aiThinking = false;
+  if(_caro.aiTimer){ clearTimeout(_caro.aiTimer); _caro.aiTimer = null; }
   _caroRender();
 
-  if(!fromRemote && _caro.roomId){
+  const isAI = !!_caro.ai;
+
+  if(!isAI && !fromRemote && _caro.roomId){
     finalizeCaroMatch(_caro.roomId, winnerSlot).catch(()=>{});
   }
-
-  let localOutcome = 'draw';
-  if(winnerSlot !== 'draw'){
-    localOutcome = winnerSlot === _caro.mySlot ? 'win' : 'loss';
-  }
-  const statsAfter = applyLocalCaroResult(localOutcome);
 
   let msg;
   if(winnerSlot==='draw') msg = t('caroDraw');
   else if(winnerSlot===_caro.mySlot) msg = t('caroYouWin');
   else msg = t('caroYouLose');
 
-  const rank = statsAfter.rank;
-  const ptsDelta = localOutcome==='win' ? '+25' : (localOutcome==='draw' ? '+8' : '+0');
-
   document.getElementById('caro-result-title').textContent = msg;
-  document.getElementById('caro-result-body').innerHTML =
-    '<div style="font-size:13px;color:#ccc;margin-bottom:8px;">'+escapeHtml(_caro.names[0])+' (●) vs '+escapeHtml(_caro.names[1])+' (○)</div>'+
-    '<div class="caro-result-rank">'+rank.icon+' <b>'+escapeHtml(rank.name)+'</b> · '+ptsDelta+' '+t('caroPts')+'</div>'+
-    '<div class="caro-result-wld">'+t('caroWins')+': '+statsAfter.wins+' · '+t('caroLosses')+': '+statsAfter.losses+' · '+t('caroDraws')+': '+statsAfter.draws+' · '+t('caroWinRate', statsAfter.winRate)+'</div>';
+
+  if(isAI){
+    document.getElementById('caro-result-body').innerHTML =
+      '<div style="font-size:13px;color:#ccc;margin-bottom:8px;">'+escapeHtml(_caro.names[0])+' (●) vs '+escapeHtml(_caro.names[1])+' (○)</div>'+
+      '<div class="caro-result-ai-note">'+t('caroAiNoPts')+'</div>';
+  } else {
+    let localOutcome = 'draw';
+    if(winnerSlot !== 'draw'){
+      localOutcome = winnerSlot === _caro.mySlot ? 'win' : 'loss';
+    }
+    const statsAfter = applyLocalCaroResult(localOutcome);
+    const rank = statsAfter.rank;
+    const ptsDelta = localOutcome==='win' ? '+25' : (localOutcome==='draw' ? '+8' : '+0');
+    document.getElementById('caro-result-body').innerHTML =
+      '<div style="font-size:13px;color:#ccc;margin-bottom:8px;">'+escapeHtml(_caro.names[0])+' (●) vs '+escapeHtml(_caro.names[1])+' (○)</div>'+
+      '<div class="caro-result-rank">'+rank.icon+' <b>'+escapeHtml(rank.name)+'</b> · '+ptsDelta+' '+t('caroPts')+'</div>'+
+      '<div class="caro-result-wld">'+t('caroWins')+': '+statsAfter.wins+' · '+t('caroLosses')+': '+statsAfter.losses+' · '+t('caroDraws')+': '+statsAfter.draws+' · '+t('caroWinRate', statsAfter.winRate)+'</div>';
+    _caroRefreshHubStats();
+  }
+
   setTimeout(()=>_caroShow('caro-result-panel'), 600);
   stopListeningRoom();
-  _caroRefreshHubStats();
 }
 
 function _caroQuit(){
   caroMode = false;
+  if(_caro && _caro.aiTimer) clearTimeout(_caro.aiTimer);
   _caro = null;
   _caroLobby = null;
   stopListeningRoom();
@@ -414,6 +624,7 @@ function _caroQuit(){
   _caroHide('caro-lobby-panel');
   _caroHide('caro-hub-panel');
   _caroHide('caro-mm-panel');
+  _caroHide('caro-ai-panel');
   try{ startBgm('main'); }catch(e){}
 }
 
@@ -459,6 +670,7 @@ function closeCaroHub(){
   _caroHide('caro-hub-panel');
   _caroHide('caro-lobby-panel');
   _caroHide('caro-mm-panel');
+  _caroHide('caro-ai-panel');
 }
 
 function _caroOpenLobby(roomId, code, role, roomData){
@@ -544,6 +756,17 @@ async function caroStartMatch(){
 (function initCaro(){
   document.getElementById('caro-btn')?.addEventListener('click', openCaroHub);
   document.getElementById('caro-hub-close')?.addEventListener('click', closeCaroHub);
+  document.getElementById('caro-ai-btn')?.addEventListener('click', ()=>{
+    try{ sfxClick(); }catch(e){}
+    _caroShow('caro-ai-panel');
+  });
+  document.getElementById('caro-ai-close')?.addEventListener('click', ()=>{
+    try{ sfxClick(); }catch(e){}
+    _caroHide('caro-ai-panel');
+  });
+  document.querySelectorAll('.caro-ai-level').forEach(btn=>{
+    btn.addEventListener('click', ()=> caroStartAI(btn.dataset.level));
+  });
   document.getElementById('caro-create-btn')?.addEventListener('click', caroCreateRoom);
   document.getElementById('caro-join-btn')?.addEventListener('click', caroJoinRoom);
   document.getElementById('caro-find-btn')?.addEventListener('click', caroFindOpponent);

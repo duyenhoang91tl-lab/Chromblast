@@ -657,6 +657,21 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 .caro-lb-pts { font-size: 12px; font-weight: 800; color: #ffd700; min-width: 36px; text-align: right; }
 .caro-result-rank { font-size: 14px; color: #ffd700; margin: 8px 0; }
 .caro-result-wld { font-size: 11px; color: #aaa; }
+.caro-hub-divider { text-align: center; font-size: 11px; color: #666; margin: 14px 0 10px; letter-spacing: 1px; }
+.caro-ai-hub-btn { margin-top: 4px; background: linear-gradient(135deg, #2a5a2a, #4a8a4a) !important; }
+.caro-ai-levels { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+.caro-ai-level {
+  width: 100%; padding: 14px 16px; border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 10px; background: rgba(255,255,255,0.08); color: #fff;
+  font-size: 15px; font-weight: 700; cursor: pointer; text-align: left;
+  transition: background 0.15s, transform 0.1s;
+}
+.caro-ai-level:hover { background: rgba(255,255,255,0.16); }
+.caro-ai-level:active { transform: scale(0.98); }
+.caro-ai-level[data-level="easy"] { border-color: rgba(110,224,142,0.35); }
+.caro-ai-level[data-level="medium"] { border-color: rgba(255,213,74,0.35); }
+.caro-ai-level[data-level="hard"] { border-color: rgba(255,120,80,0.45); }
+.caro-result-ai-note { font-size: 12px; color: #9ad4ff; margin-top: 8px; }
 
 /* ══════════════════ ACCOUNT / LOGOUT ══════════════════ */
 #account-btn {
