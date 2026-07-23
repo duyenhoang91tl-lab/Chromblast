@@ -141,6 +141,7 @@
       <button id="brick-skin-btn" title="Kho gạch" data-i18n-title="ttBricks" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">🧱</button>
       <button id="board-skin-btn" title="Kho nền bàn" data-i18n-title="ttBoards" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">🗺️</button>
       <button id="spin-btn-hdr" title="Vòng quay may mắn" data-i18n-title="ttSpin" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">🎡</button>
+      <button id="caro-btn" title="Cờ Caro online (mở từ Lv.3)" data-i18n-title="ttCaro">⬛</button>
       <button id="versus-btn" title="Đấu 1-1 (mở từ Lv.10)" data-i18n-title="ttVersus">⚔️</button>
       <button id="leaderboard-btn" title="Bảng xếp hạng" data-i18n-title="ttLeaderboard">🏆</button>
       <button id="roundguide-btn" title="Hướng dẫn cơ chế vòng hiện tại" data-i18n-title="ttRoundGuide" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">📖</button>
@@ -527,6 +528,49 @@
 
   <div id="versus-timer" style="display:none;position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:9000;background:rgba(20,20,40,0.92);border:1px solid #ffd54a;border-radius:20px;padding:6px 16px;font-weight:800;color:#ffd54a;font-size:14px;box-shadow:0 2px 12px rgba(255,213,74,0.35);pointer-events:none;"></div>
 
+  <!-- ══ CỜ CARO ONLINE (Lv.3) ══ -->
+  <div id="caro-hub-panel" class="admin-panel-like">
+    <div class="admin-card">
+      <div class="admin-title"><span data-i18n="caroTitle">⬛ Cờ Caro Online</span><button class="admin-close" id="caro-hub-close">✕</button></div>
+      <div class="admin-sub" data-i18n="caroSub">15×15 · 5 quân thắng · luật chặn hai đầu không tính thắng.</div>
+      <div id="caro-online-status" class="online-status"></div>
+      <button type="button" id="caro-create-btn" class="auth-submit-btn" data-i18n="onlineCreate">🏠 Tạo phòng</button>
+      <div class="auth-field" style="margin-top:12px;"><label data-i18n="onlineJoinLabel">Vào phòng bằng mã</label><input type="text" id="caro-join-code" maxlength="6" placeholder="ABC123" style="text-transform:uppercase;letter-spacing:2px;text-align:center;font-weight:700;"></div>
+      <button type="button" id="caro-join-btn" class="auth-submit-btn" style="background:rgba(255,255,255,0.15);" data-i18n="onlineJoin">🚪 Vào phòng</button>
+      <button type="button" id="caro-find-btn" class="auth-submit-btn" style="margin-top:10px;background:linear-gradient(135deg,#333,#666);" data-i18n="onlineFind">🔍 Tìm đối thủ</button>
+    </div>
+  </div>
+  <div id="caro-lobby-panel" class="admin-panel-like">
+    <div class="admin-card">
+      <div class="admin-title"><span data-i18n="caroLobby">⬛ Phòng Caro</span></div>
+      <div class="online-room-code-wrap"><span data-i18n="onlineCode">Mã phòng</span>: <strong id="caro-room-code">------</strong></div>
+      <div id="caro-lobby-players" class="online-players"></div>
+      <button type="button" id="caro-start-btn" class="auth-submit-btn" data-i18n="onlineStart">▶ Bắt đầu trận</button>
+      <button type="button" id="caro-lobby-leave" class="auth-submit-btn" style="background:rgba(255,255,255,0.12);margin-top:8px;" data-i18n="onlineLeave">✕ Rời phòng</button>
+    </div>
+  </div>
+  <div id="caro-mm-panel" class="admin-panel-like">
+    <div class="admin-card" style="text-align:center;">
+      <div class="admin-title"><span data-i18n="onlineSearchingTitle">🔍 Đang tìm đối thủ</span></div>
+      <div id="caro-mm-status" class="online-mm-pulse" data-i18n="onlineSearching">Đang tìm người chơi phù hợp...</div>
+      <button type="button" id="caro-mm-cancel" class="auth-submit-btn" style="background:rgba(255,255,255,0.12);margin-top:16px;" data-i18n="onlineCancel">✕ Hủy</button>
+    </div>
+  </div>
+  <div id="caro-result-panel" class="admin-panel-like">
+    <div class="admin-card">
+      <div class="admin-title"><span id="caro-result-title">🏆</span></div>
+      <div id="caro-result-body"></div>
+      <button type="button" id="caro-result-close" class="auth-submit-btn" data-i18n="vsClose" style="margin-top:12px;">✕ Đóng</button>
+    </div>
+  </div>
+  <div id="caro-stage">
+    <div class="caro-topbar">
+      <span id="caro-turn-info">Caro</span>
+      <button type="button" id="caro-quit-btn" class="caro-quit">✕</button>
+    </div>
+    <div id="caro-grid" class="caro-grid"></div>
+  </div>
+
   <div id="hiddenmap-menu-panel" class="admin-panel-like">
     <div class="admin-card">
       <div class="admin-title"><span data-i18n="hiddenMapTitle">🗺️ Map ẩn đã chơi qua</span><button class="admin-close" id="hiddenmap-menu-close-btn">✕</button></div>
@@ -760,5 +804,6 @@
 <script src="js/native.js"></script>
 <script src="js/versus.js"></script>
 <script src="js/online-ui.js"></script>
+<script src="js/caro.js"></script>
 </body>
 </html>

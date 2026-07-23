@@ -83,13 +83,16 @@ async function signInWithGoogle(){
 }
 
 // ── Phòng ─────────────────────────────────────────────────────
-async function createOnlineRoom(){
+async function createOnlineRoom(opts){
+  opts = opts || {};
+  const gameType = opts.gameType || 'versus';
   const uid = await ensureOnlineAuth();
   const code = _roomCode();
   const name = getOnlineDisplayName();
   const ref = _onlineDb.collection('rooms').doc();
   await ref.set({
     code,
+    gameType,
     hostId: uid,
     guestId: null,
     hostName: name,
@@ -97,6 +100,7 @@ async function createOnlineRoom(){
     status: 'open',
     mode: 'casual',
     seed: null,
+    currentTurn: null,
     hostReady: true,
     guestReady: false,
     hostScore: 0,
@@ -109,7 +113,9 @@ async function createOnlineRoom(){
   return { roomId: ref.id, code };
 }
 
-async function joinOnlineRoomByCode(code){
+async function joinOnlineRoomByCode(code, opts){
+  opts = opts || {};
+  const gameType = opts.gameType || null;
   const uid = await ensureOnlineAuth();
   const name = getOnlineDisplayName();
   const snap = await _onlineDb.collection('rooms')
@@ -119,6 +125,7 @@ async function joinOnlineRoomByCode(code){
   if(snap.empty) throw new Error('room_not_found');
   const doc = snap.docs[0];
   const data = doc.data();
+  if(gameType && data.gameType && data.gameType !== gameType) throw new Error('wrong_game_type');
   if(data.hostId === uid) return { roomId: doc.id, ...data };
   if(data.guestId && data.guestId !== uid) throw new Error('room_full');
   await doc.ref.update({
@@ -146,7 +153,8 @@ async function leaveOnlineRoom(roomId){
   stopListeningRoom();
 }
 
-async function startOnlineRoomMatch(roomId){
+async function startOnlineRoomMatch(roomId, opts){
+  opts = opts || {};
   const uid = await ensureOnlineAuth();
   const ref = _onlineDb.collection('rooms').doc(roomId);
   const snap = await ref.get();
@@ -154,6 +162,15 @@ async function startOnlineRoomMatch(roomId){
   const d = snap.data();
   if(d.hostId !== uid) throw new Error('host_only');
   if(!d.guestId) throw new Error('waiting_guest');
+  if(d.gameType === 'caro'){
+    await ref.update({
+      status: 'playing',
+      currentTurn: 'host',
+      startedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      moveSeq: 0
+    });
+    return null;
+  }
   const seed = (Date.now() ^ (Math.random()*0xFFFFFFF))>>>0;
   await ref.update({
     status: 'playing',
@@ -190,6 +207,18 @@ function stopListeningRoom(){
   if(_movesUnsub){ _movesUnsub(); _movesUnsub = null; }
 }
 
+async function fetchAllOnlineMoves(roomId){
+  if(!_onlineDb || !roomId) return [];
+  const snap = await _onlineDb.collection('rooms').doc(roomId).collection('moves')
+    .orderBy('seq', 'asc').get();
+  return snap.docs.map(d => d.data());
+}
+
+async function updateOnlineRoomTurn(roomId, currentTurn){
+  if(!_onlineDb || !roomId) return;
+  await _onlineDb.collection('rooms').doc(roomId).update({ currentTurn });
+}
+
 async function sendOnlineMove(roomId, payload){
   if(!_onlineDb || !roomId) return;
   const ref = _onlineDb.collection('rooms').doc(roomId);
@@ -214,7 +243,9 @@ async function updateOnlineScores(roomId, hostScore, guestScore){
 }
 
 // ── Matchmaking ───────────────────────────────────────────────
-async function startMatchmaking(onMatched){
+async function startMatchmaking(onMatched, opts){
+  opts = opts || {};
+  const gameType = opts.gameType || 'versus';
   const uid = await ensureOnlineAuth();
   const name = getOnlineDisplayName();
   const qRef = _onlineDb.collection('matchQueue').doc(uid);
@@ -223,14 +254,15 @@ async function startMatchmaking(onMatched){
     displayName: name,
     level: (typeof playerLevel !== 'undefined' ? playerLevel : 1),
     mode: 'casual',
+    gameType,
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
   });
 
   const tryPair = async () => {
     const mine = await qRef.get();
     if(!mine.exists) return;
-    const all = await _onlineDb.collection('matchQueue').orderBy('createdAt', 'asc').limit(12).get();
-    const other = all.docs.find(d => d.id !== uid);
+    const all = await _onlineDb.collection('matchQueue').orderBy('createdAt', 'asc').limit(20).get();
+    const other = all.docs.find(d => d.id !== uid && (d.data().gameType || 'versus') === gameType);
     if(!other) return;
     const roomRef = _onlineDb.collection('rooms').doc();
     try{
@@ -240,8 +272,9 @@ async function startMatchmaking(onMatched){
         if(!myQ.exists || !theirQ.exists) return;
         const hostDoc = myQ.data().createdAt <= theirQ.data().createdAt ? myQ : theirQ;
         const guestDoc = hostDoc === myQ ? theirQ : myQ;
-        tx.set(roomRef, {
+        const roomData = {
           code: _roomCode(),
+          gameType,
           hostId: hostDoc.id,
           guestId: guestDoc.id,
           hostName: hostDoc.data().displayName,
@@ -249,6 +282,7 @@ async function startMatchmaking(onMatched){
           status: 'ready',
           mode: 'casual',
           seed: null,
+          currentTurn: null,
           hostReady: true,
           guestReady: true,
           hostScore: 0,
@@ -258,7 +292,8 @@ async function startMatchmaking(onMatched){
           winnerId: null,
           matchmaking: true,
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
+        };
+        tx.set(roomRef, roomData);
         tx.delete(qRef);
         tx.delete(other.ref);
       });
@@ -285,6 +320,41 @@ function cancelMatchmaking(){
 }
 
 // ── Kết quả & BXH PvP ─────────────────────────────────────────
+async function finalizeCaroMatch(roomId, winnerSlot){
+  if(!_onlineDb || !roomId) return;
+  const ref = _onlineDb.collection('rooms').doc(roomId);
+  try{
+    await _onlineDb.runTransaction(async tx => {
+      const snap = await tx.get(ref);
+      if(!snap.exists || snap.data().status === 'finished') return;
+      const d = snap.data();
+      const winnerId = winnerSlot === 'host' ? d.hostId : (winnerSlot === 'guest' ? d.guestId : null);
+      tx.update(ref, {
+        status: 'finished',
+        winnerId,
+        endedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    });
+  }catch(e){ return; }
+  const snap = await ref.get();
+  if(!snap.exists) return;
+  const d = snap.data();
+  const winnerId = d.winnerId;
+  if(!winnerId) return;
+  const loserId = winnerId === d.hostId ? d.guestId : d.hostId;
+  await _onlineDb.collection('players').doc(winnerId).set({
+    caroWins: firebase.firestore.FieldValue.increment(1),
+    caroPoints: firebase.firestore.FieldValue.increment(25),
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  }, { merge: true });
+  if(loserId){
+    await _onlineDb.collection('players').doc(loserId).set({
+      caroLosses: firebase.firestore.FieldValue.increment(1),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+  }
+}
+
 async function finalizeOnlineMatch(roomId, hostScore, guestScore){
   if(!_onlineDb || !roomId) return;
   const ref = _onlineDb.collection('rooms').doc(roomId);
