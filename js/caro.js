@@ -693,13 +693,21 @@ async function _caroRequireOnline(){
   }
 }
 
+/** Khoá/mở phần online (tạo phòng / vào phòng / tìm đối thủ / BXH) theo Lv.
+ *  "Đấu với máy" KHÔNG bị ảnh hưởng — luôn chơi được, kể cả offline. */
+function _caroSetOnlineLocked(locked){
+  const section = document.getElementById('caro-online-section');
+  const note = document.getElementById('caro-online-locked-note');
+  if(section) section.style.display = locked ? 'none' : '';
+  if(note) note.style.display = locked ? '' : 'none';
+}
+
 function openCaroHub(){
   try{ sfxClick(); }catch(e){}
-  if(!canPlayCaro()){
-    try{ showComboFlash(0,false,t('caroNeedLevel', CARO_MIN_LEVEL)); }catch(e){}
-    return;
-  }
   _caroShow('caro-hub-panel');
+  const locked = !canPlayCaro();
+  _caroSetOnlineLocked(locked);
+  if(locked) return; // vẫn hiện bảng — người chơi bấm "Đấu với máy" bình thường
   _caroRefreshHubStats();
   if(isOnlineServicesEnabled()) _caroRequireOnline();
 }
@@ -751,6 +759,7 @@ function _caroRenderLobby(d){
 }
 
 async function caroCreateRoom(){
+  if(!canPlayCaro()){ _caroStatus(t('caroNeedLevel', CARO_MIN_LEVEL), true); return; }
   if(!await _caroRequireOnline()) return;
   try{
     const { roomId, code } = await createOnlineRoom({ gameType:'caro' });
@@ -760,6 +769,7 @@ async function caroCreateRoom(){
 }
 
 async function caroJoinRoom(){
+  if(!canPlayCaro()){ _caroStatus(t('caroNeedLevel', CARO_MIN_LEVEL), true); return; }
   if(!await _caroRequireOnline()) return;
   const code = (document.getElementById('caro-join-code').value||'').trim().toUpperCase();
   if(code.length<4){ _caroStatus(t('onlineCodeShort'), true); return; }
@@ -775,6 +785,7 @@ async function caroJoinRoom(){
 }
 
 async function caroFindOpponent(){
+  if(!canPlayCaro()){ _caroStatus(t('caroNeedLevel', CARO_MIN_LEVEL), true); return; }
   if(!await _caroRequireOnline()) return;
   _caroHide('caro-hub-panel');
   _caroShow('caro-mm-panel');
