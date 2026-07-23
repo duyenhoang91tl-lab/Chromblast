@@ -11,8 +11,204 @@ const CARO_BLACK = 1; // host
 const CARO_WHITE = 2; // guest
 
 let caroMode = false;
-let _caro = null; // { board, turn, mySlot, roomId, online, moveSeq, names, winner }
+let _caro = null; // { board, turn, mySlot, roomId, online, moveSeq, names, winner, hover, metrics }
 let _caroLobby = null;
+let _caroCanvasBound = false;
+
+function _caroGetCanvas(){
+  return document.getElementById('caro-canvas');
+}
+
+/** Tính layout canvas (giao điểm cổ điển 15×15) */
+function _caroMeasure(){
+  const canvas = _caroGetCanvas();
+  if(!canvas) return null;
+  const wrap = canvas.parentElement;
+  const maxW = Math.min((wrap && wrap.clientWidth) || 400, 440);
+  const maxH = Math.min(window.innerHeight - 120, maxW);
+  const cssSize = Math.floor(Math.min(maxW, maxH));
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = Math.floor(cssSize * dpr);
+  canvas.height = Math.floor(cssSize * dpr);
+  canvas.style.width = cssSize + 'px';
+  canvas.style.height = cssSize + 'px';
+  const pad = cssSize * 0.06 * dpr;
+  const inner = cssSize * dpr - pad * 2;
+  const step = inner / (CARO_SIZE - 1);
+  const stoneR = step * 0.42;
+  return { dpr, pad, step, stoneR, px: cssSize * dpr };
+}
+
+function _caroXY(r, c, m){
+  return { x: m.pad + c * m.step, y: m.pad + r * m.step };
+}
+
+function _caroCellAt(px, py, m){
+  const c = Math.round((px - m.pad) / m.step);
+  const r = Math.round((py - m.pad) / m.step);
+  if(r < 0 || r >= CARO_SIZE || c < 0 || c >= CARO_SIZE) return null;
+  const { x, y } = _caroXY(r, c, m);
+  const hit = m.step * 0.48;
+  if(Math.abs(px - x) > hit || Math.abs(py - y) > hit) return null;
+  return { r, c };
+}
+
+function _caroDrawStone(ctx, x, y, r, color){
+  ctx.save();
+  ctx.shadowColor = 'rgba(0,0,0,0.45)';
+  ctx.shadowBlur = r * 0.35;
+  ctx.shadowOffsetY = r * 0.12;
+  const g = ctx.createRadialGradient(x - r*0.3, y - r*0.3, r*0.1, x, y, r);
+  if(color === CARO_BLACK){
+    g.addColorStop(0, '#555');
+    g.addColorStop(0.45, '#1a1a1a');
+    g.addColorStop(1, '#000');
+  } else {
+    g.addColorStop(0, '#fff');
+    g.addColorStop(0.5, '#e8e8e8');
+    g.addColorStop(1, '#bbb');
+  }
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = color === CARO_BLACK ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.12)';
+  ctx.lineWidth = Math.max(1, r * 0.08);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function _caroDrawBoard(){
+  const canvas = _caroGetCanvas();
+  if(!canvas || !_caro) return;
+  const ctx = canvas.getContext('2d');
+  const m = _caroMeasure();
+  if(!m) return;
+  _caro.metrics = m;
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  const W = canvas.width, H = canvas.height;
+
+  // Nền gỗ
+  const wood = ctx.createLinearGradient(0, 0, W, H);
+  wood.addColorStop(0, '#d4a855');
+  wood.addColorStop(0.5, '#c4956a');
+  wood.addColorStop(1, '#a67c52');
+  ctx.fillStyle = wood;
+  ctx.fillRect(0, 0, W, H);
+
+  // Viền bàn
+  ctx.strokeStyle = '#5c3d1e';
+  ctx.lineWidth = Math.max(2, m.dpr * 2);
+  ctx.strokeRect(m.pad * 0.65, m.pad * 0.65, W - m.pad * 1.3, H - m.pad * 1.3);
+
+  // Lưới
+  ctx.strokeStyle = 'rgba(40,30,20,0.55)';
+  ctx.lineWidth = Math.max(1, m.dpr * 0.9);
+  for(let i = 0; i < CARO_SIZE; i++){
+    const x0 = m.pad, y0 = m.pad + i * m.step;
+    const x1 = W - m.pad, y1 = y0;
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+    const x2 = m.pad + i * m.step, y2 = m.pad;
+    const x3 = x2, y3 = H - m.pad;
+    ctx.beginPath(); ctx.moveTo(x2, y2); ctx.lineTo(x3, y3); ctx.stroke();
+  }
+
+  // Điểm sao (giao lộ quan trọng)
+  const stars = [[3,3],[3,11],[11,3],[11,11],[7,7]];
+  ctx.fillStyle = 'rgba(30,20,10,0.65)';
+  stars.forEach(([sr, sc]) => {
+    const { x, y } = _caroXY(sr, sc, m);
+    ctx.beginPath();
+    ctx.arc(x, y, Math.max(2, m.step * 0.1), 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  // Quân cờ
+  for(let r = 0; r < CARO_SIZE; r++){
+    for(let c = 0; c < CARO_SIZE; c++){
+      const v = _caro.board[r][c];
+      if(!v) continue;
+      const { x, y } = _caroXY(r, c, m);
+      _caroDrawStone(ctx, x, y, m.stoneR, v);
+    }
+  }
+
+  // Preview ô chọn (lượt mình)
+  if(_caro.hover && !_caro.winner && _caro.turn === _caro.mySlot && !_caro.board[_caro.hover.r][_caro.hover.c]){
+    const { x, y } = _caroXY(_caro.hover.r, _caro.hover.c, m);
+    const preview = _caroStone(_caro.mySlot);
+    ctx.globalAlpha = 0.38;
+    _caroDrawStone(ctx, x, y, m.stoneR * 0.92, preview);
+    ctx.globalAlpha = 1;
+  }
+}
+
+function _caroPointerPos(ev){
+  const canvas = _caroGetCanvas();
+  if(!canvas || !_caro.metrics) return null;
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  const clientX = ev.clientX !== undefined ? ev.clientX : (ev.touches && ev.touches[0] ? ev.touches[0].clientX : 0);
+  const clientY = ev.clientY !== undefined ? ev.clientY : (ev.touches && ev.touches[0] ? ev.touches[0].clientY : 0);
+  return {
+    px: (clientX - rect.left) * scaleX,
+    py: (clientY - rect.top) * scaleY
+  };
+}
+
+function _caroOnPointerMove(ev){
+  if(!caroMode || !_caro || _caro.winner) return;
+  const pos = _caroPointerPos(ev);
+  if(!pos || !_caro.metrics) return;
+  const cell = _caroCellAt(pos.px, pos.py, _caro.metrics);
+  const prev = _caro.hover;
+  _caro.hover = cell;
+  if((prev?.r !== cell?.r) || (prev?.c !== cell?.c)) _caroDrawBoard();
+}
+
+function _caroOnPointerDown(ev){
+  if(!caroMode || !_caro || _caro.winner) return;
+  ev.preventDefault();
+  const pos = _caroPointerPos(ev);
+  if(!pos || !_caro.metrics) return;
+  const cell = _caroCellAt(pos.px, pos.py, _caro.metrics);
+  if(!cell) return;
+  if(_caro.turn !== _caro.mySlot) return;
+  _caroApplyMove(cell.r, cell.c, _caro.mySlot, false);
+}
+
+function _caroBindCanvas(){
+  if(_caroCanvasBound) return;
+  const canvas = _caroGetCanvas();
+  if(!canvas) return;
+  _caroCanvasBound = true;
+  canvas.addEventListener('pointerdown', _caroOnPointerDown);
+  canvas.addEventListener('pointermove', _caroOnPointerMove);
+  canvas.addEventListener('pointerleave', ()=>{
+    if(_caro && _caro.hover){ _caro.hover = null; _caroDrawBoard(); }
+  });
+  window.addEventListener('resize', ()=>{ if(caroMode) _caroDrawBoard(); });
+  window.addEventListener('orientationchange', ()=>setTimeout(()=>{ if(caroMode) _caroDrawBoard(); }, 120));
+}
+
+function _caroRender(){
+  const info = document.getElementById('caro-turn-info');
+  if(!_caro) return;
+  _caroBindCanvas();
+  _caroDrawBoard();
+
+  if(info){
+    if(_caro.winner){
+      info.textContent = _caro.winner==='draw' ? t('caroDraw') :
+        (_caro.winner===_caro.mySlot ? t('caroYouWin') : t('caroYouLose'));
+    } else {
+      const mine = _caro.turn === _caro.mySlot;
+      const who = _caro.turn==='host' ? _caro.names[0] : _caro.names[1];
+      info.textContent = mine ? t('caroYourTurn') : t('caroOppTurn', who);
+    }
+  }
+}
 
 function canPlayCaro(){
   return typeof playerLevel !== 'undefined' && playerLevel >= CARO_MIN_LEVEL;
@@ -232,6 +428,11 @@ function _caroQuit(){
   _caro = null;
   _caroLobby = null;
   stopListeningRoom();
+  const canvas = _caroGetCanvas();
+  if(canvas){
+    const ctx = canvas.getContext('2d');
+    if(ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
   document.getElementById('caro-stage')?.classList.remove('active');
   document.getElementById('grid-wrap')?.classList.remove('secret-mode');
   document.getElementById('mode-badge').textContent = 'BÌNH THƯỜNG';
