@@ -1,10 +1,11 @@
-// Firebase project: chromblast-5cf77
-// Nên thêm Web app trong Firebase Console → lấy appId dạng ...:web:... thay dòng appId bên dưới.
+// Firebase Web app: chromblast-web (project chromblast-5cf77)
+// Game dùng Firebase compat CDN trong index.html — KHÔNG cần npm install firebase.
 window.FIREBASE_CONFIG = {
-  apiKey: 'AIzaSyBtREyY4aUVe2kgdcnqdgfxikNkEU19sMU',
+  apiKey: 'AIzaSyDUFxuIdICTCVIx_latyFTCzCtYsze9Xnw',
   authDomain: 'chromblast-5cf77.firebaseapp.com',
   projectId: 'chromblast-5cf77',
   storageBucket: 'chromblast-5cf77.firebasestorage.app',
   messagingSenderId: '470820469898',
-  appId: '1:470820469898:android:bae6f72ad766e9e011c173'
+  appId: '1:470820469898:web:b3e3fc9d204f732e11c173',
+  measurementId: 'G-94SKQYQKBJ'
 };
