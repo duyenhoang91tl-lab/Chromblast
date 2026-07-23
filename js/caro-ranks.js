@@ -10,12 +10,18 @@ const CARO_LOSS_PTS = 0;
 
 /** Bậc danh hiệu theo tổng điểm Caro */
 const CARO_RANKS = [
-  { id:'novice',    min:0,    icon:'🌱', vi:'Tân thủ',   en:'Novice' },
-  { id:'beginner',  min:50,   icon:'📘', vi:'Nhập môn',  en:'Beginner' },
-  { id:'skilled',   min:150,  icon:'♟️', vi:'Thạo cờ',   en:'Skilled' },
-  { id:'expert',    min:350,  icon:'⚔️', vi:'Cao thủ',   en:'Expert' },
-  { id:'master',    min:700,  icon:'🏆', vi:'Kỳ thủ',   en:'Master' },
-  { id:'grand',     min:1200, icon:'👑', vi:'Đại sư',   en:'Grandmaster' },
+  { id:'novice',    min:0,    icon:'🌱', vi:'Tân thủ',    en:'Novice' },
+  { id:'beginner',  min:50,   icon:'📘', vi:'Nhập môn',   en:'Beginner' },
+  { id:'skilled',   min:150,  icon:'♟️', vi:'Thạo cờ',    en:'Skilled' },
+  { id:'expert',    min:350,  icon:'⚔️', vi:'Cao thủ',    en:'Expert' },
+  { id:'master',    min:700,  icon:'🏆', vi:'Kỳ thủ',    en:'Master' },
+  { id:'grand',     min:1200, icon:'👑', vi:'Đại sư',    en:'Grandmaster' },
+  { id:'platinum',  min:1800, icon:'🤍', vi:'Bạch kim',   en:'Platinum' },
+  { id:'diamond',   min:2500, icon:'💎', vi:'Kim cương',  en:'Diamond' },
+  { id:'elite',     min:3300, icon:'⭐', vi:'Tinh anh',   en:'Elite' },
+  { id:'legend',    min:4200, icon:'🌟', vi:'Huyền thoại', en:'Legend' },
+  { id:'mythic',    min:5200, icon:'✨', vi:'Thần thoại', en:'Mythic' },
+  { id:'warlord',   min:6500, icon:'🔥', vi:'Chiến thần', en:'Warlord' },
 ];
 
 function getCaroRank(points){

@@ -650,7 +650,9 @@ function MILESTONE_MSG(tier){ const c=_i18nContent(); const a=c.milestones||I18N
        caroLbMyStats:'Bạn: {0}T/{1}H/{2}Hòa · {3}% thắng · {4} điểm',
        caroLbNoPlay:'Chưa chơi Caro online — bấm Tìm đối thủ để bắt đầu!',
        caroRank_novice:'Tân thủ', caroRank_beginner:'Nhập môn', caroRank_skilled:'Thạo cờ',
-       caroRank_expert:'Cao thủ', caroRank_master:'Kỳ thủ', caroRank_grand:'Đại sư' },
+       caroRank_expert:'Cao thủ', caroRank_master:'Kỳ thủ', caroRank_grand:'Đại sư',
+       caroRank_platinum:'Bạch kim', caroRank_diamond:'Kim cương', caroRank_elite:'Tinh anh',
+       caroRank_legend:'Huyền thoại', caroRank_mythic:'Thần thoại', caroRank_warlord:'Chiến thần' },
   en:{ ttCaro:'Online Caro (unlocks at Lv.3)', caroTitle:'⬛ Online Caro',
        caroSub:'15×15 · 5 in a row wins · blocked both ends does not win. ● black moves first.',
        caroNeedLevel:'⬛ Reach Level {0} to play online Caro!', caroLobby:'⬛ Caro Room',
@@ -667,7 +669,9 @@ function MILESTONE_MSG(tier){ const c=_i18nContent(); const a=c.milestones||I18N
        caroLbMyStats:'You: {0}W/{1}L/{2}D · {3}% win · {4} pts',
        caroLbNoPlay:'No online Caro yet — tap Find opponent to start!',
        caroRank_novice:'Novice', caroRank_beginner:'Beginner', caroRank_skilled:'Skilled',
-       caroRank_expert:'Expert', caroRank_master:'Master', caroRank_grand:'Grandmaster' },
+       caroRank_expert:'Expert', caroRank_master:'Master', caroRank_grand:'Grandmaster',
+       caroRank_platinum:'Platinum', caroRank_diamond:'Diamond', caroRank_elite:'Elite',
+       caroRank_legend:'Legend', caroRank_mythic:'Mythic', caroRank_warlord:'Warlord' },
   };
   Object.keys(caro).forEach(l=>{ if(I18N[l]) Object.assign(I18N[l], caro[l]); });
 })();
