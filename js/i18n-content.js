@@ -630,3 +630,22 @@ function MILESTONE_MSG(tier){ const c=_i18nContent(); const a=c.milestones||I18N
   };
   Object.keys(on).forEach(l=>{ if(I18N[l]) Object.assign(I18N[l], on[l]); });
 })();
+
+// ── Cờ Caro online ──
+(function(){
+  const caro = {
+  vi:{ ttCaro:'Cờ Caro online (mở từ Lv.3)', caroTitle:'⬛ Cờ Caro Online',
+       caroSub:'15×15 · 5 quân thắng · luật chặn hai đầu không tính thắng. ● đen đi trước.',
+       caroNeedLevel:'⬛ Đạt Cấp {0} để chơi Caro online!', caroLobby:'⬛ Phòng Caro',
+       caroYourTurn:'Lượt của bạn', caroOppTurn:'Đang chờ {0}...', caroYouWin:'🏆 Bạn thắng!',
+       caroYouLose:'😢 Bạn thua', caroDraw:'🤝 Hòa!', caroConnected:'Đã kết nối · {0}',
+       caroWrongRoom:'Phòng này không phải Caro', caroQuitConfirm:'Thoát trận Caro?' },
+  en:{ ttCaro:'Online Caro (unlocks at Lv.3)', caroTitle:'⬛ Online Caro',
+       caroSub:'15×15 · 5 in a row wins · blocked both ends does not win. ● black moves first.',
+       caroNeedLevel:'⬛ Reach Level {0} to play online Caro!', caroLobby:'⬛ Caro Room',
+       caroYourTurn:'Your turn', caroOppTurn:'Waiting for {0}...', caroYouWin:'🏆 You win!',
+       caroYouLose:'😢 You lose', caroDraw:'🤝 Draw!', caroConnected:'Connected · {0}',
+       caroWrongRoom:'This room is not Caro', caroQuitConfirm:'Quit Caro match?' },
+  };
+  Object.keys(caro).forEach(l=>{ if(I18N[l]) Object.assign(I18N[l], caro[l]); });
+})();
