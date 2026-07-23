@@ -602,7 +602,7 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px;
 }
 #caro-stage {
-  display: none; position: fixed; inset: 0; z-index: 8500;
+  display: none; position: fixed; inset: 0; z-index: 9000;
   background: linear-gradient(160deg, #1a2a1a 0%, #0d120d 100%);
   flex-direction: column; align-items: center; justify-content: center; padding: 8px;
 }
@@ -658,7 +658,7 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 .caro-result-rank { font-size: 14px; color: #ffd700; margin: 8px 0; }
 .caro-result-wld { font-size: 11px; color: #aaa; }
 .caro-hub-divider { text-align: center; font-size: 11px; color: #666; margin: 14px 0 10px; letter-spacing: 1px; }
-.caro-ai-hub-btn { margin-top: 4px; background: linear-gradient(135deg, #2a5a2a, #4a8a4a) !important; }
+.caro-ai-hub-btn { margin-top: 12px; background: linear-gradient(135deg, #2a5a2a, #4a8a4a) !important; }
 .caro-ai-levels { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
 .caro-ai-level {
   width: 100%; padding: 14px 16px; border: 1px solid rgba(255,255,255,0.15);
