@@ -625,6 +625,39 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   cursor: pointer;
 }
 
+/* ── Caro danh hiệu & BXH ── */
+.caro-hub-stats { margin-bottom: 12px; }
+.caro-rank-badge {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px; border-radius: 12px;
+  background: linear-gradient(135deg, rgba(80,60,30,0.35), rgba(40,30,15,0.5));
+  border: 1px solid rgba(255,215,120,0.25);
+}
+.caro-rank-icon { font-size: 32px; line-height: 1; }
+.caro-rank-name { font-size: 16px; font-weight: 800; color: #ffd700; }
+.caro-rank-pts { font-size: 12px; color: #bbb; margin-top: 2px; }
+.caro-wld { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 10px; font-size: 12px; color: #ccc; }
+.caro-wld .caro-w b { color: #6ee08e; }
+.caro-wld .caro-l b { color: #ff8a8a; }
+.caro-wld .caro-d b { color: #9ad4ff; }
+.caro-rate { font-size: 11px; color: #999; margin-top: 6px; }
+.caro-rank-progress { height: 5px; background: rgba(255,255,255,0.1); border-radius: 4px; margin-top: 8px; overflow: hidden; }
+.caro-rank-bar { height: 100%; background: linear-gradient(90deg, #c9a86c, #ffd700); border-radius: 4px; }
+.caro-rank-next { font-size: 10px; color: #888; margin-top: 4px; }
+.caro-lb-head {
+  display: grid; grid-template-columns: 1fr auto auto; gap: 8px;
+  font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 0.5px;
+  padding: 0 10px 6px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 6px;
+}
+.caro-lb-row { display: grid !important; grid-template-columns: 28px 1fr auto auto; align-items: center; }
+.caro-lb-row .lb-name { display: flex; flex-direction: column; gap: 2px; }
+.caro-lb-title { font-size: 10px; color: #ffd700; font-weight: 600; }
+.caro-lb-wld { font-size: 11px !important; color: #ccc !important; text-align: right; }
+.caro-lb-wld small { color: #6ee08e; }
+.caro-lb-pts { font-size: 12px; font-weight: 800; color: #ffd700; min-width: 36px; text-align: right; }
+.caro-result-rank { font-size: 14px; color: #ffd700; margin: 8px 0; }
+.caro-result-wld { font-size: 11px; color: #aaa; }
+
 /* ══════════════════ ACCOUNT / LOGOUT ══════════════════ */
 #account-btn {
   background: rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2);

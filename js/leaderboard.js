@@ -99,11 +99,30 @@ async function renderLeaderboardPanel(){
   if(sub){
     if(_lbMode === 'local') sub.textContent = t('lbSub');
     else if(_lbMode === 'global-pvp') sub.textContent = t('lbSubPvp');
+    else if(_lbMode === 'global-caro') sub.textContent = t('lbSubCaro');
     else sub.textContent = t('lbSubGlobal');
   }
 
   if(!list) return;
   list.innerHTML = '<div class="lb-empty">'+t('lbLoading')+'</div>';
+
+  if(_lbMode === 'global-caro'){
+    if(typeof fetchCaroLeaderboard !== 'function' || !isOnlineServicesEnabled()){
+      list.innerHTML = '<div class="lb-empty">'+t('lbOfflineGlobal')+'</div>';
+      if(myRankBox) myRankBox.textContent = '';
+      return;
+    }
+    const rows = await fetchCaroLeaderboard(20);
+    renderCaroLeaderboardList(list, rows, myName);
+    const mine = rows.find(r => r.name === myName);
+    const stats = await fetchMyCaroStats();
+    if(myRankBox){
+      myRankBox.textContent = mine
+        ? t('caroLbMyRank', mine.rank, rows.length, mine.wins, mine.losses, mine.draws, mine.winRate, mine.points)
+        : (stats.total > 0 ? t('caroLbMyStats', stats.wins, stats.losses, stats.draws, stats.winRate, stats.points) : t('caroLbNoPlay'));
+    }
+    return;
+  }
 
   let top = [], mine = null;
   if(_lbMode === 'local'){

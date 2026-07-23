@@ -319,39 +319,52 @@ function cancelMatchmaking(){
   }
 }
 
-// ── Kết quả & BXH PvP ─────────────────────────────────────────
+// ── Kết quả & BXH Caro ────────────────────────────────────────
 async function finalizeCaroMatch(roomId, winnerSlot){
   if(!_onlineDb || !roomId) return;
   const ref = _onlineDb.collection('rooms').doc(roomId);
+  let hostId, guestId;
   try{
     await _onlineDb.runTransaction(async tx => {
       const snap = await tx.get(ref);
       if(!snap.exists || snap.data().status === 'finished') return;
       const d = snap.data();
+      hostId = d.hostId;
+      guestId = d.guestId;
       const winnerId = winnerSlot === 'host' ? d.hostId : (winnerSlot === 'guest' ? d.guestId : null);
       tx.update(ref, {
         status: 'finished',
-        winnerId,
+        winnerId: winnerId || null,
+        isDraw: winnerSlot === 'draw',
         endedAt: firebase.firestore.FieldValue.serverTimestamp()
       });
     });
   }catch(e){ return; }
-  const snap = await ref.get();
-  if(!snap.exists) return;
-  const d = snap.data();
-  const winnerId = d.winnerId;
-  if(!winnerId) return;
-  const loserId = winnerId === d.hostId ? d.guestId : d.hostId;
-  await _onlineDb.collection('players').doc(winnerId).set({
-    caroWins: firebase.firestore.FieldValue.increment(1),
-    caroPoints: firebase.firestore.FieldValue.increment(25),
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-  }, { merge: true });
-  if(loserId){
-    await _onlineDb.collection('players').doc(loserId).set({
-      caroLosses: firebase.firestore.FieldValue.increment(1),
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    }, { merge: true });
+
+  const applyPlayer = async (uid, outcome) => {
+    if(!uid) return;
+    const patch = { updatedAt: firebase.firestore.FieldValue.serverTimestamp() };
+    if(outcome === 'win'){
+      patch.caroWins = firebase.firestore.FieldValue.increment(1);
+      patch.caroPoints = firebase.firestore.FieldValue.increment(25);
+    } else if(outcome === 'loss'){
+      patch.caroLosses = firebase.firestore.FieldValue.increment(1);
+    } else if(outcome === 'draw'){
+      patch.caroDraws = firebase.firestore.FieldValue.increment(1);
+      patch.caroPoints = firebase.firestore.FieldValue.increment(8);
+    }
+    await _onlineDb.collection('players').doc(uid).set(patch, { merge: true });
+  };
+
+  if(winnerSlot === 'draw'){
+    await applyPlayer(hostId, 'draw');
+    await applyPlayer(guestId, 'draw');
+  } else if(winnerSlot === 'host'){
+    await applyPlayer(hostId, 'win');
+    await applyPlayer(guestId, 'loss');
+  } else if(winnerSlot === 'guest'){
+    await applyPlayer(guestId, 'win');
+    await applyPlayer(hostId, 'loss');
   }
 }
 
