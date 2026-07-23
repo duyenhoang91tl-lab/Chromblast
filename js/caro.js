@@ -504,10 +504,6 @@ function _caroEnterAIGame(levelId){
 
 function caroStartAI(levelId){
   try{ sfxClick(); }catch(e){}
-  if(!canPlayCaro()){
-    try{ showComboFlash(0,false,t('caroNeedLevel', CARO_MIN_LEVEL)); }catch(e){}
-    return false;
-  }
   try{
     _caroEnterAIGame(levelId || 'medium');
     return true;
