@@ -656,7 +656,8 @@ function MILESTONE_MSG(tier){ const c=_i18nContent(); const a=c.milestones||I18N
        caroAiBtn:'🤖 Đấu với máy', caroAiTitle:'🤖 Đấu với máy',
        caroAiEasy:'🌱 Dễ', caroAiMedium:'⚔️ Trung bình', caroAiHard:'🔥 Khó',
        caroAiThinking:'...', caroAiNoPts:'Luyện với máy',
-       caroAiName_easy:'Máy (Dễ)', caroAiName_medium:'Máy (TB)', caroAiName_hard:'Máy (Khó)' },
+       caroAiName_easy:'Máy (Dễ)', caroAiName_medium:'Máy (TB)', caroAiName_hard:'Máy (Khó)',
+       caroOnlineLocked:'🔒 Chơi online (tạo/vào phòng, tìm đối thủ, BXH) cần đạt Cấp 3. Bạn vẫn có thể đấu với máy ngay bên dưới, kể cả khi offline.' },
   en:{ ttCaro:'Caro (Lv.3)', caroTitle:'⬛ Caro',
        caroSub:'15×15 · 5 in a row',
        caroNeedLevel:'⬛ Need Level {0}', caroLobby:'⬛ Caro Room',
@@ -679,7 +680,8 @@ function MILESTONE_MSG(tier){ const c=_i18nContent(); const a=c.milestones||I18N
        caroAiBtn:'🤖 vs AI', caroAiTitle:'🤖 vs AI',
        caroAiEasy:'🌱 Easy', caroAiMedium:'⚔️ Medium', caroAiHard:'🔥 Hard',
        caroAiThinking:'...', caroAiNoPts:'Practice with AI',
-       caroAiName_easy:'AI (Easy)', caroAiName_medium:'AI (Medium)', caroAiName_hard:'AI (Hard)' },
+       caroAiName_easy:'AI (Easy)', caroAiName_medium:'AI (Medium)', caroAiName_hard:'AI (Hard)',
+       caroOnlineLocked:'🔒 Online play (create/join room, find opponent, leaderboard) requires Level 3. You can still play vs AI below, even offline.' },
   };
   Object.keys(caro).forEach(l=>{ if(I18N[l]) Object.assign(I18N[l], caro[l]); });
   if(typeof applyI18nDom === 'function') applyI18nDom();
