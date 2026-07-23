@@ -307,41 +307,6 @@ function _caroApplyMove(r, c, slot, fromNet){
   return true;
 }
 
-function _caroRender(){
-  const grid = document.getElementById('caro-grid');
-  const info = document.getElementById('caro-turn-info');
-  if(!grid || !_caro) return;
-
-  grid.innerHTML = '';
-  for(let r=0;r<CARO_SIZE;r++){
-    for(let c=0;c<CARO_SIZE;c++){
-      const cell = document.createElement('button');
-      cell.type = 'button';
-      cell.className = 'caro-cell';
-      const v = _caro.board[r][c];
-      if(v===CARO_BLACK){ cell.classList.add('black'); cell.textContent='●'; }
-      else if(v===CARO_WHITE){ cell.classList.add('white'); cell.textContent='○'; }
-      const myTurn = _caro.turn === _caro.mySlot && !_caro.winner;
-      const canTap = myTurn && !v && (!_caro.online || _caro.turn === _caro.mySlot);
-      if(canTap){
-        cell.addEventListener('click', ()=>_caroApplyMove(r,c,_caro.mySlot,false));
-      } else if(!v) cell.classList.add('disabled');
-      grid.appendChild(cell);
-    }
-  }
-
-  if(info){
-    if(_caro.winner){
-      info.textContent = _caro.winner==='draw' ? t('caroDraw') :
-        (_caro.winner===_caro.mySlot ? t('caroYouWin') : t('caroYouLose'));
-    } else {
-      const mine = _caro.turn === _caro.mySlot;
-      const who = _caro.turn==='host' ? _caro.names[0] : _caro.names[1];
-      info.textContent = mine ? t('caroYourTurn') : t('caroOppTurn', who);
-    }
-  }
-}
-
 function _caroEnterGame(roomData){
   const uid = getOnlineUid();
   const isHost = roomData.hostId === uid;
@@ -402,25 +367,33 @@ function _caroEndGame(winnerSlot, fromRemote){
   if(!_caro) return;
   _caro.winner = winnerSlot;
   _caroRender();
-  const uid = getOnlineUid();
-  const roomId = _caro.roomId;
-  if(!fromRemote && _caro.roomId && winnerSlot !== 'draw'){
+
+  if(!fromRemote && _caro.roomId){
     finalizeCaroMatch(_caro.roomId, winnerSlot).catch(()=>{});
-  } else if(!fromRemote && _caro.roomId && winnerSlot === 'draw'){
-    const ref = firebase.firestore().collection('rooms').doc(roomId);
-    ref.update({ status:'finished', winnerId:null, endedAt:firebase.firestore.FieldValue.serverTimestamp() }).catch(()=>{});
   }
+
+  let localOutcome = 'draw';
+  if(winnerSlot !== 'draw'){
+    localOutcome = winnerSlot === _caro.mySlot ? 'win' : 'loss';
+  }
+  const statsAfter = applyLocalCaroResult(localOutcome);
 
   let msg;
   if(winnerSlot==='draw') msg = t('caroDraw');
   else if(winnerSlot===_caro.mySlot) msg = t('caroYouWin');
   else msg = t('caroYouLose');
 
+  const rank = statsAfter.rank;
+  const ptsDelta = localOutcome==='win' ? '+25' : (localOutcome==='draw' ? '+8' : '+0');
+
   document.getElementById('caro-result-title').textContent = msg;
   document.getElementById('caro-result-body').innerHTML =
-    '<div style="font-size:13px;color:#ccc;">'+escapeHtml(_caro.names[0])+' (●) vs '+escapeHtml(_caro.names[1])+' (○)</div>';
+    '<div style="font-size:13px;color:#ccc;margin-bottom:8px;">'+escapeHtml(_caro.names[0])+' (●) vs '+escapeHtml(_caro.names[1])+' (○)</div>'+
+    '<div class="caro-result-rank">'+rank.icon+' <b>'+escapeHtml(rank.name)+'</b> · '+ptsDelta+' '+t('caroPts')+'</div>'+
+    '<div class="caro-result-wld">'+t('caroWins')+': '+statsAfter.wins+' · '+t('caroLosses')+': '+statsAfter.losses+' · '+t('caroDraws')+': '+statsAfter.draws+' · '+t('caroWinRate', statsAfter.winRate)+'</div>';
   setTimeout(()=>_caroShow('caro-result-panel'), 600);
   stopListeningRoom();
+  _caroRefreshHubStats();
 }
 
 function _caroQuit(){
@@ -467,7 +440,15 @@ function openCaroHub(){
     return;
   }
   _caroShow('caro-hub-panel');
+  _caroRefreshHubStats();
   if(isOnlineServicesEnabled()) _caroRequireOnline();
+}
+
+async function _caroRefreshHubStats(){
+  const box = document.getElementById('caro-hub-stats');
+  if(!box) return;
+  const stats = await fetchMyCaroStats();
+  renderCaroStatsCard(box, stats);
 }
 
 function closeCaroHub(){

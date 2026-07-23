@@ -645,7 +645,18 @@ function MILESTONE_MSG(tier){ const c=_i18nContent(); const a=c.milestones||I18N
        caroNeedLevel:'⬛ Reach Level {0} to play online Caro!', caroLobby:'⬛ Caro Room',
        caroYourTurn:'Your turn', caroOppTurn:'Waiting for {0}...', caroYouWin:'🏆 You win!',
        caroYouLose:'😢 You lose', caroDraw:'🤝 Draw!', caroConnected:'Connected · {0}',
-       caroWrongRoom:'This room is not Caro', caroQuitConfirm:'Quit Caro match?' },
+       caroWrongRoom:'This room is not Caro', caroQuitConfirm:'Quit Caro match?',
+       caroRankBoard:'🏆 Caro Leaderboard', caroRankSub:'Titles by points · win +25 · draw +8',
+       caroPts:'pts', caroWins:'W', caroLosses:'L', caroDraws:'D',
+       caroWinRate:'Win rate {0}%', caroPlayed:'{0} games',
+       caroNextRank:'{1} pts to {0}', caroMaxRank:'Max rank achieved!',
+       caroLbEmpty:'No Caro data yet — play your first match!',
+       caroLbColPlayer:'Player', caroLbColWLD:'W/L/D',
+       caroLbMyRank:'Rank #{0}/{1} · {2}W/{3}L/{4}D · {5}% win · {6} pts',
+       caroLbMyStats:'You: {2}W/{3}L/{4}D · {5}% win · {6} pts',
+       caroLbNoPlay:'No online Caro yet — tap Find opponent to start!',
+       caroRank_novice:'Novice', caroRank_beginner:'Beginner', caroRank_skilled:'Skilled',
+       caroRank_expert:'Expert', caroRank_master:'Master', caroRank_grand:'Grandmaster' },
   };
   Object.keys(caro).forEach(l=>{ if(I18N[l]) Object.assign(I18N[l], caro[l]); });
 })();

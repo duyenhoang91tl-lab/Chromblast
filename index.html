@@ -463,7 +463,7 @@
       <div class="lb-tabs">
         <button type="button" class="lb-tab active" data-lb-mode="local" data-i18n="lbTabLocal">📱 Thiết bị</button>
         <button type="button" class="lb-tab" data-lb-mode="global-solo" data-i18n="lbTabGlobal">🌐 Toàn cầu</button>
-        <button type="button" class="lb-tab" data-lb-mode="global-pvp" data-i18n="lbTabPvp">⚔️ PvP</button>
+        <button type="button" class="lb-tab" data-lb-mode="global-caro" data-i18n="lbTabCaro">⬛ Caro</button>
       </div>
       <div class="admin-sub" id="leaderboard-sub" data-i18n="lbSub">Điểm cao nhất của người chơi trên thiết bị này.</div>
       <div id="leaderboard-list"></div>
@@ -534,6 +534,8 @@
       <div class="admin-title"><span data-i18n="caroTitle">⬛ Cờ Caro Online</span><button class="admin-close" id="caro-hub-close">✕</button></div>
       <div class="admin-sub" data-i18n="caroSub">15×15 · 5 quân thắng · luật chặn hai đầu không tính thắng.</div>
       <div id="caro-online-status" class="online-status"></div>
+      <div id="caro-hub-stats" class="caro-hub-stats"></div>
+      <button type="button" id="caro-rank-btn" class="auth-submit-btn" style="background:rgba(255,255,255,0.12);margin-bottom:10px;" data-i18n="caroRankBoard">🏆 Bảng xếp hạng Caro</button>
       <button type="button" id="caro-create-btn" class="auth-submit-btn" data-i18n="onlineCreate">🏠 Tạo phòng</button>
       <div class="auth-field" style="margin-top:12px;"><label data-i18n="onlineJoinLabel">Vào phòng bằng mã</label><input type="text" id="caro-join-code" maxlength="6" placeholder="ABC123" style="text-transform:uppercase;letter-spacing:2px;text-align:center;font-weight:700;"></div>
       <button type="button" id="caro-join-btn" class="auth-submit-btn" style="background:rgba(255,255,255,0.15);" data-i18n="onlineJoin">🚪 Vào phòng</button>
@@ -563,6 +565,18 @@
       <button type="button" id="caro-result-close" class="auth-submit-btn" data-i18n="vsClose" style="margin-top:12px;">✕ Đóng</button>
     </div>
   </div>
+
+  <div id="caro-rank-panel" class="admin-panel-like">
+    <div class="admin-card">
+      <div class="admin-title"><span data-i18n="caroRankBoard">🏆 Bảng xếp hạng Caro</span><button class="admin-close" id="caro-rank-close">✕</button></div>
+      <div class="admin-sub" data-i18n="caroRankSub">Danh hiệu theo điểm · thắng +25 · hòa +8</div>
+      <div id="caro-my-stats" class="caro-hub-stats"></div>
+      <div class="caro-lb-head"><span data-i18n="caroLbColPlayer">Người chơi</span><span data-i18n="caroLbColWLD">T/H/Hòa</span><span data-i18n="caroPts">Điểm</span></div>
+      <div id="caro-lb-list"></div>
+      <div id="caro-lb-my-rank" class="lb-my-rank"></div>
+    </div>
+  </div>
+
   <div id="caro-stage">
     <div class="caro-topbar">
       <span id="caro-turn-info">Caro</span>
@@ -770,6 +784,7 @@
 <script src="js/map-boards.js"></script>
 <script src="js/daily-rewards.js"></script>
 <script src="js/online-services.js"></script>
+<script src="js/caro-ranks.js"></script>
 <script src="js/leaderboard.js"></script>
 <script src="js/mech-config.js"></script>
 <script src="js/progression.js"></script>
