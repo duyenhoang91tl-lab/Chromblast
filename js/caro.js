@@ -461,8 +461,14 @@ function _caroToggleChrome(hide){
 
 function _caroEnterAIGame(levelId){
   const profile = CARO_AI_LEVELS[levelId] || CARO_AI_LEVELS.medium;
-  try{ if(typeof hardResetAllModes === 'function') hardResetAllModes(); }catch(e){}
   const pName = (typeof currentPlayerName === 'function' ? currentPlayerName() : null) || 'Bạn';
+
+  // Đóng mọi panel Caro trước
+  ['caro-hub-panel','caro-ai-panel','caro-lobby-panel','caro-mm-panel','caro-result-panel','caro-rank-panel']
+    .forEach(id => _caroHide(id));
+
+  try{ if(typeof hardResetAllModes === 'function') hardResetAllModes(); }catch(e){}
+
   _caro = {
     board: _caroNewBoard(),
     turn: 'host',
@@ -478,21 +484,21 @@ function _caroEnterAIGame(levelId){
     hover: null
   };
   caroMode = true;
-  _caroHide('caro-ai-panel');
-  _caroHide('caro-hub-panel');
-  _caroHide('caro-result-panel');
   _caroToggleChrome(true);
-  document.getElementById('caro-stage')?.classList.add('active');
+
+  const stage = document.getElementById('caro-stage');
+  if(stage) stage.classList.add('active');
   document.getElementById('grid-wrap')?.classList.add('secret-mode');
   const badge = document.getElementById('mode-badge');
   if(badge){
     badge.textContent = '⬛ CARO';
     badge.classList.add('secret');
   }
-  requestAnimationFrame(()=>{
-    _caroRender();
-    requestAnimationFrame(()=>_caroRender());
-  });
+
+  // Vẽ bàn sau khi layout active
+  const paint = ()=>{ try{ _caroRender(); }catch(e){ console.warn('[caro]', e); } };
+  paint();
+  requestAnimationFrame(()=>{ paint(); requestAnimationFrame(paint); });
   try{ startBgm('action'); }catch(e){}
 }
 
@@ -500,10 +506,18 @@ function caroStartAI(levelId){
   try{ sfxClick(); }catch(e){}
   if(!canPlayCaro()){
     try{ showComboFlash(0,false,t('caroNeedLevel', CARO_MIN_LEVEL)); }catch(e){}
-    return;
+    return false;
   }
-  _caroEnterAIGame(levelId || 'medium');
+  try{
+    _caroEnterAIGame(levelId || 'medium');
+    return true;
+  }catch(e){
+    console.error('[caro-ai] start failed', e);
+    try{ showComboFlash(0,false,'Caro AI error'); }catch(e2){}
+    return false;
+  }
 }
+window.caroStartAI = caroStartAI;
 
 function _caroApplyMove(r, c, slot, fromNet){
   if(!_caro || _caro.winner) return false;
@@ -793,31 +807,39 @@ async function caroStartMatch(){
 }
 
 (function initCaro(){
-  document.getElementById('caro-btn')?.addEventListener('click', openCaroHub);
-  document.getElementById('caro-hub-close')?.addEventListener('click', closeCaroHub);
-  document.getElementById('caro-ai-btn')?.addEventListener('click', ()=>{
-    try{ sfxClick(); }catch(e){}
-    _caroHide('caro-hub-panel');
-    _caroShow('caro-ai-panel');
-  });
-  document.getElementById('caro-ai-close')?.addEventListener('click', ()=>{
-    try{ sfxClick(); }catch(e){}
-    _caroHide('caro-ai-panel');
-    _caroShow('caro-hub-panel');
-  });
-  document.getElementById('caro-ai-panel')?.addEventListener('click', e=>{
-    const btn = e.target.closest('.caro-ai-level');
-    if(!btn) return;
-    e.preventDefault();
-    caroStartAI(btn.getAttribute('data-level') || 'medium');
-  });
-  document.getElementById('caro-create-btn')?.addEventListener('click', caroCreateRoom);
-  document.getElementById('caro-join-btn')?.addEventListener('click', caroJoinRoom);
-  document.getElementById('caro-find-btn')?.addEventListener('click', caroFindOpponent);
-  document.getElementById('caro-mm-cancel')?.addEventListener('click', caroCancelMM);
-  document.getElementById('caro-start-btn')?.addEventListener('click', caroStartMatch);
-  document.getElementById('caro-lobby-leave')?.addEventListener('click', closeCaroHub);
-  document.getElementById('caro-quit-btn')?.addEventListener('click', ()=>{ if(confirm(t('caroQuitConfirm'))) _caroQuit(); });
-  document.getElementById('caro-result-close')?.addEventListener('click', _caroQuit);
-  refreshCaroButton();
+  function bind(){
+    document.getElementById('caro-btn')?.addEventListener('click', openCaroHub);
+    document.getElementById('caro-hub-close')?.addEventListener('click', closeCaroHub);
+
+    // Chọn độ khó ngay trong hub (Dễ / TB / Khó → vào trận luôn)
+    const hub = document.getElementById('caro-hub-panel');
+    if(hub && !hub.dataset.aiBound){
+      hub.dataset.aiBound = '1';
+      let lastAiTap = 0;
+      hub.addEventListener('click', (e)=>{
+        const raw = e.target;
+        const el = raw && raw.nodeType === 3 ? raw.parentElement : raw;
+        const btn = el && typeof el.closest === 'function' ? el.closest('.caro-ai-level') : null;
+        if(!btn || !hub.contains(btn)) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const now = Date.now();
+        if(now - lastAiTap < 500) return;
+        lastAiTap = now;
+        caroStartAI(btn.getAttribute('data-level') || 'medium');
+      });
+    }
+
+    document.getElementById('caro-create-btn')?.addEventListener('click', caroCreateRoom);
+    document.getElementById('caro-join-btn')?.addEventListener('click', caroJoinRoom);
+    document.getElementById('caro-find-btn')?.addEventListener('click', caroFindOpponent);
+    document.getElementById('caro-mm-cancel')?.addEventListener('click', caroCancelMM);
+    document.getElementById('caro-start-btn')?.addEventListener('click', caroStartMatch);
+    document.getElementById('caro-lobby-leave')?.addEventListener('click', closeCaroHub);
+    document.getElementById('caro-quit-btn')?.addEventListener('click', ()=>{ if(confirm(t('caroQuitConfirm'))) _caroQuit(); });
+    document.getElementById('caro-result-close')?.addEventListener('click', _caroQuit);
+    refreshCaroButton();
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
+  else bind();
 })();
