@@ -2992,19 +2992,113 @@ body:has(#secret-stage.active) .streak-dot.lit{
 #versus-arena{
   position:fixed; inset:0; z-index:9500; background:transparent;
   display:flex; flex-direction:column;
-  padding-top:max(40px, calc(env(safe-area-inset-top) + 36px));
-  padding-bottom:max(40px, calc(env(safe-area-inset-bottom) + 36px));
+  padding-top:max(88px, calc(env(safe-area-inset-top) + 78px));
+  padding-bottom:max(58px, calc(env(safe-area-inset-bottom) + 52px));
   box-sizing:border-box;
   overflow:hidden;
+  gap:6px;
 }
-/* Chip tên + điểm một hàng — gọn, không chiếm chỗ bàn/gạch */
+/* Topbar: chat trái — đồng hồ + Thoát phải (cùng hàng, size nhỏ) */
+.vs-topbar{
+  position:absolute;
+  top:max(6px, calc(env(safe-area-inset-top) + 4px));
+  left:max(8px, env(safe-area-inset-left));
+  right:max(8px, env(safe-area-inset-right));
+  z-index:20;
+  display:flex; align-items:center; justify-content:space-between;
+  gap:8px;
+  pointer-events:none;
+}
+.vs-topbar > *{ pointer-events:auto; }
+.vs-topbar-right{
+  display:flex; align-items:center; gap:6px;
+}
+.vs-chat-fab,
+.vs-quit-btn,
+#vs-quit-btn,
+.vs-mid-timer,
+#vs-mid-timer{
+  height:30px;
+  box-sizing:border-box;
+  flex-shrink:0;
+}
+.vs-chat-fab{
+  position:static !important;
+  transform:none !important;
+  width:30px; min-width:30px;
+  border-radius:50%;
+  border:1.5px solid rgba(255,213,74,0.55);
+  background:linear-gradient(145deg, rgba(255,152,0,0.95), rgba(255,213,74,0.92));
+  color:#1a0a00; font-size:14px; line-height:1;
+  box-shadow:0 2px 8px rgba(0,0,0,0.35);
+  cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  padding:0; margin:0;
+}
+.vs-chat-fab:active{ transform:scale(0.94) !important; }
+/* Đồng hồ bấm giờ — cùng chiều cao nốt Thoát */
+.vs-mid-timer,
+#vs-mid-timer{
+  position:relative !important;
+  width:30px; min-width:30px;
+  border-radius:50%;
+  border:2px solid #ffd54a;
+  background:
+    radial-gradient(circle at 35% 30%, #2a2540 0%, #141222 70%);
+  color:#ffd54a;
+  font-weight:900; font-size:11px;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 0 10px rgba(255,213,74,0.3), inset 0 1px 0 rgba(255,255,255,0.12);
+  font-variant-numeric:tabular-nums;
+  transform:none !important;
+}
+.vs-timer-num{ position:relative; z-index:1; line-height:1; }
+.vs-timer-crown{
+  position:absolute; top:-4px; left:50%; transform:translateX(-50%);
+  width:9px; height:3px; border-radius:1px 1px 0 0;
+  background:#ffd54a;
+  box-shadow:0 -1px 0 #e6b800;
+}
+.vs-timer-knob{
+  position:absolute; top:3px; right:-3px;
+  width:4px; height:7px; border-radius:1px;
+  background:linear-gradient(180deg,#ffe082,#f0a020);
+  border:1px solid rgba(255,213,74,0.7);
+}
+#vs-mid-timer.danger{
+  color:#ff5252; border-color:#ff5252;
+  animation:vsPulse 0.5s infinite alternate;
+}
+#vs-mid-timer.danger .vs-timer-crown,
+#vs-mid-timer.danger .vs-timer-knob{ background:#ff5252; }
+@keyframes vsPulse{
+  from{ transform:scale(1); }
+  to{ transform:scale(1.08); }
+}
+.vs-quit-btn,
+#vs-quit-btn{
+  position:static !important;
+  transform:none !important;
+  min-width:52px; padding:0 10px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,0.22);
+  background:linear-gradient(180deg,#ff5a5a,#e53935);
+  color:#fff;
+  font-size:11px; font-weight:900; letter-spacing:0.2px;
+  cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 2px 0 rgba(0,0,0,0.25);
+  font-family:'Nunito', system-ui, sans-serif;
+}
+.vs-quit-btn:active{ transform:translateY(1px) !important; box-shadow:0 1px 0 rgba(0,0,0,0.25); }
+/* Chip kiểu Caro: avatar + tên + điểm */
 .vs-player-chip{
   position:absolute;
   z-index:12;
-  display:flex; align-items:center; gap:6px;
-  max-width:min(52vw, 240px);
-  padding:5px 10px;
-  border-radius:999px;
+  display:flex; align-items:center; gap:7px;
+  max-width:min(56vw, 240px);
+  padding:3px 8px 3px 3px;
+  border-radius:14px;
   background:rgba(255,255,255,0.06);
   border:1px solid rgba(255,255,255,0.14);
   color:#f2f2f7;
@@ -3013,123 +3107,67 @@ body:has(#secret-stage.active) .streak-dot.lit{
   writing-mode:horizontal-tb;
   direction:ltr;
   transform:none !important;
-  white-space:nowrap;
 }
 .vs-chip-top{
-  top:max(8px, calc(env(safe-area-inset-top) + 4px));
-  left:10px;
-  right:auto;
+  top:max(42px, calc(env(safe-area-inset-top) + 38px));
+  left:max(8px, env(safe-area-inset-left));
   border-color:rgba(255,120,140,0.45);
   background:rgba(90, 30, 50, 0.55);
 }
 .vs-chip-bottom{
-  /* Nằm trên hàng khay dưới một chút, bên trái — tránh đè gạch */
-  bottom:max(52px, calc(env(safe-area-inset-bottom) + 48px));
-  left:10px;
+  bottom:max(8px, calc(env(safe-area-inset-bottom) + 6px));
+  left:max(8px, env(safe-area-inset-left));
   border-color:rgba(120, 190, 255, 0.35);
   background:rgba(40, 70, 110, 0.55);
 }
+.vs-chip-avatar{
+  width:32px; height:32px; border-radius:10px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  font-size:18px; line-height:1;
+  background:rgba(255,255,255,0.1);
+  border:1px solid rgba(255,255,255,0.16);
+}
+.vs-chip-meta{
+  display:flex; flex-direction:column; gap:1px; min-width:0;
+}
 .vs-chip-name{
-  font-size:12px; font-weight:900; line-height:1.1;
+  font-size:11px; font-weight:900; line-height:1.15;
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-  max-width:min(34vw, 150px);
+  max-width:min(36vw, 140px);
+}
+.vs-chip-scoreline{
+  display:flex; align-items:center; gap:4px;
 }
 .vs-chip-score{
-  font-size:13px; font-weight:900; color:#ffd54a;
+  font-size:12px; font-weight:900; color:#ffd54a;
   font-variant-numeric:tabular-nums;
-  flex-shrink:0;
 }
-.vs-chip-score::before{ content:': '; color:rgba(255,255,255,0.45); font-weight:800; }
 .vs-chip-combo{
-  color:#ffcc00; font-size:11px; font-weight:800; flex-shrink:0;
+  color:#ffcc00; font-size:10px; font-weight:800;
 }
 .vs-chip-combo:empty{ display:none; }
-/* Timer + nút Thoát — góc trên phải */
-.vs-controls{
-  position:absolute;
-  top:max(8px, calc(env(safe-area-inset-top) + 4px));
-  right:max(8px, env(safe-area-inset-right));
-  left:auto;
-  transform:none;
-  z-index:15;
-  display:flex; flex-direction:row; align-items:center; gap:8px;
-}
-.vs-mid-timer,
-#vs-mid-timer{
-  position:static !important;
-  transform:none !important;
-  z-index:8;
-  background:#1a1a2e;
-  border:2px solid #ffd54a;
-  color:#ffd54a;
-  font-weight:900; font-size:16px;
-  width:42px; height:42px; border-radius:50%;
-  display:flex; align-items:center; justify-content:center;
-  box-shadow:0 0 14px rgba(255,213,74,0.35);
-  font-variant-numeric:tabular-nums;
-  flex-shrink:0;
-}
-#vs-mid-timer.danger{
-  color:#ff5252; border-color:#ff5252;
-  animation:vsPulse 0.5s infinite alternate;
-}
-@keyframes vsPulse{
-  from{ transform:scale(1); }
-  to{ transform:scale(1.1); }
-}
-.vs-quit-btn,
-#vs-quit-btn{
-  position:static !important;
-  transform:none !important;
-  min-width:64px; height:36px; padding:0 12px;
-  border-radius:999px;
-  border:1px solid rgba(255,255,255,0.25);
-  background:linear-gradient(180deg,#ff5a5a,#e53935);
-  color:#fff;
-  font-size:12px; font-weight:900; letter-spacing:0.3px;
-  cursor:pointer;
-  display:flex; align-items:center; justify-content:center;
-  box-shadow:0 3px 0 rgba(0,0,0,0.25);
-  font-family:'Nunito', system-ui, sans-serif;
-}
-.vs-quit-btn:active{ transform:translateY(1px) !important; box-shadow:0 1px 0 rgba(0,0,0,0.25); }
-/* Chat — dưới trái, giữa tường và khay gạch (JS neo theo tray) */
-.vs-chat-fab{
-  position:absolute;
-  z-index:16;
-  left:max(10px, calc(env(safe-area-inset-left) + 8px));
-  bottom:max(12px, calc(env(safe-area-inset-bottom) + 10px));
-  width:44px; height:44px; border-radius:50%;
-  border:1px solid rgba(255,213,74,0.45);
-  background:linear-gradient(145deg, rgba(255,152,0,0.95), rgba(255,213,74,0.92));
-  color:#1a0a00; font-size:20px; line-height:1;
-  box-shadow:0 6px 16px rgba(0,0,0,0.4);
-  cursor:pointer;
-  display:flex; align-items:center; justify-content:center;
-  padding:0;
-  transform:translate(-50%, -50%);
-}
-.vs-chat-fab:active{ transform:translate(-50%, -50%) scale(0.94); }
 .vs-half{
   flex:1 1 0; display:flex; flex-direction:column; align-items:center;
-  gap:3px; position:relative; padding:2px 6px; min-height:0; min-width:0;
+  gap:4px; position:relative; padding:4px 8px; min-height:0; min-width:0;
   overflow:hidden;
 }
 .vs-top{
   transform:rotate(180deg);
-  border-bottom:2px solid rgba(255,213,74,0.5);
+  border-bottom:2px solid rgba(255,213,74,0.45);
   justify-content:flex-end;
-  padding-bottom:0;
+  padding-bottom:2px;
+  margin-bottom:2px;
 }
 .vs-bottom{
   justify-content:flex-start;
-  padding-top:0;
+  padding-top:2px;
+  margin-top:2px;
 }
 .vs-hud{ display:none !important; }
 .vs-hud .vs-score{ color:#ffd54a; font-size:16px; }
 .vs-hud .vs-combo{ color:#ff8a3c; font-size:12px; }
 .vs-grid{
-  --vs-size: min(44vh, 90vw, 310px, calc(50dvh - 72px));
+  --vs-size: min(34vh, 72vw, 250px, calc(50dvh - 110px));
   display:grid;
   grid-template-columns:repeat(7, minmax(0, 1fr));
   grid-template-rows:repeat(7, minmax(0, 1fr));
@@ -3145,11 +3183,11 @@ body:has(#secret-stage.active) .streak-dot.lit{
     repeating-linear-gradient(0deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 11px),
     linear-gradient(165deg, #4A4458 0%, #3A3548 45%, #2E2A3A 100%);
   border: 2px solid #5A5468;
-  border-radius: 14px; padding: 6px;
+  border-radius: 12px; padding: 5px;
   box-shadow:
     inset 0 2px 0 rgba(255,255,255,0.08),
     inset 0 -3px 10px rgba(0,0,0,0.25),
-    0 8px 18px rgba(0,0,0,0.28);
+    0 6px 14px rgba(0,0,0,0.28);
 }
 .vs-cell{
   border-radius:8px; display:flex; align-items:center; justify-content:center;
