@@ -670,6 +670,7 @@ let _dmChatUnsub = null;
 function stopListeningChat(){
   if(_chatUnsub){ _chatUnsub(); _chatUnsub = null; }
   _roomChatId = null;
+  _roomChatCbs.clear();
 }
 
 function stopListeningWorldChat(){
@@ -712,7 +713,8 @@ function listenRoomChat(roomId, cb){
   if(typeof cb === 'function') _roomChatCbs.add(cb);
   if(!_onlineDb || !roomId) return;
   if(_roomChatId === roomId && _chatUnsub) return;
-  stopListeningChat();
+  // Chỉ hủy snapshot cũ, giữ danh sách callback
+  if(_chatUnsub){ _chatUnsub(); _chatUnsub = null; }
   _roomChatId = roomId;
   _chatUnsub = _onlineDb.collection('rooms').doc(roomId).collection('chat')
     .orderBy('ts', 'asc')
