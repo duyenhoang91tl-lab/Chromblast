@@ -177,12 +177,13 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 }
 .start-bg {
   position: absolute; inset: 0;
-  background: radial-gradient(ellipse at 50% 30%, #1a0533 0%, #0a001a 40%, #000010 100%);
-  animation: startBgPulse 4s ease-in-out infinite alternate;
+  /* Trong suốt — lộ nền thiên hà #sky-atmosphere (tinh vân + sao + cánh đào) */
+  background: transparent;
+  animation: none;
 }
 @keyframes startBgPulse {
-  from { background: radial-gradient(ellipse at 50% 30%, #1a0533 0%, #0a001a 40%, #000010 100%); }
-  to   { background: radial-gradient(ellipse at 50% 40%, #220844 0%, #0d0025 40%, #000015 100%); }
+  from { background: transparent; }
+  to   { background: transparent; }
 }
 .start-stars {
   position: absolute; inset: 0; pointer-events: none;
