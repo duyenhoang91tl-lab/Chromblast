@@ -337,6 +337,11 @@ function initAccountPanel(){
   document.getElementById('account-close-btn').addEventListener('click', ()=>{
     panel.classList.remove('show');
   });
+  document.getElementById('account-edit-profile')?.addEventListener('click', ()=>{
+    try{sfxClick();}catch(e){}
+    panel.classList.remove('show');
+    if(typeof openPlayerProfilePanel==='function') openPlayerProfilePanel();
+  });
   document.getElementById('change-password-form').addEventListener('submit', (e)=>{
     e.preventDefault();
     doChangePassword(
@@ -482,6 +487,7 @@ function closeAllSettingsOverlays(){
 
 function openSettingsPanel(){
   syncSettingsToggles();
+  try{ if(typeof renderSettingsPlayerInfo==='function') renderSettingsPlayerInfo(); }catch(e){}
   document.getElementById('settings-panel')?.classList.add('show');
 }
 

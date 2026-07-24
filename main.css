@@ -2256,21 +2256,36 @@ body:has(#secret-stage.active) .streak-dot.lit{
 #versus-arena{
   position:fixed; inset:0; z-index:9500; background:#1a1a2e;
   display:flex; flex-direction:column;
-  padding-top:max(52px, env(safe-area-inset-top));
+  padding-top:max(68px, calc(env(safe-area-inset-top) + 18px));
   box-sizing:border-box;
   overflow:hidden;
 }
+#vs-top-hud{
+  position:absolute !important;
+  top:max(10px, calc(env(safe-area-inset-top) + 6px)) !important;
+  left:10px !important; right:10px !important;
+  z-index:999;
+}
 .vs-half{
-  flex:1 1 0; display:flex; flex-direction:column; align-items:center; justify-content:center;
-  gap:4px; position:relative; padding:4px 6px; min-height:0; min-width:0;
+  flex:1 1 0; display:flex; flex-direction:column; align-items:center;
+  gap:3px; position:relative; padding:2px 6px; min-height:0; min-width:0;
   overflow:hidden;
 }
-.vs-top{ transform:rotate(180deg); border-bottom:2px solid rgba(255,213,74,0.5); }
+.vs-top{
+  transform:rotate(180deg);
+  border-bottom:2px solid rgba(255,213,74,0.5);
+  justify-content:flex-end;
+  padding-bottom:0;
+}
+.vs-bottom{
+  justify-content:flex-start;
+  padding-top:0;
+}
 .vs-hud{ display:flex; gap:12px; align-items:center; font-weight:800; color:#fff; font-size:14px; }
 .vs-hud .vs-score{ color:#ffd54a; font-size:16px; }
 .vs-hud .vs-combo{ color:#ff8a3c; font-size:12px; }
 .vs-grid{
-  --vs-size: min(42vh, 88vw, 300px, calc(50dvh - 96px));
+  --vs-size: min(44vh, 90vw, 310px, calc(50dvh - 72px));
   display:grid;
   grid-template-columns:repeat(7, minmax(0, 1fr));
   grid-template-rows:repeat(7, minmax(0, 1fr));
@@ -2392,12 +2407,40 @@ body:has(#secret-stage.active) .streak-dot.lit{
 @keyframes vsShake{ 0%,100%{translate:0} 20%{translate:-8px 0} 40%{translate:8px 0} 60%{translate:-5px 0} 80%{translate:5px 0} }
 
 /* Versus — xoay ngang: thu lưới để hai nửa không đè ô lên nhau */
+.pp-info-card{
+  margin: 10px 0 8px; padding: 12px;
+  border-radius: 14px;
+  background: linear-gradient(145deg, rgba(80,60,120,0.35), rgba(30,20,50,0.55));
+  border: 1px solid rgba(255,213,74,0.22);
+}
+.pp-info-row{ font-size: 14px; margin-bottom: 8px; }
+.pp-info-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.pp-stat{
+  background: rgba(255,255,255,0.06); border-radius: 10px; padding: 8px 6px; text-align: center;
+}
+.pp-stat small{ display:block; font-size: 10px; color: rgba(255,255,255,0.55); margin-bottom: 2px; }
+.pp-stat b{ font-size: 13px; color: #ffd54a; }
+.pp-caro-line{ font-size: 11px; color: rgba(255,255,255,0.65); margin-top: 8px; }
+.pp-preview-wrap{ margin: 8px 0 12px; font-size: 13px; color: rgba(255,255,255,0.7); }
+.pp-preview{ font-size: 18px; }
+.pp-style-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin: 8px 0; }
+.pp-style-row input[type=color]{ width: 48px; height: 36px; border: none; border-radius: 8px; background: transparent; cursor: pointer; }
+.pp-style-toggles{ display:flex; gap: 8px; flex-wrap: wrap; }
+.pp-style-btn{
+  flex:1; min-width: 72px; padding: 10px 8px; border-radius: 10px; cursor: pointer;
+  border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.06); color: #fff; font-weight: 700;
+}
+.pp-style-btn.active{ border-color: #ffd54a; background: rgba(255,213,74,0.18); color: #ffd54a; }
+.account-msg.ok{ color: #7ee08e; }
+.account-msg.err{ color: #ff8a80; }
+.player-nick{ text-shadow: 0 1px 2px rgba(0,0,0,0.45); }
+
 @media (orientation: landscape){
   #versus-arena{
-    padding-top:max(44px, env(safe-area-inset-top));
+    padding-top:max(52px, calc(env(safe-area-inset-top) + 10px));
   }
   #vs-top-hud{
-    top:4px !important; left:6px !important; right:6px !important;
+    top:max(6px, calc(env(safe-area-inset-top) + 4px)) !important; left:6px !important; right:6px !important;
     padding:4px 10px !important; font-size:12px !important;
     gap:8px;
   }

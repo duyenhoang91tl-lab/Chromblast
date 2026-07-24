@@ -170,8 +170,11 @@
             <span class="set-toggle-lab" data-i18n="setBgm">BGM</span>
           </button>
         </div>
+        <div id="settings-player-info" class="pp-info-card"></div>
+        <button type="button" class="set-action set-c-purple" id="settings-player-edit" style="margin-bottom:10px;"><span class="set-act-ico">✏️</span><span data-i18n="ppEdit">Đổi nickname / màu chữ</span></button>
         <div class="settings-actions">
           <button type="button" class="set-action set-c-purple" id="set-btn-account"><span class="set-act-ico">👤</span><span data-i18n="setAccount">Account</span></button>
+          <button type="button" class="set-action set-c-teal" id="set-btn-profile"><span class="set-act-ico">🪪</span><span data-i18n="ppProfile">Hồ sơ</span></button>
           <button type="button" class="set-action set-c-teal" id="set-btn-lang"><span class="set-act-ico">🌐</span><span data-i18n="setLanguage">Language</span></button>
           <button type="button" class="set-action set-c-blue" id="set-btn-map"><span class="set-act-ico">🗺️</span><span data-i18n="setMap">Map</span></button>
           <button type="button" class="set-action set-c-gold" id="set-btn-cup"><span class="set-act-ico">🏆</span><span data-i18n="setCup">Cup</span></button>
@@ -421,6 +424,7 @@
     <div class="admin-card">
       <div class="admin-title"><span data-i18n="accountTitle">👤 Tài khoản</span><button class="admin-close" id="account-close-btn">✕</button></div>
       <div class="account-user">Đang đăng nhập: <b id="account-username-box">—</b></div>
+      <button type="button" class="auth-submit-btn" id="account-edit-profile" style="background:rgba(255,255,255,0.12);margin:10px 0;" data-i18n="ppEdit">✏️ Đổi nickname / màu chữ</button>
 
       <div class="account-section-title">🔑 Đổi mật khẩu</div>
       <form id="change-password-form">
@@ -445,6 +449,34 @@
       <div id="lang-picker-account" class="lang-picker"></div>
       <hr class="account-divider">
       <button class="logout-btn" id="logout-btn" data-i18n="logoutBtn">🚪 Đăng xuất</button>
+    </div>
+  </div>
+
+  <div id="player-profile-panel" class="admin-panel-like">
+    <div class="admin-card">
+      <div class="admin-title"><span data-i18n="ppTitle">🪪 Hồ sơ người chơi</span><button class="admin-close" id="pp-close-btn">✕</button></div>
+      <div class="admin-sub" data-i18n="ppSub">Nickname tùy ý · ký tự đặc biệt được phép</div>
+      <div class="pp-preview-wrap"><span data-i18n="ppPreview">Xem trước</span>: <span id="pp-nick-preview" class="pp-preview">—</span></div>
+      <div class="auth-field">
+        <label data-i18n="ppNickLabel">Nickname</label>
+        <input type="text" id="pp-nick-input" maxlength="24" placeholder="Nickname..." autocomplete="nickname">
+      </div>
+      <div id="pp-rename-hint" class="admin-sub" style="margin-top:4px;"></div>
+      <button type="button" id="pp-save-nick" class="auth-submit-btn" data-i18n="ppSaveNick">✓ Lưu tên</button>
+
+      <div class="account-section-title" style="margin-top:14px;" data-i18n="ppStyleTitle">🎨 Màu & kiểu chữ</div>
+      <div class="admin-sub" data-i18n="ppStyleAdHint">Đổi màu / đậm / nhạt / nghiêng cần xem quảng cáo</div>
+      <div class="pp-style-row">
+        <label data-i18n="ppColor">Màu chữ</label>
+        <input type="color" id="pp-color-input" value="#ffffff" title="Color">
+      </div>
+      <div class="pp-style-toggles">
+        <button type="button" class="pp-style-btn" id="pp-bold" data-i18n="ppBold">B Đậm</button>
+        <button type="button" class="pp-style-btn" id="pp-light" data-i18n="ppLight">Nhạt</button>
+        <button type="button" class="pp-style-btn" id="pp-italic" data-i18n="ppItalic"><i>I Nghiêng</i></button>
+      </div>
+      <button type="button" id="pp-save-style" class="auth-submit-btn" style="background:linear-gradient(135deg,#6a1b9a,#ab47bc);margin-top:10px;" data-i18n="ppSaveStyle">📺 Áp dụng style (xem QC)</button>
+      <div class="account-msg" id="pp-msg"></div>
     </div>
   </div>
 
@@ -858,6 +890,7 @@
 <script src="js/online-services.js"></script>
 <script src="js/caro-ranks.js"></script>
 <script src="js/leaderboard.js"></script>
+<script src="js/player-profile.js"></script>
 <script src="js/mech-config.js"></script>
 <script src="js/progression.js"></script>
 <script src="js/inventory.js"></script>
