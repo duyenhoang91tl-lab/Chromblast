@@ -78,7 +78,10 @@ body.menu-open #game-root {
   opacity: 0 !important;
   pointer-events: none !important;
 }
-body.menu-open #drag-ghost {
+body.menu-open #drag-ghost,
+body.menu-open #gchat-fab,
+body.menu-open #help-btn,
+body.menu-open #hiddenmap-help-btn {
   display: none !important;
   visibility: hidden !important;
   opacity: 0 !important;
@@ -90,6 +93,11 @@ body.auth-open #start-screen {
   visibility: hidden !important;
   opacity: 0 !important;
   pointer-events: none !important;
+}
+/* Màn Bắt đầu: lớp phủ đục hơn + ép ẩn game (phòng khi thiếu class) */
+body.start-open #start-screen,
+body.menu-open:not(.auth-open) #start-screen {
+  background: rgba(8, 10, 28, 0.88) !important;
 }
 
 /* ═══ Exclusive play modes: Caro / Versus — không chồng nền Chromablast ═══ */
