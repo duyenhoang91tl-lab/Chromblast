@@ -67,9 +67,9 @@
       const size = 8 + Math.random() * 12;
       p.style.width = size + 'px';
       p.style.height = (size * 0.86) + 'px';
-      // Từ giữa–phải, bay theo gió sang trái
-      p.style.left = (42 + Math.random() * 58) + '%';
-      p.style.top = (-8 - Math.random() * 40) + 'vh';
+      // Rải khắp khung hình, bay theo gió sang trái
+      p.style.left = (Math.random() * 100) + '%';
+      p.style.top = (-8 - Math.random() * 55) + 'vh';
       // Gió trái: -28vw … -75vw
       p.style.setProperty('--windX', (-(28 + Math.random() * 47)) + 'vw');
       p.style.setProperty('--sway', (6 + Math.random() * 16) + 'px');
@@ -78,7 +78,7 @@
       p.style.animationDelay = (-Math.random() * 28) + 's';
       p.style.opacity = String(0.78 + Math.random() * 0.2);
       if(Math.random() > 0.4){
-        p.style.background = 'linear-gradient(135deg, #fff0f5 0%, #ffb3cc 48%, #ff7aaa 100%)';
+        p.style.background = 'linear-gradient(135deg, #ffe9da 0%, #f0ab8e 48%, #d17a63 100%)';
       }
       if(size < 11){
         p.style.filter = 'brightness(0.92)';

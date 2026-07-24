@@ -118,6 +118,11 @@ html, body {
   background: radial-gradient(ellipse at 50% 50%, rgba(100, 180, 255, 0.35) 0%, transparent 68%);
   animation-duration: 20s; animation-delay: -3s; filter: blur(30px); opacity: 0.32;
 }
+#sky-atmosphere .sky-mist.m8 {
+  width: 44vw; height: 24vh; top: 32%; left: 22%;
+  background: radial-gradient(ellipse at 50% 50%, rgba(70, 210, 220, 0.32) 0%, transparent 66%);
+  animation-duration: 25s; animation-delay: -14s; filter: blur(38px); opacity: 0.3;
+}
 @keyframes skyMistDrift {
   from { transform: translate3d(0, 0, 0) scale(1); }
   to   { transform: translate3d(2.8vw, -1.4vh, 0) scale(1.06); }
@@ -287,11 +292,11 @@ html, body {
   width: 14px;
   height: 12px;
   border-radius: 70% 0 70% 0;
-  background: linear-gradient(135deg, #ffe4ef 0%, #ff9ec0 42%, #f06a9a 100%);
-  border: 1px solid rgba(255, 220, 230, 0.55);
+  background: linear-gradient(135deg, #ffd9c4 0%, #e8987a 46%, #c4685a 100%);
+  border: 1px solid rgba(255, 220, 205, 0.5);
   box-shadow:
-    0 1px 3px rgba(80, 20, 50, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.55);
+    0 1px 3px rgba(60, 20, 20, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45);
   opacity: 0.92;
   filter: none;
   animation: skyPetalWind ease-in-out infinite;
