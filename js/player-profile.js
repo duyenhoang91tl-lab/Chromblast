@@ -219,6 +219,7 @@ function savePlayerProfile(patch){
   try{ if(p.nick) safeSet('chromablast_guest_name', p.nick); }catch(e){}
   _ppSyncOnlineName(p.nick);
   _ppRefreshUI();
+  try{ if(typeof refreshArcadeHud==='function') refreshArcadeHud(); }catch(e){}
   return p;
 }
 

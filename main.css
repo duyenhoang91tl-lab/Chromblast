@@ -213,9 +213,11 @@ body.mode-exclusive #gchat-fab {
   color: #fff;
   gap: 8px;
 }
-#header > div:nth-child(1) { text-align: left; }
-#header > div:nth-child(2) { text-align: center; }
-#header > div:nth-child(3) { text-align: right; }
+#header-player { display: none; }
+#header-stats-row { display: contents; }
+#header > #header-player { text-align: left; }
+#header > #header-center { text-align: center; }
+#header > #header-right { text-align: right; }
 #game-controls {
   grid-column: 1 / span 3;
   display: flex;
@@ -3455,16 +3457,16 @@ body:has(#secret-stage.active) .streak-dot.lit{
 ════════════════════════════════════════════════════════ */
 #game-root.hud-arcade #header {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  column-gap: 16px;
+  column-gap: 8px;
   overflow: visible;
   font-family: 'Nunito', system-ui, sans-serif;
   background:
     linear-gradient(180deg, rgba(186,110,210,0.62) 0%, rgba(110,48,150,0.78) 100%);
   border: 2.5px solid #ffd97a;
   border-radius: 20px;
-  padding: 14px 14px 12px;
+  padding: 12px 12px 10px;
   margin-bottom: 12px;
   min-height: 88px;
   box-shadow:
@@ -3472,46 +3474,43 @@ body:has(#secret-stage.active) .streak-dot.lit{
     0 0 18px rgba(255,190,90,0.4),
     inset 0 1px 0 rgba(255,255,255,0.28);
 }
-/* Ô điểm — căn giữa trong khung */
-#game-root.hud-arcade #header-score {
+/* Trái: tên người chơi + map */
+#game-root.hud-arcade #header-player {
+  grid-column: 1;
+  justify-self: start;
+  align-self: center;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  min-width: 92px;
-  padding: 8px 16px 7px;
-  background:
-    linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(255,230,160,0.12) 100%);
-  border: 1.5px solid rgba(255,230,150,0.55);
-  border-radius: 14px;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.35);
-  text-align: center;
+  gap: 3px;
+  min-width: 0;
+  max-width: 100%;
+  padding-right: 4px;
+  z-index: 1;
 }
-#game-root.hud-arcade #score-label {
-  display: block;
-  width: 100%;
-  color: #ffe9b8;
+#game-root.hud-arcade #header-player-name {
+  max-width: 100%;
+  font-size: 13px;
+  font-weight: 900;
+  color: #fff8e6;
+  line-height: 1.15;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 2px rgba(40,10,60,0.45);
+}
+#game-root.hud-arcade #header-map-label {
+  max-width: 100%;
   font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.6px;
-  line-height: 1.2;
+  color: #ffe08a;
+  line-height: 1.15;
   white-space: nowrap;
-  text-align: center !important;
-  text-shadow: 0 1px 0 rgba(80,30,0,0.25);
-}
-#game-root.hud-arcade #score-box {
-  display: block;
-  width: 100%;
-  font-size: clamp(24px, 6vw, 30px);
-  font-weight: 900;
-  color: #fff4c4;
-  text-align: center !important;
-  line-height: 1.05;
-  margin-top: 2px;
-  text-shadow:
-    0 0 10px rgba(255,220,100,0.75),
-    0 2px 0 rgba(120,60,0,0.35);
-  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.95;
 }
 #game-root.hud-arcade #best-box,
 #game-root.hud-arcade #combo-box,
@@ -3523,22 +3522,85 @@ body:has(#secret-stage.active) .streak-dot.lit{
 #game-root.hud-arcade #header-targets {
   display: none !important;
 }
-/* Giữa: vương miện trên, inventory dưới */
+/* Giữa: điểm + level (cùng size) ngay trên tim/vàng/kim cương */
 #game-root.hud-arcade #header-center {
+  grid-column: 2;
   justify-self: center;
   margin: 0;
   overflow: visible;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
   text-align: center;
+  min-width: 0;
+}
+#game-root.hud-arcade #header-stats-row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 8px;
+}
+/* Ô điểm = cùng size ô level */
+#game-root.hud-arcade #header-score,
+#game-root.hud-arcade #level-badge.level-crown,
+#game-root.hud-arcade #level-badge {
+  width: 58px;
+  height: 58px;
+  box-sizing: border-box;
+  flex: 0 0 58px;
+}
+#game-root.hud-arcade #header-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 3px 5px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.22) 0%, rgba(255,230,160,0.12) 100%);
+  border: 2px solid rgba(255,230,150,0.65);
+  border-radius: 10px 10px 14px 14px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.35),
+    0 2px 6px rgba(0,0,0,0.2);
+  text-align: center;
+  overflow: hidden;
+}
+#game-root.hud-arcade #score-label {
+  display: block;
+  width: 100%;
+  color: #ffe9b8;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  line-height: 1;
+  white-space: nowrap;
+  text-align: center !important;
+  text-shadow: 0 1px 0 rgba(80,30,0,0.25);
+}
+#game-root.hud-arcade #score-box {
+  display: block;
+  width: 100%;
+  font-size: clamp(13px, 3.6vw, 18px);
+  font-weight: 900;
+  color: #fff4c4;
+  text-align: center !important;
+  line-height: 1.05;
+  margin-top: 2px;
+  text-shadow:
+    0 0 8px rgba(255,220,100,0.7),
+    0 1px 0 rgba(120,60,0,0.35);
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+  padding: 0 1px;
 }
 #game-root.hud-arcade #level-badge.level-crown,
 #game-root.hud-arcade #level-badge {
   position: relative;
-  width: 56px;
-  height: 56px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -3559,7 +3621,7 @@ body:has(#secret-stage.active) .streak-dot.lit{
   position: absolute;
   left: 50%; top: -12px;
   transform: translateX(-50%);
-  width: 56px; height: 20px;
+  width: 58px; height: 20px;
   pointer-events: none;
 }
 #game-root.hud-arcade #level-badge .peak {
@@ -3624,6 +3686,8 @@ body:has(#secret-stage.active) .streak-dot.lit{
   margin-top: 0;
   gap: 5px;
   justify-content: center;
+  flex-wrap: nowrap;
+  max-width: 100%;
 }
 #game-root.hud-arcade .inv-chip {
   font-size: 12px;
@@ -3652,9 +3716,13 @@ body:has(#secret-stage.active) .streak-dot.lit{
   background: rgba(15,95,65,0.45);
 }
 #game-root.hud-arcade #game-controls {
+  grid-column: 1 / -1;
   gap: 8px;
-  justify-self: end;
+  justify-self: stretch;
+  justify-content: center;
   align-self: center;
+  margin-top: 2px;
+  flex-wrap: wrap;
 }
 #game-root.hud-arcade #game-controls > button:not(#pause-btn):not(#account-btn):not(#mute-btn):not(#versus-btn):not(#caro-btn):not(#chat-btn):not(#admin-btn) {
   display: none !important;
@@ -3721,10 +3789,23 @@ body:has(#secret-stage.active) .streak-dot.lit{
   z-index: 40;
 }
 @media (max-width: 360px) {
-  #game-root.hud-arcade #header { column-gap: 10px; padding: 12px 10px; min-height: 80px; }
-  #game-root.hud-arcade #header-score { min-width: 78px; padding: 6px 10px; }
+  #game-root.hud-arcade #header {
+    column-gap: 6px;
+    padding: 10px 8px 9px;
+    min-height: 80px;
+  }
+  #game-root.hud-arcade #header-player-name { font-size: 12px; }
+  #game-root.hud-arcade #header-map-label { font-size: 10px; }
+  #game-root.hud-arcade #header-score,
   #game-root.hud-arcade #level-badge.level-crown,
-  #game-root.hud-arcade #level-badge { width: 50px; height: 50px; }
+  #game-root.hud-arcade #level-badge {
+    width: 52px;
+    height: 52px;
+    flex-basis: 52px;
+  }
+  #game-root.hud-arcade #header-stats-row { gap: 6px; }
+  #game-root.hud-arcade #score-box { font-size: 13px; }
+  #game-root.hud-arcade #level-box { font-size: 18px; }
 }
 
 /* ════════════════════════════════════════════════════════

@@ -126,21 +126,27 @@
 </div>
 <div id="game-root">
   <div id="header">
-    <div id="header-score">
-      <div id="score-label" data-i18n="scoreLabel">ĐIỂM SỐ</div>
-      <div id="score-box">0</div>
-      <div id="best-box">Kỷ lục: 0</div>
+    <div id="header-player" aria-label="Player">
+      <div id="header-player-name">Player</div>
+      <div id="header-map-label">Map thường</div>
     </div>
     <div id="header-center" style="text-align:center">
       <div id="combo-box"></div>
-      <div id="level-badge" class="level-crown" title="Level">
-        <div class="level-crown-top" aria-hidden="true">
-          <span class="peak peak-l"><i></i></span>
-          <span class="peak peak-c"><i></i></span>
-          <span class="peak peak-r"><i></i></span>
+      <div id="header-stats-row">
+        <div id="header-score">
+          <div id="score-label" data-i18n="scoreLabel">ĐIỂM</div>
+          <div id="score-box">0</div>
+          <div id="best-box">Kỷ lục: 0</div>
         </div>
-        <div id="level-cap">LEVEL</div>
-        <div id="level-box">1</div>
+        <div id="level-badge" class="level-crown" title="Level">
+          <div class="level-crown-top" aria-hidden="true">
+            <span class="peak peak-l"><i></i></span>
+            <span class="peak peak-c"><i></i></span>
+            <span class="peak peak-r"><i></i></span>
+          </div>
+          <div id="level-cap">LEVEL</div>
+          <div id="level-box">1</div>
+        </div>
       </div>
       <div id="player-level-box" style="font-size:11px;color:#ffd700;margin-top:2px;white-space:nowrap;"></div>
       <div id="inv-hud" class="inv-hud" aria-label="Inventory"></div>

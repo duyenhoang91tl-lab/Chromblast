@@ -506,11 +506,32 @@ function enableArcadeHud(){
   root.classList.add('hud-arcade');
   const acc=document.getElementById('account-btn');
   if(acc){
-    acc.textContent='⚙️';
-    acc.title=(typeof t==='function'?t('ttSettings'):'Cài đặt');
+    acc.textContent='☰';
+    acc.title=(typeof t==='function'?t('ttMenu'):'Menu');
+    acc.setAttribute('aria-label','Menu');
     acc.dataset.arcadeOn='1';
   }
   refreshArcadeHud();
+}
+
+function arcadeMapLabel(){
+  try{
+    const key = (typeof activeHiddenMapKey!=='undefined' && activeHiddenMapKey) ? activeHiddenMapKey : null;
+    if(key && typeof HIDDEN_MAP_LIST!=='undefined'){
+      const m = HIDDEN_MAP_LIST.find(x=>x && x.key===key);
+      if(m && m.label){
+        const head = String(m.label).split(' — ')[0];
+        return head || m.label;
+      }
+      return 'Map ẩn';
+    }
+  }catch(e){}
+  // Map thường: hiện vòng hiện tại nếu có
+  try{
+    const tier = (typeof mainHardTier==='number') ? (mainHardTier|0) : 0;
+    if(tier > 0) return (typeof t==='function' ? t('arcadeMapRound', tier) : ('Vòng '+tier));
+  }catch(e){}
+  return (typeof t==='function' ? t('arcadeMapMain') : 'Map thường');
 }
 
 function refreshArcadeHud(){
@@ -524,6 +545,20 @@ function refreshArcadeHud(){
   if(cap) cap.style.display='block';
   const lb=document.getElementById('level-box');
   if(lb) lb.textContent=String(typeof playerLevel==='number' ? playerLevel : (typeof level==='number' ? level : 1));
+
+  // Trái: tên người chơi + map đang chơi
+  const nameEl=document.getElementById('header-player-name');
+  if(nameEl){
+    let nick='Player';
+    try{
+      if(typeof getPlayerNickname==='function') nick=getPlayerNickname();
+      else if(typeof _localPlayerName==='function') nick=_localPlayerName();
+      else if(typeof currentUser!=='undefined' && currentUser && currentUser.username) nick=currentUser.username;
+    }catch(e){}
+    nameEl.textContent=String(nick||'Player').trim() || 'Player';
+  }
+  const mapEl=document.getElementById('header-map-label');
+  if(mapEl) mapEl.textContent=arcadeMapLabel();
 
   // Đã bỏ mục TARGETS trên HUD arcade
   const targets=document.getElementById('header-targets');
