@@ -27,6 +27,10 @@ function _ppFontById(id){
   return NICK_FONTS.find(f => f.id === id) || NICK_FONTS[0];
 }
 
+/** Avatar thú trong game (emoji) */
+const PLAYER_AVATARS = ['🐶','🐱','🐰','🐢','🦫','🦔','🐍','🐕','🐝','🐔','🐿️','🦎'];
+const FRIENDS_KEY = 'chromablast_friends';
+
 function _ppDefault(){
   return {
     nick: '',
@@ -34,9 +38,47 @@ function _ppDefault(){
     bold: false,
     italic: false,
     fontId: 'nunito',
+    avatar: '🐶',
     renameCount: 0,
     styleUnlocked: false
   };
+}
+
+function getPlayerAvatar(){
+  const p = getPlayerProfile();
+  const a = p.avatar || '🐶';
+  return PLAYER_AVATARS.includes(a) ? a : '🐶';
+}
+
+function getFriendsList(){
+  try{
+    const raw = (typeof safeGet === 'function' ? safeGet(FRIENDS_KEY) : null) || localStorage.getItem(FRIENDS_KEY);
+    const j = raw ? JSON.parse(raw) : [];
+    return Array.isArray(j) ? j : [];
+  }catch(e){ return []; }
+}
+
+function isFriend(uid){
+  if(!uid) return false;
+  return getFriendsList().some(f => f && f.uid === uid);
+}
+
+function addFriendLocal(friend){
+  if(!friend || !friend.uid) return { ok:false, reason:'need_id' };
+  const list = getFriendsList().filter(f => f && f.uid !== friend.uid);
+  if(isFriend(friend.uid)) return { ok:true, already:true, list:getFriendsList() };
+  list.unshift({
+    uid: friend.uid,
+    name: String(friend.name || 'Player').slice(0, 32),
+    avatar: friend.avatar || '🐶',
+    at: Date.now()
+  });
+  try{
+    const s = JSON.stringify(list.slice(0, 80));
+    if(typeof safeSet === 'function') safeSet(FRIENDS_KEY, s);
+    else localStorage.setItem(FRIENDS_KEY, s);
+  }catch(e){}
+  return { ok:true, already:false, list };
 }
 
 function getPlayerProfile(){
@@ -52,6 +94,7 @@ function getPlayerProfile(){
         p.italic = !!j.italic;
         if(typeof j.fontId === 'string' && _ppFontById(j.fontId).id === j.fontId) p.fontId = j.fontId;
         else if(j.fontId) p.fontId = 'nunito';
+        if(typeof j.avatar === 'string' && PLAYER_AVATARS.includes(j.avatar)) p.avatar = j.avatar;
         p.renameCount = Math.max(0, Number(j.renameCount) || 0);
         p.styleUnlocked = !!j.styleUnlocked;
       }
@@ -71,6 +114,7 @@ function savePlayerProfile(patch){
   p.nick = String(p.nick || '').slice(0, NICK_MAX_LEN);
   if(!/^#[0-9A-Fa-f]{6}$/.test(p.color)) p.color = '#ffffff';
   if(!_ppFontById(p.fontId) || _ppFontById(p.fontId).id !== p.fontId) p.fontId = 'nunito';
+  if(!PLAYER_AVATARS.includes(p.avatar)) p.avatar = '🐶';
   try{
     const s = JSON.stringify(p);
     if(typeof safeSet === 'function') safeSet(PLAYER_PROFILE_KEY, s);
@@ -99,27 +143,29 @@ function getPlayerNickname(){
   return (typeof _localPlayerName === 'function' ? _localPlayerName() : 'Player');
 }
 
-function getPlayerNameStyle(){
-  const p = getPlayerProfile();
-  return {
-    color: p.color || '#ffffff',
-    bold: !!p.bold,
-    italic: !!p.italic,
-    fontId: p.fontId || 'nunito'
-  };
-}
-
 function formatPlayerNameHtml(name, style){
   const st = style || getPlayerNameStyle();
   const n = (typeof escapeHtml === 'function' ? escapeHtml(name) : String(name||''));
   const fam = _ppFontById(st.fontId).family;
+  const av = (st.avatar && PLAYER_AVATARS.includes(st.avatar)) ? st.avatar : getPlayerAvatar();
   const css = [
     'color:'+(st.color||'#ffffff'),
     'font-weight:'+(st.bold ? '900' : '700'),
     st.italic ? 'font-style:italic' : 'font-style:normal',
     'font-family:'+fam
   ].join(';');
-  return '<span class="player-nick" style="'+css+'">'+n+'</span>';
+  return '<span class="player-nick-wrap"><span class="player-avatar" aria-hidden="true">'+av+'</span><span class="player-nick" style="'+css+'">'+n+'</span></span>';
+}
+
+function getPlayerNameStyle(){
+  const p = getPlayerProfile();
+  return {
+    color: p.color || '#ffffff',
+    bold: !!p.bold,
+    italic: !!p.italic,
+    fontId: p.fontId || 'nunito',
+    avatar: getPlayerAvatar()
+  };
 }
 
 function canRenameFree(){
@@ -249,6 +295,24 @@ function renderNickFontList(selectedId){
   });
 }
 
+function renderAvatarPicker(selected){
+  const box = document.getElementById('pp-avatar-list');
+  if(!box) return;
+  const sel = (selected && PLAYER_AVATARS.includes(selected)) ? selected : getPlayerAvatar();
+  box.innerHTML = PLAYER_AVATARS.map(a =>
+    '<button type="button" class="pp-avatar-btn'+(a===sel?' active':'')+'" data-avatar="'+a+'" aria-label="avatar">'+a+'</button>'
+  ).join('');
+  box.querySelectorAll('.pp-avatar-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      try{sfxClick();}catch(e){}
+      const av = btn.dataset.avatar;
+      savePlayerProfile({ avatar: av });
+      box.querySelectorAll('.pp-avatar-btn').forEach(b=> b.classList.toggle('active', b.dataset.avatar===av));
+      _ppUpdatePreview();
+    });
+  });
+}
+
 function _ppRefreshUI(){
   const nick = getPlayerNickname();
   const style = getPlayerNameStyle();
@@ -269,7 +333,7 @@ function renderSettingsPlayerInfo(){
   const rankName = (caro.rank && caro.rank.name) ? caro.rank.name : '';
   const rankIcon = (caro.rank && caro.rank.icon) ? caro.rank.icon + ' ' : '';
   box.innerHTML =
-    '<div class="pp-info-row"><span data-i18n-skip>👤</span> <b id="settings-player-nick">'+formatPlayerNameHtml(info.nick, info.style)+'</b></div>'+
+    '<div class="pp-info-row">'+formatPlayerNameHtml(info.nick, info.style)+'</div>'+
     '<div class="pp-info-grid">'+
       '<div class="pp-stat"><small>'+(typeof t==='function'?t('ppLevel'):'Cấp')+'</small><b>Lv.'+info.level+'</b></div>'+
       '<div class="pp-stat"><small>'+(typeof t==='function'?t('ppMaps'):'Map đã qua')+'</small><b>'+info.maps+'</b></div>'+
@@ -287,6 +351,7 @@ function openPlayerProfilePanel(){
   if(colorIn) colorIn.value = p.color || '#ffffff';
   document.getElementById('pp-bold')?.classList.toggle('active', !!p.bold);
   document.getElementById('pp-italic')?.classList.toggle('active', !!p.italic);
+  renderAvatarPicker(p.avatar || getPlayerAvatar());
   renderNickFontList(p.fontId || 'nunito');
   const hint = document.getElementById('pp-rename-hint');
   if(hint){

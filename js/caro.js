@@ -336,6 +336,80 @@ function _caroUpdateMarks(){
   const o = el.querySelector('.caro-o');
   if(x) x.style.color = theme.x;
   if(o) o.style.color = theme.o;
+  _caroUpdateOppChip();
+}
+
+function _caroOppSlot(){
+  if(!_caro) return 'guest';
+  return _caro.mySlot === 'host' ? 'guest' : 'host';
+}
+
+function _caroUpdateOppChip(){
+  if(!_caro) return;
+  const opp = _caroOppSlot();
+  const idx = opp === 'host' ? 0 : 1;
+  const name = _caro.names[idx] || '—';
+  const av = (_caro.avatars && _caro.avatars[idx]) || '🐶';
+  const uid = (_caro.ids && _caro.ids[idx]) || null;
+  const avBtn = document.getElementById('caro-opp-avatar');
+  const nameEl = document.getElementById('caro-opp-name');
+  const chip = document.getElementById('caro-opp-chip');
+  if(avBtn){
+    avBtn.textContent = av;
+    avBtn.dataset.uid = uid || '';
+    avBtn.dataset.name = name;
+    avBtn.dataset.avatar = av;
+    avBtn.disabled = !!_caro.ai || !uid;
+  }
+  if(nameEl) nameEl.textContent = name;
+  if(chip) chip.classList.toggle('tappable', !_caro.ai && !!uid);
+}
+
+async function openPlayerCard(opts){
+  opts = opts || {};
+  const panel = document.getElementById('player-card-panel');
+  if(!panel) return;
+  const uid = opts.uid || null;
+  const fallbackName = opts.name || 'Player';
+  const fallbackAv = opts.avatar || '🐶';
+  document.getElementById('pc-avatar').textContent = fallbackAv;
+  document.getElementById('pc-name').textContent = fallbackName;
+  document.getElementById('pc-stats').textContent = (typeof t==='function'?t('caroNoStats'):'…');
+  const friendBtn = document.getElementById('pc-friend-btn');
+  const msg = document.getElementById('pc-msg');
+  if(msg) msg.textContent = '';
+  if(friendBtn){
+    friendBtn.dataset.uid = uid || '';
+    friendBtn.dataset.name = fallbackName;
+    friendBtn.dataset.avatar = fallbackAv;
+    const already = uid && typeof isFriend === 'function' && isFriend(uid);
+    friendBtn.disabled = !uid || already;
+    friendBtn.textContent = already
+      ? (typeof t==='function'?t('caroAlreadyFriend'):'Đã là bạn')
+      : (typeof t==='function'?t('caroAddFriend'):'🤝 Kết bạn');
+  }
+  panel.classList.add('show');
+  if(!uid || typeof fetchPlayerPublicProfile !== 'function') return;
+  try{
+    const prof = await fetchPlayerPublicProfile(uid);
+    if(!prof) return;
+    document.getElementById('pc-avatar').textContent = prof.avatar || fallbackAv;
+    document.getElementById('pc-name').textContent = prof.displayName || fallbackName;
+    const s = prof.stats || {};
+    const rate = s.winRate != null ? s.winRate : 0;
+    const line = (typeof t==='function'
+      ? (t('caroWinRateLabel')+': '+rate+'% · '+t('ppCaroWLD', s.wins||0, s.losses||0, s.draws||0, rate))
+      : (rate+'%'));
+    document.getElementById('pc-stats').textContent = (s.total > 0 || s.points > 0) ? line : (typeof t==='function'?t('caroNoStats'):'Chưa có thống kê');
+    if(friendBtn){
+      friendBtn.dataset.name = prof.displayName || fallbackName;
+      friendBtn.dataset.avatar = prof.avatar || fallbackAv;
+    }
+  }catch(e){}
+}
+
+function closePlayerCard(){
+  document.getElementById('player-card-panel')?.classList.remove('show');
 }
 
 function _caroStopTimer(){
@@ -695,6 +769,8 @@ function _caroEnterAIGame(levelId){
     aiTimer: null,
     moveSeq: 0,
     names: [pName, t('caroAiName_' + profile.id)],
+    avatars: [(typeof getPlayerAvatar==='function'?getPlayerAvatar():'🐶'), '🤖'],
+    ids: [null, null],
     winner: null,
     hover: null,
     turnSec: prefs.turnSec,
@@ -793,6 +869,8 @@ function _caroEnterGame(roomData){
     online: true,
     moveSeq: 0,
     names: [roomData.hostName||'Host', roomData.guestName||'Guest'],
+    avatars: [roomData.hostAvatar||'🐶', roomData.guestAvatar||'🐱'],
+    ids: [roomData.hostId||null, roomData.guestId||null],
     winner: null,
     turnSec,
     skin,
@@ -1072,10 +1150,44 @@ function _caroOpenLobby(roomId, code, role, roomData){
 
 function _caroRenderLobby(d){
   const host = d.hostName || '?';
-  const guest = d.guestName || t('onlineWaiting');
+  const guestName = d.guestName || null;
+  const guest = guestName || t('onlineWaiting');
+  const hostAv = d.hostAvatar || '🐶';
+  const guestAv = d.guestAvatar || '🐱';
+  const uid = typeof getOnlineUid === 'function' ? getOnlineUid() : null;
+  const you = (typeof t==='function'?t('caroYouLabel'):'Bạn');
+  const hostIsMe = uid && d.hostId === uid;
+  const guestIsMe = uid && d.guestId === uid;
+  const hostLabel = hostIsMe ? (escapeHtml(host)+' <small class="online-you-here">'+you+'</small>') : escapeHtml(host);
+  const guestLabel = guestName
+    ? (guestIsMe ? (escapeHtml(guest)+' <small class="online-you-here">'+you+'</small>') : escapeHtml(guest))
+    : '<span class="online-wait">'+escapeHtml(guest)+'</span>';
+
+  const hostUid = d.hostId || '';
+  const guestUid = d.guestId || '';
   document.getElementById('caro-lobby-players').innerHTML =
-    '<div class="online-player"><span class="caro-x">X</span> '+escapeHtml(host)+'</div>'+
-    '<div class="online-player"><span class="caro-o">O</span> '+escapeHtml(guest)+'</div>';
+    '<div class="online-player caro-lobby-seat" data-uid="'+escapeHtml(hostUid)+'" data-name="'+escapeHtml(host)+'" data-avatar="'+hostAv+'">'+
+      '<button type="button" class="caro-seat-av" data-uid="'+escapeHtml(hostUid)+'" data-name="'+escapeHtml(host)+'" data-avatar="'+hostAv+'">'+hostAv+'</button>'+
+      '<span class="caro-x">X</span> <span class="caro-seat-name">'+hostLabel+'</span></div>'+
+    '<div class="online-player caro-lobby-seat" data-uid="'+escapeHtml(guestUid)+'" data-name="'+escapeHtml(guestName||'')+'" data-avatar="'+guestAv+'">'+
+      '<button type="button" class="caro-seat-av" data-uid="'+escapeHtml(guestUid)+'" data-name="'+escapeHtml(guestName||'')+'" data-avatar="'+guestAv+'" '+(guestName?'':'disabled')+'>'+(guestName?guestAv:'❔')+'</button>'+
+      '<span class="caro-o">O</span> <span class="caro-seat-name">'+guestLabel+'</span></div>';
+
+  document.querySelectorAll('#caro-lobby-players .caro-seat-av').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      e.preventDefault();
+      const id = btn.dataset.uid;
+      if(!id || id === uid) return;
+      openPlayerCard({ uid: id, name: btn.dataset.name, avatar: btn.dataset.avatar });
+    });
+  });
+
+  const here = document.getElementById('caro-lobby-here');
+  if(here){
+    here.style.display = 'block';
+    here.textContent = typeof t==='function' ? t('caroJoinedRoom') : '✓ Đã vào phòng';
+  }
+
   const startBtn = document.getElementById('caro-start-btn');
   const isHost = _caroLobby && _caroLobby.role==='host';
   if(startBtn) startBtn.style.display = (isHost && d.status==='ready' && d.guestId) ? 'block' : 'none';
@@ -1096,7 +1208,8 @@ async function caroCreateRoom(){
       gameType:'caro', turnSec: prefs.turnSec, boardSkin: prefs.skin
     });
     _caroOpenLobby(roomId, code, 'host', {
-      status:'open', hostName:getOnlineDisplayName(), gameType:'caro',
+      status:'open', hostName:getOnlineDisplayName(), hostAvatar:getOnlineAvatar(),
+      hostId: getOnlineUid(), gameType:'caro',
       turnSec: prefs.turnSec, boardSkin: prefs.skin
     });
     _caroStatus(t('onlineRoomCreated', code));
@@ -1300,6 +1413,33 @@ function applyCaroSettings(){
     document.getElementById('caro-lobby-leave')?.addEventListener('click', closeCaroHub);
     document.getElementById('caro-quit-btn')?.addEventListener('click', ()=>{ if(confirm(t('caroQuitConfirm'))) _caroQuit(); });
     document.getElementById('caro-result-close')?.addEventListener('click', _caroQuit);
+    document.getElementById('caro-opp-avatar')?.addEventListener('click', ()=>{
+      const btn = document.getElementById('caro-opp-avatar');
+      if(!btn || btn.disabled) return;
+      openPlayerCard({ uid: btn.dataset.uid, name: btn.dataset.name, avatar: btn.dataset.avatar });
+    });
+    document.getElementById('pc-close-btn')?.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} closePlayerCard(); });
+    document.getElementById('pc-friend-btn')?.addEventListener('click', async ()=>{
+      try{sfxClick();}catch(e){}
+      const btn = document.getElementById('pc-friend-btn');
+      const msg = document.getElementById('pc-msg');
+      if(!btn || !btn.dataset.uid){
+        if(msg) msg.textContent = typeof t==='function'?t('caroFriendNeedId'):'';
+        return;
+      }
+      const res = typeof addOnlineFriend === 'function'
+        ? await addOnlineFriend({ uid: btn.dataset.uid, name: btn.dataset.name, avatar: btn.dataset.avatar })
+        : (typeof addFriendLocal === 'function' ? addFriendLocal({ uid: btn.dataset.uid, name: btn.dataset.name, avatar: btn.dataset.avatar }) : { ok:false });
+      if(msg){
+        msg.textContent = res.already
+          ? (typeof t==='function'?t('caroAlreadyFriend'):'Đã là bạn')
+          : (res.ok ? (typeof t==='function'?t('caroFriendAdded'):'Đã thêm bạn') : (typeof t==='function'?t('caroFriendNeedId'):'Lỗi'));
+      }
+      if(res.ok){
+        btn.disabled = true;
+        btn.textContent = typeof t==='function'?t('caroAlreadyFriend'):'Đã là bạn';
+      }
+    });
     refreshCaroButton();
   }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);

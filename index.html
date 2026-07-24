@@ -458,6 +458,9 @@
       <div class="admin-title"><span data-i18n="ppTitle">🪪 Hồ sơ người chơi</span><button class="admin-close" id="pp-close-btn">✕</button></div>
       <div class="admin-sub" data-i18n="ppSub">Nickname tùy ý · ký tự đặc biệt được phép</div>
       <div class="pp-preview-wrap"><span data-i18n="ppPreview">Xem trước</span>: <span id="pp-nick-preview" class="pp-preview">—</span></div>
+      <div class="pp-font-label" data-i18n="ppAvatar">Avatar</div>
+      <div class="admin-sub" data-i18n="ppAvatarHint">Chọn thú làm ảnh đại diện</div>
+      <div id="pp-avatar-list" class="pp-avatar-list" role="listbox"></div>
       <div class="auth-field">
         <label data-i18n="ppNickLabel">Đổi tên</label>
         <input type="text" id="pp-nick-input" maxlength="24" placeholder="Nickname..." autocomplete="nickname">
@@ -472,8 +475,8 @@
         <input type="color" id="pp-color-input" value="#ffffff" title="Color">
       </div>
       <div class="pp-style-toggles">
-        <button type="button" class="pp-style-btn" id="pp-bold" data-i18n="ppBold">B Đậm</button>
-        <button type="button" class="pp-style-btn" id="pp-italic" data-i18n="ppItalic">I Nghiêng</button>
+        <button type="button" class="pp-style-btn" id="pp-bold" data-i18n="ppBold">Đậm</button>
+        <button type="button" class="pp-style-btn" id="pp-italic" data-i18n="ppItalic">Nghiêng</button>
       </div>
       <div class="pp-font-label" data-i18n="ppFont">Font chữ</div>
       <div id="pp-font-list" class="pp-font-list" role="listbox" aria-label="Fonts"></div>
@@ -632,6 +635,7 @@
   <div id="caro-lobby-panel" class="admin-panel-like">
     <div class="admin-card">
       <div class="admin-title"><span data-i18n="caroLobby">⬛ Phòng Caro</span> <small id="caro-lobby-room-no" class="caro-lobby-no"></small></div>
+      <div id="caro-lobby-here" class="caro-joined-banner" data-i18n="caroJoinedRoom">✓ Đã vào phòng</div>
       <div class="admin-sub" id="caro-lobby-hint" data-i18n="caroLobbyHint">Đang chờ đối thủ — có thể vào từ danh sách phòng chờ hoặc mã phòng</div>
       <div class="online-room-code-wrap"><span data-i18n="onlineCode">Mã phòng</span>: <strong id="caro-room-code">------</strong></div>
       <div id="caro-lobby-players" class="online-players"></div>
@@ -679,9 +683,13 @@
 
   <div id="caro-stage">
     <div class="caro-topbar">
-      <div class="caro-top-left">
-        <span id="caro-turn-info">Caro</span>
-        <span id="caro-marks" class="caro-marks">Bạn <b class="caro-x">X</b> · Máy <b class="caro-o">O</b></span>
+      <div class="caro-opp-chip" id="caro-opp-chip">
+        <button type="button" id="caro-opp-avatar" class="caro-opp-avatar" title="Đối thủ">🐶</button>
+        <div class="caro-opp-meta">
+          <span id="caro-opp-name" class="caro-opp-name">—</span>
+          <span id="caro-turn-info" class="caro-turn-info">Caro</span>
+          <span id="caro-marks" class="caro-marks">Bạn <b class="caro-x">X</b> · Máy <b class="caro-o">O</b></span>
+        </div>
       </div>
       <div class="caro-top-right">
         <div id="caro-timer" class="caro-timer" title="Thời gian lượt">15</div>
@@ -691,6 +699,19 @@
     </div>
     <div class="caro-board-wrap">
       <canvas id="caro-canvas" aria-label="Bàn cờ Caro 15x15 X O"></canvas>
+    </div>
+  </div>
+
+  <div id="player-card-panel" class="admin-panel-like">
+    <div class="admin-card player-card-modal">
+      <div class="admin-title"><span data-i18n="caroOppCardTitle">Hồ sơ đối thủ</span><button class="admin-close" id="pc-close-btn">✕</button></div>
+      <div class="pc-head">
+        <div id="pc-avatar" class="pc-avatar">🐶</div>
+        <div id="pc-name" class="pc-name">—</div>
+      </div>
+      <div id="pc-stats" class="pc-stats" data-i18n="caroNoStats">Chưa có thống kê</div>
+      <button type="button" id="pc-friend-btn" class="auth-submit-btn btn-on-color" style="background:linear-gradient(135deg,#2e7d32,#66bb6a);margin-top:12px;" data-i18n="caroAddFriend">🤝 Kết bạn</button>
+      <div id="pc-msg" class="account-msg" style="margin-top:8px;"></div>
     </div>
   </div>
 
