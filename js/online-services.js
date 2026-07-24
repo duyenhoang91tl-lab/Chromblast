@@ -475,13 +475,29 @@ function cancelMatchmaking(){
 
 let _openCaroRoomsUnsub = null;
 function listenOpenCaroRooms(onUpdate){
-  stopListeningOpenCaroRooms();
+  return listenOpenRoomsByGameType('caro', onUpdate, '_openCaroRoomsUnsub');
+}
+function stopListeningOpenCaroRooms(){
+  if(_openCaroRoomsUnsub){ _openCaroRoomsUnsub(); _openCaroRoomsUnsub = null; }
+}
+
+let _openVersusRoomsUnsub = null;
+function listenOpenVersusRooms(onUpdate){
+  return listenOpenRoomsByGameType('versus', onUpdate, '_openVersusRoomsUnsub');
+}
+function stopListeningOpenVersusRooms(){
+  if(_openVersusRoomsUnsub){ _openVersusRoomsUnsub(); _openVersusRoomsUnsub = null; }
+}
+
+function listenOpenRoomsByGameType(gameType, onUpdate, unsubKey){
+  if(unsubKey === '_openCaroRoomsUnsub') stopListeningOpenCaroRooms();
+  if(unsubKey === '_openVersusRoomsUnsub') stopListeningOpenVersusRooms();
   if(!_onlineDb) return;
   const q = _onlineDb.collection('rooms')
-    .where('gameType', '==', 'caro')
+    .where('gameType', '==', gameType)
     .where('status', '==', 'open')
     .limit(30);
-  _openCaroRoomsUnsub = q.onSnapshot(snap => {
+  const unsub = q.onSnapshot(snap => {
     const rooms = snap.docs.map(doc => ({ roomId: doc.id, ...doc.data() }));
     rooms.sort((a, b) => {
       const ta = a.createdAt && a.createdAt.toMillis ? a.createdAt.toMillis() : 0;
@@ -490,13 +506,11 @@ function listenOpenCaroRooms(onUpdate){
     });
     if(typeof onUpdate === 'function') onUpdate(rooms);
   }, err => {
-    console.warn('[caro-rooms]', err);
+    console.warn('['+gameType+'-rooms]', err);
     if(typeof onUpdate === 'function') onUpdate([]);
   });
-}
-
-function stopListeningOpenCaroRooms(){
-  if(_openCaroRoomsUnsub){ _openCaroRoomsUnsub(); _openCaroRoomsUnsub = null; }
+  if(unsubKey === '_openCaroRoomsUnsub') _openCaroRoomsUnsub = unsub;
+  else if(unsubKey === '_openVersusRoomsUnsub') _openVersusRoomsUnsub = unsub;
 }
 
 // ── Kết quả & BXH Caro ────────────────────────────────────────

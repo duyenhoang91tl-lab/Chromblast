@@ -4,6 +4,7 @@
 // ═══════════════════════════════════════════════════════════════
 
 let _onlineLobby = null; // { roomId, code, role:'host'|'guest', roomData }
+let _onlineLastOpenRooms = [];
 
 function _onlineShow(id){ const el=document.getElementById(id); if(el) el.classList.add('show'); }
 function _onlineHide(id){ const el=document.getElementById(id); if(el) el.classList.remove('show'); }
@@ -31,6 +32,95 @@ async function _onlineRequireEnabled(){
   }
 }
 
+function _onlineStartRoomListListen(){
+  if(typeof listenOpenVersusRooms !== 'function') return;
+  listenOpenVersusRooms(_onlineRenderOpenRoomLists);
+}
+function _onlineStopRoomListListen(){
+  if(typeof stopListeningOpenVersusRooms === 'function') stopListeningOpenVersusRooms();
+}
+
+function _onlineRenderOpenRoomLists(rooms){
+  _onlineLastOpenRooms = rooms || [];
+  const open = _onlineLastOpenRooms.filter(r => r.status === 'open' && !r.guestId);
+  const countEl = document.getElementById('online-room-list-count');
+  if(countEl) countEl.textContent = open.length ? '(' + open.length + ')' : '';
+  _onlineRenderRoomListTo('online-room-list', 'online-room-list-empty', open);
+  _onlineRenderRoomListTo('online-lobby-room-list', null, open);
+  if(_onlineLobby){
+    const idx = open.findIndex(r => r.roomId === _onlineLobby.roomId);
+    const noEl = document.getElementById('online-lobby-room-no');
+    if(noEl){
+      noEl.textContent = idx >= 0
+        ? '· ' + (typeof t==='function'?t('onlineRoomNo', idx+1):('Phòng '+(idx+1)))
+        : (_onlineLobby.code ? '· '+_onlineLobby.code : '');
+    }
+  }
+}
+
+function _onlineRenderRoomListTo(listId, emptyId, rooms){
+  const list = document.getElementById(listId);
+  const empty = emptyId ? document.getElementById(emptyId) : null;
+  if(!list) return;
+  const uid = typeof getOnlineUid === 'function' ? getOnlineUid() : null;
+  const hereId = _onlineLobby && _onlineLobby.roomId;
+  if(empty) empty.style.display = rooms.length ? 'none' : 'block';
+  if(!rooms.length){ list.innerHTML = ''; return; }
+  list.innerHTML = rooms.map((r, i) => {
+    const no = i + 1;
+    const mine = uid && r.hostId === uid;
+    const here = hereId && r.roomId === hereId;
+    const name = escapeHtml(r.hostName || 'Host');
+    const joinLabel = here
+      ? (typeof t==='function'?t('onlineRoomHere'):'Đang ở')
+      : (mine ? (typeof t==='function'?t('caroRoomMine'):'Của bạn') : (typeof t==='function'?t('caroRoomJoin'):'Vào'));
+    return '<button type="button" class="caro-room-row'+(mine||here?' mine':'')+'" data-room="'+r.roomId+'">'+
+      '<span class="caro-room-no">#'+no+'</span>'+
+      '<span class="caro-room-info"><b>'+name+(here?' <span class="online-you-here">'+(typeof t==='function'?t('onlineYouHere'):'Bạn')+'</span>':'')+'</b>'+
+      '<small>'+(r.code ? escapeHtml(r.code) : '')+'</small></span>'+
+      '<span class="caro-room-action">'+joinLabel+'</span></button>';
+  }).join('');
+  list.querySelectorAll('.caro-room-row').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      e.preventDefault();
+      e.stopPropagation();
+      const rid = btn.dataset.room;
+      if(!rid) return;
+      const room = rooms.find(x => x.roomId === rid);
+      if(!room) return;
+      if(hereId && hereId === rid) return; // đã ở phòng này
+      onSwitchToRoom(room);
+    });
+  });
+}
+
+async function onSwitchToRoom(room){
+  if(!await _onlineRequireEnabled()) return;
+  const uid = getOnlineUid();
+  try{
+    // Rời phòng hiện tại trước khi vào phòng khác
+    if(_onlineLobby && _onlineLobby.roomId && _onlineLobby.roomId !== room.roomId){
+      const prev = _onlineLobby.roomId;
+      stopListeningRoom();
+      _onlineLobby = null;
+      await leaveOnlineRoom(prev);
+    }
+    if(uid && room.hostId === uid){
+      openOnlineLobby(room.roomId, room.code, 'host', room);
+      return;
+    }
+    const data = await joinOnlineRoomById(room.roomId, { gameType: 'versus' });
+    openOnlineLobby(data.roomId, data.code, 'guest', data);
+    _onlineStatus(t('onlineJoined'));
+  }catch(e){
+    const msg = e.message==='room_not_found' ? t('onlineRoomNotFound')
+      : e.message==='room_full' ? (typeof t==='function'?t('caroRoomFull'):e.message)
+      : e.message==='room_not_open' ? (typeof t==='function'?t('caroRoomNotOpen'):e.message)
+      : e.message;
+    _onlineStatus(msg, true);
+  }
+}
+
 function openOnlineHub(){
   try{ sfxClick(); }catch(e){}
   if(!canHostVersus()){
@@ -41,11 +131,14 @@ function openOnlineHub(){
   _onlineShow('online-hub-panel');
   const on = isOnlineServicesEnabled();
   document.getElementById('online-disabled-note').style.display = on ? 'none' : 'block';
-  if(on) _onlineRequireEnabled();
+  if(on){
+    _onlineRequireEnabled().then(ok => { if(ok) _onlineStartRoomListListen(); });
+  }
 }
 
 function closeOnlineHub(){
   cancelMatchmaking();
+  _onlineStopRoomListListen();
   if(_onlineLobby) leaveOnlineRoom(_onlineLobby.roomId).catch(()=>{});
   _onlineLobby=null;
   stopListeningRoom();
@@ -61,9 +154,18 @@ function openOnlineLobby(roomId, code, role, roomData){
   _onlineShow('online-lobby-panel');
   document.getElementById('online-room-code').textContent=code;
   _renderLobby(roomData);
+  _onlineStartRoomListListen();
 
   listenOnlineRoom(roomId, ev => {
-    if(ev.type==='deleted'){ closeOnlineHub(); return; }
+    if(ev.type==='deleted'){
+      // Phòng bị xóa → về hub, vẫn xem danh sách phòng khác
+      stopListeningRoom();
+      _onlineLobby=null;
+      _onlineHide('online-lobby-panel');
+      _onlineShow('online-hub-panel');
+      _onlineStartRoomListListen();
+      return;
+    }
     const d=ev.data;
     _onlineLobby.roomData=d;
     _renderLobby(d);
@@ -75,10 +177,13 @@ function openOnlineLobby(roomId, code, role, roomData){
 
 function _renderLobby(d){
   const host=d.hostName||'?';
-  const guest=d.guestName||t('onlineWaiting');
+  const waiting = typeof t==='function'?t('onlineWaiting'):'Đang chờ...';
+  const guest = d.guestName
+    ? escapeHtml(d.guestName)
+    : '<span class="online-wait">'+escapeHtml(waiting)+'</span>';
   document.getElementById('online-lobby-players').innerHTML=
     '<div class="online-player"><span>👑</span> '+escapeHtml(host)+'</div>'+
-    '<div class="online-player"><span>⚔️</span> '+escapeHtml(guest)+'</div>';
+    '<div class="online-player"><span>⚔️</span> '+guest+'</div>';
   const startBtn=document.getElementById('online-start-btn');
   const isHost=_onlineLobby && _onlineLobby.role==='host';
   if(startBtn){
@@ -86,13 +191,21 @@ function _renderLobby(d){
   }
   const mmNote=document.getElementById('online-mm-auto-note');
   if(mmNote) mmNote.style.display = d.matchmaking ? 'block' : 'none';
+  _onlineRenderOpenRoomLists(_onlineLastOpenRooms);
 }
 
 async function onCreateRoom(){
   if(!await _onlineRequireEnabled()) return;
   try{
-    const { roomId, code } = await createOnlineRoom();
-    openOnlineLobby(roomId, code, 'host', { status:'open', hostName:getOnlineDisplayName() });
+    // Nếu đang trong phòng khác → rời trước
+    if(_onlineLobby && _onlineLobby.roomId){
+      const prev = _onlineLobby.roomId;
+      stopListeningRoom();
+      _onlineLobby = null;
+      await leaveOnlineRoom(prev);
+    }
+    const { roomId, code } = await createOnlineRoom({ gameType:'versus' });
+    openOnlineLobby(roomId, code, 'host', { status:'open', hostName:getOnlineDisplayName(), gameType:'versus' });
     _onlineStatus(t('onlineRoomCreated', code));
   }catch(e){ _onlineStatus(e.message, true); }
 }
@@ -102,11 +215,19 @@ async function onJoinRoom(){
   const code=(document.getElementById('online-join-code').value||'').trim().toUpperCase();
   if(code.length<4){ _onlineStatus(t('onlineCodeShort'), true); return; }
   try{
-    const data=await joinOnlineRoomByCode(code);
+    if(_onlineLobby && _onlineLobby.roomId){
+      const prev = _onlineLobby.roomId;
+      stopListeningRoom();
+      _onlineLobby = null;
+      await leaveOnlineRoom(prev);
+    }
+    const data=await joinOnlineRoomByCode(code, { gameType:'versus' });
     openOnlineLobby(data.roomId, data.code, 'guest', data);
     _onlineStatus(t('onlineJoined'));
   }catch(e){
-    const msg = e.message==='room_not_found' ? t('onlineRoomNotFound') : e.message;
+    const msg = e.message==='room_not_found' ? t('onlineRoomNotFound')
+      : e.message==='wrong_game_type' ? (typeof t==='function'?t('caroWrongRoom'):e.message)
+      : e.message;
     _onlineStatus(msg, true);
   }
 }

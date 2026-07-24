@@ -524,21 +524,40 @@
       <div id="online-disabled-note" class="online-note" data-i18n="onlineDisabled">Chưa bật Firebase — xem docs/ONLINE_MULTIPLAYER.md để cấu hình trước khi phát hành online.</div>
       <div id="online-status" class="online-status"></div>
       <button type="button" id="online-google-btn" class="auth-submit-btn" style="background:#4285f4;margin-bottom:10px;" data-i18n="onlineGoogle">Đăng nhập Google</button>
-      <button type="button" id="online-create-btn" class="auth-submit-btn" data-i18n="onlineCreate">🏠 Tạo phòng</button>
+
+      <div class="caro-waiting-block">
+        <div class="caro-waiting-head">
+          <span data-i18n="onlineWaitingRooms">📋 Phòng chờ</span>
+          <span id="online-room-list-count" class="caro-room-count"></span>
+        </div>
+        <div id="online-room-list" class="caro-room-list"></div>
+        <div id="online-room-list-empty" class="admin-sub" data-i18n="onlineWaitingEmpty">Chưa có phòng — tạo phòng hoặc bấm Tìm đối thủ</div>
+      </div>
+
+      <button type="button" id="online-find-btn" class="auth-submit-btn" style="margin-top:10px;background:linear-gradient(135deg,#2e7d32,#66bb6a);" data-i18n="onlineFind">🔍 Tìm đối thủ (tự ghép)</button>
+      <button type="button" id="online-create-btn" class="auth-submit-btn" style="margin-top:10px;" data-i18n="onlineCreate">🏠 Tạo phòng</button>
       <div class="auth-field" style="margin-top:12px;"><label data-i18n="onlineJoinLabel">Vào phòng bằng mã</label><input type="text" id="online-join-code" maxlength="6" placeholder="ABC123" style="text-transform:uppercase;letter-spacing:2px;text-align:center;font-weight:700;"></div>
-      <button type="button" id="online-join-btn" class="auth-submit-btn" style="background:rgba(255,255,255,0.15);" data-i18n="onlineJoin">🚪 Vào phòng</button>
-      <button type="button" id="online-find-btn" class="auth-submit-btn" style="margin-top:10px;background:linear-gradient(135deg,#7b61ff,#5a8dee);" data-i18n="onlineFind">🔍 Tìm đối thủ</button>
+      <button type="button" id="online-join-btn" class="auth-submit-btn btn-ghost" style="background:rgba(255,255,255,0.15);" data-i18n="onlineJoin">🚪 Vào phòng</button>
     </div>
   </div>
 
   <div id="online-lobby-panel" class="admin-panel-like">
     <div class="admin-card">
-      <div class="admin-title"><span data-i18n="onlineLobby">🏠 Phòng chờ</span></div>
+      <div class="admin-title">
+        <span data-i18n="onlineLobby">🏠 Phòng chờ</span>
+        <small id="online-lobby-room-no" class="online-lobby-no"></small>
+      </div>
+      <div class="admin-sub" id="online-lobby-here" data-i18n="onlineYouInRoom">Bạn đang ở phòng này</div>
       <div class="online-room-code-wrap"><span data-i18n="onlineCode">Mã phòng</span>: <strong id="online-room-code">------</strong></div>
       <div id="online-lobby-players" class="online-players"></div>
       <div id="online-mm-auto-note" class="online-note" style="display:none" data-i18n="onlineMmAuto">Đã ghép đối thủ — chờ host bắt đầu...</div>
       <button type="button" id="online-start-btn" class="auth-submit-btn" data-i18n="onlineStart">▶ Bắt đầu trận</button>
-      <button type="button" id="online-lobby-leave" class="auth-submit-btn" style="background:rgba(255,255,255,0.12);margin-top:8px;" data-i18n="onlineLeave">✕ Rời phòng</button>
+      <button type="button" id="online-lobby-create" class="auth-submit-btn" style="margin-top:8px;" data-i18n="onlineCreate">🏠 Tạo phòng mới</button>
+      <div class="caro-waiting-block" style="margin-top:12px;">
+        <div class="caro-waiting-head"><span data-i18n="onlineWaitingRooms">📋 Phòng chờ</span></div>
+        <div id="online-lobby-room-list" class="caro-room-list caro-room-list-compact"></div>
+      </div>
+      <button type="button" id="online-lobby-leave" class="auth-submit-btn btn-ghost" style="background:rgba(255,255,255,0.12);margin-top:8px;" data-i18n="onlineLeave">✕ Rời phòng</button>
     </div>
   </div>
 

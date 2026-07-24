@@ -583,10 +583,28 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 .online-status { font-size:11px; color:#8ee08e; margin-bottom:10px; min-height:16px; }
 .online-status.err { color:#ff6b6b; }
 .online-status.warn { color:#ffd54a; }
-.online-room-code-wrap { text-align:center; font-size:14px; margin:12px 0; color:#ccc; }
+.online-room-code-wrap { text-align:center; font-size:14px; margin:12px 0; color:#eee; }
 .online-room-code-wrap strong { font-size:22px; letter-spacing:4px; color:#ffd700; }
 .online-players { display:flex; flex-direction:column; gap:8px; margin:12px 0; }
-.online-player { padding:10px; border-radius:10px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); font-weight:700; }
+.online-player {
+  padding:10px 12px; border-radius:10px;
+  background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.16);
+  font-weight:800; color:#ffffff !important; font-size:14px;
+}
+.online-player .online-wait { color:rgba(255,255,255,0.78); font-weight:700; }
+/* Nút phụ (nền tối / trong suốt) — chữ trắng nổi */
+.auth-submit-btn.btn-ghost,
+#online-lobby-leave, #caro-lobby-leave, #online-mm-cancel, #caro-mm-cancel,
+#online-join-btn, #caro-join-btn, #caro-lobby-skin-btn, #caro-hub-skin-btn,
+#caro-rank-btn, #account-edit-profile {
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.35);
+}
+.online-you-here {
+  display:inline-block; margin-left:6px; padding:2px 8px; border-radius:999px;
+  background:rgba(255,213,74,0.2); color:#ffd54a; font-size:10px; font-weight:800;
+}
+.online-lobby-no { font-size:12px; color:#ffd54a; font-weight:800; margin-left:6px; }
 .online-mm-pulse { font-size:14px; color:#7b61ff; padding:20px 0; animation: onlinePulse 1.2s ease-in-out infinite; }
 @keyframes onlinePulse { 0%,100%{opacity:0.5} 50%{opacity:1} }
 
