@@ -1147,26 +1147,14 @@ body.mode-exclusive #gchat-fab {
   margin-top: 4px; color: #ffc1cc; font-weight: 800; font-size: 12px;
 }
 
-/* ══ Global chat FAB — ngang hàng skill Lửa, giữa mép trái và nút Lửa ══ */
-.gchat-fab {
-  position: fixed;
-  left: max(12px, env(safe-area-inset-left));
-  top: auto;
-  bottom: max(120px, calc(env(safe-area-inset-bottom) + 110px));
-  z-index: 10075;
-  width: 46px; height: 46px; border-radius: 50%;
-  border: 1px solid rgba(255,213,74,0.45);
-  background: linear-gradient(145deg, rgba(255,152,0,0.95), rgba(255,213,74,0.92));
-  color: #1a0a00; font-size: 20px; line-height: 1;
-  box-shadow: 0 8px 22px rgba(0,0,0,0.4);
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  padding: 0;
-  transform: translate(-50%, -50%);
-  will-change: left, top;
+/* ══ Global chat FAB — tắt trên màn chính (đã có #chat-btn trên header) ══ */
+.gchat-fab,
+#gchat-fab {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
 }
-.gchat-fab[hidden] { display: none !important; }
-.gchat-fab:active { transform: translate(-50%, -50%) scale(0.94); }
 body.gchat-open .gchat-fab { display: none !important; }
 
 /* ══ Global chat panel ══ */
@@ -4156,13 +4144,14 @@ body:has(#secret-stage.active) .streak-dot.lit{
 }
 .spin-reward-ok{ width:min(200px,80%); margin-top:4px; }
 
-/* ══════════════════ FIX: đồng bộ 3 nốt cài đặt / loa / tạm dừng ══════════════════
-   Đảm bảo #account-btn (⚙️), #mute-btn (🔊), #pause-btn (⏸/▶) luôn cùng
-   kích thước, hình dạng, màu sắc trong HUD arcade — tránh lệch to/nhỏ,
-   vuông/tròn, hoặc màu khác nhau do các rule inline/cũ ghi đè lẻ tẻ. */
+/* ══════════════════ FIX: đồng bộ nốt header (Caro/Versus/Chat/Settings/Mute/Pause) ══════════════════ */
 #game-root.hud-arcade #game-controls #pause-btn,
 #game-root.hud-arcade #game-controls #account-btn,
-#game-root.hud-arcade #game-controls #mute-btn {
+#game-root.hud-arcade #game-controls #mute-btn,
+#game-root.hud-arcade #game-controls #chat-btn,
+#game-root.hud-arcade #game-controls #versus-btn.vs-unlocked,
+#game-root.hud-arcade #game-controls #caro-btn,
+#game-root.hud-arcade #game-controls #caro-btn.caro-unlocked {
   width: 40px !important;
   height: 40px !important;
   min-width: 40px !important;
@@ -4179,18 +4168,25 @@ body:has(#secret-stage.active) .streak-dot.lit{
   align-items: center !important;
   justify-content: center !important;
   box-sizing: border-box !important;
+}
+#game-root.hud-arcade #game-controls #pause-btn,
+#game-root.hud-arcade #game-controls #account-btn,
+#game-root.hud-arcade #game-controls #mute-btn,
+#game-root.hud-arcade #game-controls #chat-btn {
   background: radial-gradient(circle at 35% 28%, #9ad4ff 0%, #4a90e8 52%, #2560b8 100%) !important;
   border: 2.5px solid #d0ecff !important;
   box-shadow: 0 0 12px rgba(90,170,255,0.7), inset 0 1px 0 rgba(255,255,255,0.55) !important;
+  color: #fff !important;
 }
 #game-root.hud-arcade #game-controls {
   align-items: center !important;
   gap: 10px !important;
 }
-/* Chế độ HUD mặc định (không phải arcade): 3 nút vẫn phải đều nhau */
+/* Chế độ HUD mặc định (không phải arcade): các nút vẫn phải đều nhau */
 #game-root:not(.hud-arcade) #game-controls #pause-btn,
 #game-root:not(.hud-arcade) #game-controls #account-btn,
-#game-root:not(.hud-arcade) #game-controls #mute-btn {
+#game-root:not(.hud-arcade) #game-controls #mute-btn,
+#game-root:not(.hud-arcade) #game-controls #chat-btn {
   width: 32px !important;
   height: 32px !important;
   min-width: 32px !important;
@@ -4202,6 +4198,12 @@ body:has(#secret-stage.active) .streak-dot.lit{
   border-radius: 8px !important;
   background: rgba(255,255,255,0.1) !important;
   border: 1px solid rgba(255,255,255,0.2) !important;
+  color: #fff !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+}
   box-shadow: none !important;
   display: flex !important;
   align-items: center !important;
