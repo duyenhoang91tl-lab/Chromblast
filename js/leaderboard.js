@@ -38,6 +38,12 @@ function _localPlayerName(){
 }
 
 function currentPlayerName(){
+  try{
+    if(typeof getPlayerNickname === 'function'){
+      const n = getPlayerNickname();
+      if(n) return n;
+    }
+  }catch(e){}
   if(typeof getOnlineDisplayName === 'function' && typeof isOnlineServicesEnabled === 'function' && isOnlineServicesEnabled() && getOnlineUid()){
     const on = getOnlineDisplayName();
     if(on) return on;

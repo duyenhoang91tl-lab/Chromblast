@@ -702,3 +702,32 @@ function MILESTONE_MSG(tier){ const c=_i18nContent(); const a=c.milestones||I18N
   Object.keys(caro).forEach(l=>{ if(I18N[l]) Object.assign(I18N[l], caro[l]); });
   if(typeof applyI18nDom === 'function') applyI18nDom();
 })();
+
+// ── Hồ sơ / nickname ──
+(function(){
+  const pp = {
+  vi:{ ppProfile:'Hồ sơ', ppEdit:'Đổi nickname / màu chữ', ppTitle:'🪪 Hồ sơ người chơi',
+       ppSub:'Nickname tùy ý · ký tự đặc biệt được phép', ppPreview:'Xem trước',
+       ppNickLabel:'Nickname', ppRenameFree:'Đổi tên lần 1 miễn phí',
+       ppRenameAd:'Đổi tên tiếp theo: xem quảng cáo', ppSaveNick:'✓ Lưu tên',
+       ppStyleTitle:'🎨 Màu & kiểu chữ', ppStyleAdHint:'Đổi màu / đậm / nhạt / nghiêng cần xem quảng cáo',
+       ppColor:'Màu chữ', ppBold:'B Đậm', ppLight:'Nhạt', ppItalic:'I Nghiêng',
+       ppSaveStyle:'📺 Áp dụng style (xem QC)', ppSaved:'Đã lưu',
+       ppStyleSaved:'Đã áp dụng style (đã xem QC)', ppNickShort:'Nhập nickname',
+       ppAdFail:'Quảng cáo chưa sẵn sàng — thử lại sau',
+       ppLevel:'Cấp', ppMaps:'Map đã qua', ppCaro:'Caro',
+       ppCaroWLD:'{0}T/{1}H/{2}Hòa · {3}%' },
+  en:{ ppProfile:'Profile', ppEdit:'Edit nickname / color', ppTitle:'🪪 Player profile',
+       ppSub:'Any nickname · special characters allowed', ppPreview:'Preview',
+       ppNickLabel:'Nickname', ppRenameFree:'First rename is free',
+       ppRenameAd:'Next rename: watch an ad', ppSaveNick:'✓ Save name',
+       ppStyleTitle:'🎨 Color & style', ppStyleAdHint:'Color / bold / light / italic needs an ad',
+       ppColor:'Text color', ppBold:'B Bold', ppLight:'Light', ppItalic:'I Italic',
+       ppSaveStyle:'📺 Apply style (watch ad)', ppSaved:'Saved',
+       ppStyleSaved:'Style applied (ad watched)', ppNickShort:'Enter a nickname',
+       ppAdFail:'Ad not ready — try again later',
+       ppLevel:'Level', ppMaps:'Maps cleared', ppCaro:'Caro',
+       ppCaroWLD:'{0}W/{1}L/{2}D · {3}%' },
+  };
+  Object.keys(pp).forEach(l=>{ if(I18N[l]) Object.assign(I18N[l], pp[l]); });
+})();

@@ -254,8 +254,18 @@ function _vsApplyRemotePlace(P, move){
   document.getElementById('online-start-btn')?.addEventListener('click', onStartOnlineMatch);
   document.getElementById('online-lobby-leave')?.addEventListener('click', closeOnlineHub);
   document.getElementById('online-google-btn')?.addEventListener('click', async ()=>{
-    try{ await signInWithGoogle(); _onlineStatus('Google · '+getOnlineDisplayName()); }
-    catch(e){ _onlineStatus(e.message, true); }
+    try{
+      await signInWithGoogle();
+      _onlineStatus('Google · '+getOnlineDisplayName());
+    }catch(e){
+      const code = (e && (e.code || e.message)) || '';
+      // User đóng popup Google — không hiện lỗi đỏ
+      if(String(code).includes('popup-closed-by-user') || String(code).includes('cancelled-popup-request')){
+        _onlineStatus('');
+        return;
+      }
+      _onlineStatus(e.message || String(e), true);
+    }
   });
 
   initOnlineServices().then(ok => {

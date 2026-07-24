@@ -11,7 +11,10 @@ function applyLoggedInUser(username){
   currentUser = { username, role: u.role || 'user' };
   setSession(username);
   const nameBox = document.getElementById('account-username-box');
-  if(nameBox) nameBox.textContent = username;
+  if(nameBox){
+    if(typeof formatPlayerNameHtml === 'function') nameBox.innerHTML = formatPlayerNameHtml(typeof getPlayerNickname==='function'?getPlayerNickname():username);
+    else nameBox.textContent = username;
+  }
   if(typeof updateDailyBadge === 'function') updateDailyBadge(); // khoá lưu quà đổi theo tài khoản
   return true;
 }

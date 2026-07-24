@@ -22,7 +22,15 @@ function isOnlineServicesEnabled(){
 function getOnlineUid(){ return _onlineUid; }
 // Fallback dùng _localPlayerName() (không gọi currentPlayerName()) để tránh đệ quy vô hạn
 // currentPlayerName() <-> getOnlineDisplayName() khi _onlineDisplayName chưa kịp gán.
-function getOnlineDisplayName(){ return _onlineDisplayName || (typeof _localPlayerName === 'function' ? _localPlayerName() : 'Player'); }
+function getOnlineDisplayName(){
+  try{
+    if(typeof getPlayerNickname === 'function'){
+      const n = getPlayerNickname();
+      if(n) return n;
+    }
+  }catch(e){}
+  return _onlineDisplayName || (typeof _localPlayerName === 'function' ? _localPlayerName() : 'Player');
+}
 
 function _roomCode(){
   let s = '';
