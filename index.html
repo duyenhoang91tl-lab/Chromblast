@@ -1089,48 +1089,13 @@
     </div>
   </div>
 
-  <!-- Candy Crush–style saga: vườn hoa + Samoyed → chọn map 1–4 -->
+  <!-- Saga: vườn hoa + Samoyed (map 4) + cầu vồng 7 màu kéo được -->
   <div id="saga-map-screen" aria-hidden="true">
-    <div class="saga-garden" aria-hidden="true">
-      <div class="saga-sky"></div>
-      <div class="saga-sun"></div>
-      <div class="saga-hills"></div>
-      <div class="saga-bush left"></div>
-      <div class="saga-bush right"></div>
-      <div class="saga-flowers"></div>
-      <div class="saga-petal p1"></div>
-      <div class="saga-petal p2"></div>
-      <div class="saga-petal p3"></div>
-      <div class="saga-petal p4"></div>
-      <div class="saga-petal p5"></div>
-    </div>
+    <canvas id="saga-canvas" aria-label="Cầu vồng chọn map"></canvas>
     <button type="button" id="saga-close-btn" aria-label="Đóng">✕</button>
+    <div class="saga-speech">Xin chào! Cùng chơi trong vườn hoa nhé 🌸</div>
     <div class="saga-stage">
-      <div class="saga-mascot-wrap">
-        <div class="saga-samoyed" aria-hidden="true">
-          <div class="sam-ear left"></div>
-          <div class="sam-ear right"></div>
-          <div class="sam-head">
-            <div class="sam-eye left"></div>
-            <div class="sam-eye right"></div>
-            <div class="sam-nose"></div>
-            <div class="sam-smile"></div>
-            <div class="sam-blush left"></div>
-            <div class="sam-blush right"></div>
-          </div>
-          <div class="sam-body"></div>
-          <div class="sam-paw left"></div>
-          <div class="sam-paw right"></div>
-        </div>
-        <div class="saga-speech">Xin chào! Cùng chơi trong vườn hoa nhé 🌸</div>
-      </div>
-      <div class="saga-path" role="list">
-        <div class="saga-path-rail"><div id="saga-path-fill"></div></div>
-        <button type="button" class="saga-node" data-lv="1" role="listitem">1</button>
-        <button type="button" class="saga-node" data-lv="2" role="listitem">2</button>
-        <button type="button" class="saga-node" data-lv="3" role="listitem">3</button>
-        <button type="button" class="saga-node" data-lv="4" role="listitem">4</button>
-      </div>
+      <div class="saga-drag-hint">← Kéo cầu vồng xem map đã qua / chưa phá →</div>
       <div class="saga-info">
         <div id="saga-blurb"></div>
         <div id="saga-progress" class="saga-progress-badge">0/4</div>
