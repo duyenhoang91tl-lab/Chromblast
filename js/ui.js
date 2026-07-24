@@ -107,7 +107,11 @@ function initStartScreen(){
   const screen = document.getElementById('start-screen');
   function hideStart(){
     screen.classList.add('hide');
-    setTimeout(()=>{ screen.style.display='none'; }, 500);
+    if(typeof syncMenuOpenState === 'function') syncMenuOpenState();
+    setTimeout(()=>{
+      screen.style.display='none';
+      if(typeof syncMenuOpenState === 'function') syncMenuOpenState();
+    }, 500);
   }
   function beginFromStart(){
     sfxClick();
@@ -642,7 +646,12 @@ function settingsGoHome(){
   closeAllSettingsOverlays();
   try{ hardResetAllModes(); }catch(e){}
   const screen=document.getElementById('start-screen');
-  if(screen){ screen.style.display='flex'; screen.classList.remove('hidden'); }
+  if(screen){
+    screen.style.display='flex';
+    screen.classList.remove('hide');
+    screen.classList.remove('hidden');
+  }
+  if(typeof syncMenuOpenState === 'function') syncMenuOpenState();
 }
 
 function settingsReplay(){

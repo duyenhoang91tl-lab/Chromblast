@@ -72,154 +72,59 @@ html, body {
   background: radial-gradient(circle at 42% 38%, rgba(40, 30, 70, 0.12), transparent 68%);
 }
 
-/* Quầng lõi tinh vân (mềm, không thành đám đặc) */
-#sky-atmosphere .sky-glow {
+/* Bụi vũ trụ / tinh vân xoay nhẹ */
+#sky-atmosphere .sky-mist {
   position: absolute;
   border-radius: 50%;
-  filter: blur(48px);
+  filter: blur(36px);
+  opacity: 0.5;
   z-index: 1;
-  pointer-events: none;
   animation: skyMistDrift ease-in-out infinite alternate;
   will-change: transform, opacity;
 }
-#sky-atmosphere .sky-glow.g1 {
-  width: 70vw; height: 42vh; left: 10%; bottom: 10%;
-  background: radial-gradient(ellipse at 45% 50%, rgba(60, 170, 255, 0.42) 0%, transparent 68%);
-  opacity: 0.55; animation-duration: 24s;
+#sky-atmosphere .sky-mist.m1 {
+  width: 58vw; height: 34vh; bottom: 8%; left: 8%;
+  background: radial-gradient(ellipse at 45% 50%, rgba(70, 130, 255, 0.65) 0%, transparent 70%);
+  animation-duration: 22s; filter: blur(42px); opacity: 0.55;
 }
-#sky-atmosphere .sky-glow.g2 {
-  width: 58vw; height: 36vh; right: -4%; bottom: 18%; left: auto;
-  background: radial-gradient(ellipse at 55% 45%, rgba(180, 70, 230, 0.38) 0%, transparent 66%);
-  opacity: 0.48; animation-duration: 28s; animation-delay: -7s;
+#sky-atmosphere .sky-mist.m2 {
+  width: 52vw; height: 32vh; bottom: 14%; right: -4%; left: auto;
+  background: radial-gradient(ellipse at 55% 45%, rgba(200, 50, 230, 0.5) 0%, transparent 68%);
+  animation-duration: 26s; animation-delay: -6s; filter: blur(40px); opacity: 0.48;
 }
-#sky-atmosphere .sky-glow.g3 {
-  width: 50vw; height: 30vh; left: 28%; top: 36%;
-  background: radial-gradient(ellipse at 50% 50%, rgba(90, 120, 255, 0.28) 0%, transparent 70%);
-  opacity: 0.4; animation-duration: 22s; animation-delay: -4s; filter: blur(40px);
+#sky-atmosphere .sky-mist.m3 {
+  width: 70vw; height: 28vh; top: 38%; left: 10%;
+  background: radial-gradient(ellipse at 50% 50%, rgba(120, 70, 220, 0.4) 0%, transparent 68%);
+  animation-duration: 30s; animation-delay: -11s; opacity: 0.4;
 }
-
-/* Sợi tinh vân mỏng — dài, hẹp, xoắn nhẹ như ảnh tham chiếu */
-#sky-atmosphere .sky-filament {
-  position: absolute;
-  z-index: 1;
-  pointer-events: none;
-  border-radius: 50%;
-  filter: blur(10px);
-  opacity: 0.55;
-  mix-blend-mode: screen;
-  animation: skyFilamentDrift ease-in-out infinite alternate;
-  will-change: transform, opacity;
-  /* dải sáng mỏng giữa sợi */
-  background: linear-gradient(90deg,
-    transparent 0%,
-    rgba(120, 190, 255, 0.15) 18%,
-    rgba(180, 220, 255, 0.75) 48%,
-    rgba(160, 100, 255, 0.45) 72%,
-    transparent 100%);
-  box-shadow:
-    0 0 18px rgba(100, 180, 255, 0.25),
-    0 0 40px rgba(160, 80, 220, 0.12);
+#sky-atmosphere .sky-mist.m4 {
+  width: 48vw; height: 26vh; top: 12%; left: -8%;
+  background: radial-gradient(ellipse at 40% 50%, rgba(50, 100, 220, 0.38) 0%, transparent 70%);
+  animation-duration: 24s; animation-delay: -4s; opacity: 0.36;
 }
-#sky-atmosphere .sky-filament.f1 {
-  width: 92vw; height: 3.2vh; left: -8%; top: 58%;
-  transform: rotate(-18deg);
-  animation-duration: 26s; opacity: 0.62;
+#sky-atmosphere .sky-mist.m5 {
+  width: 42vw; height: 22vh; top: 6%; right: 18%; left: auto;
+  background: radial-gradient(ellipse at 50% 50%, rgba(160, 120, 255, 0.32) 0%, transparent 65%);
+  animation-duration: 18s; filter: blur(28px); opacity: 0.34;
 }
-#sky-atmosphere .sky-filament.f2 {
-  width: 78vw; height: 2.4vh; left: 8%; top: 66%;
-  transform: rotate(-12deg);
-  background: linear-gradient(90deg,
-    transparent 0%, rgba(80, 200, 255, 0.2) 20%,
-    rgba(140, 230, 255, 0.85) 50%, rgba(200, 90, 255, 0.4) 75%, transparent 100%);
-  animation-duration: 22s; animation-delay: -5s; opacity: 0.7; filter: blur(8px);
+#sky-atmosphere .sky-mist.m6 {
+  width: 80vw; height: 36vh; bottom: -4%; left: 5%;
+  background: radial-gradient(ellipse at 50% 40%, rgba(90, 40, 180, 0.45) 0%, rgba(40, 80, 200, 0.2) 45%, transparent 72%);
+  animation-duration: 28s; animation-delay: -9s; filter: blur(48px); opacity: 0.5;
 }
-#sky-atmosphere .sky-filament.f3 {
-  width: 70vw; height: 2.8vh; left: 18%; top: 48%;
-  transform: rotate(14deg);
-  background: linear-gradient(90deg,
-    transparent 0%, rgba(160, 80, 255, 0.25) 25%,
-    rgba(120, 160, 255, 0.7) 52%, rgba(60, 180, 255, 0.35) 78%, transparent 100%);
-  animation-duration: 30s; animation-delay: -11s; opacity: 0.5;
+#sky-atmosphere .sky-mist.m7 {
+  width: 36vw; height: 20vh; top: 28%; left: 55%;
+  background: radial-gradient(ellipse at 50% 50%, rgba(100, 180, 255, 0.35) 0%, transparent 68%);
+  animation-duration: 20s; animation-delay: -3s; filter: blur(30px); opacity: 0.32;
 }
-#sky-atmosphere .sky-filament.f4 {
-  width: 85vw; height: 2vh; left: -5%; top: 74%;
-  transform: rotate(-22deg);
-  background: linear-gradient(90deg,
-    transparent 0%, rgba(100, 140, 255, 0.2) 22%,
-    rgba(200, 80, 230, 0.65) 55%, rgba(80, 160, 255, 0.3) 80%, transparent 100%);
-  animation-duration: 24s; animation-delay: -3s; opacity: 0.58; filter: blur(9px);
-}
-#sky-atmosphere .sky-filament.f5 {
-  width: 55vw; height: 1.8vh; left: 35%; top: 40%;
-  transform: rotate(-28deg);
-  background: linear-gradient(90deg,
-    transparent 0%, rgba(90, 220, 255, 0.35) 30%,
-    rgba(180, 240, 255, 0.8) 50%, rgba(140, 100, 255, 0.3) 72%, transparent 100%);
-  animation-duration: 18s; animation-delay: -8s; opacity: 0.65; filter: blur(7px);
-}
-#sky-atmosphere .sky-filament.f6 {
-  width: 64vw; height: 2.2vh; left: -2%; top: 32%;
-  transform: rotate(8deg);
-  background: linear-gradient(90deg,
-    transparent 0%, rgba(120, 90, 255, 0.3) 28%,
-    rgba(100, 170, 255, 0.6) 55%, transparent 100%);
-  animation-duration: 27s; animation-delay: -14s; opacity: 0.42; filter: blur(11px);
-}
-#sky-atmosphere .sky-filament.f7 {
-  width: 48vw; height: 1.5vh; right: 5%; top: 55%; left: auto;
-  transform: rotate(22deg);
-  background: linear-gradient(90deg,
-    transparent 0%, rgba(200, 120, 255, 0.35) 35%,
-    rgba(120, 210, 255, 0.75) 58%, transparent 100%);
-  animation-duration: 20s; animation-delay: -2s; opacity: 0.55; filter: blur(6px);
-}
-#sky-atmosphere .sky-filament.f8 {
-  width: 72vw; height: 2.6vh; left: 12%; bottom: 16%;
-  transform: rotate(-8deg);
-  background: linear-gradient(90deg,
-    transparent 0%, rgba(70, 150, 255, 0.25) 18%,
-    rgba(100, 200, 255, 0.7) 45%, rgba(180, 70, 220, 0.45) 70%, transparent 100%);
-  animation-duration: 32s; animation-delay: -9s; opacity: 0.6;
-}
-#sky-atmosphere .sky-filament.f9 {
-  width: 40vw; height: 1.4vh; left: 50%; top: 28%;
-  transform: rotate(-35deg);
-  background: linear-gradient(90deg,
-    transparent 0%, rgba(160, 200, 255, 0.4) 40%,
-    rgba(220, 160, 255, 0.55) 65%, transparent 100%);
-  animation-duration: 16s; animation-delay: -6s; opacity: 0.45; filter: blur(8px);
-}
-#sky-atmosphere .sky-filament.f10 {
-  width: 88vw; height: 1.6vh; left: -10%; top: 62%;
-  transform: rotate(4deg);
-  background: linear-gradient(90deg,
-    transparent 0%, rgba(80, 180, 255, 0.15) 15%,
-    rgba(140, 220, 255, 0.55) 48%, rgba(160, 90, 255, 0.25) 78%, transparent 100%);
-  animation-duration: 29s; animation-delay: -16s; opacity: 0.5; filter: blur(12px);
-}
-#sky-atmosphere .sky-filament.f11 {
-  width: 36vw; height: 1.2vh; left: 8%; top: 44%;
-  transform: rotate(32deg);
-  background: linear-gradient(90deg,
-    transparent 0%, rgba(100, 230, 255, 0.5) 45%,
-    rgba(180, 120, 255, 0.35) 70%, transparent 100%);
-  animation-duration: 19s; animation-delay: -1s; opacity: 0.48; filter: blur(5px);
-}
-#sky-atmosphere .sky-filament.f12 {
-  width: 60vw; height: 2vh; right: -8%; bottom: 28%; left: auto;
-  transform: rotate(-16deg);
-  background: linear-gradient(90deg,
-    transparent 0%, rgba(200, 80, 220, 0.3) 30%,
-    rgba(90, 160, 255, 0.65) 55%, rgba(60, 200, 255, 0.3) 80%, transparent 100%);
-  animation-duration: 25s; animation-delay: -12s; opacity: 0.52; filter: blur(9px);
+#sky-atmosphere .sky-mist.m8 {
+  width: 44vw; height: 24vh; top: 32%; left: 22%;
+  background: radial-gradient(ellipse at 50% 50%, rgba(70, 210, 220, 0.32) 0%, transparent 66%);
+  animation-duration: 25s; animation-delay: -14s; filter: blur(38px); opacity: 0.3;
 }
 @keyframes skyMistDrift {
   from { transform: translate3d(0, 0, 0) scale(1); }
   to   { transform: translate3d(2.8vw, -1.4vh, 0) scale(1.06); }
-}
-@keyframes skyFilamentDrift {
-  from { opacity: 0.4; filter: blur(9px); }
-  to   { opacity: 0.72; filter: blur(11px); }
 }
 
 /* Sao */
