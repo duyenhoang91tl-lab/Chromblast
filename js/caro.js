@@ -64,28 +64,55 @@ let _caroTimerId = null;
 let _caroPrefsDraft = null;
 let _caroLastOpenRooms = [];
 
+function _caroBoardSkinUnlocked(id){
+  if(!id || !CARO_THEMES[id]) return false;
+  if(typeof isBoardSkinUnlocked === 'function') return !!isBoardSkinUnlocked(id);
+  // Fallback nếu map-boards chưa nạp: chỉ cho classic/slate (starter)
+  return id === 'classic' || id === 'slate';
+}
+
+function _caroDefaultUnlockedSkin(){
+  try{
+    if(typeof getActiveBoardSkin === 'function'){
+      const a = getActiveBoardSkin();
+      if(_caroBoardSkinUnlocked(a)) return a;
+    }
+  }catch(e){}
+  if(_caroBoardSkinUnlocked('slate')) return 'slate';
+  if(_caroBoardSkinUnlocked('classic')) return 'classic';
+  if(typeof getUnlockedBoardSkinIds === 'function'){
+    const ids = getUnlockedBoardSkinIds() || [];
+    const hit = ids.find(id => CARO_THEMES[id]);
+    if(hit) return hit;
+  }
+  return 'slate';
+}
+
 function getCaroPrefs(){
-  let p = { turnSec: CARO_TURN_NORMAL, skin: 'wood' };
+  let p = { turnSec: CARO_TURN_NORMAL, skin: _caroDefaultUnlockedSkin() };
   try{
     const raw = (typeof safeGet === 'function' ? safeGet(CARO_PREFS_KEY) : null) || localStorage.getItem(CARO_PREFS_KEY);
     if(raw){
       const j = JSON.parse(raw);
       if(j.turnSec === 10 || j.turnSec === 15) p.turnSec = j.turnSec;
-      if(j.skin && CARO_THEMES[j.skin]) p.skin = j.skin;
+      if(j.skin && CARO_THEMES[j.skin] && _caroBoardSkinUnlocked(j.skin)) p.skin = j.skin;
     }
   }catch(e){}
-  // Đồng bộ nền map đang dùng nếu có
+  // Đồng bộ nền map đang dùng nếu chưa có prefs riêng và nền đó đã mở
   try{
-    const active = document.documentElement.getAttribute('data-board-skin');
-    if(active && CARO_THEMES[active] && !localStorage.getItem(CARO_PREFS_KEY)) p.skin = active;
+    if(!localStorage.getItem(CARO_PREFS_KEY)){
+      const active = document.documentElement.getAttribute('data-board-skin');
+      if(active && CARO_THEMES[active] && _caroBoardSkinUnlocked(active)) p.skin = active;
+    }
   }catch(e){}
+  if(!_caroBoardSkinUnlocked(p.skin)) p.skin = _caroDefaultUnlockedSkin();
   return p;
 }
 
 function setCaroPrefs(patch){
   const p = Object.assign(getCaroPrefs(), patch || {});
   if(p.turnSec !== 10 && p.turnSec !== 15) p.turnSec = CARO_TURN_NORMAL;
-  if(!CARO_THEMES[p.skin]) p.skin = 'wood';
+  if(!CARO_THEMES[p.skin] || !_caroBoardSkinUnlocked(p.skin)) p.skin = _caroDefaultUnlockedSkin();
   try{
     const s = JSON.stringify(p);
     if(typeof safeSet === 'function') safeSet(CARO_PREFS_KEY, s);
@@ -1476,6 +1503,16 @@ async function caroStartMatch(){
 }
 
 function _caroSelectSkinDraft(id, container){
+  if(!_caroBoardSkinUnlocked(id)){
+    try{
+      if(typeof showComboFlash === 'function'){
+        showComboFlash(0, false, (typeof t==='function'?t('caroSkinLocked'):null) || '🔒 Mở nền này ở map xếp hình trước');
+      } else if(typeof _caroStatus === 'function'){
+        _caroStatus((typeof t==='function'?t('caroSkinLocked'):null) || '🔒 Mở nền này ở map xếp hình trước', true);
+      }
+    }catch(e){}
+    return;
+  }
   const base = _caroPrefsDraft || getCaroPrefs();
   _caroPrefsDraft = Object.assign({}, base, { skin: id });
   _caroSyncPrefUI(_caroPrefsDraft);
@@ -1492,18 +1529,28 @@ function _caroFillSkinGrid(container){
   list.forEach(id=>{
     const th = CARO_THEMES[id];
     if(!th) return;
+    const locked = !_caroBoardSkinUnlocked(id);
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.className = 'caro-skin-chip' + (prefs.skin === id ? ' active' : '');
+    btn.className = 'caro-skin-chip' + (prefs.skin === id ? ' active' : '') + (locked ? ' locked' : '');
     btn.dataset.skin = id;
-    btn.title = id;
+    btn.disabled = locked;
+    btn.title = locked
+      ? ((typeof t==='function'?t('caroSkinLocked'):null) || '🔒 Mở ở map xếp hình trước')
+      : id;
     btn.style.background = 'linear-gradient(135deg,'+th.bg[0]+','+th.bg[1]+')';
-    btn.innerHTML = '<span class="caro-skin-xo"><i style="color:'+th.x+'">X</i><i style="color:'+th.o+'">O</i></span><small>'+id+'</small>';
-    const pick = (e)=>{
-      if(e){ e.preventDefault(); e.stopPropagation(); }
-      _caroSelectSkinDraft(id, container);
-    };
-    btn.addEventListener('click', pick);
+    const skinName = (typeof BOARD_SKINS !== 'undefined' && Array.isArray(BOARD_SKINS))
+      ? ((BOARD_SKINS.find(s => s.id === id) || {}).name || id)
+      : id;
+    btn.innerHTML = '<span class="caro-skin-xo"><i style="color:'+th.x+'">X</i><i style="color:'+th.o+'">O</i></span>'+
+      '<small>'+(locked ? '🔒 ' : '')+skinName+'</small>';
+    if(!locked){
+      const pick = (e)=>{
+        if(e){ e.preventDefault(); e.stopPropagation(); }
+        _caroSelectSkinDraft(id, container);
+      };
+      btn.addEventListener('click', pick);
+    }
     container.appendChild(btn);
   });
 }

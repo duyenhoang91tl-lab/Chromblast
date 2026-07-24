@@ -775,6 +775,13 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   pointer-events: auto; position: relative; z-index: 1;
 }
 .caro-skin-chip.active { border-color: #ffd54a; box-shadow: 0 0 0 2px rgba(255,213,74,0.35); }
+.caro-skin-chip.locked {
+  opacity: 0.42;
+  filter: grayscale(0.55);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+.caro-skin-chip.locked.active { border-color: rgba(255,255,255,0.2); box-shadow: none; }
 .caro-skin-xo { display: flex; gap: 8px; font-size: 16px; font-weight: 900; }
 .caro-skin-xo i { font-style: normal; text-shadow: 0 1px 0 #fff, 0 0 4px rgba(0,0,0,0.35); }
 .caro-skin-chip small { font-size: 9px; opacity: 0.9; text-transform: capitalize; }

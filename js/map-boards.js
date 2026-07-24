@@ -100,6 +100,11 @@
 
   function applyBoardSkin(id) {
     if (!getSkin(id)) id = "slate";
+    // Chỉ áp dụng nền đã mở khóa ở map xếp hình chính
+    if (!isUnlocked(id)) {
+      id = isUnlocked(state.active) ? state.active : "slate";
+      if (!isUnlocked(id)) id = STARTER_IDS[0] || "classic";
+    }
     state.active = id;
     document.documentElement.setAttribute("data-board-skin", id);
     const root = document.getElementById("game-root");
@@ -402,6 +407,10 @@
   g.BOARD_SKINS = BOARD_SKINS;
   g.applyBoardSkin = applyBoardSkin;
   g.unlockBoardSkin = unlockBoardSkin;
+  g.isBoardSkinUnlocked = isUnlocked;
+  g.getUnlockedBoardSkinIds = function () {
+    return state.unlocked.slice();
+  };
   g.openBoardSkinPanel = openBoardSkinPanel;
   g.closeBoardSkinPanel = closeBoardSkinPanel;
   g.maybeShowStarterBoardPicker = maybeShowStarterBoardPicker;
