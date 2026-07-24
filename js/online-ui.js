@@ -322,10 +322,7 @@ function enterOnlineVersusMatch(roomId, roomData){
     _vsApplyNetworkMove(move);
   });
 
-  // Cho phép tab "Trong trận" của chat toàn cục lắng nghe
-  try{
-    if(typeof listenRoomChat === 'function') listenRoomChat(roomId, function(){});
-  }catch(e){}
+  try{ if(typeof _vsSetupChat === 'function') _vsSetupChat(true); }catch(e){}
 
   let cd=3;
   const cdEl=document.getElementById('vs-countdown');
@@ -423,6 +420,10 @@ function onLeaveLobbyToHub(){
   document.getElementById('online-mm-cancel')?.addEventListener('click', onCancelMatchmaking);
   document.getElementById('online-start-btn')?.addEventListener('click', onStartOnlineMatch);
   document.getElementById('online-lobby-leave')?.addEventListener('click', onLeaveLobbyToHub);
+  document.getElementById('online-lobby-invite')?.addEventListener('click', ()=>{
+    try{ sfxClick(); }catch(e){}
+    if(typeof openChatPanel === 'function') openChatPanel('friends');
+  });
   document.getElementById('online-google-btn')?.addEventListener('click', async ()=>{
     const btn = document.getElementById('online-google-btn');
     if(btn) btn.disabled = true;
