@@ -392,7 +392,28 @@ function _caroUpdateOppChip(){
   }
   if(nameEl) nameEl.textContent = name;
   if(chip) chip.classList.toggle('tappable', !_caro.ai && !!uid);
+  _caroUpdateMeChip();
   try{ if(window.CaroSocial && CaroSocial.renderCoupleHud) CaroSocial.renderCoupleHud(); }catch(e){}
+}
+
+function _caroUpdateMeChip(){
+  if(!_caro) return;
+  const nameEl = document.getElementById('caro-me-name');
+  const avBtn = document.getElementById('caro-me-avatar');
+  const nick = (typeof getPlayerNickname === 'function' ? getPlayerNickname() : null)
+    || (_caro.mySlot === 'host' ? _caro.names[0] : _caro.names[1])
+    || 'Bạn';
+  const av = (typeof getPlayerAvatarDisplay === 'function'
+    ? getPlayerAvatarDisplay()
+    : (typeof getPlayerAvatar === 'function' ? getPlayerAvatar() : '🐶'));
+  if(nameEl) nameEl.textContent = nick;
+  if(avBtn){
+    if(typeof applyAvatarElement === 'function') applyAvatarElement(avBtn, av);
+    else avBtn.textContent = (typeof getPlayerAvatar === 'function' ? getPlayerAvatar() : '🐶');
+  }
+  try{
+    if(window.CaroSocial && CaroSocial.renderFxBar) CaroSocial.renderFxBar();
+  }catch(e){}
 }
 
 async function openPlayerCard(opts){
