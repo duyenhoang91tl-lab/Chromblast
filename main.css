@@ -265,7 +265,7 @@ body.mode-exclusive #gchat-fab {
   display: flex; align-items: center; justify-content: center;
   overflow: hidden;
   font-family: inherit;
-  background: rgba(8, 10, 28, 0.45);
+  background: rgba(8, 10, 28, 0.88);
 }
 .start-bg {
   position: absolute; inset: 0;
