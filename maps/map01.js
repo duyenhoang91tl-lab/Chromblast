@@ -69,7 +69,7 @@ function enterSecretMode(){
   initSecretBoard();
   renderSecretGrid();
   renderStreakDots();
-  // Bắt đầu đếm giờ ngay khi vào — hết giờ không ấn kịp → trừ tim lần lượt; hết 5 tim thì out
+  // Bắt đầu đếm giờ ngay khi vào — hết giờ không ấn kịp → trừ tim lần lượt; hết 3 tim thì out
   resetSecretTimer();
 }
 

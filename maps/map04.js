@@ -11,7 +11,7 @@
 ══════════════════════════════════════════ */
 let beeMode=false, beeRAF=null, beeLast=0, beeElapsed=0;
 let bees=[], beeParticles=[], butterflies=[], gardenFlowers=[];
-let gdHearts=5, gdMaxHearts=5, gdWave=1, gdWaveTimer=0, gdWaveDuration=13, gdSpawnTimer=0;
+let gdHearts=3, gdMaxHearts=3, gdWave=1, gdWaveTimer=0, gdWaveDuration=13, gdSpawnTimer=0;
 const GD_MAX_WAVE=10;
 let beeCombo=0, beeComboTimer=0;
 let gdShakeX=0, gdShakeY=0, gdShakeDur=0, gdDogHit=0, gdGameTime=0;

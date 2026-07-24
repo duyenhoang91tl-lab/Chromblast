@@ -64,7 +64,7 @@ const SHAPES=[
 const SECRET_COLORS = COLORS.slice(0,4); // 4 màu đầu giống map thường
 const COLOR_BURST_MIN = 12;   // Tăng ngưỡng nổ màu (từ 9 lên 12) để tránh nổ quá sớm khi chưa đầy hàng/cột
 const SECRET_WINDOW = 2500;  // ms — khoảng thời gian giữa 2 lần nổ trong map ẩn (ấn chậm hơn sẽ mất tim)
-const SECRET_LIVES_MAX = 5;  // tim riêng map ẩn 1 (không đụng Inventory.hearts level chính)
+const SECRET_LIVES_MAX = 3;  // tim riêng map ẩn — tối đa 3 (không đụng Inventory.hearts level chính)
 const SECRET_ULTRA  = 9;     // streak to trigger ultra
 const TEST_UNLOCK_SCORE = 100; // ngưỡng điểm mở khoá Map ẩn 1 (và mốc thắng trong Map ẩn 1)
 

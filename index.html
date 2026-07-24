@@ -164,33 +164,23 @@
       <button id="roundguide-btn" title="Hướng dẫn cơ chế vòng hiện tại" data-i18n-title="ttRoundGuide" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">📖</button>
       <button id="adventure-toggle-btn" title="Chế độ Adventure" data-i18n-title="ttAdventure">🚀 ADV</button>
       <button id="chat-btn" title="Chat" data-i18n-title="ttChat" aria-label="Chat">💬</button>
-      <button id="account-btn" title="Cài đặt" data-i18n-title="ttSettings">⚙️</button>
+      <button id="account-btn" title="Menu" data-i18n-title="ttMenu" aria-label="Menu">☰</button>
       <button id="mute-btn" title="Tắt/bật âm thanh" data-i18n-title="ttMute" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">🔊</button>
       <button id="pause-btn" title="Tạm dừng" data-i18n-title="ttPause" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">⏸</button>
     </div>
   </div>
 
-  <!-- ══ SETTINGS HUB ══ -->
-  <div id="settings-panel" class="settings-overlay">
-    <div class="settings-modal">
-      <div class="settings-head">
-        <span data-i18n="settingsTitle">Cài đặt</span>
+  <!-- ══ MENU HUB (fullscreen) ══ -->
+  <div id="settings-panel" class="settings-overlay menu-fullscreen">
+    <div class="settings-modal menu-screen">
+      <div class="settings-head menu-head">
+        <span data-i18n="menuTitle">Menu</span>
         <button type="button" class="settings-x" id="settings-close-btn" aria-label="Close">✕</button>
       </div>
-      <div class="settings-inner">
-        <div class="settings-toggles">
-          <button type="button" class="set-toggle" id="set-sfx-toggle">
-            <span class="set-toggle-ico" id="set-sfx-ico">🔊</span>
-            <span class="set-toggle-lab" data-i18n="setSound">Âm thanh</span>
-          </button>
-          <button type="button" class="set-toggle" id="set-bgm-toggle">
-            <span class="set-toggle-ico" id="set-bgm-ico">🎵</span>
-            <span class="set-toggle-lab" data-i18n="setBgm">Nhạc nền</span>
-          </button>
-        </div>
+      <div class="settings-inner menu-inner">
         <div id="settings-player-info" class="pp-info-card"></div>
         <button type="button" class="set-action set-c-purple" id="settings-player-edit" style="margin-bottom:10px;"><span class="set-act-ico">✏️</span><span data-i18n="ppEdit">Đổi tên / kiểu chữ</span></button>
-        <div class="settings-actions">
+        <div class="settings-actions menu-actions">
           <button type="button" class="set-action set-c-purple" id="set-btn-account"><span class="set-act-ico">👤</span><span data-i18n="setAccount">Tài khoản</span></button>
           <button type="button" class="set-action set-c-blue" id="set-btn-help"><span class="set-act-ico">❓</span><span data-i18n="setHelp">Hướng dẫn</span></button>
           <button type="button" class="set-action set-c-teal" id="set-btn-lang"><span class="set-act-ico">🌐</span><span data-i18n="setLanguage">Ngôn ngữ</span></button>
@@ -202,7 +192,7 @@
           <button type="button" class="set-action set-c-board" id="set-btn-boards"><span class="set-act-ico">🗺️</span><span data-i18n="setBoards">Nền bàn</span></button>
           <button type="button" class="set-action set-c-spin" id="set-btn-spin"><span class="set-act-ico">🎡</span><span data-i18n="setSpin">Vòng quay</span></button>
           <button type="button" class="set-action set-c-gold" id="set-btn-versus" style="display:none"><span class="set-act-ico">⚔️</span><span data-i18n="vsTitle">Đấu 1-1</span></button>
-          <button type="button" class="set-action set-c-green" id="set-btn-more"><span class="set-act-ico">⚙️</span><span data-i18n="setMore">Cài đặt thêm</span><span class="set-dot"></span></button>
+          <button type="button" class="set-action set-c-green" id="set-btn-more"><span class="set-act-ico">⚙️</span><span data-i18n="setMore">Cài đặt</span></button>
           <button type="button" class="set-action set-c-lime" id="set-btn-home"><span class="set-act-ico">🏠</span><span data-i18n="setHome">Trang chủ</span></button>
           <button type="button" class="set-action set-c-lime" id="set-btn-replay"><span class="set-act-ico">🔁</span><span data-i18n="setReplay">Chơi lại</span></button>
         </div>
@@ -210,14 +200,30 @@
     </div>
   </div>
 
-  <!-- ══ MORE SETTINGS ══ -->
-  <div id="settings-more-panel" class="settings-overlay">
-    <div class="settings-modal">
-      <div class="settings-head">
-        <span data-i18n="setMoreTitle">Cài đặt thêm</span>
+  <!-- ══ SETTINGS (sound + vibrate + about) ══ -->
+  <div id="settings-more-panel" class="settings-overlay menu-fullscreen">
+    <div class="settings-modal menu-screen">
+      <div class="settings-head menu-head">
+        <button type="button" class="settings-back" id="settings-more-back-btn" aria-label="Back">‹</button>
+        <span data-i18n="setMoreTitle">Cài đặt</span>
         <button type="button" class="settings-x" id="settings-more-close-btn" aria-label="Close">✕</button>
       </div>
-      <div class="settings-inner settings-more-inner">
+      <div class="settings-inner settings-more-inner menu-inner">
+        <div class="settings-toggles settings-toggles-prefs">
+          <button type="button" class="set-toggle" id="set-sfx-toggle">
+            <span class="set-toggle-ico" id="set-sfx-ico">🔊</span>
+            <span class="set-toggle-lab" data-i18n="setSound">Âm thanh</span>
+          </button>
+          <button type="button" class="set-toggle" id="set-bgm-toggle">
+            <span class="set-toggle-ico" id="set-bgm-ico">🎵</span>
+            <span class="set-toggle-lab" data-i18n="setBgm">Nhạc nền</span>
+          </button>
+          <button type="button" class="set-toggle" id="set-vibrate-toggle">
+            <span class="set-toggle-ico" id="set-vibrate-ico">📳</span>
+            <span class="set-toggle-lab" data-i18n="setVibrate">Rung</span>
+          </button>
+        </div>
+        <p class="settings-pref-hint" data-i18n="setVibrateHint">Rung khi nổ combo</p>
         <div class="settings-appinfo">
           <div class="settings-appico" aria-hidden="true">🧩</div>
           <div>
@@ -1013,9 +1019,10 @@
         <input type="checkbox" id="unlock-autoskip-chk"> Tự động bỏ qua (không hỏi lại map ẩn nữa)
       </label>
     </div>
-    <div id="pause-overlay" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.75);z-index:100;border-radius:14px;flex-direction:column;align-items:center;justify-content:center;gap:20px;">
-      <div style="font-size:28px;font-weight:900;color:#fff;text-shadow:0 0 20px #fff;" data-i18n="pauseTitle">⏸ TẠM DỪNG</div>
-      <button id="resume-btn" style="background:linear-gradient(135deg,#ff6600,#ffaa00);border:none;border-radius:30px;padding:14px 40px;font-size:18px;font-weight:800;color:#1a0a00;cursor:pointer;" data-i18n="resumeBtn">▶ Tiếp tục</button>
+    <div id="pause-overlay" class="pause-overlay">
+      <div class="pause-title" data-i18n="pauseTitle">⏸ TẠM DỪNG</div>
+      <button type="button" id="resume-btn" class="pause-btn-primary" data-i18n="resumeBtn">▶ Tiếp tục</button>
+      <button type="button" id="pause-replay-btn" class="pause-btn-secondary" style="display:none;" data-i18n="pauseReplay">🔁 Chơi lại màn này</button>
     </div>
     <div id="game-over-overlay">
       <div id="go-title" data-i18n="gameOverTitle">🎮 Hết lượt!</div>

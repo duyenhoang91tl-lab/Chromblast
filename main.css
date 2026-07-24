@@ -3728,7 +3728,7 @@ body:has(#secret-stage.active) .streak-dot.lit{
 }
 
 /* ════════════════════════════════════════════════════════
-   SETTINGS HUB — modal xanh kiểu Block Blast
+   MENU / SETTINGS — fullscreen hub
 ════════════════════════════════════════════════════════ */
 .settings-overlay{
   position:fixed; inset:0; z-index:10020; display:none;
@@ -3736,6 +3736,13 @@ body:has(#secret-stage.active) .streak-dot.lit{
   background:rgba(6,10,28,0.72); padding:16px;
 }
 .settings-overlay.show{ display:flex; }
+.settings-overlay.menu-fullscreen{
+  padding:0;
+  background:
+    radial-gradient(120% 80% at 10% -10%, rgba(90,180,255,0.35), transparent 55%),
+    radial-gradient(100% 70% at 100% 0%, rgba(255,200,90,0.18), transparent 50%),
+    linear-gradient(165deg, #0b1a33 0%, #123056 42%, #1a4a7a 100%);
+}
 .settings-modal{
   width:min(360px,94vw); max-height:min(88vh,640px);
   background:linear-gradient(180deg,#5BA8E8 0%,#3D8FD4 100%);
@@ -3743,12 +3750,24 @@ body:has(#secret-stage.active) .streak-dot.lit{
   display:flex; flex-direction:column; overflow:hidden;
   font-family:'Nunito',system-ui,sans-serif;
 }
+.settings-overlay.menu-fullscreen .settings-modal.menu-screen{
+  width:100%; max-width:none; height:100%; max-height:none;
+  border-radius:0; box-shadow:none;
+  background:transparent;
+  display:flex; flex-direction:column;
+}
 .settings-modal-sm{ max-height:min(70vh,420px); }
 .settings-modal-tall{ max-height:min(90vh,720px); }
 .settings-head{
   position:relative; display:flex; align-items:center; justify-content:center;
   padding:12px 44px 8px; color:#fff; font-weight:900; font-size:18px;
   letter-spacing:0.3px; text-shadow:0 1px 0 rgba(0,0,0,0.15);
+}
+.settings-overlay.menu-fullscreen .menu-head{
+  padding:18px 52px 12px;
+  font-size:22px;
+  letter-spacing:0.6px;
+  flex-shrink:0;
 }
 .settings-x, .settings-back{
   position:absolute; top:8px; width:34px; height:34px; border:none; border-radius:50%;
@@ -3764,8 +3783,34 @@ body:has(#secret-stage.active) .streak-dot.lit{
   box-shadow:inset 0 1px 0 rgba(255,255,255,0.12);
   color:#f2f2f7;
 }
+.settings-overlay.menu-fullscreen .menu-inner{
+  margin:0 14px 18px; padding:16px 14px 22px;
+  max-height:none; flex:1; min-height:0;
+  border-radius:18px;
+  background:linear-gradient(180deg, rgba(22,48,86,0.92) 0%, rgba(14,32,58,0.96) 100%);
+  border:1px solid rgba(160,210,255,0.18);
+  box-shadow:0 10px 36px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.1);
+}
+.settings-overlay.menu-fullscreen .menu-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.settings-overlay.menu-fullscreen .menu-actions .set-action{
+  min-height:52px;
+  font-size:14px;
+  padding:12px 12px;
+}
+@media (max-width:360px){
+  .settings-overlay.menu-fullscreen .menu-actions{ grid-template-columns:1fr; }
+}
 .settings-toggles{
   display:flex; justify-content:center; gap:28px; margin-bottom:16px; padding-top:4px;
+}
+.settings-toggles-prefs{ gap:18px; flex-wrap:wrap; }
+.settings-pref-hint{
+  text-align:center; margin:-6px 0 14px; font-size:12px; font-weight:800;
+  color:rgba(255,255,255,0.65);
 }
 .set-toggle{
   background:transparent; border:none; color:#fff; cursor:pointer;
@@ -3840,6 +3885,33 @@ body:has(#secret-stage.active) .streak-dot.lit{
 .settings-text-body{
   color:rgba(255,255,255,0.9); font-size:13px; line-height:1.55; font-weight:800;
   white-space:pre-wrap;
+}
+
+/* Pause overlay — resume + replay (hidden maps) */
+.pause-overlay{
+  display:none; position:absolute; inset:0; z-index:100;
+  background:rgba(0,0,0,0.78);
+  border-radius:14px;
+  flex-direction:column; align-items:center; justify-content:center; gap:14px;
+  padding:20px;
+}
+.pause-title{
+  font-size:28px; font-weight:900; color:#fff;
+  text-shadow:0 0 20px rgba(255,255,255,0.55);
+  margin-bottom:6px;
+}
+.pause-btn-primary,
+.pause-btn-secondary{
+  border:none; border-radius:30px; padding:14px 36px;
+  font-size:17px; font-weight:800; cursor:pointer;
+  font-family:inherit; min-width:220px;
+}
+.pause-btn-primary{
+  background:linear-gradient(135deg,#ff6600,#ffaa00); color:#1a0a00;
+}
+.pause-btn-secondary{
+  background:linear-gradient(135deg,#3d8fd4,#62b4f0); color:#fff;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.25);
 }
 
 /* Cup / Achievement */

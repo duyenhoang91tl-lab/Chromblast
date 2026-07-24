@@ -149,6 +149,32 @@ function initStartScreen(){
   });
 }
 
+function isPlayingHiddenMap(){
+  return !!(typeof activeHiddenMapKey!=='undefined' && activeHiddenMapKey);
+}
+
+/** Chơi lại đúng map ẩn đang chơi (chỉ map ẩn). */
+function replayActiveHiddenMap(){
+  const key = (typeof activeHiddenMapKey!=='undefined') ? activeHiddenMapKey : null;
+  if(!key) return false;
+  const maps = (typeof HIDDEN_MAP_LIST!=='undefined') ? HIDDEN_MAP_LIST : [];
+  const m = maps.find(x=>x && x.key===key);
+  if(!m || typeof m.run!=='function') return false;
+  try{ sfxClick(); }catch(e){}
+  // Thoát pause sạch (không resume loop map cũ)
+  gamePaused = false;
+  const overlay = document.getElementById('pause-overlay');
+  const btn = document.getElementById('pause-btn');
+  if(overlay) overlay.style.display = 'none';
+  if(btn) btn.textContent = '⏸';
+  const replayBtn = document.getElementById('pause-replay-btn');
+  if(replayBtn) replayBtn.style.display = 'none';
+  try{ hardResetAllModes(); }catch(e){}
+  try{ if(typeof startGame==='function') startGame(); }catch(e){}
+  try{ m.run(); }catch(e){}
+  return true;
+}
+
 function togglePause(){
   // Cho phép tạm dừng ở CẢ bàn chính lẫn map ẩn (bàn chính không có vòng lặp
   // RAF nào cần dừng — chỉ hiện overlay + dừng nhạc).
@@ -156,9 +182,11 @@ function togglePause(){
   gamePaused = !gamePaused;
   const overlay = document.getElementById('pause-overlay');
   const btn = document.getElementById('pause-btn');
+  const replayBtn = document.getElementById('pause-replay-btn');
   if(gamePaused){
     overlay.style.display = 'flex';
     btn.textContent = '▶';
+    if(replayBtn) replayBtn.style.display = isPlayingHiddenMap() ? '' : 'none';
     stopRhythmBgm();
     stopBgm();
     if(dodgeRAF){ cancelAnimationFrame(dodgeRAF); dodgeRAF=null; }
@@ -186,6 +214,7 @@ function togglePause(){
   } else {
     overlay.style.display = 'none';
     btn.textContent = '⏸';
+    if(replayBtn) replayBtn.style.display = 'none';
     if(dodgeMode)  { dodgeLast=0; dodgeRAF=requestAnimationFrame(dodgeLoop); }
     if(fruitMode)  { fruitLast=0; fruitRAF=requestAnimationFrame(fruitLoop); }
     if(beeMode)    { beeLast=0;   beeRAF=requestAnimationFrame(beeLoop);     }
@@ -523,14 +552,19 @@ function openSettingsPanel(){
 function syncSettingsToggles(){
   const sfxBtn=document.getElementById('set-sfx-toggle');
   const bgmBtn=document.getElementById('set-bgm-toggle');
+  const vibBtn=document.getElementById('set-vibrate-toggle');
   const sfxIco=document.getElementById('set-sfx-ico');
   const bgmIco=document.getElementById('set-bgm-ico');
+  const vibIco=document.getElementById('set-vibrate-ico');
   const muted=!!(typeof sfxMuted!=='undefined' && sfxMuted);
   const bgmOff=!!(typeof bgmMuted!=='undefined' && bgmMuted);
+  const vibOff=!(typeof vibrateEnabled==='undefined' ? true : vibrateEnabled);
   if(sfxBtn) sfxBtn.classList.toggle('is-off', muted);
   if(bgmBtn) bgmBtn.classList.toggle('is-off', bgmOff);
+  if(vibBtn) vibBtn.classList.toggle('is-off', vibOff);
   if(sfxIco) sfxIco.textContent = muted ? '🔇' : '🔊';
   if(bgmIco) bgmIco.textContent = bgmOff ? '🎵' : '🎵';
+  if(vibIco) vibIco.textContent = vibOff ? '📴' : '📳';
   const muteBtn=document.getElementById('mute-btn');
   if(muteBtn) muteBtn.textContent = muted ? '🔇' : '🔊';
 }
@@ -551,6 +585,15 @@ function toggleBgmSetting(){
   else if(!sfxMuted){ try{ if(typeof resumeContextBgm==='function') resumeContextBgm(); }catch(e){} }
   syncSettingsToggles();
   try{ sfxClick(); }catch(e){}
+}
+
+function toggleVibrateSetting(){
+  const next = !(typeof vibrateEnabled!=='undefined' && vibrateEnabled);
+  if(typeof setVibrateEnabled==='function') setVibrateEnabled(next);
+  else vibrateEnabled = next;
+  syncSettingsToggles();
+  try{ sfxClick(); }catch(e){}
+  if(next){ try{ vibrateCombo(3); }catch(e){} }
 }
 
 function openSettingsAccount(){
@@ -647,6 +690,7 @@ function openSettingsCup(){
 
 function openSettingsMore(){
   document.getElementById('settings-panel')?.classList.remove('show');
+  syncSettingsToggles();
   document.getElementById('settings-more-panel')?.classList.add('show');
 }
 
@@ -674,6 +718,8 @@ function settingsGoHome(){
 function settingsReplay(){
   closeAllSettingsOverlays();
   try{ sfxClick(); }catch(e){}
+  // Trong map ẩn: chơi lại đúng màn đó; map thường: chơi lại bàn chính
+  if(isPlayingHiddenMap() && replayActiveHiddenMap()) return;
   if(typeof startGame==='function') startGame();
 }
 
@@ -681,6 +727,10 @@ function initSettingsMenu(){
   const close=id=>()=>{ document.getElementById(id)?.classList.remove('show'); };
   document.getElementById('settings-close-btn')?.addEventListener('click', close('settings-panel'));
   document.getElementById('settings-more-close-btn')?.addEventListener('click', ()=>{
+    close('settings-more-panel')();
+    openSettingsPanel();
+  });
+  document.getElementById('settings-more-back-btn')?.addEventListener('click', ()=>{
     close('settings-more-panel')();
     openSettingsPanel();
   });
@@ -700,6 +750,7 @@ function initSettingsMenu(){
 
   document.getElementById('set-sfx-toggle')?.addEventListener('click', toggleSfxSetting);
   document.getElementById('set-bgm-toggle')?.addEventListener('click', toggleBgmSetting);
+  document.getElementById('set-vibrate-toggle')?.addEventListener('click', toggleVibrateSetting);
   document.getElementById('set-btn-account')?.addEventListener('click', ()=>{ sfxClick(); openSettingsAccount(); });
   document.getElementById('set-btn-help')?.addEventListener('click', ()=>{
     sfxClick();
@@ -721,6 +772,10 @@ function initSettingsMenu(){
   document.getElementById('set-btn-more')?.addEventListener('click', ()=>{ sfxClick(); openSettingsMore(); });
   document.getElementById('set-btn-home')?.addEventListener('click', ()=>{ sfxClick(); settingsGoHome(); });
   document.getElementById('set-btn-replay')?.addEventListener('click', settingsReplay);
+  document.getElementById('pause-replay-btn')?.addEventListener('click', ()=>{
+    if(!isPlayingHiddenMap()) return;
+    replayActiveHiddenMap();
+  });
 
   document.getElementById('set-contact-btn')?.addEventListener('click', ()=>{
     sfxClick();
