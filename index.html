@@ -707,13 +707,26 @@
         </div>
       </div>
       <div class="caro-top-right">
+        <div id="caro-hearts-hud" class="caro-hearts-hud" title="Tim chung với Chromablast">❤️ 5</div>
         <div id="caro-timer" class="caro-timer" title="Thời gian lượt">15</div>
+        <button type="button" id="caro-chat-toggle" class="caro-chat-toggle" title="Chat" style="display:none;">💬</button>
         <button type="button" id="caro-settings-btn" class="caro-settings-btn" title="Cài đặt">⚙️</button>
         <button type="button" id="caro-quit-btn" class="caro-quit">✕</button>
       </div>
     </div>
     <div class="caro-board-wrap">
       <canvas id="caro-canvas" aria-label="Bàn cờ Caro 15x15 X O"></canvas>
+      <div id="caro-chat" class="caro-chat" hidden>
+        <div class="caro-chat-head">
+          <span data-i18n="caroChatTitle">💬 Chat</span>
+          <button type="button" id="caro-chat-close" class="caro-chat-close" aria-label="Close">✕</button>
+        </div>
+        <div id="caro-chat-log" class="caro-chat-log" aria-live="polite"></div>
+        <form id="caro-chat-form" class="caro-chat-form" autocomplete="off">
+          <input id="caro-chat-input" type="text" maxlength="120" data-i18n-placeholder="caroChatPlaceholder" placeholder="Nhắn đối thủ..." />
+          <button type="submit" id="caro-chat-send" data-i18n="caroChatSend">Gửi</button>
+        </form>
+      </div>
     </div>
   </div>
 

@@ -661,9 +661,15 @@ function stopListeningMoves(){
   if(_movesUnsub){ _movesUnsub(); _movesUnsub = null; }
 }
 
+let _chatUnsub = null;
+function stopListeningChat(){
+  if(_chatUnsub){ _chatUnsub(); _chatUnsub = null; }
+}
+
 function stopListeningRoom(){
   stopListeningRoomDoc();
   stopListeningMoves();
+  stopListeningChat();
 }
 
 async function fetchAllOnlineMoves(roomId){
@@ -706,6 +712,40 @@ async function sendOnlineMove(roomId, payload){
     });
   });
   return seqOut;
+}
+
+/** Chat trong phòng (Caro / Versus) */
+async function sendRoomChat(roomId, text){
+  if(!_onlineDb || !roomId) return null;
+  const raw = String(text || '').trim().slice(0, 120);
+  if(!raw) return null;
+  const name = getOnlineDisplayName();
+  const avatar = (typeof getPlayerAvatar === 'function') ? getPlayerAvatar() : '🐶';
+  const ref = _onlineDb.collection('rooms').doc(roomId).collection('chat').doc();
+  const payload = {
+    uid: _onlineUid,
+    name: name,
+    avatar: avatar,
+    text: raw,
+    ts: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  await ref.set(payload);
+  return payload;
+}
+
+function listenRoomChat(roomId, cb){
+  stopListeningChat();
+  if(!_onlineDb || !roomId) return;
+  _chatUnsub = _onlineDb.collection('rooms').doc(roomId).collection('chat')
+    .orderBy('ts', 'asc')
+    .limitToLast(40)
+    .onSnapshot(snap => {
+      snap.docChanges().forEach(chg => {
+        if(chg.type === 'added' && typeof cb === 'function'){
+          cb({ id: chg.doc.id, ...chg.doc.data() });
+        }
+      });
+    }, err => console.warn('[online] chat listen', err));
 }
 
 async function updateOnlineScores(roomId, hostScore, guestScore){
