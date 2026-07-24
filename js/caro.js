@@ -15,11 +15,11 @@ const CARO_PREFS_KEY = 'chromablast_caro_prefs';
 const CARO_TURN_NORMAL = 15;
 const CARO_TURN_FAST = 10;
 
-/** Cấu hình AI theo độ khó */
+/** Cấu hình AI theo độ khó — depth càng cao càng “đọc” nước trước */
 const CARO_AI_LEVELS = {
-  easy:   { id:'easy',   thinkMs:280, mistakeRate:0.55, radius:2 },
-  medium: { id:'medium', thinkMs:420, mistakeRate:0.15, radius:3 },
-  hard:   { id:'hard',   thinkMs:560, mistakeRate:0.02, radius:3 },
+  easy:   { id:'easy',   thinkMs:320, mistakeRate:0.28, radius:2, depth:1, topN:8  },
+  medium: { id:'medium', thinkMs:500, mistakeRate:0.05, radius:3, depth:2, topN:10 },
+  hard:   { id:'hard',   thinkMs:700, mistakeRate:0,    radius:4, depth:3, topN:14 },
 };
 
 /** Nền map xếp hình + màu X/O nổi bật theo từng nền */
@@ -736,30 +736,121 @@ function _caroOpenEnds(board, cells, dr, dc){
 }
 
 function _caroPatternValue(len, openEnds){
-  if(len >= 5) return 100000;
-  if(len === 4) return openEnds === 2 ? 12000 : (openEnds === 1 ? 3200 : 120);
-  if(len === 3) return openEnds === 2 ? 900 : (openEnds === 1 ? 180 : 25);
-  if(len === 2) return openEnds === 2 ? 70 : (openEnds === 1 ? 18 : 4);
-  return 2;
+  if(len >= 5) return 1000000;
+  if(len === 4) return openEnds === 2 ? 80000 : (openEnds === 1 ? 18000 : 200);
+  if(len === 3) return openEnds === 2 ? 4500 : (openEnds === 1 ? 420 : 40);
+  if(len === 2) return openEnds === 2 ? 220 : (openEnds === 1 ? 45 : 8);
+  return 3;
 }
 
-function _caroScoreCell(board, r, c, color){
+/** Phân tích đe dọa sau khi đặt quân tại (r,c) */
+function _caroAnalyzePlace(board, r, c, color){
   const b = _caroCloneBoard(board);
   b[r][c] = color;
-  if(_caroCheckWin(b, r, c, color)) return 200000;
-  let score = 0;
+  if(_caroCheckWin(b, r, c, color)){
+    return { win:true, openFour:0, halfFour:0, openThree:0, halfThree:0, score:1000000 };
+  }
+  let score = 0, openFour = 0, halfFour = 0, openThree = 0, halfThree = 0;
   const dirs = [[0,1],[1,0],[1,1],[1,-1]];
   for(const [dr,dc] of dirs){
     const cells = _caroExtendLine(b, r, c, dr, dc, color);
-    score += _caroPatternValue(cells.length, _caroOpenEnds(b, cells, dr, dc));
+    const open = _caroOpenEnds(b, cells, dr, dc);
+    const len = cells.length;
+    score += _caroPatternValue(len, open);
+    if(len >= 4 && open >= 1){ if(open === 2) openFour++; else halfFour++; }
+    else if(len === 3 && open === 2) openThree++;
+    else if(len === 3 && open === 1) halfThree++;
   }
   const cr = (CARO_SIZE - 1) / 2;
-  score += Math.max(0, 10 - (Math.abs(r-cr) + Math.abs(c-cr)));
-  return score;
+  score += Math.max(0, 12 - (Math.abs(r-cr) + Math.abs(c-cr)));
+  return { win:false, openFour, halfFour, openThree, halfThree, score };
+}
+
+function _caroScoreCell(board, r, c, color){
+  return _caroAnalyzePlace(board, r, c, color).score;
 }
 
 function _caroEvaluateMove(board, r, c, color, oppColor){
-  return _caroScoreCell(board, r, c, color) + _caroScoreCell(board, r, c, oppColor) * 1.1;
+  const atk = _caroAnalyzePlace(board, r, c, color);
+  const def = _caroAnalyzePlace(board, r, c, oppColor);
+  let score = atk.score + def.score * 1.15;
+  // Đe dọa kép / sống rất mạnh
+  if(atk.openFour >= 1) score += 200000;
+  if(atk.halfFour >= 2 || (atk.halfFour >= 1 && atk.openThree >= 1)) score += 150000;
+  if(atk.openThree >= 2) score += 90000;
+  if(def.openFour >= 1) score += 190000;
+  if(def.halfFour >= 2 || (def.halfFour >= 1 && def.openThree >= 1)) score += 140000;
+  if(def.openThree >= 2) score += 85000;
+  return score;
+}
+
+function _caroImmediateWins(board, color, candidates){
+  const hits = [];
+  for(const [r,c] of candidates){
+    const b = _caroCloneBoard(board);
+    b[r][c] = color;
+    if(_caroCheckWin(b, r, c, color)) hits.push([r,c]);
+  }
+  return hits;
+}
+
+/** Nước buộc phải chặn: đối thủ có open-four / half-four thắng ngay nước sau */
+function _caroForcedBlocks(board, oppColor, candidates){
+  const blocks = [];
+  for(const [r,c] of candidates){
+    const a = _caroAnalyzePlace(board, r, c, oppColor);
+    if(a.win || a.openFour >= 1 || a.halfFour >= 1) blocks.push([r, c, a.win ? 3 : (a.openFour ? 2 : 1)]);
+  }
+  blocks.sort((a,b)=> b[2]-a[2]);
+  return blocks.map(([r,c])=>[r,c]);
+}
+
+function _caroRankCandidates(board, color, oppColor, candidates, topN){
+  const scored = candidates.map(([r,c])=>({
+    r, c, score: _caroEvaluateMove(board, r, c, color, oppColor)
+  })).sort((a,b)=> b.score - a.score);
+  return scored.slice(0, Math.min(scored.length, topN || 12));
+}
+
+function _caroBoardStaticEval(board, color, oppColor){
+  // Heuristic nhẹ: quét ứng viên quanh quân hiện có
+  const cands = _caroGetCandidates(board, 2);
+  if(!cands.length) return 0;
+  let bestAtk = 0, bestDef = 0;
+  for(const [r,c] of cands){
+    bestAtk = Math.max(bestAtk, _caroScoreCell(board, r, c, color));
+    bestDef = Math.max(bestDef, _caroScoreCell(board, r, c, oppColor));
+  }
+  return bestAtk - bestDef * 1.05;
+}
+
+function _caroNegamax(board, depth, alpha, beta, color, oppColor, profile){
+  if(depth <= 0) return _caroBoardStaticEval(board, color, oppColor);
+  const radius = profile.radius || 3;
+  let candidates = _caroGetCandidates(board, radius);
+  if(!candidates.length) return 0;
+
+  // Ưu tiên thắng / chặn ngay trong nhánh
+  const wins = _caroImmediateWins(board, color, candidates);
+  if(wins.length) return 500000 + depth;
+  const blocks = _caroForcedBlocks(board, oppColor, candidates);
+  if(blocks.length) candidates = blocks;
+  else {
+    const ranked = _caroRankCandidates(board, color, oppColor, candidates, profile.topN || 10);
+    candidates = ranked.map(m => [m.r, m.c]);
+  }
+
+  let best = -Infinity;
+  for(const [r,c] of candidates){
+    const b = _caroCloneBoard(board);
+    b[r][c] = color;
+    if(_caroCheckWin(b, r, c, color)) return 500000 + depth;
+    const val = -_caroNegamax(b, depth-1, -beta, -alpha, oppColor, color, profile);
+    if(val > best) best = val;
+    if(val > alpha) alpha = val;
+    if(alpha >= beta) break;
+  }
+  return best;
 }
 
 function _caroRandomEmptyNear(board, radius){
@@ -779,29 +870,57 @@ function _caroPickAIMove(profile){
     const candidates = _caroGetCandidates(board, profile.radius || 3);
     if(!candidates.length) return _caroRandomEmptyNear(board, 4);
 
-    // Ưu tiên thắng ngay / chặn thắng
-    for(const [r,c] of candidates){
-      const b = _caroCloneBoard(board);
-      b[r][c] = aiColor;
-      if(_caroCheckWin(b, r, c, aiColor)) return { r, c, score: 1e9 };
-    }
-    for(const [r,c] of candidates){
-      const b = _caroCloneBoard(board);
-      b[r][c] = playerColor;
-      if(_caroCheckWin(b, r, c, playerColor)) return { r, c, score: 5e8 };
+    // 1) Thắng ngay
+    const winNow = _caroImmediateWins(board, aiColor, candidates);
+    if(winNow.length) return { r: winNow[0][0], c: winNow[0][1], score: 1e9 };
+
+    // 2) Chặn đối thủ thắng ngay
+    const blockWin = _caroImmediateWins(board, playerColor, candidates);
+    if(blockWin.length) return { r: blockWin[0][0], c: blockWin[0][1], score: 5e8 };
+
+    // 3) Chặn open-four / half-four của đối thủ
+    const forced = _caroForcedBlocks(board, playerColor, candidates);
+    if(forced.length){
+      // Trong các nước chặn, chọn nước tốt nhất cho mình
+      const rankedBlock = _caroRankCandidates(board, aiColor, playerColor, forced, forced.length);
+      if(rankedBlock.length) return { r: rankedBlock[0].r, c: rankedBlock[0].c, score: rankedBlock[0].score };
     }
 
-    const scored = candidates.map(([r,c]) => ({
-      r, c, score: _caroEvaluateMove(board, r, c, aiColor, playerColor)
-    })).sort((a,b)=> b.score - a.score);
+    // 4) Tạo open-four / đe dọa kép nếu có
+    let bestThreat = null;
+    for(const [r,c] of candidates){
+      const a = _caroAnalyzePlace(board, r, c, aiColor);
+      const threat = a.openFour*100 + a.halfFour*40 + a.openThree*15;
+      if(threat >= 15){
+        const score = _caroEvaluateMove(board, r, c, aiColor, playerColor) + threat*1000;
+        if(!bestThreat || score > bestThreat.score) bestThreat = { r, c, score };
+      }
+    }
+    if(bestThreat && bestThreat.score >= 80000) return bestThreat;
 
-    if(!scored.length) return null;
+    // 5) Heuristic + (medium/hard) lookahead negamax trên top ứng viên
+    const depth = Math.max(1, profile.depth|0);
+    const ranked = _caroRankCandidates(board, aiColor, playerColor, candidates, profile.topN || 12);
+    if(!ranked.length) return null;
+
+    let scored = ranked;
+    if(depth >= 2){
+      scored = ranked.map(m=>{
+        const b = _caroCloneBoard(board);
+        b[m.r][m.c] = aiColor;
+        // leaf đã thắng được xử lý ở trên; ở đây search phản ứng đối thủ
+        const look = -_caroNegamax(b, depth-1, -Infinity, Infinity, playerColor, aiColor, profile);
+        return { r:m.r, c:m.c, score: m.score * 0.35 + look };
+      }).sort((a,b)=> b.score - a.score);
+    }
+
     if(Math.random() < (profile.mistakeRate || 0)){
-      const pool = scored.slice(0, Math.min(scored.length, Math.max(3, Math.ceil(scored.length * 0.4))));
+      const pool = scored.slice(0, Math.min(scored.length, Math.max(2, Math.ceil(scored.length * 0.35))));
       return pool[Math.floor(Math.random() * pool.length)];
     }
     const top = scored[0].score;
-    const topMoves = scored.filter(m => m.score >= top * 0.92);
+    const band = Math.max(Math.abs(top) * 0.04, 50);
+    const topMoves = scored.filter(m => m.score >= top - band);
     return topMoves[Math.floor(Math.random() * topMoves.length)];
   }catch(e){
     console.warn('[caro-ai]', e);
