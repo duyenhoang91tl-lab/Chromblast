@@ -149,29 +149,25 @@ function _vsBuildArena(){
   const online = !!( _vs && _vs.online && _vs.online.roomId );
   const nTop = escapeHtml(_vs.names[0] || 'P1');
   const nBot = escapeHtml(_vs.names[1] || 'P2');
+  const quitLbl = (typeof t === 'function' ? t('vsQuit') : null) || 'Thoát';
 
-  // Chip trên/dưới kiểu Caro (ngoài nửa xoay 180° → chữ không bị ngược)
-  // Giữa: timer + thoát (+ chat online)
+  // Chip trên/dưới: tên + điểm một hàng; timer/thoát góc trên phải; chat dưới trái cạnh khay
   arena.innerHTML =
     '<div id="vs-top-chip" class="vs-player-chip vs-chip-top" aria-label="'+nTop+'">'+
-      '<div class="vs-chip-meta">'+
-        '<span class="vs-chip-name" id="vs-chip-name0">'+nTop+'</span>'+
-        '<span class="vs-chip-score"><span id="vs-global-score0">0</span>'+
-        '<span id="vs-global-combo0" class="vs-chip-combo"></span></span>'+
-      '</div>'+
+      '<span class="vs-chip-name" id="vs-chip-name0">'+nTop+'</span>'+
+      '<span class="vs-chip-score" id="vs-global-score0">0</span>'+
+      '<span id="vs-global-combo0" class="vs-chip-combo"></span>'+
     '</div>'+
     '<div id="vs-controls" class="vs-controls">'+
       '<div id="vs-mid-timer" class="vs-mid-timer" title="Thời gian">'+VERSUS_TIME+'</div>'+
-      (online ? '<button type="button" id="vs-chat-toggle" class="vs-chat-toggle" title="Chat">💬</button>' : '')+
-      '<button type="button" id="vs-quit-btn" class="vs-quit-btn" title="Thoát">✕</button>'+
+      '<button type="button" id="vs-quit-btn" class="vs-quit-btn" title="'+quitLbl+'">'+escapeHtml(quitLbl)+'</button>'+
     '</div>'+
     '<div id="vs-bottom-chip" class="vs-player-chip vs-chip-bottom" aria-label="'+nBot+'">'+
-      '<div class="vs-chip-meta">'+
-        '<span class="vs-chip-name" id="vs-chip-name1">'+nBot+'</span>'+
-        '<span class="vs-chip-score"><span id="vs-global-score1">0</span>'+
-        '<span id="vs-global-combo1" class="vs-chip-combo"></span></span>'+
-      '</div>'+
+      '<span class="vs-chip-name" id="vs-chip-name1">'+nBot+'</span>'+
+      '<span class="vs-chip-score" id="vs-global-score1">0</span>'+
+      '<span id="vs-global-combo1" class="vs-chip-combo"></span>'+
     '</div>'+
+    '<button type="button" id="vs-chat-fab" class="vs-chat-fab" title="Chat" aria-label="Chat">💬</button>'+
     '<div id="vs-countdown"></div>'+
     (online
       ? '<div id="vs-chat" class="vs-chat" hidden>'+
@@ -228,20 +224,58 @@ function _vsBuildArena(){
     half.appendChild(ghost);
     P.el.ghost=ghost;
   });
-  document.getElementById('vs-quit-btn').addEventListener('click',()=>{ if(confirm('Thoát trận?')) _vsAbort(); });
+  document.getElementById('vs-quit-btn').addEventListener('click',()=>{
+    const msg = (typeof t==='function'?t('caroQuitConfirm'):null) || 'Thoát trận?';
+    if(confirm(msg)) _vsAbort();
+  });
+  document.getElementById('vs-chat-fab')?.addEventListener('click', ()=>{
+    try{ sfxClick(); }catch(e){}
+    if(online) _vsToggleChat();
+    else if(typeof openChatPanel === 'function') openChatPanel();
+  });
   if(online){
-    document.getElementById('vs-chat-toggle')?.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} _vsToggleChat(); });
     document.getElementById('vs-chat-close')?.addEventListener('click', ()=> _vsToggleChat(false));
     document.getElementById('vs-chat-form')?.addEventListener('submit', _vsSendChat);
   }
-  requestAnimationFrame(_vsReflowGrids);
+  requestAnimationFrame(()=>{ _vsReflowGrids(); _vsPositionChatFab(); });
+  window.addEventListener('resize', _vsPositionChatFab);
+}
+
+function _vsPositionChatFab(){
+  const fab = document.getElementById('vs-chat-fab');
+  if(!fab || !versusMode || !_vs) return;
+  // Neo cạnh khay gạch người dưới: giữa tường trái và mép khay, cùng hàng khay
+  const P = _vs.players && _vs.players[1];
+  const tray = P && P.el && P.el.tray;
+  const safeLeft = (()=>{
+    try{
+      const n = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('env(safe-area-inset-left)'));
+      return Number.isFinite(n) ? n : 0;
+    }catch(e){ return 0; }
+  })();
+  const edge = Math.max(8, safeLeft + 8);
+  if(tray){
+    const r = tray.getBoundingClientRect();
+    if(r.width > 2 && r.height > 2){
+      const x = (edge + r.left) / 2;
+      const y = r.top + r.height / 2;
+      fab.style.left = Math.max(edge + 22, x) + 'px';
+      fab.style.top = y + 'px';
+      fab.style.bottom = 'auto';
+      fab.style.right = 'auto';
+      return;
+    }
+  }
+  fab.style.left = (edge + 22) + 'px';
+  fab.style.top = 'auto';
+  fab.style.bottom = 'max(12px, calc(env(safe-area-inset-bottom) + 10px))';
 }
 
 function _vsSetupChat(online){
-  const toggle = document.getElementById('vs-chat-toggle');
+  const fab = document.getElementById('vs-chat-fab');
   const panel = document.getElementById('vs-chat');
   const log = document.getElementById('vs-chat-log');
-  if(toggle) toggle.style.display = online ? '' : 'none';
+  if(fab) fab.style.display = '';
   if(panel){ panel.hidden = true; panel.classList.remove('open'); }
   if(log) log.innerHTML = '';
   if(!online || !_vs || !_vs.online || !_vs.online.roomId) return;
@@ -317,6 +351,7 @@ function _vsAbort(){
     if(_vs && _vs.online && typeof stopListeningRoom === 'function') stopListeningRoom();
     else if(typeof stopListeningChat === 'function') stopListeningChat();
   }catch(e){}
+  try{ window.removeEventListener('resize', _vsPositionChatFab); }catch(e){}
   const a=document.getElementById('versus-arena'); if(a) a.remove();
   _vsToggleGlobalUI(false);
   versusMode=false; _vs=null;
@@ -330,11 +365,11 @@ function _vsRenderHud(P){
   if(P.el.score) P.el.score.textContent=P.score.toLocaleString();
   if(P.el.combo) P.el.combo.textContent=P.combo>=2?('🔥x'+P.combo):'';
 
-  // Chip góc trên (P0) / góc dưới (P1) — ngoài vùng xoay 180°
+  // Chip góc trên (P0) / góc dưới (P1) — tên + điểm một hàng
   const globalScore = document.getElementById('vs-global-score' + P.idx);
   const globalCombo = document.getElementById('vs-global-combo' + P.idx);
   if(globalScore) globalScore.textContent = P.score.toLocaleString();
-  if(globalCombo) globalCombo.textContent = P.combo>=2?(' 🔥x'+P.combo):'';
+  if(globalCombo) globalCombo.textContent = P.combo>=2?('🔥x'+P.combo):'';
 }
 function _vsRenderGrid(P){
   const fog = Date.now()<P.fogUntil;
@@ -560,7 +595,7 @@ document.addEventListener('pointerdown', ev=>{
   if(!t || !t.closest) return;
   // Giữ chọn khi chạm khối, bàn cờ, thẻ chướng ngại, nút thoát
   if(t.closest('.vs-piece') || t.closest('.vs-grid') || t.closest('.vs-cards') ||
-     t.closest('#vs-quit-btn') || t.closest('#vs-controls') ||
+     t.closest('#vs-quit-btn') || t.closest('#vs-controls') || t.closest('#vs-chat-fab') ||
      t.closest('#vs-top-chip') || t.closest('#vs-bottom-chip') || t.closest('#vs-chat')) return;
   // Huỷ mọi drag đang mở của pointer này
   const id=ev.pointerId!==undefined?ev.pointerId:-1;
