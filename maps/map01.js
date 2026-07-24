@@ -9,7 +9,10 @@
 function renderSecretHearts(){
   const el=document.getElementById('secret-hearts');
   if(!el) return;
-  el.textContent='❤️'.repeat(Math.max(0,secretLives))+'🖤'.repeat(Math.max(0,3-secretLives));
+  const max = (typeof SECRET_LIVES_MAX === 'number') ? SECRET_LIVES_MAX : 5;
+  const live = Math.max(0, secretLives|0);
+  el.textContent='❤️'.repeat(live)+'🖤'.repeat(Math.max(0, max-live));
+  el.style.display = secretMode ? 'block' : 'none';
   if(typeof refreshArcadeHud==='function' && secretMode) refreshArcadeHud();
 }
 
@@ -24,7 +27,8 @@ function enterSecretMode(){
   secretUltra=false;
   secret1Gained=0;
   secret1GoalShown=false;
-  secretLives=3; secretMissStreak=0;
+  secretLives = (typeof SECRET_LIVES_MAX === 'number') ? SECRET_LIVES_MAX : 5;
+  secretMissStreak=0;
   document.getElementById('secret-hearts').style.display='block';
   renderSecretHearts();
   awaitingSecretUnlock=false; // đã vào rồi → không trigger lại
@@ -65,6 +69,8 @@ function enterSecretMode(){
   initSecretBoard();
   renderSecretGrid();
   renderStreakDots();
+  // Bắt đầu đếm giờ ngay khi vào — hết giờ không ấn kịp → trừ tim lần lượt; hết 5 tim thì out
+  resetSecretTimer();
 }
 
 function exitSecretMode(){
@@ -289,7 +295,8 @@ function onSCClick(e){
   updateFireBorder();
   const _ctr=clearCentroid(group, getSC);
   showScorePop(basePoints, finalPts, _ctr.x, _ctr.y, secretStreak);
-  // Map ẩn 1: không pháo/tia DOM — chỉ viền CSS theo combo (updateFireBorder)
+  // Hoa tung ra khi phá ô (map ẩn 1) — nhẹ, không đụng Inventory
+  try{ spawnClearFlowers(group); }catch(e){}
   // Giữ lồng tiếng khen, bỏ flash chữ giữa lưới
   if(!ultraJustTriggered && shouldPraise(secretStreak)){
     try{ speakPraise(praiseLevelForStreak(secretStreak)); }catch(e){}

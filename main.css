@@ -3291,7 +3291,11 @@ body:has(#secret-stage.active) .streak-dot.lit{
 #game-root.hud-arcade.map-secret1 #sc-fx * {
   display: none !important;
 }
-#game-root.hud-arcade.map-secret1 #secret-hearts { display: none !important; }
+/* Tim map ẩn 1 phải hiện — không ẩn dưới HUD arcade */
+#game-root.hud-arcade.map-secret1 #secret-hearts {
+  display: block !important;
+  z-index: 40;
+}
 @media (max-width: 360px) {
   #game-root.hud-arcade #header { column-gap: 10px; padding: 12px 10px; min-height: 80px; }
   #game-root.hud-arcade #header-score { min-width: 78px; padding: 6px 10px; }
