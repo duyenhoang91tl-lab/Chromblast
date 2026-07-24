@@ -692,7 +692,7 @@ function runPowerQueue(queue){
     setTimeout(()=>{
       renderGrid();
       if(consecutiveBursts>=3 && !secretMode) triggerUnlock();
-      else processClears();
+      else processClears({ chain: true });
     }, 120);
     return;
   }
@@ -701,7 +701,11 @@ function runPowerQueue(queue){
   activatePower(p, queue);
   setTimeout(()=>{ renderGrid(); setTimeout(()=>runPowerQueue(queue), 200); }, 320);
 }
-function processClears(){
+/** Kiểm tra nổ hàng/cột/cụm màu.
+ *  opts.chain = true: tiếp nối sau một đợt nổ thành công — nếu hết chuỗi thì
+ *  GIỮ combo (không đứt). Chỉ đặt khối mà không nổ mới reset combo. */
+function processClears(opts){
+  opts = opts || {};
   const cellAlive=(r,c)=> board[r][c]!==null && !pendingClearKeys.has(`${r},${c}`);
   let lineKeys=new Set();
   for(let r=0;r<ROWS;r++)
@@ -737,10 +741,13 @@ function processClears(){
   totalKeys.forEach(k=>pendingClearKeys.add(k)); // đánh dấu ngay — đợt tính sau coi như trống
 
   if(totalKeys.size===0){
-    // Đặt khối mà không nổ → đứt chuỗi combo, phải tính lại từ đầu (không khen liên tiếp nữa)
-    combo=0; consecutiveBursts=0; updateComboUI(); updateBurstCount();
-    const wrap=document.getElementById('grid-wrap');
-    wrap.classList.remove('combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5');
+    // Kết thúc cascade sau đợt nổ thành công → giữ combo.
+    // Chỉ đứt combo khi vừa đặt khối mà không có gì nổ.
+    if(!opts.chain){
+      combo=0; consecutiveBursts=0; updateComboUI(); updateBurstCount();
+      const wrap=document.getElementById('grid-wrap');
+      wrap.classList.remove('combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5');
+    }
     afterPlace();
     return;
   }
@@ -1007,7 +1014,7 @@ function processClears(){
     if(consecutiveBursts>=3 && !secretMode){
       setTimeout(()=>triggerUnlock(), 200);
     } else {
-      setTimeout(()=>processClears(), 100);
+      setTimeout(()=>processClears({ chain: true }), 100);
     }
   }, waitTime);
 }
