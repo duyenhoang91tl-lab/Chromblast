@@ -57,17 +57,23 @@ function isOverlayScreenOpen(el){
   return true;
 }
 
-/** Ẩn #game-root khi auth/start đang mở; ẩn #start-screen khi auth đang mở. */
+/** Ẩn #game-root khi auth/start/tos đang mở; ẩn #start-screen khi auth đang mở. */
 function syncMenuOpenState(){
   const auth = document.getElementById('auth-screen');
   const start = document.getElementById('start-screen');
+  const tos = document.getElementById('tos-gate');
+  const notif = document.getElementById('notif-gate');
   const authOpen = isOverlayScreenOpen(auth);
   // Gỡ auth-open trước khi đọc start (tránh CSS ẩn start làm lệch trạng thái)
   document.body.classList.toggle('auth-open', !!authOpen);
   const startOpen = isOverlayScreenOpen(start);
-  const menuOpen = !!(authOpen || startOpen);
+  const tosOpen = !!(tos && (tos.classList.contains('show') || tos.style.display === 'flex'));
+  const notifOpen = !!(notif && (notif.classList.contains('show') || notif.style.display === 'flex'));
+  const menuOpen = !!(authOpen || startOpen || tosOpen || notifOpen);
   document.body.classList.toggle('menu-open', menuOpen);
   document.body.classList.toggle('start-open', !!(!authOpen && startOpen));
+  document.body.classList.toggle('tos-open', !!(!authOpen && tosOpen));
+  document.body.classList.toggle('notif-open', !!(!authOpen && notifOpen));
   try{ if(typeof syncChatFabVisibility === 'function') syncChatFabVisibility(); }catch(e){}
 }
 
@@ -84,6 +90,7 @@ function hideAuthScreen(){
       start.classList.remove('hide');
     }
     syncMenuOpenState();
+    try{ if(typeof maybeShowPreGameGates==='function') maybeShowPreGameGates(); }catch(e){}
   }, 500);
 }
 
@@ -144,6 +151,10 @@ function initAuthScreen(){
     document.getElementById('login-username').focus();
   }
   if(typeof syncMenuOpenState === 'function') syncMenuOpenState();
+  // Đã bỏ auth → điều khoản + hỏi thông báo trước menu Bắt đầu
+  if(document.getElementById('auth-screen')?.style.display === 'none'){
+    try{ if(typeof maybeShowPreGameGates==='function') maybeShowPreGameGates(); }catch(e){}
+  }
 }
 
 function doLogout(){
