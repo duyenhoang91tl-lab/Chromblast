@@ -1145,13 +1145,46 @@ function openCaroHub(){
   if(locked) return;
   _caroRefreshHubStats();
   if(isOnlineServicesEnabled()){
-    _caroRequireOnline().then(ok => { if(ok) _caroStartRoomListListen(); });
+    _caroRequireOnline().then(async ok => {
+      if(!ok) return;
+      // Sau F5: dọn/sửa phòng treo và hiện lại phòng của mình trong list
+      try{
+        if(typeof findMyLiveHostedRoom === 'function'){
+          const mine = await findMyLiveHostedRoom('caro');
+          if(mine && (mine.status === 'open' || mine.status === 'ready')){
+            _caroLastOpenRooms = _caroMergeMyRoom(_caroLastOpenRooms || [], mine);
+            _caroRenderOpenRoomLists(_caroLastOpenRooms);
+          }
+        }
+      }catch(e){}
+      _caroStartRoomListListen();
+    });
   }
+}
+
+function _caroMergeMyRoom(rooms, mine){
+  const list = (rooms || []).slice();
+  if(!mine || !mine.roomId) return list;
+  const i = list.findIndex(r => r.roomId === mine.roomId);
+  if(i >= 0) list[i] = Object.assign({}, list[i], mine);
+  else list.unshift(mine);
+  return list;
 }
 
 function _caroStartRoomListListen(){
   if(typeof listenOpenCaroRooms !== 'function') return;
-  listenOpenCaroRooms(_caroRenderOpenRoomLists);
+  listenOpenCaroRooms(async (rooms)=>{
+    let list = rooms || [];
+    try{
+      if(typeof findMyLiveHostedRoom === 'function'){
+        const mine = await findMyLiveHostedRoom('caro');
+        if(mine && (mine.status === 'open' || mine.status === 'ready')){
+          list = _caroMergeMyRoom(list, mine);
+        }
+      }
+    }catch(e){}
+    _caroRenderOpenRoomLists(list);
+  });
 }
 
 function _caroStopRoomListListen(){
@@ -1160,7 +1193,13 @@ function _caroStopRoomListListen(){
 
 function _caroRenderOpenRoomLists(rooms){
   _caroLastOpenRooms = rooms || [];
-  const open = _caroLastOpenRooms.filter(r => r.status === 'open' && !r.guestId);
+  // Hiện cả phòng open trống + phòng của mình (kể cả ready) để F5 vẫn thấy
+  const uid = typeof getOnlineUid === 'function' ? getOnlineUid() : null;
+  const open = _caroLastOpenRooms.filter(r => {
+    if(r.status === 'open' && !r.guestId) return true;
+    if(uid && r.hostId === uid && (r.status === 'open' || r.status === 'ready')) return true;
+    return false;
+  });
   const countEl = document.getElementById('caro-room-list-count');
   if(countEl) countEl.textContent = open.length ? '(' + open.length + ')' : '';
   _caroRenderRoomListTo('caro-room-list', 'caro-room-list-empty', open);
@@ -1218,13 +1257,15 @@ async function _caroRefreshHubStats(){
 function closeCaroHub(){
   cancelMatchmaking();
   _caroStopRoomListListen();
-  if(_caroLobby) leaveOnlineRoom(_caroLobby.roomId).catch(()=>{});
+  const leaving = _caroLobby && _caroLobby.roomId ? leaveOnlineRoom(_caroLobby.roomId) : Promise.resolve();
   _caroLobby = null;
   stopListeningRoom();
   _caroHide('caro-hub-panel');
   _caroHide('caro-lobby-panel');
   _caroHide('caro-mm-panel');
   _caroHide('caro-ai-panel');
+  // Best-effort: đợi xóa phòng trống (tránh F5 ngay sau khi đóng còn phòng ma)
+  leaving.catch(()=>{});
 }
 
 function _caroOpenLobby(roomId, code, role, roomData){
@@ -1311,16 +1352,39 @@ async function caroCreateRoom(){
       if(!wasHost) await leaveOnlineRoom(prev);
     }
     const prefs = getCaroPrefs();
-    const { roomId, code, reused } = await createOnlineRoom({
+    const created = await createOnlineRoom({
       gameType:'caro', turnSec: prefs.turnSec, boardSkin: prefs.skin
     });
-    _caroOpenLobby(roomId, code, 'host', {
+    const room = created.room || {
       status:'open', hostName:getOnlineDisplayName(), hostAvatar:getOnlineAvatar(),
       hostId: getOnlineUid(), gameType:'caro',
       turnSec: prefs.turnSec, boardSkin: prefs.skin
-    });
-    _caroStatus(t(reused ? 'onlineRoomReuse' : 'onlineRoomCreated', code));
+    };
+    _caroOpenLobby(created.roomId, created.code, 'host', Object.assign({}, room, {
+      roomId: created.roomId,
+      code: created.code,
+      hostName: room.hostName || getOnlineDisplayName(),
+      hostAvatar: room.hostAvatar || getOnlineAvatar(),
+      hostId: room.hostId || getOnlineUid(),
+      gameType: 'caro'
+    }));
+    if(created.playing){
+      _caroStatus(t('onlineRoomReuse', created.code));
+    } else {
+      _caroStatus(t(created.reused ? 'onlineRoomReuse' : 'onlineRoomCreated', created.code));
+    }
   }catch(e){
+    // Fallback: nếu vẫn báo đang host → tìm phòng cũ và mở lại
+    if(e.message === 'already_hosting' && typeof findMyLiveHostedRoom === 'function'){
+      try{
+        const mine = await findMyLiveHostedRoom('caro');
+        if(mine){
+          _caroOpenLobby(mine.roomId, mine.code, 'host', mine);
+          _caroStatus(t('onlineRoomReuse', mine.code));
+          return;
+        }
+      }catch(e2){}
+    }
     const msg = e.message==='already_hosting' ? t('onlineAlreadyHosting') : e.message;
     _caroStatus(msg, true);
   }

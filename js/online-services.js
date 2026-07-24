@@ -54,6 +54,7 @@ async function initOnlineServices(){
     _onlineDisplayName = getOnlineDisplayName();
     await _upsertPlayerProfile();
     _onlineReady = true;
+    try{ bindOnlineRoomUnloadCleanup(); }catch(e){}
     return true;
   }catch(e){
     console.warn('[online] init failed', e);
@@ -253,6 +254,8 @@ function friendlyOnlineAuthError(e){
 
 // ── Phòng ─────────────────────────────────────────────────────
 // Mỗi người chỉ host được 1 phòng đang sống (open/ready/playing) tại một thời điểm.
+const ROOM_STALE_MS = 45 * 60 * 1000; // phòng playing/ready treo quá lâu → coi như bỏ
+
 async function _listHostedRooms(uid){
   if(!_onlineDb || !uid) return [];
   const snap = await _onlineDb.collection('rooms').where('hostId', '==', uid).limit(30).get();
@@ -263,6 +266,76 @@ function _isLiveRoomStatus(status){
   return status === 'open' || status === 'ready' || status === 'playing';
 }
 
+function _roomAgeMs(r){
+  const t = r.updatedAt || r.startedAt || r.createdAt;
+  if(!t) return Infinity;
+  try{
+    if(typeof t.toMillis === 'function') return Date.now() - t.toMillis();
+    if(t.seconds) return Date.now() - t.seconds * 1000;
+  }catch(e){}
+  return Infinity;
+}
+
+async function _deleteRoomDoc(roomId){
+  if(!_onlineDb || !roomId) return;
+  try{ await _onlineDb.collection('rooms').doc(roomId).delete(); }catch(e){}
+}
+
+async function _endRoomDoc(roomId){
+  if(!_onlineDb || !roomId) return;
+  try{
+    await _onlineDb.collection('rooms').doc(roomId).update({
+      status: 'finished',
+      endedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  }catch(e){}
+}
+
+/** Sửa trạng thái phòng treo (F5 / thoát đột ngột) và trả về bản đã làm sạch. */
+async function _sanitizeHostedRoom(r){
+  if(!r || !_onlineDb) return r;
+  const ref = _onlineDb.collection('rooms').doc(r.roomId);
+  const age = _roomAgeMs(r);
+
+  // Playing treo lâu → kết thúc (không chặn tạo phòng mới)
+  if(r.status === 'playing' && age > ROOM_STALE_MS){
+    await _endRoomDoc(r.roomId);
+    return null;
+  }
+
+  // ready nhưng không còn guest → về open
+  if(r.status === 'ready' && !r.guestId){
+    try{ await ref.update({ status: 'open', guestReady: false }); }catch(e){}
+    return Object.assign({}, r, { status: 'open', guestReady: false, guestId: null });
+  }
+
+  // open nhưng còn ghost guestId → xóa ghost
+  if(r.status === 'open' && r.guestId){
+    try{
+      await ref.update({
+        guestId: null, guestName: null, guestAvatar: null, guestReady: false
+      });
+    }catch(e){}
+    return Object.assign({}, r, {
+      guestId: null, guestName: null, guestAvatar: null, guestReady: false
+    });
+  }
+
+  // ready + guest nhưng treo lâu → đá guest, về open
+  if(r.status === 'ready' && r.guestId && age > ROOM_STALE_MS){
+    try{
+      await ref.update({
+        guestId: null, guestName: null, guestAvatar: null, guestReady: false, status: 'open'
+      });
+    }catch(e){}
+    return Object.assign({}, r, {
+      guestId: null, guestName: null, guestAvatar: null, guestReady: false, status: 'open'
+    });
+  }
+
+  return r;
+}
+
 /** Xóa các phòng trống (không guest) do mình host — trừ exceptRoomId. */
 async function abandonMyEmptyHostedRooms(exceptRoomId){
   const uid = _onlineUid || (await ensureOnlineAuth().catch(()=>null));
@@ -271,10 +344,34 @@ async function abandonMyEmptyHostedRooms(exceptRoomId){
   await Promise.all(mine.map(async r => {
     if(exceptRoomId && r.roomId === exceptRoomId) return;
     if(!_isLiveRoomStatus(r.status)) return;
-    if(r.status === 'playing') return;
-    if(r.guestId) return;
-    try{ await _onlineDb.collection('rooms').doc(r.roomId).delete(); }catch(e){}
+    if(r.status === 'playing'){
+      if(_roomAgeMs(r) > ROOM_STALE_MS) await _endRoomDoc(r.roomId);
+      return;
+    }
+    if(r.guestId){
+      // ready/open treo lâu có guest ghost → dọn
+      if(_roomAgeMs(r) > ROOM_STALE_MS){
+        await _deleteRoomDoc(r.roomId);
+      }
+      return;
+    }
+    await _deleteRoomDoc(r.roomId);
   }));
+}
+
+/** Lấy phòng đang host (cùng gameType) sau khi dọn treo — dùng để hiện lại lobby sau F5. */
+async function findMyLiveHostedRoom(gameType){
+  const uid = await ensureOnlineAuth();
+  const mine = await _listHostedRooms(uid);
+  const cleaned = [];
+  for(const r of mine){
+    if(!_isLiveRoomStatus(r.status)) continue;
+    if(gameType && (r.gameType || 'versus') !== gameType) continue;
+    const s = await _sanitizeHostedRoom(r);
+    if(s && _isLiveRoomStatus(s.status)) cleaned.push(s);
+  }
+  cleaned.sort((a, b) => _roomAgeMs(a) - _roomAgeMs(b));
+  return cleaned[0] || null;
 }
 
 async function createOnlineRoom(opts){
@@ -285,12 +382,26 @@ async function createOnlineRoom(opts){
   const avatar = getOnlineAvatar();
 
   const mine = await _listHostedRooms(uid);
-  const live = mine.filter(r => _isLiveRoomStatus(r.status));
-  if(live.some(r => r.status === 'playing')){
-    throw new Error('already_hosting');
+  const live = [];
+  for(const r of mine){
+    if(!_isLiveRoomStatus(r.status)) continue;
+    const s = await _sanitizeHostedRoom(r);
+    if(s && _isLiveRoomStatus(s.status)) live.push(s);
   }
 
-  // Đã có phòng cùng loại (open/ready) → tái dùng, không tạo thêm
+  // Đang chơi trận còn "tươi" → không tạo thêm; gọi lại sẽ tái vào phòng đó ở UI
+  const playing = live.find(r => r.status === 'playing' && (r.gameType || 'versus') === gameType);
+  if(playing){
+    return {
+      roomId: playing.roomId,
+      code: playing.code,
+      reused: true,
+      playing: true,
+      room: playing
+    };
+  }
+
+  // Đã có phòng cùng loại (open/ready) → luôn tái dùng / mở lại lobby (kể cả đang có khách)
   const same = live.filter(r =>
     (r.gameType || 'versus') === gameType && (r.status === 'open' || r.status === 'ready')
   );
@@ -301,25 +412,32 @@ async function createOnlineRoom(opts){
       return ta - tb;
     });
     const keep = same[0];
-    // Phòng đã có khách → không được tạo phòng thứ 2
-    if(keep.guestId) throw new Error('already_hosting');
     await Promise.all(same.slice(1).map(async extra => {
-      if(extra.guestId) return;
-      try{ await _onlineDb.collection('rooms').doc(extra.roomId).delete(); }catch(e){}
+      if(extra.guestId && _roomAgeMs(extra) < ROOM_STALE_MS) return;
+      await _deleteRoomDoc(extra.roomId);
     }));
-    await abandonMyEmptyHostedRooms(keep.roomId);
-    // Cập nhật tên/avatar host nếu đổi
+    // Dọn phòng loại khác đang trống
+    await Promise.all(live.map(async r => {
+      if(r.roomId === keep.roomId) return;
+      if((r.gameType || 'versus') === gameType) return;
+      if(r.status === 'playing' && _roomAgeMs(r) < ROOM_STALE_MS) return;
+      if(r.guestId && _roomAgeMs(r) < ROOM_STALE_MS) return;
+      await _deleteRoomDoc(r.roomId);
+    }));
     try{
       await _onlineDb.collection('rooms').doc(keep.roomId).update({
         hostName: name,
         hostAvatar: avatar
       });
     }catch(e){}
-    return { roomId: keep.roomId, code: keep.code, reused: true };
+    return { roomId: keep.roomId, code: keep.code, reused: true, room: keep };
   }
 
-  // Còn phòng loại khác / sẵn sàng có khách → chặn
-  const blocked = live.find(r => r.status === 'ready' && r.guestId);
+  // Còn phòng loại khác đang có khách / đang chơi → chặn
+  const blocked = live.find(r =>
+    (r.status === 'playing' && _roomAgeMs(r) < ROOM_STALE_MS) ||
+    (r.status === 'ready' && r.guestId && _roomAgeMs(r) < ROOM_STALE_MS)
+  );
   if(blocked) throw new Error('already_hosting');
 
   // Dọn phòng trống cũ rồi tạo mới
@@ -327,7 +445,7 @@ async function createOnlineRoom(opts){
 
   const code = _roomCode();
   const ref = _onlineDb.collection('rooms').doc();
-  await ref.set({
+  const roomData = {
     code,
     gameType,
     hostId: uid,
@@ -349,9 +467,11 @@ async function createOnlineRoom(opts){
     winnerId: null,
     turnSec: opts.turnSec === 10 ? 10 : (opts.turnSec === 15 ? 15 : null),
     boardSkin: opts.boardSkin || null,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  });
-  return { roomId: ref.id, code, reused: false };
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  await ref.set(roomData);
+  return { roomId: ref.id, code, reused: false, room: Object.assign({ roomId: ref.id }, roomData) };
 }
 
 /** Chặn vào phòng khác khi đang host trận / phòng đã có khách. */
@@ -438,13 +558,46 @@ async function leaveOnlineRoom(roomId){
   if(d.hostId === uid){
     if(d.guestId) await ref.update({
       hostId: d.guestId, hostName: d.guestName, hostAvatar: d.guestAvatar || null,
-      guestId: null, guestName: null, guestAvatar: null, status: 'open', guestReady: false
+      guestId: null, guestName: null, guestAvatar: null, status: 'open', guestReady: false,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
     else await ref.delete();
   } else if(d.guestId === uid){
-    await ref.update({ guestId: null, guestName: null, guestAvatar: null, guestReady: false, status: 'open' });
+    await ref.update({
+      guestId: null, guestName: null, guestAvatar: null, guestReady: false, status: 'open',
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
   }
   stopListeningRoom();
+}
+
+/** Best-effort: F5 / đóng tab → xóa phòng trống đang host (tránh phòng ma). */
+function bindOnlineRoomUnloadCleanup(){
+  if(bindOnlineRoomUnloadCleanup._done) return;
+  bindOnlineRoomUnloadCleanup._done = true;
+  const flush = ()=>{
+    try{
+      const uid = _onlineUid;
+      const db = _onlineDb;
+      if(!uid || !db || typeof db.collection !== 'function') return;
+      // Chỉ dọn khi không trong trận đang chơi (caroMode / versusMode)
+      const inMatch = (typeof caroMode !== 'undefined' && caroMode) ||
+        (typeof versusMode !== 'undefined' && versusMode);
+      if(inMatch) return;
+      db.collection('rooms').where('hostId', '==', uid).limit(10).get().then(snap=>{
+        snap.docs.forEach(doc=>{
+          const d = doc.data() || {};
+          if(d.status === 'playing') return;
+          if(d.guestId) return;
+          if(d.status === 'open' || d.status === 'ready'){
+            doc.ref.delete().catch(()=>{});
+          }
+        });
+      }).catch(()=>{});
+    }catch(e){}
+  };
+  window.addEventListener('pagehide', flush);
+  window.addEventListener('beforeunload', flush);
 }
 
 async function startOnlineRoomMatch(roomId, opts){
