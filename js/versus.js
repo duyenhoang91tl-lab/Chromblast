@@ -355,7 +355,6 @@ function _vsRenderHud(P){
   if(P.el.score) P.el.score.textContent=P.score.toLocaleString();
   if(P.el.combo) P.el.combo.textContent=P.combo>=2?('🔥x'+P.combo):'';
 
-  // Chip góc trên (P0) / góc dưới (P1) — tên + điểm một hàng
   const globalScore = document.getElementById('vs-global-score' + P.idx);
   const globalCombo = document.getElementById('vs-global-combo' + P.idx);
   if(globalScore) globalScore.textContent = P.score.toLocaleString();
