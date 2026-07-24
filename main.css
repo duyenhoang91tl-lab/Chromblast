@@ -217,6 +217,7 @@ body.mode-exclusive #gchat-fab {
 }
 #header-player { display: none; }
 #header-stats-row { display: contents; }
+#score-star-track { display: none; }
 #header > #header-player { text-align: left; }
 #header > #header-center { text-align: center; }
 #header > #header-right { text-align: right; }
@@ -3653,62 +3654,118 @@ body:has(#secret-stage.active) .streak-dot.lit{
   align-items: flex-end;
   justify-content: center;
   gap: 8px;
+  width: min(100%, 280px);
 }
-/* Ô điểm = cùng size ô level */
+/* Ô điểm / level cùng size; thanh sao ở giữa */
 #game-root.hud-arcade #header-score,
 #game-root.hud-arcade #level-badge.level-crown,
 #game-root.hud-arcade #level-badge {
-  width: 58px;
-  height: 58px;
+  width: 54px;
+  height: 54px;
   box-sizing: border-box;
-  flex: 0 0 58px;
+  flex: 0 0 54px;
 }
 #game-root.hud-arcade #header-score {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 4px 3px 5px;
-  background:
-    linear-gradient(180deg, rgba(255,255,255,0.22) 0%, rgba(255,230,160,0.12) 100%);
-  border: 2px solid rgba(255,230,150,0.65);
-  border-radius: 10px 10px 14px 14px;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.35),
-    0 2px 6px rgba(0,0,0,0.2);
+  padding: 2px 2px 4px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
   text-align: center;
-  overflow: hidden;
+  overflow: visible;
 }
 #game-root.hud-arcade #score-label {
-  display: block;
-  width: 100%;
-  color: #ffe9b8;
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 0.4px;
-  line-height: 1;
-  white-space: nowrap;
-  text-align: center !important;
-  text-shadow: 0 1px 0 rgba(80,30,0,0.25);
+  display: none !important;
 }
 #game-root.hud-arcade #score-box {
   display: block;
   width: 100%;
-  font-size: clamp(13px, 3.6vw, 18px);
+  font-size: clamp(22px, 6.2vw, 30px);
   font-weight: 900;
-  color: #fff4c4;
+  color: #ff4fa3;
   text-align: center !important;
-  line-height: 1.05;
-  margin-top: 2px;
+  line-height: 1;
+  margin-top: 0;
+  -webkit-text-stroke: 1.2px #fff;
   text-shadow:
-    0 0 8px rgba(255,220,100,0.7),
-    0 1px 0 rgba(120,60,0,0.35);
+    0 2px 0 #c2185b,
+    0 0 10px rgba(255,120,180,0.55);
   font-variant-numeric: tabular-nums;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow: visible;
   white-space: nowrap;
   max-width: 100%;
-  padding: 0 1px;
+  padding: 0;
+}
+/* Thanh điểm + 3 sao (kiểu Candy) */
+#game-root.hud-arcade #score-star-track {
+  display: block;
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 96px;
+  max-width: 160px;
+  height: 28px;
+  margin-bottom: 8px;
+  overflow: visible;
+}
+#game-root.hud-arcade .score-star-rail {
+  position: absolute;
+  left: 0; right: 0; bottom: 2px;
+  height: 12px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #fff4dc 0%, #e8d2a8 100%);
+  border: 2px solid rgba(255,255,255,0.85);
+  box-shadow:
+    inset 0 1px 2px rgba(120,70,20,0.18),
+    0 2px 4px rgba(0,0,0,0.18);
+  overflow: hidden;
+}
+#game-root.hud-arcade .score-star-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: inherit;
+  background: linear-gradient(180deg, #ffe06a 0%, #ff9a1a 55%, #f07800 100%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.55);
+  transition: width 0.28s cubic-bezier(.2,.9,.2,1);
+}
+#game-root.hud-arcade .score-star-marks {
+  position: absolute;
+  left: 0; right: 0; top: -2px;
+  height: 22px;
+  pointer-events: none;
+}
+#game-root.hud-arcade .score-star {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  font-size: 15px;
+  line-height: 1;
+  color: #d8c29a;
+  text-shadow:
+    0 0 0 1px #b88830,
+    0 1px 2px rgba(0,0,0,0.25);
+  filter: grayscale(0.35) brightness(0.95);
+  transition: transform 0.2s ease, filter 0.2s ease, color 0.2s ease;
+}
+#game-root.hud-arcade .score-star.is-lit {
+  color: #ffd54a;
+  filter: drop-shadow(0 0 4px rgba(255,200,60,0.85)) grayscale(0);
+  transform: translateX(-50%) scale(1.12);
+  text-shadow:
+    0 0 0 1.5px #e08900,
+    0 1px 0 #fff3c0,
+    0 2px 3px rgba(120,50,0,0.35);
+}
+#game-root.hud-arcade .score-star.is-pop {
+  animation: scoreStarPop 0.45s ease;
+}
+@keyframes scoreStarPop {
+  0% { transform: translateX(-50%) scale(0.7); }
+  45% { transform: translateX(-50%) scale(1.35); }
+  100% { transform: translateX(-50%) scale(1.12); }
 }
 #game-root.hud-arcade #level-badge.level-crown,
 #game-root.hud-arcade #level-badge {
@@ -3733,7 +3790,7 @@ body:has(#secret-stage.active) .streak-dot.lit{
   position: absolute;
   left: 50%; top: -12px;
   transform: translateX(-50%);
-  width: 58px; height: 20px;
+  width: 54px; height: 20px;
   pointer-events: none;
 }
 #game-root.hud-arcade #level-badge .peak {
@@ -3911,13 +3968,15 @@ body:has(#secret-stage.active) .streak-dot.lit{
   #game-root.hud-arcade #header-score,
   #game-root.hud-arcade #level-badge.level-crown,
   #game-root.hud-arcade #level-badge {
-    width: 52px;
-    height: 52px;
-    flex-basis: 52px;
+    width: 48px;
+    height: 48px;
+    flex-basis: 48px;
   }
-  #game-root.hud-arcade #header-stats-row { gap: 6px; }
-  #game-root.hud-arcade #score-box { font-size: 13px; }
-  #game-root.hud-arcade #level-box { font-size: 18px; }
+  #game-root.hud-arcade #header-stats-row { gap: 6px; width: min(100%, 240px); }
+  #game-root.hud-arcade #score-box { font-size: 20px; -webkit-text-stroke-width: 1px; }
+  #game-root.hud-arcade #level-box { font-size: 17px; }
+  #game-root.hud-arcade #score-star-track { min-width: 78px; max-width: 120px; }
+  #game-root.hud-arcade .score-star { font-size: 13px; }
 }
 
 /* ════════════════════════════════════════════════════════

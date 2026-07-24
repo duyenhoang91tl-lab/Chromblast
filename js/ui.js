@@ -659,6 +659,45 @@ function arcadeMapLabel(){
   return (typeof t==='function' ? t('arcadeMapMain') : 'Map thường');
 }
 
+/** Ngưỡng 1★ / 2★ / 3★ theo điểm hiện tại (thanh tự scale khi vượt). */
+function scoreStarThresholds(){
+  let target = 300;
+  try{
+    if(typeof TEST_UNLOCK_SCORE==='number') target = Math.max(target, (TEST_UNLOCK_SCORE|0) * 3);
+    if(typeof best==='number' && best > 0) target = Math.max(target, Math.ceil(best * 1.05));
+  }catch(e){}
+  const s = Math.max(0, Math.round((typeof score==='number'?score:0)||0));
+  while(s >= target) target = Math.max(target + 100, Math.round(target * 1.45));
+  return {
+    score: s,
+    target,
+    s1: Math.max(1, Math.round(target * 0.33)),
+    s2: Math.max(2, Math.round(target * 0.66)),
+    s3: target
+  };
+}
+
+function updateScoreStarBar(){
+  const fill = document.getElementById('score-star-fill');
+  const track = document.getElementById('score-star-track');
+  if(!fill || !track) return;
+  const th = scoreStarThresholds();
+  const pct = Math.max(0, Math.min(100, (th.score / th.target) * 100));
+  fill.style.width = pct.toFixed(1) + '%';
+  const marks = track.querySelectorAll('.score-star');
+  const cuts = [th.s1, th.s2, th.s3];
+  marks.forEach((el, i)=>{
+    const lit = th.score >= cuts[i];
+    const was = el.classList.contains('is-lit');
+    el.classList.toggle('is-lit', lit);
+    if(lit && !was){
+      el.classList.remove('is-pop');
+      void el.offsetWidth;
+      el.classList.add('is-pop');
+    }
+  });
+}
+
 function refreshArcadeHud(){
   const root=document.getElementById('game-root');
   if(!root || !root.classList.contains('hud-arcade')) return;
@@ -684,6 +723,8 @@ function refreshArcadeHud(){
   }
   const mapEl=document.getElementById('header-map-label');
   if(mapEl) mapEl.textContent=arcadeMapLabel();
+
+  try{ updateScoreStarBar(); }catch(e){}
 
   // Đã bỏ mục TARGETS trên HUD arcade
   const targets=document.getElementById('header-targets');
