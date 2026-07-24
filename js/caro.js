@@ -452,6 +452,20 @@ function _caroStartTurnTimer(){
   }, 200);
 }
 
+function _caroCaroOverlayIds(){
+  return [
+    'caro-stage',
+    'caro-hub-panel',
+    'caro-lobby-panel',
+    'caro-mm-panel',
+    'caro-ai-panel',
+    'caro-settings-panel',
+    'caro-result-panel',
+    'caro-rank-panel',
+    'player-card-panel'
+  ];
+}
+
 function _caroApplyStageTheme(){
   const stage = document.getElementById('caro-stage');
   if(!stage) return;
@@ -462,17 +476,42 @@ function _caroApplyStageTheme(){
 function _caroSetGameRootHidden(hide){
   const root = document.getElementById('game-root');
   if(!root) return;
+  // #caro-stage và panel Caro nằm TRONG #game-root — nếu ẩn root bằng
+  // visibility:hidden thì bàn cờ cũng biến mất (chỉ còn bầu trời).
+  // Con với visibility:visible vẫn hiện được khi cha bị ẩn.
   if(hide){
     root.dataset.caroPrevVis = root.style.visibility || '';
     root.style.visibility = 'hidden';
+    _caroCaroOverlayIds().forEach(id=>{
+      const el = document.getElementById(id);
+      if(!el) return;
+      if(!('caroPrevVis' in el.dataset)){
+        el.dataset.caroPrevVis = el.style.visibility || '';
+      }
+      el.style.visibility = 'visible';
+    });
     // Gỡ glow vàng secret-mode / combo để không lộ vạch hai bên
     const gw = document.getElementById('grid-wrap');
     if(gw){
       gw.classList.remove('secret-mode','ultra-glow','combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5','fire-low','fire-mid','fire-high','fire-max');
     }
-  } else if('caroPrevVis' in root.dataset){
-    root.style.visibility = root.dataset.caroPrevVis;
-    delete root.dataset.caroPrevVis;
+  } else {
+    if('caroPrevVis' in root.dataset){
+      root.style.visibility = root.dataset.caroPrevVis;
+      delete root.dataset.caroPrevVis;
+    } else {
+      root.style.visibility = '';
+    }
+    _caroCaroOverlayIds().forEach(id=>{
+      const el = document.getElementById(id);
+      if(!el) return;
+      if('caroPrevVis' in el.dataset){
+        el.style.visibility = el.dataset.caroPrevVis;
+        delete el.dataset.caroPrevVis;
+      } else {
+        el.style.visibility = '';
+      }
+    });
   }
 }
 
