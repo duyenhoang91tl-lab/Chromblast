@@ -588,7 +588,10 @@ function _caroShow(id){
   if(!el) return;
   el.classList.add('show');
   el.style.display = 'flex';
-  if(id === 'caro-settings-panel') el.style.zIndex = '10070';
+  el.style.visibility = 'visible';
+  if(id === 'caro-settings-panel' || id === 'caro-result-panel' || id === 'caro-rank-panel' || id === 'player-card-panel'){
+    el.style.zIndex = '10070';
+  }
 }
 function _caroHide(id){
   const el=document.getElementById(id);
