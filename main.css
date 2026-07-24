@@ -33,6 +33,8 @@ body {
   text-rendering: optimizeLegibility;
   display: flex; justify-content: center; align-items: flex-start;
   padding: max(16px, env(safe-area-inset-top)) 12px max(16px, env(safe-area-inset-bottom));
+  padding-left: max(12px, env(safe-area-inset-left, 0px));
+  padding-right: max(12px, env(safe-area-inset-right, 0px));
   min-height: 100vh; min-height: 100dvh;
   overflow-x: hidden; overflow-y: auto;
   -webkit-user-select: none; user-select: none;
@@ -48,6 +50,7 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 ::selection { background: transparent; }
 #game-root {
   max-width: 420px; width: 100%; position: relative;
+  margin-left: auto; margin-right: auto;
   transform-origin: top center;
   font-family: 'Nunito', system-ui, sans-serif;
   font-weight: 800;

@@ -4,12 +4,18 @@
 (function(){
   const root=document.getElementById('game-root');
   function fitGameRoot(){
-    root.style.transform='none';
-    const availH=window.innerHeight-16;
-    const contentH=root.scrollHeight;
-    if(contentH>availH && availH>0){
-      const scale=Math.max(0.55, availH/contentH);
-      root.style.transform='scale('+scale+')';
+    if(!root) return;
+    // Bỏ scale tạm để đo đúng — rồi căn giữa lại bằng transform-origin top center
+    root.style.transform = 'none';
+    const availH = window.innerHeight - 16;
+    const contentH = root.scrollHeight;
+    if(contentH > availH && availH > 0){
+      const scale = Math.max(0.55, availH / contentH);
+      // Giữ tâm ngang khi co — tránh bàn 8×8 lệch phải trên WebView
+      root.style.transformOrigin = 'top center';
+      root.style.transform = 'scale(' + scale + ')';
+    } else {
+      root.style.transformOrigin = 'top center';
     }
     // #game-root vừa co giãn lại — toạ độ getBoundingClientRect() của lưới (cache trong
     // engine.js) không còn đúng nữa, phải tính lại ở lần kéo-thả kế tiếp.
