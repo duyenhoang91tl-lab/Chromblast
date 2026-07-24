@@ -151,6 +151,9 @@
     if(set && set.has(msg.id)) return;
     if(set) set.add(msg.id);
     const mine = isMine(msg);
+    if(msg.kind === 'heart_gift' && !mine && bucket === 'friends'){
+      try{ if(typeof grantHearts === 'function') grantHearts(1, tt('gchatHeartReceived','Tim từ bạn')); }catch(e){}
+    }
     const row = document.createElement('div');
     row.className = 'gchat-row'+(mine?' mine':'');
     row.dataset.msgId = msg.id;
@@ -296,6 +299,17 @@
   async function renderFriendsList(){
     const list = $('gchat-friends-list');
     const thread = $('gchat-friends-thread');
+    const cap = $('gchat-friend-cap');
+    if(cap){
+      const n = (typeof getFriendsList === 'function') ? getFriendsList().length : 0;
+      const max = (typeof maxFriendsForLevel === 'function')
+        ? maxFriendsForLevel(typeof playerLevel==='number'?playerLevel:1)
+        : 20;
+      const gifts = (typeof getHeartGiftState === 'function') ? getHeartGiftState() : { sentTo:[] };
+      const giftMax = (typeof Inventory !== 'undefined' && Inventory.MAX_HEART_GIFT_PEOPLE) || 10;
+      cap.textContent = tt('gchatFriendCap','Bạn bè')+': '+n+'/'+max+
+        ' · '+tt('gchatHeartGiftLeft','Tim gửi')+': '+(gifts.sentTo.length)+'/'+giftMax;
+    }
     if(!list) return;
     list.innerHTML = '';
     if(state.friendUid){
@@ -305,7 +319,7 @@
     list.hidden = false;
     const friends = (typeof getFriendsList === 'function') ? getFriendsList() : [];
     if(!friends.length){
-      list.innerHTML = '<div class="gchat-empty">'+tt('gchatNoFriends','Chưa có bạn — kết bạn từ hồ sơ đối thủ Caro')+'</div>';
+      list.innerHTML = '<div class="gchat-empty">'+tt('gchatNoFriends','Chưa có bạn — gửi lời mời từ hồ sơ đối thủ Caro')+'</div>';
       if(thread) thread.hidden = true;
       return;
     }
@@ -579,6 +593,79 @@
     showInviteToast(invite);
   };
 
+  function showFriendRequestToast(req){
+    if(!req || !req.fromUid) return;
+    document.querySelectorAll('.gchat-friend-req-toast').forEach(el=>el.remove());
+    const toast = document.createElement('div');
+    toast.className = 'gchat-invite-toast gchat-friend-req-toast';
+    toast.innerHTML =
+      '<div class="gchat-invite-toast-body">'+
+        '<div class="gchat-invite-toast-title">'+tt('gchatFriendReq','Lời mời kết bạn')+'</div>'+
+        '<div class="gchat-invite-toast-desc">'+escapeHtml((req.fromAvatar||'🐶')+' '+(req.fromName||'Player'))+'</div>'+
+      '</div>'+
+      '<div class="gchat-invite-toast-actions">'+
+        '<button type="button" class="gchat-invite-accept">'+tt('gchatFriendAccept','Chấp nhận')+'</button>'+
+        '<button type="button" class="gchat-invite-decline">'+tt('gchatFriendDecline','Từ chối')+'</button>'+
+      '</div>';
+    document.body.appendChild(toast);
+    const accept = toast.querySelector('.gchat-invite-accept');
+    const decline = toast.querySelector('.gchat-invite-decline');
+    const cleanup = ()=>{ try{ toast.remove(); }catch(e){} };
+    accept?.addEventListener('click', async ()=>{
+      try{ sfxClick(); }catch(e){}
+      accept.disabled = true;
+      try{
+        const res = await respondFriendRequest(req.fromUid, true);
+        cleanup();
+        if(res && res.ok){
+          try{ showComboFlash(0,false,'🤝 '+tt('gchatFriendAccepted','Đã kết bạn')); }catch(e){}
+          renderFriendsList();
+        } else if(res && res.reason === 'cap'){
+          try{ showComboFlash(0,false, tt('gchatFriendCapFull','Đã đủ số bạn tối đa')); }catch(e){}
+        }
+      }catch(err){ cleanup(); }
+    });
+    decline?.addEventListener('click', async ()=>{
+      try{ sfxClick(); }catch(e){}
+      try{ await respondFriendRequest(req.fromUid, false); }catch(e){}
+      cleanup();
+    });
+    setTimeout(cleanup, 60000);
+  }
+
+  window.onFriendRequestIncoming = function(req){
+    showFriendRequestToast(req);
+  };
+
+  async function sendHeartToFriend(){
+    if(!state.friendUid){
+      setStatus(tt('gchatPickFriend','Chọn một người bạn'), true);
+      return;
+    }
+    const check = (typeof canSendHeartGift === 'function')
+      ? canSendHeartGift(state.friendUid)
+      : { ok:false };
+    if(!check.ok){
+      const msg = check.reason === 'already'
+        ? tt('gchatHeartAlready','Đã gửi tim người này hôm nay')
+        : check.reason === 'cap'
+          ? tt('gchatHeartCap','Tối đa 10 người/ngày')
+          : tt('gchatHeartFail','Không gửi được');
+      setStatus(msg, true);
+      return;
+    }
+    if(!(await ensureOnline())) return;
+    try{
+      await sendFriendChat(state.friendUid, '❤️ '+tt('gchatHeartGiftText','Gửi bạn một trái tim'), { kind: 'heart_gift' });
+      if(typeof markHeartGiftSent === 'function') markHeartGiftSent(state.friendUid);
+      setStatus(tt('gchatHeartSent','Đã gửi tim'));
+      renderFriendsList();
+    }catch(err){
+      console.warn('[heart gift]', err);
+      setStatus(tt('gchatHeartFail','Không gửi được'), true);
+    }
+  }
+
   function initGlobalChat(){
     if(state.ready) return;
     state.ready = true;
@@ -612,6 +699,7 @@
     });
     $('gchat-invite-caro')?.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} inviteFriend('caro'); });
     $('gchat-invite-versus')?.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} inviteFriend('versus'); });
+    $('gchat-send-heart')?.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} sendHeartToFriend(); });
     $('gchat-world-caro')?.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} createWorldRoomInvite('caro'); });
     $('gchat-world-versus')?.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} createWorldRoomInvite('versus'); });
     loadTlPref();

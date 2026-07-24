@@ -434,10 +434,13 @@ async function openPlayerCard(opts){
     friendBtn.dataset.name = fallbackName;
     friendBtn.dataset.avatar = fallbackAv;
     const already = uid && typeof isFriend === 'function' && isFriend(uid);
-    friendBtn.disabled = !uid || already;
+    const pending = uid && typeof hasOutgoingFriendRequest === 'function' && hasOutgoingFriendRequest(uid);
+    friendBtn.disabled = !uid || already || pending;
     friendBtn.textContent = already
       ? (typeof t==='function'?t('caroAlreadyFriend'):'Đã là bạn')
-      : (typeof t==='function'?t('caroAddFriend'):'🤝 Kết bạn');
+      : pending
+        ? (typeof t==='function'?t('caroFriendRequestedShort'):'Đã mời')
+        : (typeof t==='function'?t('caroAddFriend'):'🤝 Kết bạn');
   }
   panel.classList.add('show');
   if(!uid || typeof fetchPlayerPublicProfile !== 'function') return;
@@ -1942,17 +1945,29 @@ function applyCaroSettings(){
         if(msg) msg.textContent = typeof t==='function'?t('caroFriendNeedId'):'';
         return;
       }
-      const res = typeof addOnlineFriend === 'function'
-        ? await addOnlineFriend({ uid: btn.dataset.uid, name: btn.dataset.name, avatar: btn.dataset.avatar })
-        : (typeof addFriendLocal === 'function' ? addFriendLocal({ uid: btn.dataset.uid, name: btn.dataset.name, avatar: btn.dataset.avatar }) : { ok:false });
-      if(msg){
-        msg.textContent = res.already
-          ? (typeof t==='function'?t('caroAlreadyFriend'):'Đã là bạn')
-          : (res.ok ? (typeof t==='function'?t('caroFriendAdded'):'Đã thêm bạn') : (typeof t==='function'?t('caroFriendNeedId'):'Lỗi'));
-      }
-      if(res.ok){
+      if(typeof isFriend === 'function' && isFriend(btn.dataset.uid)){
+        if(msg) msg.textContent = typeof t==='function'?t('caroAlreadyFriend'):'Đã là bạn';
         btn.disabled = true;
-        btn.textContent = typeof t==='function'?t('caroAlreadyFriend'):'Đã là bạn';
+        return;
+      }
+      if(typeof friendSlotsLeft === 'function' && friendSlotsLeft() < 1){
+        if(msg) msg.textContent = typeof t==='function'?t('gchatFriendCapFull'):'Đã đủ số bạn tối đa';
+        return;
+      }
+      const res = typeof sendFriendRequest === 'function'
+        ? await sendFriendRequest({ uid: btn.dataset.uid, name: btn.dataset.name, avatar: btn.dataset.avatar })
+        : (typeof addOnlineFriend === 'function'
+          ? await addOnlineFriend({ uid: btn.dataset.uid, name: btn.dataset.name, avatar: btn.dataset.avatar })
+          : { ok:false });
+      if(msg){
+        if(res.already) msg.textContent = typeof t==='function'?t('caroAlreadyFriend'):'Đã là bạn';
+        else if(res.pending || (res.ok && !res.already)) msg.textContent = typeof t==='function'?t('caroFriendRequested'):'Đã gửi lời mời — chờ chấp nhận';
+        else if(res.reason === 'cap') msg.textContent = typeof t==='function'?t('gchatFriendCapFull'):'Đã đủ số bạn tối đa';
+        else msg.textContent = typeof t==='function'?t('caroFriendNeedId'):'Lỗi';
+      }
+      if(res.ok || res.pending){
+        btn.disabled = true;
+        btn.textContent = typeof t==='function'?t('caroFriendRequestedShort'):'Đã mời';
       }
     });
     refreshCaroButton();

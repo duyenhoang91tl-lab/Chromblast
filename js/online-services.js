@@ -51,9 +51,11 @@ async function initOnlineServices(){
       if(user){
         try{ startPresenceHeartbeat(); }catch(e){}
         try{ startInviteListener(); }catch(e){}
+        try{ startFriendRequestListener(typeof window.onFriendRequestIncoming==='function'?window.onFriendRequestIncoming:null); }catch(e){}
       } else {
         try{ stopPresenceHeartbeat(); }catch(e){}
         try{ stopInviteListener(); }catch(e){}
+        try{ stopFriendRequestListener(); }catch(e){}
       }
     });
     if(!_onlineAuth.currentUser) await _onlineAuth.signInAnonymously();
@@ -64,6 +66,7 @@ async function initOnlineServices(){
     try{ bindOnlineRoomUnloadCleanup(); }catch(e){}
     try{ startPresenceHeartbeat(); }catch(e){}
     try{ startInviteListener(); }catch(e){}
+    try{ startFriendRequestListener(typeof window.onFriendRequestIncoming==='function'?window.onFriendRequestIncoming:null); }catch(e){}
     return true;
   }catch(e){
     console.warn('[online] init failed', e);
@@ -140,21 +143,180 @@ async function fetchPlayerPublicProfile(uid){
   }
 }
 
-async function addOnlineFriend(friend){
-  const local = (typeof addFriendLocal === 'function') ? addFriendLocal(friend) : { ok:false };
-  if(!local.ok) return local;
-  if(local.already) return local;
+async function _writeFriendDoc(ownerUid, friend){
+  if(!_onlineDb || !ownerUid || !friend || !friend.uid) return;
+  await _onlineDb.collection('players').doc(ownerUid)
+    .collection('friends').doc(friend.uid)
+    .set({
+      name: friend.name || 'Player',
+      avatar: friend.avatar || '🐶',
+      addedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+}
+
+/** Gửi lời mời kết bạn — đối phương chấp nhận / từ chối */
+async function sendFriendRequest(friend){
+  if(!friend || !friend.uid) return { ok:false, reason:'need_id' };
+  if(typeof isFriend === 'function' && isFriend(friend.uid)) return { ok:true, already:true };
+  if(typeof friendSlotsLeft === 'function' && friendSlotsLeft() < 1){
+    return { ok:false, reason:'cap', max: typeof maxFriendsForLevel==='function'?maxFriendsForLevel(typeof playerLevel==='number'?playerLevel:1):20 };
+  }
+  if(typeof hasOutgoingFriendRequest === 'function' && hasOutgoingFriendRequest(friend.uid)){
+    return { ok:true, pending:true };
+  }
   try{
-    if(!_onlineDb || !_onlineUid || !friend || !friend.uid) return local;
-    await _onlineDb.collection('players').doc(_onlineUid)
-      .collection('friends').doc(friend.uid)
+    await ensureOnlineAuth();
+    if(!_onlineDb || !_onlineUid) return { ok:false, reason:'offline' };
+    if(friend.uid === _onlineUid) return { ok:false, reason:'self' };
+    await _onlineDb.collection('players').doc(friend.uid)
+      .collection('friendRequests').doc(_onlineUid)
       .set({
-        name: friend.name || 'Player',
-        avatar: friend.avatar || '🐶',
-        addedAt: firebase.firestore.FieldValue.serverTimestamp()
+        fromUid: _onlineUid,
+        fromName: getOnlineDisplayName(),
+        fromAvatar: (typeof getPlayerAvatar === 'function') ? getPlayerAvatar() : '🐶',
+        toUid: friend.uid,
+        status: 'pending',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true });
-  }catch(e){ console.warn('[online] addFriend', e); }
-  return local;
+    if(typeof markOutgoingFriendRequest === 'function'){
+      markOutgoingFriendRequest({
+        uid: friend.uid,
+        name: friend.name || 'Player',
+        avatar: friend.avatar || '🐶'
+      });
+    }
+    return { ok:true, pending:true };
+  }catch(e){
+    console.warn('[online] sendFriendRequest', e);
+    return { ok:false, reason:'error' };
+  }
+}
+
+/** @deprecated — dùng sendFriendRequest; giữ alias để không vỡ chỗ gọi cũ */
+async function addOnlineFriend(friend){
+  return sendFriendRequest(friend);
+}
+
+async function respondFriendRequest(fromUid, accept){
+  if(!_onlineDb || !_onlineUid || !fromUid) return { ok:false };
+  const ref = _onlineDb.collection('players').doc(_onlineUid).collection('friendRequests').doc(fromUid);
+  try{
+    const snap = await ref.get();
+    if(!snap.exists) return { ok:false, reason:'missing' };
+    const data = snap.data() || {};
+    if(accept){
+      if(typeof friendSlotsLeft === 'function' && friendSlotsLeft() < 1){
+        return { ok:false, reason:'cap' };
+      }
+      const them = {
+        uid: fromUid,
+        name: data.fromName || 'Player',
+        avatar: data.fromAvatar || '🐶'
+      };
+      const me = {
+        uid: _onlineUid,
+        name: getOnlineDisplayName(),
+        avatar: (typeof getPlayerAvatar === 'function') ? getPlayerAvatar() : '🐶'
+      };
+      const local = (typeof addFriendLocal === 'function') ? addFriendLocal(them) : { ok:false };
+      if(!local.ok && !local.already) return local;
+      await _writeFriendDoc(_onlineUid, them);
+      await ref.set({ status: 'accepted', respondedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+      // Báo cho người gửi — họ tự thêm bạn khi nhận accepted_notice
+      try{
+        await _onlineDb.collection('players').doc(fromUid)
+          .collection('friendRequests').doc(_onlineUid)
+          .set({
+            fromUid: _onlineUid,
+            fromName: me.name,
+            fromAvatar: me.avatar,
+            toUid: fromUid,
+            status: 'accepted_notice',
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          }, { merge: true });
+      }catch(e2){}
+      return { ok:true, accepted:true, friend: them };
+    }
+    await ref.set({ status: 'declined', respondedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+    return { ok:true, declined:true };
+  }catch(e){
+    console.warn('[online] respondFriendRequest', e);
+    return { ok:false, reason:'error' };
+  }
+}
+
+let _friendReqUnsub = null;
+const _seenFriendReqIds = new Set();
+
+function stopFriendRequestListener(){
+  if(_friendReqUnsub){ try{ _friendReqUnsub(); }catch(e){} _friendReqUnsub = null; }
+}
+
+function startFriendRequestListener(onIncoming){
+  stopFriendRequestListener();
+  if(!_onlineDb || !_onlineUid) return;
+  _friendReqUnsub = _onlineDb.collection('players').doc(_onlineUid)
+    .collection('friendRequests')
+    .onSnapshot(snap=>{
+      snap.docChanges().forEach(chg=>{
+        if(chg.type !== 'added' && chg.type !== 'modified') return;
+        const d = chg.doc.data() || {};
+        const id = chg.doc.id;
+        if(d.status === 'pending' && d.fromUid && d.fromUid !== _onlineUid){
+          const key = 'p:'+id+':'+(d.createdAt && d.createdAt.seconds ? d.createdAt.seconds : '');
+          if(_seenFriendReqIds.has('p:'+id)) return;
+          _seenFriendReqIds.add('p:'+id);
+          const payload = {
+            id,
+            fromUid: d.fromUid,
+            fromName: d.fromName || 'Player',
+            fromAvatar: d.fromAvatar || '🐶'
+          };
+          const cb = onIncoming || (typeof window.onFriendRequestIncoming === 'function' ? window.onFriendRequestIncoming : null);
+          if(typeof cb === 'function') cb(payload);
+        }
+        if(d.status === 'accepted_notice' && d.fromUid){
+          if(_seenFriendReqIds.has('a:'+id)) return;
+          _seenFriendReqIds.add('a:'+id);
+          if(typeof addFriendLocal === 'function'){
+            addFriendLocal({ uid: d.fromUid, name: d.fromName, avatar: d.fromAvatar });
+          }
+          if(typeof clearOutgoingFriendRequest === 'function') clearOutgoingFriendRequest(d.fromUid);
+          try{
+            _onlineDb.collection('players').doc(_onlineUid).collection('friends').doc(d.fromUid)
+              .set({
+                name: d.fromName || 'Player',
+                avatar: d.fromAvatar || '🐶',
+                addedAt: firebase.firestore.FieldValue.serverTimestamp()
+              }, { merge: true });
+          }catch(e){}
+          try{ showComboFlash(0,false,'🤝 '+(d.fromName||'Player')+' đã chấp nhận kết bạn'); }catch(e){}
+          try{ chg.doc.ref.delete(); }catch(e2){}
+        }
+      });
+    }, err => console.warn('[online] friendRequests', err));
+}
+
+async function sendFriendChat(friendUid, text, extra){
+  if(!friendUid) return null;
+  const dmId = await ensureDmDoc(friendUid);
+  if(!dmId) return null;
+  const payload = _chatMsgPayload(text);
+  if(!payload) return null;
+  if(extra && typeof extra === 'object'){
+    Object.keys(extra).forEach(k=>{
+      if(extra[k] != null && k !== 'ts' && k !== 'uid') payload[k] = extra[k];
+    });
+  }
+  const ref = _onlineDb.collection('dms').doc(dmId);
+  const msgRef = ref.collection('messages').doc();
+  await msgRef.set(payload);
+  await ref.set({
+    lastText: payload.text,
+    lastAt: firebase.firestore.FieldValue.serverTimestamp(),
+    lastUid: _onlineUid
+  }, { merge: true });
+  return payload;
 }
 
 // ── Presence (online / offline) ───────────────────────────────
@@ -1038,23 +1200,6 @@ async function ensureDmDoc(friendUid){
     });
   }
   return dmId;
-}
-
-async function sendFriendChat(friendUid, text){
-  if(!friendUid) return null;
-  const dmId = await ensureDmDoc(friendUid);
-  if(!dmId) return null;
-  const payload = _chatMsgPayload(text);
-  if(!payload) return null;
-  const ref = _onlineDb.collection('dms').doc(dmId);
-  const msgRef = ref.collection('messages').doc();
-  await msgRef.set(payload);
-  await ref.set({
-    lastText: payload.text,
-    lastAt: firebase.firestore.FieldValue.serverTimestamp(),
-    lastUid: _onlineUid
-  }, { merge: true });
-  return payload;
 }
 
 function listenFriendChat(friendUid, cb){

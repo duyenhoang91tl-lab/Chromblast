@@ -4003,3 +4003,25 @@ body:has(#secret-stage.active) .streak-dot.lit{
   justify-content: center !important;
   box-sizing: border-box !important;
 }
+
+/* Shop + gold + friend requests */
+.inv-gold{ box-shadow:0 0 0 1px rgba(255,213,74,0.35); color:#ffe082; }
+.shop-panel .shop-card{ max-width:min(96vw,420px); }
+.shop-gold-row{ text-align:center; font-size:18px; font-weight:900; color:#ffd54a; margin:4px 0 10px; }
+.shop-tabs{ display:flex; gap:6px; margin-bottom:10px; }
+.shop-tab{ flex:1; border:1px solid rgba(255,255,255,0.16); background:rgba(255,255,255,0.06); color:#fff; border-radius:10px; padding:8px 6px; font-weight:800; font-size:12px; cursor:pointer; }
+.shop-tab.active{ border-color:#ffd54a; background:rgba(255,213,74,0.16); color:#ffd54a; }
+.shop-grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; max-height:55vh; overflow:auto; }
+.shop-item{ border:1px solid rgba(255,255,255,0.14); background:rgba(255,255,255,0.06); border-radius:12px; padding:10px 8px; color:#fff; cursor:pointer; text-align:center; }
+.shop-item.owned{ opacity:0.55; cursor:default; }
+.shop-item-ico{ font-size:22px; }
+.shop-item-name{ font-size:12px; font-weight:900; margin-top:4px; }
+.shop-item-price{ font-size:11px; color:#ffd54a; font-weight:800; margin-top:2px; }
+.shop-hearts-box{ display:flex; flex-direction:column; gap:8px; }
+.shop-hint{ font-size:12px; color:rgba(255,255,255,0.7); font-weight:700; margin:0 0 4px; }
+.shop-buy-heart,.shop-ad-gold,.shop-ad-heart{ margin:0 !important; }
+.gchat-friend-cap{ font-size:11px; font-weight:800; color:rgba(255,236,180,0.85); padding:4px 2px 8px; }
+.gchat-friend-requests{ display:flex; flex-direction:column; gap:6px; margin-bottom:6px; }
+.gchat-heart-btn{ background:rgba(255,80,120,0.25) !important; border-color:rgba(255,120,150,0.45) !important; }
+.board-skin-card.shop-buyable,.brick-skin-card.shop-buyable{ opacity:0.92; cursor:pointer; }
+.board-skin-card.shop-buyable:disabled,.brick-skin-card.shop-buyable:disabled{ opacity:0.55; }
