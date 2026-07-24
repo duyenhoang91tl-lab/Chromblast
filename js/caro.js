@@ -1173,17 +1173,23 @@ function _caroMergeMyRoom(rooms, mine){
 
 function _caroStartRoomListListen(){
   if(typeof listenOpenCaroRooms !== 'function') return;
-  listenOpenCaroRooms(async (rooms)=>{
-    let list = rooms || [];
-    try{
-      if(typeof findMyLiveHostedRoom === 'function'){
-        const mine = await findMyLiveHostedRoom('caro');
-        if(mine && (mine.status === 'open' || mine.status === 'ready')){
-          list = _caroMergeMyRoom(list, mine);
+  listenOpenCaroRooms((rooms)=>{
+    // Gộp phòng mình đang host (không sanitize lại mỗi snapshot — tránh ghi Firestore liên tục)
+    const mergeMine = async ()=>{
+      let list = rooms || [];
+      try{
+        const uid = typeof getOnlineUid === 'function' ? getOnlineUid() : null;
+        if(uid && typeof _listHostedRooms === 'function'){
+          const mine = (await _listHostedRooms(uid)).filter(r =>
+            (r.gameType || 'versus') === 'caro' &&
+            (r.status === 'open' || r.status === 'ready')
+          );
+          mine.forEach(r => { list = _caroMergeMyRoom(list, r); });
         }
-      }
-    }catch(e){}
-    _caroRenderOpenRoomLists(list);
+      }catch(e){}
+      _caroRenderOpenRoomLists(list);
+    };
+    mergeMine();
   });
 }
 
