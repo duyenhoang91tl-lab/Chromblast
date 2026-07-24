@@ -206,10 +206,26 @@ async function onCreateRoom(){
       _onlineLobby = null;
       if(!wasHost) await leaveOnlineRoom(prev);
     }
-    const { roomId, code, reused } = await createOnlineRoom({ gameType:'versus' });
-    openOnlineLobby(roomId, code, 'host', { status:'open', hostName:getOnlineDisplayName(), gameType:'versus' });
-    _onlineStatus(t(reused ? 'onlineRoomReuse' : 'onlineRoomCreated', code));
+    const created = await createOnlineRoom({ gameType:'versus' });
+    const room = created.room || { status:'open', hostName:getOnlineDisplayName(), gameType:'versus' };
+    openOnlineLobby(created.roomId, created.code, 'host', Object.assign({}, room, {
+      roomId: created.roomId,
+      code: created.code,
+      hostName: room.hostName || getOnlineDisplayName(),
+      gameType: 'versus'
+    }));
+    _onlineStatus(t(created.reused ? 'onlineRoomReuse' : 'onlineRoomCreated', created.code));
   }catch(e){
+    if(e.message === 'already_hosting' && typeof findMyLiveHostedRoom === 'function'){
+      try{
+        const mine = await findMyLiveHostedRoom('versus');
+        if(mine){
+          openOnlineLobby(mine.roomId, mine.code, 'host', mine);
+          _onlineStatus(t('onlineRoomReuse', mine.code));
+          return;
+        }
+      }catch(e2){}
+    }
     const msg = e.message==='already_hosting' ? t('onlineAlreadyHosting') : e.message;
     _onlineStatus(msg, true);
   }
