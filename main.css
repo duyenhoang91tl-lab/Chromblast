@@ -595,8 +595,12 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 @keyframes onlinePulse { 0%,100%{opacity:0.5} 50%{opacity:1} }
 
 /* ══════════════════ CỜ CARO 15×15 ══════════════════ */
-#caro-btn { display: none; }
-#caro-btn.caro-unlocked { display: flex !important; align-items: center; justify-content: center; }
+#caro-btn {
+  display: flex !important; align-items: center; justify-content: center;
+  opacity: 0.7;
+}
+#caro-btn.caro-unlocked { opacity: 1; }
+#game-root.hud-arcade #caro-btn,
 #game-root.hud-arcade #caro-btn.caro-unlocked {
   width: 32px; height: 32px; font-size: 15px; padding: 0;
   background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px;
@@ -658,14 +662,18 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 .caro-result-rank { font-size: 14px; color: #ffd700; margin: 8px 0; }
 .caro-result-wld { font-size: 11px; color: #aaa; }
 .caro-hub-divider { text-align: center; font-size: 11px; color: #666; margin: 14px 0 10px; letter-spacing: 1px; }
-.caro-ai-block { margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.1); }
+.caro-ai-block { margin: 8px 0 16px; }
 .caro-ai-label { font-size: 13px; font-weight: 800; color: #9dce9d; margin-bottom: 8px; }
-.caro-ai-hub-btn { margin-top: 12px; background: linear-gradient(135deg, #2a5a2a, #4a8a4a) !important; }
-.caro-ai-levels { display: flex; flex-direction: column; gap: 8px; }
+.caro-ai-hub-btn {
+  margin-top: 0 !important; margin-bottom: 10px;
+  background: linear-gradient(135deg, #2a5a2a, #4a8a4a) !important;
+  color: #fff !important;
+}
+.caro-ai-levels { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
 .caro-ai-level {
-  width: 100%; padding: 12px 14px; border: 1px solid rgba(255,255,255,0.15);
+  width: 100%; padding: 12px 8px; border: 1px solid rgba(255,255,255,0.15);
   border-radius: 10px; background: rgba(60,120,60,0.25); color: #fff;
-  font-size: 15px; font-weight: 700; cursor: pointer; text-align: left;
+  font-size: 13px; font-weight: 700; cursor: pointer; text-align: center;
   -webkit-tap-highlight-color: rgba(255,255,255,0.15);
   touch-action: manipulation;
   transition: background 0.15s, transform 0.1s;
@@ -676,6 +684,9 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 .caro-ai-level[data-level="medium"] { border-color: rgba(255,213,74,0.35); }
 .caro-ai-level[data-level="hard"] { border-color: rgba(255,120,80,0.45); }
 .caro-result-ai-note { font-size: 12px; color: #9ad4ff; margin-top: 8px; }
+
+/* Nút Caro HUD: luôn hiện để vào luyện máy (online vẫn cần Lv.3 trong hub) */
+/* (rule chính nằm ở khối CỜ CARO phía trên) */
 
 /* ══════════════════ ACCOUNT / LOGOUT ══════════════════ */
 #account-btn {
@@ -2572,6 +2583,7 @@ body:has(#secret-stage.active) .streak-dot.lit{
 #versus-btn.vs-unlocked { display: flex !important; align-items: center; justify-content: center; }
 #game-root.hud-arcade #admin-btn.admin-on,
 #game-root.hud-arcade #versus-btn.vs-unlocked,
+#game-root.hud-arcade #caro-btn,
 #game-root.hud-arcade #caro-btn.caro-unlocked,
 #game-root.hud-arcade #pause-btn,
 #game-root.hud-arcade #account-btn,
@@ -2595,6 +2607,7 @@ body:has(#secret-stage.active) .streak-dot.lit{
   border: 2px solid #fff0c0 !important;
   box-shadow: 0 0 10px rgba(255,180,40,0.7), inset 0 1px 0 rgba(255,255,255,0.5);
 }
+#game-root.hud-arcade #caro-btn,
 #game-root.hud-arcade #caro-btn.caro-unlocked {
   background: radial-gradient(circle at 35% 30%, #aaa 0%, #444 55%, #111 100%) !important;
   border: 2px solid #ccc !important;
