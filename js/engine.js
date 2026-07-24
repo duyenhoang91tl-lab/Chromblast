@@ -698,8 +698,8 @@ function runPowerQueue(queue){
     powerBusy = false;
     setTimeout(()=>{
       renderGrid();
-      if(consecutiveBursts>=3 && !secretMode) triggerUnlock();
-      else processClears({ chain: true });
+      // Mở map ẩn theo cổng ★★★ (2 map thường), không còn combo×3
+      processClears({ chain: true });
     }, 120);
     return;
   }
@@ -1017,12 +1017,8 @@ function processClears(opts){
       return;
     }
 
-    // Check unlock BEFORE continuing chain
-    if(consecutiveBursts>=3 && !secretMode){
-      setTimeout(()=>triggerUnlock(), 200);
-    } else {
-      setTimeout(()=>processClears({ chain: true }), 100);
-    }
+    // Tiếp chuỗi nổ — mở map ẩn do cổng ★★★ (checkNormalMapThreeStars), không còn combo×3
+    setTimeout(()=>processClears({ chain: true }), 100);
   }, waitTime);
 }
 

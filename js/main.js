@@ -169,11 +169,14 @@ function updateBurstCount(){
   }
   bc.classList.remove('unlock-pending');
   if(unlockGateActive && !secretMode){
-    const need=unlockThresholdForStage(unlockGateStageIndex+1);
-    const earned=Math.min(Math.round(score-unlockGateBaseline), need);
-    bc.textContent=
-      earned>=need?t('unlockReady'):
-      t('progress', earned, need);
+    // Cổng mới: 2 map thường ★★★ → 1 map ẩn
+    const clears = (typeof normalStarClears==='number') ? normalStarClears : 0;
+    const needN = (typeof NORMAL_STARS_PER_HIDDEN==='number') ? NORMAL_STARS_PER_HIDDEN : 2;
+    const rel = (typeof relativeStarScore==='function') ? relativeStarScore() : 0;
+    const tgt = (typeof normalStarTarget==='number') ? normalStarTarget : 150;
+    bc.textContent = (typeof t==='function')
+      ? t('starGateProgress', clears, needN, rel, tgt)
+      : ('★★★ '+clears+'/'+needN+' · '+rel+'/'+tgt);
   } else if(comboGateActive && !secretMode && mainHardTier>=20 && mainHardTier<41){
     // Các level KHÔNG có map ẩn: đạt đủ điểm map thường → "qua màn", lên level kế tiếp.
     const need=comboThresholdForTier(mainHardTier);
@@ -195,13 +198,8 @@ function afterPlace(){
   }
   checkAdventureUnlock();
 
-  // Đạt đủ điểm map thường (mốc tăng dần 100đ mỗi map ẩn) → mở map ẩn tiếp theo
-  if(unlockGateActive && !secretMode && unlockGateStageIndex<UNLOCK_STAGE_ORDER.length &&
-     score-unlockGateBaseline>=unlockThresholdForStage(unlockGateStageIndex+1)){
-    unlockGateActive=false;
-    consecutiveBursts=0; updateBurstCount();
-    const stageKey=UNLOCK_STAGE_ORDER[unlockGateStageIndex];
-    setTimeout(()=>triggerStageUnlock(stageKey), 250);
+  // Đủ 3★ trên map thường → đếm 1/2; đủ 2 map thường → mở map ẩn (màn Samoyed)
+  if(typeof checkNormalMapThreeStars==='function' && checkNormalMapThreeStars()){
     return;
   }
   // 🌗 Đã thắng đủ 20/20 map ẩn → tiến trình vòng cơ chế đôi 21→40, PHẢI vượt qua vòng
@@ -401,7 +399,10 @@ function updateScoreUI(){
   if(score>_xpLastScore) addPlayerXP(score-_xpLastScore);
   _xpLastScore=score;
   checkScoreMilestone();
-  if(unlockGateActive && !secretMode) updateBurstCount();
+  if(unlockGateActive && !secretMode){
+    updateBurstCount();
+    try{ if(typeof checkNormalMapThreeStars==='function') checkNormalMapThreeStars(); }catch(e){}
+  }
   saveProgress();
 }
 
@@ -438,6 +439,7 @@ function startGame(){
   secretStreak=0; secretMultiplier=1; secretUltra=false;
   secret1Gained=0; pendingUnlock='secret';
   unlockGateStageIndex=0; unlockGateBaseline=0; unlockGateActive=true;
+  try{ if(typeof resetNormalStarRun==='function') resetNormalStarRun(); }catch(e){}
   memoryMode=false; if(memoryRAF){cancelAnimationFrame(memoryRAF);memoryRAF=null;}
   bubbleMode=false; if(typeof bubbleRAF!=='undefined'&&bubbleRAF){cancelAnimationFrame(bubbleRAF);bubbleRAF=null;}
   stackMode=false; if(typeof stackRAF!=='undefined'&&stackRAF){cancelAnimationFrame(stackRAF);stackRAF=null;}
