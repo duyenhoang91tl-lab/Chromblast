@@ -66,6 +66,7 @@ function syncMenuOpenState(){
   const start = document.getElementById('start-screen');
   const open = isOverlayScreenOpen(auth) || isOverlayScreenOpen(start);
   document.body.classList.toggle('menu-open', !!open);
+  try{ if(typeof syncChatFabVisibility === 'function') syncChatFabVisibility(); }catch(e){}
 }
 
 function hideAuthScreen(){
