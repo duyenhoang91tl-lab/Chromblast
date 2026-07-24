@@ -384,6 +384,31 @@ function _caroApplyStageTheme(){
   stage.style.background = 'linear-gradient(165deg, '+theme.pad+' 0%, #0a0a12 100%)';
 }
 
+function _caroSyncRoomPrefsFromData(d){
+  if(!d) return;
+  const patch = {};
+  if(d.turnSec === 10 || d.turnSec === 15) patch.turnSec = d.turnSec;
+  if(d.boardSkin && CARO_THEMES[d.boardSkin]) patch.skin = d.boardSkin;
+  if(Object.keys(patch).length) setCaroPrefs(patch);
+}
+
+function _caroApplyRoomMetaToGame(d){
+  if(!_caro || !d) return;
+  let changed = false;
+  if(d.boardSkin && CARO_THEMES[d.boardSkin] && _caro.skin !== d.boardSkin){
+    _caro.skin = d.boardSkin;
+    changed = true;
+  }
+  if((d.turnSec === 10 || d.turnSec === 15) && _caro.turnSec !== d.turnSec){
+    _caro.turnSec = d.turnSec;
+    changed = true;
+  }
+  if(!changed) return;
+  _caroApplyStageTheme();
+  _caroStartTurnTimer();
+  _caroRender();
+}
+
 function _caroSyncPrefUI(p){
   p = p || getCaroPrefs();
   document.querySelectorAll('.caro-seg-btn[data-turn]').forEach(btn=>{
@@ -417,6 +442,7 @@ function _caroShow(id){
   if(!el) return;
   el.classList.add('show');
   el.style.display = 'flex';
+  if(id === 'caro-settings-panel') el.style.zIndex = '10070';
 }
 function _caroHide(id){
   const el=document.getElementById(id);
@@ -814,6 +840,7 @@ function _caroEnterGame(roomData){
   listenOnlineRoom(roomId, ev=>{
     if(ev.type==='deleted'){ _caroQuit(); return; }
     const d = ev.data;
+    _caroApplyRoomMetaToGame(d);
     if(d.status==='finished' && d.winnerId){
       const winSlot = d.winnerId===d.hostId ? 'host' : 'guest';
       if(!_caro.winner) _caroEndGame(winSlot, true);
@@ -973,6 +1000,7 @@ function _caroOpenLobby(roomId, code, role, roomData){
     if(ev.type==='deleted'){ closeCaroHub(); return; }
     const d = ev.data;
     _caroLobby.roomData = d;
+    _caroSyncRoomPrefsFromData(d);
     _caroRenderLobby(d);
     if(d.status==='playing' && !caroMode) _caroEnterGame({ roomId, ...d });
   });
@@ -1055,6 +1083,13 @@ async function caroStartMatch(){
   }catch(e){ _caroStatus(e.message, true); }
 }
 
+function _caroSelectSkinDraft(id, container){
+  const base = _caroPrefsDraft || getCaroPrefs();
+  _caroPrefsDraft = Object.assign({}, base, { skin: id });
+  _caroSyncPrefUI(_caroPrefsDraft);
+  if(container) container.querySelectorAll('.caro-skin-chip').forEach(c=>c.classList.toggle('active', c.dataset.skin===id));
+}
+
 function _caroFillSkinGrid(container){
   if(!container) return;
   const prefs = _caroPrefsDraft || getCaroPrefs();
@@ -1072,11 +1107,11 @@ function _caroFillSkinGrid(container){
     btn.title = id;
     btn.style.background = 'linear-gradient(135deg,'+th.bg[0]+','+th.bg[1]+')';
     btn.innerHTML = '<span class="caro-skin-xo"><i style="color:'+th.x+'">X</i><i style="color:'+th.o+'">O</i></span><small>'+id+'</small>';
-    btn.addEventListener('click', ()=>{
-      _caroPrefsDraft = Object.assign({}, prefs, { skin: id });
-      _caroSyncPrefUI(_caroPrefsDraft);
-      container.querySelectorAll('.caro-skin-chip').forEach(c=>c.classList.toggle('active', c.dataset.skin===id));
-    });
+    const pick = (e)=>{
+      if(e){ e.preventDefault(); e.stopPropagation(); }
+      _caroSelectSkinDraft(id, container);
+    };
+    btn.addEventListener('click', pick);
     container.appendChild(btn);
   });
 }
@@ -1101,9 +1136,11 @@ function applyCaroSettings(){
     _caroApplyStageTheme();
     _caroStartTurnTimer();
     _caroRender();
-    if(_caro.online && _caro.roomId && typeof updateOnlineRoomMeta === 'function'){
-      updateOnlineRoomMeta(_caro.roomId, { turnSec: p.turnSec, boardSkin: p.skin }).catch(()=>{});
-    }
+  }
+  const roomId = (_caro && _caro.roomId) || (_caroLobby && _caroLobby.roomId);
+  if(roomId && typeof updateOnlineRoomMeta === 'function'){
+    updateOnlineRoomMeta(roomId, { turnSec: p.turnSec, boardSkin: p.skin }).catch(()=>{});
+    if(_caroLobby) _caroLobby.roomData = Object.assign({}, _caroLobby.roomData || {}, { turnSec: p.turnSec, boardSkin: p.skin });
   }
   try{ sfxClick(); }catch(e){}
 }
@@ -1135,7 +1172,16 @@ function applyCaroSettings(){
       btn.addEventListener('click', ()=>{
         const turn = Number(btn.dataset.turn) === 10 ? 10 : 15;
         if(_caroPrefsDraft) _caroPrefsDraft.turnSec = turn;
-        setCaroPrefs({ turnSec: turn });
+        const inSettings = document.getElementById('caro-settings-panel')?.classList.contains('show');
+        if(inSettings){
+          _caroSyncPrefUI(_caroPrefsDraft || getCaroPrefs());
+        } else {
+          setCaroPrefs({ turnSec: turn });
+          const roomId = _caroLobby && _caroLobby.roomId;
+          if(roomId && typeof updateOnlineRoomMeta === 'function'){
+            updateOnlineRoomMeta(roomId, { turnSec: turn }).catch(()=>{});
+          }
+        }
         if(_caro && !_caro.winner){
           _caro.turnSec = turn;
           _caroStartTurnTimer();
@@ -1143,6 +1189,7 @@ function applyCaroSettings(){
       });
     });
     document.getElementById('caro-hub-skin-btn')?.addEventListener('click', ()=> openCaroSettings(false));
+    document.getElementById('caro-lobby-skin-btn')?.addEventListener('click', ()=> openCaroSettings(false));
     document.getElementById('caro-settings-btn')?.addEventListener('click', ()=> openCaroSettings(true));
     document.getElementById('caro-settings-close')?.addEventListener('click', ()=> _caroHide('caro-settings-panel'));
     document.getElementById('caro-settings-apply')?.addEventListener('click', applyCaroSettings);
