@@ -47,7 +47,7 @@ function enterStackMode(){
   document.getElementById('grid-wrap').classList.add('secret-mode');
   document.getElementById('mode-badge').textContent='🏗️ MAP ẨN 9';
   document.getElementById('mode-badge').classList.add('secret');
-  document.getElementById('burst-count').textContent='🏗️ 0/'+STACK_KPI+' tầng';
+  document.getElementById('burst-count').textContent='🏗️ 0 tầng';
   stackMode=true;
   initStack();
   stackLast=performance.now();
@@ -109,7 +109,7 @@ function stackLoop(now){
   drawStack(ctx,W,460,sway);
 
   const timeLeft=Math.max(0,STACK_TIME-stackElapsed);
-  document.getElementById('burst-count').textContent='🏗️ '+stackCount+'/'+STACK_KPI+'  ⏱'+timeLeft.toFixed(0)+'s';
+  document.getElementById('burst-count').textContent='🏗️ '+stackCount+' tầng  ⏱'+timeLeft.toFixed(0)+'s';
 
   if(timeLeft<=0){
     stackDone(stackCount>=STACK_KPI); return;
@@ -254,7 +254,7 @@ function drawStack(ctx,W,H,sway){
 
   const sTimeLeft=Math.max(0,STACK_TIME-stackElapsed);
   drawHudTop(ctx,W,{
-    left:'🏗️ '+stackCount+'/'+STACK_KPI+' tầng',
+    left:'🏗️ '+stackCount+' tầng',
     right:(sway.active?'💨 ':'⏱ ')+sTimeLeft.toFixed(0)+'s',
   });
 }
