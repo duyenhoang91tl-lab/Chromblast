@@ -89,6 +89,19 @@ async function signInWithGoogle(){
   // Firebase fallback sang điều hướng redirect toàn trang → sessionStorage bị
   // mất khi quay lại → lỗi "missing initial state".
   if(!isOnlineServicesEnabled()) throw new Error('online_disabled');
+
+  // Capacitor / WebView Android: popup OAuth Google thường bị chặn hoặc
+  // báo auth/unauthorized-domain rồi tắt ngay — không gọi popup trên native.
+  try{
+    if(window.Capacitor && typeof Capacitor.isNativePlatform === 'function' && Capacitor.isNativePlatform()){
+      const err = new Error('google_native_unsupported');
+      err.code = 'google_native_unsupported';
+      throw err;
+    }
+  }catch(e){
+    if(e && e.code === 'google_native_unsupported') throw e;
+  }
+
   if(!firebase.apps.length) firebase.initializeApp(window.FIREBASE_CONFIG);
   if(!_onlineAuth) _onlineAuth = firebase.auth();
   if(!_onlineDb) _onlineDb = firebase.firestore();
@@ -105,6 +118,30 @@ async function signInWithGoogle(){
   _onlineReady = true;
   await _upsertPlayerProfile();
   return _onlineUid;
+}
+
+function friendlyOnlineAuthError(e){
+  const code = String((e && (e.code || e.message)) || '');
+  if(code.includes('popup-closed-by-user') || code.includes('cancelled-popup-request')) return null; // bỏ qua
+  if(code.includes('unauthorized-domain')){
+    return (typeof t==='function' ? t('onlineAuthDomain') : null)
+      || 'Domain chưa được phép trên Firebase. Console → Authentication → Settings → Authorized domains → thêm localhost';
+  }
+  if(code.includes('google_native_unsupported') || code.includes('operation-not-supported')){
+    return (typeof t==='function' ? t('onlineAuthNative') : null)
+      || 'Trên app Android dùng chơi ẩn danh (đã tự kết nối). Google Sign-In dùng trên trình duyệt web.';
+  }
+  if(code.includes('network-request-failed')){
+    return (typeof t==='function' ? t('onlineAuthNetwork') : null) || 'Mất mạng — kiểm tra kết nối rồi thử lại';
+  }
+  if(code.includes('online_disabled')){
+    return (typeof t==='function' ? t('onlineDisabled') : null) || 'Chưa cấu hình Firebase';
+  }
+  // Không hiện raw Firebase dài — rút gọn
+  if(code.startsWith('Firebase:') || code.includes('auth/')){
+    return (typeof t==='function' ? t('onlineAuthFail') : null) || 'Đăng nhập Google chưa thành công — vẫn chơi online được bằng tài khoản ẩn danh';
+  }
+  return (e && e.message) ? String(e.message) : String(e || 'Error');
 }
 
 // ── Phòng ─────────────────────────────────────────────────────

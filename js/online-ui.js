@@ -17,15 +17,16 @@ function _onlineStatus(msg, isErr){
 
 async function _onlineRequireEnabled(){
   if(!isOnlineServicesEnabled()){
-    _onlineStatus('Chưa cấu hình Firebase — xem docs/ONLINE_MULTIPLAYER.md', true);
+    _onlineStatus(typeof t==='function'?t('onlineDisabled'):'Chưa cấu hình Firebase', true);
     return false;
   }
   try{
     await ensureOnlineAuth();
-    _onlineStatus('Đã kết nối · '+getOnlineDisplayName());
+    _onlineStatus((typeof t==='function'?t('caroConnected', getOnlineDisplayName()):null) || ('Đã kết nối · '+getOnlineDisplayName()));
     return true;
   }catch(e){
-    _onlineStatus('Không kết nối được server: '+e.message, true);
+    const msg = (typeof friendlyOnlineAuthError==='function' ? friendlyOnlineAuthError(e) : null) || e.message;
+    _onlineStatus(msg || 'Không kết nối được server', true);
     return false;
   }
 }
@@ -258,15 +259,28 @@ function _vsApplyRemotePlace(P, move){
       await signInWithGoogle();
       _onlineStatus('Google · '+getOnlineDisplayName());
     }catch(e){
-      const code = (e && (e.code || e.message)) || '';
-      // User đóng popup Google — không hiện lỗi đỏ
-      if(String(code).includes('popup-closed-by-user') || String(code).includes('cancelled-popup-request')){
-        _onlineStatus('');
-        return;
+      const msg = typeof friendlyOnlineAuthError === 'function' ? friendlyOnlineAuthError(e) : (e && e.message);
+      if(!msg){ _onlineStatus(''); return; } // user đóng popup / bỏ qua
+      // Lỗi domain / native: hiện vàng (cảnh báo), không đỏ Firebase dài
+      const soft = String((e && e.code) || e.message || '').includes('unauthorized-domain')
+        || String((e && e.code) || '').includes('google_native_unsupported');
+      const el = document.getElementById('online-status');
+      if(el){
+        el.textContent = msg;
+        el.className = 'online-status' + (soft ? ' warn' : ' err');
+      } else {
+        _onlineStatus(msg, true);
       }
-      _onlineStatus(e.message || String(e), true);
     }
   });
+
+  // App Android: ẩn nút Google (popup OAuth không ổn định) — anonymous đủ chơi online
+  try{
+    if(window.Capacitor && typeof Capacitor.isNativePlatform === 'function' && Capacitor.isNativePlatform()){
+      const gBtn = document.getElementById('online-google-btn');
+      if(gBtn) gBtn.style.display = 'none';
+    }
+  }catch(e){}
 
   initOnlineServices().then(ok => {
     const badge=document.getElementById('online-status-badge');
