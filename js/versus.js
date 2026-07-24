@@ -138,18 +138,31 @@ function _vsBuildArena(){
   if(arena) arena.remove();
   _vsToggleGlobalUI(true);
   arena=document.createElement('div'); arena.id='versus-arena';
-  
+  const online = !!( _vs && _vs.online && _vs.online.roomId );
+
   // TẠO THANH GIAO DIỆN CHUNG BÊN TRÊN CÙNG
   arena.innerHTML =
     '<div id="vs-top-hud" style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.7); padding: 8px 15px; border-radius: 8px; color: white; font-family: Nunito,system-ui,sans-serif;">'+
       '<div style="font-weight: bold; font-size: 16px; color: #ff4d4d;">'+escapeHtml(_vs.names[1])+': <span id="vs-global-score1">0</span> <span id="vs-global-combo1" style="color:#ffcc00"></span></div>'+
-      '<div style="display: flex; align-items: center; gap: 20px;">'+
+      '<div style="display: flex; align-items: center; gap: 12px;">'+
         '<div style="font-weight: bold; font-size: 16px; color: #4da6ff;">'+escapeHtml(_vs.names[0])+': <span id="vs-global-score0">0</span> <span id="vs-global-combo0" style="color:#ffcc00"></span></div>'+
         '<div id="vs-mid-timer" style="font-size: 22px; font-weight: bold; color: #ffd700;">'+VERSUS_TIME+'</div>'+
+        (online ? '<button type="button" id="vs-chat-toggle" class="vs-chat-toggle" title="Chat">💬</button>' : '')+
         '<button id="vs-quit-btn" style="position: static; transform: none; width: auto; height: auto; background: #ff4444; border: none; color: white; border-radius: 4px; padding: 4px 10px; font-weight: bold; cursor: pointer;">✕</button>'+
       '</div>'+
     '</div>'+
-    '<div id="vs-countdown"></div>';
+    '<div id="vs-countdown"></div>'+
+    (online
+      ? '<div id="vs-chat" class="vs-chat" hidden>'+
+          '<div class="vs-chat-head"><span>'+(typeof t==='function'?t('caroChatTitle'):'💬 Chat')+'</span>'+
+          '<button type="button" id="vs-chat-close" class="vs-chat-close" aria-label="Close">✕</button></div>'+
+          '<div id="vs-chat-log" class="vs-chat-log" aria-live="polite"></div>'+
+          '<form id="vs-chat-form" class="vs-chat-form" autocomplete="off">'+
+            '<input id="vs-chat-input" type="text" maxlength="120" placeholder="'+(typeof t==='function'?t('caroChatPlaceholder'):'Nhắn đối thủ...')+'" />'+
+            '<button type="submit">'+(typeof t==='function'?t('caroChatSend'):'Gửi')+'</button>'+
+          '</form>'+
+        '</div>'
+      : '');
 
   document.body.appendChild(arena);
   _vs.players.forEach((P,i)=>{
@@ -195,7 +208,74 @@ function _vsBuildArena(){
     P.el.ghost=ghost;
   });
   document.getElementById('vs-quit-btn').addEventListener('click',()=>{ if(confirm('Thoát trận?')) _vsAbort(); });
+  if(online){
+    document.getElementById('vs-chat-toggle')?.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} _vsToggleChat(); });
+    document.getElementById('vs-chat-close')?.addEventListener('click', ()=> _vsToggleChat(false));
+    document.getElementById('vs-chat-form')?.addEventListener('submit', _vsSendChat);
+  }
   requestAnimationFrame(_vsReflowGrids);
+}
+
+function _vsSetupChat(online){
+  const toggle = document.getElementById('vs-chat-toggle');
+  const panel = document.getElementById('vs-chat');
+  const log = document.getElementById('vs-chat-log');
+  if(toggle) toggle.style.display = online ? '' : 'none';
+  if(panel){ panel.hidden = true; panel.classList.remove('open'); }
+  if(log) log.innerHTML = '';
+  if(!online || !_vs || !_vs.online || !_vs.online.roomId) return;
+  if(typeof listenRoomChat !== 'function') return;
+  const seen = new Set();
+  listenRoomChat(_vs.online.roomId, msg=>{
+    if(!msg || !msg.id || seen.has(msg.id)) return;
+    seen.add(msg.id);
+    _vsAppendChat(msg);
+  });
+}
+
+function _vsAppendChat(msg){
+  const log = document.getElementById('vs-chat-log');
+  if(!log || !msg) return;
+  const mine = msg.uid && typeof getOnlineUid === 'function' && msg.uid === getOnlineUid();
+  const row = document.createElement('div');
+  row.className = 'vs-chat-row'+(mine?' mine':'');
+  const who = document.createElement('span');
+  who.className = 'vs-chat-who';
+  who.textContent = (msg.avatar || '')+' '+(msg.name || 'Player');
+  const body = document.createElement('span');
+  body.className = 'vs-chat-text';
+  body.textContent = msg.text || '';
+  row.appendChild(who);
+  row.appendChild(body);
+  log.appendChild(row);
+  log.scrollTop = log.scrollHeight;
+}
+
+function _vsToggleChat(forceOpen){
+  const panel = document.getElementById('vs-chat');
+  if(!panel) return;
+  const open = forceOpen != null ? !!forceOpen : panel.hidden;
+  panel.hidden = !open;
+  panel.classList.toggle('open', open);
+  if(open){
+    const input = document.getElementById('vs-chat-input');
+    if(input) setTimeout(()=> input.focus(), 50);
+  }
+}
+
+async function _vsSendChat(e){
+  if(e) e.preventDefault();
+  if(!_vs || !_vs.online || !_vs.online.roomId) return;
+  const input = document.getElementById('vs-chat-input');
+  if(!input) return;
+  const text = input.value;
+  input.value = '';
+  try{
+    if(typeof sendRoomChat === 'function') await sendRoomChat(_vs.online.roomId, text);
+  }catch(err){
+    console.warn('[vs-chat]', err);
+    try{ showComboFlash(0,false, typeof t==='function'?t('caroChatFail'):'Không gửi được chat'); }catch(e2){}
+  }
 }
 
 /** Sau xoay màn / resize: ép lưới 7×7 tính lại kích thước ô (tránh ô đè nhau). */
@@ -212,6 +292,10 @@ function _vsReflowGrids(){
 
 function _vsAbort(){
   if(_vs && _vs.timer) clearInterval(_vs.timer);
+  try{
+    if(_vs && _vs.online && typeof stopListeningRoom === 'function') stopListeningRoom();
+    else if(typeof stopListeningChat === 'function') stopListeningChat();
+  }catch(e){}
   const a=document.getElementById('versus-arena'); if(a) a.remove();
   _vsToggleGlobalUI(false);
   versusMode=false; _vs=null;
@@ -708,7 +792,12 @@ function _vsTick(){
 function _vsEndMatch(){
   if(!_vs) return;
   if(_vs.timer){ clearInterval(_vs.timer); _vs.timer=null; }
-  if(_vs.online){ stopListeningRoom(); _onlineLobby=null; }
+  if(_vs.online){
+    try{ if(typeof stopListeningRoom === 'function') stopListeningRoom(); }catch(e){}
+    try{ if(typeof _onlineLobby !== 'undefined') _onlineLobby=null; }catch(e){}
+  } else {
+    try{ if(typeof stopListeningChat === 'function') stopListeningChat(); }catch(e){}
+  }
   versusMode=false;
   const a=document.getElementById('versus-arena'); if(a) a.remove();
   _vsToggleGlobalUI(false);

@@ -1129,7 +1129,8 @@ function MILESTONE_MSG(tier){
     gchatInviteCaro:'❌⭕ Mời Caro', gchatInviteVersus:'⚔️ Mời Versus',
     gchatInviting:'Đang gửi lời mời...', gchatInviteSent:'Đã gửi lời mời',
     gchatInviteFail:'Không mời được', gchatInviteIncoming:'Lời mời phòng',
-    gchatInviteAccept:'Vào', gchatInviteDecline:'Từ chối'
+    gchatInviteAccept:'Vào', gchatInviteDecline:'Từ chối',
+    gchatInviteFriend:'🤝 Mời bạn bè'
   },
   en:{
     gchatTitle:'💬 Chat', gchatTabWorld:'🌍 World', gchatTabFriends:'🤝 Friends', gchatTabGame:'🎮 In match',
@@ -1142,7 +1143,8 @@ function MILESTONE_MSG(tier){
     gchatInviteCaro:'❌⭕ Invite Caro', gchatInviteVersus:'⚔️ Invite Versus',
     gchatInviting:'Sending invite...', gchatInviteSent:'Invite sent',
     gchatInviteFail:'Could not invite', gchatInviteIncoming:'Room invite',
-    gchatInviteAccept:'Join', gchatInviteDecline:'Decline'
+    gchatInviteAccept:'Join', gchatInviteDecline:'Decline',
+    gchatInviteFriend:'🤝 Invite friends'
   },
   ko:{
     gchatTitle:'💬 채팅', gchatTabWorld:'🌍 월드', gchatTabFriends:'🤝 친구', gchatTabGame:'🎮 경기',
@@ -1155,7 +1157,8 @@ function MILESTONE_MSG(tier){
     gchatInviteCaro:'❌⭕ 캐로 초대', gchatInviteVersus:'⚔️ Versus 초대',
     gchatInviting:'초대 보내는 중...', gchatInviteSent:'초대를 보냈습니다',
     gchatInviteFail:'초대 실패', gchatInviteIncoming:'방 초대',
-    gchatInviteAccept:'입장', gchatInviteDecline:'거절'
+    gchatInviteAccept:'입장', gchatInviteDecline:'거절',
+    gchatInviteFriend:'🤝 친구 초대'
   },
   ja:{
     gchatTitle:'💬 チャット', gchatTabWorld:'🌍 ワールド', gchatTabFriends:'🤝 友達', gchatTabGame:'🎮 試合',
@@ -1168,7 +1171,8 @@ function MILESTONE_MSG(tier){
     gchatInviteCaro:'❌⭕ キャロ招待', gchatInviteVersus:'⚔️ Versus招待',
     gchatInviting:'招待送信中...', gchatInviteSent:'招待を送りました',
     gchatInviteFail:'招待できません', gchatInviteIncoming:'ルーム招待',
-    gchatInviteAccept:'参加', gchatInviteDecline:'拒否'
+    gchatInviteAccept:'参加', gchatInviteDecline:'拒否',
+    gchatInviteFriend:'🤝 友達を招待'
   },
   zh:{
     gchatTitle:'💬 聊天', gchatTabWorld:'🌍 世界', gchatTabFriends:'🤝 好友', gchatTabGame:'🎮 对局',
@@ -1181,7 +1185,8 @@ function MILESTONE_MSG(tier){
     gchatInviteCaro:'❌⭕ 邀请五子棋', gchatInviteVersus:'⚔️ 邀请Versus',
     gchatInviting:'正在发送邀请...', gchatInviteSent:'已发送邀请',
     gchatInviteFail:'邀请失败', gchatInviteIncoming:'房间邀请',
-    gchatInviteAccept:'加入', gchatInviteDecline:'拒绝'
+    gchatInviteAccept:'加入', gchatInviteDecline:'拒绝',
+    gchatInviteFriend:'🤝 邀请好友'
   },
   es:{
     gchatTitle:'💬 Chat', gchatTabWorld:'🌍 Mundo', gchatTabFriends:'🤝 Amigos', gchatTabGame:'🎮 Partida',
@@ -1194,7 +1199,8 @@ function MILESTONE_MSG(tier){
     gchatInviteCaro:'❌⭕ Invitar Caro', gchatInviteVersus:'⚔️ Invitar Versus',
     gchatInviting:'Enviando invitación...', gchatInviteSent:'Invitación enviada',
     gchatInviteFail:'No se pudo invitar', gchatInviteIncoming:'Invitación a sala',
-    gchatInviteAccept:'Entrar', gchatInviteDecline:'Rechazar'
+    gchatInviteAccept:'Entrar', gchatInviteDecline:'Rechazar',
+    gchatInviteFriend:'🤝 Invitar amigos'
   }
   };
   Object.keys(gchat).forEach(l=>{ if(I18N[l]) Object.assign(I18N[l], gchat[l]); });

@@ -1734,6 +1734,10 @@ function applyCaroSettings(){
     document.getElementById('caro-mm-cancel')?.addEventListener('click', caroCancelMM);
     document.getElementById('caro-start-btn')?.addEventListener('click', caroStartMatch);
     document.getElementById('caro-lobby-leave')?.addEventListener('click', closeCaroHub);
+    document.getElementById('caro-lobby-invite')?.addEventListener('click', ()=>{
+      try{ sfxClick(); }catch(e){}
+      if(typeof openChatPanel === 'function') openChatPanel('friends');
+    });
     document.getElementById('caro-quit-btn')?.addEventListener('click', ()=>{ if(confirm(t('caroQuitConfirm'))) _caroQuit(); });
     document.getElementById('caro-result-close')?.addEventListener('click', _caroQuit);
     document.getElementById('caro-chat-toggle')?.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} _caroToggleChat(); });
