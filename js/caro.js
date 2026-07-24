@@ -1012,6 +1012,11 @@ function _caroEnterAIGame(levelId){
     .forEach(id => _caroHide(id));
 
   try{ if(typeof hardResetAllModes === 'function') hardResetAllModes(); }catch(e){}
+  // Dọn Versus nếu còn sót (tránh 2 nửa bàn đè dưới Caro)
+  try{
+    if(typeof versusMode !== 'undefined' && versusMode && typeof _vsAbort === 'function') _vsAbort();
+    else document.getElementById('versus-arena')?.remove();
+  }catch(e){}
 
   _caro = {
     board: _caroNewBoard(),
@@ -1120,6 +1125,11 @@ function _caroEnterGame(roomData){
   const prefs = getCaroPrefs();
   const turnSec = roomData.turnSec === 10 || roomData.turnSec === 15 ? roomData.turnSec : prefs.turnSec;
   const skin = (roomData.boardSkin && CARO_THEMES[roomData.boardSkin]) ? roomData.boardSkin : prefs.skin;
+  try{ if(typeof hardResetAllModes === 'function') hardResetAllModes(); }catch(e){}
+  try{
+    if(typeof versusMode !== 'undefined' && versusMode && typeof _vsAbort === 'function') _vsAbort();
+    else document.getElementById('versus-arena')?.remove();
+  }catch(e){}
   _caro = {
     board: _caroNewBoard(),
     turn: 'host',

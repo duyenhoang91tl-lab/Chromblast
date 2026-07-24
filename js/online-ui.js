@@ -306,6 +306,13 @@ function enterOnlineVersusMatch(roomId, roomData){
   _onlineHide('online-lobby-panel');
   _onlineHide('versus-setup-panel');
   if(typeof hardResetAllModes==='function') hardResetAllModes();
+  try{
+    if(typeof caroMode !== 'undefined' && caroMode && typeof _caroQuit === 'function') _caroQuit();
+    else {
+      const st=document.getElementById('caro-stage');
+      if(st){ st.classList.remove('active'); st.style.display='none'; }
+    }
+  }catch(e){}
 
   _vsHide('versus-setup-panel');
   _vs={ seed: roomData.seed, names:[myName, oppName], timeLeft:VERSUS_TIME, timer:null,

@@ -96,6 +96,13 @@ function startVersusMatch(){
   const n2=(document.getElementById('vs-name2').value.trim()||t('vsP2'));
   _vsHide('versus-setup-panel');
   if(typeof hardResetAllModes==='function') hardResetAllModes();
+  try{
+    if(typeof caroMode !== 'undefined' && caroMode && typeof _caroQuit === 'function') _caroQuit();
+    else {
+      const st=document.getElementById('caro-stage');
+      if(st){ st.classList.remove('active'); st.style.display='none'; }
+    }
+  }catch(e){}
   const seed=(Date.now() ^ (Math.random()*0xFFFFFFF))>>>0;
   _vs={ seed, names:[n1,n2], timeLeft:VERSUS_TIME, timer:null,
         players:[_vsNewPlayer(0,seed), _vsNewPlayer(1,seed)] };
