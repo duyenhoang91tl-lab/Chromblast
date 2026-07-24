@@ -9,6 +9,9 @@
    Phá 2 map thường (mỗi map đủ 3★ trên thanh điểm) → mở 1 map ẩn.
    Sau map ẩn → lại cần 2 map thường ★★★ để mở map ẩn tiếp.
    Màn Samoyed hiện khi vừa đủ điều kiện mở map ẩn (theo chặng 4 map).
+
+   Cơ chế map thường theo số Map N (không theo số map ẩn đã xong):
+   Map 1 = không, Map 2 = dây gai, Map 3 = núi, Map 4 = … (mainHardTier = N-1).
 ══════════════════════════════════════════════════════ */
 /* ══════ CHẾ ĐỘ ADVENTURE — mở khóa khi đạt 10.000 điểm ══════ */
 const ADVENTURE_UNLOCK_SCORE = 10000;
@@ -92,6 +95,17 @@ function resetNormalStarRun(){
 }
 loadNormalStars();
 
+/** Map N → mainHardTier = N-1 (Map 2 = dây gai, Map 3 = núi…). */
+function syncMainHardTierFromNormalStage(applyMechs){
+  const next = Math.max(0, (normalMapStage|0) - 1);
+  try{ mainHardTier = next; }catch(e){}
+  if(applyMechs){
+    try{ if(typeof resetMechanicState==='function') resetMechanicState(); }catch(e){}
+    try{ if(typeof applyRoundMechanics==='function') applyRoundMechanics(); }catch(e){}
+  }
+  return next;
+}
+
 /** Đồng bộ cổng map ẩn từ danh sách đã phá đảo (sau reload). */
 (function syncUnlockGateFromSave(){
   try{
@@ -141,6 +155,8 @@ function checkNormalMapThreeStars(){
     normalStarClears = 0;
     persistNormalStars();
     unlockGateActive = false;
+    // Stage đã nhảy (vd. Map 3) — áp núi/cơ chế khi về từ map ẩn, tránh nháy board trước Samoyed
+    syncMainHardTierFromNormalStage(false);
     try{ consecutiveBursts = 0; }catch(e){}
     try{ if(typeof updateBurstCount==='function') updateBurstCount(); }catch(e){}
     const stageKey = UNLOCK_STAGE_ORDER[unlockGateStageIndex];
@@ -151,6 +167,8 @@ function checkNormalMapThreeStars(){
       }catch(e){}
     }, 480);
   } else {
+    // Map 1 ★★★ → Map 2 + dây gai; các bước lẻ khác tương tự
+    syncMainHardTierFromNormalStage(true);
     try{ if(typeof updateBurstCount==='function') updateBurstCount(); }catch(e){}
   }
   try{ if(typeof updateScoreStarBar==='function') updateScoreStarBar(); }catch(e){}
@@ -183,10 +201,8 @@ function advanceHiddenGate(playedIdx){
   unlockGateBaseline = score;
   unlockGateActive = (unlockGateStageIndex < UNLOCK_STAGE_ORDER.length);
   consecutiveBursts=0; updateBurstCount();
-  // Mỗi vòng map ẩn xong → map thường khó thêm một bậc
-  mainHardTier=unlockGateStageIndex;
-  resetMechanicState();
-  applyRoundMechanics();
+  // Về map thường: giữ Map N đã nhảy trước Samoyed + áp cơ chế đúng bậc (Map 3 = núi…)
+  syncMainHardTierFromNormalStage(true);
   // Reset cổng ★★★ cho map ẩn kế
   normalStarClears = 0;
   normalStarBaseline = score;
