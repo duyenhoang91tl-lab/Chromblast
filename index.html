@@ -93,7 +93,7 @@
     <div class="start-hint" data-i18n="startHint">Chạm để bắt đầu</div>
   </div>
 </div>
-<button id="help-btn" title="Hướng dẫn chơi" data-i18n-title="ttHelp">❓</button>
+<button id="help-btn" title="Hướng dẫn chơi" data-i18n-title="ttHelp" style="display:none !important;" aria-hidden="true" tabindex="-1">❓</button>
 <div id="help-panel">
   <div class="admin-card help-card">
     <div class="admin-title"><span data-i18n="hpMech">Cơ chế đặc biệt</span><button class="admin-close" id="help-close-btn" aria-label="Close">✕</button></div>
@@ -175,6 +175,7 @@
         <div class="settings-actions">
           <button type="button" class="set-action set-c-purple" id="set-btn-account"><span class="set-act-ico">👤</span><span data-i18n="setAccount">Account</span></button>
           <button type="button" class="set-action set-c-teal" id="set-btn-profile"><span class="set-act-ico">🪪</span><span data-i18n="ppProfile">Hồ sơ</span></button>
+          <button type="button" class="set-action set-c-blue" id="set-btn-help"><span class="set-act-ico">❓</span><span data-i18n="setHelp">Hướng dẫn</span></button>
           <button type="button" class="set-action set-c-teal" id="set-btn-lang"><span class="set-act-ico">🌐</span><span data-i18n="setLanguage">Language</span></button>
           <button type="button" class="set-action set-c-blue" id="set-btn-map"><span class="set-act-ico">🗺️</span><span data-i18n="setMap">Map</span></button>
           <button type="button" class="set-action set-c-gold" id="set-btn-cup"><span class="set-act-ico">🏆</span><span data-i18n="setCup">Cup</span></button>
