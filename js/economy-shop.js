@@ -98,10 +98,38 @@
       const left = typeof adHeartViewsLeft === "function" ? adHeartViewsLeft() : 0;
       const gLeft = typeof adGoldViewsLeft === "function" ? adGoldViewsLeft() : 0;
       const nextG = typeof nextAdGoldReward === "function" ? nextAdGoldReward() : 0;
+      let heartStatus = "";
+      try {
+        if (typeof Inventory !== "undefined") {
+          if (typeof Inventory.applyHeartRegen === "function") Inventory.applyHeartRegen();
+          const h =
+            typeof Inventory.formatHearts === "function"
+              ? Inventory.formatHearts(Inventory.hearts)
+              : String(Inventory.hearts);
+          const maxH = Inventory.MAX_HEARTS || 5;
+          const rem =
+            typeof Inventory.heartRegenRemainingMs === "function"
+              ? Inventory.heartRegenRemainingMs()
+              : 0;
+          if (Number(Inventory.hearts) + 1e-9 >= maxH) {
+            heartStatus = "❤️ " + h + " / " + maxH + " · " + tt("shopHeartFull", "Đầy");
+          } else if (rem > 0) {
+            const sec = Math.ceil(rem / 1000);
+            const mm = Math.floor(sec / 60);
+            const ss = sec % 60;
+            const pad = (n) => (n < 10 ? "0" : "") + n;
+            heartStatus =
+              "❤️ " + h + " / " + maxH + " · +" + tt("shopHeartNext", "1 sau") + " " + pad(mm) + ":" + pad(ss);
+          } else {
+            heartStatus = "❤️ " + h + " / " + maxH;
+          }
+        }
+      } catch (e) {}
       box.innerHTML =
         '<p class="shop-hint">' +
-        tt("shopHeartHint", "Mua tim bằng vàng hoặc xem quảng cáo (tối đa 5 lượt/ngày mỗi loại).") +
+        tt("shopHeartHint", "Tim tự hồi +1 mỗi 30 phút (tối đa 5). Thêm tim: mua vàng, xem QC (5/ngày), quay thưởng, bạn bè, lên level.") +
         "</p>" +
+        (heartStatus ? '<p class="shop-heart-status">' + heartStatus + "</p>" : "") +
         '<button type="button" class="auth-submit-btn shop-buy-heart" id="shop-buy-heart">' +
         "❤️ +" +
         HEART_PACK +

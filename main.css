@@ -832,12 +832,13 @@ body.menu-open #game-root {
 .caro-chat-toggle { background: rgba(66, 165, 245, 0.35); border: 1px solid rgba(144,202,249,0.45); }
 .caro-quit { background: #e53935; }
 .caro-hearts-hud {
-  min-width: 44px; height: 32px; padding: 0 8px;
+  min-width: 44px; height: 32px; padding: 0 10px;
   border-radius: 999px; background: rgba(0,0,0,0.45);
   border: 1px solid rgba(255,120,140,0.45);
   color: #ffc1cc; font-size: 12px; font-weight: 900;
   display: flex; align-items: center; justify-content: center;
-  white-space: nowrap;
+  white-space: nowrap; letter-spacing: 0.2px;
+  font-variant-numeric: tabular-nums;
 }
 .caro-board-wrap {
   flex: 1; display: flex; align-items: center; justify-content: center;
@@ -3670,7 +3671,7 @@ body:has(#secret-stage.active) .streak-dot.lit{
   border-radius:999px; padding:2px 7px; line-height:1.2;
   font-family:'Nunito',system-ui,sans-serif;
 }
-.inv-heart{ box-shadow:0 0 0 1px rgba(255,80,100,0.25); }
+.inv-heart{ box-shadow:0 0 0 1px rgba(255,80,100,0.25); font-variant-numeric: tabular-nums; }
 .inv-fire{ box-shadow:0 0 0 1px rgba(255,140,60,0.25); }
 .inv-bubble{ box-shadow:0 0 0 1px rgba(100,200,255,0.25); }
 .inv-wind{ box-shadow:0 0 0 1px rgba(120,240,190,0.25); }
@@ -4019,6 +4020,10 @@ body:has(#secret-stage.active) .streak-dot.lit{
 .shop-item-price{ font-size:11px; color:#ffd54a; font-weight:800; margin-top:2px; }
 .shop-hearts-box{ display:flex; flex-direction:column; gap:8px; }
 .shop-hint{ font-size:12px; color:rgba(255,255,255,0.7); font-weight:700; margin:0 0 4px; }
+.shop-heart-status{
+  margin:0 0 2px; font-size:13px; font-weight:900; color:#ffc1cc;
+  font-variant-numeric: tabular-nums;
+}
 .shop-buy-heart,.shop-ad-gold,.shop-ad-heart{ margin:0 !important; }
 .gchat-friend-cap{ font-size:11px; font-weight:800; color:rgba(255,236,180,0.85); padding:4px 2px 8px; }
 .gchat-friend-requests{ display:flex; flex-direction:column; gap:6px; margin-bottom:6px; }
