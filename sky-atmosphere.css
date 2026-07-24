@@ -114,37 +114,33 @@ html, body {
 #sky-atmosphere .sky-mountains {
   position: absolute;
   left: 0; right: 0; bottom: 0;
-  height: 34%;
+  height: 36%;
   z-index: 4;
   pointer-events: none;
 }
-#sky-atmosphere .sky-mountains::before,
+#sky-atmosphere .sky-mount-svg {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  width: 100%;
+  display: block;
+}
+#sky-atmosphere .sky-mount-far {
+  height: 72%;
+  opacity: 0.75;
+  filter: blur(0.8px);
+}
+#sky-atmosphere .sky-mount-near {
+  height: 100%;
+  opacity: 1;
+}
+/* Gradient tối dần chân núi */
 #sky-atmosphere .sky-mountains::after {
   content: '';
   position: absolute;
   left: 0; right: 0; bottom: 0;
-}
-/* Lớp núi xa — thấp, mờ tím */
-#sky-atmosphere .sky-mountains::before {
-  height: 78%;
-  background:
-    radial-gradient(ellipse 42% 120% at 8% 100%, #3a2068 0%, transparent 68%),
-    radial-gradient(ellipse 50% 140% at 32% 100%, #4a2878 0%, transparent 70%),
-    radial-gradient(ellipse 48% 130% at 58% 100%, #3a2468 0%, transparent 68%),
-    radial-gradient(ellipse 55% 150% at 88% 100%, #4a2a78 0%, transparent 70%);
-  opacity: 0.85;
-  filter: blur(1.5px);
-}
-/* Lớp núi gần — đậm hơn + sương chân */
-#sky-atmosphere .sky-mountains::after {
-  height: 100%;
-  background:
-    linear-gradient(180deg, transparent 0%, rgba(90, 40, 110, 0.35) 38%, rgba(30, 12, 48, 0.92) 100%),
-    radial-gradient(ellipse 38% 110% at 0% 100%, #2a1448 0%, transparent 72%),
-    radial-gradient(ellipse 46% 130% at 28% 110%, #1e1038 0%, transparent 70%),
-    radial-gradient(ellipse 50% 140% at 55% 105%, #241240 0%, transparent 68%),
-    radial-gradient(ellipse 42% 120% at 82% 110%, #1a0e34 0%, transparent 70%),
-    radial-gradient(ellipse 36% 100% at 100% 100%, #221038 0%, transparent 72%);
+  height: 45%;
+  background: linear-gradient(180deg, transparent 0%, rgba(18, 8, 40, 0.55) 55%, rgba(10, 4, 24, 0.9) 100%);
+  pointer-events: none;
 }
 
 /* Lớp sương mỏng phủ chân núi */
