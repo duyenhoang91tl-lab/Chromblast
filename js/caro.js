@@ -17,9 +17,10 @@ const CARO_TURN_FAST = 10;
 
 /** Cấu hình AI theo độ khó — depth càng cao càng “đọc” nước trước */
 const CARO_AI_LEVELS = {
-  easy:   { id:'easy',   thinkMs:320, mistakeRate:0.28, radius:2, depth:1, topN:8  },
-  medium: { id:'medium', thinkMs:500, mistakeRate:0.05, radius:3, depth:2, topN:10 },
-  hard:   { id:'hard',   thinkMs:700, mistakeRate:0,    radius:4, depth:3, topN:10 },
+  easy:     { id:'easy',     thinkMs:320, mistakeRate:0.28, radius:2, depth:1, topN:8  },
+  medium:   { id:'medium',   thinkMs:500, mistakeRate:0.05, radius:3, depth:2, topN:10 },
+  hard:     { id:'hard',     thinkMs:700, mistakeRate:0,    radius:4, depth:3, topN:10 },
+  extreme:  { id:'extreme',  thinkMs:900, mistakeRate:0,    radius:5, depth:4, topN:12 },
 };
 
 /** Nền map xếp hình + màu X/O nổi bật theo từng nền */
@@ -382,14 +383,16 @@ function _caroUpdateOppChip(){
   const nameEl = document.getElementById('caro-opp-name');
   const chip = document.getElementById('caro-opp-chip');
   if(avBtn){
-    avBtn.textContent = av;
+    if(typeof applyAvatarElement === 'function') applyAvatarElement(avBtn, av);
+    else avBtn.textContent = av;
     avBtn.dataset.uid = uid || '';
     avBtn.dataset.name = name;
-    avBtn.dataset.avatar = av;
+    avBtn.dataset.avatar = isCustomPlayerAvatar && isCustomPlayerAvatar(av) ? '📷' : av;
     avBtn.disabled = !!_caro.ai || !uid;
   }
   if(nameEl) nameEl.textContent = name;
   if(chip) chip.classList.toggle('tappable', !_caro.ai && !!uid);
+  try{ if(window.CaroSocial && CaroSocial.renderCoupleHud) CaroSocial.renderCoupleHud(); }catch(e){}
 }
 
 async function openPlayerCard(opts){
@@ -1190,6 +1193,12 @@ function _caroEndGame(winnerSlot, fromRemote){
   _caroRender();
 
   const isAI = !!_caro.ai;
+  try{
+    if(isAI && _caro.ai.id === 'extreme' && winnerSlot === _caro.mySlot){
+      window.dispatchEvent(new CustomEvent('caro-ai-win', { detail:{ level:'extreme' } }));
+      if(window.CaroSocial && typeof CaroSocial.onExtremeAiWin === 'function') CaroSocial.onExtremeAiWin();
+    }
+  }catch(e){}
 
   if(!isAI && !fromRemote && _caro.roomId){
     finalizeCaroMatch(_caro.roomId, winnerSlot).catch(()=>{});
@@ -1272,12 +1281,33 @@ function _caroAppendChat(msg){
   who.className = 'caro-chat-who';
   who.textContent = (msg.avatar || '')+' '+(msg.name || 'Player');
   const body = document.createElement('span');
-  body.className = 'caro-chat-text';
+  body.className = 'caro-chat-text bubble-'+(msg.bubbleStyle || 'classic')+(msg.kind==='fx'?' caro-chat-fx':'');
   body.textContent = msg.text || '';
   row.appendChild(who);
   row.appendChild(body);
+  if(msg.kind === 'couple_invite' && !mine){
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'caro-couple-accept';
+    btn.textContent = '💍 '+(typeof t==='function'?t('caroCoupleAccept'):'Nhận kết đôi');
+    btn.addEventListener('click', ()=>{
+      try{sfxClick();}catch(e){}
+      if(window.CaroSocial && CaroSocial.acceptInvite){
+        // fallback via event
+      }
+      try{
+        if(typeof watchAd !== 'undefined'){ /* noop */ }
+        window.dispatchEvent(new CustomEvent('caro-couple-accept', { detail: msg }));
+      }catch(e){}
+      btn.disabled = true;
+    });
+    row.appendChild(btn);
+  }
   log.appendChild(row);
   log.scrollTop = log.scrollHeight;
+  try{
+    if(window.CaroSocial && typeof CaroSocial.onChatMessage === 'function') CaroSocial.onChatMessage(msg);
+  }catch(e){}
 }
 
 function _caroToggleChat(forceOpen){
@@ -1289,6 +1319,12 @@ function _caroToggleChat(forceOpen){
   if(open){
     const input = document.getElementById('caro-chat-input');
     if(input) setTimeout(()=> input.focus(), 50);
+    try{
+      if(window.CaroSocial){
+        if(CaroSocial.renderFxBar) CaroSocial.renderFxBar();
+        if(CaroSocial.renderBubblePicker) CaroSocial.renderBubblePicker();
+      }
+    }catch(e){}
   }
 }
 
@@ -1300,7 +1336,13 @@ async function _caroSendChat(e){
   const text = input.value;
   input.value = '';
   try{
-    if(typeof sendRoomChat === 'function') await sendRoomChat(_caro.roomId, text);
+    const extra = {};
+    try{
+      if(window.CaroSocial && CaroSocial.currentBubbleStyle){
+        extra.bubbleStyle = CaroSocial.currentBubbleStyle();
+      }
+    }catch(e2){}
+    if(typeof sendRoomChat === 'function') await sendRoomChat(_caro.roomId, text, extra);
   }catch(err){
     console.warn('[caro-chat]', err);
     try{ showComboFlash(0,false, typeof t==='function'?t('caroChatFail'):'Không gửi được chat'); }catch(e2){}

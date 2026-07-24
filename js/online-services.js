@@ -956,10 +956,15 @@ function _chatMsgPayload(text){
 }
 
 /** Chat trong phòng (Caro / Versus) — hỗ trợ nhiều listener */
-async function sendRoomChat(roomId, text){
+async function sendRoomChat(roomId, text, extra){
   if(!_onlineDb || !roomId) return null;
   const payload = _chatMsgPayload(text);
   if(!payload) return null;
+  if(extra && typeof extra === 'object'){
+    Object.keys(extra).forEach(k=>{
+      if(extra[k] != null && k !== 'ts' && k !== 'uid') payload[k] = extra[k];
+    });
+  }
   const ref = _onlineDb.collection('rooms').doc(roomId).collection('chat').doc();
   await ref.set(payload);
   return payload;
