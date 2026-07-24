@@ -9,6 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>ChromaBlast</title>
 <link rel="stylesheet" href="main.css">
+<link rel="stylesheet" href="saga-map.css">
 <link rel="stylesheet" href="sky-atmosphere.css">
 <link rel="stylesheet" href="nick-fonts.css">
 <link rel="stylesheet" href="brick-skins.css">
@@ -165,10 +166,13 @@
 <div id="game-root">
   <div id="header">
     <div id="header-player" aria-label="Player">
-      <div id="header-player-name">Player</div>
-      <div id="header-map-label">Map thường</div>
+      <div id="header-avatar" class="header-avatar" aria-hidden="true">🐶</div>
+      <div class="header-player-meta">
+        <div id="header-player-name">Player</div>
+        <div id="header-map-label">Map chính</div>
+      </div>
     </div>
-    <div id="header-center" style="text-align:center">
+    <div id="header-center" style="text-align:right">
       <div id="combo-box"></div>
       <div id="header-stats-row">
         <div id="header-score">
@@ -181,8 +185,8 @@
             <div id="score-star-fill" class="score-star-fill"></div>
           </div>
           <div class="score-star-marks">
-            <span class="score-star" data-star="1" style="left:33%">★</span>
-            <span class="score-star" data-star="2" style="left:66%">★</span>
+            <span class="score-star" data-star="1" style="left:33.333%">★</span>
+            <span class="score-star" data-star="2" style="left:66.666%">★</span>
             <span class="score-star" data-star="3" style="left:100%">★</span>
           </div>
         </div>
@@ -1085,6 +1089,57 @@
     </div>
   </div>
 
+  <!-- Candy Crush–style saga: vườn hoa + Samoyed → chọn map 1–4 -->
+  <div id="saga-map-screen" aria-hidden="true">
+    <div class="saga-garden" aria-hidden="true">
+      <div class="saga-sky"></div>
+      <div class="saga-sun"></div>
+      <div class="saga-hills"></div>
+      <div class="saga-bush left"></div>
+      <div class="saga-bush right"></div>
+      <div class="saga-flowers"></div>
+      <div class="saga-petal p1"></div>
+      <div class="saga-petal p2"></div>
+      <div class="saga-petal p3"></div>
+      <div class="saga-petal p4"></div>
+      <div class="saga-petal p5"></div>
+    </div>
+    <button type="button" id="saga-close-btn" aria-label="Đóng">✕</button>
+    <div class="saga-stage">
+      <div class="saga-mascot-wrap">
+        <div class="saga-samoyed" aria-hidden="true">
+          <div class="sam-ear left"></div>
+          <div class="sam-ear right"></div>
+          <div class="sam-head">
+            <div class="sam-eye left"></div>
+            <div class="sam-eye right"></div>
+            <div class="sam-nose"></div>
+            <div class="sam-smile"></div>
+            <div class="sam-blush left"></div>
+            <div class="sam-blush right"></div>
+          </div>
+          <div class="sam-body"></div>
+          <div class="sam-paw left"></div>
+          <div class="sam-paw right"></div>
+        </div>
+        <div class="saga-speech">Xin chào! Cùng chơi trong vườn hoa nhé 🌸</div>
+      </div>
+      <div class="saga-path" role="list">
+        <div class="saga-path-rail"><div id="saga-path-fill"></div></div>
+        <button type="button" class="saga-node" data-lv="1" role="listitem">1</button>
+        <button type="button" class="saga-node" data-lv="2" role="listitem">2</button>
+        <button type="button" class="saga-node" data-lv="3" role="listitem">3</button>
+        <button type="button" class="saga-node" data-lv="4" role="listitem">4</button>
+      </div>
+      <div class="saga-info">
+        <div id="saga-blurb"></div>
+        <div id="saga-progress" class="saga-progress-badge">0/4</div>
+      </div>
+      <button type="button" id="saga-play-btn" class="saga-play-btn">Chơi</button>
+      <button type="button" id="saga-later-btn" class="saga-later-btn">Quay lại map thường</button>
+    </div>
+  </div>
+
   <!-- Mode A pieces -->
   <div id="skill-bar" class="skill-bar" style="display:none;" aria-label="Powers">
     <button type="button" id="skill-btn-fire" class="skill-btn pw-fire" title="Lửa — chạm ô để đốt 3×3 ngay (dây leo chỉ gỡ 1 lớp)">🔥 <span class="skill-lab">Lửa</span></button>
@@ -1193,6 +1248,7 @@
 <script src="js/engine.js"></script>
 <script src="js/main.js"></script>
 <script src="js/map-manager.js"></script>
+<script src="js/saga-map.js"></script>
 <script src="js/native.js"></script>
 <script src="js/versus.js"></script>
 <script src="js/online-ui.js"></script>

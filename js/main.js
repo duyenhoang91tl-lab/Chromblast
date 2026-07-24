@@ -244,6 +244,8 @@ function triggerUnlock(){
   // (hoặc treo im nếu popup bị bỏ qua) mà không bao giờ báo thua. Phải kiểm tra trước.
   if(checkGameOverA()) return; // đã hiện Game Over overlay — không hiện popup mở khoá nữa
   pendingUnlock='secret';
+  // Map 1–4: màn phụ saga (Candy Crush) thay overlay khoá cũ
+  if(typeof showSagaUnlock==='function' && showSagaUnlock('secret')) return;
   document.getElementById('unlock-title').textContent=t('unlockTitle');
   document.getElementById('unlock-desc').innerHTML=t('unlockDesc', TEST_UNLOCK_SCORE);
   document.getElementById('unlock-btn').textContent=t('unlockBtn');
@@ -271,6 +273,8 @@ document.getElementById('burst-count').addEventListener('click',()=>{
   if(!unlockDeferred) return;
   sfxClick();
   unlockDeferred=false;
+  if(typeof isSagaMapKey==='function' && isSagaMapKey(pendingUnlock) &&
+     typeof showSagaUnlock==='function' && showSagaUnlock(pendingUnlock)) return;
   showUnlockOverlay();
 });
 
@@ -729,6 +733,7 @@ function hardResetAllModes(){
   document.getElementById('mode-badge').textContent=t('badgeNormal');
   document.getElementById('mode-badge').classList.remove('secret');
   document.getElementById('unlock-overlay').classList.remove('show');
+  try{ if(typeof hideSagaMapScreen==='function') hideSagaMapScreen(); }catch(e){}
   const pauseOverlay=document.getElementById('pause-overlay');
   if(pauseOverlay) pauseOverlay.style.display='none';
   gamePaused=false;
