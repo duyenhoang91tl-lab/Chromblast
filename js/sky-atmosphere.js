@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════
-// js/sky-atmosphere.js — Sao twinkle/lóe · sao chổi · cánh đào bay nhẹ
+// js/sky-atmosphere.js — Sao twinkle/lóe chậm · sao chổi · cánh đào theo gió trái
 // Nạp sớm (sau DOM atmosphere trong index.html).
 // ═══════════════════════════════════════════════════════════════
 
@@ -16,7 +16,6 @@
       const bright = roll > 0.84;
       const warm = !bright && roll < 0.16;
       const cool = !bright && !warm && roll > 0.72;
-      // ~8% sao thỉnh thoảng lóe tia sáng
       const flare = !warm && Math.random() < 0.08;
       s.className = 'sky-star'
         + (bright ? ' bright' : '')
@@ -35,18 +34,19 @@
       s.style.top = (Math.random() * Math.random() * 78) + '%';
 
       if(flare){
-        // Chu kỳ dài: vài giây mới lóe một lần
-        const dur = 7 + Math.random() * 10;
+        // Lóe chậm hơn: chu kỳ 14–28s, chỉ sáng ngắn ở cuối chu kỳ
+        const dur = 14 + Math.random() * 14;
         s.style.animationDuration = dur + 's';
         s.style.animationDelay = (-Math.random() * dur) + 's';
       } else {
+        // Twinkle thường cũng chậm hơn
         const dur = bright
-          ? (1.8 + Math.random() * 2.6)
-          : (2.4 + Math.random() * 4.5);
+          ? (3.5 + Math.random() * 4)
+          : (4.5 + Math.random() * 6);
         s.style.animationDuration = dur + 's';
         s.style.animationDelay = (-Math.random() * dur) + 's';
-        if(!bright && Math.random() > 0.65){
-          s.style.animationDuration = (4.5 + Math.random() * 5) + 's';
+        if(!bright && Math.random() > 0.6){
+          s.style.animationDuration = (8 + Math.random() * 8) + 's';
         }
       }
       frag.appendChild(s);
@@ -58,20 +58,25 @@
     const box = document.getElementById('sky-petals');
     if(!box || box.dataset.ready) return;
     box.dataset.ready = '1';
-    const count = 14;
+    const count = 16;
     for(let i=0;i<count;i++){
       const p = document.createElement('div');
       p.className = 'sky-petal';
       const size = 11 + Math.random() * 7;
       p.style.width = size + 'px';
       p.style.height = (size * 0.86) + 'px';
-      p.style.left = (Math.random() * 100) + '%';
-      // Drift nhẹ, xoay chậm — bay dịu hơn
-      p.style.setProperty('--drift', ((Math.random() * 70) - 20) + 'px');
-      p.style.setProperty('--spin', (90 + Math.random() * 200) + 'deg');
-      p.style.animationDuration = (16 + Math.random() * 14) + 's';
-      p.style.animationDelay = (-Math.random() * 18) + 's';
-      p.style.opacity = String(0.82 + Math.random() * 0.16);
+      // Xuất hiện từ giữa–phải, bay theo gió sang trái
+      p.style.left = (48 + Math.random() * 52) + '%';
+      // Gió trái: -28vw … -70vw
+      p.style.setProperty('--windX', (-(28 + Math.random() * 42)) + 'vw');
+      // Biên độ phất phơ ngang
+      p.style.setProperty('--sway', (6 + Math.random() * 14) + 'px');
+      // Xoay nhẹ theo gió
+      p.style.setProperty('--spin', (-(100 + Math.random() * 160)) + 'deg');
+      // Bay chậm, dịu
+      p.style.animationDuration = (18 + Math.random() * 16) + 's';
+      p.style.animationDelay = (-Math.random() * 22) + 's';
+      p.style.opacity = String(0.85 + Math.random() * 0.14);
       if(Math.random() > 0.45){
         p.style.background = 'linear-gradient(135deg, #fff0f5 0%, #ffb3cc 48%, #ff7aaa 100%)';
       }
@@ -95,7 +100,6 @@
   }
 
   function scheduleMeteors(){
-    // Sao chổi thỉnh thoảng vụt qua (8–22 giây / lần)
     const next = function(){
       spawnMeteor();
       setTimeout(next, 8000 + Math.random() * 14000);
