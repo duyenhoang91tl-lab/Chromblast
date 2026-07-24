@@ -118,8 +118,7 @@
             const mm = Math.floor(sec / 60);
             const ss = sec % 60;
             const pad = (n) => (n < 10 ? "0" : "") + n;
-            heartStatus =
-              "❤️ " + h + " / " + maxH + " · +" + tt("shopHeartNext", "1 sau") + " " + pad(mm) + ":" + pad(ss);
+            heartStatus = "❤️ " + h + " / " + maxH + " · +1 " + pad(mm) + ":" + pad(ss);
           } else {
             heartStatus = "❤️ " + h + " / " + maxH;
           }
