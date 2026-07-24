@@ -14,13 +14,14 @@ html, body {
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
-  /* Tầng nền: indigo đen + lõi xanh điện/magenta; sợi tinh vân vẽ bằng .sky-filament */
+  /* Tầng nền: indigo + quầng mềm; bụi tinh vân = .sky-mist */
   background:
-    radial-gradient(ellipse 50% 38% at 48% 72%, rgba(50, 150, 255, 0.38) 0%, transparent 62%),
-    radial-gradient(ellipse 42% 32% at 62% 64%, rgba(170, 50, 220, 0.32) 0%, transparent 60%),
-    radial-gradient(ellipse 36% 28% at 30% 70%, rgba(80, 40, 180, 0.28) 0%, transparent 58%),
-    radial-gradient(ellipse 60% 40% at 78% 16%, rgba(90, 70, 200, 0.2) 0%, transparent 58%),
-    radial-gradient(ellipse 90% 50% at 50% 100%, rgba(25, 40, 120, 0.3) 0%, transparent 50%),
+    radial-gradient(ellipse 55% 42% at 48% 78%, rgba(70, 120, 255, 0.45) 0%, transparent 62%),
+    radial-gradient(ellipse 48% 38% at 62% 68%, rgba(180, 60, 220, 0.35) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 32% at 32% 72%, rgba(90, 40, 180, 0.3) 0%, transparent 58%),
+    radial-gradient(ellipse 70% 45% at 78% 18%, rgba(100, 70, 210, 0.22) 0%, transparent 58%),
+    radial-gradient(ellipse 50% 36% at 12% 40%, rgba(40, 90, 200, 0.18) 0%, transparent 65%),
+    radial-gradient(ellipse 90% 55% at 50% 100%, rgba(30, 50, 140, 0.28) 0%, transparent 50%),
     /* sao nền cực nhỏ (field dày) */
     radial-gradient(1px 1px at 8% 12%, rgba(255,255,255,0.85), transparent),
     radial-gradient(1px 1px at 18% 28%, rgba(220,230,255,0.7), transparent),
