@@ -660,6 +660,10 @@ function setActiveHiddenMap(key){
   const btn = document.getElementById('hiddenmap-help-btn');
   if(btn) btn.style.display = key ? 'flex' : 'none';
   if(typeof refreshArcadeHud==='function') refreshArcadeHud();
+  try{
+    const mapEl=document.getElementById('header-map-label');
+    if(mapEl && typeof arcadeMapLabel==='function') mapEl.textContent=arcadeMapLabel();
+  }catch(e){}
 }
 
 let currentUser = null; // { username, role }
