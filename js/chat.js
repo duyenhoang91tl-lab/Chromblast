@@ -4,6 +4,7 @@
 // ═══════════════════════════════════════════════════════════════
 
 (function(){
+  const TL_KEY = 'chromablast_gchat_tl';
   const state = {
     tab: 'world',
     friendUid: null,
@@ -13,7 +14,9 @@
     presence: {},
     seen: { world: new Set(), friends: new Set(), game: new Set() },
     roomCb: null,
-    ready: false
+    ready: false,
+    tlLang: '',
+    tlCache: Object.create(null)
   };
 
   function $(id){ return document.getElementById(id); }
@@ -23,10 +26,123 @@
     return fallback || key;
   }
 
+  function loadTlPref(){
+    try{
+      const v = localStorage.getItem(TL_KEY);
+      state.tlLang = v || '';
+    }catch(e){ state.tlLang = ''; }
+    const sel = $('gchat-tl-lang');
+    if(sel) sel.value = state.tlLang;
+  }
+
+  function saveTlPref(code){
+    state.tlLang = code || '';
+    try{
+      if(state.tlLang) localStorage.setItem(TL_KEY, state.tlLang);
+      else localStorage.removeItem(TL_KEY);
+    }catch(e){}
+  }
+
+  function pad2(n){ return String(n).padStart(2, '0'); }
+
+  function msgDate(ts){
+    if(!ts) return null;
+    try{
+      if(typeof ts.toDate === 'function') return ts.toDate();
+      if(typeof ts.seconds === 'number') return new Date(ts.seconds * 1000);
+      if(typeof ts === 'number') return new Date(ts);
+      if(ts instanceof Date) return ts;
+    }catch(e){}
+    return null;
+  }
+
+  function formatMsgTime(ts){
+    const d = msgDate(ts);
+    if(!d || isNaN(d.getTime())) return '';
+    const now = new Date();
+    const sameDay = d.getFullYear()===now.getFullYear() && d.getMonth()===now.getMonth() && d.getDate()===now.getDate();
+    const hm = pad2(d.getHours())+':'+pad2(d.getMinutes());
+    if(sameDay) return hm;
+    return pad2(d.getDate())+'/'+pad2(d.getMonth()+1)+'/'+String(d.getFullYear()).slice(-2)+' '+hm;
+  }
+
   function isMine(msg){
     try{
       return !!(msg && msg.uid && typeof getOnlineUid === 'function' && msg.uid === getOnlineUid());
     }catch(e){ return false; }
+  }
+
+  async function translateText(text, tl){
+    const raw = String(text || '').trim();
+    if(!raw || !tl) return raw;
+    const key = tl+'|'+raw;
+    if(state.tlCache[key]) return state.tlCache[key];
+
+    // 1) Google gtx (không cần API key)
+    try{
+      const url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl='
+        + encodeURIComponent(tl)+'&dt=t&q='+encodeURIComponent(raw);
+      const res = await fetch(url);
+      if(res.ok){
+        const data = await res.json();
+        const out = (data && data[0] || []).map(x => x && x[0] ? x[0] : '').join('');
+        if(out){ state.tlCache[key] = out; return out; }
+      }
+    }catch(e){}
+
+    // 2) MyMemory fallback
+    try{
+      const url = 'https://api.mymemory.translated.net/get?q='+encodeURIComponent(raw)
+        +'&langpair=autodetect|'+encodeURIComponent(tl);
+      const res = await fetch(url);
+      if(res.ok){
+        const data = await res.json();
+        const out = data && data.responseData && data.responseData.translatedText;
+        if(out && !/INVALID SOURCE LANGUAGE|PLEASE SELECT/i.test(out)){
+          state.tlCache[key] = out;
+          return out;
+        }
+      }
+    }catch(e){}
+
+    throw new Error('translate_fail');
+  }
+
+  function applyTranslateToRow(row){
+    if(!row) return;
+    const body = row.querySelector('.gchat-text');
+    if(!body) return;
+    const orig = body.dataset.orig || body.textContent || '';
+    body.dataset.orig = orig;
+    let tr = row.querySelector('.gchat-tr');
+    if(!state.tlLang || !orig.trim()){
+      if(tr) tr.remove();
+      return;
+    }
+    if(!tr){
+      tr = document.createElement('span');
+      tr.className = 'gchat-tr';
+      body.insertAdjacentElement('afterend', tr);
+    }
+    tr.classList.add('pending');
+    tr.classList.remove('err');
+    tr.textContent = tt('gchatTranslating', 'Đang dịch...');
+    translateText(orig, state.tlLang).then(out=>{
+      if(!tr.isConnected) return;
+      tr.classList.remove('pending','err');
+      tr.textContent = out;
+    }).catch(()=>{
+      if(!tr.isConnected) return;
+      tr.classList.remove('pending');
+      tr.classList.add('err');
+      tr.textContent = tt('gchatTranslateFail', 'Không dịch được');
+    });
+  }
+
+  function refreshWorldTranslations(){
+    const log = $('gchat-world-log');
+    if(!log) return;
+    log.querySelectorAll('.gchat-row').forEach(applyTranslateToRow);
   }
 
   function appendMsg(logEl, msg, bucket){
@@ -37,13 +153,26 @@
     const mine = isMine(msg);
     const row = document.createElement('div');
     row.className = 'gchat-row'+(mine?' mine':'');
-    const who = document.createElement('span');
-    who.className = 'gchat-who';
-    who.textContent = (msg.avatar || '🐶')+' '+(msg.name || 'Player');
+    row.dataset.msgId = msg.id;
+
+    const head = document.createElement('div');
+    head.className = 'gchat-who';
+    const name = document.createElement('span');
+    name.textContent = (msg.avatar || '🐶')+' '+(msg.name || 'Player');
+    head.appendChild(name);
+    const when = formatMsgTime(msg.ts);
+    if(when){
+      const timeEl = document.createElement('span');
+      timeEl.className = 'gchat-time';
+      timeEl.textContent = '· '+when;
+      head.appendChild(timeEl);
+    }
+    row.appendChild(head);
+
     const body = document.createElement('span');
     body.className = 'gchat-text';
+    body.dataset.orig = msg.text || '';
     body.textContent = msg.text || '';
-    row.appendChild(who);
     row.appendChild(body);
 
     const isInvite = msg.kind === 'room_invite' && msg.roomId;
@@ -105,6 +234,7 @@
     }
 
     logEl.appendChild(row);
+    if(bucket === 'world') applyTranslateToRow(row);
     logEl.scrollTop = logEl.scrollHeight;
   }
 
@@ -484,6 +614,14 @@
     $('gchat-invite-versus')?.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} inviteFriend('versus'); });
     $('gchat-world-caro')?.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} createWorldRoomInvite('caro'); });
     $('gchat-world-versus')?.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} createWorldRoomInvite('versus'); });
+    loadTlPref();
+    $('gchat-tl-lang')?.addEventListener('change', (e)=>{
+      saveTlPref(e.target.value || '');
+      try{ sfxClick(); }catch(err){}
+      refreshWorldTranslations();
+      if(state.tlLang) setStatus(tt('gchatTranslateOn','Đã bật dịch tự động'));
+      else setStatus('');
+    });
     syncChatFabVisibility();
   }
 

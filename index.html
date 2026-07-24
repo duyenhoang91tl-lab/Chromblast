@@ -456,6 +456,20 @@
           <button type="button" id="gchat-world-caro" class="gchat-invite-btn" data-i18n="gchatCreateCaro">❌⭕ Tạo phòng Caro</button>
           <button type="button" id="gchat-world-versus" class="gchat-invite-btn" data-i18n="gchatCreateVersus">⚔️ Tạo phòng Versus</button>
         </div>
+        <div class="gchat-translate-bar">
+          <label for="gchat-tl-lang" data-i18n="gchatTranslateTo">🌐 Dịch sang</label>
+          <select id="gchat-tl-lang" class="gchat-tl-select" aria-label="Translate language">
+            <option value="" data-i18n="gchatTranslateOff">Tắt</option>
+            <option value="vi">Tiếng Việt</option>
+            <option value="en">English</option>
+            <option value="ko">한국어</option>
+            <option value="ja">日本語</option>
+            <option value="zh">中文</option>
+            <option value="es">Español</option>
+            <option value="th">ไทย</option>
+            <option value="id">Indonesia</option>
+          </select>
+        </div>
         <div id="gchat-world-log" class="gchat-log" aria-live="polite"></div>
         <form id="gchat-world-form" class="gchat-form" autocomplete="off">
           <input id="gchat-world-input" type="text" maxlength="120" data-i18n-placeholder="gchatPlaceholder" placeholder="Nhắn chat thế giới..." />
