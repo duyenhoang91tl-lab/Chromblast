@@ -92,14 +92,14 @@ async function signInWithGoogle(){
 
   // Capacitor / WebView Android: popup OAuth Google thường bị chặn hoặc
   // báo auth/unauthorized-domain rồi tắt ngay — không gọi popup trên native.
+  let native = false;
   try{
-    if(window.Capacitor && typeof Capacitor.isNativePlatform === 'function' && Capacitor.isNativePlatform()){
-      const err = new Error('google_native_unsupported');
-      err.code = 'google_native_unsupported';
-      throw err;
-    }
-  }catch(e){
-    if(e && e.code === 'google_native_unsupported') throw e;
+    native = !!(window.Capacitor && typeof Capacitor.isNativePlatform === 'function' && Capacitor.isNativePlatform());
+  }catch(e){ native = false; }
+  if(native){
+    const err = new Error('google_native_unsupported');
+    err.code = 'google_native_unsupported';
+    throw err;
   }
 
   if(!firebase.apps.length) firebase.initializeApp(window.FIREBASE_CONFIG);
