@@ -30,6 +30,16 @@ service cloud.firestore {
         allow read: if signedIn();
         allow create: if signedIn();
       }
+
+      match /chat/{msgId} {
+        allow read: if signedIn();
+        allow create: if signedIn()
+          && request.resource.data.keys().hasAll(['uid','name','text','ts'])
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 120;
+      }
     }
   }
 }

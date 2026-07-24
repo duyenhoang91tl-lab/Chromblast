@@ -15,11 +15,22 @@ const DAILY_HEARTS = 5;
 
 let inv = { hearts: 5, fires: 1, bubbles: 1, winds: 1, lastHeartDay: '', combo5Seen: false, combo10Seen: false };
 
+/** Tim dùng nửa đơn vị (0.5) — dùng chung Chromablast + Caro PvP */
+function roundHalf(n){
+  const x = Number(n);
+  if(!isFinite(x)) return 0;
+  return Math.round(Math.max(0, x) * 2) / 2;
+}
+function formatHearts(n){
+  const v = roundHalf(n);
+  return (Math.abs(v % 1) < 1e-9) ? String(Math.round(v)) : v.toFixed(1);
+}
+
 (function loadInventory(){
   try{
     const s = JSON.parse(safeGet(INV_KEY) || '{}');
     if(s && typeof s === 'object'){
-      if('hearts' in s) inv.hearts = Math.max(0, s.hearts|0);
+      if('hearts' in s) inv.hearts = roundHalf(s.hearts);
       if('fires' in s) inv.fires = Math.max(0, s.fires|0);
       if('bubbles' in s) inv.bubbles = Math.max(0, s.bubbles|0);
       if('winds' in s) inv.winds = Math.max(0, s.winds|0);
@@ -36,7 +47,7 @@ let inv = { hearts: 5, fires: 1, bubbles: 1, winds: 1, lastHeartDay: '', combo5S
 function saveInventory(){
   try{
     safeSet(INV_KEY, JSON.stringify({
-      hearts: inv.hearts|0,
+      hearts: roundHalf(inv.hearts),
       fires: inv.fires|0,
       bubbles: inv.bubbles|0,
       winds: inv.winds|0,
@@ -60,12 +71,13 @@ function powerName(type){
 }
 
 function grantHearts(n, reason){
+  n = roundHalf(n);
   if(!(n>0)) return;
-  inv.hearts = (inv.hearts|0) + (n|0);
+  inv.hearts = roundHalf(roundHalf(inv.hearts) + n);
   saveInventory();
   renderInventoryHud();
   try{
-    if(reason) showComboFlash(0, false, '❤️ +'+n+(reason?(' · '+reason):''));
+    if(reason) showComboFlash(0, false, '❤️ +'+formatHearts(n)+(reason?(' · '+reason):''));
   }catch(e){}
 }
 
@@ -85,11 +97,15 @@ function grantRandomPower(reason){
   return type;
 }
 
-function spendHearts(n){
-  n = n|0;
+/** Trừ tim (hỗ trợ 0.5). allowPartial=true: trừ tối đa số đang có. */
+function spendHearts(n, opts){
+  opts = opts || {};
+  n = roundHalf(n);
   if(n<=0) return true;
-  if((inv.hearts|0) < n) return false;
-  inv.hearts -= n;
+  const cur = roundHalf(inv.hearts);
+  if(!opts.allowPartial && cur + 1e-9 < n) return false;
+  const spent = Math.min(cur, n);
+  inv.hearts = roundHalf(cur - spent);
   saveInventory();
   renderInventoryHud();
   return true;
@@ -111,7 +127,7 @@ function grantDailyHeartsIfNeeded(){
   const day = (typeof todayStr==='function') ? todayStr() : new Date().toISOString().slice(0,10);
   if(inv.lastHeartDay === day) return false;
   inv.lastHeartDay = day;
-  inv.hearts = (inv.hearts|0) + DAILY_HEARTS;
+  inv.hearts = roundHalf(roundHalf(inv.hearts) + DAILY_HEARTS);
   saveInventory();
   renderInventoryHud();
   return true;
@@ -136,7 +152,11 @@ function renderInventoryHud(){
   if(el){
     // Chỉ hiện tim trên thanh tiêu đề; Lửa/Bóng/Gió còn ở skill-bar phía dưới
     el.innerHTML =
-      '<span class="inv-chip inv-heart" title="Tim">❤️ '+(inv.hearts|0)+'</span>';
+      '<span class="inv-chip inv-heart" title="Tim (chung với Caro)">❤️ '+formatHearts(inv.hearts)+'</span>';
+  }
+  const caroHud = document.getElementById('caro-hearts-hud');
+  if(caroHud){
+    caroHud.textContent = '❤️ '+formatHearts(inv.hearts);
   }
   const sk = document.getElementById('skill-bar');
   if(sk){
@@ -159,7 +179,7 @@ function renderInventoryHud(){
     });
     // Nút xem QC +1 tim: chỉ hiện khi HẾT TIM để người chơi lựa chọn
     const adBtn = document.getElementById('inv-ad-heart-btn');
-    if(adBtn) adBtn.style.display = (inv.hearts|0)<=0 ? '' : 'none';
+    if(adBtn) adBtn.style.display = roundHalf(inv.hearts)<=0 ? '' : 'none';
   }
 }
 
@@ -232,11 +252,14 @@ function initInventoryUI(){
 
 /** API cho lucky-spin.js và script khác */
 window.Inventory = {
-  get hearts(){ return inv.hearts|0; },
+  get hearts(){ return roundHalf(inv.hearts); },
   get fires(){ return inv.fires|0; },
   get bubbles(){ return inv.bubbles|0; },
   get winds(){ return inv.winds|0; },
+  formatHearts: formatHearts,
+  roundHalf: roundHalf,
   addHearts: function(n, reason){ grantHearts(n, reason||''); },
+  spendHearts: spendHearts,
   addFires: function(n, reason){ grantPower('fire', n, reason||''); },
   addBubbles: function(n, reason){ grantPower('bubble', n, reason||''); },
   addWinds: function(n, reason){ grantPower('wind', n, reason||''); },

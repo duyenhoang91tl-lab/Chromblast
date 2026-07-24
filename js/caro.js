@@ -901,6 +901,7 @@ function _caroEnterAIGame(levelId){
   const paint = ()=>{ try{ _caroRender(); }catch(e){ console.warn('[caro]', e); } };
   paint();
   requestAnimationFrame(()=>{ paint(); requestAnimationFrame(paint); });
+  _caroSetupChat(false);
   _caroStartTurnTimer();
   try{ startBgm('action'); }catch(e){}
 }
@@ -1050,6 +1051,7 @@ function _caroEnterGame(roomData){
     }
   });
 
+  _caroSetupChat(true);
   _caroRender();
   _caroStartTurnTimer();
   try{ startBgm('action'); }catch(e){}
@@ -1057,6 +1059,8 @@ function _caroEnterGame(roomData){
 
 function _caroEndGame(winnerSlot, fromRemote){
   if(!_caro) return;
+  if(_caro.settled) return;
+  _caro.settled = true;
   _caro.winner = winnerSlot;
   _caro.aiThinking = false;
   _caroStopTimer();
@@ -1076,6 +1080,7 @@ function _caroEndGame(winnerSlot, fromRemote){
 
   document.getElementById('caro-result-title').textContent = msg;
 
+  let heartNote = '';
   if(isAI){
     document.getElementById('caro-result-body').innerHTML =
       '<div style="font-size:13px;color:#ccc;margin-bottom:8px;">'+escapeHtml(_caro.names[0])+' (<b class="caro-x">X</b>) vs '+escapeHtml(_caro.names[1])+' (<b class="caro-o">O</b>)</div>'+
@@ -1085,13 +1090,27 @@ function _caroEndGame(winnerSlot, fromRemote){
     if(winnerSlot !== 'draw'){
       localOutcome = winnerSlot === _caro.mySlot ? 'win' : 'loss';
     }
+    // Thua người (PvP): trừ ½ tim chung với Chromablast
+    if(localOutcome === 'loss' && !_caro.heartTaken){
+      _caro.heartTaken = true;
+      try{
+        if(typeof spendHearts === 'function') spendHearts(0.5, { allowPartial: true });
+        else if(window.Inventory && typeof Inventory.spendHearts === 'function') Inventory.spendHearts(0.5, { allowPartial: true });
+        heartNote = '<div class="caro-result-heart">'+t('caroHeartLoss')+'</div>';
+      }catch(e){}
+    }
     const statsAfter = applyLocalCaroResult(localOutcome);
     const rank = statsAfter.rank;
     const ptsDelta = localOutcome==='win' ? '+25' : (localOutcome==='draw' ? '+8' : '+0');
+    const heartsLeft = (window.Inventory && typeof Inventory.formatHearts === 'function')
+      ? Inventory.formatHearts(Inventory.hearts)
+      : String(typeof formatHearts==='function' ? formatHearts(typeof inv!=='undefined'?inv.hearts:0) : 0);
     document.getElementById('caro-result-body').innerHTML =
       '<div style="font-size:13px;color:#ccc;margin-bottom:8px;">'+escapeHtml(_caro.names[0])+' (<b class="caro-x">X</b>) vs '+escapeHtml(_caro.names[1])+' (<b class="caro-o">O</b>)</div>'+
       '<div class="caro-result-rank">'+rank.icon+' <b>'+escapeHtml(rank.name)+'</b> · '+ptsDelta+' '+t('caroPts')+'</div>'+
-      '<div class="caro-result-wld">'+t('caroWins')+': '+statsAfter.wins+' · '+t('caroLosses')+': '+statsAfter.losses+' · '+t('caroDraws')+': '+statsAfter.draws+' · '+t('caroWinRate', statsAfter.winRate)+'</div>';
+      '<div class="caro-result-wld">'+t('caroWins')+': '+statsAfter.wins+' · '+t('caroLosses')+': '+statsAfter.losses+' · '+t('caroDraws')+': '+statsAfter.draws+' · '+t('caroWinRate', statsAfter.winRate)+'</div>'+
+      heartNote+
+      '<div class="caro-result-hearts-left">❤️ '+heartsLeft+'</div>';
     _caroRefreshHubStats();
   }
 
@@ -1103,6 +1122,69 @@ function _caroEndGame(winnerSlot, fromRemote){
   stopListeningRoom();
 }
 
+function _caroSetupChat(online){
+  const toggle = document.getElementById('caro-chat-toggle');
+  const panel = document.getElementById('caro-chat');
+  const log = document.getElementById('caro-chat-log');
+  if(toggle) toggle.style.display = online ? '' : 'none';
+  if(panel){ panel.hidden = true; panel.classList.remove('open'); }
+  if(log) log.innerHTML = '';
+  try{ if(typeof renderInventoryHud === 'function') renderInventoryHud(); }catch(e){}
+  if(!online || !_caro || !_caro.roomId) return;
+  if(typeof listenRoomChat !== 'function') return;
+  const seen = new Set();
+  listenRoomChat(_caro.roomId, msg=>{
+    if(!msg || !msg.id || seen.has(msg.id)) return;
+    seen.add(msg.id);
+    _caroAppendChat(msg);
+  });
+}
+
+function _caroAppendChat(msg){
+  const log = document.getElementById('caro-chat-log');
+  if(!log || !msg) return;
+  const mine = msg.uid && typeof getOnlineUid === 'function' && msg.uid === getOnlineUid();
+  const row = document.createElement('div');
+  row.className = 'caro-chat-row'+(mine?' mine':'');
+  const who = document.createElement('span');
+  who.className = 'caro-chat-who';
+  who.textContent = (msg.avatar || '')+' '+(msg.name || 'Player');
+  const body = document.createElement('span');
+  body.className = 'caro-chat-text';
+  body.textContent = msg.text || '';
+  row.appendChild(who);
+  row.appendChild(body);
+  log.appendChild(row);
+  log.scrollTop = log.scrollHeight;
+}
+
+function _caroToggleChat(forceOpen){
+  const panel = document.getElementById('caro-chat');
+  if(!panel) return;
+  const open = forceOpen != null ? !!forceOpen : panel.hidden;
+  panel.hidden = !open;
+  panel.classList.toggle('open', open);
+  if(open){
+    const input = document.getElementById('caro-chat-input');
+    if(input) setTimeout(()=> input.focus(), 50);
+  }
+}
+
+async function _caroSendChat(e){
+  if(e) e.preventDefault();
+  if(!_caro || !_caro.online || !_caro.roomId) return;
+  const input = document.getElementById('caro-chat-input');
+  if(!input) return;
+  const text = input.value;
+  input.value = '';
+  try{
+    if(typeof sendRoomChat === 'function') await sendRoomChat(_caro.roomId, text);
+  }catch(err){
+    console.warn('[caro-chat]', err);
+    try{ showComboFlash(0,false, typeof t==='function'?t('caroChatFail'):'Không gửi được chat'); }catch(e2){}
+  }
+}
+
 function _caroQuit(){
   caroMode = false;
   _caroStopTimer();
@@ -1110,6 +1192,7 @@ function _caroQuit(){
   _caro = null;
   _caroLobby = null;
   stopListeningRoom();
+  _caroSetupChat(false);
   _caroToggleChrome(false);
   _caroSetGameRootHidden(false);
   const canvas = _caroGetCanvas();
@@ -1653,6 +1736,9 @@ function applyCaroSettings(){
     document.getElementById('caro-lobby-leave')?.addEventListener('click', closeCaroHub);
     document.getElementById('caro-quit-btn')?.addEventListener('click', ()=>{ if(confirm(t('caroQuitConfirm'))) _caroQuit(); });
     document.getElementById('caro-result-close')?.addEventListener('click', _caroQuit);
+    document.getElementById('caro-chat-toggle')?.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} _caroToggleChat(); });
+    document.getElementById('caro-chat-close')?.addEventListener('click', ()=> _caroToggleChat(false));
+    document.getElementById('caro-chat-form')?.addEventListener('submit', _caroSendChat);
     document.getElementById('caro-opp-avatar')?.addEventListener('click', ()=>{
       const btn = document.getElementById('caro-opp-avatar');
       if(!btn || btn.disabled) return;
