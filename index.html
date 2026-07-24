@@ -532,7 +532,18 @@
   <div id="caro-hub-panel" class="admin-panel-like">
     <div class="admin-card">
       <div class="admin-title"><span data-i18n="caroTitle">⬛ Caro</span><button class="admin-close" id="caro-hub-close">✕</button></div>
-      <div class="admin-sub" data-i18n="caroSub">15×15 · 5 quân thắng</div>
+      <div class="admin-sub" data-i18n="caroSub">15×15 · X vs O · 5 ô thắng</div>
+
+      <div class="caro-prefs-block">
+        <div class="caro-prefs-row">
+          <span data-i18n="caroTurnTime">Thời gian lượt</span>
+          <div class="caro-seg">
+            <button type="button" class="caro-seg-btn caro-hub-turn" data-turn="15">15s</button>
+            <button type="button" class="caro-seg-btn caro-hub-turn" data-turn="10">10s</button>
+          </div>
+        </div>
+        <button type="button" id="caro-hub-skin-btn" class="auth-submit-btn" style="background:rgba(255,255,255,0.12);margin-top:8px;" data-i18n="caroPickBg">🎨 Chọn nền bàn</button>
+      </div>
 
       <div class="caro-ai-block">
         <button type="button" id="caro-ai-start-btn" class="auth-submit-btn caro-ai-hub-btn" data-level="medium" data-i18n="caroAiBtn" onclick="if(window.caroStartAI){window.caroStartAI('medium')}else{alert('Thiếu caroStartAI — kiểm tra js/caro.js')}">🤖 Đấu với máy</button>
@@ -560,6 +571,13 @@
       <div class="admin-title"><span data-i18n="caroLobby">⬛ Phòng Caro</span></div>
       <div class="online-room-code-wrap"><span data-i18n="onlineCode">Mã phòng</span>: <strong id="caro-room-code">------</strong></div>
       <div id="caro-lobby-players" class="online-players"></div>
+      <div class="caro-prefs-row" style="margin:10px 0;">
+        <span data-i18n="caroTurnTime">Thời gian lượt</span>
+        <div class="caro-seg">
+          <button type="button" class="caro-seg-btn caro-lobby-turn" data-turn="15">15s</button>
+          <button type="button" class="caro-seg-btn caro-lobby-turn" data-turn="10">10s</button>
+        </div>
+      </div>
       <button type="button" id="caro-start-btn" class="auth-submit-btn" data-i18n="onlineStart">▶ Bắt đầu trận</button>
       <button type="button" id="caro-lobby-leave" class="auth-submit-btn" style="background:rgba(255,255,255,0.12);margin-top:8px;" data-i18n="onlineLeave">✕ Rời phòng</button>
     </div>
@@ -592,11 +610,36 @@
 
   <div id="caro-stage">
     <div class="caro-topbar">
-      <span id="caro-turn-info">Caro</span>
-      <button type="button" id="caro-quit-btn" class="caro-quit">✕</button>
+      <div class="caro-top-left">
+        <span id="caro-turn-info">Caro</span>
+        <span id="caro-marks" class="caro-marks">Bạn <b class="caro-x">X</b> · Máy <b class="caro-o">O</b></span>
+      </div>
+      <div class="caro-top-right">
+        <div id="caro-timer" class="caro-timer" title="Thời gian lượt">15</div>
+        <button type="button" id="caro-settings-btn" class="caro-settings-btn" title="Cài đặt">⚙️</button>
+        <button type="button" id="caro-quit-btn" class="caro-quit">✕</button>
+      </div>
     </div>
     <div class="caro-board-wrap">
-      <canvas id="caro-canvas" aria-label="Bàn cờ Caro 15x15"></canvas>
+      <canvas id="caro-canvas" aria-label="Bàn cờ Caro 15x15 X O"></canvas>
+    </div>
+  </div>
+
+  <div id="caro-settings-panel" class="admin-panel-like">
+    <div class="admin-card">
+      <div class="admin-title"><span data-i18n="caroSettingsTitle">⚙️ Cài đặt Caro</span><button class="admin-close" id="caro-settings-close">✕</button></div>
+      <div class="auth-field">
+        <label data-i18n="caroTurnTime">Thời gian mỗi lượt</label>
+        <div class="caro-seg">
+          <button type="button" class="caro-seg-btn" data-turn="15" id="caro-turn-15">15s</button>
+          <button type="button" class="caro-seg-btn" data-turn="10" id="caro-turn-10">10s · Nhanh</button>
+        </div>
+      </div>
+      <div class="auth-field" style="margin-top:12px;">
+        <label data-i18n="caroBgLabel">Nền bàn (map xếp hình)</label>
+        <div id="caro-skin-grid" class="caro-skin-grid"></div>
+      </div>
+      <button type="button" id="caro-settings-apply" class="auth-submit-btn" style="margin-top:14px;" data-i18n="caroSettingsApply">✓ Áp dụng</button>
     </div>
   </div>
 

@@ -607,27 +607,81 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 }
 #caro-stage {
   display: none; position: fixed; inset: 0; z-index: 10060;
-  background: linear-gradient(160deg, #1a2a1a 0%, #0d120d 100%);
-  flex-direction: column; align-items: center; justify-content: center; padding: 8px;
+  background: linear-gradient(165deg, #1a1428 0%, #0a0a12 100%);
+  flex-direction: column; align-items: center; justify-content: center;
+  padding: max(10px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom));
+  gap: 10px;
 }
 #caro-stage.active { display: flex !important; }
 .caro-topbar {
-  width: min(96vw, 420px); display: flex; justify-content: space-between; align-items: center;
-  color: #e8e8e8; font-weight: 700; font-size: 13px; margin-bottom: 8px;
+  width: min(96vw, 460px); display: flex; justify-content: space-between; align-items: center;
+  color: #f2f2f7; font-weight: 800; font-size: 14px; gap: 8px;
 }
-.caro-quit { background: #c44; border: none; color: #fff; border-radius: 6px; padding: 4px 10px; cursor: pointer; font-weight: 700; }
+.caro-top-left { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.caro-top-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.caro-marks { font-size: 11px; color: #b8b8c8; font-weight: 700; }
+.caro-marks b { font-size: 13px; }
+.caro-x { color: #FF5A7A; font-weight: 900; }
+.caro-o { color: #4DE1FF; font-weight: 900; }
+.caro-timer {
+  min-width: 42px; height: 36px; padding: 0 10px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 12px; background: rgba(255,255,255,0.12);
+  border: 2px solid rgba(255,255,255,0.2);
+  font-size: 18px; font-weight: 900; color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+.caro-timer.mine { border-color: #ffd54a; box-shadow: 0 0 12px rgba(255,213,74,0.35); }
+.caro-timer.danger { background: #c62828; border-color: #ff8a80; animation: caroTimerPulse 0.6s ease infinite alternate; }
+@keyframes caroTimerPulse { from { transform: scale(1); } to { transform: scale(1.06); } }
+.caro-settings-btn, .caro-quit {
+  width: 36px; height: 36px; border: none; border-radius: 10px;
+  color: #fff; font-weight: 800; cursor: pointer; font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+}
+.caro-settings-btn { background: rgba(255,255,255,0.14); }
+.caro-quit { background: #e53935; }
 .caro-board-wrap {
   flex: 1; display: flex; align-items: center; justify-content: center;
-  width: 100%; max-width: min(96vw, 440px); min-height: 0;
+  width: 100%; max-width: min(96vw, 460px); min-height: 0;
 }
 #caro-canvas {
   display: block; width: 100%; height: auto;
-  max-height: calc(100vh - 120px);
-  border-radius: 8px;
-  box-shadow: 0 6px 28px rgba(0,0,0,0.55);
+  max-height: calc(100vh - 130px);
+  border-radius: 16px;
+  box-shadow: 0 10px 36px rgba(0,0,0,0.45), 0 0 0 2px rgba(255,255,255,0.12);
   touch-action: none;
   cursor: pointer;
+  background: #222;
 }
+.caro-prefs-block { margin: 8px 0 12px; }
+.caro-prefs-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  font-size: 12px; color: #ccc; font-weight: 700;
+}
+.caro-seg { display: flex; gap: 6px; }
+.caro-seg-btn {
+  border: 1px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.08);
+  color: #fff; border-radius: 999px; padding: 7px 12px; font-size: 12px; font-weight: 800;
+  cursor: pointer;
+}
+.caro-seg-btn.active {
+  background: linear-gradient(135deg, #ff9800, #ffd54a); color: #1a0a00; border-color: transparent;
+}
+.caro-skin-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+  max-height: 42vh; overflow-y: auto; padding: 2px;
+}
+.caro-skin-chip {
+  border: 2px solid transparent; border-radius: 12px; padding: 8px 6px;
+  cursor: pointer; color: #fff; min-height: 64px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.15);
+}
+.caro-skin-chip.active { border-color: #ffd54a; box-shadow: 0 0 0 2px rgba(255,213,74,0.35); }
+.caro-skin-xo { display: flex; gap: 8px; font-size: 16px; font-weight: 900; }
+.caro-skin-xo i { font-style: normal; text-shadow: 0 1px 0 #fff, 0 0 4px rgba(0,0,0,0.35); }
+.caro-skin-chip small { font-size: 9px; opacity: 0.9; text-transform: capitalize; }
 
 /* ── Caro danh hiệu & BXH ── */
 .caro-hub-stats { margin-bottom: 12px; }

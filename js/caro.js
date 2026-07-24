@@ -1,14 +1,19 @@
 // ═══════════════════════════════════════════════════════════════
-// js/caro.js — CỜ CARO 15×15 online (mở khóa Lv.3)
+// js/caro.js — CỜ CARO 15×15 (X vs O · ô vuông)
 // Luật: 5 quân liên tiếp thắng — CHẶN HAI ĐẦU thì không tính thắng.
-// Host = ● đen, Guest = ○ trắng. Dùng Firebase rooms/moves (gameType:'caro').
+// Host = X, Guest = O. Online dùng Firebase rooms/moves (gameType:'caro').
 // ═══════════════════════════════════════════════════════════════
 
 const CARO_MIN_LEVEL = 3;
 const CARO_SIZE = 15;
 const CARO_EMPTY = 0;
-const CARO_BLACK = 1; // host
-const CARO_WHITE = 2; // guest
+const CARO_X = 1; // host
+const CARO_O = 2; // guest
+const CARO_BLACK = CARO_X; // alias cũ
+const CARO_WHITE = CARO_O;
+const CARO_PREFS_KEY = 'chromablast_caro_prefs';
+const CARO_TURN_NORMAL = 15;
+const CARO_TURN_FAST = 10;
 
 /** Cấu hình AI theo độ khó */
 const CARO_AI_LEVELS = {
@@ -17,71 +22,178 @@ const CARO_AI_LEVELS = {
   hard:   { id:'hard',   thinkMs:560, mistakeRate:0.02, radius:3 },
 };
 
+/** Nền map xếp hình + màu X/O nổi bật theo từng nền */
+const CARO_THEMES = {
+  classic: { bg:['#2a2a3a','#1e1e2c'], cell:'rgba(255,255,255,0.06)', line:'rgba(255,255,255,0.18)', x:'#FF5A7A', o:'#4DE1FF', pad:'#161622' },
+  slate:   { bg:['#4A4458','#2E2A3A'], cell:'rgba(255,255,255,0.07)', line:'rgba(255,255,255,0.2)',  x:'#FF6B8A', o:'#7CF5C8', pad:'#1c1826' },
+  wood:    { bg:['#C9956A','#8B5E3C'], cell:'rgba(255,255,255,0.12)', line:'rgba(70,40,15,0.35)',   x:'#C41E3A', o:'#1E5AA8', pad:'#6a3e22' },
+  garden:  { bg:['#3D7A4A','#1E4028'], cell:'rgba(255,255,255,0.1)',  line:'rgba(255,255,255,0.22)', x:'#FF4D6D', o:'#FFE566', pad:'#14301c' },
+  ocean:   { bg:['#1A5F8A','#072438'], cell:'rgba(255,255,255,0.1)',  line:'rgba(180,230,255,0.25)', x:'#FF6B4A', o:'#FFE566', pad:'#041828' },
+  night:   { bg:['#0B1026','#050812'], cell:'rgba(255,255,255,0.08)', line:'rgba(180,200,255,0.2)',  x:'#FF5CAD', o:'#7CFFB2', pad:'#03050e' },
+  sunset:  { bg:['#FF8A5C','#2A1A40'], cell:'rgba(255,255,255,0.12)', line:'rgba(255,255,255,0.25)', x:'#FFF05A', o:'#5AD0FF', pad:'#1a1030' },
+  ice:     { bg:['#E8F7FF','#7AB8D8'], cell:'rgba(255,255,255,0.35)', line:'rgba(30,80,120,0.25)',   x:'#E63946', o:'#1D3557', pad:'#5a9ab8' },
+  lava:    { bg:['#2A0A00','#1A0500'], cell:'rgba(255,120,0,0.12)',   line:'rgba(255,140,40,0.35)',  x:'#FFE566', o:'#4DE1FF', pad:'#100300' },
+  candy:   { bg:['#FFB6C8','#C9B6FF'], cell:'rgba(255,255,255,0.28)', line:'rgba(120,60,120,0.2)',   x:'#E91E63', o:'#3F51B5', pad:'#b08ad8' },
+  neon:    { bg:['#0A0A14','#12102A'], cell:'rgba(0,255,200,0.06)',   line:'rgba(0,255,200,0.28)',   x:'#FF2D95', o:'#00FFC8', pad:'#060610' },
+  sand:    { bg:['#E8D5A8','#C4A06A'], cell:'rgba(255,255,255,0.2)',  line:'rgba(90,60,20,0.28)',    x:'#C62828', o:'#1565C0', pad:'#a88850' },
+  marble:  { bg:['#F5F0EA','#D8D0C8'], cell:'rgba(255,255,255,0.35)', line:'rgba(80,70,60,0.22)',    x:'#D32F2F', o:'#1976D2', pad:'#c0b8b0' },
+  metal:   { bg:['#D8DCE2','#8A929C'], cell:'rgba(255,255,255,0.18)', line:'rgba(40,45,55,0.28)',    x:'#C62828', o:'#0D47A1', pad:'#6e7680' },
+  paper:   { bg:['#F3E9D8','#E8D9C0'], cell:'rgba(255,255,255,0.3)',  line:'rgba(100,80,50,0.25)',   x:'#B71C1C', o:'#0D47A1', pad:'#d4c4a8' },
+  pixel:   { bg:['#3A3A5A','#2A2A42'], cell:'rgba(255,255,255,0.08)', line:'rgba(255,255,255,0.22)', x:'#FF5252', o:'#40C4FF', pad:'#1e1e30' },
+  forest:  { bg:['#1E3A22','#0F2214'], cell:'rgba(255,255,255,0.08)', line:'rgba(180,255,180,0.2)',  x:'#FF7043', o:'#FFEB3B', pad:'#0a160c' },
+  sakura:  { bg:['#FFE4EC','#E8A0B8'], cell:'rgba(255,255,255,0.35)', line:'rgba(140,60,90,0.22)',   x:'#C2185B', o:'#4527A0', pad:'#d888a8' },
+  aurora:  { bg:['#0E2A3A','#1A1040'], cell:'rgba(120,255,200,0.08)', line:'rgba(180,255,230,0.22)', x:'#FF4081', o:'#69F0AE', pad:'#0a1028' },
+  retro:   { bg:['#1A0A2A','#220E34'], cell:'rgba(255,80,180,0.08)',  line:'rgba(255,120,200,0.28)', x:'#00E5FF', o:'#FFEA00', pad:'#12061e' },
+  cloud:   { bg:['#87CEEB','#B0E0F0'], cell:'rgba(255,255,255,0.35)', line:'rgba(40,80,120,0.22)',   x:'#E53935', o:'#1E88E5', pad:'#6eb4d0' },
+  ink:     { bg:['#2A2A3A','#000000'], cell:'rgba(255,255,255,0.06)', line:'rgba(255,255,255,0.18)', x:'#FF5252', o:'#40C4FF', pad:'#000' },
+  gold:    { bg:['#FFF0C0','#8A6810'], cell:'rgba(255,255,255,0.2)',  line:'rgba(80,50,0,0.3)',      x:'#B71C1C', o:'#0D47A1', pad:'#6e5010' },
+  mint:    { bg:['#C8F5E4','#3AA888'], cell:'rgba(255,255,255,0.28)', line:'rgba(20,80,60,0.25)',    x:'#D50000', o:'#1A237E', pad:'#2e8870' },
+  berry:   { bg:['#8A2A4A','#2A0A18'], cell:'rgba(255,255,255,0.1)',  line:'rgba(255,180,200,0.22)', x:'#FFE566', o:'#80D8FF', pad:'#1a0610' },
+  desert:  { bg:['#F0C878','#B07830'], cell:'rgba(255,255,255,0.18)', line:'rgba(90,50,10,0.28)',    x:'#C62828', o:'#1565C0', pad:'#906020' },
+  coral:   { bg:['#FF7A6A','#2A6A8A'], cell:'rgba(255,255,255,0.15)', line:'rgba(255,255,255,0.28)', x:'#FFF176', o:'#E0F7FA', pad:'#1e4860' },
+  storm:   { bg:['#3A4A6A','#0A101C'], cell:'rgba(255,255,255,0.08)', line:'rgba(180,200,255,0.22)', x:'#FF6E40', o:'#69F0AE', pad:'#060a12' },
+  honey:   { bg:['#F5C84A','#A87810'], cell:'rgba(255,255,255,0.18)', line:'rgba(80,50,0,0.28)',     x:'#B71C1C', o:'#0D47A1', pad:'#886010' },
+  violet:  { bg:['#5A2A8A','#1A0A30'], cell:'rgba(255,255,255,0.1)',  line:'rgba(220,180,255,0.25)', x:'#FFEA00', o:'#00E5FF', pad:'#100620' },
+};
+
 let caroMode = false;
-let _caro = null; // { board, turn, mySlot, roomId, online, moveSeq, names, winner, hover, metrics }
+let _caro = null;
 let _caroLobby = null;
 let _caroCanvasBound = false;
+let _caroTimerId = null;
+let _caroPrefsDraft = null;
+
+function getCaroPrefs(){
+  let p = { turnSec: CARO_TURN_NORMAL, skin: 'wood' };
+  try{
+    const raw = (typeof safeGet === 'function' ? safeGet(CARO_PREFS_KEY) : null) || localStorage.getItem(CARO_PREFS_KEY);
+    if(raw){
+      const j = JSON.parse(raw);
+      if(j.turnSec === 10 || j.turnSec === 15) p.turnSec = j.turnSec;
+      if(j.skin && CARO_THEMES[j.skin]) p.skin = j.skin;
+    }
+  }catch(e){}
+  // Đồng bộ nền map đang dùng nếu có
+  try{
+    const active = document.documentElement.getAttribute('data-board-skin');
+    if(active && CARO_THEMES[active] && !localStorage.getItem(CARO_PREFS_KEY)) p.skin = active;
+  }catch(e){}
+  return p;
+}
+
+function setCaroPrefs(patch){
+  const p = Object.assign(getCaroPrefs(), patch || {});
+  if(p.turnSec !== 10 && p.turnSec !== 15) p.turnSec = CARO_TURN_NORMAL;
+  if(!CARO_THEMES[p.skin]) p.skin = 'wood';
+  try{
+    const s = JSON.stringify(p);
+    if(typeof safeSet === 'function') safeSet(CARO_PREFS_KEY, s);
+    else localStorage.setItem(CARO_PREFS_KEY, s);
+  }catch(e){}
+  _caroSyncPrefUI(p);
+  return p;
+}
+
+function _caroTheme(){
+  const skin = (_caro && _caro.skin) || getCaroPrefs().skin;
+  return CARO_THEMES[skin] || CARO_THEMES.wood;
+}
 
 function _caroGetCanvas(){
   return document.getElementById('caro-canvas');
 }
 
-/** Tính layout canvas (giao điểm cổ điển 15×15) */
+/** Layout ô vuông 15×15 (không còn kiểu giao điểm Go) */
 function _caroMeasure(){
   const canvas = _caroGetCanvas();
   if(!canvas) return null;
   const wrap = canvas.parentElement;
-  const maxW = Math.min((wrap && wrap.clientWidth) || 400, 440);
-  const maxH = Math.min(window.innerHeight - 120, maxW);
+  const maxW = Math.min((wrap && wrap.clientWidth) || 400, 460);
+  const maxH = Math.min(window.innerHeight - 110, maxW);
   const cssSize = Math.floor(Math.min(maxW, maxH));
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
   canvas.width = Math.floor(cssSize * dpr);
   canvas.height = Math.floor(cssSize * dpr);
   canvas.style.width = cssSize + 'px';
   canvas.style.height = cssSize + 'px';
-  const pad = cssSize * 0.06 * dpr;
+  const pad = Math.max(8, cssSize * 0.035) * dpr;
   const inner = cssSize * dpr - pad * 2;
-  const step = inner / (CARO_SIZE - 1);
-  const stoneR = step * 0.42;
-  return { dpr, pad, step, stoneR, px: cssSize * dpr };
+  const cell = inner / CARO_SIZE;
+  const gap = Math.max(1, cell * 0.06);
+  return { dpr, pad, cell, gap, px: cssSize * dpr };
 }
 
-function _caroXY(r, c, m){
-  return { x: m.pad + c * m.step, y: m.pad + r * m.step };
+function _caroCellRect(r, c, m){
+  const x = m.pad + c * m.cell;
+  const y = m.pad + r * m.cell;
+  return { x, y, s: m.cell, inset: m.gap };
 }
 
 function _caroCellAt(px, py, m){
-  const c = Math.round((px - m.pad) / m.step);
-  const r = Math.round((py - m.pad) / m.step);
+  const c = Math.floor((px - m.pad) / m.cell);
+  const r = Math.floor((py - m.pad) / m.cell);
   if(r < 0 || r >= CARO_SIZE || c < 0 || c >= CARO_SIZE) return null;
-  const { x, y } = _caroXY(r, c, m);
-  const hit = m.step * 0.48;
-  if(Math.abs(px - x) > hit || Math.abs(py - y) > hit) return null;
   return { r, c };
 }
 
-function _caroDrawStone(ctx, x, y, r, color){
-  ctx.save();
-  ctx.shadowColor = 'rgba(0,0,0,0.45)';
-  ctx.shadowBlur = r * 0.35;
-  ctx.shadowOffsetY = r * 0.12;
-  const g = ctx.createRadialGradient(x - r*0.3, y - r*0.3, r*0.1, x, y, r);
-  if(color === CARO_BLACK){
-    g.addColorStop(0, '#555');
-    g.addColorStop(0.45, '#1a1a1a');
-    g.addColorStop(1, '#000');
-  } else {
-    g.addColorStop(0, '#fff');
-    g.addColorStop(0.5, '#e8e8e8');
-    g.addColorStop(1, '#bbb');
-  }
-  ctx.fillStyle = g;
+function _caroRoundRect(ctx, x, y, w, h, rad){
+  const r = Math.min(rad, w/2, h/2);
   ctx.beginPath();
-  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.moveTo(x+r, y);
+  ctx.arcTo(x+w, y, x+w, y+h, r);
+  ctx.arcTo(x+w, y+h, x, y+h, r);
+  ctx.arcTo(x, y+h, x, y, r);
+  ctx.arcTo(x, y, x+w, y, r);
+  ctx.closePath();
+}
+
+function _caroDrawMark(ctx, x, y, s, mark, theme, alpha){
+  const inset = s * 0.18;
+  const cx = x + s/2, cy = y + s/2;
+  const size = s - inset * 2;
+  ctx.save();
+  ctx.globalAlpha = alpha == null ? 1 : alpha;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  // Nền viên dễ thương
+  _caroRoundRect(ctx, x + s*0.08, y + s*0.08, s*0.84, s*0.84, s*0.18);
+  ctx.fillStyle = mark === CARO_X ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.18)';
   ctx.fill();
-  ctx.strokeStyle = color === CARO_BLACK ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.12)';
-  ctx.lineWidth = Math.max(1, r * 0.08);
-  ctx.stroke();
+
+  const strokeMain = mark === CARO_X ? theme.x : theme.o;
+  const lw = Math.max(2.5, s * 0.14);
+
+  // Viền trắng để nổi trên mọi nền
+  ctx.strokeStyle = 'rgba(255,255,255,0.95)';
+  ctx.lineWidth = lw + Math.max(2, s * 0.08);
+  if(mark === CARO_X){
+    ctx.beginPath();
+    ctx.moveTo(cx - size*0.32, cy - size*0.32);
+    ctx.lineTo(cx + size*0.32, cy + size*0.32);
+    ctx.moveTo(cx + size*0.32, cy - size*0.32);
+    ctx.lineTo(cx - size*0.32, cy + size*0.32);
+    ctx.stroke();
+  } else {
+    ctx.beginPath();
+    ctx.arc(cx, cy, size * 0.32, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  ctx.strokeStyle = strokeMain;
+  ctx.lineWidth = lw;
+  if(mark === CARO_X){
+    ctx.beginPath();
+    ctx.moveTo(cx - size*0.32, cy - size*0.32);
+    ctx.lineTo(cx + size*0.32, cy + size*0.32);
+    ctx.moveTo(cx + size*0.32, cy - size*0.32);
+    ctx.lineTo(cx - size*0.32, cy + size*0.32);
+    ctx.stroke();
+  } else {
+    ctx.beginPath();
+    ctx.arc(cx, cy, size * 0.32, 0, Math.PI * 2);
+    ctx.stroke();
+  }
   ctx.restore();
 }
 
@@ -94,59 +206,49 @@ function _caroDrawBoard(){
   _caro.metrics = m;
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   const W = canvas.width, H = canvas.height;
+  const theme = _caroTheme();
 
-  // Nền gỗ
-  const wood = ctx.createLinearGradient(0, 0, W, H);
-  wood.addColorStop(0, '#d4a855');
-  wood.addColorStop(0.5, '#c4956a');
-  wood.addColorStop(1, '#a67c52');
-  ctx.fillStyle = wood;
+  // Nền map
+  const g = ctx.createLinearGradient(0, 0, W, H);
+  g.addColorStop(0, theme.bg[0]);
+  g.addColorStop(1, theme.bg[1]);
+  ctx.fillStyle = g;
   ctx.fillRect(0, 0, W, H);
 
-  // Viền bàn
-  ctx.strokeStyle = '#5c3d1e';
-  ctx.lineWidth = Math.max(2, m.dpr * 2);
-  ctx.strokeRect(m.pad * 0.65, m.pad * 0.65, W - m.pad * 1.3, H - m.pad * 1.3);
+  // Khung bo góc
+  const frame = Math.max(4, m.dpr * 3);
+  ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+  ctx.lineWidth = frame;
+  _caroRoundRect(ctx, frame, frame, W - frame*2, H - frame*2, m.dpr * 14);
+  ctx.stroke();
 
-  // Lưới
-  ctx.strokeStyle = 'rgba(40,30,20,0.55)';
-  ctx.lineWidth = Math.max(1, m.dpr * 0.9);
-  for(let i = 0; i < CARO_SIZE; i++){
-    const x0 = m.pad, y0 = m.pad + i * m.step;
-    const x1 = W - m.pad, y1 = y0;
-    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
-    const x2 = m.pad + i * m.step, y2 = m.pad;
-    const x3 = x2, y3 = H - m.pad;
-    ctx.beginPath(); ctx.moveTo(x2, y2); ctx.lineTo(x3, y3); ctx.stroke();
+  // Ô vuông
+  for(let r = 0; r < CARO_SIZE; r++){
+    for(let c = 0; c < CARO_SIZE; c++){
+      const { x, y, s, inset } = _caroCellRect(r, c, m);
+      _caroRoundRect(ctx, x + inset, y + inset, s - inset*2, s - inset*2, Math.max(2, s * 0.14));
+      ctx.fillStyle = theme.cell;
+      ctx.fill();
+      ctx.strokeStyle = theme.line;
+      ctx.lineWidth = Math.max(1, m.dpr * 0.8);
+      ctx.stroke();
+    }
   }
 
-  // Điểm sao (giao lộ quan trọng)
-  const stars = [[3,3],[3,11],[11,3],[11,11],[7,7]];
-  ctx.fillStyle = 'rgba(30,20,10,0.65)';
-  stars.forEach(([sr, sc]) => {
-    const { x, y } = _caroXY(sr, sc, m);
-    ctx.beginPath();
-    ctx.arc(x, y, Math.max(2, m.step * 0.1), 0, Math.PI * 2);
-    ctx.fill();
-  });
-
-  // Quân cờ
+  // Quân X / O
   for(let r = 0; r < CARO_SIZE; r++){
     for(let c = 0; c < CARO_SIZE; c++){
       const v = _caro.board[r][c];
       if(!v) continue;
-      const { x, y } = _caroXY(r, c, m);
-      _caroDrawStone(ctx, x, y, m.stoneR, v);
+      const { x, y, s } = _caroCellRect(r, c, m);
+      _caroDrawMark(ctx, x, y, s, v, theme, 1);
     }
   }
 
-  // Preview ô chọn (lượt mình)
-  if(_caro.hover && !_caro.winner && _caro.turn === _caro.mySlot && !_caro.board[_caro.hover.r][_caro.hover.c]){
-    const { x, y } = _caroXY(_caro.hover.r, _caro.hover.c, m);
-    const preview = _caroStone(_caro.mySlot);
-    ctx.globalAlpha = 0.38;
-    _caroDrawStone(ctx, x, y, m.stoneR * 0.92, preview);
-    ctx.globalAlpha = 1;
+  // Preview
+  if(_caro.hover && !_caro.winner && !_caro.aiThinking && _caro.turn === _caro.mySlot && !_caro.board[_caro.hover.r][_caro.hover.c]){
+    const { x, y, s } = _caroCellRect(_caro.hover.r, _caro.hover.c, m);
+    _caroDrawMark(ctx, x, y, s, _caroStone(_caro.mySlot), theme, 0.4);
   }
 }
 
@@ -204,6 +306,8 @@ function _caroRender(){
   if(!_caro) return;
   _caroBindCanvas();
   _caroDrawBoard();
+  _caroUpdateMarks();
+  _caroUpdateTimerUI();
 
   if(info){
     if(_caro.winner){
@@ -217,6 +321,73 @@ function _caroRender(){
       info.textContent = mine ? t('caroYourTurn') : t('caroOppTurn', who);
     }
   }
+}
+
+function _caroUpdateMarks(){
+  const el = document.getElementById('caro-marks');
+  if(!el || !_caro) return;
+  const meX = _caro.mySlot === 'host';
+  const theme = _caroTheme();
+  el.innerHTML = meX
+    ? ('Bạn <b class="caro-x">X</b> · '+escapeHtml(_caro.names[1])+' <b class="caro-o">O</b>')
+    : (escapeHtml(_caro.names[0])+' <b class="caro-x">X</b> · Bạn <b class="caro-o">O</b>');
+  const x = el.querySelector('.caro-x');
+  const o = el.querySelector('.caro-o');
+  if(x) x.style.color = theme.x;
+  if(o) o.style.color = theme.o;
+}
+
+function _caroStopTimer(){
+  if(_caroTimerId){ clearInterval(_caroTimerId); _caroTimerId = null; }
+}
+
+function _caroUpdateTimerUI(){
+  const el = document.getElementById('caro-timer');
+  if(!el || !_caro) return;
+  const left = Math.max(0, _caro.turnLeft == null ? (_caro.turnSec||15) : _caro.turnLeft);
+  el.textContent = String(left);
+  el.classList.toggle('danger', left <= 5);
+  el.classList.toggle('mine', !_caro.winner && _caro.turn === _caro.mySlot && !_caro.aiThinking);
+}
+
+function _caroStartTurnTimer(){
+  _caroStopTimer();
+  if(!_caro || _caro.winner) return;
+  const sec = _caro.turnSec || getCaroPrefs().turnSec || CARO_TURN_NORMAL;
+  _caro.turnSec = sec;
+  _caro.turnLeft = sec;
+  _caro.turnEndsAt = Date.now() + sec * 1000;
+  _caroUpdateTimerUI();
+  _caroTimerId = setInterval(()=>{
+    if(!_caro || _caro.winner){ _caroStopTimer(); return; }
+    const left = Math.max(0, Math.ceil((_caro.turnEndsAt - Date.now()) / 1000));
+    _caro.turnLeft = left;
+    _caroUpdateTimerUI();
+    if(left <= 0){
+      _caroStopTimer();
+      // Hết giờ → thua người đang tới lượt
+      const loser = _caro.turn;
+      const winner = _caroOpp(loser);
+      _caroEndGame(winner);
+    }
+  }, 200);
+}
+
+function _caroApplyStageTheme(){
+  const stage = document.getElementById('caro-stage');
+  if(!stage) return;
+  const theme = _caroTheme();
+  stage.style.background = 'linear-gradient(165deg, '+theme.pad+' 0%, #0a0a12 100%)';
+}
+
+function _caroSyncPrefUI(p){
+  p = p || getCaroPrefs();
+  document.querySelectorAll('.caro-seg-btn[data-turn]').forEach(btn=>{
+    btn.classList.toggle('active', Number(btn.dataset.turn) === p.turnSec);
+  });
+  document.querySelectorAll('.caro-skin-chip').forEach(chip=>{
+    chip.classList.toggle('active', chip.dataset.skin === p.skin);
+  });
 }
 
 function canPlayCaro(){
@@ -261,7 +432,7 @@ function _caroNewBoard(){
   return Array.from({length:CARO_SIZE}, ()=>Array(CARO_SIZE).fill(CARO_EMPTY));
 }
 
-function _caroStone(slot){ return slot === 'host' ? CARO_BLACK : CARO_WHITE; }
+function _caroStone(slot){ return slot === 'host' ? CARO_X : CARO_O; }
 function _caroOpp(slot){ return slot === 'host' ? 'guest' : 'host'; }
 
 /** Luật chặn hai đầu: 5 quân thắng chỉ khi KHÔNG bị chặn cả 2 đầu bởi đối phương hoặc biên */
@@ -474,9 +645,10 @@ function _caroToggleChrome(hide){
 function _caroEnterAIGame(levelId){
   const profile = CARO_AI_LEVELS[levelId] || CARO_AI_LEVELS.medium;
   const pName = (typeof currentPlayerName === 'function' ? currentPlayerName() : null) || 'Bạn';
+  const prefs = getCaroPrefs();
 
   // Đóng mọi panel Caro trước (ép display:none — tránh panel đè bàn cờ)
-  ['caro-hub-panel','caro-ai-panel','caro-lobby-panel','caro-mm-panel','caro-result-panel','caro-rank-panel']
+  ['caro-hub-panel','caro-ai-panel','caro-lobby-panel','caro-mm-panel','caro-result-panel','caro-rank-panel','caro-settings-panel']
     .forEach(id => _caroHide(id));
 
   try{ if(typeof hardResetAllModes === 'function') hardResetAllModes(); }catch(e){}
@@ -493,10 +665,14 @@ function _caroEnterAIGame(levelId){
     moveSeq: 0,
     names: [pName, t('caroAiName_' + profile.id)],
     winner: null,
-    hover: null
+    hover: null,
+    turnSec: prefs.turnSec,
+    skin: prefs.skin,
+    turnLeft: prefs.turnSec
   };
   caroMode = true;
   _caroToggleChrome(true);
+  _caroApplyStageTheme();
 
   const stage = document.getElementById('caro-stage');
   if(!stage){
@@ -514,10 +690,10 @@ function _caroEnterAIGame(levelId){
     badge.classList.add('secret');
   }
 
-  // Vẽ bàn sau khi layout active
   const paint = ()=>{ try{ _caroRender(); }catch(e){ console.warn('[caro]', e); } };
   paint();
   requestAnimationFrame(()=>{ paint(); requestAnimationFrame(paint); });
+  _caroStartTurnTimer();
   try{ startBgm('action'); }catch(e){}
 }
 
@@ -561,6 +737,7 @@ function _caroApplyMove(r, c, slot, fromNet){
 
   _caro.turn = _caroOpp(slot);
   _caroRender();
+  _caroStartTurnTimer();
 
   if(!fromNet && _caro.online && _caro.roomId){
     sendOnlineMove(_caro.roomId, { type:'caro_place', slot, r, c }).catch(()=>{});
@@ -574,6 +751,9 @@ function _caroEnterGame(roomData){
   const uid = getOnlineUid();
   const isHost = roomData.hostId === uid;
   const mySlot = isHost ? 'host' : 'guest';
+  const prefs = getCaroPrefs();
+  const turnSec = roomData.turnSec === 10 || roomData.turnSec === 15 ? roomData.turnSec : prefs.turnSec;
+  const skin = (roomData.boardSkin && CARO_THEMES[roomData.boardSkin]) ? roomData.boardSkin : prefs.skin;
   _caro = {
     board: _caroNewBoard(),
     turn: 'host',
@@ -582,13 +762,22 @@ function _caroEnterGame(roomData){
     online: true,
     moveSeq: 0,
     names: [roomData.hostName||'Host', roomData.guestName||'Guest'],
-    winner: null
+    winner: null,
+    turnSec,
+    skin,
+    turnLeft: turnSec
   };
   caroMode = true;
   _caroHide('caro-lobby-panel');
   _caroHide('caro-hub-panel');
   _caroToggleChrome(true);
-  document.getElementById('caro-stage')?.classList.add('active');
+  _caroApplyStageTheme();
+  const stage = document.getElementById('caro-stage');
+  if(stage){
+    stage.classList.add('active');
+    stage.style.display = 'flex';
+    stage.style.zIndex = '10060';
+  }
   document.getElementById('grid-wrap')?.classList.add('secret-mode');
   const badge = document.getElementById('mode-badge');
   if(badge){
@@ -607,6 +796,7 @@ function _caroEnterGame(roomData){
     });
     if(roomData.currentTurn) _caro.turn = roomData.currentTurn;
     _caroRender();
+    _caroStartTurnTimer();
   });
 
   listenOnlineMoves(roomId, move=>{
@@ -627,6 +817,7 @@ function _caroEnterGame(roomData){
   });
 
   _caroRender();
+  _caroStartTurnTimer();
   try{ startBgm('action'); }catch(e){}
 }
 
@@ -634,6 +825,7 @@ function _caroEndGame(winnerSlot, fromRemote){
   if(!_caro) return;
   _caro.winner = winnerSlot;
   _caro.aiThinking = false;
+  _caroStopTimer();
   if(_caro.aiTimer){ clearTimeout(_caro.aiTimer); _caro.aiTimer = null; }
   _caroRender();
 
@@ -652,7 +844,7 @@ function _caroEndGame(winnerSlot, fromRemote){
 
   if(isAI){
     document.getElementById('caro-result-body').innerHTML =
-      '<div style="font-size:13px;color:#ccc;margin-bottom:8px;">'+escapeHtml(_caro.names[0])+' (●) vs '+escapeHtml(_caro.names[1])+' (○)</div>'+
+      '<div style="font-size:13px;color:#ccc;margin-bottom:8px;">'+escapeHtml(_caro.names[0])+' (<b class="caro-x">X</b>) vs '+escapeHtml(_caro.names[1])+' (<b class="caro-o">O</b>)</div>'+
       '<div class="caro-result-ai-note">'+t('caroAiNoPts')+'</div>';
   } else {
     let localOutcome = 'draw';
@@ -663,18 +855,23 @@ function _caroEndGame(winnerSlot, fromRemote){
     const rank = statsAfter.rank;
     const ptsDelta = localOutcome==='win' ? '+25' : (localOutcome==='draw' ? '+8' : '+0');
     document.getElementById('caro-result-body').innerHTML =
-      '<div style="font-size:13px;color:#ccc;margin-bottom:8px;">'+escapeHtml(_caro.names[0])+' (●) vs '+escapeHtml(_caro.names[1])+' (○)</div>'+
+      '<div style="font-size:13px;color:#ccc;margin-bottom:8px;">'+escapeHtml(_caro.names[0])+' (<b class="caro-x">X</b>) vs '+escapeHtml(_caro.names[1])+' (<b class="caro-o">O</b>)</div>'+
       '<div class="caro-result-rank">'+rank.icon+' <b>'+escapeHtml(rank.name)+'</b> · '+ptsDelta+' '+t('caroPts')+'</div>'+
       '<div class="caro-result-wld">'+t('caroWins')+': '+statsAfter.wins+' · '+t('caroLosses')+': '+statsAfter.losses+' · '+t('caroDraws')+': '+statsAfter.draws+' · '+t('caroWinRate', statsAfter.winRate)+'</div>';
     _caroRefreshHubStats();
   }
 
-  setTimeout(()=>_caroShow('caro-result-panel'), 600);
+  setTimeout(()=>{
+    const rp = document.getElementById('caro-result-panel');
+    if(rp) rp.style.zIndex = '10070';
+    _caroShow('caro-result-panel');
+  }, 600);
   stopListeningRoom();
 }
 
 function _caroQuit(){
   caroMode = false;
+  _caroStopTimer();
   if(_caro && _caro.aiTimer) clearTimeout(_caro.aiTimer);
   _caro = null;
   _caroLobby = null;
@@ -690,6 +887,7 @@ function _caroQuit(){
     stage.classList.remove('active');
     stage.style.display = 'none';
     stage.style.zIndex = '';
+    stage.style.background = '';
   }
   document.getElementById('grid-wrap')?.classList.remove('secret-mode');
   const badge = document.getElementById('mode-badge');
@@ -697,8 +895,7 @@ function _caroQuit(){
     badge.textContent = typeof t === 'function' ? t('badgeNormal') : 'BÌNH THƯỜNG';
     badge.classList.remove('secret');
   }
-  // Reset inline display để lần sau _caroShow hoạt động đúng
-  ['caro-hub-panel','caro-lobby-panel','caro-mm-panel','caro-result-panel','caro-rank-panel','caro-ai-panel']
+  ['caro-hub-panel','caro-lobby-panel','caro-mm-panel','caro-result-panel','caro-rank-panel','caro-ai-panel','caro-settings-panel']
     .forEach(id=>{
       const el=document.getElementById(id);
       if(el){ el.classList.remove('show'); el.style.display=''; }
@@ -734,9 +931,10 @@ function _caroSetOnlineLocked(locked){
 function openCaroHub(){
   try{ sfxClick(); }catch(e){}
   _caroShow('caro-hub-panel');
+  _caroSyncPrefUI(getCaroPrefs());
   const locked = !canPlayCaro();
   _caroSetOnlineLocked(locked);
-  if(locked) return; // vẫn hiện bảng — người chơi bấm "Đấu với máy" bình thường
+  if(locked) return;
   _caroRefreshHubStats();
   if(isOnlineServicesEnabled()) _caroRequireOnline();
 }
@@ -780,19 +978,26 @@ function _caroRenderLobby(d){
   const host = d.hostName || '?';
   const guest = d.guestName || t('onlineWaiting');
   document.getElementById('caro-lobby-players').innerHTML =
-    '<div class="online-player"><span>●</span> '+escapeHtml(host)+' (đen)</div>'+
-    '<div class="online-player"><span>○</span> '+escapeHtml(guest)+' (trắng)</div>';
+    '<div class="online-player"><span class="caro-x">X</span> '+escapeHtml(host)+'</div>'+
+    '<div class="online-player"><span class="caro-o">O</span> '+escapeHtml(guest)+'</div>';
   const startBtn = document.getElementById('caro-start-btn');
   const isHost = _caroLobby && _caroLobby.role==='host';
   if(startBtn) startBtn.style.display = (isHost && d.status==='ready' && d.guestId) ? 'block' : 'none';
+  _caroSyncPrefUI(getCaroPrefs());
 }
 
 async function caroCreateRoom(){
   if(!canPlayCaro()){ _caroStatus(t('caroNeedLevel', CARO_MIN_LEVEL), true); return; }
   if(!await _caroRequireOnline()) return;
   try{
-    const { roomId, code } = await createOnlineRoom({ gameType:'caro' });
-    _caroOpenLobby(roomId, code, 'host', { status:'open', hostName:getOnlineDisplayName(), gameType:'caro' });
+    const prefs = getCaroPrefs();
+    const { roomId, code } = await createOnlineRoom({
+      gameType:'caro', turnSec: prefs.turnSec, boardSkin: prefs.skin
+    });
+    _caroOpenLobby(roomId, code, 'host', {
+      status:'open', hostName:getOnlineDisplayName(), gameType:'caro',
+      turnSec: prefs.turnSec, boardSkin: prefs.skin
+    });
     _caroStatus(t('onlineRoomCreated', code));
   }catch(e){ _caroStatus(e.message, true); }
 }
@@ -838,8 +1043,65 @@ function caroCancelMM(){
 async function caroStartMatch(){
   if(!_caroLobby) return;
   try{
-    await startOnlineRoomMatch(_caroLobby.roomId);
+    const prefs = getCaroPrefs();
+    await startOnlineRoomMatch(_caroLobby.roomId, {
+      turnSec: prefs.turnSec,
+      boardSkin: prefs.skin
+    });
   }catch(e){ _caroStatus(e.message, true); }
+}
+
+function _caroFillSkinGrid(container){
+  if(!container) return;
+  const prefs = _caroPrefsDraft || getCaroPrefs();
+  const list = (typeof BOARD_SKINS !== 'undefined' && Array.isArray(BOARD_SKINS))
+    ? BOARD_SKINS.map(s => s.id).filter(id => CARO_THEMES[id])
+    : Object.keys(CARO_THEMES);
+  container.innerHTML = '';
+  list.forEach(id=>{
+    const th = CARO_THEMES[id];
+    if(!th) return;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'caro-skin-chip' + (prefs.skin === id ? ' active' : '');
+    btn.dataset.skin = id;
+    btn.title = id;
+    btn.style.background = 'linear-gradient(135deg,'+th.bg[0]+','+th.bg[1]+')';
+    btn.innerHTML = '<span class="caro-skin-xo"><i style="color:'+th.x+'">X</i><i style="color:'+th.o+'">O</i></span><small>'+id+'</small>';
+    btn.addEventListener('click', ()=>{
+      _caroPrefsDraft = Object.assign({}, prefs, { skin: id });
+      _caroSyncPrefUI(_caroPrefsDraft);
+      container.querySelectorAll('.caro-skin-chip').forEach(c=>c.classList.toggle('active', c.dataset.skin===id));
+    });
+    container.appendChild(btn);
+  });
+}
+
+function openCaroSettings(fromGame){
+  try{ sfxClick(); }catch(e){}
+  _caroPrefsDraft = Object.assign({}, getCaroPrefs());
+  if(_caro && _caro.skin) _caroPrefsDraft.skin = _caro.skin;
+  if(_caro && _caro.turnSec) _caroPrefsDraft.turnSec = _caro.turnSec;
+  _caroFillSkinGrid(document.getElementById('caro-skin-grid'));
+  _caroSyncPrefUI(_caroPrefsDraft);
+  _caroShow('caro-settings-panel');
+}
+
+function applyCaroSettings(){
+  const draft = _caroPrefsDraft || getCaroPrefs();
+  const p = setCaroPrefs(draft);
+  _caroHide('caro-settings-panel');
+  if(_caro && !_caro.winner){
+    _caro.skin = p.skin;
+    _caro.turnSec = p.turnSec;
+    _caroApplyStageTheme();
+    _caroStartTurnTimer();
+    _caroRender();
+    if(_caro.online && _caro.roomId && typeof updateOnlineRoomMeta === 'function'){
+      updateOnlineRoomMeta(_caro.roomId, { turnSec: p.turnSec, boardSkin: p.skin }).catch(()=>{});
+    }
+  }
+  try{ sfxClick(); }catch(e){}
 }
 
 (function initCaro(){
@@ -851,7 +1113,6 @@ async function caroStartMatch(){
       if(!el || el.dataset.aiWired === '1') return;
       el.dataset.aiWired = '1';
       el.addEventListener('click', (e)=>{
-        // Nếu HTML đã có onclick gọi caroStartAI thì debounce trong caroStartAI sẽ chặn double
         if(e){ e.stopPropagation(); }
         start(level || el.getAttribute('data-level') || 'medium');
       });
@@ -865,10 +1126,30 @@ async function caroStartMatch(){
     });
   }
 
+  function bindPrefs(){
+    document.querySelectorAll('.caro-hub-turn, .caro-lobby-turn, #caro-turn-15, #caro-turn-10').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const turn = Number(btn.dataset.turn) === 10 ? 10 : 15;
+        if(_caroPrefsDraft) _caroPrefsDraft.turnSec = turn;
+        setCaroPrefs({ turnSec: turn });
+        if(_caro && !_caro.winner){
+          _caro.turnSec = turn;
+          _caroStartTurnTimer();
+        }
+      });
+    });
+    document.getElementById('caro-hub-skin-btn')?.addEventListener('click', ()=> openCaroSettings(false));
+    document.getElementById('caro-settings-btn')?.addEventListener('click', ()=> openCaroSettings(true));
+    document.getElementById('caro-settings-close')?.addEventListener('click', ()=> _caroHide('caro-settings-panel'));
+    document.getElementById('caro-settings-apply')?.addEventListener('click', applyCaroSettings);
+    _caroSyncPrefUI(getCaroPrefs());
+  }
+
   function bind(){
     document.getElementById('caro-btn')?.addEventListener('click', openCaroHub);
     document.getElementById('caro-hub-close')?.addEventListener('click', closeCaroHub);
     bindAiButtons();
+    bindPrefs();
 
     document.getElementById('caro-create-btn')?.addEventListener('click', caroCreateRoom);
     document.getElementById('caro-join-btn')?.addEventListener('click', caroJoinRoom);

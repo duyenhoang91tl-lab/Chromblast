@@ -110,6 +110,8 @@ async function createOnlineRoom(opts){
     startedAt: null,
     endedAt: null,
     winnerId: null,
+    turnSec: opts.turnSec === 10 ? 10 : (opts.turnSec === 15 ? 15 : null),
+    boardSkin: opts.boardSkin || null,
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
   });
   return { roomId: ref.id, code };
@@ -165,12 +167,15 @@ async function startOnlineRoomMatch(roomId, opts){
   if(d.hostId !== uid) throw new Error('host_only');
   if(!d.guestId) throw new Error('waiting_guest');
   if(d.gameType === 'caro'){
-    await ref.update({
+    const patch = {
       status: 'playing',
       currentTurn: 'host',
       startedAt: firebase.firestore.FieldValue.serverTimestamp(),
       moveSeq: 0
-    });
+    };
+    if(opts.turnSec === 10 || opts.turnSec === 15) patch.turnSec = opts.turnSec;
+    if(opts.boardSkin) patch.boardSkin = opts.boardSkin;
+    await ref.update(patch);
     return null;
   }
   const seed = (Date.now() ^ (Math.random()*0xFFFFFFF))>>>0;
@@ -219,6 +224,15 @@ async function fetchAllOnlineMoves(roomId){
 async function updateOnlineRoomTurn(roomId, currentTurn){
   if(!_onlineDb || !roomId) return;
   await _onlineDb.collection('rooms').doc(roomId).update({ currentTurn });
+}
+
+async function updateOnlineRoomMeta(roomId, meta){
+  if(!_onlineDb || !roomId || !meta) return;
+  const patch = {};
+  if(meta.turnSec === 10 || meta.turnSec === 15) patch.turnSec = meta.turnSec;
+  if(meta.boardSkin) patch.boardSkin = meta.boardSkin;
+  if(!Object.keys(patch).length) return;
+  await _onlineDb.collection('rooms').doc(roomId).update(patch);
 }
 
 async function sendOnlineMove(roomId, payload){
