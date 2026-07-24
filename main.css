@@ -1147,23 +1147,26 @@ body.mode-exclusive #gchat-fab {
   margin-top: 4px; color: #ffc1cc; font-weight: 800; font-size: 12px;
 }
 
-/* ══ Global chat FAB — luôn mở được (menu / map ẩn / Caro / Versus) ══ */
+/* ══ Global chat FAB — ngang hàng skill Lửa, giữa mép trái và nút Lửa ══ */
 .gchat-fab {
   position: fixed;
   left: max(12px, env(safe-area-inset-left));
-  bottom: max(16px, env(safe-area-inset-bottom));
+  top: auto;
+  bottom: max(120px, calc(env(safe-area-inset-bottom) + 110px));
   z-index: 10075;
-  width: 52px; height: 52px; border-radius: 50%;
+  width: 46px; height: 46px; border-radius: 50%;
   border: 1px solid rgba(255,213,74,0.45);
   background: linear-gradient(145deg, rgba(255,152,0,0.95), rgba(255,213,74,0.92));
-  color: #1a0a00; font-size: 22px; line-height: 1;
+  color: #1a0a00; font-size: 20px; line-height: 1;
   box-shadow: 0 8px 22px rgba(0,0,0,0.4);
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   padding: 0;
+  transform: translate(-50%, -50%);
+  will-change: left, top;
 }
 .gchat-fab[hidden] { display: none !important; }
-.gchat-fab:active { transform: scale(0.94); }
+.gchat-fab:active { transform: translate(-50%, -50%) scale(0.94); }
 body.gchat-open .gchat-fab { display: none !important; }
 
 /* ══ Global chat panel ══ */

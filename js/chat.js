@@ -514,6 +514,51 @@
     return state.tab || 'world';
   }
 
+  function positionChatFab(){
+    const fab = $('gchat-fab');
+    if(!fab || fab.hidden) return;
+    if(document.body.classList.contains('menu-open')
+      || document.body.classList.contains('auth-open')
+      || document.body.classList.contains('mode-exclusive')
+      || document.body.classList.contains('mode-caro')
+      || document.body.classList.contains('mode-versus')){
+      return;
+    }
+    const fire = $('skill-btn-fire');
+    const bar = $('skill-bar');
+    const safeLeft = (()=>{
+      try{
+        const raw = getComputedStyle(document.documentElement).getPropertyValue('env(safe-area-inset-left)');
+        const n = parseFloat(raw);
+        return Number.isFinite(n) ? n : 0;
+      }catch(e){ return 0; }
+    })();
+    const edge = Math.max(8, safeLeft + 8);
+    let placed = false;
+    if(fire && bar){
+      const barShown = bar.style.display !== 'none' && getComputedStyle(bar).display !== 'none';
+      if(barShown){
+        const r = fire.getBoundingClientRect();
+        if(r.width > 2 && r.height > 2 && r.top > 0){
+          // Giữa cạnh trái màn hình và mép trái nút Lửa; cùng hàng với Lửa
+          const x = (edge + r.left) / 2;
+          const y = r.top + r.height / 2;
+          fab.style.left = Math.max(edge + 23, x) + 'px';
+          fab.style.top = y + 'px';
+          fab.style.bottom = 'auto';
+          fab.style.right = 'auto';
+          placed = true;
+        }
+      }
+    }
+    if(!placed){
+      fab.style.left = (edge + 23) + 'px';
+      fab.style.top = 'auto';
+      fab.style.bottom = 'max(120px, calc(env(safe-area-inset-bottom) + 110px))';
+      fab.style.right = 'auto';
+    }
+  }
+
   function syncChatFabVisibility(){
     const fab = $('gchat-fab');
     if(!fab) return;
@@ -531,6 +576,12 @@
       || document.body.classList.contains('menu-open')
       || document.body.classList.contains('start-open');
     document.body.classList.toggle('gchat-open', panelOpen);
+    if(!fab.hidden){
+      requestAnimationFrame(()=>{
+        positionChatFab();
+        requestAnimationFrame(positionChatFab);
+      });
+    }
   }
 
   function openChatPanel(tab){
