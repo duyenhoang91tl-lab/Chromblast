@@ -30,7 +30,10 @@ html, body {
 #sky-atmosphere .sky-moon {
   position: absolute;
   top: 7%;
-  right: 12%;
+  /* Căn gần giữa hơn — tránh cảm giác UI lệch phải vì trăng nặng bên phải */
+  left: 50%;
+  right: auto;
+  margin-left: 18%;
   width: 52px;
   height: 52px;
   border-radius: 50%;
@@ -127,36 +130,39 @@ html, body {
 #game-root {
   position: relative;
   z-index: 1;
-  /* Không dùng overflow:hidden ở đây — dễ làm #grid / khay khối lệch ngang
-     trên WebView khi kết hợp transform:scale (fitGameRoot). */
   overflow: visible;
   margin-left: auto;
   margin-right: auto;
+  width: 100%;
+  max-width: min(420px, 100%);
+  box-sizing: border-box;
 }
 
-/* Chặn glow vàng tràn mép: thu bóng + clip theo chiều ngang của body (đã overflow-x:hidden).
-   Giữ #grid-wrap overflow:visible để bàn/khay căn giữa đúng như trước. */
 #grid-wrap {
   width: 100%;
+  max-width: 100%;
   margin-left: auto;
   margin-right: auto;
   overflow: visible;
+  box-sizing: border-box;
 }
 #grid-wrap.secret-mode {
   box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.55), 0 0 10px rgba(255, 215, 0, 0.28) !important;
   animation: none !important;
 }
 
-/* Căn giữa bàn 8×8 + khay khối trong khung game */
-#grid {
+#grid,
+#pieces-area,
+.skill-bar,
+#hint-bar {
   margin-left: auto !important;
   margin-right: auto !important;
-}
-#pieces-area {
-  width: 100%;
   box-sizing: border-box;
-  margin-left: auto;
-  margin-right: auto;
+}
+#pieces-area,
+.skill-bar {
+  width: 100%;
+  max-width: 100%;
 }
 
 /* Start / auth dùng cùng palette trời đêm */

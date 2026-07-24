@@ -89,7 +89,7 @@ function renderGrid(){
   if(!gridCells){
     // Dựng DOM 1 lần duy nhất. Dùng event delegation (1 listener trên #grid)
     // thay vì gắn listener riêng cho từng ô mỗi lần render → tránh rò rỉ listener + giảm việc tạo node.
-    grid.style.gridTemplateColumns=`repeat(${COLS},44px)`;
+    grid.style.gridTemplateColumns=`repeat(${COLS},minmax(0,1fr))`;
     grid.innerHTML='';
     gridCells=Array.from({length:ROWS},()=>Array(COLS).fill(null));
     for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
