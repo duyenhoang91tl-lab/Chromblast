@@ -362,6 +362,19 @@ function _vsApplyRemotePlace(P, move){
   _vsPlaceAt(P, move.R, move.C, true);
 }
 
+function onLeaveLobbyToHub(){
+  cancelMatchmaking();
+  const prev = _onlineLobby && _onlineLobby.roomId;
+  stopListeningRoom();
+  _onlineLobby = null;
+  if(prev) leaveOnlineRoom(prev).catch(()=>{});
+  _onlineHide('online-lobby-panel');
+  _onlineHide('online-matchmaking-panel');
+  _onlineShow('online-hub-panel');
+  _onlineStartRoomListListen();
+  try{ if(typeof sfxClick==='function') sfxClick(); }catch(e){}
+}
+
 (function initOnlineUI(){
   document.getElementById('vs-online-btn')?.addEventListener('click', openOnlineHub);
   document.getElementById('vs-local-btn')?.addEventListener('click', ()=>{
@@ -370,11 +383,12 @@ function _vsApplyRemotePlace(P, move){
   });
   document.getElementById('online-hub-close')?.addEventListener('click', closeOnlineHub);
   document.getElementById('online-create-btn')?.addEventListener('click', onCreateRoom);
+  document.getElementById('online-lobby-create')?.addEventListener('click', onCreateRoom);
   document.getElementById('online-join-btn')?.addEventListener('click', onJoinRoom);
   document.getElementById('online-find-btn')?.addEventListener('click', onFindOpponent);
   document.getElementById('online-mm-cancel')?.addEventListener('click', onCancelMatchmaking);
   document.getElementById('online-start-btn')?.addEventListener('click', onStartOnlineMatch);
-  document.getElementById('online-lobby-leave')?.addEventListener('click', closeOnlineHub);
+  document.getElementById('online-lobby-leave')?.addEventListener('click', onLeaveLobbyToHub);
   document.getElementById('online-google-btn')?.addEventListener('click', async ()=>{
     const btn = document.getElementById('online-google-btn');
     if(btn) btn.disabled = true;
