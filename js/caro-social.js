@@ -119,18 +119,12 @@
   }
 
   function avatarRect(which){
-    // which: 'opp' | 'me' — me uses chip avatar as stand-in near top-left too
-    const el = document.getElementById('caro-opp-avatar');
+    // which: 'opp' | 'me' — ném từ avatar mình (dưới) vào avatar đối thủ (trên)
+    const id = which === 'me' ? 'caro-me-avatar' : 'caro-opp-avatar';
+    let el = document.getElementById(id);
+    if(!el && which === 'me') el = document.getElementById('caro-opp-avatar');
     if(!el) return null;
     const r = el.getBoundingClientRect();
-    if(which === 'me'){
-      // Gần góc phải topbar (không có avatar mình) → điểm gần chat toggle
-      const tr = document.querySelector('.caro-top-right');
-      if(tr){
-        const t = tr.getBoundingClientRect();
-        return { x: t.left + 18, y: t.top + t.height/2, w: 36, h: 36 };
-      }
-    }
     return { x: r.left + r.width/2, y: r.top + r.height/2, w: r.width, h: r.height };
   }
 
@@ -152,8 +146,8 @@
     setTimeout(()=> el.remove(), 900);
   }
 
-  function stampOnOpp(cls, emoji, ms){
-    const av = document.getElementById('caro-opp-avatar');
+  function stampOnAvatar(which, cls, emoji, ms){
+    const av = document.getElementById(which === 'me' ? 'caro-me-avatar' : 'caro-opp-avatar');
     if(!av) return;
     av.classList.add(cls);
     let stamp = av.querySelector('.caro-av-stamp');
@@ -170,17 +164,18 @@
   }
 
   function playFx(fxId, fromMine){
-    const me = avatarRect(fromMine ? 'me' : 'opp');
-    const opp = avatarRect(fromMine ? 'opp' : 'me');
-    const from = fromMine ? me : opp;
-    const to = fromMine ? opp : me;
+    // fromMine: mình ném → đối thủ; !fromMine: đối thủ ném → mình
+    const from = avatarRect(fromMine ? 'me' : 'opp');
+    const to = avatarRect(fromMine ? 'opp' : 'me');
+    const hitWhich = fromMine ? 'opp' : 'me';
+    const hit = (cls, emoji, ms)=> stampOnAvatar(hitWhich, cls, emoji, ms);
     const map = {
-      egg:()=>{ spawnProjectile('🥚', from, to); setTimeout(()=>stampOnOpp('hit-egg','💦',1400), 700); },
-      tomato:()=>{ spawnProjectile('🍅', from, to); setTimeout(()=>stampOnOpp('hit-tomato','💥',1400), 700); },
-      slipper:()=>{ spawnProjectile('🩴', from, to, 'spin'); setTimeout(()=>stampOnOpp('hit-slipper','💫',1400), 700); },
-      rose:()=>{ spawnProjectile('🌹', from, to); setTimeout(()=>stampOnOpp('hit-rose','✨',1600), 700); },
+      egg:()=>{ spawnProjectile('🥚', from, to); setTimeout(()=>hit('hit-egg','💦',1400), 700); },
+      tomato:()=>{ spawnProjectile('🍅', from, to); setTimeout(()=>hit('hit-tomato','💥',1400), 700); },
+      slipper:()=>{ spawnProjectile('🩴', from, to, 'spin'); setTimeout(()=>hit('hit-slipper','💫',1400), 700); },
+      rose:()=>{ spawnProjectile('🌹', from, to); setTimeout(()=>hit('hit-rose','✨',1600), 700); },
       handshake:()=>{ spawnProjectile('🤝', from, to); },
-      heart:()=>{ spawnProjectile('❤️', from, to); setTimeout(()=>stampOnOpp('hit-heart','💕',1600), 700); },
+      heart:()=>{ spawnProjectile('❤️', from, to); setTimeout(()=>hit('hit-heart','💕',1600), 700); },
       fire:()=>{
         const layer = ensureFxLayer();
         if(!layer || !from || !to) return;
@@ -194,10 +189,10 @@
         beam.style.width = len+'px';
         beam.style.transform = 'rotate('+ang+'deg)';
         layer.appendChild(beam);
-        setTimeout(()=>{ stampOnOpp('hit-fire','🔥',1600); beam.remove(); }, 700);
+        setTimeout(()=>{ hit('hit-fire','🔥',1600); beam.remove(); }, 700);
       },
-      squid:()=>{ spawnProjectile('🦑', from, to); setTimeout(()=>stampOnOpp('hit-ink','🖤',2200), 700); },
-      cactus:()=>{ spawnProjectile('🌵', from, to); setTimeout(()=>stampOnOpp('hit-cactus','📌',2000), 700); },
+      squid:()=>{ spawnProjectile('🦑', from, to); setTimeout(()=>hit('hit-ink','🖤',2200), 700); },
+      cactus:()=>{ spawnProjectile('🌵', from, to); setTimeout(()=>hit('hit-cactus','📌',2000), 700); },
       flowers:()=>{
         for(let i=0;i<12;i++){
           setTimeout(()=> spawnProjectile(['🌸','🌺','🌼','💮'][i%4], from, {
@@ -228,27 +223,30 @@
     if(map[fxId]) map[fxId]();
   }
 
-  function renderCoupleHud(){
-    const meta = document.querySelector('#caro-opp-chip .caro-opp-meta');
-    if(!meta) return;
-    let el = document.getElementById('caro-couple-line');
-    if(!el){
-      el = document.createElement('div');
-      el.id = 'caro-couple-line';
-      el.className = 'caro-couple-line';
-      meta.appendChild(el);
-    } else if(el.parentElement !== meta){
-      meta.appendChild(el);
-    }
-    const c = getCouple();
-    if(!c){
+  function setCoupleLine(el, couple){
+    if(!el) return;
+    if(!couple){
       el.hidden = true;
       el.textContent = '';
       return;
     }
     el.hidden = false;
     el.innerHTML = '<span class="caro-couple-ring">💍</span><span class="caro-couple-name">'+
-      (typeof escapeHtml==='function'?escapeHtml(c.partnerName||'…'):(c.partnerName||'…'))+'</span>';
+      (typeof escapeHtml==='function'?escapeHtml(couple.partnerName||'…'):(couple.partnerName||'…'))+'</span>';
+  }
+
+  function renderCoupleHud(){
+    const c = getCouple();
+    setCoupleLine(document.getElementById('caro-me-couple-line'), c);
+    // Dòng trên đối thủ chỉ hiện khi đang ghép với đúng người đang đấu
+    const oppLine = document.getElementById('caro-couple-line');
+    let showOpp = null;
+    if(c && _caro && _caro.ids){
+      const opp = (typeof _caroOppSlot==='function') ? _caroOppSlot() : 'guest';
+      const idx = opp === 'host' ? 0 : 1;
+      if(_caro.ids[idx] && _caro.ids[idx] === c.partnerUid) showOpp = c;
+    }
+    setCoupleLine(oppLine, showOpp);
   }
 
   function showFloatingBubble(text, style, mine){
@@ -256,7 +254,7 @@
     if(!stage) return;
     if(getComputedStyle(stage).position === 'static') stage.style.position = 'relative';
     let host = document.getElementById('caro-bubble-host');
-    if(!host || host.parentElement !== stage){
+    if(!host){
       host = document.createElement('div');
       host.id = 'caro-bubble-host';
       stage.appendChild(host);
@@ -264,6 +262,19 @@
     const b = document.createElement('div');
     b.className = 'caro-float-bubble style-'+(style||'classic')+(mine?' mine':'');
     b.textContent = text;
+    const av = document.getElementById(mine ? 'caro-me-avatar' : 'caro-opp-avatar');
+    if(av){
+      const sr = stage.getBoundingClientRect();
+      const ar = av.getBoundingClientRect();
+      if(mine){
+        b.style.left = Math.max(8, ar.left - sr.left)+'px';
+        b.style.top = Math.max(8, ar.top - sr.top - 44)+'px';
+        b.style.right = 'auto';
+      } else {
+        b.style.left = Math.min(sr.width - 40, ar.right - sr.left + 6)+'px';
+        b.style.top = Math.max(8, ar.top - sr.top + 2)+'px';
+      }
+    }
     host.appendChild(b);
     const life = Math.max(1200, Math.min(2200, 900 + String(text).length*40));
     setTimeout(()=>{ b.classList.add('out'); setTimeout(()=>b.remove(), 280); }, life);
@@ -285,11 +296,10 @@
   }
 
   async function sendFx(fxId){
-    if(!_caro || !_caro.online || !_caro.roomId) return;
+    if(!_caro) return;
     if(!isFxUnlocked(fxId)){
       try{
         await watchAd();
-        const p = getPlayerProfile();
         const list = unlockedFx().slice();
         if(list.indexOf(fxId)<0) list.push(fxId);
         savePlayerProfile({ unlockedFx: list });
@@ -302,6 +312,9 @@
     const all = FREE_FX.concat(PREMIUM_FX);
     const fx = all.find(f=>f.id===fxId);
     if(!fx) return;
+    // Ném ngay từ avatar mình → avatar đối thủ (không phải tin nhắn sticker)
+    playFx(fx.id, true);
+    if(!_caro.online || !_caro.roomId || typeof sendRoomChat !== 'function') return;
     try{
       await sendRoomChat(_caro.roomId, fx.emoji+' '+fx.label, {
         kind: 'fx',
@@ -400,7 +413,8 @@
     if(!msg) return;
     const mine = msg.uid && typeof getOnlineUid==='function' && msg.uid===getOnlineUid();
     if(msg.kind === 'fx' && msg.fxId){
-      playFx(msg.fxId, !!mine);
+      // Tin của mình đã play local khi chọn FX — chỉ phát lại khi đối thủ ném
+      if(!mine) playFx(msg.fxId, false);
     }
     if(msg.kind === 'couple_invite' && !mine){
       // Hiện nút nhận trong chat row — handled in append; also toast
@@ -435,26 +449,34 @@
     }
   }
 
-  function renderFxBar(){
-    const bar = document.getElementById('caro-fx-bar');
-    if(!bar) return;
-    bar.innerHTML = '';
+  function fillFxButtons(host, opts){
+    if(!host) return;
+    const withCouple = !!(opts && opts.withCouple);
+    host.innerHTML = '';
     FREE_FX.concat(PREMIUM_FX).forEach(fx=>{
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'caro-fx-btn'+(fx.premium && !isFxUnlocked(fx.id)?' locked':'');
       b.title = fx.label + (fx.premium && !isFxUnlocked(fx.id) ? ' 🔒 QC' : '');
+      b.setAttribute('aria-label', fx.label);
       b.textContent = fx.emoji;
       b.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} sendFx(fx.id); });
-      bar.appendChild(b);
+      host.appendChild(b);
     });
-    const coupleBtn = document.createElement('button');
-    coupleBtn.type = 'button';
-    coupleBtn.className = 'caro-fx-btn caro-fx-couple';
-    coupleBtn.title = tt('caroCoupleBtn','Kết đôi (xem QC)');
-    coupleBtn.textContent = '💍';
-    coupleBtn.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} sendCoupleInvite(); });
-    bar.appendChild(coupleBtn);
+    if(withCouple){
+      const coupleBtn = document.createElement('button');
+      coupleBtn.type = 'button';
+      coupleBtn.className = 'caro-fx-btn caro-fx-couple';
+      coupleBtn.title = tt('caroCoupleBtn','Kết đôi (xem QC)');
+      coupleBtn.textContent = '💍';
+      coupleBtn.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} sendCoupleInvite(); });
+      host.appendChild(coupleBtn);
+    }
+  }
+
+  function renderFxBar(){
+    fillFxButtons(document.getElementById('caro-fx-bar'), { withCouple: true });
+    fillFxButtons(document.getElementById('caro-quick-fx'), { withCouple: false });
   }
 
   function renderBubblePicker(){
