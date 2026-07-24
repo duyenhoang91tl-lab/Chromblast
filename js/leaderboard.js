@@ -25,11 +25,9 @@ function getLeaderboardEntries(){
   return cleaned;
 }
 
-function currentPlayerName(){
-  if(typeof getOnlineDisplayName === 'function' && typeof isOnlineServicesEnabled === 'function' && isOnlineServicesEnabled() && getOnlineUid()){
-    const on = getOnlineDisplayName();
-    if(on) return on;
-  }
+/** Tên cục bộ (không đụng tới Firebase) — dùng làm fallback, TRÁNH gọi vòng lại
+ * getOnlineDisplayName() (chống đệ quy vô hạn currentPlayerName <-> getOnlineDisplayName). */
+function _localPlayerName(){
   if(typeof currentUser !== 'undefined' && currentUser && currentUser.username) return currentUser.username;
   let gid = safeGet('chromablast_guest_name');
   if(!gid){
@@ -37,6 +35,14 @@ function currentPlayerName(){
     safeSet('chromablast_guest_name', gid);
   }
   return gid;
+}
+
+function currentPlayerName(){
+  if(typeof getOnlineDisplayName === 'function' && typeof isOnlineServicesEnabled === 'function' && isOnlineServicesEnabled() && getOnlineUid()){
+    const on = getOnlineDisplayName();
+    if(on) return on;
+  }
+  return _localPlayerName();
 }
 
 function submitScoreToLeaderboard(score){
