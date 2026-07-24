@@ -320,6 +320,8 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   padding: 20px;
 }
 .admin-panel-like.show { display:flex; }
+/* Caro cài đặt phải nổi trên #caro-stage (z-index 10060) khi chơi online */
+#caro-settings-panel.admin-panel-like { z-index: 10070; }
 .admin-map-btn.locked { opacity:0.4; cursor:not-allowed; }
 .admin-map-btn.locked:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); }
 .admin-card {
@@ -677,6 +679,8 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   cursor: pointer; color: #fff; min-height: 64px;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
   box-shadow: inset 0 0 0 1px rgba(255,255,255,0.15);
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  pointer-events: auto; position: relative; z-index: 1;
 }
 .caro-skin-chip.active { border-color: #ffd54a; box-shadow: 0 0 0 2px rgba(255,213,74,0.35); }
 .caro-skin-xo { display: flex; gap: 8px; font-size: 16px; font-weight: 900; }
