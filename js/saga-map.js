@@ -628,6 +628,7 @@ function showSagaMapScreen(opts){
   if(o.unlockKey && typeof autoSkipHiddenMaps !== 'undefined' && autoSkipHiddenMaps){
     try{
       unlockDeferred = true;
+      if(typeof syncMainHardTierFromNormalStage === 'function') syncMainHardTierFromNormalStage(true);
       if(typeof updateBurstCount === 'function') updateBurstCount();
     }catch(e){}
     return false;
@@ -705,6 +706,8 @@ function _sagaDeferUnlock(){
   }catch(e){}
   try{
     unlockDeferred = true;
+    // Về map thường ngay → áp cơ chế đúng Map N (vd. Map 3 = núi)
+    if(typeof syncMainHardTierFromNormalStage === 'function') syncMainHardTierFromNormalStage(true);
     if(typeof updateBurstCount === 'function') updateBurstCount();
   }catch(e){}
 }

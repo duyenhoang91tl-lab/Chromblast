@@ -35,8 +35,8 @@ let _pieceRand = null; // null = Math.random như bình thường
 function setPieceRand(f){ _pieceRand = f || null; }
 function makePiece(){
   const R = _pieceRand || Math.random;
-  // Càng qua nhiều vòng map ẩn, khối càng thiên về hình to/khó xếp
-  // (mặc định ~55% khối lớn giống tỉ lệ cũ, mỗi vòng +3%, tối đa 90%)
+  // Map thường càng cao (mainHardTier = MapN-1), khối càng thiên về hình to/khó xếp
+  // (mặc định ~55% khối lớn giống tỉ lệ cũ, mỗi bậc +3%, tối đa 90%)
   const hardP=Math.min(0.9, 0.55+mainHardTier*0.03);
   const wantHard=R()<hardP;
   const pool=SHAPES.filter(s=> wantHard ? s.length>=4 : s.length<=3);
