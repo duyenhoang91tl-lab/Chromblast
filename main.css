@@ -687,6 +687,36 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 .caro-skin-xo i { font-style: normal; text-shadow: 0 1px 0 #fff, 0 0 4px rgba(0,0,0,0.35); }
 .caro-skin-chip small { font-size: 9px; opacity: 0.9; text-transform: capitalize; }
 
+.caro-waiting-block { margin: 10px 0 12px; }
+.caro-waiting-head {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 13px; font-weight: 800; color: #ffd54a; margin-bottom: 8px;
+}
+.caro-room-count { font-size: 11px; color: rgba(255,255,255,0.55); font-weight: 700; }
+.caro-room-list {
+  display: flex; flex-direction: column; gap: 6px;
+  max-height: 28vh; overflow-y: auto; padding-right: 2px;
+}
+.caro-room-list-compact { max-height: 18vh; }
+.caro-room-row {
+  width: 100%; display: grid; grid-template-columns: 36px 1fr auto;
+  align-items: center; gap: 8px; padding: 10px 12px;
+  border-radius: 12px; border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.06); color: #fff; cursor: pointer;
+  text-align: left; touch-action: manipulation;
+}
+.caro-room-row.mine { border-color: rgba(255,213,74,0.45); background: rgba(255,213,74,0.1); }
+.caro-room-no { font-size: 14px; font-weight: 900; color: #ffd54a; }
+.caro-room-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.caro-room-info b { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.caro-room-info small { font-size: 10px; color: rgba(255,255,255,0.55); }
+.caro-room-action {
+  font-size: 11px; font-weight: 800; color: #7ee08e;
+  padding: 6px 10px; border-radius: 999px; background: rgba(126,224,142,0.12);
+}
+.caro-room-row.mine .caro-room-action { color: #ffd54a; background: rgba(255,213,74,0.12); }
+.caro-lobby-no { font-size: 12px; color: #ffd54a; font-weight: 800; }
+
 /* ── Caro danh hiệu & BXH ── */
 .caro-hub-stats { margin-bottom: 12px; }
 .caro-rank-badge {

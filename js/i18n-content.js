@@ -661,7 +661,11 @@ function MILESTONE_MSG(tier){ const c=_i18nContent(); const a=c.milestones||I18N
        caroAiEasy:'🌱 Dễ', caroAiMedium:'⚔️ TB', caroAiHard:'🔥 Khó',
        caroAiThinking:'...', caroAiNoPts:'Luyện với máy',
        caroAiName_easy:'Máy (Dễ)', caroAiName_medium:'Máy (TB)', caroAiName_hard:'Máy (Khó)',
-       caroOnlineLocked:'🔒 Online cần Cấp 3. Đấu với máy vẫn chơi được.' },
+       caroOnlineLocked:'🔒 Online cần Cấp 3. Đấu với máy vẫn chơi được.',
+       caroWaitingRooms:'📋 Phòng chờ', caroWaitingEmpty:'Chưa có phòng — tạo phòng hoặc bấm Tìm đối thủ',
+       caroRoomNo:'Phòng {0}', caroRoomJoin:'Vào', caroRoomMine:'Của bạn',
+       caroLobbyHint:'Đang chờ đối thủ — có thể vào từ danh sách phòng chờ hoặc mã phòng',
+       caroRoomFull:'Phòng đã đủ người', caroRoomNotOpen:'Phòng không còn mở' },
   en:{ ttCaro:'Caro (Lv.3 online)', ttCaroAi:'Caro · vs AI', caroTitle:'⬛ Caro',
        caroSub:'15×15 · X vs O · 5 in a row',
        caroNeedLevel:'⬛ Online needs Level {0}', caroLobby:'⬛ Caro Room',
@@ -689,7 +693,11 @@ function MILESTONE_MSG(tier){ const c=_i18nContent(); const a=c.milestones||I18N
        caroAiEasy:'🌱 Easy', caroAiMedium:'⚔️ Mid', caroAiHard:'🔥 Hard',
        caroAiThinking:'...', caroAiNoPts:'Practice with AI',
        caroAiName_easy:'AI (Easy)', caroAiName_medium:'AI (Medium)', caroAiName_hard:'AI (Hard)',
-       caroOnlineLocked:'🔒 Online needs Level 3. vs AI still works.' },
+       caroOnlineLocked:'🔒 Online needs Level 3. vs AI still works.',
+       caroWaitingRooms:'📋 Waiting rooms', caroWaitingEmpty:'No rooms yet — create one or tap Find opponent',
+       caroRoomNo:'Room {0}', caroRoomJoin:'Join', caroRoomMine:'Yours',
+       caroLobbyHint:'Waiting for opponent — they can join from the room list or room code',
+       caroRoomFull:'Room is full', caroRoomNotOpen:'Room is no longer open' },
   };
   Object.keys(caro).forEach(l=>{ if(I18N[l]) Object.assign(I18N[l], caro[l]); });
   if(typeof applyI18nDom === 'function') applyI18nDom();
