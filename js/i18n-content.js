@@ -1130,6 +1130,10 @@ function MILESTONE_MSG(tier){
     gchatInviting:'Đang gửi lời mời...', gchatInviteSent:'Đã gửi lời mời',
     gchatInviteFail:'Không mời được', gchatInviteIncoming:'Lời mời phòng',
     gchatInviteAccept:'Vào', gchatInviteDecline:'Từ chối',
+    gchatCreateCaro:'❌⭕ Tạo phòng Caro', gchatCreateVersus:'⚔️ Tạo phòng Versus',
+    gchatRoomPosted:'Đã tạo phòng — đăng lên Thế giới',
+    gchatInviteWaiting:'Đang chờ người vào...',
+    gchatInviteCaroShort:'Mời Caro', gchatInviteVersusShort:'Mời Versus',
     gchatInviteFriend:'🤝 Mời bạn bè'
   },
   en:{
@@ -1144,6 +1148,10 @@ function MILESTONE_MSG(tier){
     gchatInviting:'Sending invite...', gchatInviteSent:'Invite sent',
     gchatInviteFail:'Could not invite', gchatInviteIncoming:'Room invite',
     gchatInviteAccept:'Join', gchatInviteDecline:'Decline',
+    gchatCreateCaro:'❌⭕ Create Caro room', gchatCreateVersus:'⚔️ Create Versus room',
+    gchatRoomPosted:'Room created — posted to World',
+    gchatInviteWaiting:'Waiting for players...',
+    gchatInviteCaroShort:'Invite Caro', gchatInviteVersusShort:'Invite Versus',
     gchatInviteFriend:'🤝 Invite friends'
   },
   ko:{
@@ -1158,6 +1166,10 @@ function MILESTONE_MSG(tier){
     gchatInviting:'초대 보내는 중...', gchatInviteSent:'초대를 보냈습니다',
     gchatInviteFail:'초대 실패', gchatInviteIncoming:'방 초대',
     gchatInviteAccept:'입장', gchatInviteDecline:'거절',
+    gchatCreateCaro:'❌⭕ 캐로 방 만들기', gchatCreateVersus:'⚔️ Versus 방 만들기',
+    gchatRoomPosted:'방 생성 — 월드에 게시됨',
+    gchatInviteWaiting:'입장 대기 중...',
+    gchatInviteCaroShort:'캐로 초대', gchatInviteVersusShort:'Versus 초대',
     gchatInviteFriend:'🤝 친구 초대'
   },
   ja:{
@@ -1172,6 +1184,10 @@ function MILESTONE_MSG(tier){
     gchatInviting:'招待送信中...', gchatInviteSent:'招待を送りました',
     gchatInviteFail:'招待できません', gchatInviteIncoming:'ルーム招待',
     gchatInviteAccept:'参加', gchatInviteDecline:'拒否',
+    gchatCreateCaro:'❌⭕ キャロ部屋作成', gchatCreateVersus:'⚔️ Versus部屋作成',
+    gchatRoomPosted:'ルーム作成 — ワールドに投稿',
+    gchatInviteWaiting:'参加者待ち...',
+    gchatInviteCaroShort:'キャロ招待', gchatInviteVersusShort:'Versus招待',
     gchatInviteFriend:'🤝 友達を招待'
   },
   zh:{
@@ -1186,6 +1202,10 @@ function MILESTONE_MSG(tier){
     gchatInviting:'正在发送邀请...', gchatInviteSent:'已发送邀请',
     gchatInviteFail:'邀请失败', gchatInviteIncoming:'房间邀请',
     gchatInviteAccept:'加入', gchatInviteDecline:'拒绝',
+    gchatCreateCaro:'❌⭕ 创建五子棋房', gchatCreateVersus:'⚔️ 创建Versus房',
+    gchatRoomPosted:'已建房 — 已发到世界频道',
+    gchatInviteWaiting:'等待加入...',
+    gchatInviteCaroShort:'邀五子棋', gchatInviteVersusShort:'邀Versus',
     gchatInviteFriend:'🤝 邀请好友'
   },
   es:{
@@ -1200,6 +1220,10 @@ function MILESTONE_MSG(tier){
     gchatInviting:'Enviando invitación...', gchatInviteSent:'Invitación enviada',
     gchatInviteFail:'No se pudo invitar', gchatInviteIncoming:'Invitación a sala',
     gchatInviteAccept:'Entrar', gchatInviteDecline:'Rechazar',
+    gchatCreateCaro:'❌⭕ Crear sala Caro', gchatCreateVersus:'⚔️ Crear sala Versus',
+    gchatRoomPosted:'Sala creada — publicada en Mundo',
+    gchatInviteWaiting:'Esperando jugadores...',
+    gchatInviteCaroShort:'Invitar Caro', gchatInviteVersusShort:'Invitar Versus',
     gchatInviteFriend:'🤝 Invitar amigos'
   }
   };

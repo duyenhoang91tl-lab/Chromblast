@@ -34,8 +34,9 @@
     const set = state.seen[bucket];
     if(set && set.has(msg.id)) return;
     if(set) set.add(msg.id);
+    const mine = isMine(msg);
     const row = document.createElement('div');
-    row.className = 'gchat-row'+(isMine(msg)?' mine':'');
+    row.className = 'gchat-row'+(mine?' mine':'');
     const who = document.createElement('span');
     who.className = 'gchat-who';
     who.textContent = (msg.avatar || '🐶')+' '+(msg.name || 'Player');
@@ -44,6 +45,65 @@
     body.textContent = msg.text || '';
     row.appendChild(who);
     row.appendChild(body);
+
+    const isInvite = msg.kind === 'room_invite' && msg.roomId;
+    if(isInvite){
+      const card = document.createElement('div');
+      card.className = 'gchat-invite-card';
+      const lab = document.createElement('div');
+      lab.className = 'gchat-invite-card-lab';
+      lab.textContent = (msg.gameType === 'versus' ? 'Versus' : 'Caro')+' · '+(msg.code || '');
+      card.appendChild(lab);
+      if(!mine){
+        const join = document.createElement('button');
+        join.type = 'button';
+        join.className = 'gchat-invite-join';
+        join.textContent = tt('gchatInviteAccept', 'Vào');
+        join.addEventListener('click', async ()=>{
+          try{ sfxClick(); }catch(e){}
+          join.disabled = true;
+          try{
+            closeChatPanel();
+            await joinFromInvite({
+              gameType: msg.gameType === 'versus' ? 'versus' : 'caro',
+              roomId: msg.roomId,
+              code: msg.code
+            });
+          }catch(err){
+            console.warn('[gchat join]', err);
+            join.disabled = false;
+            setStatus(tt('gchatInviteFail','Không mời được'), true);
+          }
+        });
+        card.appendChild(join);
+      } else {
+        const note = document.createElement('div');
+        note.className = 'gchat-invite-card-note';
+        note.textContent = tt('gchatInviteWaiting','Đang chờ người vào...');
+        card.appendChild(note);
+      }
+      row.appendChild(card);
+    } else if(!mine && msg.uid && (bucket === 'world' || bucket === 'friends')){
+      const actions = document.createElement('div');
+      actions.className = 'gchat-msg-actions';
+      const mk = (gameType, label)=>{
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'gchat-msg-invite';
+        b.textContent = label;
+        b.addEventListener('click', async ()=>{
+          try{ sfxClick(); }catch(e){}
+          b.disabled = true;
+          try{ await invitePlayer(msg.uid, gameType, msg.name || 'Player'); }
+          finally{ b.disabled = false; }
+        });
+        return b;
+      };
+      actions.appendChild(mk('caro', tt('gchatInviteCaroShort','Mời Caro')));
+      actions.appendChild(mk('versus', tt('gchatInviteVersusShort','Mời Versus')));
+      row.appendChild(actions);
+    }
+
     logEl.appendChild(row);
     logEl.scrollTop = logEl.scrollHeight;
   }
@@ -197,20 +257,45 @@
     listenFriendChat(friend.uid, msg => appendMsg($('gchat-friends-log'), msg, 'friends'));
   }
 
-  async function inviteFriend(gameType){
-    if(!state.friendUid){
+  async function invitePlayer(toUid, gameType, displayName){
+    if(!toUid){
       setStatus(tt('gchatPickFriend','Chọn một người bạn'), true);
       return;
     }
     if(!(await ensureOnline())) return;
     setStatus(tt('gchatInviting','Đang gửi lời mời...'));
     try{
-      if(typeof closeChatPanel === 'function') closeChatPanel();
-      await inviteFriendToRoom(state.friendUid, gameType);
+      await inviteFriendToRoom(toUid, gameType);
+      closeChatPanel();
       setStatus(tt('gchatInviteSent','Đã gửi lời mời'));
-      try{ showAchievementToast({ label: tt('gchatInviteSent','Đã gửi lời mời'), desc: state.friendName }); }catch(e){}
+      try{ showAchievementToast({ label: tt('gchatInviteSent','Đã gửi lời mời'), desc: displayName || '' }); }catch(e){}
     }catch(err){
       console.warn('[invite]', err);
+      setStatus(tt('gchatInviteFail','Không mời được'), true);
+    }
+  }
+
+  async function inviteFriend(gameType){
+    return invitePlayer(state.friendUid, gameType, state.friendName);
+  }
+
+  /** Tạo phòng + đăng thẻ mời lên chat thế giới để ai cũng vào được */
+  async function createWorldRoomInvite(gameType){
+    if(!(await ensureOnline())) return;
+    setStatus(tt('gchatInviting','Đang gửi lời mời...'));
+    try{
+      if(typeof postWorldRoomInvite !== 'function') throw new Error('no_post');
+      const res = await postWorldRoomInvite(gameType);
+      setStatus(tt('gchatRoomPosted','Đã tạo phòng — đăng lên Thế giới'));
+      try{
+        showAchievementToast({
+          label: tt('gchatRoomPosted','Đã tạo phòng — đăng lên Thế giới'),
+          desc: (res && res.lobby && res.lobby.code) || ''
+        });
+      }catch(e){}
+      closeChatPanel();
+    }catch(err){
+      console.warn('[world invite]', err);
       setStatus(tt('gchatInviteFail','Không mời được'), true);
     }
   }
@@ -397,6 +482,8 @@
     });
     $('gchat-invite-caro')?.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} inviteFriend('caro'); });
     $('gchat-invite-versus')?.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} inviteFriend('versus'); });
+    $('gchat-world-caro')?.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} createWorldRoomInvite('caro'); });
+    $('gchat-world-versus')?.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} createWorldRoomInvite('versus'); });
     syncChatFabVisibility();
   }
 

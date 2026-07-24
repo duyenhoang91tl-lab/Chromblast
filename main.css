@@ -998,6 +998,25 @@ body.gchat-open .gchat-fab { display: none !important; }
   background: rgba(255,213,74,0.12); color: #ffe082;
   border-radius: 10px; padding: 8px 10px; font-size: 11px; font-weight: 900; cursor: pointer;
 }
+.gchat-world-invite { margin-bottom: 8px; }
+.gchat-invite-card {
+  margin-top: 4px; padding: 8px 10px; border-radius: 12px;
+  background: rgba(255,213,74,0.12); border: 1px solid rgba(255,213,74,0.35);
+  display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;
+  max-width: 100%;
+}
+.gchat-invite-card-lab { font-size: 12px; font-weight: 900; color: #ffd54a; }
+.gchat-invite-card-note { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.55); }
+.gchat-invite-join {
+  border: none; border-radius: 10px; padding: 6px 12px;
+  background: linear-gradient(135deg, #ff9800, #ffd54a);
+  color: #1a0a00; font-weight: 900; font-size: 12px; cursor: pointer;
+}
+.gchat-msg-actions { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
+.gchat-msg-invite {
+  border: 1px solid rgba(144,202,249,0.35); background: rgba(66,165,245,0.18);
+  color: #bbdefb; border-radius: 8px; padding: 3px 8px; font-size: 10px; font-weight: 800; cursor: pointer;
+}
 .gchat-invite-btn:active { transform: scale(0.98); }
 
 .gchat-invite-toast {
