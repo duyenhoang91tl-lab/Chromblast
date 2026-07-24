@@ -59,7 +59,6 @@ function rotatePiece(idx){
   piece.shape=piece.shape.map(([r,c])=>[r-minR, c-minC]);
   renderPieces();
   if(selected===idx){ showGhost(piece); updatePreview(lastMouseX||0, lastMouseY||0); }
-  showHint(t('hintRotated'));
 }
 
 // Ô bị chặn không đặt khối lên được (do các cơ chế độ khó chiếm giữ)
