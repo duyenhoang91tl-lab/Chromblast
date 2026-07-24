@@ -550,6 +550,11 @@
       <div class="pp-font-label" data-i18n="ppAvatar">Avatar</div>
       <div class="admin-sub" data-i18n="ppAvatarHint">Chọn thú làm ảnh đại diện</div>
       <div id="pp-avatar-list" class="pp-avatar-list" role="listbox"></div>
+      <div class="pp-avatar-upload-row">
+        <input type="file" id="pp-avatar-file" accept="image/*" hidden>
+        <button type="button" id="pp-avatar-upload-btn" class="auth-submit-btn btn-ghost" style="background:rgba(255,255,255,0.12);" data-i18n="ppAvatarUpload">📷 Up ảnh cá nhân</button>
+        <button type="button" id="pp-avatar-clear-btn" class="auth-submit-btn btn-ghost" style="background:rgba(255,255,255,0.08);" data-i18n="ppAvatarClear">✕ Xóa ảnh</button>
+      </div>
       <div class="auth-field">
         <label data-i18n="ppNickLabel">Đổi tên</label>
         <input type="text" id="pp-nick-input" maxlength="24" placeholder="Nickname..." autocomplete="nickname">
@@ -697,6 +702,7 @@
           <button type="button" class="caro-ai-level" id="caro-ai-easy" data-level="easy" data-i18n="caroAiEasy" onclick="if(window.caroStartAI){window.caroStartAI('easy')}else{alert('Thiếu caroStartAI — kiểm tra js/caro.js')}">🌱 Dễ</button>
           <button type="button" class="caro-ai-level" id="caro-ai-medium" data-level="medium" data-i18n="caroAiMedium" onclick="if(window.caroStartAI){window.caroStartAI('medium')}else{alert('Thiếu caroStartAI — kiểm tra js/caro.js')}">⚔️ TB</button>
           <button type="button" class="caro-ai-level" id="caro-ai-hard" data-level="hard" data-i18n="caroAiHard" onclick="if(window.caroStartAI){window.caroStartAI('hard')}else{alert('Thiếu caroStartAI — kiểm tra js/caro.js')}">🔥 Khó</button>
+          <button type="button" class="caro-ai-level" id="caro-ai-extreme" data-level="extreme" data-i18n="caroAiExtreme" onclick="if(window.caroStartAI){window.caroStartAI('extreme')}else{alert('Thiếu caroStartAI — kiểm tra js/caro.js')}">💀 Cực khó</button>
         </div>
       </div>
 
@@ -797,12 +803,16 @@
           <span data-i18n="caroChatTitle">💬 Chat</span>
           <button type="button" id="caro-chat-close" class="caro-chat-close" aria-label="Close">✕</button>
         </div>
+        <div id="caro-fx-bar" class="caro-fx-bar" aria-label="Tương tác"></div>
+        <div id="caro-bubble-picker" class="caro-bubble-picker" aria-label="Mẫu bong bóng"></div>
         <div id="caro-chat-log" class="caro-chat-log" aria-live="polite"></div>
         <form id="caro-chat-form" class="caro-chat-form" autocomplete="off">
           <input id="caro-chat-input" type="text" maxlength="120" data-i18n-placeholder="caroChatPlaceholder" placeholder="Nhắn đối thủ..." />
           <button type="submit" id="caro-chat-send" data-i18n="caroChatSend">Gửi</button>
         </form>
       </div>
+      <div id="caro-fx-layer" aria-hidden="true"></div>
+      <div id="caro-bubble-host" aria-hidden="true"></div>
     </div>
   </div>
 
@@ -1075,5 +1085,6 @@
 <script src="js/online-ui.js"></script>
 <script src="js/chat.js"></script>
 <script src="js/caro.js"></script>
+<script src="js/caro-social.js"></script>
 </body>
 </html>

@@ -773,7 +773,7 @@ function MILESTONE_MSG(tier){
        caroRank_platinum:'Bạch kim', caroRank_diamond:'Kim cương', caroRank_elite:'Tinh anh',
        caroRank_legend:'Huyền thoại', caroRank_mythic:'Thần thoại', caroRank_warlord:'Chiến thần',
        caroAiBtn:'🤖 Đấu với máy', caroAiTitle:'🤖 Đấu với máy',
-       caroAiEasy:'🌱 Dễ', caroAiMedium:'⚔️ TB', caroAiHard:'🔥 Khó',
+       caroAiEasy:'🌱 Dễ', caroAiMedium:'⚔️ TB', caroAiHard:'🔥 Khó', caroAiExtreme:'💀 Cực khó', caroAiName_extreme:'Máy (Cực khó)',
        caroAiThinking:'...', caroAiNoPts:'Luyện với máy',
        caroAiName_easy:'Máy (Dễ)', caroAiName_medium:'Máy (TB)', caroAiName_hard:'Máy (Khó)',
        caroOnlineLocked:'🔒 Online cần Cấp 3. Đấu với máy vẫn chơi được.',
@@ -809,7 +809,7 @@ function MILESTONE_MSG(tier){
        caroRank_platinum:'Platinum', caroRank_diamond:'Diamond', caroRank_elite:'Elite',
        caroRank_legend:'Legend', caroRank_mythic:'Mythic', caroRank_warlord:'Warlord',
        caroAiBtn:'🤖 Play vs AI', caroAiTitle:'🤖 vs AI',
-       caroAiEasy:'🌱 Easy', caroAiMedium:'⚔️ Mid', caroAiHard:'🔥 Hard',
+       caroAiEasy:'🌱 Easy', caroAiMedium:'⚔️ Mid', caroAiHard:'🔥 Hard', caroAiExtreme:'💀 Extreme', caroAiName_extreme:'AI (Extreme)',
        caroAiThinking:'...', caroAiNoPts:'Practice with AI',
        caroAiName_easy:'AI (Easy)', caroAiName_medium:'AI (Medium)', caroAiName_hard:'AI (Hard)',
        caroOnlineLocked:'🔒 Online needs Level 3. vs AI still works.',
@@ -845,7 +845,7 @@ function MILESTONE_MSG(tier){
        caroRank_platinum:'플래티넘', caroRank_diamond:'다이아', caroRank_elite:'엘리트',
        caroRank_legend:'전설', caroRank_mythic:'신화', caroRank_warlord:'전쟁신',
        caroAiBtn:'🤖 AI와 대결', caroAiTitle:'🤖 AI 대결',
-       caroAiEasy:'🌱 쉬움', caroAiMedium:'⚔️ 보통', caroAiHard:'🔥 어려움',
+       caroAiEasy:'🌱 쉬움', caroAiMedium:'⚔️ 보통', caroAiHard:'🔥 어려움', caroAiExtreme:'💀 극한', caroAiName_extreme:'AI (극한)',
        caroAiThinking:'...', caroAiNoPts:'AI 연습',
        caroAiName_easy:'AI (쉬움)', caroAiName_medium:'AI (보통)', caroAiName_hard:'AI (어려움)',
        caroOnlineLocked:'🔒 온라인은 레벨 3 필요. AI 대결은 가능합니다.',
@@ -881,7 +881,7 @@ function MILESTONE_MSG(tier){
        caroRank_platinum:'プラチナ', caroRank_diamond:'ダイヤ', caroRank_elite:'エリート',
        caroRank_legend:'伝説', caroRank_mythic:'神話', caroRank_warlord:'戦神',
        caroAiBtn:'🤖 CPUと対戦', caroAiTitle:'🤖 CPU対戦',
-       caroAiEasy:'🌱 易', caroAiMedium:'⚔️ 中', caroAiHard:'🔥 難',
+       caroAiEasy:'🌱 易', caroAiMedium:'⚔️ 中', caroAiHard:'🔥 難', caroAiExtreme:'💀 極難', caroAiName_extreme:'CPU（極難）',
        caroAiThinking:'...', caroAiNoPts:'CPU練習',
        caroAiName_easy:'CPU（易）', caroAiName_medium:'CPU（中）', caroAiName_hard:'CPU（難）',
        caroOnlineLocked:'🔒 オンラインはレベル3必要。CPU対戦は可能です。',
@@ -917,7 +917,7 @@ function MILESTONE_MSG(tier){
        caroRank_platinum:'铂金', caroRank_diamond:'钻石', caroRank_elite:'精英',
        caroRank_legend:'传奇', caroRank_mythic:'神话', caroRank_warlord:'战神',
        caroAiBtn:'🤖 人机对战', caroAiTitle:'🤖 人机对战',
-       caroAiEasy:'🌱 简单', caroAiMedium:'⚔️ 中等', caroAiHard:'🔥 困难',
+       caroAiEasy:'🌱 简单', caroAiMedium:'⚔️ 中等', caroAiHard:'🔥 困难', caroAiExtreme:'💀 极难', caroAiName_extreme:'电脑（极难）',
        caroAiThinking:'...', caroAiNoPts:'人机练习',
        caroAiName_easy:'电脑（简单）', caroAiName_medium:'电脑（中等）', caroAiName_hard:'电脑（困难）',
        caroOnlineLocked:'🔒 线上需要3级。人机仍可玩。',
@@ -953,7 +953,7 @@ function MILESTONE_MSG(tier){
        caroRank_platinum:'Platino', caroRank_diamond:'Diamante', caroRank_elite:'Élite',
        caroRank_legend:'Leyenda', caroRank_mythic:'Mítico', caroRank_warlord:'Señor de guerra',
        caroAiBtn:'🤖 Jugar vs IA', caroAiTitle:'🤖 vs IA',
-       caroAiEasy:'🌱 Fácil', caroAiMedium:'⚔️ Medio', caroAiHard:'🔥 Difícil',
+       caroAiEasy:'🌱 Fácil', caroAiMedium:'⚔️ Medio', caroAiHard:'🔥 Difícil', caroAiExtreme:'💀 Extremo', caroAiName_extreme:'IA (Extrema)',
        caroAiThinking:'...', caroAiNoPts:'Práctica con IA',
        caroAiName_easy:'IA (Fácil)', caroAiName_medium:'IA (Media)', caroAiName_hard:'IA (Difícil)',
        caroOnlineLocked:'🔒 Online requiere Nivel 3. vs IA sigue disponible.',
@@ -1250,3 +1250,30 @@ function MILESTONE_MSG(tier){
 })();
 
 // pp* / setHelp đã nằm trong js/i18n.js (đủ 6 ngôn ngữ).
+
+
+// ── Caro social / couple / FX ──
+(function(){
+  const social = {
+    vi:{ caroAdFail:'Cần xem quảng cáo', caroCoupleBtn:'Kết đôi',
+      caroCoupleInvite:'Mời kết đôi — cùng thắng Cực khó!', caroCoupleInvited:'Đã gửi lời mời kết đôi',
+      caroCoupleNeedOpp:'Cần đối thủ online', caroCoupleAccept:'Nhận kết đôi',
+      caroCoupleAccepted:'Đã nhận kết đôi — đi thắng Cực khó!',
+      caroCoupleQuestHint:'Cùng thắng máy Cực khó để ghép đôi',
+      caroCoupleIncoming:'Có lời mời kết đôi — mở chat để nhận',
+      caroCoupleExtremeWin:'Đã thắng Cực khó', caroCoupleDone:'Đã ghép đôi!',
+      ppAvatarUpload:'📷 Up ảnh cá nhân', ppAvatarClear:'✕ Xóa ảnh',
+      caroAvatarTooBig:'Ảnh quá lớn', caroAvatarSaved:'Đã lưu avatar' },
+    en:{ caroAdFail:'Watch an ad required', caroCoupleBtn:'Couple',
+      caroCoupleInvite:'Couple invite — beat Extreme AI together!', caroCoupleInvited:'Couple invite sent',
+      caroCoupleNeedOpp:'Need an online opponent', caroCoupleAccept:'Accept couple',
+      caroCoupleAccepted:'Couple accepted — beat Extreme AI!',
+      caroCoupleQuestHint:'Both must beat Extreme AI to pair',
+      caroCoupleIncoming:'Couple invite — open chat to accept',
+      caroCoupleExtremeWin:'Beat Extreme AI', caroCoupleDone:'Coupled!',
+      ppAvatarUpload:'📷 Upload photo', ppAvatarClear:'✕ Clear photo',
+      caroAvatarTooBig:'Image too large', caroAvatarSaved:'Avatar saved' }
+  };
+  Object.keys(social).forEach(l=>{ if(typeof I18N!=='undefined' && I18N[l]) Object.assign(I18N[l], social[l]); });
+})();
+

@@ -39,6 +39,10 @@ function _ppDefault(){
     italic: false,
     fontId: 'nunito',
     avatar: '🐶',
+    customAvatar: '',
+    bubbleStyle: 'classic',
+    unlockedFx: [],
+    unlockedBubbles: ['classic'],
     renameCount: 0,
     styleUnlocked: false
   };
@@ -48,6 +52,33 @@ function getPlayerAvatar(){
   const p = getPlayerProfile();
   const a = p.avatar || '🐶';
   return PLAYER_AVATARS.includes(a) ? a : '🐶';
+}
+
+/** Avatar hiện thị local (ưu tiên ảnh up); mạng vẫn dùng emoji getPlayerAvatar() */
+function getPlayerAvatarDisplay(){
+  const p = getPlayerProfile();
+  if(p.customAvatar && String(p.customAvatar).startsWith('data:image')) return p.customAvatar;
+  return getPlayerAvatar();
+}
+
+function isCustomPlayerAvatar(av){
+  return !!(av && String(av).startsWith('data:image'));
+}
+
+function applyAvatarElement(el, avatar){
+  if(!el) return;
+  const av = avatar != null ? avatar : getPlayerAvatarDisplay();
+  if(isCustomPlayerAvatar(av)){
+    el.textContent = '';
+    el.style.backgroundImage = 'url('+av+')';
+    el.style.backgroundSize = 'cover';
+    el.style.backgroundPosition = 'center';
+    el.classList.add('avatar-img');
+  } else {
+    el.style.backgroundImage = '';
+    el.textContent = av || '🐶';
+    el.classList.remove('avatar-img');
+  }
 }
 
 function getFriendsList(){
@@ -95,6 +126,13 @@ function getPlayerProfile(){
         if(typeof j.fontId === 'string' && _ppFontById(j.fontId).id === j.fontId) p.fontId = j.fontId;
         else if(j.fontId) p.fontId = 'nunito';
         if(typeof j.avatar === 'string' && PLAYER_AVATARS.includes(j.avatar)) p.avatar = j.avatar;
+        if(typeof j.customAvatar === 'string' && j.customAvatar.startsWith('data:image') && j.customAvatar.length < 220000){
+          p.customAvatar = j.customAvatar;
+        }
+        if(typeof j.bubbleStyle === 'string') p.bubbleStyle = j.bubbleStyle;
+        if(Array.isArray(j.unlockedFx)) p.unlockedFx = j.unlockedFx.filter(x=>typeof x==='string').slice(0, 40);
+        if(Array.isArray(j.unlockedBubbles)) p.unlockedBubbles = j.unlockedBubbles.filter(x=>typeof x==='string').slice(0, 20);
+        if(!p.unlockedBubbles || !p.unlockedBubbles.length) p.unlockedBubbles = ['classic'];
         p.renameCount = Math.max(0, Number(j.renameCount) || 0);
         p.styleUnlocked = !!j.styleUnlocked;
       }
@@ -115,6 +153,13 @@ function savePlayerProfile(patch){
   if(!/^#[0-9A-Fa-f]{6}$/.test(p.color)) p.color = '#ffffff';
   if(!_ppFontById(p.fontId) || _ppFontById(p.fontId).id !== p.fontId) p.fontId = 'nunito';
   if(!PLAYER_AVATARS.includes(p.avatar)) p.avatar = '🐶';
+  if(p.customAvatar && !(typeof p.customAvatar === 'string' && p.customAvatar.startsWith('data:image') && p.customAvatar.length < 220000)){
+    p.customAvatar = '';
+  }
+  if(!Array.isArray(p.unlockedFx)) p.unlockedFx = [];
+  if(!Array.isArray(p.unlockedBubbles) || !p.unlockedBubbles.length) p.unlockedBubbles = ['classic'];
+  if(!p.bubbleStyle) p.bubbleStyle = 'classic';
+  if(p.unlockedBubbles.indexOf(p.bubbleStyle) < 0) p.bubbleStyle = 'classic';
   try{
     const s = JSON.stringify(p);
     if(typeof safeSet === 'function') safeSet(PLAYER_PROFILE_KEY, s);
