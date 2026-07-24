@@ -82,12 +82,27 @@ async function _upsertPlayerProfile(){
 }
 
 async function signInWithGoogle(){
-  await ensureOnlineAuth();
+  // QUAN TRỌNG: không await bất kỳ thao tác bất đồng bộ nào (signInAnonymously,
+  // ghi Firestore...) TRƯỚC khi gọi signInWithPopup. Trên trình duyệt mobile,
+  // window.open() chỉ được phép nếu nằm ngay trong "user gesture" (cú click).
+  // Nếu có await trước đó, gesture bị mất → Chrome mobile chặn popup thật sự,
+  // Firebase fallback sang điều hướng redirect toàn trang → sessionStorage bị
+  // mất khi quay lại → lỗi "missing initial state".
+  if(!isOnlineServicesEnabled()) throw new Error('online_disabled');
+  if(!firebase.apps.length) firebase.initializeApp(window.FIREBASE_CONFIG);
+  if(!_onlineAuth) _onlineAuth = firebase.auth();
+  if(!_onlineDb) _onlineDb = firebase.firestore();
+
   const provider = new firebase.auth.GoogleAuthProvider();
-  await _onlineAuth.signInWithPopup(provider);
+  await _onlineAuth.signInWithPopup(provider); // gọi ngay, đồng bộ với click
+
+  // Các việc bất đồng bộ khác (ghi Firestore, đảm bảo có uid...) làm SAU khi
+  // popup đã hoàn tất, không ảnh hưởng đến việc mở popup nữa.
+  if(!_onlineAuth.currentUser) await _onlineAuth.signInAnonymously();
   _onlineUid = _onlineAuth.currentUser.uid;
   const name = _onlineAuth.currentUser.displayName;
   if(name) _onlineDisplayName = name;
+  _onlineReady = true;
   await _upsertPlayerProfile();
   return _onlineUid;
 }
