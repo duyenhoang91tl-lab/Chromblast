@@ -116,6 +116,7 @@ async function onSwitchToRoom(room){
     const msg = e.message==='room_not_found' ? t('onlineRoomNotFound')
       : e.message==='room_full' ? (typeof t==='function'?t('caroRoomFull'):e.message)
       : e.message==='room_not_open' ? (typeof t==='function'?t('caroRoomNotOpen'):e.message)
+      : e.message==='already_hosting' ? t('onlineAlreadyHosting')
       : e.message;
     _onlineStatus(msg, true);
   }
