@@ -30,6 +30,17 @@ function _ppFontById(id){
 /** Avatar thú trong game (emoji) */
 const PLAYER_AVATARS = ['🐶','🐱','🐰','🐢','🦫','🦔','🐍','🐕','🐝','🐔','🐿️','🦎'];
 const FRIENDS_KEY = 'chromablast_friends';
+const FRIEND_REQ_OUT_KEY = 'chromablast_friend_req_out';
+
+/** Lv < 10: 20 bạn; mỗi +10 level → +20 slot */
+function maxFriendsForLevel(level){
+  const lv = Math.max(1, Number(level) || (typeof playerLevel === 'number' ? playerLevel : 1));
+  return 20 + Math.floor(lv / 10) * 20;
+}
+function friendSlotsLeft(){
+  const max = maxFriendsForLevel(typeof playerLevel === 'number' ? playerLevel : 1);
+  return Math.max(0, max - getFriendsList().length);
+}
 
 function _ppDefault(){
   return {
@@ -96,8 +107,10 @@ function isFriend(uid){
 
 function addFriendLocal(friend){
   if(!friend || !friend.uid) return { ok:false, reason:'need_id' };
-  const list = getFriendsList().filter(f => f && f.uid !== friend.uid);
   if(isFriend(friend.uid)) return { ok:true, already:true, list:getFriendsList() };
+  const max = maxFriendsForLevel(typeof playerLevel === 'number' ? playerLevel : 1);
+  const list = getFriendsList().filter(f => f && f.uid !== friend.uid);
+  if(list.length >= max) return { ok:false, reason:'cap', max, list };
   list.unshift({
     uid: friend.uid,
     name: String(friend.name || 'Player').slice(0, 32),
@@ -105,11 +118,49 @@ function addFriendLocal(friend){
     at: Date.now()
   });
   try{
-    const s = JSON.stringify(list.slice(0, 80));
+    const s = JSON.stringify(list.slice(0, max));
     if(typeof safeSet === 'function') safeSet(FRIENDS_KEY, s);
     else localStorage.setItem(FRIENDS_KEY, s);
   }catch(e){}
-  return { ok:true, already:false, list };
+  return { ok:true, already:false, list, max };
+}
+
+function removeFriendLocal(uid){
+  if(!uid) return { ok:false };
+  const list = getFriendsList().filter(f => f && f.uid !== uid);
+  try{
+    const s = JSON.stringify(list);
+    if(typeof safeSet === 'function') safeSet(FRIENDS_KEY, s);
+    else localStorage.setItem(FRIENDS_KEY, s);
+  }catch(e){}
+  return { ok:true, list };
+}
+
+function getOutgoingFriendRequests(){
+  try{
+    const raw = (typeof safeGet === 'function' ? safeGet(FRIEND_REQ_OUT_KEY) : null) || localStorage.getItem(FRIEND_REQ_OUT_KEY);
+    const j = raw ? JSON.parse(raw) : [];
+    return Array.isArray(j) ? j : [];
+  }catch(e){ return []; }
+}
+function saveOutgoingFriendRequests(list){
+  try{
+    const s = JSON.stringify((list||[]).slice(0, 40));
+    if(typeof safeSet === 'function') safeSet(FRIEND_REQ_OUT_KEY, s);
+    else localStorage.setItem(FRIEND_REQ_OUT_KEY, s);
+  }catch(e){}
+}
+function markOutgoingFriendRequest(friend){
+  if(!friend || !friend.uid) return;
+  const list = getOutgoingFriendRequests().filter(f => f && f.uid !== friend.uid);
+  list.unshift({ uid: friend.uid, name: friend.name||'Player', avatar: friend.avatar||'🐶', at: Date.now() });
+  saveOutgoingFriendRequests(list);
+}
+function clearOutgoingFriendRequest(uid){
+  saveOutgoingFriendRequests(getOutgoingFriendRequests().filter(f => f && f.uid !== uid));
+}
+function hasOutgoingFriendRequest(uid){
+  return !!uid && getOutgoingFriendRequests().some(f => f && f.uid === uid);
 }
 
 function getPlayerProfile(){

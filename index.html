@@ -154,6 +154,7 @@
     <div id="game-controls">
       <button id="hiddenmap-menu-btn" title="Chọn map ẩn đã chơi qua" data-i18n-title="ttHiddenMap" style="display:none;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;align-items:center;justify-content:center;padding:0;">🗺️</button>
       <button id="daily-btn" title="Điểm danh nhận quà" data-i18n-title="ttDaily">🎁</button>
+      <button id="shop-btn" title="Cửa hàng vàng" data-i18n-title="ttShop" style="background:rgba(255,213,74,0.18);border:1px solid rgba(255,213,74,0.4);border-radius:8px;color:#ffd54a;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">🛒</button>
       <button id="brick-skin-btn" title="Kho gạch" data-i18n-title="ttBricks" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">🧱</button>
       <button id="board-skin-btn" title="Kho nền bàn" data-i18n-title="ttBoards" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">🗺️</button>
       <button id="spin-btn-hdr" title="Vòng quay may mắn" data-i18n-title="ttSpin" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">🎡</button>
@@ -194,6 +195,7 @@
           <button type="button" class="set-action set-c-blue" id="set-btn-help"><span class="set-act-ico">❓</span><span data-i18n="setHelp">Hướng dẫn</span></button>
           <button type="button" class="set-action set-c-teal" id="set-btn-lang"><span class="set-act-ico">🌐</span><span data-i18n="setLanguage">Ngôn ngữ</span></button>
           <button type="button" class="set-action set-c-blue" id="set-btn-map"><span class="set-act-ico">🗺️</span><span data-i18n="setMap">Map ẩn</span></button>
+          <button type="button" class="set-action set-c-gold" id="set-btn-shop"><span class="set-act-ico">🛒</span><span data-i18n="setShop">Cửa hàng</span></button>
           <button type="button" class="set-action set-c-gold" id="set-btn-cup"><span class="set-act-ico">🏆</span><span data-i18n="setCup">Cúp</span></button>
           <button type="button" class="set-action set-c-brick" id="set-btn-bricks"><span class="set-act-ico">🧱</span><span data-i18n="setBricks">Gạch</span></button>
           <button type="button" class="set-action set-c-board" id="set-btn-boards"><span class="set-act-ico">🗺️</span><span data-i18n="setBoards">Nền bàn</span></button>
@@ -478,6 +480,8 @@
       </div>
 
       <div class="gchat-pane" data-pane="friends">
+        <div id="gchat-friend-cap" class="gchat-friend-cap"></div>
+        <div id="gchat-friend-requests" class="gchat-friend-requests"></div>
         <div id="gchat-friends-list" class="gchat-friends-list"></div>
         <div id="gchat-friends-thread" class="gchat-friends-thread" hidden>
           <div class="gchat-friend-head">
@@ -490,6 +494,7 @@
           <div class="gchat-invite-row">
             <button type="button" id="gchat-invite-caro" class="gchat-invite-btn" data-i18n="gchatInviteCaro">❌⭕ Mời Caro</button>
             <button type="button" id="gchat-invite-versus" class="gchat-invite-btn" data-i18n="gchatInviteVersus">⚔️ Mời Versus</button>
+            <button type="button" id="gchat-send-heart" class="gchat-invite-btn gchat-heart-btn" data-i18n="gchatSendHeart">❤️ Gửi tim</button>
           </div>
           <div id="gchat-friends-log" class="gchat-log" aria-live="polite"></div>
           <form id="gchat-friends-form" class="gchat-form" autocomplete="off">
@@ -582,7 +587,7 @@
   <div id="daily-panel" class="admin-panel-like">
     <div class="admin-card">
       <div class="admin-title"><span data-i18n="dailyTitle">🎁 Điểm danh hàng ngày</span><button class="admin-close" id="daily-close-btn">✕</button></div>
-      <div class="admin-sub">Điểm danh mỗi ngày để nhận XP. Bỏ lỡ 1 ngày sẽ mất chuỗi, quay lại ngày 1.</div>
+      <div class="admin-sub" data-i18n="dailySub">Điểm danh mỗi ngày: XP + 🪙1 vàng. Bỏ lỡ 1 ngày sẽ mất chuỗi. Cup / lên cấp cũng thưởng vàng.</div>
       <div id="daily-reward-list" class="daily-grid"></div>
       <button id="daily-claim-btn" class="auth-submit-btn" style="margin-top:14px;">🎁 Nhận quà</button>
     </div>
@@ -1062,6 +1067,7 @@
 <script src="js/mech-config.js"></script>
 <script src="js/progression.js"></script>
 <script src="js/inventory.js"></script>
+<script src="js/economy-shop.js"></script>
 <script src="js/lucky-spin.js"></script>
 <script src="js/effects.js"></script>
 <script src="js/ui.js"></script>

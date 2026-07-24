@@ -22,39 +22,39 @@
   }
 
 
-  /** classic + plush mở sẵn; chroma mở sau map ẩn 7; còn lại mở dần khi phá map ẩn */
+  /** classic + plush mở sẵn; còn lại chỉ mua bằng vàng trong Shop */
   const BRICK_SKINS = [
     { id: "classic", name: "Classic", desc: { vi: 'Gạch bevel cổ điển', en: 'Classic beveled bricks' }, starter: true  },
     { id: "plush", name: "Plush", desc: { vi: 'Bông xù hiện tại', en: 'Current plush style' }, starter: true  },
-    { id: "chroma", name: "Chroma", desc: { vi: 'Kẹo bóng + icon — thắng map ẩn 7', en: 'Candy gloss + icons — clear hidden map 7' }, unlockMap: "memory"  },
-    { id: "glass", name: "Glass", desc: { vi: 'Thủy tinh trong', en: 'Clear glass' } },
-    { id: "neon", name: "Neon", desc: { vi: 'Ô neon + thú màu gạch thường', en: 'Neon tiles + pet icons' } },
-    { id: "metal", name: "Metal", desc: { vi: 'Kim loại xước', en: 'Brushed metal' } },
-    { id: "wood", name: "Wood", desc: { vi: 'Gỗ vân ấm', en: 'Warm wood grain' } },
-    { id: "crystal", name: "Crystal", desc: { vi: 'Pha lê đa giác', en: 'Crystal facets' } },
-    { id: "ice", name: "Ice", desc: { vi: 'Băng giá', en: 'Icy frost' } },
-    { id: "lava", name: "Lava", desc: { vi: 'Nham thạch', en: 'Molten lava' } },
-    { id: "gold", name: "Gold", desc: { vi: 'Vàng bóng', en: 'Shiny gold' } },
-    { id: "silver", name: "Silver", desc: { vi: 'Bạc lạnh', en: 'Cool silver' } },
-    { id: "marble", name: "Marble", desc: { vi: 'Cẩm thạch', en: 'Marble stone' } },
-    { id: "pixel", name: "Pixel", desc: { vi: 'Pixel 8-bit', en: 'Pixel' } },
-    { id: "watercolor", name: "Watercolor", desc: { vi: 'Màu nước', en: 'Watercolor wash' } },
-    { id: "holo", name: "Holo", desc: { vi: 'Hologram', en: 'Holo' } },
-    { id: "matte", name: "Matte", desc: { vi: 'Nhám mờ', en: 'Matte finish' } },
-    { id: "glossy", name: "Glossy", desc: { vi: 'Bóng gương', en: 'Mirror gloss' } },
-    { id: "chalk", name: "Chalk", desc: { vi: 'Phấn bảng', en: 'Chalkboard' } },
-    { id: "leather", name: "Leather", desc: { vi: 'Da thật', en: 'Real leather' } },
-    { id: "felt", name: "Felt", desc: { vi: 'Nỉ mềm', en: 'Soft felt' } },
-    { id: "ceramic", name: "Ceramic", desc: { vi: 'Sứ men', en: 'Glazed ceramic' } },
-    { id: "rubber", name: "Rubber", desc: { vi: 'Cao su', en: 'Rubber' } },
-    { id: "jelly", name: "Jelly", desc: { vi: 'Thạch mềm', en: 'Soft jelly' } },
-    { id: "pastel", name: "Pastel", desc: { vi: 'Pastel dịu', en: 'Soft pastel' } },
-    { id: "retro", name: "Retro", desc: { vi: 'Retro phẳng', en: 'Flat retro' } },
-    { id: "galaxy", name: "Galaxy", desc: { vi: 'Thiên hà', en: 'Galaxy space' } },
-    { id: "bubble", name: "Bubble", desc: { vi: 'Bong bóng', en: 'Bubbly' } },
-    { id: "stone", name: "Stone", desc: { vi: 'Đá thô', en: 'Rough stone' } },
-    { id: "paper", name: "Paper", desc: { vi: 'Giấy gấp', en: 'Folded paper' } },
-    { id: "chrome", name: "Chrome", desc: { vi: 'Chrome gương', en: 'Mirror chrome' } },
+    { id: "chroma", name: "Chroma", desc: { vi: 'Kẹo bóng + icon', en: 'Candy gloss + icons' }, price: 45 },
+    { id: "glass", name: "Glass", desc: { vi: 'Thủy tinh trong', en: 'Clear glass' }, price: 18 },
+    { id: "neon", name: "Neon", desc: { vi: 'Ô neon + thú màu gạch thường', en: 'Neon tiles + pet icons' }, price: 36 },
+    { id: "metal", name: "Metal", desc: { vi: 'Kim loại xước', en: 'Brushed metal' }, price: 28 },
+    { id: "wood", name: "Wood", desc: { vi: 'Gỗ vân ấm', en: 'Warm wood grain' }, price: 12 },
+    { id: "crystal", name: "Crystal", desc: { vi: 'Pha lê đa giác', en: 'Crystal facets' }, price: 55 },
+    { id: "ice", name: "Ice", desc: { vi: 'Băng giá', en: 'Icy frost' }, price: 22 },
+    { id: "lava", name: "Lava", desc: { vi: 'Nham thạch', en: 'Molten lava' }, price: 30 },
+    { id: "gold", name: "Gold", desc: { vi: 'Vàng bóng', en: 'Shiny gold' }, price: 90 },
+    { id: "silver", name: "Silver", desc: { vi: 'Bạc lạnh', en: 'Cool silver' }, price: 40 },
+    { id: "marble", name: "Marble", desc: { vi: 'Cẩm thạch', en: 'Marble stone' }, price: 48 },
+    { id: "pixel", name: "Pixel", desc: { vi: 'Pixel 8-bit', en: 'Pixel' }, price: 20 },
+    { id: "watercolor", name: "Watercolor", desc: { vi: 'Màu nước', en: 'Watercolor wash' }, price: 26 },
+    { id: "holo", name: "Holo", desc: { vi: 'Hologram', en: 'Holo' }, price: 70 },
+    { id: "matte", name: "Matte", desc: { vi: 'Nhám mờ', en: 'Matte finish' }, price: 10 },
+    { id: "glossy", name: "Glossy", desc: { vi: 'Bóng gương', en: 'Mirror gloss' }, price: 24 },
+    { id: "chalk", name: "Chalk", desc: { vi: 'Phấn bảng', en: 'Chalkboard' }, price: 14 },
+    { id: "leather", name: "Leather", desc: { vi: 'Da thật', en: 'Real leather' }, price: 32 },
+    { id: "felt", name: "Felt", desc: { vi: 'Nỉ mềm', en: 'Soft felt' }, price: 16 },
+    { id: "ceramic", name: "Ceramic", desc: { vi: 'Sứ men', en: 'Glazed ceramic' }, price: 28 },
+    { id: "rubber", name: "Rubber", desc: { vi: 'Cao su', en: 'Rubber' }, price: 12 },
+    { id: "jelly", name: "Jelly", desc: { vi: 'Thạch mềm', en: 'Soft jelly' }, price: 22 },
+    { id: "pastel", name: "Pastel", desc: { vi: 'Pastel dịu', en: 'Soft pastel' }, price: 18 },
+    { id: "retro", name: "Retro", desc: { vi: 'Retro phẳng', en: 'Flat retro' }, price: 25 },
+    { id: "galaxy", name: "Galaxy", desc: { vi: 'Thiên hà', en: 'Galaxy space' }, price: 80 },
+    { id: "bubble", name: "Bubble", desc: { vi: 'Bong bóng', en: 'Bubbly' }, price: 34 },
+    { id: "stone", name: "Stone", desc: { vi: 'Đá thô', en: 'Rough stone' }, price: 15 },
+    { id: "paper", name: "Paper", desc: { vi: 'Giấy gấp', en: 'Folded paper' }, price: 10 },
+    { id: "chrome", name: "Chrome", desc: { vi: 'Chrome gương', en: 'Mirror chrome' }, price: 100 },
   ];
 
   const STARTER_IDS = BRICK_SKINS.filter(function (s) {
@@ -162,27 +162,9 @@
     return false;
   }
 
-  /** Mở/thu hồi skin gắn map (chroma sau map ẩn 7). Trả id vừa mở khóa hoặc null. */
+  /** Không còn mở gạch bằng map ẩn — chỉ Shop */
   function syncMapGatedBrickSkins() {
-    let justUnlocked = null;
-    BRICK_SKINS.forEach(function (skin) {
-      if (!skin.unlockMap) return;
-      if (isHiddenMapCleared(skin.unlockMap)) {
-        if (unlockBrickSkin(skin.id)) justUnlocked = skin.id;
-      } else if (isUnlocked(skin.id)) {
-        state.unlocked = state.unlocked.filter(function (id) {
-          return id !== skin.id;
-        });
-        if (state.active === skin.id) {
-          state.active = "plush";
-          document.documentElement.setAttribute("data-brick-skin", "plush");
-          const root = document.getElementById("game-root");
-          if (root) root.setAttribute("data-brick-skin", "plush");
-        }
-        saveState();
-      }
-    });
-    return justUnlocked;
+    return null;
   }
 
   function announceBrickUnlock(id) {
@@ -217,13 +199,16 @@
     opts = opts || {};
     const card = document.createElement("button");
     card.type = "button";
+    const price = skin.price | 0;
+    const shopLocked = !!(opts.locked && price > 0);
     card.className =
       "brick-skin-card" +
       (opts.locked ? " locked" : "") +
       (opts.active ? " active" : "") +
-      (opts.hl ? " highlight" : "");
+      (opts.hl ? " highlight" : "") +
+      (shopLocked ? " shop-buyable" : "");
     card.dataset.id = skin.id;
-    if (opts.locked) card.disabled = true;
+    if (opts.locked && !shopLocked) card.disabled = true;
 
     const preview = document.createElement("div");
     preview.className = "brick-skin-preview";
@@ -237,10 +222,10 @@
 
     const desc = document.createElement("div");
     desc.className = "brick-skin-desc";
-    if (opts.locked) {
-      desc.textContent = skin.unlockMap
-        ? tt("brickSkinMap7")
-        : tt("brickSkinLocked");
+    if (opts.locked && price > 0) {
+      desc.textContent = "🪙 " + price + " · " + tt("brickSkinBuyShop", "Mua trong Shop");
+    } else if (opts.locked) {
+      desc.textContent = tt("brickSkinLocked");
     } else {
       desc.textContent = skinDesc(skin);
     }
@@ -254,6 +239,13 @@
           if (typeof sfxClick === "function") sfxClick();
         } catch (_) {}
         opts.onPick(skin.id);
+      });
+    } else if (shopLocked) {
+      card.addEventListener("click", function () {
+        try {
+          if (typeof sfxClick === "function") sfxClick();
+        } catch (_) {}
+        if (typeof openShop === "function") openShop("bricks");
       });
     }
     return card;
@@ -394,48 +386,13 @@
     openBrickSkinPanel("starter", null, thenFn);
   }
 
-  /** Thắng map ẩn mới → mở khóa gạch mới (1–2 kiểu nếu còn nhiều hơn số map còn lại) */
+  /** Gạch chỉ mua bằng vàng trong Shop — không tặng khi phá map ẩn */
   function onHiddenMapClearedForBrick(mapKey) {
-    const gated = syncMapGatedBrickSkins();
-
-    let mapsLeft = 0;
-    try {
-      const total =
-        typeof HIDDEN_MAP_LIST !== "undefined" && HIDDEN_MAP_LIST
-          ? HIDDEN_MAP_LIST.length
-          : 21;
-      const cleared =
-        typeof clearedHiddenMaps !== "undefined" && clearedHiddenMaps
-          ? clearedHiddenMaps.size
-          : 0;
-      mapsLeft = Math.max(0, total - cleared);
-    } catch (_) {
-      mapsLeft = 0;
-    }
-    const remainingSkins = UNLOCK_ORDER.filter(function (id) {
-      return !isUnlocked(id);
-    }).length;
-    let n = 1;
-    if (remainingSkins > mapsLeft + 1) n = 2;
-
-    let last = null;
-    for (let i = 0; i < n; i++) {
-      const next = nextLockedSkinId();
-      if (!next) break;
-      unlockBrickSkin(next);
-      last = next;
-    }
-
-    // Ưu tiên thông báo skin gắn map (chroma sau map 7) nếu vừa mở
-    const highlight = gated || last;
-    if (!highlight) return null;
-    announceBrickUnlock(highlight);
-    return highlight;
+    return null;
   }
 
   function initBrickSkins() {
     loadState();
-    syncMapGatedBrickSkins();
     applyBrickSkin(state.active);
     ensurePanel();
     document.getElementById("brick-skin-btn")?.addEventListener("click", function () {
@@ -455,47 +412,15 @@
     });
   }
 
-  /** Lucky Spin: 2% mở khóa 1 gạch chưa có (random). quiet=true → chỉ unlock, không mở panel. */
+  /** Không mở gạch bằng vòng quay — chỉ Shop */
   function tryUnlockRandomBrickFromSpin(chance, quiet) {
-    if (typeof chance !== "number") chance = 0.02;
-    if (Math.random() >= chance) return null;
-    const locked = UNLOCK_ORDER.filter(function (id) {
-      return !isUnlocked(id);
-    });
-    const pool =
-      locked.length > 0
-        ? locked
-        : BRICK_SKINS.map(function (s) {
-            return s.id;
-          }).filter(function (id) {
-            return !isUnlocked(id);
-          });
-    if (!pool.length) return null;
-    const id = pool[Math.floor(Math.random() * pool.length)];
-    if (!unlockBrickSkin(id)) return null;
-    if (quiet) return id;
-    setTimeout(function () {
-      openBrickSkinPanel("unlock", id);
-      try {
-        if (typeof sfxUnlock === "function") sfxUnlock();
-      } catch (_) {}
-      try {
-        if (typeof showComboFlash === "function") {
-          const s = getSkin(id);
-          showComboFlash(
-            0,
-            false,
-            tt("brickSpinRare", s ? s.name : id)
-          );
-        }
-      } catch (_) {}
-    }, 700);
-    return id;
+    return null;
   }
 
   g.BRICK_SKINS = BRICK_SKINS;
   g.applyBrickSkin = applyBrickSkin;
   g.unlockBrickSkin = unlockBrickSkin;
+  g.isBrickSkinUnlocked = isUnlocked;
   g.openBrickSkinPanel = openBrickSkinPanel;
   g.closeBrickSkinPanel = closeBrickSkinPanel;
   g.maybeShowStarterBrickPicker = maybeShowStarterBrickPicker;

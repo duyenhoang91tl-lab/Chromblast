@@ -25,34 +25,34 @@
   const BOARD_SKINS = [
     { id: "classic", name: "Classic", desc: { vi: 'Nền tối phẳng cổ điển', en: 'Flat classic dark board' }, starter: true  },
     { id: "slate", name: "Slate", desc: { vi: 'Nền xám tím hiện tại', en: 'Current slate purple board' }, starter: true  },
-    { id: "wood", name: "Wood", desc: { vi: 'Ván gỗ ấm', en: 'Warm wood planks' } },
-    { id: "garden", name: "Garden", desc: { vi: 'Vườn xanh', en: 'Green garden' } },
-    { id: "ocean", name: "Ocean", desc: { vi: 'Đại dương', en: 'Ocean depths' } },
-    { id: "night", name: "Night", desc: { vi: 'Đêm sao', en: 'Starry night' } },
-    { id: "sunset", name: "Sunset", desc: { vi: 'Hoàng hôn', en: 'Sunset glow' } },
-    { id: "ice", name: "Ice", desc: { vi: 'Băng giá', en: 'Icy frost' } },
-    { id: "lava", name: "Lava", desc: { vi: 'Nham thạch', en: 'Molten lava' } },
-    { id: "candy", name: "Candy", desc: { vi: 'Kẹo ngọt', en: 'Sweet candy' } },
-    { id: "neon", name: "Neon", desc: { vi: 'Neon city', en: 'Neon city' } },
-    { id: "sand", name: "Sand", desc: { vi: 'Cát vàng', en: 'Golden sand' } },
-    { id: "marble", name: "Marble", desc: { vi: 'Cẩm thạch', en: 'Marble stone' } },
-    { id: "metal", name: "Metal", desc: { vi: 'Kim loại', en: 'Brushed metal' } },
-    { id: "paper", name: "Paper", desc: { vi: 'Giấy kraft', en: 'Kraft paper' } },
-    { id: "pixel", name: "Pixel", desc: { vi: 'Pixel grid', en: 'Pixel grid' } },
-    { id: "forest", name: "Forest", desc: { vi: 'Rừng sâu', en: 'Deep forest' } },
-    { id: "sakura", name: "Sakura", desc: { vi: 'Hoa anh đào', en: 'Cherry blossoms' } },
-    { id: "aurora", name: "Aurora", desc: { vi: 'Cực quang', en: 'Northern lights' } },
-    { id: "retro", name: "Retro", desc: { vi: 'Retro arcade', en: 'Retro arcade' } },
-    { id: "cloud", name: "Cloud", desc: { vi: 'Mây trời', en: 'Sky clouds' } },
-    { id: "ink", name: "Ink", desc: { vi: 'Mực đen', en: 'Black ink' } },
-    { id: "gold", name: "Gold", desc: { vi: 'Hoàng kim', en: 'Royal gold' } },
-    { id: "mint", name: "Mint", desc: { vi: 'Bạc hà', en: 'Fresh mint' } },
-    { id: "berry", name: "Berry", desc: { vi: 'Quả mọng', en: 'Berry tones' } },
-    { id: "desert", name: "Desert", desc: { vi: 'Sa mạc', en: 'Desert dunes' } },
-    { id: "coral", name: "Coral", desc: { vi: 'San hô', en: 'Coral reef' } },
-    { id: "storm", name: "Storm", desc: { vi: 'Bão tố', en: 'Stormy skies' } },
-    { id: "honey", name: "Honey", desc: { vi: 'Mật ong', en: 'Honey amber' } },
-    { id: "violet", name: "Violet", desc: { vi: 'Tím huyền', en: 'Mystic violet' } },
+    { id: "wood", name: "Wood", desc: { vi: 'Ván gỗ ấm', en: 'Warm wood planks' }, price: 8 },
+    { id: "garden", name: "Garden", desc: { vi: 'Vườn xanh', en: 'Green garden' }, price: 10 },
+    { id: "ocean", name: "Ocean", desc: { vi: 'Đại dương', en: 'Ocean depths' }, price: 14 },
+    { id: "night", name: "Night", desc: { vi: 'Đêm sao', en: 'Starry night' }, price: 16 },
+    { id: "sunset", name: "Sunset", desc: { vi: 'Hoàng hôn', en: 'Sunset glow' }, price: 18 },
+    { id: "ice", name: "Ice", desc: { vi: 'Băng giá', en: 'Icy frost' }, price: 20 },
+    { id: "lava", name: "Lava", desc: { vi: 'Nham thạch', en: 'Molten lava' }, price: 28 },
+    { id: "candy", name: "Candy", desc: { vi: 'Kẹo ngọt', en: 'Sweet candy' }, price: 24 },
+    { id: "neon", name: "Neon", desc: { vi: 'Neon city', en: 'Neon city' }, price: 36 },
+    { id: "sand", name: "Sand", desc: { vi: 'Cát vàng', en: 'Golden sand' }, price: 12 },
+    { id: "marble", name: "Marble", desc: { vi: 'Cẩm thạch', en: 'Marble stone' }, price: 48 },
+    { id: "metal", name: "Metal", desc: { vi: 'Kim loại', en: 'Brushed metal' }, price: 32 },
+    { id: "paper", name: "Paper", desc: { vi: 'Giấy kraft', en: 'Kraft paper' }, price: 10 },
+    { id: "pixel", name: "Pixel", desc: { vi: 'Pixel grid', en: 'Pixel grid' }, price: 22 },
+    { id: "forest", name: "Forest", desc: { vi: 'Rừng sâu', en: 'Deep forest' }, price: 26 },
+    { id: "sakura", name: "Sakura", desc: { vi: 'Hoa anh đào', en: 'Cherry blossoms' }, price: 55 },
+    { id: "aurora", name: "Aurora", desc: { vi: 'Cực quang', en: 'Northern lights' }, price: 72 },
+    { id: "retro", name: "Retro", desc: { vi: 'Retro arcade', en: 'Retro arcade' }, price: 30 },
+    { id: "cloud", name: "Cloud", desc: { vi: 'Mây trời', en: 'Sky clouds' }, price: 15 },
+    { id: "ink", name: "Ink", desc: { vi: 'Mực đen', en: 'Black ink' }, price: 40 },
+    { id: "gold", name: "Gold", desc: { vi: 'Hoàng kim', en: 'Royal gold' }, price: 100 },
+    { id: "mint", name: "Mint", desc: { vi: 'Bạc hà', en: 'Fresh mint' }, price: 18 },
+    { id: "berry", name: "Berry", desc: { vi: 'Quả mọng', en: 'Berry tones' }, price: 22 },
+    { id: "desert", name: "Desert", desc: { vi: 'Sa mạc', en: 'Desert dunes' }, price: 16 },
+    { id: "coral", name: "Coral", desc: { vi: 'San hô', en: 'Coral reef' }, price: 58 },
+    { id: "storm", name: "Storm", desc: { vi: 'Bão tố', en: 'Stormy skies' }, price: 64 },
+    { id: "honey", name: "Honey", desc: { vi: 'Mật ong', en: 'Honey amber' }, price: 42 },
+    { id: "violet", name: "Violet", desc: { vi: 'Tím huyền', en: 'Mystic violet' }, price: 80 },
   ];
 
   const STARTER_IDS = BOARD_SKINS.filter(function (s) {
@@ -152,13 +152,17 @@
     opts = opts || {};
     const card = document.createElement("button");
     card.type = "button";
+    const price = skin.price | 0;
+    const shopLocked = !!(opts.locked && price > 0);
     card.className =
       "board-skin-card" +
       (opts.locked ? " locked" : "") +
       (opts.active ? " active" : "") +
-      (opts.hl ? " highlight" : "");
+      (opts.hl ? " highlight" : "") +
+      (shopLocked ? " shop-buyable" : "");
     card.dataset.id = skin.id;
-    if (opts.locked) card.disabled = true;
+    // Cho phép bấm khi khóa để mua trong shop / mua nhanh
+    if (opts.locked && !shopLocked) card.disabled = true;
 
     const preview = document.createElement("div");
     preview.className = "board-skin-preview";
@@ -170,7 +174,11 @@
 
     const desc = document.createElement("div");
     desc.className = "board-skin-desc";
-    desc.textContent = opts.locked ? tt("boardSkinLocked") : skinDesc(skin);
+    if (opts.locked && price > 0) {
+      desc.textContent = "🪙 " + price + " · " + tt("boardSkinBuyShop", "Mua trong Shop");
+    } else {
+      desc.textContent = opts.locked ? tt("boardSkinLocked") : skinDesc(skin);
+    }
 
     card.appendChild(preview);
     card.appendChild(name);
@@ -181,6 +189,13 @@
           if (typeof sfxClick === "function") sfxClick();
         } catch (_) {}
         opts.onPick(skin.id);
+      });
+    } else if (shopLocked) {
+      card.addEventListener("click", function () {
+        try {
+          if (typeof sfxClick === "function") sfxClick();
+        } catch (_) {}
+        if (typeof openShop === "function") openShop("boards");
       });
     }
     return card;
@@ -316,86 +331,13 @@
   }
 
   function onHiddenMapClearedForBoard() {
-    let mapsLeft = 0;
-    try {
-      const total =
-        typeof HIDDEN_MAP_LIST !== "undefined" && HIDDEN_MAP_LIST
-          ? HIDDEN_MAP_LIST.length
-          : 21;
-      const cleared =
-        typeof clearedHiddenMaps !== "undefined" && clearedHiddenMaps
-          ? clearedHiddenMaps.size
-          : 0;
-      mapsLeft = Math.max(0, total - cleared);
-    } catch (_) {
-      mapsLeft = 0;
-    }
-    const remaining = UNLOCK_ORDER.filter(function (id) {
-      return !isUnlocked(id);
-    }).length;
-    let n = 1;
-    if (remaining > mapsLeft + 1) n = 2;
-
-    let last = null;
-    for (let i = 0; i < n; i++) {
-      const next = nextLockedSkinId();
-      if (!next) break;
-      unlockBoardSkin(next);
-      last = next;
-    }
-    if (!last) return null;
-
-    // Trễ hơn picker gạch để không chồng modal
-    setTimeout(function () {
-      openBoardSkinPanel("unlock", last);
-      try {
-        if (typeof sfxUnlock === "function") sfxUnlock();
-      } catch (_) {}
-      try {
-        if (typeof showComboFlash === "function") {
-          const s = getSkin(last);
-          showComboFlash(0, false, tt("boardUnlockFlash", s ? s.name : last));
-        }
-      } catch (_) {}
-    }, 3200);
-    return last;
+    // Nền bàn chỉ mua bằng vàng trong Shop — không tặng khi phá map ẩn
+    return null;
   }
 
   function tryUnlockRandomBoardFromSpin(chance, quiet) {
-    if (typeof chance !== "number") chance = 0.02;
-    if (Math.random() >= chance) return null;
-    const locked = UNLOCK_ORDER.filter(function (id) {
-      return !isUnlocked(id);
-    });
-    const pool =
-      locked.length > 0
-        ? locked
-        : BOARD_SKINS.map(function (s) {
-            return s.id;
-          }).filter(function (id) {
-            return !isUnlocked(id);
-          });
-    if (!pool.length) return null;
-    const id = pool[Math.floor(Math.random() * pool.length)];
-    if (!unlockBoardSkin(id)) return null;
-    if (quiet) return id;
-    setTimeout(function () {
-      openBoardSkinPanel("unlock", id);
-      try {
-        if (typeof sfxUnlock === "function") sfxUnlock();
-      } catch (_) {}
-      try {
-        if (typeof showComboFlash === "function") {
-          const s = getSkin(id);
-          showComboFlash(
-            0,
-            false,
-            tt("boardSpinRare", s ? s.name : id)
-          );
-        }
-      } catch (_) {}
-    }, 1400);
-    return id;
+    // Không mở nền bằng vòng quay — chỉ Shop
+    return null;
   }
 
   function initBoardSkins() {

@@ -21,6 +21,15 @@ service cloud.firestore {
         allow create, update, delete: if isOwner(uid);
       }
 
+      /* Lời mời kết bạn — người nhận sở hữu doc */
+      match /friendRequests/{fromUid} {
+        allow read, update, delete: if isOwner(uid);
+        allow create: if signedIn()
+          && request.resource.data.fromUid == request.auth.uid
+          && request.resource.data.toUid == uid
+          && request.resource.data.status in ['pending', 'accepted_notice'];
+      }
+
       /* Lời mời vào phòng — người nhận sở hữu doc */
       match /invites/{inviteId} {
         allow read, update, delete: if isOwner(uid);

@@ -100,6 +100,14 @@ function addPlayerXP(n){
     try{ sfxUnlock(); }catch(e){}
     try{ showComboFlash(0,false,t('levelUp', playerLevel)); }catch(e){}
     try{ if(typeof grantHearts==='function') grantHearts(1, 'Lên cấp'); }catch(e){}
+    try{
+      // Thưởng vàng mỗi cấp lên: 2 + floor(lv/10)
+      let goldGain = 0;
+      for(let lv = prevLevel + 1; lv <= playerLevel; lv++){
+        goldGain += 2 + Math.floor(lv / 10);
+      }
+      if(goldGain>0 && typeof grantGold==='function') grantGold(goldGain, 'Lên cấp');
+    }catch(e){}
     try{ if(typeof unlockSkillByLevel==='function') unlockSkillByLevel(playerLevel); }catch(e){}
     try{ if(typeof refreshVersusButton==='function') refreshVersusButton(); }catch(e){}
     try{ if(typeof refreshCaroButton==='function') refreshCaroButton(); }catch(e){}
@@ -233,6 +241,33 @@ function unlockAchievement(id){
   saveCups();
   try{ showAchievementToast(a); }catch(e){}
   try { sfxScoreMilestone(); } catch(e){ try { sfxStreak(5); } catch(e2){} }
+  try{
+    const g = (typeof cupGoldReward==='function') ? cupGoldReward(id) : 3;
+    if(g>0 && typeof grantGold==='function') grantGold(g, '🏆 '+(a.label||id));
+  }catch(e){}
+}
+
+/** Vàng theo độ khó cup */
+function cupGoldReward(id){
+  const hard = {
+    combo25:12, combo30:18, score100k:16, score150k:20, score200k:28,
+    best100k:18, level50:20, player50:22, maps20:18, burst50:14, lines500:14,
+    fruit400:12, survive300:12, combo20:10, score50k:10, maps15:12, player40:14
+  };
+  const mid = {
+    combo15:6, combo10:4, score25k:7, score10k:4, best50k:8, best75k:10,
+    level25:8, level40:10, player25:8, player30:10, maps10:8, survive180:6,
+    fruit150:5, lines200:6, login21:5, secret12:6
+  };
+  const easy = {
+    combo5:2, score5k:2, maps1:2, login7:2, survive60:2, lines100:2,
+    level10:3, player10:3, maps5:4, best25k:5, level15:4, player15:4,
+    survive120:5, ultra:4
+  };
+  if(hard[id]!=null) return hard[id];
+  if(mid[id]!=null) return mid[id];
+  if(easy[id]!=null) return easy[id];
+  return 3;
 }
 
 /** Đánh dấu cup đã xem → gỡ dấu đỏ */
