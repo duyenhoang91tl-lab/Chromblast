@@ -256,7 +256,11 @@ function renderHiddenMapMenu(){
         const startScreen = document.getElementById('start-screen');
         if(startScreen){
           startScreen.classList.add('hide');
-          setTimeout(()=>{ startScreen.style.display='none'; }, 500);
+          if(typeof syncMenuOpenState === 'function') syncMenuOpenState();
+          setTimeout(()=>{
+            startScreen.style.display='none';
+            if(typeof syncMenuOpenState === 'function') syncMenuOpenState();
+          }, 500);
         }
         sfxClick();
         hardResetAllModes();
