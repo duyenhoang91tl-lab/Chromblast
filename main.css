@@ -4204,12 +4204,6 @@ body:has(#secret-stage.active) .streak-dot.lit{
   justify-content: center !important;
   box-sizing: border-box !important;
 }
-  box-shadow: none !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  box-sizing: border-box !important;
-}
 
 /* Shop + gold + friend requests */
 .inv-gold{ box-shadow:0 0 0 1px rgba(255,213,74,0.35); color:#ffe082; }
