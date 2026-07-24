@@ -26,6 +26,18 @@
     }
   }
 
+  // Google Sign-In native (Capgo SocialLogin) — warm-up sớm
+  try{
+    const SocialLogin = cap.Plugins && cap.Plugins.SocialLogin;
+    const webClientId = window.GOOGLE_WEB_CLIENT_ID;
+    if(SocialLogin && webClientId){
+      await SocialLogin.initialize({ google: { webClientId, mode: 'online' } });
+      window.__socialLoginGoogleReady = true;
+    }
+  }catch(e){
+    console.warn('[native] SocialLogin init', e);
+  }
+
   // ⚠️ ID đơn vị quảng cáo (AdMob console → Ad units):
   //  - Interstitial dùng id riêng.
   //  - Rewarded PHẢI là ad unit loại "Rewarded" — dùng id interstitial sẽ

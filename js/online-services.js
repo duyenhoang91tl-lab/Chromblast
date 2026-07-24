@@ -82,54 +82,100 @@ async function _upsertPlayerProfile(){
 }
 
 async function signInWithGoogle(){
-  // QUAN TRỌNG: không await bất kỳ thao tác bất đồng bộ nào (signInAnonymously,
-  // ghi Firestore...) TRƯỚC khi gọi signInWithPopup. Trên trình duyệt mobile,
-  // window.open() chỉ được phép nếu nằm ngay trong "user gesture" (cú click).
-  // Nếu có await trước đó, gesture bị mất → Chrome mobile chặn popup thật sự,
-  // Firebase fallback sang điều hướng redirect toàn trang → sessionStorage bị
-  // mất khi quay lại → lỗi "missing initial state".
+  // Web: không await async trước signInWithPopup (giữ user gesture).
+  // Android: dùng Google Sign-In native (Capgo SocialLogin) → Firebase credential.
   if(!isOnlineServicesEnabled()) throw new Error('online_disabled');
-
-  // Capacitor / WebView Android: popup OAuth Google thường bị chặn hoặc
-  // báo auth/unauthorized-domain rồi tắt ngay — không gọi popup trên native.
-  let native = false;
-  try{
-    native = !!(window.Capacitor && typeof Capacitor.isNativePlatform === 'function' && Capacitor.isNativePlatform());
-  }catch(e){ native = false; }
-  if(native){
-    const err = new Error('google_native_unsupported');
-    err.code = 'google_native_unsupported';
-    throw err;
-  }
 
   if(!firebase.apps.length) firebase.initializeApp(window.FIREBASE_CONFIG);
   if(!_onlineAuth) _onlineAuth = firebase.auth();
   if(!_onlineDb) _onlineDb = firebase.firestore();
 
-  const provider = new firebase.auth.GoogleAuthProvider();
-  await _onlineAuth.signInWithPopup(provider); // gọi ngay, đồng bộ với click
+  if(_isNativeCapacitor()){
+    await _signInWithGoogleNative();
+  } else {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    await _onlineAuth.signInWithPopup(provider);
+  }
 
-  // Các việc bất đồng bộ khác (ghi Firestore, đảm bảo có uid...) làm SAU khi
-  // popup đã hoàn tất, không ảnh hưởng đến việc mở popup nữa.
-  if(!_onlineAuth.currentUser) await _onlineAuth.signInAnonymously();
+  if(!_onlineAuth.currentUser) throw new Error('auth_no_user');
   _onlineUid = _onlineAuth.currentUser.uid;
   const name = _onlineAuth.currentUser.displayName;
   if(name) _onlineDisplayName = name;
+  try{
+    if(typeof getPlayerProfile === 'function' && typeof savePlayerProfile === 'function'){
+      const p = getPlayerProfile();
+      if(name && (!p.nick || /^Khách#/.test(p.nick))) savePlayerProfile({ nick: name });
+    }
+  }catch(e){}
   _onlineReady = true;
   await _upsertPlayerProfile();
   return _onlineUid;
 }
 
+function _isNativeCapacitor(){
+  try{
+    return !!(window.Capacitor && typeof Capacitor.isNativePlatform === 'function' && Capacitor.isNativePlatform());
+  }catch(e){ return false; }
+}
+
+async function _ensureSocialLoginGoogle(){
+  const SocialLogin = window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.SocialLogin;
+  if(!SocialLogin) throw Object.assign(new Error('google_plugin_missing'), { code: 'google_plugin_missing' });
+  const webClientId = window.GOOGLE_WEB_CLIENT_ID;
+  if(!webClientId) throw Object.assign(new Error('google_web_client_missing'), { code: 'google_web_client_missing' });
+  if(!_ensureSocialLoginGoogle._inited){
+    if(!window.__socialLoginGoogleReady){
+      await SocialLogin.initialize({
+        google: { webClientId, mode: 'online' }
+      });
+    }
+    _ensureSocialLoginGoogle._inited = true;
+  }
+  return SocialLogin;
+}
+
+async function _signInWithGoogleNative(){
+  const SocialLogin = await _ensureSocialLoginGoogle();
+  const login = await SocialLogin.login({
+    provider: 'google',
+    options: { scopes: ['email', 'profile'] }
+  });
+  const idToken = login && login.result && login.result.idToken;
+  if(!idToken){
+    throw Object.assign(new Error('google_no_id_token'), { code: 'google_no_id_token' });
+  }
+  const credential = firebase.auth.GoogleAuthProvider.credential(idToken);
+  // Giữ cùng uid nếu đang là anonymous → điểm Caro/PvP không mất
+  if(_onlineAuth.currentUser && _onlineAuth.currentUser.isAnonymous){
+    try{
+      await _onlineAuth.currentUser.linkWithCredential(credential);
+      return;
+    }catch(e){
+      // Tài khoản Google đã tồn tại → đăng nhập bằng Google (đổi uid)
+      if(!String(e.code||e.message||'').includes('credential-already-in-use')
+         && !String(e.code||e.message||'').includes('email-already-in-use')){
+        throw e;
+      }
+    }
+  }
+  await _onlineAuth.signInWithCredential(credential);
+}
+
 function friendlyOnlineAuthError(e){
   const code = String((e && (e.code || e.message)) || '');
-  if(code.includes('popup-closed-by-user') || code.includes('cancelled-popup-request')) return null; // bỏ qua
+  if(code.includes('popup-closed-by-user') || code.includes('cancelled-popup-request')) return null;
+  if(code.includes('12501') || /sign.?in.?canceled|user.?canceled|cancel/i.test(code)) return null;
   if(code.includes('unauthorized-domain')){
     return (typeof t==='function' ? t('onlineAuthDomain') : null)
       || 'Domain chưa được phép trên Firebase. Console → Authentication → Settings → Authorized domains → thêm localhost';
   }
-  if(code.includes('google_native_unsupported') || code.includes('operation-not-supported')){
-    return (typeof t==='function' ? t('onlineAuthNative') : null)
-      || 'Trên app Android dùng chơi ẩn danh (đã tự kết nối). Google Sign-In dùng trên trình duyệt web.';
+  if(code.includes('google_plugin_missing') || code.includes('google_web_client_missing')){
+    return (typeof t==='function' ? t('onlineAuthNativeSetup') : null)
+      || 'Thiếu cấu hình Google Sign-In trên app — chạy npm run cap:sync và kiểm tra GOOGLE_WEB_CLIENT_ID';
+  }
+  if(code.includes('google_no_id_token') || code.includes('Developer console is not set up') || code.includes('28444')){
+    return (typeof t==='function' ? t('onlineAuthSha') : null)
+      || 'Google Sign-In chưa khớp SHA-1. Thêm SHA-1 debug/release vào Firebase Android app rồi tải lại google-services.json';
   }
   if(code.includes('network-request-failed')){
     return (typeof t==='function' ? t('onlineAuthNetwork') : null) || 'Mất mạng — kiểm tra kết nối rồi thử lại';
@@ -137,9 +183,8 @@ function friendlyOnlineAuthError(e){
   if(code.includes('online_disabled')){
     return (typeof t==='function' ? t('onlineDisabled') : null) || 'Chưa cấu hình Firebase';
   }
-  // Không hiện raw Firebase dài — rút gọn
   if(code.startsWith('Firebase:') || code.includes('auth/')){
-    return (typeof t==='function' ? t('onlineAuthFail') : null) || 'Đăng nhập Google chưa thành công — vẫn chơi online được bằng tài khoản ẩn danh';
+    return (typeof t==='function' ? t('onlineAuthFail') : null) || 'Đăng nhập Google chưa thành công — vẫn chơi online bằng tài khoản ẩn danh được';
   }
   return (e && e.message) ? String(e.message) : String(e || 'Error');
 }

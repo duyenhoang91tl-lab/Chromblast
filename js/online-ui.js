@@ -255,15 +255,15 @@ function _vsApplyRemotePlace(P, move){
   document.getElementById('online-start-btn')?.addEventListener('click', onStartOnlineMatch);
   document.getElementById('online-lobby-leave')?.addEventListener('click', closeOnlineHub);
   document.getElementById('online-google-btn')?.addEventListener('click', async ()=>{
+    const btn = document.getElementById('online-google-btn');
+    if(btn) btn.disabled = true;
     try{
       await signInWithGoogle();
       _onlineStatus('Google · '+getOnlineDisplayName());
     }catch(e){
       const msg = typeof friendlyOnlineAuthError === 'function' ? friendlyOnlineAuthError(e) : (e && e.message);
-      if(!msg){ _onlineStatus(''); return; } // user đóng popup / bỏ qua
-      // Lỗi domain / native: hiện vàng (cảnh báo), không đỏ Firebase dài
-      const soft = String((e && e.code) || e.message || '').includes('unauthorized-domain')
-        || String((e && e.code) || '').includes('google_native_unsupported');
+      if(!msg){ _onlineStatus(''); return; }
+      const soft = /unauthorized-domain|google_plugin|google_web_client|google_no_id|28444|SHA/i.test(String((e&&e.code)||e.message||'')+msg);
       const el = document.getElementById('online-status');
       if(el){
         el.textContent = msg;
@@ -271,16 +271,10 @@ function _vsApplyRemotePlace(P, move){
       } else {
         _onlineStatus(msg, true);
       }
+    }finally{
+      if(btn) btn.disabled = false;
     }
   });
-
-  // App Android: ẩn nút Google (popup OAuth không ổn định) — anonymous đủ chơi online
-  try{
-    if(window.Capacitor && typeof Capacitor.isNativePlatform === 'function' && Capacitor.isNativePlatform()){
-      const gBtn = document.getElementById('online-google-btn');
-      if(gBtn) gBtn.style.display = 'none';
-    }
-  }catch(e){}
 
   initOnlineServices().then(ok => {
     const badge=document.getElementById('online-status-badge');

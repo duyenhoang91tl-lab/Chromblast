@@ -33,14 +33,30 @@ Project settings → **Add app** → Web `</>` → copy `appId` dạng `1:470820
 | Provider | Trạng thái |
 |----------|------------|
 | Anonymous | **Bật** (bắt buộc — vào phòng nhanh) |
-| Google | Bật (tuỳ chọn — nút Đăng nhập Google trên **web**) |
+| Google | **Bật** (app Android + web) |
 
 **Authorized domains** (Authentication → Settings):
 - Luôn có: `localhost`
-- Nếu chạy web/hosting: thêm domain của bạn
-- App Android (Capacitor) dùng **Anonymous** — không cần Google popup
+- App Android dùng **Google Sign-In native** (`@capgo/capacitor-social-login`) → Firebase `signInWithCredential` — không phụ thuộc Authorized domains như popup web.
 
-Nếu thấy lỗi `auth/unauthorized-domain`: domain hiện tại chưa nằm trong danh sách trên.
+**Google Sign-In trên Android (CH Play) — checklist:**
+1. Firebase Console → Project settings → Android app `com.duyenhoang91tl.chromblast`
+2. Thêm **SHA-1** (và SHA-256) của:
+   - keystore **debug** (máy test)
+   - keystore **release / Play App Signing** (khi lên CH Play)
+3. Tải lại `google-services.json` → `android/app/google-services.json`
+4. Trong Google Cloud / Firebase phải có:
+   - OAuth **Android** client (package + SHA-1)
+   - OAuth **Web** client → dùng làm `GOOGLE_WEB_CLIENT_ID` trong `js/firebase-config.js` (**không** dùng Android client ID)
+5. `npm run cap:sync` → Rebuild APK
+
+Lấy SHA-1 debug:
+```bash
+keytool -list -v -keystore %USERPROFILE%\.android\debug.keystore -alias androiddebugkey -storepass android -keypass android
+```
+
+Nếu thấy lỗi `auth/unauthorized-domain` trên **web**: thêm domain vào Authorized domains.
+Nếu lỗi Google trên **app**: gần như chắc thiếu/sai SHA-1 hoặc dùng nhầm client ID.
 
 ### 1c. Firestore Database
 **Build → Firestore Database → Create database**
