@@ -455,8 +455,25 @@ function _caroStartTurnTimer(){
 function _caroApplyStageTheme(){
   const stage = document.getElementById('caro-stage');
   if(!stage) return;
-  const theme = _caroTheme();
-  stage.style.background = 'linear-gradient(165deg, '+theme.pad+' 0%, #0a0a12 100%)';
+  // Nền trời đêm chung (sky-atmosphere) — không tô đen/pad đặc
+  stage.style.background = '';
+}
+
+function _caroSetGameRootHidden(hide){
+  const root = document.getElementById('game-root');
+  if(!root) return;
+  if(hide){
+    root.dataset.caroPrevVis = root.style.visibility || '';
+    root.style.visibility = 'hidden';
+    // Gỡ glow vàng secret-mode / combo để không lộ vạch hai bên
+    const gw = document.getElementById('grid-wrap');
+    if(gw){
+      gw.classList.remove('secret-mode','ultra-glow','combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5','fire-low','fire-mid','fire-high','fire-max');
+    }
+  } else if('caroPrevVis' in root.dataset){
+    root.style.visibility = root.dataset.caroPrevVis;
+    delete root.dataset.caroPrevVis;
+  }
 }
 
 function _caroSyncRoomPrefsFromData(d){
@@ -794,6 +811,7 @@ function _caroEnterAIGame(levelId){
   };
   caroMode = true;
   _caroToggleChrome(true);
+  _caroSetGameRootHidden(true);
   _caroApplyStageTheme();
 
   const stage = document.getElementById('caro-stage');
@@ -805,7 +823,6 @@ function _caroEnterAIGame(levelId){
   stage.classList.add('active');
   stage.style.display = 'flex';
   stage.style.zIndex = '10060';
-  document.getElementById('grid-wrap')?.classList.add('secret-mode');
   const badge = document.getElementById('mode-badge');
   if(badge){
     badge.textContent = '⬛ CARO';
@@ -895,6 +912,7 @@ function _caroEnterGame(roomData){
   _caroHide('caro-lobby-panel');
   _caroHide('caro-hub-panel');
   _caroToggleChrome(true);
+  _caroSetGameRootHidden(true);
   _caroApplyStageTheme();
   const stage = document.getElementById('caro-stage');
   if(stage){
@@ -902,7 +920,6 @@ function _caroEnterGame(roomData){
     stage.style.display = 'flex';
     stage.style.zIndex = '10060';
   }
-  document.getElementById('grid-wrap')?.classList.add('secret-mode');
   const badge = document.getElementById('mode-badge');
   if(badge){
     badge.textContent = '⬛ CARO';
@@ -1002,6 +1019,7 @@ function _caroQuit(){
   _caroLobby = null;
   stopListeningRoom();
   _caroToggleChrome(false);
+  _caroSetGameRootHidden(false);
   const canvas = _caroGetCanvas();
   if(canvas){
     const ctx = canvas.getContext('2d');

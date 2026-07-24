@@ -23,7 +23,7 @@ html {
   text-size-adjust: 100%;
 }
 body {
-  background: #1a1a2e;
+  background: #0b1026;
   color: #f2f2f7;
   font-family: 'Nunito', system-ui, -apple-system, sans-serif;
   font-weight: 800;
@@ -32,7 +32,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   display: flex; justify-content: center; align-items: flex-start;
-  padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+  padding: max(16px, env(safe-area-inset-top)) 12px max(16px, env(safe-area-inset-bottom));
   min-height: 100vh; min-height: 100dvh;
   overflow-x: hidden; overflow-y: auto;
   -webkit-user-select: none; user-select: none;
