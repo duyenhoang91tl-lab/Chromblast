@@ -1259,8 +1259,17 @@ async function caroCreateRoom(){
   if(!canPlayCaro()){ _caroStatus(t('caroNeedLevel', CARO_MIN_LEVEL), true); return; }
   if(!await _caroRequireOnline()) return;
   try{
+    // Rời phòng hiện tại (nếu đang ở) trước khi tạo/tái dùng
+    if(_caroLobby && _caroLobby.roomId){
+      const prev = _caroLobby.roomId;
+      const wasHost = _caroLobby.role === 'host';
+      stopListeningRoom();
+      _caroLobby = null;
+      // Guest rời hẳn; host giữ phòng để createOnlineRoom tái dùng (1 phòng)
+      if(!wasHost) await leaveOnlineRoom(prev);
+    }
     const prefs = getCaroPrefs();
-    const { roomId, code } = await createOnlineRoom({
+    const { roomId, code, reused } = await createOnlineRoom({
       gameType:'caro', turnSec: prefs.turnSec, boardSkin: prefs.skin
     });
     _caroOpenLobby(roomId, code, 'host', {
@@ -1268,8 +1277,11 @@ async function caroCreateRoom(){
       hostId: getOnlineUid(), gameType:'caro',
       turnSec: prefs.turnSec, boardSkin: prefs.skin
     });
-    _caroStatus(t('onlineRoomCreated', code));
-  }catch(e){ _caroStatus(e.message, true); }
+    _caroStatus(t(reused ? 'onlineRoomReuse' : 'onlineRoomCreated', code));
+  }catch(e){
+    const msg = e.message==='already_hosting' ? t('onlineAlreadyHosting') : e.message;
+    _caroStatus(msg, true);
+  }
 }
 
 async function caroJoinRoom(){
@@ -1283,7 +1295,8 @@ async function caroJoinRoom(){
     _caroStatus(t('onlineJoined'));
   }catch(e){
     const msg = e.message==='room_not_found' ? t('onlineRoomNotFound') :
-      e.message==='wrong_game_type' ? t('caroWrongRoom') : e.message;
+      e.message==='wrong_game_type' ? t('caroWrongRoom') :
+      e.message==='already_hosting' ? t('onlineAlreadyHosting') : e.message;
     _caroStatus(msg, true);
   }
 }
@@ -1300,7 +1313,8 @@ async function caroJoinRoomById(roomId){
     const msg = e.message==='room_not_found' ? t('onlineRoomNotFound') :
       e.message==='room_full' ? t('caroRoomFull') :
       e.message==='room_not_open' ? t('caroRoomNotOpen') :
-      e.message==='wrong_game_type' ? t('caroWrongRoom') : e.message;
+      e.message==='wrong_game_type' ? t('caroWrongRoom') :
+      e.message==='already_hosting' ? t('onlineAlreadyHosting') : e.message;
     _caroStatus(msg, true);
   }
 }
@@ -1312,17 +1326,24 @@ async function caroFindOpponent(){
   _caroHide('caro-hub-panel');
   _caroShow('caro-mm-panel');
   document.getElementById('caro-mm-status').textContent = t('onlineSearching');
-  startMatchmaking(room=>{
+  try{
+    await startMatchmaking(room=>{
+      _caroHide('caro-mm-panel');
+      const role = room.hostId===getOnlineUid() ? 'host' : 'guest';
+      _caroOpenLobby(room.roomId, room.code, role, room);
+      if(room.matchmaking && role==='host'){
+        startOnlineRoomMatch(room.roomId, {
+          turnSec: prefs.turnSec,
+          boardSkin: prefs.skin
+        }).catch(()=>{});
+      }
+    }, { gameType:'caro', turnSec: prefs.turnSec, boardSkin: prefs.skin });
+  }catch(e){
     _caroHide('caro-mm-panel');
-    const role = room.hostId===getOnlineUid() ? 'host' : 'guest';
-    _caroOpenLobby(room.roomId, room.code, role, room);
-    if(room.matchmaking && role==='host'){
-      startOnlineRoomMatch(room.roomId, {
-        turnSec: prefs.turnSec,
-        boardSkin: prefs.skin
-      }).catch(()=>{});
-    }
-  }, { gameType:'caro', turnSec: prefs.turnSec, boardSkin: prefs.skin });
+    _caroShow('caro-hub-panel');
+    const msg = e.message==='already_hosting' ? t('onlineAlreadyHosting') : e.message;
+    _caroStatus(msg, true);
+  }
 }
 
 function caroCancelMM(){
