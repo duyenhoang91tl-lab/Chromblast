@@ -196,6 +196,7 @@
           <button type="button" class="set-action set-c-teal" id="set-btn-lang"><span class="set-act-ico">🌐</span><span data-i18n="setLanguage">Ngôn ngữ</span></button>
           <button type="button" class="set-action set-c-blue" id="set-btn-map"><span class="set-act-ico">🗺️</span><span data-i18n="setMap">Map ẩn</span></button>
           <button type="button" class="set-action set-c-gold" id="set-btn-shop"><span class="set-act-ico">🛒</span><span data-i18n="setShop">Cửa hàng</span></button>
+          <button type="button" class="set-action set-c-teal" id="set-btn-friends"><span class="set-act-ico">🤝</span><span data-i18n="setFriends">Bạn bè</span></button>
           <button type="button" class="set-action set-c-gold" id="set-btn-cup"><span class="set-act-ico">🏆</span><span data-i18n="setCup">Cúp</span></button>
           <button type="button" class="set-action set-c-brick" id="set-btn-bricks"><span class="set-act-ico">🧱</span><span data-i18n="setBricks">Gạch</span></button>
           <button type="button" class="set-action set-c-board" id="set-btn-boards"><span class="set-act-ico">🗺️</span><span data-i18n="setBoards">Nền bàn</span></button>
@@ -594,16 +595,48 @@
   </div>
 
   <div id="leaderboard-panel" class="admin-panel-like">
-    <div class="admin-card">
+    <div class="admin-card lb-card-wide">
       <div class="admin-title"><span data-i18n="leaderboardTitle">🏆 Bảng xếp hạng</span><button class="admin-close" id="leaderboard-close-btn">✕</button></div>
       <div class="lb-tabs">
-        <button type="button" class="lb-tab active" data-lb-mode="local" data-i18n="lbTabLocal">📱 Thiết bị</button>
-        <button type="button" class="lb-tab" data-lb-mode="global-solo" data-i18n="lbTabGlobal">🌐 Toàn cầu</button>
+        <button type="button" class="lb-tab active" data-lb-mode="period" data-i18n="lbTabPeriod">🏅 Kỳ</button>
+        <button type="button" class="lb-tab" data-lb-mode="friends-alltime" data-i18n="lbTabFriends">🤝 Bạn bè</button>
+        <button type="button" class="lb-tab" data-lb-mode="global-solo" data-i18n="lbTabGlobal">🌐 All-time</button>
         <button type="button" class="lb-tab" data-lb-mode="global-caro" data-i18n="lbTabCaro">❌⭕ Caro</button>
+        <button type="button" class="lb-tab" data-lb-mode="local" data-i18n="lbTabLocal">📱 Máy</button>
       </div>
-      <div class="admin-sub" id="leaderboard-sub" data-i18n="lbSub">Điểm cao nhất của người chơi trên thiết bị này.</div>
+      <div id="lb-period-tabs" class="lb-tabs lb-period-tabs">
+        <button type="button" class="lb-period-tab active" data-lb-period="day">📅 Ngày</button>
+        <button type="button" class="lb-period-tab" data-lb-period="week">📆 Tuần</button>
+        <button type="button" class="lb-period-tab" data-lb-period="month">🗓️ Tháng</button>
+      </div>
+      <div id="lb-scope-tabs" class="lb-tabs lb-scope-tabs">
+        <button type="button" class="lb-scope-tab active" data-lb-scope="world" data-i18n="lbScopeWorld">🌍 Thế giới</button>
+        <button type="button" class="lb-scope-tab" data-lb-scope="continent" data-i18n="lbScopeContinent">🗺️ Châu lục</button>
+        <button type="button" class="lb-scope-tab" data-lb-scope="country" data-i18n="lbScopeCountry">🏳️ Đất nước</button>
+        <button type="button" class="lb-scope-tab" data-lb-scope="friends" data-i18n="lbScopeFriends">🤝 Bạn bè</button>
+      </div>
+      <div class="lb-region-row">
+        <label data-i18n="lbRegion">Quốc gia của bạn</label>
+        <select id="lb-country-select" class="lb-country-select"></select>
+        <span id="lb-region-label" class="lb-region-label"></span>
+      </div>
+      <div class="admin-sub" id="leaderboard-sub" data-i18n="lbSub">Top 100 — thưởng vàng theo hạng; kim cương chỉ top 1–3.</div>
+      <div id="lb-reward-preview" class="lb-reward-preview"></div>
+      <div id="lb-claim-wrap" class="lb-claim-wrap">
+        <div id="lb-claim-note" class="lb-claim-note"></div>
+        <button type="button" id="lb-claim-btn" class="auth-submit-btn lb-claim-btn">🎁 Nhận thưởng kỳ trước</button>
+      </div>
       <div id="leaderboard-list"></div>
       <div id="leaderboard-my-rank" class="lb-my-rank"></div>
+    </div>
+  </div>
+
+  <div id="friends-panel" class="admin-panel-like">
+    <div class="admin-card">
+      <div class="admin-title"><span data-i18n="friendsTitle">🤝 Danh sách bạn bè</span><button class="admin-close" id="friends-close-btn">✕</button></div>
+      <div id="friends-cap-line" class="gchat-friend-cap"></div>
+      <div id="friends-panel-list" class="friends-panel-list"></div>
+      <button type="button" id="friends-open-chat" class="auth-submit-btn" style="margin-top:10px;" data-i18n="friendsOpenChat">💬 Mở chat bạn bè</button>
     </div>
   </div>
 
@@ -1057,16 +1090,18 @@
 <script src="js/i18n-content.js"></script>
 <script src="js/audio.js"></script>
 <script src="js/save.js"></script>
+<script src="js/geo-region.js"></script>
 <script src="js/brick-skins.js"></script>
 <script src="js/map-boards.js"></script>
 <script src="js/daily-rewards.js"></script>
 <script src="js/online-services.js"></script>
 <script src="js/caro-ranks.js"></script>
-<script src="js/leaderboard.js"></script>
 <script src="js/player-profile.js"></script>
 <script src="js/mech-config.js"></script>
 <script src="js/progression.js"></script>
 <script src="js/inventory.js"></script>
+<script src="js/lb-period.js"></script>
+<script src="js/leaderboard.js"></script>
 <script src="js/economy-shop.js"></script>
 <script src="js/lucky-spin.js"></script>
 <script src="js/effects.js"></script>

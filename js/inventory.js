@@ -15,6 +15,7 @@ const MAX_HEART_GIFT_PEOPLE = 10;
 let inv = {
   hearts: 5,
   gold: START_GOLD,
+  diamonds: 0,
   fires: 1,
   bubbles: 1,
   winds: 1,
@@ -64,9 +65,11 @@ function _invDay(){
         inv.gold = Math.max(0, Math.floor(Number(s.gold)));
         inv.goldBootstrapped = true;
       } else {
-        // Người chơi cũ chưa có vàng → tặng đúng mức khởi điểm một lần
         inv.gold = START_GOLD;
         inv.goldBootstrapped = true;
+      }
+      if('diamonds' in s && Number.isFinite(Number(s.diamonds))){
+        inv.diamonds = Math.max(0, Math.floor(Number(s.diamonds)));
       }
     } else {
       inv.gold = START_GOLD;
@@ -83,6 +86,7 @@ function saveInventory(){
     safeSet(INV_KEY, JSON.stringify({
       hearts: roundHalf(inv.hearts),
       gold: Math.max(0, inv.gold|0),
+      diamonds: Math.max(0, inv.diamonds|0),
       fires: inv.fires|0,
       bubbles: inv.bubbles|0,
       winds: inv.winds|0,
@@ -131,6 +135,39 @@ function spendGold(n){
   saveInventory();
   renderInventoryHud();
   return true;
+}
+
+const GOLD_PER_DIAMOND = 100;
+function getDiamonds(){ return Math.max(0, inv.diamonds|0); }
+function grantDiamonds(n, reason){
+  n = Math.floor(Number(n)||0);
+  if(!(n>0)) return;
+  inv.diamonds = (inv.diamonds|0) + n;
+  saveInventory();
+  renderInventoryHud();
+  try{ if(reason) showComboFlash(0, false, '💎 +'+n+(reason?(' · '+reason):'')); }catch(e){}
+}
+function spendDiamonds(n){
+  n = Math.floor(Number(n)||0);
+  if(n<=0) return true;
+  if((inv.diamonds|0) < n) return false;
+  inv.diamonds = (inv.diamonds|0) - n;
+  saveInventory();
+  renderInventoryHud();
+  return true;
+}
+/** Đổi vàng → kim cương: 100 vàng = 1 kim cương */
+function exchangeGoldForDiamonds(count){
+  count = Math.max(1, count|0);
+  const cost = count * GOLD_PER_DIAMOND;
+  if(!spendGold(cost)) return { ok:false, reason:'gold' };
+  grantDiamonds(count, typeof t==='function'?t('shopDiamondExchange'):'Đổi vàng');
+  return { ok:true, diamonds:count, gold:cost };
+}
+function diamondPriceForGold(goldPrice){
+  const p = Math.max(0, goldPrice|0);
+  if(p < GOLD_PER_DIAMOND) return 0;
+  return Math.ceil(p / GOLD_PER_DIAMOND);
 }
 
 function grantHearts(n, reason){
@@ -279,7 +316,8 @@ function renderInventoryHud(){
   if(el){
     el.innerHTML =
       '<span class="inv-chip inv-heart" title="Tim (chung với Caro)">❤️ '+formatHearts(inv.hearts)+'</span>'+
-      '<span class="inv-chip inv-gold" title="Vàng">🪙 '+getGold()+'</span>';
+      '<span class="inv-chip inv-gold" title="Vàng">🪙 '+getGold()+'</span>'+
+      '<span class="inv-chip inv-diamond" title="Kim cương">💎 '+getDiamonds()+'</span>';
   }
   const caroHud = document.getElementById('caro-hearts-hud');
   if(caroHud){
@@ -411,6 +449,7 @@ function initInventoryUI(){
 window.Inventory = {
   get hearts(){ return roundHalf(inv.hearts); },
   get gold(){ return getGold(); },
+  get diamonds(){ return getDiamonds(); },
   get fires(){ return inv.fires|0; },
   get bubbles(){ return inv.bubbles|0; },
   get winds(){ return inv.winds|0; },
@@ -421,6 +460,12 @@ window.Inventory = {
   addGold: function(n, reason){ grantGold(n, reason||''); },
   spendGold: spendGold,
   getGold: getGold,
+  addDiamonds: function(n, reason){ grantDiamonds(n, reason||''); },
+  spendDiamonds: spendDiamonds,
+  getDiamonds: getDiamonds,
+  exchangeGoldForDiamonds: exchangeGoldForDiamonds,
+  diamondPriceForGold: diamondPriceForGold,
+  GOLD_PER_DIAMOND: GOLD_PER_DIAMOND,
   addFires: function(n, reason){ grantPower('fire', n, reason||''); },
   addBubbles: function(n, reason){ grantPower('bubble', n, reason||''); },
   addWinds: function(n, reason){ grantPower('wind', n, reason||''); },
@@ -441,3 +486,4 @@ window.Inventory = {
   getHeartGiftState: getHeartGiftState,
   MAX_HEART_GIFT_PEOPLE: MAX_HEART_GIFT_PEOPLE
 };
+try{ window.GOLD_PER_DIAMOND = GOLD_PER_DIAMOND; }catch(e){}

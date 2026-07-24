@@ -152,7 +152,18 @@
     if(set) set.add(msg.id);
     const mine = isMine(msg);
     if(msg.kind === 'heart_gift' && !mine && bucket === 'friends'){
-      try{ if(typeof grantHearts === 'function') grantHearts(1, tt('gchatHeartReceived','Tim từ bạn')); }catch(e){}
+      try{
+        const key = 'chromablast_heart_recv';
+        let claimed = [];
+        try{ claimed = JSON.parse(localStorage.getItem(key)||'[]'); }catch(e){ claimed=[]; }
+        if(!Array.isArray(claimed)) claimed = [];
+        if(claimed.indexOf(msg.id) < 0){
+          claimed.push(msg.id);
+          if(claimed.length > 80) claimed = claimed.slice(-80);
+          try{ localStorage.setItem(key, JSON.stringify(claimed)); }catch(e){}
+          if(typeof grantHearts === 'function') grantHearts(1, tt('gchatHeartReceived','Tim từ bạn'));
+        }
+      }catch(e){}
     }
     const row = document.createElement('div');
     row.className = 'gchat-row'+(mine?' mine':'');
@@ -711,6 +722,26 @@
       else setStatus('');
     });
     syncChatFabVisibility();
+    $('friends-close-btn')?.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} closeFriendsPanel(); });
+    $('friends-panel')?.addEventListener('click', (e)=>{ if(e.target === $('friends-panel')) closeFriendsPanel(); });
+    $('friends-open-chat')?.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} closeFriendsPanel(); openChatPanel('friends'); });
+    $('set-btn-friends')?.addEventListener('click', ()=>{
+      try{sfxClick();}catch(e){}
+      try{ if(typeof closeSettingsHub==='function') closeSettingsHub(); }catch(e){}
+      openFriendsPanel();
+    });
+  }
+
+  // friends panel helpers declared before init uses them
+  function closeFriendsPanel(){
+    const panel = $('friends-panel');
+    if(panel) panel.classList.remove('show');
+  }
+  function openFriendsPanel(){
+    const panel = $('friends-panel');
+    if(!panel) return;
+    panel.classList.add('show');
+    renderFriendsPanelList();
   }
 
   window.openChatPanel = openChatPanel;
@@ -718,6 +749,55 @@
   window.syncChatFabVisibility = syncChatFabVisibility;
   window.initGlobalChat = initGlobalChat;
   window.showInviteToast = showInviteToast;
+
+  async function renderFriendsPanelList(){
+    const list = $('friends-panel-list');
+    const cap = $('friends-cap-line');
+    if(!list) return;
+    const friends = (typeof getFriendsList === 'function') ? getFriendsList() : [];
+    const max = (typeof maxFriendsForLevel === 'function')
+      ? maxFriendsForLevel(typeof playerLevel==='number'?playerLevel:1) : 20;
+    if(cap){
+      const gifts = (typeof getHeartGiftState === 'function') ? getHeartGiftState() : { sentTo:[] };
+      const giftMax = (typeof Inventory !== 'undefined' && Inventory.MAX_HEART_GIFT_PEOPLE) || 10;
+      cap.textContent = tt('gchatFriendCap','Bạn bè')+': '+friends.length+'/'+max+
+        ' · '+tt('gchatHeartGiftLeft','Tim gửi')+': '+gifts.sentTo.length+'/'+giftMax;
+    }
+    list.innerHTML = '';
+    if(!friends.length){
+      list.innerHTML = '<div class="gchat-empty">'+tt('gchatNoFriends','Chưa có bạn')+'</div>';
+      return;
+    }
+    let presence = {};
+    try{
+      if(typeof fetchFriendsPresence === 'function' && await ensureOnline()){
+        presence = await fetchFriendsPresence(friends) || {};
+      }
+    }catch(e){}
+    friends.forEach(f=>{
+      if(!f || !f.uid) return;
+      const online = !!(presence[f.uid] && presence[f.uid].online);
+      const row = document.createElement('div');
+      row.className = 'friends-panel-row';
+      row.innerHTML =
+        '<span class="gchat-friend-av-wrap">'+presenceDot(online)+'<span class="gchat-friend-av">'+(f.avatar||'🐶')+'</span></span>'+
+        '<span class="friends-panel-meta">'+
+          '<span class="gchat-friend-name">'+escapeHtml(f.name||'Player')+'</span>'+
+          '<span class="gchat-friend-status">'+(online?tt('gchatOnline','Online'):tt('gchatOffline','Offline'))+'</span>'+
+        '</span>'+
+        '<button type="button" class="friends-panel-chat">💬</button>';
+      row.querySelector('.friends-panel-chat')?.addEventListener('click', ()=>{
+        try{ sfxClick(); }catch(e){}
+        closeFriendsPanel();
+        openChatPanel('friends');
+        openFriendThread(f);
+      });
+      list.appendChild(row);
+    });
+  }
+
+  window.openFriendsPanel = openFriendsPanel;
+  window.closeFriendsPanel = closeFriendsPanel;
 
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initGlobalChat);
   else initGlobalChat();

@@ -18,6 +18,9 @@
   function gold() {
     return typeof getGold === "function" ? getGold() : 0;
   }
+  function diamonds() {
+    return typeof getDiamonds === "function" ? getDiamonds() : 0;
+  }
 
   function ensureShopPanel() {
     let panel = document.getElementById("shop-panel");
@@ -29,11 +32,12 @@
       '<div class="admin-card shop-card">' +
       '<div class="admin-title"><span data-i18n="shopTitle">🛒 Cửa hàng</span>' +
       '<button type="button" class="admin-close" id="shop-close-btn">✕</button></div>' +
-      '<div class="shop-gold-row" id="shop-gold-row">🪙 0</div>' +
+      '<div class="shop-gold-row" id="shop-gold-row">🪙 0 · 💎 0</div>' +
       '<div class="shop-tabs">' +
       '<button type="button" class="shop-tab active" data-shop-tab="boards">🗺️ Nền</button>' +
       '<button type="button" class="shop-tab" data-shop-tab="bricks">🧱 Gạch</button>' +
       '<button type="button" class="shop-tab" data-shop-tab="hearts">❤️ Tim</button>' +
+      '<button type="button" class="shop-tab" data-shop-tab="diamond">💎 KC</button>' +
       "</div>" +
       '<div id="shop-body" class="shop-body"></div>' +
       "</div>";
@@ -60,9 +64,33 @@
     tab = tab || "boards";
     const body = document.getElementById("shop-body");
     const goldRow = document.getElementById("shop-gold-row");
-    if (goldRow) goldRow.textContent = "🪙 " + gold();
+    if (goldRow) goldRow.textContent = "🪙 " + gold() + " · 💎 " + diamonds();
     if (!body) return;
     body.innerHTML = "";
+
+    if (tab === "diamond") {
+      const rate = typeof GOLD_PER_DIAMOND === "number" ? GOLD_PER_DIAMOND : 100;
+      const box = document.createElement("div");
+      box.className = "shop-hearts-box";
+      box.innerHTML =
+        '<p class="shop-hint">' +
+        tt("shopDiamondHint", "100 vàng = 1 kim cương. Item ≥100 vàng có thể mua bằng kim cương. KC thưởng top 1–3 BXH.") +
+        "</p>" +
+        '<button type="button" class="auth-submit-btn" id="shop-ex-1">💎 +1 · 🪙 ' + rate + "</button>" +
+        '<button type="button" class="auth-submit-btn" id="shop-ex-5">💎 +5 · 🪙 ' + rate * 5 + "</button>";
+      body.appendChild(box);
+      function doEx(n) {
+        try { sfxClick(); } catch (e) {}
+        const r = typeof exchangeGoldForDiamonds === "function" ? exchangeGoldForDiamonds(n) : { ok: false };
+        if (!r.ok) {
+          try { showComboFlash(0, false, tt("shopNotEnoughGold", "Không đủ vàng")); } catch (e) {}
+        }
+        renderShop("diamond");
+      }
+      document.getElementById("shop-ex-1")?.addEventListener("click", function () { doEx(1); });
+      document.getElementById("shop-ex-5")?.addEventListener("click", function () { doEx(5); });
+      return;
+    }
 
     if (tab === "hearts") {
       const box = document.createElement("div");
@@ -96,58 +124,33 @@
         "</button>";
       body.appendChild(box);
       document.getElementById("shop-buy-heart")?.addEventListener("click", function () {
-        try {
-          sfxClick();
-        } catch (e) {}
+        try { sfxClick(); } catch (e) {}
         if (typeof buyHeartWithGold !== "function") return;
         const r = buyHeartWithGold(HEART_PACK, HEART_GOLD_PRICE);
         if (!r || !r.ok) {
-          try {
-            showComboFlash(0, false, tt("shopNotEnoughGold", "Không đủ vàng"));
-          } catch (e) {}
+          try { showComboFlash(0, false, tt("shopNotEnoughGold", "Không đủ vàng")); } catch (e) {}
         }
         renderShop("hearts");
       });
       document.getElementById("shop-ad-gold")?.addEventListener("click", function () {
-        try {
-          sfxClick();
-        } catch (e) {}
-        if (typeof watchAdForGold === "function") watchAdForGold(function () {
-          renderShop("hearts");
-        });
+        try { sfxClick(); } catch (e) {}
+        if (typeof watchAdForGold === "function") watchAdForGold(function () { renderShop("hearts"); });
       });
       document.getElementById("shop-ad-heart")?.addEventListener("click", function () {
-        try {
-          sfxClick();
-        } catch (e) {}
+        try { sfxClick(); } catch (e) {}
         if (typeof watchAdForHeart === "function") watchAdForHeart();
-        setTimeout(function () {
-          renderShop("hearts");
-        }, 800);
+        setTimeout(function () { renderShop("hearts"); }, 800);
       });
       return;
     }
 
     const isBoard = tab === "boards";
     const list = isBoard
-      ? typeof BOARD_SKINS !== "undefined"
-        ? BOARD_SKINS
-        : []
-      : typeof BRICK_SKINS !== "undefined"
-        ? BRICK_SKINS
-        : [];
+      ? typeof BOARD_SKINS !== "undefined" ? BOARD_SKINS : []
+      : typeof BRICK_SKINS !== "undefined" ? BRICK_SKINS : [];
     const unlockedFn = isBoard
-      ? typeof isBoardSkinUnlocked === "function"
-        ? isBoardSkinUnlocked
-        : function () {
-            return true;
-          }
-      : typeof isBrickSkinUnlocked === "function"
-        ? isBrickSkinUnlocked
-        : function () {
-            return true;
-          };
-    const buyFn = isBoard ? buyBoardWithGold : buyBrickWithGold;
+      ? typeof isBoardSkinUnlocked === "function" ? isBoardSkinUnlocked : function () { return true; }
+      : typeof isBrickSkinUnlocked === "function" ? isBrickSkinUnlocked : function () { return true; };
 
     const grid = document.createElement("div");
     grid.className = "shop-grid";
@@ -155,51 +158,73 @@
       if (!skin || skin.starter) return;
       const owned = unlockedFn(skin.id);
       const price = skin.price | 0 || 20;
-      const card = document.createElement("button");
-      card.type = "button";
+      const diaCost =
+        typeof diamondPriceForGold === "function" ? diamondPriceForGold(price) : price >= 100 ? Math.ceil(price / 100) : 0;
+      const card = document.createElement("div");
       card.className = "shop-item" + (owned ? " owned" : "");
       card.innerHTML =
-        '<div class="shop-item-ico">' +
-        (isBoard ? "🗺️" : "🧱") +
-        "</div>" +
-        '<div class="shop-item-name">' +
-        (skin.name || skin.id) +
-        "</div>" +
+        '<div class="shop-item-ico">' + (isBoard ? "🗺️" : "🧱") + "</div>" +
+        '<div class="shop-item-name">' + (skin.name || skin.id) + "</div>" +
         '<div class="shop-item-price">' +
-        (owned ? tt("shopOwned", "Đã sở hữu") : "🪙 " + price) +
+        (owned ? tt("shopOwned", "Đã sở hữu") : "🪙 " + price + (diaCost ? " / 💎 " + diaCost : "")) +
         "</div>";
       if (!owned) {
-        card.addEventListener("click", function () {
-          try {
-            sfxClick();
-          } catch (e) {}
-          const r = buyFn(skin.id, price);
-          if (!r || !r.ok) {
-            try {
-              showComboFlash(
-                0,
-                false,
-                r && r.reason === "owned"
-                  ? tt("shopOwned", "Đã sở hữu")
-                  : tt("shopNotEnoughGold", "Không đủ vàng")
-              );
-            } catch (e) {}
-          } else {
-            try {
-              showComboFlash(0, false, "🪙 −" + price + " · " + (skin.name || skin.id));
-            } catch (e) {}
-            try {
-              if (typeof sfxUnlock === "function") sfxUnlock();
-            } catch (e) {}
-          }
+        const row = document.createElement("div");
+        row.className = "shop-item-actions";
+        const bGold = document.createElement("button");
+        bGold.type = "button";
+        bGold.className = "shop-mini-btn";
+        bGold.textContent = "🪙";
+        bGold.title = "Mua bằng vàng";
+        bGold.addEventListener("click", function () {
+          try { sfxClick(); } catch (e) {}
+          const r = isBoard ? buyBoardWithGold(skin.id, price) : buyBrickWithGold(skin.id, price);
+          flashBuy(r, skin, price, false);
           renderShop(tab);
         });
-      } else {
-        card.disabled = true;
+        row.appendChild(bGold);
+        if (diaCost > 0) {
+          const bDia = document.createElement("button");
+          bDia.type = "button";
+          bDia.className = "shop-mini-btn shop-mini-dia";
+          bDia.textContent = "💎";
+          bDia.title = "Mua bằng kim cương";
+          bDia.addEventListener("click", function () {
+            try { sfxClick(); } catch (e) {}
+            const r = isBoard
+              ? buyBoardWithDiamond(skin.id, diaCost)
+              : buyBrickWithDiamond(skin.id, diaCost);
+            flashBuy(r, skin, diaCost, true);
+            renderShop(tab);
+          });
+          row.appendChild(bDia);
+        }
+        card.appendChild(row);
       }
       grid.appendChild(card);
     });
     body.appendChild(grid);
+  }
+
+  function flashBuy(r, skin, cost, isDia) {
+    if (!r || !r.ok) {
+      try {
+        showComboFlash(
+          0,
+          false,
+          r && r.reason === "owned"
+            ? tt("shopOwned", "Đã sở hữu")
+            : isDia
+              ? tt("shopNotEnoughDiamond", "Không đủ kim cương")
+              : tt("shopNotEnoughGold", "Không đủ vàng")
+        );
+      } catch (e) {}
+      return;
+    }
+    try {
+      showComboFlash(0, false, (isDia ? "💎 −" : "🪙 −") + cost + " · " + (skin.name || skin.id));
+    } catch (e) {}
+    try { if (typeof sfxUnlock === "function") sfxUnlock(); } catch (e) {}
   }
 
   function buyBoardWithGold(id, price) {
@@ -216,6 +241,24 @@
       return { ok: false, reason: "owned" };
     if (typeof spendGold !== "function" || !spendGold(price))
       return { ok: false, reason: "gold" };
+    if (typeof unlockBrickSkin === "function") unlockBrickSkin(id);
+    return { ok: true };
+  }
+
+  function buyBoardWithDiamond(id, diaCost) {
+    if (typeof isBoardSkinUnlocked === "function" && isBoardSkinUnlocked(id))
+      return { ok: false, reason: "owned" };
+    if (typeof spendDiamonds !== "function" || !spendDiamonds(diaCost))
+      return { ok: false, reason: "diamond" };
+    if (typeof unlockBoardSkin === "function") unlockBoardSkin(id);
+    return { ok: true };
+  }
+
+  function buyBrickWithDiamond(id, diaCost) {
+    if (typeof isBrickSkinUnlocked === "function" && isBrickSkinUnlocked(id))
+      return { ok: false, reason: "owned" };
+    if (typeof spendDiamonds !== "function" || !spendDiamonds(diaCost))
+      return { ok: false, reason: "diamond" };
     if (typeof unlockBrickSkin === "function") unlockBrickSkin(id);
     return { ok: true };
   }

@@ -4025,3 +4025,54 @@ body:has(#secret-stage.active) .streak-dot.lit{
 .gchat-heart-btn{ background:rgba(255,80,120,0.25) !important; border-color:rgba(255,120,150,0.45) !important; }
 .board-skin-card.shop-buyable,.brick-skin-card.shop-buyable{ opacity:0.92; cursor:pointer; }
 .board-skin-card.shop-buyable:disabled,.brick-skin-card.shop-buyable:disabled{ opacity:0.55; }
+
+/* Leaderboard period / friends / diamonds */
+.inv-diamond{ box-shadow:0 0 0 1px rgba(120,200,255,0.4); color:#b3e5fc; }
+.lb-card-wide{ max-width:min(96vw,440px); }
+.lb-period-tabs,.lb-scope-tabs{ margin-top:6px; flex-wrap:wrap; }
+.lb-period-tab,.lb-scope-tab{
+  flex:1 1 auto; min-width:64px; border:1px solid rgba(255,255,255,0.14);
+  background:rgba(255,255,255,0.06); color:#fff; border-radius:10px;
+  padding:6px 8px; font-size:11px; font-weight:800; cursor:pointer;
+}
+.lb-period-tab.active,.lb-scope-tab.active{
+  border-color:#ffd54a; background:rgba(255,213,74,0.16); color:#ffd54a;
+}
+.lb-region-row{
+  display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+  margin:8px 0 4px; font-size:12px; font-weight:800; color:rgba(255,255,255,0.75);
+}
+.lb-country-select{
+  flex:1; min-width:120px; border-radius:10px; border:1px solid rgba(255,255,255,0.2);
+  background:rgba(0,0,0,0.35); color:#fff; padding:6px 8px; font-weight:800;
+}
+.lb-region-label{ font-size:11px; color:#ffd54a; }
+.lb-reward-preview{
+  display:flex; flex-wrap:wrap; gap:4px; margin:6px 0 8px;
+}
+.lb-reward-title{ width:100%; font-size:11px; font-weight:900; color:#ffe082; margin-bottom:2px; }
+.lb-reward-chip{
+  font-size:10px; font-weight:800; color:#fff;
+  background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12);
+  border-radius:999px; padding:3px 8px;
+}
+.lb-claim-wrap{ margin:6px 0 10px; }
+.lb-claim-note{ font-size:11px; font-weight:800; color:rgba(255,236,180,0.85); margin-bottom:6px; }
+.lb-claim-btn{ margin:0 !important; }
+.lb-geo{ font-size:10px; color:rgba(255,255,255,0.45); font-weight:700; }
+.shop-item-actions{ display:flex; gap:6px; justify-content:center; margin-top:6px; }
+.shop-mini-btn{
+  border:1px solid rgba(255,255,255,0.2); background:rgba(255,255,255,0.1);
+  border-radius:8px; width:36px; height:28px; cursor:pointer; font-size:14px;
+}
+.shop-mini-dia{ border-color:rgba(100,200,255,0.45); }
+.friends-panel-list{ display:flex; flex-direction:column; gap:6px; max-height:55vh; overflow:auto; }
+.friends-panel-row{
+  display:flex; align-items:center; gap:8px; padding:8px;
+  border-radius:12px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1);
+}
+.friends-panel-meta{ flex:1; min-width:0; display:flex; flex-direction:column; gap:1px; }
+.friends-panel-chat{
+  border:none; border-radius:10px; width:36px; height:36px; cursor:pointer;
+  background:rgba(66,165,245,0.3); font-size:16px;
+}
