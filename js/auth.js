@@ -50,13 +50,10 @@ function doRegister(username, password, password2){
 
 function isOverlayScreenOpen(el){
   if(!el) return false;
-  const d = el.style.display;
-  if(d === 'none') return false;
-  // computed: khi vừa set display:none hoặc chưa gắn style
-  try{
-    if(window.getComputedStyle(el).display === 'none') return false;
-  }catch(e){}
-  // Vẫn coi là đang mở trong lúc fade (.hide) — giữ ẩn #game-root đến khi display:none
+  // Chỉ tin style.display inline. Không dùng getComputedStyle:
+  // body.auth-open #start-screen { display:none } khiến start bị coi là đóng
+  // ngay khi auth vừa tắt → menu-open bị gỡ → lộ #game-root dưới màn Bắt đầu.
+  if(el.style.display === 'none') return false;
   return true;
 }
 
@@ -65,9 +62,12 @@ function syncMenuOpenState(){
   const auth = document.getElementById('auth-screen');
   const start = document.getElementById('start-screen');
   const authOpen = isOverlayScreenOpen(auth);
-  const startOpen = isOverlayScreenOpen(start);
-  document.body.classList.toggle('menu-open', !!(authOpen || startOpen));
+  // Gỡ auth-open trước khi đọc start (tránh CSS ẩn start làm lệch trạng thái)
   document.body.classList.toggle('auth-open', !!authOpen);
+  const startOpen = isOverlayScreenOpen(start);
+  const menuOpen = !!(authOpen || startOpen);
+  document.body.classList.toggle('menu-open', menuOpen);
+  document.body.classList.toggle('start-open', !!(!authOpen && startOpen));
   try{ if(typeof syncChatFabVisibility === 'function') syncChatFabVisibility(); }catch(e){}
 }
 
