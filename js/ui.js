@@ -661,24 +661,29 @@ function arcadeMapLabel(){
       return 'Map';
     }
   }catch(e){}
-  // Map thường: Map 1 / Map 2 / Map 3… theo vòng tiến trình (mainHardTier 0 → Map 1)
+  // Map thường: Map 1 / Map 2 / Map 3… theo normalMapStage (mỗi map cần ★★★)
   try{
-    const tier = (typeof mainHardTier === 'number') ? (mainHardTier|0) : 0;
-    const n = Math.max(1, tier + 1);
+    const n = (typeof normalMapStage === 'number' && normalMapStage > 0)
+      ? (normalMapStage|0)
+      : 1;
     return (typeof t==='function' ? t('arcadeMapRound', n) : ('Map '+n));
   }catch(e){}
   return 'Map 1';
 }
 
-/** Ngưỡng 1★ / 2★ / 3★ theo điểm hiện tại (thanh tự scale khi vượt). */
+/** Ngưỡng 1★ / 2★ / 3★ theo map thường hiện tại (baseline + target cố định). */
 function scoreStarThresholds(){
-  let target = 300;
+  let target = 150;
+  let s = 0;
   try{
-    if(typeof TEST_UNLOCK_SCORE==='number') target = Math.max(target, (TEST_UNLOCK_SCORE|0) * 3);
-    if(typeof best==='number' && best > 0) target = Math.max(target, Math.ceil(best * 1.05));
+    if(typeof normalStarTarget === 'number' && normalStarTarget > 0) target = normalStarTarget|0;
+    if(typeof relativeStarScore === 'function') s = relativeStarScore();
+    else {
+      const base = (typeof normalStarBaseline === 'number') ? normalStarBaseline : 0;
+      s = Math.max(0, Math.round(((typeof score==='number'?score:0)||0) - base));
+    }
   }catch(e){}
-  const s = Math.max(0, Math.round((typeof score==='number'?score:0)||0));
-  while(s >= target) target = Math.max(target + 100, Math.round(target * 1.45));
+  target = Math.max(60, target|0);
   return {
     score: s,
     target,

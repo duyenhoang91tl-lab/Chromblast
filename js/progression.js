@@ -5,9 +5,10 @@
 // ═══════════════════════════════════════════════════════════════
 
 /* ══════════════════════════════════════════════════════
-   HỆ THỐNG MỞ KHÓA MAP ẨN THEO MỐC ĐIỂM TĂNG DẦN
-   Map thường 100đ → Map ẩn 1. Thắng map ẩn N → về map thường
-   đạt thêm 100*(N+1) đ (tính từ mốc lúc vừa thắng) → mở map ẩn N+1.
+   HỆ THỐNG MỞ KHÓA MAP ẨN
+   Phá 2 map thường (mỗi map đủ 3★ trên thanh điểm) → mở 1 map ẩn.
+   Sau map ẩn → lại cần 2 map thường ★★★ để mở map ẩn tiếp.
+   Màn Samoyed hiện khi vừa đủ điều kiện mở map ẩn (theo chặng 4 map).
 ══════════════════════════════════════════════════════ */
 /* ══════ CHẾ ĐỘ ADVENTURE — mở khóa khi đạt 10.000 điểm ══════ */
 const ADVENTURE_UNLOCK_SCORE = 10000;
@@ -39,42 +40,145 @@ function forfeitHiddenMapScore(){
   advanceHiddenGate(unlockGateStageIndex);
 }
 const UNLOCK_STAGE_ORDER = ['secret','dodge','fruit','bee','gold','mole','memory','bubble','stack','boss','catch','flood','arena','snake','brick','runner','space','rhythm','maze','mega'];
-function unlockThresholdForStage(stageNum){ return 100*stageNum; } // stageNum 1-indexed (map ẩn thứ mấy)
+const NORMAL_STARS_PER_HIDDEN = 2; // 2 map thường ★★★ → 1 map ẩn
+function unlockThresholdForStage(stageNum){ return 100*stageNum; } // giữ API cũ (HUD/test)
 let unlockGateStageIndex = 0;   // index (0-based) trong UNLOCK_STAGE_ORDER của map ẩn TIẾP THEO cần mở
-let unlockGateBaseline = 0;     // mốc điểm map thường lúc bắt đầu chờ
-let unlockGateActive = true;    // đang tích điểm map thường để mở map ẩn tiếp theo?
+let unlockGateBaseline = 0;     // mốc điểm map thường lúc bắt đầu chờ (tham khảo)
+let unlockGateActive = true;    // đang chờ ★★★ map thường để mở map ẩn tiếp theo?
+
+/** Tiến trình map thường theo sao */
+let normalStarClears = 0;     // 0..1 — số map thường ★★★ đã phá hướng tới map ẩn kế
+let normalMapStage = 1;       // Map thường đang chơi (1, 2, 3…)
+let normalStarBaseline = 0;   // mốc điểm bắt đầu thanh ★ của map thường hiện tại
+let normalStarTarget = 150;   // điểm cần (từ baseline) để đủ 3★
+let _starClearLock = false;
+
+function normalStarTargetForStage(stage){
+  const gate = (typeof unlockGateStageIndex === 'number') ? unlockGateStageIndex : 0;
+  const st = Math.max(1, stage|0);
+  return 120 + gate * 40 + Math.max(0, st - 1) * 15;
+}
+function relativeStarScore(){
+  return Math.max(0, Math.round(((typeof score==='number')?score:0) - (normalStarBaseline|0)));
+}
+function persistNormalStars(){
+  try{
+    saveNormalStarProgressData({
+      clears: normalStarClears|0,
+      stage: normalMapStage|0,
+      baseline: normalStarBaseline|0,
+      target: normalStarTarget|0,
+      gate: unlockGateStageIndex|0
+    });
+  }catch(e){}
+}
+function loadNormalStars(){
+  try{
+    const j = (typeof getSavedNormalStarProgress==='function') ? getSavedNormalStarProgress() : {};
+    if(!j || typeof j !== 'object') return;
+    normalStarClears = Math.max(0, Math.min(NORMAL_STARS_PER_HIDDEN - 1, j.clears|0));
+    normalMapStage = Math.max(1, j.stage|0 || 1);
+    normalStarBaseline = Math.max(0, j.baseline|0);
+    normalStarTarget = Math.max(80, j.target|0 || normalStarTargetForStage(normalMapStage));
+  }catch(e){}
+}
+function resetNormalStarRun(){
+  normalStarClears = 0;
+  normalMapStage = 1;
+  normalStarBaseline = (typeof score==='number') ? score : 0;
+  normalStarTarget = normalStarTargetForStage(1);
+  _starClearLock = false;
+  persistNormalStars();
+}
+loadNormalStars();
+
+/** Gọi khi thanh điểm đủ 3★ trên map thường — đếm 1/2 rồi mở map ẩn. */
+function checkNormalMapThreeStars(){
+  if(_starClearLock) return false;
+  try{
+    if(typeof secretMode!=='undefined' && secretMode) return false;
+    if(typeof activeHiddenMapKey!=='undefined' && activeHiddenMapKey) return false;
+    if(typeof versusMode!=='undefined' && versusMode) return false;
+    if(typeof caroMode!=='undefined' && caroMode) return false;
+  }catch(e){}
+  if(!unlockGateActive) return false;
+  if(unlockGateStageIndex >= UNLOCK_STAGE_ORDER.length) return false;
+  if(relativeStarScore() < normalStarTarget) return false;
+
+  _starClearLock = true;
+  const doneStage = normalMapStage;
+  normalStarClears++;
+  normalMapStage++;
+  normalStarBaseline = score;
+  normalStarTarget = normalStarTargetForStage(normalMapStage);
+  persistNormalStars();
+
+  try{ if(typeof sfxUnlock==='function') sfxUnlock(); }catch(e){}
+  try{
+    const msg = (typeof t==='function')
+      ? t('starMapClear', doneStage, normalStarClears, NORMAL_STARS_PER_HIDDEN)
+      : ('★★★ Map thường '+doneStage+' ('+normalStarClears+'/'+NORMAL_STARS_PER_HIDDEN+')');
+    if(typeof showComboFlash==='function') showComboFlash(0, false, msg);
+  }catch(e){}
+
+  setTimeout(()=>{ _starClearLock = false; }, 500);
+
+  if(normalStarClears >= NORMAL_STARS_PER_HIDDEN){
+    normalStarClears = 0;
+    persistNormalStars();
+    unlockGateActive = false;
+    try{ consecutiveBursts = 0; }catch(e){}
+    try{ if(typeof updateBurstCount==='function') updateBurstCount(); }catch(e){}
+    const stageKey = UNLOCK_STAGE_ORDER[unlockGateStageIndex];
+    // Hiện màn Samoyed (theo chặng 4 map) rồi vào chọn map ẩn
+    setTimeout(()=>{
+      try{
+        if(typeof triggerStageUnlock==='function') triggerStageUnlock(stageKey);
+      }catch(e){}
+    }, 480);
+  } else {
+    try{ if(typeof updateBurstCount==='function') updateBurstCount(); }catch(e){}
+  }
+  try{ if(typeof updateScoreStarBar==='function') updateScoreStarBar(); }catch(e){}
+  try{ if(typeof refreshArcadeHud==='function') refreshArcadeHud(); }catch(e){}
+  return true;
+}
+
 function triggerStageUnlock(stageKey){
   // Dispatch qua MapManager (đã thay chuỗi switch cũ).
   window._adStageCount = (window._adStageCount||0) + 1;
   if(typeof showInterstitialAd==='function' && window._adStageCount % 2 === 0) showInterstitialAd();
+  try{ pendingUnlock = stageKey; }catch(e){}
+  // Mọi map ẩn: ưu tiên màn Samoyed theo chặng 4 map
+  try{
+    if(typeof showSagaUnlock==='function' && showSagaUnlock(stageKey)) return true;
+  }catch(e){}
   return triggerMapUnlock(stageKey);
 }
 // Gọi khi vừa THẮNG map ẩn ở vị trí clearedIdx (0-based) trong UNLOCK_STAGE_ORDER —
-// bắt đầu đếm điểm map thường để mở map ẩn kế tiếp.
+// bắt đầu lại đếm 2 map thường ★★★ để mở map ẩn kế tiếp.
 function startUnlockGate(clearedIdx){
   markMapCleared(UNLOCK_STAGE_ORDER[clearedIdx]);           // ghi "đã phá đảo" (chỉ khi THẮNG)
   addPlayerXP(30+clearedIdx*10); // thưởng XP mỗi lần phá đảo một map ẩn — vòng càng sâu thưởng càng lớn (chỉ khi THẮNG)
   advanceHiddenGate(clearedIdx);
-  // Map ẩn 1–3: sau khi qua màn → màn phụ saga (vườn hoa + Samoyed) rồi chọn màn 1–4
-  if(clearedIdx>=0 && clearedIdx<=2 && typeof showSagaAfterClear==='function'){
-    setTimeout(()=>{ try{ showSagaAfterClear(clearedIdx); }catch(e){} }, 480);
-  }
 }
 // Đẩy tiến trình sang map ẩn kế tiếp — dùng chung cho cả THẮNG (startUnlockGate)
-// lẫn THUA (forfeitHiddenMapScore): sau map ẩn thứ `playedIdx` (0-based), mốc điểm
-// map thường để mở map ẩn tiếp theo tăng dần 200 → 300 → 400 ... Thắng hay thua đều tiến.
+// lẫn THUA (forfeitHiddenMapScore). Sau đó cần lại 2 map thường ★★★.
 function advanceHiddenGate(playedIdx){
   unlockGateStageIndex = playedIdx+1;
   unlockGateBaseline = score;
   unlockGateActive = (unlockGateStageIndex < UNLOCK_STAGE_ORDER.length);
   consecutiveBursts=0; updateBurstCount();
-  // Mỗi vòng map ẩn xong → map thường khó thêm một bậc:
-  // khối gạch to/khó xếp xuất hiện nhiều hơn + rải thêm ô chướng ngại lên bàn cờ
+  // Mỗi vòng map ẩn xong → map thường khó thêm một bậc
   mainHardTier=unlockGateStageIndex;
-  resetMechanicState(); // tắt cơ chế của vòng trước — mỗi vòng chỉ có đúng 1 cơ chế mới
-  applyRoundMechanics(); // vòng 1: dây gai · vòng 2: núi · vòng 3: sóc trộm ô · ...
-  // 🌗 Vừa qua map ẩn CUỐI CÙNG (Mega, vòng 20) → không còn map ẩn nào nữa,
-  // bắt đầu tiến trình "qua màn" cho các level không có map ẩn (21-41) ngay trên bàn cờ thường.
+  resetMechanicState();
+  applyRoundMechanics();
+  // Reset cổng ★★★ cho map ẩn kế
+  normalStarClears = 0;
+  normalStarBaseline = score;
+  normalStarTarget = normalStarTargetForStage(normalMapStage);
+  persistNormalStars();
+  // 🌗 Vừa qua map ẩn CUỐI CÙNG (Mega) → tiến trình vòng 21-41 trên bàn thường
   if(!unlockGateActive){
     comboGateActive=true;
     comboGateBaseline=score;

@@ -11,7 +11,14 @@ const SAGA_BLURBS = {
   4: 'Samoyed đang chơi giữa vườn hoa. Chỉ đường chạy giúp chó và đập ong bay đi!',
 };
 const SAGA_RAINBOW = ['#ff4d6d','#ff8c42','#ffd60a','#70e000','#4cc9f0','#7b2cbf','#f72585'];
-const SAGA_EPISODE_KEYS = new Set(['secret','dodge','fruit','bee']);
+/** Mỗi 4 map ẩn = 1 chặng Samoyed (nền khác nhau). */
+const SAGA_EPISODES = [
+  { id:0, from:1,  to:4,  theme:'garden', title:'Vườn hoa', speech:'Xin chào! Cùng chơi trong vườn hoa nhé 🌸' },
+  { id:1, from:5,  to:8,  theme:'forest', title:'Khu rừng', speech:'Rừng sâu có nhiều bí mật — đi nào! 🌲' },
+  { id:2, from:9,  to:12, theme:'castle', title:'Lâu đài', speech:'Lâu đài cổ đang chờ bạn khám phá! 🏰' },
+  { id:3, from:13, to:16, theme:'ocean',  title:'Bờ biển', speech:'Sóng biển và kho báu đang chờ! 🌊' },
+  { id:4, from:17, to:20, theme:'sky',    title:'Trời mây', speech:'Bay lên bầu trời cùng Samoyed! ☁️' },
+];
 
 let _sagaSelectedId = 1;
 let _sagaFromUnlock = false;
@@ -26,6 +33,16 @@ let _sagaButterflies = [];
 let _sagaDog = null;
 let _sagaT0 = 0;
 let _sagaLevelsCache = null;
+let _sagaEpisode = SAGA_EPISODES[0];
+
+function sagaEpisodeForMapId(id){
+  const n = Math.max(1, Math.min(20, id|0));
+  return SAGA_EPISODES.find(e => n >= e.from && n <= e.to) || SAGA_EPISODES[0];
+}
+function sagaEpisodeLevels(ep){
+  const e = ep || _sagaEpisode || SAGA_EPISODES[0];
+  return sagaLevels().filter(l => l.id >= e.from && l.id <= e.to);
+}
 
 function sagaBuildLevels(){
   const out = [];
@@ -57,7 +74,11 @@ function sagaLevels(){
 }
 
 function isSagaMapKey(key){
-  return !!(key && SAGA_EPISODE_KEYS.has(key));
+  if(!key) return false;
+  try{
+    if(typeof UNLOCK_STAGE_ORDER !== 'undefined' && UNLOCK_STAGE_ORDER && UNLOCK_STAGE_ORDER.indexOf(key) >= 0) return true;
+  }catch(e){}
+  return !!sagaLevelByKey(key);
 }
 
 function sagaLevelByKey(key){
@@ -97,7 +118,7 @@ function sagaIsUnlocked(lv){
 }
 
 function sagaClearedCount(){
-  return sagaLevels().reduce((n, lv) => n + (sagaIsCleared(lv) ? 1 : 0), 0);
+  return sagaEpisodeLevels().reduce((n, lv) => n + (sagaIsCleared(lv) ? 1 : 0), 0);
 }
 
 function hideSagaMapScreen(){
@@ -349,26 +370,124 @@ function _sagaDrawNode(ctx, lv, pos, selected, t){
 }
 
 function _sagaUpdateInfo(){
-  const levels = sagaLevels();
-  const selected = levels.find(l => l.id === _sagaSelectedId) || levels[0];
-  const unlocked = sagaIsUnlocked(selected);
+  const levels = sagaEpisodeLevels();
+  const selected = levels.find(l => l.id === _sagaSelectedId) || levels[0] || sagaLevels()[0];
+  const unlocked = selected ? sagaIsUnlocked(selected) : false;
   const blurb = document.getElementById('saga-blurb');
-  if(blurb){
-    blurb.innerHTML = '<div class="saga-blurb-title">'+selected.title+'</div>'+
+  if(blurb && selected){
+    const epTitle = (_sagaEpisode && _sagaEpisode.title) ? (' · '+_sagaEpisode.title) : '';
+    blurb.innerHTML = '<div class="saga-blurb-title">'+selected.title+epTitle+'</div>'+
       '<div class="saga-blurb-text">'+selected.blurb+'</div>';
   }
   const prog = document.getElementById('saga-progress');
   if(prog){
-    const maxU = Math.max(1, sagaMaxUnlockedId());
-    prog.textContent = sagaClearedCount() + '/' + maxU;
+    const total = levels.length || 4;
+    prog.textContent = sagaClearedCount() + '/' + total;
   }
   const playBtn = document.getElementById('saga-play-btn');
   if(playBtn){
     playBtn.disabled = !unlocked;
-    playBtn.textContent = unlocked ? (selected.playLabel || 'Chơi') : 'Đang khoá';
+    playBtn.textContent = unlocked ? ((selected && selected.playLabel) || 'Chơi') : 'Đang khoá';
   }
   const laterBtn = document.getElementById('saga-later-btn');
   if(laterBtn) laterBtn.style.display = _sagaFromUnlock ? '' : 'none';
+  const speech = document.querySelector('#saga-map-screen .saga-speech');
+  if(speech && _sagaEpisode) speech.textContent = _sagaEpisode.speech || speech.textContent;
+}
+
+function _sagaDrawThemeBackground(ctx, W, H, t, theme){
+  const sky = ctx.createLinearGradient(0, 0, 0, H);
+  if(theme === 'forest'){
+    sky.addColorStop(0, '#1b4332');
+    sky.addColorStop(0.45, '#2d6a4f');
+    sky.addColorStop(1, '#081c15');
+  } else if(theme === 'castle'){
+    sky.addColorStop(0, '#3d348b');
+    sky.addColorStop(0.4, '#7678ed');
+    sky.addColorStop(1, '#2c2a4a');
+  } else if(theme === 'ocean'){
+    sky.addColorStop(0, '#48cae4');
+    sky.addColorStop(0.5, '#00b4d8');
+    sky.addColorStop(1, '#0077b6');
+  } else if(theme === 'sky'){
+    sky.addColorStop(0, '#caf0f8');
+    sky.addColorStop(0.5, '#90e0ef');
+    sky.addColorStop(1, '#ade8f4');
+  } else {
+    sky.addColorStop(0, '#7ec8ff');
+    sky.addColorStop(0.4, '#b8e4ff');
+    sky.addColorStop(0.7, '#dff5c8');
+    sky.addColorStop(1, '#8fd86a');
+  }
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, W, H);
+
+  // sun / moon
+  ctx.beginPath();
+  ctx.arc(W * 0.86, H * 0.1, 26 + Math.sin(t) * 1.5, 0, Math.PI * 2);
+  if(theme === 'castle'){
+    ctx.fillStyle = '#f8f9fa';
+    ctx.shadowColor = 'rgba(200,220,255,0.45)';
+  } else {
+    ctx.fillStyle = '#ffd84a';
+    ctx.shadowColor = 'rgba(255,210,80,0.55)';
+  }
+  ctx.shadowBlur = 22;
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  if(theme === 'forest'){
+    ctx.fillStyle = '#1b4332';
+    for(let i = 0; i < 7; i++){
+      const x = (i / 6) * W;
+      const h = 80 + (i % 3) * 28;
+      ctx.beginPath();
+      ctx.moveTo(x, H * 0.72);
+      ctx.lineTo(x + 28, H * 0.72 - h);
+      ctx.lineTo(x + 56, H * 0.72);
+      ctx.fill();
+    }
+    ctx.fillStyle = '#2d6a4f';
+    ctx.fillRect(0, H * 0.7, W, H * 0.3);
+  } else if(theme === 'castle'){
+    ctx.fillStyle = '#4a4e69';
+    ctx.fillRect(W * 0.2, H * 0.48, W * 0.6, H * 0.28);
+    ctx.fillRect(W * 0.18, H * 0.42, 36, 40);
+    ctx.fillRect(W * 0.72, H * 0.42, 36, 40);
+    ctx.fillStyle = '#22223b';
+    ctx.fillRect(0, H * 0.72, W, H * 0.28);
+  } else if(theme === 'ocean'){
+    ctx.fillStyle = '#023e8a';
+    ctx.beginPath();
+    ctx.moveTo(0, H * 0.68);
+    for(let x = 0; x <= W; x += 20){
+      ctx.lineTo(x, H * 0.68 + Math.sin(x * 0.04 + t * 2) * 8);
+    }
+    ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.fill();
+    ctx.fillStyle = '#0077b6';
+    ctx.fillRect(0, H * 0.78, W, H * 0.22);
+  } else if(theme === 'sky'){
+    ctx.fillStyle = 'rgba(255,255,255,0.75)';
+    [[0.2,0.22],[0.55,0.18],[0.78,0.28]].forEach(([px, py], i)=>{
+      const cx = W * px, cy = H * py + Math.sin(t + i) * 4;
+      ctx.beginPath(); ctx.ellipse(cx, cy, 36, 16, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(cx - 22, cy + 4, 22, 12, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(cx + 24, cy + 6, 24, 13, 0, 0, Math.PI * 2); ctx.fill();
+    });
+    ctx.fillStyle = '#b5e48c';
+    ctx.fillRect(0, H * 0.78, W, H * 0.22);
+  } else {
+    ctx.fillStyle = '#6fbe4e';
+    ctx.beginPath();
+    ctx.ellipse(W * 0.2, H * 0.72, W * 0.45, H * 0.16, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#7bc95a';
+    ctx.beginPath();
+    ctx.ellipse(W * 0.78, H * 0.74, W * 0.5, H * 0.18, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#8fd86a';
+    ctx.fillRect(0, H * 0.7, W, H * 0.3);
+  }
 }
 
 function _sagaResizeCanvas(){
@@ -401,9 +520,8 @@ function _sagaFrame(now){
     _sagaScroll += _sagaScrollVel;
     _sagaScrollVel *= 0.9;
   }
-  const levels = sagaLevels();
-  const maxId = levels.length;
-  _sagaScroll = Math.max(1, Math.min(maxId, _sagaScroll));
+  const epClamp = _sagaEpisode || SAGA_EPISODES[0];
+  _sagaScroll = Math.max(epClamp.from, Math.min(epClamp.to, _sagaScroll));
 
   // snap soft toward selected when idle
   if(!_sagaDrag && Math.abs(_sagaScrollVel) < 0.02){
@@ -412,41 +530,23 @@ function _sagaFrame(now){
 
   ctx.clearRect(0, 0, W, H);
 
-  // Sky
-  const sky = ctx.createLinearGradient(0, 0, 0, H);
-  sky.addColorStop(0, '#7ec8ff');
-  sky.addColorStop(0.4, '#b8e4ff');
-  sky.addColorStop(0.7, '#dff5c8');
-  sky.addColorStop(1, '#8fd86a');
-  ctx.fillStyle = sky;
-  ctx.fillRect(0, 0, W, H);
+  const theme = (epClamp && epClamp.theme) || 'garden';
+  _sagaDrawThemeBackground(ctx, W, H, t, theme);
 
-  // Sun
-  ctx.beginPath();
-  ctx.arc(W * 0.86, H * 0.1, 28 + Math.sin(t) * 1.5, 0, Math.PI * 2);
-  ctx.fillStyle = '#ffd84a';
-  ctx.shadowColor = 'rgba(255,210,80,0.55)';
-  ctx.shadowBlur = 24;
-  ctx.fill();
-  ctx.shadowBlur = 0;
-
-  // Hills
-  ctx.fillStyle = '#6fbe4e';
-  ctx.beginPath();
-  ctx.ellipse(W * 0.2, H * 0.72, W * 0.45, H * 0.16, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = '#7bc95a';
-  ctx.beginPath();
-  ctx.ellipse(W * 0.78, H * 0.74, W * 0.5, H * 0.18, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = '#8fd86a';
-  ctx.fillRect(0, H * 0.7, W, H * 0.3);
-
-  // Flowers
   if(!_sagaFlowers.length) _sagaInitScene(W, H);
-  _sagaFlowers.forEach(f => _sagaDrawFlower(ctx, f, t));
+  if(theme === 'garden' || theme === 'forest'){
+    _sagaFlowers.forEach(f => _sagaDrawFlower(ctx, f, t));
+  } else if(theme === 'ocean'){
+    // sò / đá nhỏ dùng lại flower positions
+    _sagaFlowers.forEach((f, i) => {
+      if(i % 3 !== 0) return;
+      ctx.beginPath();
+      ctx.ellipse(f.x, H * 0.78 + (f.y % 20), f.size * 0.5, f.size * 0.28, 0, 0, Math.PI * 2);
+      ctx.fillStyle = i % 2 ? '#f8bbd0' : '#ffe0b2';
+      ctx.fill();
+    });
+  }
 
-  // Butterflies
   _sagaButterflies.forEach(b => {
     b.x += b.vx * 0.016;
     b.y += b.vy * 0.016;
@@ -461,23 +561,28 @@ function _sagaFrame(now){
     if(b.x > W - 8) b.vx = -Math.abs(b.vx);
     if(b.y < H * 0.08) b.vy = Math.abs(b.vy);
     if(b.y > H * 0.55) b.vy = -Math.abs(b.vy);
-    _sagaDrawButterfly(ctx, b, t);
+    if(theme === 'garden' || theme === 'forest' || theme === 'sky') _sagaDrawButterfly(ctx, b, t);
   });
 
-  // Rainbow + nodes
+  // Rainbow + nodes — chỉ map trong chặng hiện tại (4 map)
+  const epLevels = sagaEpisodeLevels();
+  const ep = _sagaEpisode || SAGA_EPISODES[0];
+  const scrollMin = ep.from;
+  const scrollMax = ep.to;
+  _sagaScroll = Math.max(scrollMin, Math.min(scrollMax, _sagaScroll));
+
   const rcx = W * 0.5;
   const rcy = H * 0.38;
   const radius = Math.min(W * 0.42, H * 0.22, 150);
   _sagaDrawRainbow(ctx, rcx, rcy, radius, t);
 
   _sagaHitNodes = [];
-  // Vẽ map gần trước (z-order): xa trước, gần/selected sau
-  const order = levels.slice().sort((a, b) => {
+  const order = epLevels.slice().sort((a, b) => {
     return Math.abs(b.id - _sagaScroll) - Math.abs(a.id - _sagaScroll);
   });
   order.forEach(lv => {
-    const pos = _sagaNodePos(lv.id, rcx, rcy, radius, _sagaScroll, maxId);
-    if(Math.abs(pos.delta) > 4.2) return; // ngoài tầm nhìn
+    const pos = _sagaNodePos(lv.id, rcx, rcy, radius, _sagaScroll, epLevels.length);
+    if(Math.abs(pos.delta) > 3.5) return;
     const hit = _sagaDrawNode(ctx, lv, pos, lv.id === _sagaSelectedId, t);
     _sagaHitNodes.push(hit);
   });
@@ -535,6 +640,9 @@ function showSagaMapScreen(opts){
   }
   _sagaSelectedId = _sagaPickDefaultId(o);
   if(_sagaSelectedId < 1) _sagaSelectedId = 1;
+  _sagaEpisode = sagaEpisodeForMapId(_sagaSelectedId);
+  // Giữ chọn trong chặng
+  _sagaSelectedId = Math.max(_sagaEpisode.from, Math.min(_sagaEpisode.to, _sagaSelectedId));
   _sagaScroll = _sagaSelectedId;
   _sagaScrollVel = 0;
 
@@ -564,8 +672,8 @@ function playSelectedSagaLevel(){
   try{ pendingUnlock = lv.key; }catch(e){}
   try{ hiddenMapEntryScore = score; }catch(e){}
 
+  // Không startGame() — giữ điểm + tiến trình cổng ★★★ / map ẩn
   try{ if(typeof hardResetAllModes === 'function') hardResetAllModes(); }catch(e){}
-  try{ if(typeof startGame === 'function') startGame(); }catch(e){}
 
   let started = false;
   try{
@@ -654,9 +762,10 @@ function _sagaBindOnce(){
         return;
       }
     }
-    // snap tới map gần nhất
+    // snap tới map gần nhất trong chặng
+    const ep = _sagaEpisode || SAGA_EPISODES[0];
     const snapped = Math.round(_sagaScroll);
-    _sagaSelectId(Math.max(1, Math.min(20, snapped)));
+    _sagaSelectId(Math.max(ep.from, Math.min(ep.to, snapped)));
     _sagaScroll = _sagaSelectedId;
   };
 

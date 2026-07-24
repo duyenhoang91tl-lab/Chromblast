@@ -93,6 +93,18 @@ function saveRulesRead(){ safeSet('chromablast_rules_read','1'); }
 function isRulesRead(){ return safeGet('chromablast_rules_read')==='1'; }
 
 /* ──────────────────────────────────────────
+   ⭐ TIẾN TRÌNH MAP THƯỜNG ★★★ → MỞ MAP ẨN (chromablast_normal_stars)
+   Cần phá 2 map thường (mỗi map đủ 3 sao điểm) để mở 1 map ẩn.
+────────────────────────────────────────── */
+function getSavedNormalStarProgress(){
+  try{ return JSON.parse(localStorage.getItem('chromablast_normal_stars')||'{}'); }
+  catch(e){ return {}; }
+}
+function saveNormalStarProgressData(data){
+  try{ localStorage.setItem('chromablast_normal_stars', JSON.stringify(data||{})); }catch(e){}
+}
+
+/* ──────────────────────────────────────────
    🗺️ MỞ KHÓA MAP ẨN ĐÃ THẮNG (chromablast_cleared_maps)
 ────────────────────────────────────────── */
 const CLEARED_MAPS_ALIAS = { secret:'secret1' }; // 'secret' (khoá nội bộ) === 'secret1' (khoá trong HIDDEN_MAP_LIST)
