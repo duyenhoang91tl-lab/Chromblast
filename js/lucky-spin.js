@@ -76,10 +76,11 @@
   }
 
   function prizeDetail(seg) {
-    if (seg.kind === "heart") return "+" + seg.amount + " Tim";
-    if (seg.kind === "fire") return "+" + seg.amount + " Lửa";
-    if (seg.kind === "bubble") return "+" + seg.amount + " Bóng bóng";
-    if (seg.kind === "wind") return "+" + seg.amount + " Gió";
+    const tt = typeof t === "function" ? t : function (k) { return k; };
+    if (seg.kind === "heart") return tt("prizeHeart", seg.amount);
+    if (seg.kind === "fire") return tt("prizeFire", seg.amount);
+    if (seg.kind === "bubble") return tt("prizeBubble", seg.amount);
+    if (seg.kind === "wind") return tt("prizeWind", seg.amount);
     return seg.label;
   }
 
@@ -136,14 +137,13 @@
     const btn = document.getElementById("spin-btn");
     const hint = document.getElementById("spin-hint");
     const timer = document.getElementById("spin-timer");
+    const tt = typeof t === "function" ? t : function (k) { return k; };
     if (btn) {
       btn.disabled = spinning || awaitingRewardConfirm || !free;
-      btn.textContent = free ? "Quay" : "Hết lượt";
+      btn.textContent = free ? tt("spinBtn") : tt("spinNoTurns");
     }
     if (hint) {
-      hint.textContent = free
-        ? "1 lượt quay miễn phí mỗi ngày · 2% gạch / nền"
-        : "Quay lại vào ngày mai để nhận lượt miễn phí";
+      hint.textContent = free ? tt("spinHintFree") : tt("spinHintWait");
     }
     if (timer) {
       timer.textContent = formatHms(remainingMs());
@@ -182,18 +182,19 @@
     awaitingRewardConfirm = true;
     setSpinChromeLocked(true);
     if (icon) icon.textContent = (seg.icon || "") + "×" + seg.amount;
-    if (text) text.textContent = "Đã nhận " + prizeDetail(seg);
+    const tt = typeof t === "function" ? t : function (k) { return k; };
+    if (text) text.textContent = tt("spinGot", prizeDetail(seg));
     if (extra) {
       const parts = [];
       if (bonus && bonus.brick) {
-        parts.push("🧱 Bonus: gạch " + (bonus.brickName || bonus.brick));
+        parts.push(tt("spinBonusBrick", bonus.brickName || bonus.brick));
       }
       if (bonus && bonus.board) {
-        parts.push("🗺️ Bonus: nền " + (bonus.boardName || bonus.board));
+        parts.push(tt("spinBonusBoard", bonus.boardName || bonus.board));
       }
       extra.textContent = parts.join(" · ");
     }
-    if (inv) inv.textContent = "Tài khoản: " + invSummary();
+    if (inv) inv.textContent = tt("spinInv", invSummary());
     layer.hidden = false;
     updateSpinUi();
     try {
