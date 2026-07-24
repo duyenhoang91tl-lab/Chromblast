@@ -661,10 +661,35 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   opacity: 0.7;
 }
 #caro-btn.caro-unlocked { opacity: 1; }
+#caro-btn .caro-btn-ico{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  pointer-events: none;
+  user-select: none;
+}
+#caro-btn .caro-btn-ico .caro-x,
+#caro-btn .caro-btn-ico .caro-o{
+  font-style: normal;
+  font-weight: 900;
+  font-size: 12px;
+  line-height: 1;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.45);
+}
+#caro-btn .caro-btn-ico .caro-x{ color: #ff6b6b; }
+#caro-btn .caro-btn-ico .caro-o{ color: #7dd3fc; }
 #game-root.hud-arcade #caro-btn,
 #game-root.hud-arcade #caro-btn.caro-unlocked {
   width: 32px; height: 32px; font-size: 15px; padding: 0;
   background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px;
+}
+#game-root.hud-arcade #caro-btn .caro-btn-ico .caro-x,
+#game-root.hud-arcade #caro-btn .caro-btn-ico .caro-o{
+  font-size: 13px;
 }
 #caro-stage {
   display: none; position: fixed; inset: 0; z-index: 10060;
@@ -2919,9 +2944,14 @@ body:has(#secret-stage.active) .streak-dot.lit{
 }
 #game-root.hud-arcade #caro-btn,
 #game-root.hud-arcade #caro-btn.caro-unlocked {
-  background: radial-gradient(circle at 35% 30%, #aaa 0%, #444 55%, #111 100%) !important;
-  border: 2px solid #ccc !important;
-  box-shadow: 0 0 10px rgba(200,200,200,0.4), inset 0 1px 0 rgba(255,255,255,0.35);
+  background: radial-gradient(circle at 35% 30%, #3a4658 0%, #1c2430 55%, #0c1016 100%) !important;
+  border: 2px solid #c5d0e0 !important;
+  box-shadow: 0 0 10px rgba(125,211,252,0.35), inset 0 1px 0 rgba(255,255,255,0.35);
+  color: #fff;
+}
+#game-root.hud-arcade #caro-btn .caro-btn-ico .caro-x,
+#game-root.hud-arcade #caro-btn .caro-btn-ico .caro-o{
+  font-size: 14px;
 }
 #game-root.hud-arcade #pause-btn,
 #game-root.hud-arcade #account-btn,

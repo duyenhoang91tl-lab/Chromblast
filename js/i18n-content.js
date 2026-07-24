@@ -656,9 +656,9 @@ function MILESTONE_MSG(tier){ const c=_i18nContent(); const a=c.milestones||I18N
 // ── Cờ Caro online ──
 (function(){
   const caro = {
-  vi:{ ttCaro:'Cờ Caro (Lv.3 online)', ttCaroAi:'Caro · đấu với máy', caroTitle:'⬛ Caro',
+  vi:{ ttCaro:'Cờ Caro (Lv.3 online)', ttCaroAi:'Caro · đấu với máy', caroTitle:'❌⭕ Caro',
        caroSub:'15×15 · X vs O · 5 ô thắng',
-       caroNeedLevel:'⬛ Online cần Cấp {0}', caroLobby:'⬛ Phòng Caro',
+       caroNeedLevel:'❌⭕ Online cần Cấp {0}', caroLobby:'❌⭕ Phòng Caro',
        caroYourTurn:'Lượt bạn', caroOppTurn:'Chờ {0}...', caroYouWin:'🏆 Thắng!',
        caroYouLose:'😢 Thua', caroDraw:'🤝 Hòa', caroConnected:'Online · {0}',
        caroWrongRoom:'Không phải phòng Caro', caroQuitConfirm:'Thoát trận?',
@@ -689,9 +689,9 @@ function MILESTONE_MSG(tier){ const c=_i18nContent(); const a=c.milestones||I18N
        caroRoomNo:'Phòng {0}', caroRoomJoin:'Vào', caroRoomMine:'Của bạn',
        caroLobbyHint:'Đang chờ đối thủ — có thể vào từ danh sách phòng chờ hoặc mã phòng',
        caroRoomFull:'Phòng đã đủ người', caroRoomNotOpen:'Phòng không còn mở' },
-  en:{ ttCaro:'Caro (Lv.3 online)', ttCaroAi:'Caro · vs AI', caroTitle:'⬛ Caro',
+  en:{ ttCaro:'Caro (Lv.3 online)', ttCaroAi:'Caro · vs AI', caroTitle:'❌⭕ Caro',
        caroSub:'15×15 · X vs O · 5 in a row',
-       caroNeedLevel:'⬛ Online needs Level {0}', caroLobby:'⬛ Caro Room',
+       caroNeedLevel:'❌⭕ Online needs Level {0}', caroLobby:'❌⭕ Caro Room',
        caroYourTurn:'Your turn', caroOppTurn:'Wait {0}...', caroYouWin:'🏆 Win!',
        caroYouLose:'😢 Lose', caroDraw:'🤝 Draw', caroConnected:'Online · {0}',
        caroWrongRoom:'Not a Caro room', caroQuitConfirm:'Quit match?',

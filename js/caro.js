@@ -894,7 +894,7 @@ function _caroEnterAIGame(levelId){
   stage.style.zIndex = '10060';
   const badge = document.getElementById('mode-badge');
   if(badge){
-    badge.textContent = '⬛ CARO';
+    badge.textContent = '❌⭕ CARO';
     badge.classList.add('secret');
   }
 
@@ -994,7 +994,7 @@ function _caroEnterGame(roomData){
   }
   const badge = document.getElementById('mode-badge');
   if(badge){
-    badge.textContent = '⬛ CARO';
+    badge.textContent = '❌⭕ CARO';
     badge.classList.add('secret');
   }
 
