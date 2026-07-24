@@ -1,10 +1,10 @@
 /* ═══════════════════════════════════════════════════════════════
-   Nền ngoài không gian: tinh vân · trăng · sao lóe chậm · sao chổi
-   + cánh đào rõ nét bay theo gió sang trái
+   Nền mặc định: thiên hà sâu · tinh vân xanh–tím · trăng góc phải
+   · sao dày lấp lánh chậm · cánh đào hồng bay theo gió trái
 ═══════════════════════════════════════════════════════════════ */
 
 html, body {
-  background-color: #07041a !important;
+  background-color: #02010c !important;
   background-image: none;
 }
 
@@ -14,81 +14,113 @@ html, body {
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
+  /* Tầng tinh vân: indigo đen + xanh điện + magenta, sáng nhất vùng dưới giữa */
   background:
-    radial-gradient(ellipse 70% 45% at 75% 15%, rgba(120, 80, 220, 0.32) 0%, transparent 60%),
-    radial-gradient(ellipse 55% 40% at 18% 35%, rgba(60, 100, 200, 0.22) 0%, transparent 62%),
-    radial-gradient(ellipse 80% 50% at 50% 85%, rgba(40, 80, 160, 0.2) 0%, transparent 55%),
+    radial-gradient(ellipse 55% 42% at 48% 78%, rgba(70, 120, 255, 0.55) 0%, transparent 62%),
+    radial-gradient(ellipse 48% 38% at 62% 68%, rgba(180, 60, 220, 0.42) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 32% at 32% 72%, rgba(90, 40, 180, 0.38) 0%, transparent 58%),
+    radial-gradient(ellipse 70% 45% at 78% 18%, rgba(100, 70, 210, 0.28) 0%, transparent 58%),
+    radial-gradient(ellipse 50% 36% at 12% 40%, rgba(40, 90, 200, 0.22) 0%, transparent 65%),
+    radial-gradient(ellipse 90% 55% at 50% 100%, rgba(30, 50, 140, 0.35) 0%, transparent 50%),
+    /* sao nền cực nhỏ (field dày) */
+    radial-gradient(1px 1px at 8% 12%, rgba(255,255,255,0.85), transparent),
+    radial-gradient(1px 1px at 18% 28%, rgba(220,230,255,0.7), transparent),
+    radial-gradient(1.2px 1.2px at 27% 8%, rgba(255,255,255,0.9), transparent),
+    radial-gradient(1px 1px at 35% 42%, rgba(200,210,255,0.55), transparent),
+    radial-gradient(1px 1px at 44% 15%, rgba(255,255,255,0.8), transparent),
+    radial-gradient(1.4px 1.4px at 52% 33%, rgba(255,255,255,0.95), transparent),
+    radial-gradient(1px 1px at 61% 9%, rgba(210,220,255,0.65), transparent),
+    radial-gradient(1px 1px at 70% 48%, rgba(255,255,255,0.55), transparent),
+    radial-gradient(1.2px 1.2px at 79% 22%, rgba(255,255,255,0.88), transparent),
+    radial-gradient(1px 1px at 88% 38%, rgba(200,220,255,0.6), transparent),
+    radial-gradient(1px 1px at 94% 14%, rgba(255,255,255,0.75), transparent),
+    radial-gradient(1px 1px at 14% 55%, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1.1px 1.1px at 41% 58%, rgba(220,230,255,0.7), transparent),
+    radial-gradient(1px 1px at 73% 62%, rgba(255,255,255,0.45), transparent),
+    radial-gradient(1px 1px at 91% 70%, rgba(200,210,255,0.5), transparent),
     linear-gradient(180deg,
-      #040210 0%,
-      #0a0628 22%,
-      #120a38 48%,
-      #1a1048 72%,
-      #0c0828 100%);
+      #010008 0%,
+      #050218 18%,
+      #0a0630 42%,
+      #120a42 62%,
+      #0c0828 82%,
+      #030110 100%);
 }
 
-/* Trăng */
+/* Trăng nhỏ, sáng trắng–vàng, góc phải trên */
 #sky-atmosphere .sky-moon {
   position: absolute;
-  top: 8%;
-  left: 68%;
-  width: 48px;
-  height: 48px;
+  top: 7%;
+  right: 9%;
+  left: auto;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  z-index: 3;
+  z-index: 4;
   background:
-    radial-gradient(circle at 32% 30%, #fffdf2 0%, #ffe8b0 40%, #efc878 75%, #c8a050 100%);
+    radial-gradient(circle at 34% 30%, #fffef8 0%, #fff6d0 38%, #ffe39a 72%, #efc86a 100%);
   box-shadow:
-    0 0 18px rgba(255, 230, 170, 0.55),
-    0 0 42px rgba(255, 200, 140, 0.28),
-    0 0 80px rgba(160, 120, 255, 0.18);
-  opacity: 0.92;
+    0 0 14px rgba(255, 245, 200, 0.7),
+    0 0 36px rgba(255, 220, 150, 0.35),
+    0 0 70px rgba(180, 140, 255, 0.2);
+  opacity: 0.95;
 }
 #sky-atmosphere .sky-moon::after {
   content: '';
   position: absolute;
-  inset: 5px 9px 9px 12px;
+  inset: 4px 7px 8px 10px;
   border-radius: 50%;
-  background: radial-gradient(circle at 40% 40%, rgba(30, 20, 60, 0.14), transparent 65%);
+  background: radial-gradient(circle at 42% 38%, rgba(40, 30, 70, 0.12), transparent 68%);
 }
 
-/* Tinh vân mờ */
+/* Bụi vũ trụ / tinh vân xoay nhẹ */
 #sky-atmosphere .sky-mist {
   position: absolute;
   border-radius: 50%;
-  filter: blur(32px);
-  opacity: 0.45;
+  filter: blur(36px);
+  opacity: 0.5;
   z-index: 1;
   animation: skyMistDrift ease-in-out infinite alternate;
   will-change: transform, opacity;
 }
 #sky-atmosphere .sky-mist.m1 {
-  width: 50vw; height: 26vh; top: 12%; left: -6%;
-  background: radial-gradient(ellipse at 40% 50%, rgba(140, 110, 255, 0.5) 0%, transparent 70%);
-  animation-duration: 20s;
+  width: 58vw; height: 34vh; bottom: 8%; left: 8%;
+  background: radial-gradient(ellipse at 45% 50%, rgba(70, 130, 255, 0.65) 0%, transparent 70%);
+  animation-duration: 22s; filter: blur(42px); opacity: 0.55;
 }
 #sky-atmosphere .sky-mist.m2 {
-  width: 55vw; height: 30vh; top: 20%; right: -10%; left: auto;
-  background: radial-gradient(ellipse at 60% 40%, rgba(90, 140, 255, 0.35) 0%, transparent 72%);
-  animation-duration: 24s; animation-delay: -5s; opacity: 0.38;
+  width: 52vw; height: 32vh; bottom: 14%; right: -4%; left: auto;
+  background: radial-gradient(ellipse at 55% 45%, rgba(200, 50, 230, 0.5) 0%, transparent 68%);
+  animation-duration: 26s; animation-delay: -6s; filter: blur(40px); opacity: 0.48;
 }
 #sky-atmosphere .sky-mist.m3 {
-  width: 65vw; height: 24vh; top: 40%; left: 15%;
-  background: radial-gradient(ellipse at 50% 50%, rgba(180, 100, 220, 0.32) 0%, transparent 68%);
-  animation-duration: 28s; animation-delay: -9s; opacity: 0.36;
+  width: 70vw; height: 28vh; top: 38%; left: 10%;
+  background: radial-gradient(ellipse at 50% 50%, rgba(120, 70, 220, 0.4) 0%, transparent 68%);
+  animation-duration: 30s; animation-delay: -11s; opacity: 0.4;
 }
 #sky-atmosphere .sky-mist.m4 {
-  width: 70vw; height: 28vh; bottom: 22%; left: 0;
-  background: radial-gradient(ellipse at 45% 60%, rgba(60, 120, 200, 0.3) 0%, transparent 70%);
-  animation-duration: 22s; filter: blur(40px); opacity: 0.4;
+  width: 48vw; height: 26vh; top: 12%; left: -8%;
+  background: radial-gradient(ellipse at 40% 50%, rgba(50, 100, 220, 0.38) 0%, transparent 70%);
+  animation-duration: 24s; animation-delay: -4s; opacity: 0.36;
 }
 #sky-atmosphere .sky-mist.m5 {
-  width: 40vw; height: 20vh; top: 6%; left: 42%;
-  background: radial-gradient(ellipse at 50% 50%, rgba(200, 170, 255, 0.28) 0%, transparent 65%);
-  animation-duration: 16s; filter: blur(24px); opacity: 0.34;
+  width: 42vw; height: 22vh; top: 6%; right: 18%; left: auto;
+  background: radial-gradient(ellipse at 50% 50%, rgba(160, 120, 255, 0.32) 0%, transparent 65%);
+  animation-duration: 18s; filter: blur(28px); opacity: 0.34;
+}
+#sky-atmosphere .sky-mist.m6 {
+  width: 80vw; height: 36vh; bottom: -4%; left: 5%;
+  background: radial-gradient(ellipse at 50% 40%, rgba(90, 40, 180, 0.45) 0%, rgba(40, 80, 200, 0.2) 45%, transparent 72%);
+  animation-duration: 28s; animation-delay: -9s; filter: blur(48px); opacity: 0.5;
+}
+#sky-atmosphere .sky-mist.m7 {
+  width: 36vw; height: 20vh; top: 28%; left: 55%;
+  background: radial-gradient(ellipse at 50% 50%, rgba(100, 180, 255, 0.35) 0%, transparent 68%);
+  animation-duration: 20s; animation-delay: -3s; filter: blur(30px); opacity: 0.32;
 }
 @keyframes skyMistDrift {
   from { transform: translate3d(0, 0, 0) scale(1); }
-  to   { transform: translate3d(2.5vw, -1vh, 0) scale(1.05); }
+  to   { transform: translate3d(2.8vw, -1.4vh, 0) scale(1.06); }
 }
 
 /* Sao */
@@ -142,7 +174,7 @@ html, body {
   box-shadow: 0 0 2px 1px rgba(210,230,255,0.95), 0 0 8px 2px rgba(140,160,255,0.4);
 }
 
-/* Sao thỉnh thoảng lóe tia sáng */
+/* Sao thỉnh thoảng lóe tia sáng (chậm) */
 #sky-stars .sky-star.flare {
   z-index: 3;
   animation-name: skyStarFlare;
@@ -179,12 +211,11 @@ html, body {
   100% { opacity: 0.7; transform: scale(1.05); filter: brightness(1.1); }
 }
 @keyframes skyTwinkleBright {
-  0%   { opacity: 0.3; transform: scale(0.75); filter: brightness(0.8); }
-  30%  { opacity: 1; transform: scale(1.3); filter: brightness(1.5); }
-  55%  { opacity: 0.4; transform: scale(0.9); filter: brightness(0.85); }
-  100% { opacity: 0.85; transform: scale(1.1); filter: brightness(1.2); }
+  0%   { opacity: 0.35; transform: scale(0.8); filter: brightness(0.85); }
+  35%  { opacity: 1; transform: scale(1.25); filter: brightness(1.45); }
+  60%  { opacity: 0.45; transform: scale(0.92); filter: brightness(0.9); }
+  100% { opacity: 0.85; transform: scale(1.08); filter: brightness(1.15); }
 }
-/* Chu kỳ rất dài: phần lớn thời gian dịu, thỉnh thoảng mới lóe (và lóe chậm) */
 @keyframes skyStarFlare {
   0%, 92%, 100% { opacity: 0.5; transform: scale(1); filter: brightness(1); }
   94% { opacity: 0.85; transform: scale(1.35); filter: brightness(1.5); }
@@ -241,7 +272,7 @@ html, body {
   100% { opacity: 0; transform: rotate(-32deg) translateX(55vw) scaleX(1); }
 }
 
-/* Cánh đào — rõ nét, bay theo gió sang trái, phất phơ */
+/* Cánh đào hồng — bay phất phơ theo gió trái */
 #sky-petals {
   position: absolute;
   inset: 0;
@@ -252,7 +283,6 @@ html, body {
 #sky-petals .sky-petal {
   position: absolute;
   top: -16px;
-  /* Bắt đầu từ phía phải / giữa để bay về trái */
   left: 55%;
   width: 14px;
   height: 12px;
@@ -264,7 +294,6 @@ html, body {
     inset 0 1px 0 rgba(255, 255, 255, 0.55);
   opacity: 0.92;
   filter: none;
-  /* ease-in-out cho cảm giác gió đẩy nhẹ */
   animation: skyPetalWind ease-in-out infinite;
   will-change: transform, opacity;
 }
@@ -278,7 +307,6 @@ html, body {
   transform: rotate(35deg);
   opacity: 0.7;
 }
-/* --windX âm: bay về bên trái; --sway: dao động phất phơ */
 @keyframes skyPetalWind {
   0% {
     transform: translate3d(0, -3vh, 0) rotate(-8deg) scale(0.92);
@@ -352,16 +380,17 @@ html, body {
 
 .start-bg {
   background:
-    radial-gradient(ellipse 70% 45% at 50% 0%, rgba(100, 70, 200, 0.35) 0%, transparent 55%),
-    linear-gradient(180deg, #040210 0%, #120a38 45%, #0c0828 100%) !important;
+    radial-gradient(ellipse 70% 50% at 50% 85%, rgba(70, 110, 240, 0.28) 0%, transparent 55%),
+    radial-gradient(ellipse 55% 40% at 70% 20%, rgba(140, 60, 200, 0.22) 0%, transparent 55%),
+    linear-gradient(180deg, #010008 0%, #0a0630 45%, #050218 100%) !important;
   animation: none !important;
 }
 
 #caro-stage,
 #caro-stage.active {
   background:
-    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(80, 50, 140, 0.28) 0%, transparent 55%),
-    linear-gradient(180deg, rgba(8, 4, 24, 0.5) 0%, rgba(20, 12, 48, 0.25) 45%, rgba(8, 4, 24, 0.55) 100%) !important;
+    radial-gradient(ellipse 80% 50% at 50% 90%, rgba(70, 100, 220, 0.22) 0%, transparent 55%),
+    linear-gradient(180deg, rgba(4, 2, 16, 0.45) 0%, rgba(16, 10, 48, 0.22) 45%, rgba(4, 2, 16, 0.5) 100%) !important;
 }
 #versus-arena { background: transparent !important; }
 
@@ -370,5 +399,5 @@ html, body {
   box-shadow: none !important;
 }
 #game-root.theme-adventure::after {
-  background: linear-gradient(180deg, transparent 0%, rgba(8, 4, 24, 0.45) 100%) !important;
+  background: linear-gradient(180deg, transparent 0%, rgba(4, 2, 16, 0.4) 100%) !important;
 }
