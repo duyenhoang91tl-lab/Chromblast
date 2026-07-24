@@ -4098,11 +4098,35 @@ body:has(#secret-stage.active) .streak-dot.lit{
   min-height:52px;
   font-size:14px;
   padding:12px 12px;
-  color:#fff;
-  background:linear-gradient(180deg,#9B6BFF,#6A3FD4);
+  color:#fff !important;
+  -webkit-text-fill-color:#fff;
+  -webkit-text-stroke:0;
+  text-shadow:none;
+}
+/* Mỗi 2 hàng một màu pastel đậm (chữ trắng): hồng → cam → đỏ → tím → xanh → xanh da trời */
+.settings-overlay.menu-fullscreen #settings-player-edit.set-action,
+.settings-overlay.menu-fullscreen .menu-actions .set-action:nth-child(1),
+.settings-overlay.menu-fullscreen .menu-actions .set-action:nth-child(2){
+  background:linear-gradient(180deg,#E889A8,#C4567A);
+}
+.settings-overlay.menu-fullscreen .menu-actions .set-action:nth-child(n+3):nth-child(-n+6){
+  background:linear-gradient(180deg,#E8A05A,#C4742E);
+}
+.settings-overlay.menu-fullscreen .menu-actions .set-action:nth-child(n+7):nth-child(-n+10){
+  background:linear-gradient(180deg,#E06A6A,#C43C3C);
+}
+.settings-overlay.menu-fullscreen .menu-actions .set-action:nth-child(n+11):nth-child(-n+14){
+  background:linear-gradient(180deg,#A78BDB,#6F4FB0);
+}
+.settings-overlay.menu-fullscreen .menu-actions .set-action:nth-child(n+15):nth-child(-n+18){
+  background:linear-gradient(180deg,#5AAA7A,#3D8A5A);
+}
+.settings-overlay.menu-fullscreen .menu-actions .set-action:nth-child(n+19){
+  background:linear-gradient(180deg,#5BA8D9,#2F7FB0);
 }
 @media (max-width:360px){
   .settings-overlay.menu-fullscreen .menu-actions{ grid-template-columns:1fr; }
+  /* 1 cột: vẫn gom theo cặp hàng (2 nút / màu) — cùng thứ tự màu */
 }
 .settings-toggles{
   display:flex; justify-content:center; gap:28px; margin-bottom:16px; padding-top:4px;
