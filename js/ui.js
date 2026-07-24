@@ -494,6 +494,7 @@ function closeAllSettingsOverlays(){
 
 function openSettingsPanel(){
   syncSettingsToggles();
+  try{ if(typeof applyI18nDom==='function') applyI18nDom(); }catch(e){}
   try{ if(typeof renderSettingsPlayerInfo==='function') renderSettingsPlayerInfo(); }catch(e){}
   document.getElementById('settings-panel')?.classList.add('show');
 }

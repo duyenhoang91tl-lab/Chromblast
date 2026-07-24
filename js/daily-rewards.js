@@ -74,17 +74,18 @@ function renderDailyPanel(){
       else if(i === status.streakDay) cls += ' today';
       else cls += ' locked';
       div.className = cls;
-      div.innerHTML = '<div class="daily-day-num">Ngày '+i+'</div><div class="daily-day-xp">+'+xp+' XP</div>';
+      div.innerHTML = '<div class="daily-day-num">'+(typeof t==='function'?t('dailyDay', i):('Ngày '+i))+'</div><div class="daily-day-xp">+'+xp+' XP</div>';
       list.appendChild(div);
     }
   }
   const btn = document.getElementById('daily-claim-btn');
   if(btn){
     if(status.alreadyClaimedToday){
-      btn.textContent = '✅ Đã nhận hôm nay — quay lại vào ngày mai';
+      btn.textContent = typeof t==='function' ? t('dailyClaimed') : '✅ Đã nhận hôm nay — quay lại vào ngày mai';
       btn.disabled = true;
     } else {
-      btn.textContent = '🎁 Nhận quà ngày ' + status.streakDay + ' (+' + DAILY_REWARD_XP[(status.streakDay-1)%7] + ' XP)';
+      const xp = DAILY_REWARD_XP[(status.streakDay-1)%7];
+      btn.textContent = typeof t==='function' ? t('dailyClaim', status.streakDay, xp) : ('🎁 Nhận quà ngày ' + status.streakDay + ' (+' + xp + ' XP)');
       btn.disabled = false;
     }
   }
@@ -109,7 +110,7 @@ function initDailyRewardPanel(){
   document.getElementById('daily-claim-btn').addEventListener('click', ()=>{
     const res = claimDailyReward();
     if(res){
-      if(typeof showComboFlash === 'function') showComboFlash(0, false, '🎁 +'+res.xp+' XP (ngày '+res.day+'/7)');
+      if(typeof showComboFlash === 'function') showComboFlash(0, false, typeof t==='function' ? t('dailyFlash', res.xp, res.day) : ('🎁 +'+res.xp+' XP (ngày '+res.day+'/7)'));
       if(typeof sfxUnlock === 'function') sfxUnlock();
       renderDailyPanel();
       updateDailyBadge();

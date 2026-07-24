@@ -4,7 +4,8 @@
 // - Phần tử HTML gắn data-i18n / data-i18n-title / data-i18n-html sẽ được
 //   applyI18nDom() thay chữ tự động khi đổi ngôn ngữ.
 // - Ngôn ngữ lưu ở localStorage 'chromablast_lang'; lần đầu tự chọn theo máy.
-// - Thiếu key ở ngôn ngữ nào → tự rơi về tiếng Anh, rồi tiếng Việt (gốc).
+// - Thiếu key: vi chỉ dùng vi (không lẫn en); en chỉ dùng en (không lẫn vi);
+//   ko/ja/zh/es thiếu → rơi về en (không rơi về vi).
 // Nạp ĐẦU TIÊN (trước mọi file js khác) để t() sẵn sàng ở khắp nơi.
 // ═══════════════════════════════════════════════════════════════
 
@@ -199,6 +200,11 @@ ko: {
   gameOverTitle:'🎮 더 이상 둘 수 없어요!', restartBtn:'다시 하기', finalScore:'점수: {0}',
   accountTitle:'👤 계정', leaderboardTitle:'🏆 리더보드',
   lbSub:'이 기기 플레이어들의 최고 점수입니다.',
+  lbSubGlobal:'글로벌 솔로 최고 점수 (Firebase 필요).',
+  lbSubPvp:'온라인 1대1 PvP 점수 — 승 +30, 무 +5.',
+  lbTabLocal:'📱 기기', lbTabGlobal:'🌐 글로벌', lbTabPvp:'⚔️ PvP', lbTabCaro:'⬛ 캐로',
+  lbSubCaro:'캐로 리더보드 — 칭호, 승/패/무 비율.',
+  lbLoading:'불러오는 중...', lbOfflineGlobal:'서버 미연결 — 글로벌 리더보드를 보려면 Firebase를 설정하세요.',
   lbEmpty:'아직 점수가 없어요 — 첫 번째 기록을 세워 보세요!',
   lbMyRank:'내 순위: #{0} / {1} — {2}점',
   lbNoRank:'아직 리더보드에 점수가 없어요 — 한 판 플레이해 보세요!',
@@ -271,6 +277,11 @@ ja: {
   gameOverTitle:'🎮 手詰まり！', restartBtn:'もう一度', finalScore:'スコア: {0}',
   accountTitle:'👤 アカウント', leaderboardTitle:'🏆 ランキング',
   lbSub:'この端末のプレイヤーのハイスコアです。',
+  lbSubGlobal:'グローバルソロ最高スコア（Firebaseが必要）。',
+  lbSubPvp:'オンライン1対1 PvPポイント — 勝+30、引分+5。',
+  lbTabLocal:'📱 端末', lbTabGlobal:'🌐 グローバル', lbTabPvp:'⚔️ PvP', lbTabCaro:'⬛ キャロ',
+  lbSubCaro:'キャロランキング — 称号、勝敗引分率。',
+  lbLoading:'読み込み中...', lbOfflineGlobal:'サーバー未接続 — グローバルランキングにはFirebase設定が必要です。',
   lbEmpty:'まだ記録がありません — 最初の記録を作ろう！',
   lbMyRank:'あなたの順位: #{0} / {1} — {2}点',
   lbNoRank:'まだランキングに記録がありません — 1回プレイしてみよう！',
@@ -343,6 +354,11 @@ zh: {
   gameOverTitle:'🎮 无路可走！', restartBtn:'再来一局', finalScore:'得分: {0}',
   accountTitle:'👤 账号', leaderboardTitle:'🏆 排行榜',
   lbSub:'本设备玩家的最高分。',
+  lbSubGlobal:'全球单人最高分（需要 Firebase）。',
+  lbSubPvp:'线上1对1 PvP积分 — 胜+30，平+5。',
+  lbTabLocal:'📱 本机', lbTabGlobal:'🌐 全球', lbTabPvp:'⚔️ PvP', lbTabCaro:'⬛ 五子棋',
+  lbSubCaro:'五子棋排行榜 — 段位、胜/负/平。',
+  lbLoading:'加载中...', lbOfflineGlobal:'未连接服务器 — 配置 Firebase 以查看全球排行榜。',
   lbEmpty:'暂无记录 — 快来创造第一个纪录吧！',
   lbMyRank:'我的排名: #{0} / {1} — {2}分',
   lbNoRank:'你还没有上榜 — 玩一局即可上榜！',
@@ -415,6 +431,11 @@ es: {
   gameOverTitle:'🎮 ¡Sin movimientos!', restartBtn:'Jugar de nuevo', finalScore:'Puntos: {0}',
   accountTitle:'👤 Cuenta', leaderboardTitle:'🏆 Clasificación',
   lbSub:'Mejores puntuaciones de los jugadores en este dispositivo.',
+  lbSubGlobal:'Récords globales en solitario (requiere Firebase).',
+  lbSubPvp:'Puntos PvP 1v1 online — victoria +30, empate +5.',
+  lbTabLocal:'📱 Dispositivo', lbTabGlobal:'🌐 Global', lbTabPvp:'⚔️ PvP', lbTabCaro:'⬛ Caro',
+  lbSubCaro:'Clasificación Caro — títulos, ratio victorias/derrotas/empates.',
+  lbLoading:'Cargando...', lbOfflineGlobal:'Sin servidor — configura Firebase para ver la clasificación global.',
   lbEmpty:'Aún no hay puntuaciones — ¡juega y sé el primero!',
   lbMyRank:'Tu puesto: #{0} / {1} — {2} pts',
   lbNoRank:'Aún no tienes puntuación — ¡juega una partida para entrar!',
@@ -472,17 +493,17 @@ let currentLang = (function(){
   return 'vi';
 })();
 
-// Lấy chuỗi dịch; {0},{1}... thay bằng tham số. Thiếu key → en → vi.
-// Lưu ý: chuỗi rỗng '' là hợp lệ (vd. ẩn hintDefault) — không được fallback sang tên key.
+// Lấy chuỗi dịch; {0},{1}... thay bằng tham số.
+// Không lẫn ngôn ngữ: vi↔en không fallback chéo; ngôn ngữ khác thiếu → en.
+// Chuỗi rỗng '' là hợp lệ (vd. ẩn hintDefault) — không fallback sang tên key.
 function t(key){
   const args = Array.prototype.slice.call(arguments, 1);
   let s;
-  if(I18N[currentLang] && Object.prototype.hasOwnProperty.call(I18N[currentLang], key)){
-    s = I18N[currentLang][key];
-  } else if(I18N.en && Object.prototype.hasOwnProperty.call(I18N.en, key)){
+  const pack = I18N[currentLang];
+  if(pack && Object.prototype.hasOwnProperty.call(pack, key)){
+    s = pack[key];
+  } else if(currentLang !== 'vi' && currentLang !== 'en' && I18N.en && Object.prototype.hasOwnProperty.call(I18N.en, key)){
     s = I18N.en[key];
-  } else if(I18N.vi && Object.prototype.hasOwnProperty.call(I18N.vi, key)){
-    s = I18N.vi[key];
   } else {
     s = key;
   }

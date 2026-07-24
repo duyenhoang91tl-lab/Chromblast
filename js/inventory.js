@@ -48,10 +48,16 @@ function saveInventory(){
 }
 
 const POWER_INFO = {
-  fire:   { field:'fires',   icon:'🔥', name:'Lửa' },
-  bubble: { field:'bubbles', icon:'🫧', name:'Bóng' },
-  wind:   { field:'winds',   icon:'💨', name:'Gió' },
+  fire:   { field:'fires',   icon:'🔥', nameKey:'invFire' },
+  bubble: { field:'bubbles', icon:'🫧', nameKey:'invBubble' },
+  wind:   { field:'winds',   icon:'💨', nameKey:'invWind' },
 };
+function powerName(type){
+  const info = POWER_INFO[type];
+  if(!info) return type;
+  try{ if(typeof t==='function') return t(info.nameKey); }catch(e){}
+  return info.nameKey;
+}
 
 function grantHearts(n, reason){
   if(!(n>0)) return;
@@ -69,7 +75,7 @@ function grantPower(type, n, reason){
   inv[info.field] = (inv[info.field]|0) + (n|0);
   saveInventory();
   renderInventoryHud();
-  try{ if(reason) showComboFlash(0, false, info.icon+' +'+n+' '+info.name+(reason?(' · '+reason):'')); }catch(e){}
+  try{ if(reason) showComboFlash(0, false, info.icon+' +'+n+' '+powerName(type)+(reason?(' · '+reason):'')); }catch(e){}
 }
 
 function grantRandomPower(reason){
@@ -149,7 +155,7 @@ function renderInventoryHud(){
       b.classList.toggle('no-res', cnt<1);
       b.classList.toggle('aiming', typeof pendingSkill!=='undefined' && pendingSkill===type);
       const lab = b.querySelector('.skill-lab');
-      if(lab) lab.textContent = info.name.split(' ')[0]+' ×'+cnt;
+      if(lab) lab.textContent = powerName(type).split(' ')[0]+' ×'+cnt;
     });
     // Nút xem QC +1 tim: chỉ hiện khi HẾT TIM để người chơi lựa chọn
     const adBtn = document.getElementById('inv-ad-heart-btn');
@@ -167,16 +173,16 @@ function usePowerItem(type){
   const inHidden = (typeof secretMode!=='undefined' && secretMode) ||
                    (typeof activeHiddenMapKey!=='undefined' && activeHiddenMapKey) ||
                    (typeof versusMode!=='undefined' && versusMode);
-  if(inHidden){ try{ showComboFlash(0,false,'Chỉ dùng ở bàn chính'); }catch(e){} return; }
+  if(inHidden){ try{ showComboFlash(0,false, typeof t==='function'?t('invMainOnly'):'Chỉ dùng ở bàn chính'); }catch(e){} return; }
   if((inv[info.field]|0) < 1){
-    try{ showComboFlash(0,false,'Thiếu '+info.icon+' — combo x5/x10, phá 15 lần hoặc 🎡'); }catch(e){}
+    try{ showComboFlash(0,false, typeof t==='function'?t('invMissing', info.icon):('Thiếu '+info.icon+' — combo x5/x10, phá 15 lần hoặc 🎡')); }catch(e){}
     return;
   }
   if(typeof beginSkillAim!=='function'){ return; }
   // Bấm lại cùng skill → hủy chọn
   if(typeof pendingSkill!=='undefined' && pendingSkill===type){
     cancelSkillAim();
-    try{ showHint('Đã hủy'); }catch(e){}
+    try{ showHint(typeof t==='function'?t('invCancel'):'Đã hủy'); }catch(e){}
     return;
   }
   beginSkillAim(type);
@@ -193,7 +199,7 @@ function watchAdForHeart(){
     _adHeartBusy = b;
     if(btn) btn.classList.toggle('no-res', b);
   };
-  const done = ()=>{ setBusy(false); grantHearts(1, 'Xem quảng cáo'); };
+  const done = ()=>{ setBusy(false); grantHearts(1, typeof t==='function'?t('invAdGrant'):'Xem quảng cáo'); };
   const fail = ()=>{
     setBusy(false);
     // QC chưa cấu hình xong / không có fill: vẫn tặng tim nhưng giới hạn
@@ -201,9 +207,9 @@ function watchAdForHeart(){
     const now = Date.now();
     if(now - _adHeartFallbackAt >= AD_HEART_FALLBACK_COOLDOWN){
       _adHeartFallbackAt = now;
-      grantHearts(1, 'Tặng thêm');
+      grantHearts(1, typeof t==='function'?t('invExtraGift'):'Tặng thêm');
     } else {
-      try{ showComboFlash(0,false,'Quảng cáo chưa sẵn sàng — thử lại sau nhé'); }catch(e){}
+      try{ showComboFlash(0,false, typeof t==='function'?t('invAdFail'):'Quảng cáo chưa sẵn sàng — thử lại sau nhé'); }catch(e){}
     }
   };
   setBusy(true);
