@@ -365,7 +365,11 @@ function _caroStartTurnTimer(){
     _caroUpdateTimerUI();
     if(left <= 0){
       _caroStopTimer();
-      // Hết giờ → thua người đang tới lượt
+      // AI không bị xử thua vì hết giờ suy nghĩ
+      if(_caro.ai && _caro.turn !== _caro.mySlot){
+        _caro.turnLeft = 0;
+        return;
+      }
       const loser = _caro.turn;
       const winner = _caroOpp(loser);
       _caroEndGame(winner);
