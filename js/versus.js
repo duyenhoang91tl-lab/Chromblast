@@ -137,6 +137,7 @@ function _vsBuildArena(){
   let arena=document.getElementById('versus-arena');
   if(arena) arena.remove();
   _vsToggleGlobalUI(true);
+  try{ if(typeof setExclusivePlayMode === 'function') setExclusivePlayMode('versus'); }catch(e){}
   arena=document.createElement('div'); arena.id='versus-arena';
   const online = !!( _vs && _vs.online && _vs.online.roomId );
 
@@ -299,6 +300,7 @@ function _vsAbort(){
   const a=document.getElementById('versus-arena'); if(a) a.remove();
   _vsToggleGlobalUI(false);
   versusMode=false; _vs=null;
+  try{ if(typeof setExclusivePlayMode === 'function') setExclusivePlayMode(null); }catch(e){}
   try{ startBgm('main'); }catch(e){}
 }
 
@@ -801,6 +803,7 @@ function _vsEndMatch(){
   versusMode=false;
   const a=document.getElementById('versus-arena'); if(a) a.remove();
   _vsToggleGlobalUI(false);
+  try{ if(typeof setExclusivePlayMode === 'function') setExclusivePlayMode(null); }catch(e){}
   try{ startBgm('main'); }catch(e){}
   const [P0,P1]=_vs.players, [n1,n2]=_vs.names;
   const s1=P0.score, s2=P1.score;

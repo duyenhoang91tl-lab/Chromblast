@@ -524,7 +524,10 @@
       else authOpen = !!(auth && !auth.classList.contains('hide') && auth.style.display !== 'none');
     }catch(e){}
     const panelOpen = !!$('gchat-panel')?.classList.contains('show');
-    fab.hidden = authOpen || panelOpen;
+    const exclusive = document.body.classList.contains('mode-exclusive')
+      || document.body.classList.contains('mode-caro')
+      || document.body.classList.contains('mode-versus');
+    fab.hidden = authOpen || panelOpen || exclusive;
     document.body.classList.toggle('gchat-open', panelOpen);
   }
 

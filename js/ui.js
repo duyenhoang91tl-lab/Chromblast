@@ -8,6 +8,19 @@
 // Dùng chung phạm vi global với audio.js / save.js / main.js (không phải module).
 // ═══════════════════════════════════════════════════════════════
 
+/**
+ * Chế độ chơi toàn màn — chỉ hiện UI của mode đó, ẩn Chromablast / mode khác.
+ * mode: null | 'caro' | 'versus'
+ */
+function setExclusivePlayMode(mode){
+  const m = mode === 'caro' || mode === 'versus' ? mode : null;
+  document.body.classList.toggle('mode-caro', m === 'caro');
+  document.body.classList.toggle('mode-versus', m === 'versus');
+  document.body.classList.toggle('mode-exclusive', !!m);
+  try{ if(typeof syncChatFabVisibility === 'function') syncChatFabVisibility(); }catch(e){}
+}
+try{ window.setExclusivePlayMode = setExclusivePlayMode; }catch(e){}
+
 function showAchievementToast(a){
   if(!document.getElementById('toast-style')){
     const st = document.createElement('style');

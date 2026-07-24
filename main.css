@@ -77,6 +77,68 @@ body.menu-open #game-root {
   pointer-events: none !important;
 }
 
+/* ═══ Exclusive play modes: Caro / Versus — không chồng nền Chromablast ═══ */
+body.mode-caro #header,
+body.mode-caro #grid-wrap,
+body.mode-caro #pieces-area,
+body.mode-caro #skill-bar,
+body.mode-caro #hint-bar,
+body.mode-caro #status-bar,
+body.mode-caro #timer-bar-wrap,
+body.mode-caro #secret-streak-bar,
+body.mode-caro #secret-hearts,
+body.mode-caro #dodge-controls,
+body.mode-caro #rotate-bar,
+body.mode-caro #burst-count,
+body.mode-caro #unlock-overlay,
+body.mode-caro #pause-overlay,
+body.mode-versus #header,
+body.mode-versus #grid-wrap,
+body.mode-versus #pieces-area,
+body.mode-versus #skill-bar,
+body.mode-versus #hint-bar,
+body.mode-versus #status-bar,
+body.mode-versus #timer-bar-wrap,
+body.mode-versus #secret-streak-bar,
+body.mode-versus #secret-hearts,
+body.mode-versus #dodge-controls,
+body.mode-versus #rotate-bar,
+body.mode-versus #burst-count,
+body.mode-versus #unlock-overlay,
+body.mode-versus #pause-overlay,
+body.mode-exclusive #help-btn,
+body.mode-exclusive #hiddenmap-help-btn,
+body.mode-exclusive #drag-ghost {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+}
+body.mode-caro #caro-stage,
+body.mode-caro #caro-stage.active {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  z-index: 10060 !important;
+  background: linear-gradient(165deg, #1a1428 0%, #0d0a1a 45%, #0a0a12 100%) !important;
+}
+body.mode-versus #game-root {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+body.mode-versus #versus-arena {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  z-index: 10050 !important;
+  background: linear-gradient(165deg, #1a1428 0%, #0d0a1a 45%, #0a0a12 100%) !important;
+}
+body.mode-exclusive #gchat-fab {
+  display: none !important;
+}
+
 /* ══════════════════ CHẾ ĐỘ ADVENTURE — mở khóa ở 10.000 điểm ══════════════════ */
 #game-root.theme-adventure {
   background:

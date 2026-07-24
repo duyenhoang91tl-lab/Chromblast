@@ -389,13 +389,19 @@ html, body {
   animation: none !important;
 }
 
+/* Caro / Versus: nền đục — không lộ bàn Chromablast phía dưới */
 #caro-stage,
 #caro-stage.active {
-  background:
-    radial-gradient(ellipse 80% 50% at 50% 90%, rgba(70, 100, 220, 0.22) 0%, transparent 55%),
-    linear-gradient(180deg, rgba(4, 2, 16, 0.45) 0%, rgba(16, 10, 48, 0.22) 45%, rgba(4, 2, 16, 0.5) 100%) !important;
+  background: linear-gradient(165deg, #1a1428 0%, #0d0a1a 45%, #0a0a12 100%) !important;
 }
-#versus-arena { background: transparent !important; }
+#versus-arena {
+  background: linear-gradient(165deg, #1a1428 0%, #0d0a1a 45%, #0a0a12 100%) !important;
+}
+body.mode-caro #caro-stage,
+body.mode-caro #caro-stage.active,
+body.mode-versus #versus-arena {
+  background: linear-gradient(165deg, #1a1428 0%, #0d0a1a 45%, #0a0a12 100%) !important;
+}
 
 #game-root.theme-adventure {
   background: transparent !important;
