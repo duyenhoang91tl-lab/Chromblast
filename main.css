@@ -114,6 +114,11 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   margin-bottom: 12px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   color: #fff;
   gap: 8px;
 }
@@ -2202,7 +2207,10 @@ body:has(#secret-stage.active) .streak-dot.lit{
 /* Gợi ý chơi — kiểu tip Block Blast: luôn hiện, gọn, pill */
 #hint-bar {
   display: block;
-  margin: 10px 6px 2px;
+  margin: 10px auto 2px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   padding: 9px 16px;
   text-align: center;
   font-family: 'Nunito', system-ui, sans-serif;
