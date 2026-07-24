@@ -163,7 +163,7 @@
       <button id="leaderboard-btn" title="Bảng xếp hạng" data-i18n-title="ttLeaderboard">🏆</button>
       <button id="roundguide-btn" title="Hướng dẫn cơ chế vòng hiện tại" data-i18n-title="ttRoundGuide" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">📖</button>
       <button id="adventure-toggle-btn" title="Chế độ Adventure" data-i18n-title="ttAdventure">🚀 ADV</button>
-      <button id="chat-btn" title="Chat" data-i18n-title="ttChat" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">💬</button>
+      <button id="chat-btn" title="Chat" data-i18n-title="ttChat" aria-label="Chat">💬</button>
       <button id="account-btn" title="Cài đặt" data-i18n-title="ttSettings">⚙️</button>
       <button id="mute-btn" title="Tắt/bật âm thanh" data-i18n-title="ttMute" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">🔊</button>
       <button id="pause-btn" title="Tạm dừng" data-i18n-title="ttPause" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">⏸</button>
@@ -440,7 +440,7 @@
     </div>
   </div>
 
-  <button type="button" id="gchat-fab" class="gchat-fab" title="Chat" data-i18n-title="ttChat" aria-label="Chat" hidden>💬</button>
+  <button type="button" id="gchat-fab" class="gchat-fab" title="Chat" data-i18n-title="ttChat" aria-label="Chat" hidden style="display:none !important;" tabindex="-1" aria-hidden="true">💬</button>
   <div id="gchat-panel" class="admin-panel-like">
     <div class="admin-card gchat-card">
       <div class="admin-title">
