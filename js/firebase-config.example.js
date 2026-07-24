@@ -8,3 +8,5 @@ window.FIREBASE_CONFIG = {
   messagingSenderId: '123456789',
   appId: '1:123456789:web:abcdef'
 };
+// OAuth Web client ID (client_type 3) — bắt buộc cho Google Sign-In trên Android
+window.GOOGLE_WEB_CLIENT_ID = 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com';

@@ -622,6 +622,8 @@ function MILESTONE_MSG(tier){ const c=_i18nContent(); const a=c.milestones||I18N
        onlineRoomCreated:'Phòng đã tạo · mã {0}', onlineJoined:'Đã vào phòng!', onlineRoomNotFound:'Không tìm thấy phòng', onlineCodeShort:'Nhập mã phòng (6 ký tự)',
        onlineAuthDomain:'Domain chưa được phép trên Firebase (Authorized domains). Vẫn chơi online bằng tài khoản ẩn danh được.',
        onlineAuthNative:'Trên app Android dùng chơi ẩn danh (đã tự kết nối). Google Sign-In dùng trên web.',
+       onlineAuthNativeSetup:'Thiếu plugin Google Sign-In — chạy npm run cap:sync rồi build lại APK.',
+       onlineAuthSha:'Google Sign-In chưa khớp SHA-1. Thêm SHA-1 (debug + release) vào Firebase Android app, tải lại google-services.json.',
        onlineAuthNetwork:'Mất mạng — kiểm tra kết nối rồi thử lại',
        onlineAuthFail:'Đăng nhập Google chưa thành công — vẫn chơi online bằng tài khoản ẩn danh được' },
   en:{ vsModeLocal:'📱 Local', vsModeOnline:'🌐 Online',
@@ -633,6 +635,8 @@ function MILESTONE_MSG(tier){ const c=_i18nContent(); const a=c.milestones||I18N
        onlineRoomCreated:'Room created · code {0}', onlineJoined:'Joined room!', onlineRoomNotFound:'Room not found', onlineCodeShort:'Enter room code (6 chars)',
        onlineAuthDomain:'Domain not allowed in Firebase Authorized domains. You can still play online anonymously.',
        onlineAuthNative:'On Android, anonymous play is used (already connected). Google Sign-In works on web.',
+       onlineAuthNativeSetup:'Google Sign-In plugin missing — run npm run cap:sync and rebuild the APK.',
+       onlineAuthSha:'Google Sign-In SHA-1 mismatch. Add debug+release SHA-1 to the Firebase Android app, re-download google-services.json.',
        onlineAuthNetwork:'Network error — check connection and retry',
        onlineAuthFail:'Google sign-in failed — you can still play online anonymously' },
   };
