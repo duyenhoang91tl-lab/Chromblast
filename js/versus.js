@@ -104,7 +104,8 @@ function startVersusMatch(){
     }
   }catch(e){}
   const seed=(Date.now() ^ (Math.random()*0xFFFFFFF))>>>0;
-  _vs={ seed, names:[n1,n2], timeLeft:VERSUS_TIME, timer:null,
+  const avMe = (typeof getPlayerAvatar === 'function') ? getPlayerAvatar() : '🐶';
+  _vs={ seed, names:[n1,n2], avatars:[avMe, '🐱'], timeLeft:VERSUS_TIME, timer:null,
         players:[_vsNewPlayer(0,seed), _vsNewPlayer(1,seed)] };
   versusMode=true;
   _vsBuildArena();
@@ -149,25 +150,40 @@ function _vsBuildArena(){
   const online = !!( _vs && _vs.online && _vs.online.roomId );
   const nTop = escapeHtml(_vs.names[0] || 'P1');
   const nBot = escapeHtml(_vs.names[1] || 'P2');
+  const avTop = escapeHtml((_vs.avatars && _vs.avatars[0]) || '🐶');
+  const avBot = escapeHtml((_vs.avatars && _vs.avatars[1]) || '🐱');
   const quitLbl = (typeof t === 'function' ? t('vsQuit') : null) || 'Thoát';
 
-  // Chip trên/dưới: tên + điểm một hàng; timer/thoát góc trên phải; chat dưới trái cạnh khay
+  // Topbar: chat trái | đồng hồ bấm giờ + Thoát phải
+  // Chip kiểu Caro: avatar + tên + điểm
   arena.innerHTML =
-    '<div id="vs-top-chip" class="vs-player-chip vs-chip-top" aria-label="'+nTop+'">'+
-      '<span class="vs-chip-name" id="vs-chip-name0">'+nTop+'</span>'+
-      '<span class="vs-chip-score" id="vs-global-score0">0</span>'+
-      '<span id="vs-global-combo0" class="vs-chip-combo"></span>'+
+    '<div id="vs-topbar" class="vs-topbar">'+
+      '<button type="button" id="vs-chat-fab" class="vs-chat-fab" title="Chat" aria-label="Chat">💬</button>'+
+      '<div class="vs-topbar-right">'+
+        '<div id="vs-mid-timer" class="vs-mid-timer" title="Thời gian" aria-label="Đồng hồ">'+
+          '<span class="vs-timer-crown" aria-hidden="true"></span>'+
+          '<span class="vs-timer-knob" aria-hidden="true"></span>'+
+          '<span class="vs-timer-num">'+VERSUS_TIME+'</span>'+
+        '</div>'+
+        '<button type="button" id="vs-quit-btn" class="vs-quit-btn" title="'+quitLbl+'">'+escapeHtml(quitLbl)+'</button>'+
+      '</div>'+
     '</div>'+
-    '<div id="vs-controls" class="vs-controls">'+
-      '<div id="vs-mid-timer" class="vs-mid-timer" title="Thời gian">'+VERSUS_TIME+'</div>'+
-      '<button type="button" id="vs-quit-btn" class="vs-quit-btn" title="'+quitLbl+'">'+escapeHtml(quitLbl)+'</button>'+
+    '<div id="vs-top-chip" class="vs-player-chip vs-chip-top" aria-label="'+nTop+'">'+
+      '<span class="vs-chip-avatar" id="vs-chip-avatar0">'+avTop+'</span>'+
+      '<div class="vs-chip-meta">'+
+        '<span class="vs-chip-name" id="vs-chip-name0">'+nTop+'</span>'+
+        '<span class="vs-chip-scoreline"><span class="vs-chip-score" id="vs-global-score0">0</span>'+
+        '<span id="vs-global-combo0" class="vs-chip-combo"></span></span>'+
+      '</div>'+
     '</div>'+
     '<div id="vs-bottom-chip" class="vs-player-chip vs-chip-bottom" aria-label="'+nBot+'">'+
-      '<span class="vs-chip-name" id="vs-chip-name1">'+nBot+'</span>'+
-      '<span class="vs-chip-score" id="vs-global-score1">0</span>'+
-      '<span id="vs-global-combo1" class="vs-chip-combo"></span>'+
+      '<span class="vs-chip-avatar" id="vs-chip-avatar1">'+avBot+'</span>'+
+      '<div class="vs-chip-meta">'+
+        '<span class="vs-chip-name" id="vs-chip-name1">'+nBot+'</span>'+
+        '<span class="vs-chip-scoreline"><span class="vs-chip-score" id="vs-global-score1">0</span>'+
+        '<span id="vs-global-combo1" class="vs-chip-combo"></span></span>'+
+      '</div>'+
     '</div>'+
-    '<button type="button" id="vs-chat-fab" class="vs-chat-fab" title="Chat" aria-label="Chat">💬</button>'+
     '<div id="vs-countdown"></div>'+
     (online
       ? '<div id="vs-chat" class="vs-chat" hidden>'+
@@ -237,38 +253,11 @@ function _vsBuildArena(){
     document.getElementById('vs-chat-close')?.addEventListener('click', ()=> _vsToggleChat(false));
     document.getElementById('vs-chat-form')?.addEventListener('submit', _vsSendChat);
   }
-  requestAnimationFrame(()=>{ _vsReflowGrids(); _vsPositionChatFab(); });
-  window.addEventListener('resize', _vsPositionChatFab);
+  requestAnimationFrame(()=>{ _vsReflowGrids(); });
 }
 
 function _vsPositionChatFab(){
-  const fab = document.getElementById('vs-chat-fab');
-  if(!fab || !versusMode || !_vs) return;
-  // Neo cạnh khay gạch người dưới: giữa tường trái và mép khay, cùng hàng khay
-  const P = _vs.players && _vs.players[1];
-  const tray = P && P.el && P.el.tray;
-  const safeLeft = (()=>{
-    try{
-      const n = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('env(safe-area-inset-left)'));
-      return Number.isFinite(n) ? n : 0;
-    }catch(e){ return 0; }
-  })();
-  const edge = Math.max(8, safeLeft + 8);
-  if(tray){
-    const r = tray.getBoundingClientRect();
-    if(r.width > 2 && r.height > 2){
-      const x = (edge + r.left) / 2;
-      const y = r.top + r.height / 2;
-      fab.style.left = Math.max(edge + 22, x) + 'px';
-      fab.style.top = y + 'px';
-      fab.style.bottom = 'auto';
-      fab.style.right = 'auto';
-      return;
-    }
-  }
-  fab.style.left = (edge + 22) + 'px';
-  fab.style.top = 'auto';
-  fab.style.bottom = 'max(12px, calc(env(safe-area-inset-bottom) + 10px))';
+  // Chat đã cố định trên topbar — giữ stub để không lỗi listener cũ
 }
 
 function _vsSetupChat(online){
@@ -596,7 +585,7 @@ document.addEventListener('pointerdown', ev=>{
   if(!t || !t.closest) return;
   // Giữ chọn khi chạm khối, bàn cờ, thẻ chướng ngại, nút thoát
   if(t.closest('.vs-piece') || t.closest('.vs-grid') || t.closest('.vs-cards') ||
-     t.closest('#vs-quit-btn') || t.closest('#vs-controls') || t.closest('#vs-chat-fab') ||
+     t.closest('#vs-quit-btn') || t.closest('#vs-topbar') || t.closest('#vs-chat-fab') ||
      t.closest('#vs-top-chip') || t.closest('#vs-bottom-chip') || t.closest('#vs-chat')) return;
   // Huỷ mọi drag đang mở của pointer này
   const id=ev.pointerId!==undefined?ev.pointerId:-1;
@@ -842,8 +831,12 @@ function _vsApplyObstacle(F,ob){
 function _vsTick(){
   if(!versusMode||!_vs) return;
   const tm=document.getElementById('vs-mid-timer');
-  if(tm){ tm.textContent=_vs.timeLeft; tm.classList.toggle('danger',_vs.timeLeft<=10); }
-  // render lại lưới nếu sương mù vừa tan
+  if(tm){
+    const num = tm.querySelector('.vs-timer-num');
+    if(num) num.textContent = String(_vs.timeLeft);
+    else tm.textContent = String(_vs.timeLeft);
+    tm.classList.toggle('danger',_vs.timeLeft<=10);
+  }
   if(_vs.timeLeft<=0){ _vsEndMatch(); return; }
   _vs.timeLeft--;
 }

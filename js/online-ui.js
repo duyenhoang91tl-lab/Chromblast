@@ -315,7 +315,16 @@ function enterOnlineVersusMatch(roomId, roomData){
   }catch(e){}
 
   _vsHide('versus-setup-panel');
-  _vs={ seed: roomData.seed, names:[myName, oppName], timeLeft:VERSUS_TIME, timer:null,
+  _vs={ seed: roomData.seed, names:[myName, oppName],
+        avatars:[
+          isHost
+            ? (roomData.hostAvatar || ((typeof getPlayerAvatar==='function')?getPlayerAvatar():'🐶'))
+            : (roomData.guestAvatar || ((typeof getPlayerAvatar==='function')?getPlayerAvatar():'🐶')),
+          isHost
+            ? (roomData.guestAvatar || '🐱')
+            : (roomData.hostAvatar || '🐶')
+        ],
+        timeLeft:VERSUS_TIME, timer:null,
         players:[_vsNewPlayer(0,roomData.seed), _vsNewPlayer(1,roomData.seed)],
         online:{ roomId, mySlot, appliedSeq:0, isHost, startedAtMs } };
   versusMode=true;
