@@ -478,6 +478,21 @@ function _caroApplyRoomMetaToGame(d){
     _caro.turnSec = d.turnSec;
     changed = true;
   }
+  if(d.hostName || d.guestName){
+    _caro.names = [d.hostName || _caro.names[0], d.guestName || _caro.names[1]];
+    changed = true;
+  }
+  if(d.hostAvatar || d.guestAvatar){
+    _caro.avatars = [
+      d.hostAvatar || (_caro.avatars && _caro.avatars[0]) || '🐶',
+      d.guestAvatar || (_caro.avatars && _caro.avatars[1]) || '🐱'
+    ];
+    changed = true;
+  }
+  if(d.hostId || d.guestId){
+    _caro.ids = [d.hostId || null, d.guestId || null];
+    changed = true;
+  }
   if(!changed) return;
   _caroApplyStageTheme();
   _caroStartTurnTimer();
