@@ -2132,14 +2132,19 @@ body:has(#secret-stage.active) .streak-dot.lit{
 .score-pop {
   position: absolute; transform: translate(-50%,-50%);
   font-family: 'Nunito', system-ui, sans-serif;
-  font-weight: 900; color: #fff; pointer-events: none; z-index: 35;
+  font-size: clamp(26px, 7vw, 34px);
+  font-weight: 900; color: #fff; pointer-events: none; z-index: 60;
   letter-spacing: 0.4px;
-  text-shadow: 0 2px 10px rgba(0,0,0,0.7), 0 0 16px rgba(255,210,90,0.95);
+  text-shadow:
+    0 2px 10px rgba(0,0,0,0.75),
+    0 0 18px rgba(255,210,90,0.95),
+    0 0 4px rgba(255,255,255,0.9);
+  -webkit-text-stroke: 0.6px rgba(80,40,0,0.35);
   white-space: nowrap;
-  animation: scorePop 0.85s cubic-bezier(.2,.85,.2,1) forwards;
+  animation: scorePop 1s cubic-bezier(.2,.85,.2,1) forwards;
 }
 .score-pop-bonus {
-  z-index: 36; font-style: italic; letter-spacing: 0.5px;
+  z-index: 61; font-style: italic; letter-spacing: 0.5px;
   animation: scorePopBonus 1.15s cubic-bezier(.2,.8,.2,1) forwards;
   animation-delay: 0.12s;
 }
@@ -2149,9 +2154,32 @@ body:has(#secret-stage.active) .streak-dot.lit{
   100% { opacity: 0; transform: translate(calc(-50% + 34px),-230%) scale(1); }
 }
 @keyframes scorePop {
-  0%   { opacity: 0; transform: translate(-50%,-40%) scale(0.5); }
-  18%  { opacity: 1; transform: translate(-50%,-72%) scale(1.15); }
-  100% { opacity: 0; transform: translate(-50%,-175%) scale(1); }
+  0%   { opacity: 0; transform: translate(-50%,-30%) scale(0.45); }
+  16%  { opacity: 1; transform: translate(-50%,-70%) scale(1.22); }
+  70%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%,-160%) scale(1); }
+}
+
+/* Hoa nhỏ tung ra khi phá ô map thường */
+.clear-flower {
+  position: absolute;
+  left: 0; top: 0;
+  transform: translate(-50%,-50%);
+  pointer-events: none;
+  z-index: 55;
+  line-height: 1;
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,0.35));
+  animation: clearFlowerFly 0.95s ease-out forwards;
+  will-change: transform, opacity;
+}
+@keyframes clearFlowerFly {
+  0%   { opacity: 0; transform: translate(-50%,-50%) scale(0.35) rotate(0deg); }
+  12%  { opacity: 1; transform: translate(-50%,-40%) scale(1.15) rotate(12deg); }
+  55%  { opacity: 1; }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--fx, 20px)), calc(-50% + var(--fy, 40px))) scale(0.75) rotate(var(--rot, 40deg));
+  }
 }
 .shockwave {
   position: absolute; transform: translate(-50%,-50%);
