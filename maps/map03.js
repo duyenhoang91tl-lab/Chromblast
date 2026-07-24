@@ -539,7 +539,7 @@ function exitFruitToMain(){
   document.getElementById('burst-count').textContent='Chuỗi nổ: 0/3';
   resetFruitCombo();
   consecutiveBursts=0; updateBurstCount();
-  document.getElementById('hint-bar').textContent='Chạm khối → ghost hiện · Di ngón → ghost bám · Thả trên ô → đặt · Thả vùng trống → xoay';
+  document.getElementById('hint-bar').textContent=(typeof t==='function'?t('hintDefault'):'');
   // TEST: luôn mở khoá Map ẩn 4 ngay khi rời map ẩn 3
   awaitingBeeUnlock=false;
   renderPieces();

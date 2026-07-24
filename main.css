@@ -2105,6 +2105,15 @@ body:has(#secret-stage.active) .streak-dot.lit{
     inset 0 1px 0 rgba(255,255,255,0.16);
   transition: color 0.2s, border-color 0.2s, background 0.2s, box-shadow 0.2s;
 }
+/* Không hiện pill trống khi không có hướng dẫn mặc định */
+#hint-bar:empty {
+  display: none;
+  margin: 0;
+  padding: 0;
+  border: none;
+  box-shadow: none;
+  background: none;
+}
 #hint-bar.hint-flash {
   animation: hintToastIn 0.38s cubic-bezier(.2,.9,.2,1);
   border-color: rgba(255,214,110,0.65);
