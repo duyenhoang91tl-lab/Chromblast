@@ -582,6 +582,7 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 .online-note { font-size:11px; color:#ffcc55; margin-bottom:10px; line-height:1.4; }
 .online-status { font-size:11px; color:#8ee08e; margin-bottom:10px; min-height:16px; }
 .online-status.err { color:#ff6b6b; }
+.online-status.warn { color:#ffd54a; }
 .online-room-code-wrap { text-align:center; font-size:14px; margin:12px 0; color:#ccc; }
 .online-room-code-wrap strong { font-size:22px; letter-spacing:4px; color:#ffd700; }
 .online-players { display:flex; flex-direction:column; gap:8px; margin:12px 0; }

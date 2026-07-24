@@ -33,7 +33,14 @@ Project settings → **Add app** → Web `</>` → copy `appId` dạng `1:470820
 | Provider | Trạng thái |
 |----------|------------|
 | Anonymous | **Bật** (bắt buộc — vào phòng nhanh) |
-| Google | Bật (tuỳ chọn — nút Đăng nhập Google) |
+| Google | Bật (tuỳ chọn — nút Đăng nhập Google trên **web**) |
+
+**Authorized domains** (Authentication → Settings):
+- Luôn có: `localhost`
+- Nếu chạy web/hosting: thêm domain của bạn
+- App Android (Capacitor) dùng **Anonymous** — không cần Google popup
+
+Nếu thấy lỗi `auth/unauthorized-domain`: domain hiện tại chưa nằm trong danh sách trên.
 
 ### 1c. Firestore Database
 **Build → Firestore Database → Create database**
