@@ -362,32 +362,33 @@ function initHelpPanel(){
   const chk = document.getElementById('help-agree-chk');
   const okBtn = document.getElementById('help-ok-btn');
   const closeBtn = document.getElementById('help-close-btn');
-  if(!btn || !panel) return;
+  if(!panel) return;
 
   function markRead(){
     saveRulesRead();
-    btn.classList.add('read');
-    btn.textContent='✅';
+    if(btn){ btn.classList.add('read'); btn.textContent='✅'; }
   }
   if(isRulesRead()) markRead();
 
   function openPanel(){
     if(typeof sfxClick==='function') sfxClick();
-    chk.checked=false;
-    okBtn.classList.remove('enabled');
+    if(chk){ chk.checked=false; }
+    if(okBtn) okBtn.classList.remove('enabled');
     renderRoundHelp();
     panel.classList.add('show');
   }
   function closePanel(){ panel.classList.remove('show'); }
 
-  btn.addEventListener('click', openPanel);
-  closeBtn.addEventListener('click', closePanel);
+  window.openHelpPanel = openPanel;
+  // Nút ❓ góc màn đã ẩn — mở từ Cài đặt
+  if(btn) btn.addEventListener('click', openPanel);
+  closeBtn?.addEventListener('click', closePanel);
   panel.addEventListener('click', (e)=>{ if(e.target===panel) closePanel(); });
-  chk.addEventListener('change', ()=>{
-    okBtn.classList.toggle('enabled', chk.checked);
+  chk?.addEventListener('change', ()=>{
+    if(okBtn) okBtn.classList.toggle('enabled', chk.checked);
   });
-  okBtn.addEventListener('click', ()=>{
-    if(!chk.checked) return;
+  okBtn?.addEventListener('click', ()=>{
+    if(!chk || !chk.checked) return;
     markRead();
     closePanel();
   });
@@ -667,6 +668,11 @@ function initSettingsMenu(){
   document.getElementById('set-sfx-toggle')?.addEventListener('click', toggleSfxSetting);
   document.getElementById('set-bgm-toggle')?.addEventListener('click', toggleBgmSetting);
   document.getElementById('set-btn-account')?.addEventListener('click', ()=>{ sfxClick(); openSettingsAccount(); });
+  document.getElementById('set-btn-help')?.addEventListener('click', ()=>{
+    sfxClick();
+    closeAllSettingsOverlays();
+    if(typeof openHelpPanel==='function') openHelpPanel();
+  });
   document.getElementById('set-btn-lang')?.addEventListener('click', ()=>{ sfxClick(); openSettingsLang(); });
   document.getElementById('set-btn-map')?.addEventListener('click', ()=>{ sfxClick(); openSettingsMap(); });
   document.getElementById('set-btn-cup')?.addEventListener('click', ()=>{ sfxClick(); openSettingsCup(); });

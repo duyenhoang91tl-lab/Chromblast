@@ -731,3 +731,12 @@ function MILESTONE_MSG(tier){ const c=_i18nContent(); const a=c.milestones||I18N
   };
   Object.keys(pp).forEach(l=>{ if(I18N[l]) Object.assign(I18N[l], pp[l]); });
 })();
+
+// ── Settings help ──
+(function(){
+  const h = {
+    vi:{ setHelp:'Hướng dẫn' },
+    en:{ setHelp:'How to play' },
+  };
+  Object.keys(h).forEach(l=>{ if(I18N[l]) Object.assign(I18N[l], h[l]); });
+})();

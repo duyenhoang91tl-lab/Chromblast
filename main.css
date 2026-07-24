@@ -348,18 +348,11 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 
 /* ══════════════════ HƯỚNG DẪN CHƠI (HELP) — kiểu modal Block Blast ══════════════════ */
 #help-btn {
-  position: fixed; top: max(12px, env(safe-area-inset-top)); right: 12px; z-index: 10002;
-  width: 36px; height: 36px; border-radius: 50%;
-  background: linear-gradient(180deg,#7ec8ff,#3a8fe0);
-  color:#fff;
-  border: 2px solid rgba(255,255,255,0.55);
-  font-size: 16px; font-weight: 900; cursor: pointer;
-  display:flex; align-items:center; justify-content:center; padding:0;
-  box-shadow: 0 3px 12px rgba(40,120,220,0.45), inset 0 1px 0 rgba(255,255,255,0.45);
-  transition: transform 0.15s;
+  display: none !important;
 }
 #help-btn:active { transform: scale(0.92); }
 #help-btn.read {
+  /* giữ class để tương thích — nút đã ẩn */
   background: linear-gradient(180deg,#6ad0a0,#2e9a68);
   border-color: rgba(200,255,220,0.55);
   color:#fff;
