@@ -4035,10 +4035,8 @@ body:has(#secret-stage.active) .streak-dot.lit{
 .settings-overlay.show{ display:flex; }
 .settings-overlay.menu-fullscreen{
   padding:0;
-  background:
-    radial-gradient(120% 80% at 10% -10%, rgba(90,180,255,0.35), transparent 55%),
-    radial-gradient(100% 70% at 100% 0%, rgba(255,200,90,0.18), transparent 50%),
-    linear-gradient(165deg, #0b1a33 0%, #123056 42%, #1a4a7a 100%);
+  /* Trong suốt — lộ nền bầu trời sao #sky-atmosphere giống màn start / các mục khác */
+  background: rgba(8, 10, 28, 0.42);
 }
 .settings-modal{
   width:min(360px,94vw); max-height:min(88vh,640px);
@@ -4084,19 +4082,23 @@ body:has(#secret-stage.active) .streak-dot.lit{
   margin:0 14px 18px; padding:16px 14px 22px;
   max-height:none; flex:1; min-height:0;
   border-radius:18px;
-  background:linear-gradient(180deg, rgba(22,48,86,0.92) 0%, rgba(14,32,58,0.96) 100%);
-  border:1px solid rgba(160,210,255,0.18);
+  background:linear-gradient(180deg, rgba(28, 18, 52, 0.78) 0%, rgba(16, 10, 34, 0.86) 100%);
+  border:1px solid rgba(180,140,255,0.22);
   box-shadow:0 10px 36px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.1);
+  backdrop-filter: blur(2px);
 }
 .settings-overlay.menu-fullscreen .menu-actions{
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:10px;
 }
-.settings-overlay.menu-fullscreen .menu-actions .set-action{
+.settings-overlay.menu-fullscreen .menu-actions .set-action,
+.settings-overlay.menu-fullscreen #settings-player-edit.set-action{
   min-height:52px;
   font-size:14px;
   padding:12px 12px;
+  color:#fff;
+  background:linear-gradient(180deg,#9B6BFF,#6A3FD4);
 }
 @media (max-width:360px){
   .settings-overlay.menu-fullscreen .menu-actions{ grid-template-columns:1fr; }
