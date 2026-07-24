@@ -521,7 +521,7 @@
     let authOpen = false;
     try{
       if(typeof isOverlayScreenOpen === 'function') authOpen = isOverlayScreenOpen(auth);
-      else authOpen = !!(auth && !auth.classList.contains('hide') && auth.style.display !== 'none');
+      else authOpen = !!(auth && auth.style.display !== 'none');
     }catch(e){}
     const panelOpen = !!$('gchat-panel')?.classList.contains('show');
     const exclusive = document.body.classList.contains('mode-exclusive')
