@@ -754,13 +754,13 @@ function hardResetAllModes(){
 
 
 
-initAuthScreen();
 initAdminPanel();
 initGamePanels();
 initAccountPanel();
 
 initHelpPanel();
 initStartScreen();
+initAuthScreen();
 initDailyRewardPanel();
 initLeaderboardPanel();
 try{ if(typeof initBrickSkins==='function') initBrickSkins(); }catch(e){}

@@ -149,31 +149,40 @@ function showNotifGate(){
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
 }
 
+function setStartScreenVisible(on){
+  const start = document.getElementById('start-screen');
+  if(!start) return;
+  if(on){
+    start.style.display = 'flex';
+    start.classList.remove('hide');
+  } else {
+    start.classList.add('hide');
+    start.style.display = 'none';
+  }
+}
+
 function preGameGatesReady(){
   return hasAcceptedTerms() && hasAskedNotifications();
 }
 
-/** Auth xong → Điều khoản → Hỏi thông báo → menu Bắt đầu */
+/** Điều khoản → Hỏi thông báo → menu Bắt đầu (ẩn start cho tới khi xong cả hai) */
 function maybeShowPreGameGates(){
   const auth = document.getElementById('auth-screen');
   if(auth && auth.style.display !== 'none' && !auth.classList.contains('hide')) return;
 
-  const start = document.getElementById('start-screen');
-  if(start && start.style.display !== 'none'){
-    start.style.display = 'flex';
-    start.classList.remove('hide');
-  }
-
   if(!hasAcceptedTerms()){
+    setStartScreenVisible(false);
     showTermsGate();
     return;
   }
   hideTermsGate();
   if(!hasAskedNotifications()){
+    setStartScreenVisible(false);
     showNotifGate();
     return;
   }
   hideNotifGate();
+  setStartScreenVisible(true);
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
 }
 

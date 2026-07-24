@@ -54,6 +54,7 @@ function isOverlayScreenOpen(el){
   // body.auth-open #start-screen { display:none } khiến start bị coi là đóng
   // ngay khi auth vừa tắt → menu-open bị gỡ → lộ #game-root dưới màn Bắt đầu.
   if(el.style.display === 'none') return false;
+  if(el.classList.contains('hide')) return false;
   return true;
 }
 
@@ -71,7 +72,7 @@ function syncMenuOpenState(){
   const notifOpen = !!(notif && (notif.classList.contains('show') || notif.style.display === 'flex'));
   const menuOpen = !!(authOpen || startOpen || tosOpen || notifOpen);
   document.body.classList.toggle('menu-open', menuOpen);
-  document.body.classList.toggle('start-open', !!(!authOpen && startOpen));
+  document.body.classList.toggle('start-open', !!(!authOpen && startOpen && !tosOpen && !notifOpen));
   document.body.classList.toggle('tos-open', !!(!authOpen && tosOpen));
   document.body.classList.toggle('notif-open', !!(!authOpen && notifOpen));
   try{ if(typeof syncChatFabVisibility === 'function') syncChatFabVisibility(); }catch(e){}
@@ -81,14 +82,9 @@ function hideAuthScreen(){
   const authScreen = document.getElementById('auth-screen');
   authScreen.classList.add('hide');
   syncMenuOpenState();
+  try{ if(typeof maybeShowPreGameGates==='function') maybeShowPreGameGates(); }catch(e){}
   setTimeout(()=>{
     authScreen.style.display='none';
-    // Đảm bảo màn Bắt đầu còn mở thì luôn giữ menu-open (ẩn game)
-    const start = document.getElementById('start-screen');
-    if(start && start.style.display !== 'none'){
-      start.style.display = 'flex';
-      start.classList.remove('hide');
-    }
     syncMenuOpenState();
     try{ if(typeof maybeShowPreGameGates==='function') maybeShowPreGameGates(); }catch(e){}
   }, 500);
@@ -142,19 +138,24 @@ function initAuthScreen(){
     );
   });
 
-  // Nếu đã đăng nhập trước đó (còn phiên) → bỏ qua màn hình đăng nhập
+  // Khôi phục phiên nếu còn; không chặn bằng màn đăng nhập (guest mặc định)
   const savedSession = getSession();
   if(savedSession && loadUsers()[savedSession]){
     applyLoggedInUser(savedSession);
-    document.getElementById('auth-screen').style.display = 'none';
   } else {
-    document.getElementById('login-username').focus();
+    currentUser = null;
+    if(typeof updateDailyBadge === 'function') updateDailyBadge();
   }
+
+  const authScreen = document.getElementById('auth-screen');
+  if(authScreen){
+    authScreen.style.display = 'none';
+    authScreen.classList.add('hide');
+  }
+
   if(typeof syncMenuOpenState === 'function') syncMenuOpenState();
-  // Đã bỏ auth → điều khoản + hỏi thông báo trước menu Bắt đầu
-  if(document.getElementById('auth-screen')?.style.display === 'none'){
-    try{ if(typeof maybeShowPreGameGates==='function') maybeShowPreGameGates(); }catch(e){}
-  }
+  // Điều khoản + hỏi thông báo trước menu Bắt đầu
+  try{ if(typeof maybeShowPreGameGates==='function') maybeShowPreGameGates(); }catch(e){}
 }
 
 function doLogout(){
