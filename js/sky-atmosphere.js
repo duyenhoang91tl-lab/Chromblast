@@ -9,18 +9,35 @@
     if(!box || box.dataset.ready) return;
     box.dataset.ready = '1';
     const frag = document.createDocumentFragment();
-    const n = 70;
+    const n = 110;
     for(let i=0;i<n;i++){
       const s = document.createElement('div');
-      s.className = 'sky-star';
-      const size = 1 + Math.random() * 2.2;
+      const roll = Math.random();
+      const bright = roll > 0.82;
+      const warm = !bright && roll < 0.18;
+      const cool = !bright && !warm && roll > 0.7;
+      s.className = 'sky-star' + (bright ? ' bright' : '') + (warm ? ' warm' : '') + (cool ? ' cool' : '');
+
+      // Sao sáng lớn hơn một chút; sao thường vẫn nhỏ như hạt
+      const size = bright
+        ? (2.2 + Math.random() * 2.4)
+        : (1.1 + Math.random() * 1.8);
       s.style.width = size + 'px';
       s.style.height = size + 'px';
       s.style.left = (Math.random() * 100) + '%';
-      s.style.top = (Math.random() * 78) + '%';
-      s.style.animationDuration = (1.4 + Math.random() * 2.8) + 's';
-      s.style.animationDelay = (Math.random() * 3) + 's';
-      s.style.opacity = String(0.35 + Math.random() * 0.65);
+      // Nhiều sao hơn ở nửa trên bầu trời
+      s.style.top = (Math.random() * Math.random() * 72) + '%';
+
+      // Nhịp nhấp nháy lệch nhau — nhanh/chậm như sao thật
+      const dur = bright
+        ? (1.6 + Math.random() * 2.4)
+        : (2.2 + Math.random() * 4.5);
+      s.style.animationDuration = dur + 's';
+      s.style.animationDelay = (-Math.random() * dur) + 's';
+      // Một số sao nhấp chậm hơn (đổi timing riêng)
+      if(!bright && Math.random() > 0.65){
+        s.style.animationDuration = (4.5 + Math.random() * 5) + 's';
+      }
       frag.appendChild(s);
     }
     box.appendChild(frag);

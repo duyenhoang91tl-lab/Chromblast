@@ -43,6 +43,7 @@ html, body {
     0 0 24px rgba(255, 230, 160, 0.55),
     0 0 60px rgba(255, 200, 120, 0.25);
   opacity: 0.92;
+  z-index: 2;
 }
 
 #sky-atmosphere .sky-moon::after {
@@ -56,28 +57,98 @@ html, body {
   background: radial-gradient(circle at 40% 40%, rgba(30, 20, 60, 0.15), transparent 60%);
 }
 
+/* Đám mây: nhiều lớp phồng, độ mờ nhẹ — nhìn rõ khối mây, không chỉ vệt tím mờ */
 #sky-atmosphere .sky-cloud {
   position: absolute;
+  z-index: 1;
+  height: 46px;
   border-radius: 999px;
-  filter: blur(18px);
-  opacity: 0.35;
-  background: rgba(220, 180, 255, 0.55);
+  filter: blur(2.5px);
+  opacity: 0.82;
+  background: linear-gradient(180deg,
+    rgba(255, 245, 255, 0.72) 0%,
+    rgba(230, 200, 255, 0.55) 45%,
+    rgba(170, 140, 230, 0.38) 100%);
+  box-shadow:
+    0 0 18px rgba(220, 190, 255, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
   animation: skyCloudDrift linear infinite;
+  will-change: transform;
+}
+#sky-atmosphere .sky-cloud::before,
+#sky-atmosphere .sky-cloud::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  background: inherit;
+  filter: blur(1px);
+  box-shadow: inherit;
+}
+#sky-atmosphere .sky-cloud::before {
+  width: 58%;
+  height: 130%;
+  left: 8%;
+  top: -55%;
+}
+#sky-atmosphere .sky-cloud::after {
+  width: 48%;
+  height: 115%;
+  right: 10%;
+  top: -40%;
 }
 
-#sky-atmosphere .sky-cloud.c1 { width: 180px; height: 50px; top: 18%; left: -40px; animation-duration: 48s; }
-#sky-atmosphere .sky-cloud.c2 { width: 220px; height: 60px; top: 32%; right: -60px; background: rgba(160, 140, 255, 0.4); animation-duration: 62s; animation-direction: reverse; }
-#sky-atmosphere .sky-cloud.c3 { width: 160px; height: 42px; top: 48%; left: 20%; background: rgba(255, 160, 200, 0.28); animation-duration: 55s; }
+#sky-atmosphere .sky-cloud.c1 {
+  width: 210px; height: 52px; top: 16%; left: -50px;
+  animation-duration: 52s;
+}
+#sky-atmosphere .sky-cloud.c2 {
+  width: 260px; height: 60px; top: 28%; right: -70px; left: auto;
+  background: linear-gradient(180deg,
+    rgba(240, 230, 255, 0.68) 0%,
+    rgba(180, 160, 255, 0.5) 50%,
+    rgba(120, 100, 210, 0.36) 100%);
+  animation-duration: 68s;
+  animation-direction: reverse;
+}
+#sky-atmosphere .sky-cloud.c3 {
+  width: 190px; height: 48px; top: 44%; left: 18%;
+  background: linear-gradient(180deg,
+    rgba(255, 230, 245, 0.62) 0%,
+    rgba(255, 170, 210, 0.42) 50%,
+    rgba(180, 100, 170, 0.3) 100%);
+  animation-duration: 58s;
+  opacity: 0.78;
+}
+#sky-atmosphere .sky-cloud.c4 {
+  width: 240px; height: 54px; top: 22%; left: 42%;
+  background: linear-gradient(180deg,
+    rgba(255, 250, 255, 0.7) 0%,
+    rgba(200, 180, 255, 0.48) 55%,
+    rgba(130, 110, 200, 0.32) 100%);
+  animation-duration: 74s;
+  animation-direction: reverse;
+  opacity: 0.75;
+}
+#sky-atmosphere .sky-cloud.c5 {
+  width: 170px; height: 44px; top: 38%; left: 68%;
+  background: linear-gradient(180deg,
+    rgba(235, 245, 255, 0.65) 0%,
+    rgba(150, 170, 240, 0.42) 55%,
+    rgba(90, 110, 190, 0.28) 100%);
+  animation-duration: 60s;
+  opacity: 0.72;
+}
 
 @keyframes skyCloudDrift {
   from { transform: translateX(0); }
-  to   { transform: translateX(40vw); }
+  to   { transform: translateX(36vw); }
 }
 
 #sky-atmosphere .sky-mountains {
   position: absolute;
   left: 0; right: 0; bottom: 0;
   height: 22%;
+  z-index: 3;
   background:
     linear-gradient(180deg, transparent 0%, rgba(10, 6, 24, 0.55) 40%, #08051a 100%),
     radial-gradient(ellipse 40% 100% at 15% 100%, #1a1030 0%, transparent 70%),
@@ -88,24 +159,93 @@ html, body {
 #sky-stars {
   position: absolute;
   inset: 0;
+  z-index: 0;
 }
 
+/* Sao thường: chấm sáng + halo, nhấp nháy không đều như sao thật */
 #sky-stars .sky-star {
   position: absolute;
   border-radius: 50%;
   background: #fff;
-  animation: skyTwinkle ease-in-out infinite alternate;
+  box-shadow:
+    0 0 2px 1px rgba(255, 255, 255, 0.85),
+    0 0 6px 2px rgba(200, 220, 255, 0.55);
+  animation-name: skyTwinkle;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  will-change: opacity, transform, filter;
+}
+
+/* Sao lớn / sáng: thêm tia lấp lánh (cross flare) */
+#sky-stars .sky-star.bright {
+  background: radial-gradient(circle, #fff 0%, #e8f0ff 55%, rgba(180, 200, 255, 0.2) 100%);
+  box-shadow:
+    0 0 3px 1px rgba(255, 255, 255, 0.95),
+    0 0 10px 3px rgba(180, 210, 255, 0.7),
+    0 0 18px 4px rgba(140, 170, 255, 0.35);
+  animation-name: skyTwinkleBright;
+}
+#sky-stars .sky-star.bright::before,
+#sky-stars .sky-star.bright::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.95), transparent);
+  pointer-events: none;
+}
+#sky-stars .sky-star.bright::before {
+  width: 220%;
+  height: 1px;
+  transform: translate(-50%, -50%);
+}
+#sky-stars .sky-star.bright::after {
+  width: 1px;
+  height: 220%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.95), transparent);
+}
+
+/* Sao ấm / lạnh nhẹ để bầu trời sống động hơn */
+#sky-stars .sky-star.warm {
+  background: #fff6e8;
+  box-shadow:
+    0 0 2px 1px rgba(255, 236, 200, 0.9),
+    0 0 8px 2px rgba(255, 200, 120, 0.45);
+}
+#sky-stars .sky-star.cool {
+  background: #e8f2ff;
+  box-shadow:
+    0 0 2px 1px rgba(210, 230, 255, 0.95),
+    0 0 8px 2px rgba(140, 180, 255, 0.5);
 }
 
 @keyframes skyTwinkle {
-  from { opacity: 0.25; transform: scale(0.85); }
-  to   { opacity: 1; transform: scale(1.25); }
+  0%   { opacity: 0.2;  transform: scale(0.75); filter: brightness(0.7); }
+  18%  { opacity: 0.55; transform: scale(0.95); filter: brightness(1); }
+  35%  { opacity: 1;   transform: scale(1.2);  filter: brightness(1.35); }
+  48%  { opacity: 0.4;  transform: scale(0.85); filter: brightness(0.8); }
+  62%  { opacity: 0.9;  transform: scale(1.1);  filter: brightness(1.2); }
+  78%  { opacity: 0.3;  transform: scale(0.8);  filter: brightness(0.75); }
+  100% { opacity: 0.75; transform: scale(1.05); filter: brightness(1.1); }
+}
+
+@keyframes skyTwinkleBright {
+  0%   { opacity: 0.25; transform: scale(0.7);  filter: brightness(0.75); }
+  12%  { opacity: 1;    transform: scale(1.35); filter: brightness(1.6); }
+  22%  { opacity: 0.35; transform: scale(0.85); filter: brightness(0.85); }
+  40%  { opacity: 0.95; transform: scale(1.2);  filter: brightness(1.4); }
+  55%  { opacity: 0.45; transform: scale(0.9);  filter: brightness(0.9); }
+  70%  { opacity: 1;    transform: scale(1.4);  filter: brightness(1.7); }
+  85%  { opacity: 0.3;  transform: scale(0.8);  filter: brightness(0.8); }
+  100% { opacity: 0.8;  transform: scale(1.1);  filter: brightness(1.2); }
 }
 
 #sky-petals {
   position: absolute;
   inset: 0;
   overflow: hidden;
+  z-index: 4;
 }
 
 #sky-petals .sky-petal {
