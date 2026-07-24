@@ -300,12 +300,11 @@ function getHostableLobby(){
 }
 
 /**
- * Mời bạn vào phòng. Nếu chưa host lobby → tạo phòng Caro (mặc định) rồi mời.
- * gameType: 'caro' | 'versus'
+ * Đảm bảo đang host lobby loại gameType (tạo mới nếu chưa có).
+ * Trả về { gameType, roomId, code }.
  */
-async function inviteFriendToRoom(friendUid, gameType){
+async function ensureHostLobby(gameType){
   await ensureOnlineAuth();
-  if(!friendUid) throw new Error('bad_friend');
   gameType = gameType === 'versus' ? 'versus' : 'caro';
 
   let lobby = getHostableLobby();
@@ -327,12 +326,78 @@ async function inviteFriendToRoom(friendUid, gameType){
     }
   }
   if(!lobby || !lobby.roomId) throw new Error('no_room');
-  return sendRoomInvite({
+  return lobby;
+}
+
+/**
+ * Mời bạn vào phòng. Nếu chưa host lobby → tạo phòng rồi mời.
+ * gameType: 'caro' | 'versus'
+ */
+async function inviteFriendToRoom(friendUid, gameType){
+  await ensureOnlineAuth();
+  if(!friendUid) throw new Error('bad_friend');
+  gameType = gameType === 'versus' ? 'versus' : 'caro';
+  const lobby = await ensureHostLobby(gameType);
+  const invite = await sendRoomInvite({
     toUid: friendUid,
     gameType: lobby.gameType,
     roomId: lobby.roomId,
     code: lobby.code
   });
+  try{ await sendFriendRoomInvite(friendUid, lobby); }catch(e){ console.warn('[invite dm]', e); }
+  return invite;
+}
+
+/** Đăng thẻ mời phòng lên chat thế giới (ai cũng bấm Vào được) */
+async function postWorldRoomInvite(gameType){
+  const lobby = await ensureHostLobby(gameType);
+  await ensureOnlineAuth();
+  if(!_onlineDb) throw new Error('online_disabled');
+  const label = lobby.gameType === 'versus' ? 'Versus' : 'Caro';
+  const text = '🎮 '+label+' · '+String(lobby.code||'')+' — vào phòng!';
+  const payload = {
+    uid: _onlineUid,
+    name: getOnlineDisplayName(),
+    avatar: getOnlineAvatar(),
+    text: text.slice(0, 120),
+    kind: 'room_invite',
+    gameType: lobby.gameType,
+    roomId: lobby.roomId,
+    code: String(lobby.code || '').toUpperCase(),
+    ts: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  const ref = _onlineDb.collection('worldChat').doc('global').collection('messages').doc();
+  await ref.set(payload);
+  return { lobby, message: { id: ref.id, ...payload } };
+}
+
+/** Gửi thẻ mời phòng vào inbox (DM) bạn bè */
+async function sendFriendRoomInvite(friendUid, lobby){
+  if(!friendUid || !lobby || !lobby.roomId) return null;
+  const dmId = await ensureDmDoc(friendUid);
+  if(!dmId) return null;
+  const label = lobby.gameType === 'versus' ? 'Versus' : 'Caro';
+  const text = '🎮 '+label+' · '+String(lobby.code||'')+' — vào phòng!';
+  const payload = {
+    uid: _onlineUid,
+    name: getOnlineDisplayName(),
+    avatar: getOnlineAvatar(),
+    text: text.slice(0, 120),
+    kind: 'room_invite',
+    gameType: lobby.gameType === 'versus' ? 'versus' : 'caro',
+    roomId: lobby.roomId,
+    code: String(lobby.code || '').toUpperCase(),
+    ts: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  const ref = _onlineDb.collection('dms').doc(dmId);
+  const msgRef = ref.collection('messages').doc();
+  await msgRef.set(payload);
+  await ref.set({
+    lastText: payload.text,
+    lastAt: firebase.firestore.FieldValue.serverTimestamp(),
+    lastUid: _onlineUid
+  }, { merge: true });
+  return { id: msgRef.id, ...payload };
 }
 
 async function signInWithGoogle(){
