@@ -109,6 +109,44 @@
     <div class="start-hint" data-i18n="startHint">Chạm để bắt đầu</div>
   </div>
 </div>
+
+<!-- Điều khoản — hiện trước khi vào menu Bắt đầu (kiểu chấp nhận) -->
+<div id="tos-gate" class="tos-gate" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="tos-title">
+  <div class="tos-card">
+    <div class="tos-head">
+      <div class="tos-brand" aria-hidden="true">
+        <span class="logo-chroma">CHROMA</span><span class="logo-blast">BLAST</span>
+      </div>
+    </div>
+    <div class="tos-body">
+      <h2 id="tos-title" class="tos-title" data-i18n="tosTitle">Điều khoản Sử dụng</h2>
+      <div class="tos-chars" aria-hidden="true">🟥🟧🟨🟩🟦🟪</div>
+      <p class="tos-desc" data-i18n="tosDesc">Để tiếp tục chơi, bạn cần xác nhận rằng bạn đồng ý với Điều khoản Sử dụng và đã đọc Chính sách Quyền riêng tư của chúng tôi</p>
+      <button type="button" class="tos-link" id="tos-open-terms" data-i18n="tosLinkTerms">ĐIỀU KHOẢN SỬ DỤNG</button>
+      <button type="button" class="tos-link" id="tos-open-privacy" data-i18n="tosLinkPrivacy">CHÍNH SÁCH QUYỀN RIÊNG TƯ</button>
+      <button type="button" class="tos-accept" id="tos-accept-btn" data-i18n="tosAccept">CHẤP NHẬN</button>
+    </div>
+  </div>
+</div>
+
+<!-- Hỏi quyền thông báo — sau điều khoản, trước vào game -->
+<div id="notif-gate" class="tos-gate notif-gate" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="notif-title">
+  <div class="tos-card">
+    <div class="tos-head">
+      <div class="tos-brand" aria-hidden="true">
+        <span class="logo-chroma">CHROMA</span><span class="logo-blast">BLAST</span>
+      </div>
+    </div>
+    <div class="tos-body">
+      <div class="notif-bell" aria-hidden="true">🔔</div>
+      <h2 id="notif-title" class="tos-title notif-title" data-i18n="notifTitle">Thông báo</h2>
+      <p class="tos-desc" data-i18n="notifDesc">Bạn có cho phép Chroma Blast gửi thông báo cho bạn?</p>
+      <p class="notif-hint" data-i18n="notifHint">Nhắc tim hồi, quà điểm danh và sự kiện trong game.</p>
+      <button type="button" class="tos-accept" id="notif-allow-btn" data-i18n="notifAllow">CHO PHÉP</button>
+      <button type="button" class="notif-deny" id="notif-deny-btn" data-i18n="notifDeny">KHÔNG PHẢI BÂY GIỜ</button>
+    </div>
+  </div>
+</div>
 <button id="help-btn" title="Hướng dẫn chơi" data-i18n-title="ttHelp" style="display:none !important;" aria-hidden="true" tabindex="-1">❓</button>
 <div id="help-panel">
   <div class="admin-card help-card">

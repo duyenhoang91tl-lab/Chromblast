@@ -98,6 +98,126 @@ function clearHintFlash(){
   el.classList.remove('hint-flash','hint-aim');
 }
 
+const TOS_ACCEPT_KEY = 'chromablast_tos_accepted_v1';
+const NOTIF_ASKED_KEY = 'chromablast_notif_asked_v1';
+const NOTIF_PREF_KEY = 'chromablast_notif_pref_v1';
+
+function _gateGet(key){
+  try{
+    return (typeof safeGet==='function') ? safeGet(key) : localStorage.getItem(key);
+  }catch(e){ return null; }
+}
+function _gateSet(key, val){
+  try{
+    if(typeof safeSet==='function') safeSet(key, val);
+    else localStorage.setItem(key, val);
+  }catch(e){}
+}
+
+function hasAcceptedTerms(){ return _gateGet(TOS_ACCEPT_KEY) === '1'; }
+function setAcceptedTerms(){ _gateSet(TOS_ACCEPT_KEY, '1'); }
+function hasAskedNotifications(){ return _gateGet(NOTIF_ASKED_KEY) === '1'; }
+function setNotifAsked(pref){
+  _gateSet(NOTIF_ASKED_KEY, '1');
+  if(pref) _gateSet(NOTIF_PREF_KEY, pref);
+}
+
+function _setGateVisible(id, on){
+  const el = document.getElementById(id);
+  if(!el) return;
+  if(on){
+    el.style.display = 'flex';
+    el.classList.add('show');
+  } else {
+    el.classList.remove('show');
+    el.style.display = 'none';
+  }
+}
+
+function hideTermsGate(){ _setGateVisible('tos-gate', false); if(typeof syncMenuOpenState==='function') syncMenuOpenState(); }
+function hideNotifGate(){ _setGateVisible('notif-gate', false); if(typeof syncMenuOpenState==='function') syncMenuOpenState(); }
+function showTermsGate(){
+  try{ if(typeof applyI18nDom==='function') applyI18nDom(); }catch(e){}
+  hideNotifGate();
+  _setGateVisible('tos-gate', true);
+  if(typeof syncMenuOpenState==='function') syncMenuOpenState();
+}
+function showNotifGate(){
+  try{ if(typeof applyI18nDom==='function') applyI18nDom(); }catch(e){}
+  hideTermsGate();
+  _setGateVisible('notif-gate', true);
+  if(typeof syncMenuOpenState==='function') syncMenuOpenState();
+}
+
+function preGameGatesReady(){
+  return hasAcceptedTerms() && hasAskedNotifications();
+}
+
+/** Auth xong → Điều khoản → Hỏi thông báo → menu Bắt đầu */
+function maybeShowPreGameGates(){
+  const auth = document.getElementById('auth-screen');
+  if(auth && auth.style.display !== 'none' && !auth.classList.contains('hide')) return;
+
+  const start = document.getElementById('start-screen');
+  if(start && start.style.display !== 'none'){
+    start.style.display = 'flex';
+    start.classList.remove('hide');
+  }
+
+  if(!hasAcceptedTerms()){
+    showTermsGate();
+    return;
+  }
+  hideTermsGate();
+  if(!hasAskedNotifications()){
+    showNotifGate();
+    return;
+  }
+  hideNotifGate();
+  if(typeof syncMenuOpenState==='function') syncMenuOpenState();
+}
+
+async function requestBrowserNotifications(){
+  try{
+    if(typeof Notification === 'undefined') return 'unsupported';
+    if(Notification.permission === 'granted') return 'granted';
+    if(Notification.permission === 'denied') return 'denied';
+    const res = await Notification.requestPermission();
+    return res || 'default';
+  }catch(e){ return 'error'; }
+}
+
+function initPreGameGates(){
+  document.getElementById('tos-accept-btn')?.addEventListener('click', ()=>{
+    try{ sfxClick(); }catch(e){}
+    setAcceptedTerms();
+    hideTermsGate();
+    maybeShowPreGameGates();
+  });
+  document.getElementById('tos-open-terms')?.addEventListener('click', ()=>{
+    try{ sfxClick(); }catch(e){}
+    window.open('terms-of-service.html', '_blank', 'noopener');
+  });
+  document.getElementById('tos-open-privacy')?.addEventListener('click', ()=>{
+    try{ sfxClick(); }catch(e){}
+    window.open('privacy-policy.html', '_blank', 'noopener');
+  });
+  document.getElementById('notif-allow-btn')?.addEventListener('click', async ()=>{
+    try{ sfxClick(); }catch(e){}
+    const perm = await requestBrowserNotifications();
+    setNotifAsked(perm === 'granted' ? 'allow' : 'deny');
+    hideNotifGate();
+    maybeShowPreGameGates();
+  });
+  document.getElementById('notif-deny-btn')?.addEventListener('click', ()=>{
+    try{ sfxClick(); }catch(e){}
+    setNotifAsked('deny');
+    hideNotifGate();
+    maybeShowPreGameGates();
+  });
+  maybeShowPreGameGates();
+}
+
 function initStartScreen(){
   // Generate twinkling stars
   const starDiv = document.getElementById('start-stars');
@@ -127,6 +247,10 @@ function initStartScreen(){
     }, 500);
   }
   function beginFromStart(){
+    if(!preGameGatesReady()){
+      maybeShowPreGameGates();
+      return;
+    }
     sfxClick();
     function afterCosmetics(){ hideStart(); }
     function afterBricks(){
@@ -147,6 +271,7 @@ function initStartScreen(){
     if(e.target.closest && e.target.closest('#start-btn')) return;
     beginFromStart();
   });
+  try{ initPreGameGates(); }catch(e){}
 }
 
 function isPlayingHiddenMap(){
@@ -824,8 +949,7 @@ function initSettingsMenu(){
   });
   document.getElementById('set-terms-btn')?.addEventListener('click', ()=>{
     sfxClick();
-    openSettingsText(t('setTerms')||'Terms of Service',
-      'ChromaBlast is provided for entertainment.\nPlease play fairly and respect other players.\nLocal progress is stored on your device.');
+    window.open('terms-of-service.html', '_blank', 'noopener');
   });
   document.getElementById('set-privacy-btn')?.addEventListener('click', ()=>{
     sfxClick();
