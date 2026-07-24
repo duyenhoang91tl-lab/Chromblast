@@ -220,7 +220,7 @@
     const note = $('gchat-game-note');
     const form = $('gchat-game-form');
     if(!roomId){
-      if(note) note.textContent = tt('gchatNoMatch','Chưa trong trận online (Caro / Versus)');
+      if(note) note.textContent = tt('gchatNoMatch','Chưa trong phòng online (Caro / Versus)');
       if(form) form.style.display = 'none';
       clearLog('gchat-game-log', 'game');
       if(state.roomCb && typeof unlistenRoomChat === 'function'){
@@ -229,7 +229,7 @@
       }
       return;
     }
-    if(note) note.textContent = tt('gchatInMatch','Đang chat trong trận');
+    if(note) note.textContent = tt('gchatInMatch','Đang chat trong phòng');
     if(form) form.style.display = '';
     if(!(await ensureOnline())) return;
     if(state.roomCb && typeof unlistenRoomChat === 'function') unlistenRoomChat(state.roomCb);
@@ -268,17 +268,39 @@
     }
   }
 
+  function preferredChatTab(explicit){
+    if(explicit) return explicit;
+    if(currentRoomId()) return 'game';
+    return state.tab || 'world';
+  }
+
+  function syncChatFabVisibility(){
+    const fab = $('gchat-fab');
+    if(!fab) return;
+    const auth = $('auth-screen');
+    let authOpen = false;
+    try{
+      if(typeof isOverlayScreenOpen === 'function') authOpen = isOverlayScreenOpen(auth);
+      else authOpen = !!(auth && !auth.classList.contains('hide') && auth.style.display !== 'none');
+    }catch(e){}
+    const panelOpen = !!$('gchat-panel')?.classList.contains('show');
+    fab.hidden = authOpen || panelOpen;
+    document.body.classList.toggle('gchat-open', panelOpen);
+  }
+
   function openChatPanel(tab){
     const panel = $('gchat-panel');
     if(!panel) return;
     panel.classList.add('show');
-    showTab(tab || state.tab || 'world');
+    showTab(preferredChatTab(tab));
+    syncChatFabVisibility();
     try{ if(typeof applyI18nDom === 'function') applyI18nDom(); }catch(e){}
   }
 
   function closeChatPanel(){
     const panel = $('gchat-panel');
     if(panel) panel.classList.remove('show');
+    syncChatFabVisibility();
     try{ if(typeof stopListeningWorldChat === 'function') stopListeningWorldChat(); }catch(e){}
     try{ if(typeof stopListeningDmChat === 'function') stopListeningDmChat(); }catch(e){}
   }
@@ -345,10 +367,12 @@
   function initGlobalChat(){
     if(state.ready) return;
     state.ready = true;
-    $('chat-btn')?.addEventListener('click', ()=>{
+    const openBtn = ()=>{
       try{ sfxClick(); }catch(e){}
-      openChatPanel('world');
-    });
+      openChatPanel();
+    };
+    $('chat-btn')?.addEventListener('click', openBtn);
+    $('gchat-fab')?.addEventListener('click', openBtn);
     $('gchat-close')?.addEventListener('click', ()=>{
       try{ sfxClick(); }catch(e){}
       closeChatPanel();
@@ -373,10 +397,12 @@
     });
     $('gchat-invite-caro')?.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} inviteFriend('caro'); });
     $('gchat-invite-versus')?.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} inviteFriend('versus'); });
+    syncChatFabVisibility();
   }
 
   window.openChatPanel = openChatPanel;
   window.closeChatPanel = closeChatPanel;
+  window.syncChatFabVisibility = syncChatFabVisibility;
   window.initGlobalChat = initGlobalChat;
   window.showInviteToast = showInviteToast;
 

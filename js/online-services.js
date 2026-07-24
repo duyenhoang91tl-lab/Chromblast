@@ -1007,13 +1007,19 @@ function listenFriendChat(friendUid, cb){
   }).catch(err => console.warn('[online] ensure dm', err));
 }
 
-/** roomId trận đang chơi (Caro / Versus) — cho tab In-game */
+/** roomId phòng/trận online đang mở (lobby hoặc match — Caro / Versus) */
 function getActiveOnlineRoomId(){
   try{
     if(typeof _caro !== 'undefined' && _caro && _caro.online && _caro.roomId) return _caro.roomId;
   }catch(e){}
   try{
     if(typeof _vs !== 'undefined' && _vs && _vs.online && _vs.online.roomId) return _vs.online.roomId;
+  }catch(e){}
+  try{
+    if(typeof _caroLobby !== 'undefined' && _caroLobby && _caroLobby.roomId) return _caroLobby.roomId;
+  }catch(e){}
+  try{
+    if(typeof _onlineLobby !== 'undefined' && _onlineLobby && _onlineLobby.roomId) return _onlineLobby.roomId;
   }catch(e){}
   return null;
 }

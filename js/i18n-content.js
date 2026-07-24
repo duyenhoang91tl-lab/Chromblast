@@ -1119,11 +1119,11 @@ function MILESTONE_MSG(tier){
 (function(){
   const gchat = {
   vi:{
-    gchatTitle:'💬 Chat', gchatTabWorld:'🌍 Thế giới', gchatTabFriends:'🤝 Bạn bè', gchatTabGame:'🎮 Trong trận',
+    gchatTitle:'💬 Chat', gchatTabWorld:'🌍 Thế giới', gchatTabFriends:'🤝 Bạn bè', gchatTabGame:'🎮 Phòng',
     gchatSend:'Gửi', gchatPlaceholder:'Nhập tin nhắn...',
     gchatNeedOnline:'Cần bật online / Firebase', gchatAuthFail:'Đăng nhập online thất bại',
     gchatNoFriends:'Chưa có bạn — kết bạn từ hồ sơ đối thủ Caro',
-    gchatNoMatch:'Chưa trong trận online (Caro / Versus)', gchatInMatch:'Đang chat trong trận',
+    gchatNoMatch:'Chưa trong phòng online (Caro / Versus)', gchatInMatch:'Đang chat trong phòng',
     gchatPickFriend:'Chọn một người bạn', gchatSendFail:'Không gửi được',
     gchatOnline:'Online', gchatOffline:'Offline',
     gchatInviteCaro:'❌⭕ Mời Caro', gchatInviteVersus:'⚔️ Mời Versus',
@@ -1133,11 +1133,11 @@ function MILESTONE_MSG(tier){
     gchatInviteFriend:'🤝 Mời bạn bè'
   },
   en:{
-    gchatTitle:'💬 Chat', gchatTabWorld:'🌍 World', gchatTabFriends:'🤝 Friends', gchatTabGame:'🎮 In match',
+    gchatTitle:'💬 Chat', gchatTabWorld:'🌍 World', gchatTabFriends:'🤝 Friends', gchatTabGame:'🎮 Room',
     gchatSend:'Send', gchatPlaceholder:'Type a message...',
     gchatNeedOnline:'Online / Firebase required', gchatAuthFail:'Online sign-in failed',
     gchatNoFriends:'No friends yet — add from a Caro opponent card',
-    gchatNoMatch:'Not in an online match (Caro / Versus)', gchatInMatch:'Match chat active',
+    gchatNoMatch:'Not in an online room (Caro / Versus)', gchatInMatch:'Room chat active',
     gchatPickFriend:'Pick a friend', gchatSendFail:'Could not send',
     gchatOnline:'Online', gchatOffline:'Offline',
     gchatInviteCaro:'❌⭕ Invite Caro', gchatInviteVersus:'⚔️ Invite Versus',
@@ -1147,11 +1147,11 @@ function MILESTONE_MSG(tier){
     gchatInviteFriend:'🤝 Invite friends'
   },
   ko:{
-    gchatTitle:'💬 채팅', gchatTabWorld:'🌍 월드', gchatTabFriends:'🤝 친구', gchatTabGame:'🎮 경기',
+    gchatTitle:'💬 채팅', gchatTabWorld:'🌍 월드', gchatTabFriends:'🤝 친구', gchatTabGame:'🎮 방',
     gchatSend:'보내기', gchatPlaceholder:'메시지 입력...',
     gchatNeedOnline:'온라인/Firebase 필요', gchatAuthFail:'온라인 로그인 실패',
     gchatNoFriends:'친구가 없습니다 — 캐로 상대 프로필에서 추가',
-    gchatNoMatch:'온라인 경기 중이 아님 (캐로/Versus)', gchatInMatch:'경기 채팅 중',
+    gchatNoMatch:'온라인 방 없음 (캐로/Versus)', gchatInMatch:'방 채팅 중',
     gchatPickFriend:'친구를 선택하세요', gchatSendFail:'전송 실패',
     gchatOnline:'온라인', gchatOffline:'오프라인',
     gchatInviteCaro:'❌⭕ 캐로 초대', gchatInviteVersus:'⚔️ Versus 초대',
@@ -1161,11 +1161,11 @@ function MILESTONE_MSG(tier){
     gchatInviteFriend:'🤝 친구 초대'
   },
   ja:{
-    gchatTitle:'💬 チャット', gchatTabWorld:'🌍 ワールド', gchatTabFriends:'🤝 友達', gchatTabGame:'🎮 試合',
+    gchatTitle:'💬 チャット', gchatTabWorld:'🌍 ワールド', gchatTabFriends:'🤝 友達', gchatTabGame:'🎮 ルーム',
     gchatSend:'送信', gchatPlaceholder:'メッセージを入力...',
     gchatNeedOnline:'オンライン/Firebaseが必要', gchatAuthFail:'オンラインログイン失敗',
     gchatNoFriends:'友達がいません — キャロ相手カードから追加',
-    gchatNoMatch:'オンライン試合中ではありません', gchatInMatch:'試合チャット中',
+    gchatNoMatch:'オンラインルーム外です', gchatInMatch:'ルームチャット中',
     gchatPickFriend:'友達を選んでください', gchatSendFail:'送信できません',
     gchatOnline:'オンライン', gchatOffline:'オフライン',
     gchatInviteCaro:'❌⭕ キャロ招待', gchatInviteVersus:'⚔️ Versus招待',
@@ -1175,11 +1175,11 @@ function MILESTONE_MSG(tier){
     gchatInviteFriend:'🤝 友達を招待'
   },
   zh:{
-    gchatTitle:'💬 聊天', gchatTabWorld:'🌍 世界', gchatTabFriends:'🤝 好友', gchatTabGame:'🎮 对局',
+    gchatTitle:'💬 聊天', gchatTabWorld:'🌍 世界', gchatTabFriends:'🤝 好友', gchatTabGame:'🎮 房间',
     gchatSend:'发送', gchatPlaceholder:'输入消息...',
     gchatNeedOnline:'需要开启线上/Firebase', gchatAuthFail:'线上登录失败',
     gchatNoFriends:'暂无好友 — 可从五子棋对手资料添加',
-    gchatNoMatch:'未在线上对局中（五子棋/Versus）', gchatInMatch:'对局聊天中',
+    gchatNoMatch:'未在线上房间（五子棋/Versus）', gchatInMatch:'房间聊天中',
     gchatPickFriend:'请选择好友', gchatSendFail:'发送失败',
     gchatOnline:'在线', gchatOffline:'离线',
     gchatInviteCaro:'❌⭕ 邀请五子棋', gchatInviteVersus:'⚔️ 邀请Versus',
@@ -1189,11 +1189,11 @@ function MILESTONE_MSG(tier){
     gchatInviteFriend:'🤝 邀请好友'
   },
   es:{
-    gchatTitle:'💬 Chat', gchatTabWorld:'🌍 Mundo', gchatTabFriends:'🤝 Amigos', gchatTabGame:'🎮 Partida',
+    gchatTitle:'💬 Chat', gchatTabWorld:'🌍 Mundo', gchatTabFriends:'🤝 Amigos', gchatTabGame:'🎮 Sala',
     gchatSend:'Enviar', gchatPlaceholder:'Escribe un mensaje...',
     gchatNeedOnline:'Se requiere online / Firebase', gchatAuthFail:'Error al iniciar sesión online',
     gchatNoFriends:'Sin amigos — añade desde la ficha de rival de Caro',
-    gchatNoMatch:'No estás en partida online (Caro / Versus)', gchatInMatch:'Chat de partida activo',
+    gchatNoMatch:'No estás en una sala online (Caro / Versus)', gchatInMatch:'Chat de sala activo',
     gchatPickFriend:'Elige un amigo', gchatSendFail:'No se pudo enviar',
     gchatOnline:'En línea', gchatOffline:'Desconectado',
     gchatInviteCaro:'❌⭕ Invitar Caro', gchatInviteVersus:'⚔️ Invitar Versus',
