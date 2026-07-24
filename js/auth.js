@@ -48,10 +48,34 @@ function doRegister(username, password, password2){
   hideAuthScreen();
 }
 
+function isOverlayScreenOpen(el){
+  if(!el) return false;
+  if(el.classList.contains('hide')) return false;
+  const d = el.style.display;
+  if(d === 'none') return false;
+  // computed: khi vừa set display:none hoặc chưa gắn style
+  try{
+    if(window.getComputedStyle(el).display === 'none') return false;
+  }catch(e){}
+  return true;
+}
+
+/** Ẩn #game-root khi auth/start đang mở (nền trong suốt không còn lộ HUD). */
+function syncMenuOpenState(){
+  const auth = document.getElementById('auth-screen');
+  const start = document.getElementById('start-screen');
+  const open = isOverlayScreenOpen(auth) || isOverlayScreenOpen(start);
+  document.body.classList.toggle('menu-open', !!open);
+}
+
 function hideAuthScreen(){
   const authScreen = document.getElementById('auth-screen');
   authScreen.classList.add('hide');
-  setTimeout(()=>{ authScreen.style.display='none'; }, 500);
+  syncMenuOpenState();
+  setTimeout(()=>{
+    authScreen.style.display='none';
+    syncMenuOpenState();
+  }, 500);
 }
 
 function initAuthScreen(){
@@ -110,6 +134,7 @@ function initAuthScreen(){
   } else {
     document.getElementById('login-username').focus();
   }
+  if(typeof syncMenuOpenState === 'function') syncMenuOpenState();
 }
 
 function doLogout(){

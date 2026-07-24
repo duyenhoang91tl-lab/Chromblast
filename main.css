@@ -71,6 +71,12 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   font-weight: 800;
 }
 
+/* Ẩn HUD/lưới game khi đang ở màn đăng nhập hoặc start — tránh “lộ” sau nền trong suốt */
+body.menu-open #game-root {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
 /* ══════════════════ CHẾ ĐỘ ADVENTURE — mở khóa ở 10.000 điểm ══════════════════ */
 #game-root.theme-adventure {
   background:
