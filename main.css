@@ -460,10 +460,11 @@ body.mode-exclusive #gchat-fab {
   transform:translateY(2px);
   box-shadow:0 2px 0 #145028, inset 0 1px 0 rgba(255,255,255,0.28);
 }
-body.tos-open #start-screen .start-content,
-body.notif-open #start-screen .start-content{
-  pointer-events:none;
-  filter:saturate(0.85) brightness(0.72);
+body.tos-open #start-screen,
+body.notif-open #start-screen{
+  display:none !important;
+  visibility:hidden !important;
+  pointer-events:none !important;
 }
 .notif-bell{
   font-size:42px; line-height:1;
