@@ -165,10 +165,17 @@ function preGameGatesReady(){
   return hasAcceptedTerms() && hasAskedNotifications();
 }
 
-/** Điều khoản → Hỏi thông báo → menu Bắt đầu (ẩn start cho tới khi xong cả hai) */
+/** Auth xong → Điều khoản → Hỏi thông báo → menu Bắt đầu (ẩn start tới khi xong) */
 function maybeShowPreGameGates(){
   const auth = document.getElementById('auth-screen');
-  if(auth && auth.style.display !== 'none' && !auth.classList.contains('hide')) return;
+  // Còn màn đăng nhập → chưa sang bước 2/3/4
+  if(auth && auth.style.display !== 'none' && !auth.classList.contains('hide')){
+    hideTermsGate();
+    hideNotifGate();
+    setStartScreenVisible(false);
+    if(typeof syncMenuOpenState==='function') syncMenuOpenState();
+    return;
+  }
 
   if(!hasAcceptedTerms()){
     setStartScreenVisible(false);

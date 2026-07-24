@@ -138,24 +138,30 @@ function initAuthScreen(){
     );
   });
 
-  // Khôi phục phiên nếu còn; không chặn bằng màn đăng nhập (guest mặc định)
+  // Luồng chuẩn: Đăng nhập → Điều khoản → Thông báo → Menu Bắt đầu
+  const authScreen = document.getElementById('auth-screen');
   const savedSession = getSession();
   if(savedSession && loadUsers()[savedSession]){
     applyLoggedInUser(savedSession);
+    if(authScreen){
+      authScreen.style.display = 'none';
+      authScreen.classList.add('hide');
+    }
   } else {
     currentUser = null;
     if(typeof updateDailyBadge === 'function') updateDailyBadge();
-  }
-
-  const authScreen = document.getElementById('auth-screen');
-  if(authScreen){
-    authScreen.style.display = 'none';
-    authScreen.classList.add('hide');
+    if(authScreen){
+      authScreen.style.display = 'flex';
+      authScreen.classList.remove('hide');
+    }
+    try{ document.getElementById('login-username')?.focus(); }catch(e){}
   }
 
   if(typeof syncMenuOpenState === 'function') syncMenuOpenState();
-  // Điều khoản + hỏi thông báo trước menu Bắt đầu
-  try{ if(typeof maybeShowPreGameGates==='function') maybeShowPreGameGates(); }catch(e){}
+  // Chỉ sang điều khoản/thông báo khi đã xong (hoặc bỏ qua) màn đăng nhập
+  if(authScreen?.style.display === 'none' || authScreen?.classList.contains('hide')){
+    try{ if(typeof maybeShowPreGameGates==='function') maybeShowPreGameGates(); }catch(e){}
+  }
 }
 
 function doLogout(){
