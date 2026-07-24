@@ -57,16 +57,22 @@ function showHint(msg, opts){
   const hold=(opts&&opts.hold)|0 || 1800;
   const sticky=!!(opts&&opts.sticky);
   const aim=!!(opts&&opts.aim);
+  const text = (msg == null ? '' : String(msg)).trim();
+  if(!text){
+    el.textContent='';
+    el.classList.remove('hint-flash','hint-aim');
+    return;
+  }
   el.classList.remove('hint-flash','hint-aim');
   void el.offsetWidth;
-  el.textContent=msg;
+  el.textContent=text;
   el.classList.add('hint-flash');
   if(aim) el.classList.add('hint-aim');
   if(window._hintTimer) clearTimeout(window._hintTimer);
   if(sticky) return;
   window._hintTimer=setTimeout(()=>{
     if(typeof pendingSkill!=='undefined' && pendingSkill) return;
-    el.textContent=t('hintDefault');
+    el.textContent='';
     el.classList.remove('hint-flash','hint-aim');
   }, hold);
 }
@@ -75,7 +81,7 @@ function clearHintFlash(){
   const el=document.getElementById('hint-bar');
   if(!el) return;
   if(window._hintTimer) clearTimeout(window._hintTimer);
-  el.textContent=t('hintDefault');
+  el.textContent='';
   el.classList.remove('hint-flash','hint-aim');
 }
 

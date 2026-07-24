@@ -473,9 +473,21 @@ let currentLang = (function(){
 })();
 
 // Lấy chuỗi dịch; {0},{1}... thay bằng tham số. Thiếu key → en → vi.
+// Lưu ý: chuỗi rỗng '' là hợp lệ (vd. ẩn hintDefault) — không được fallback sang tên key.
 function t(key){
   const args = Array.prototype.slice.call(arguments, 1);
-  let s = (I18N[currentLang] && I18N[currentLang][key]) || I18N.en[key] || I18N.vi[key] || key;
+  let s;
+  if(I18N[currentLang] && Object.prototype.hasOwnProperty.call(I18N[currentLang], key)){
+    s = I18N[currentLang][key];
+  } else if(I18N.en && Object.prototype.hasOwnProperty.call(I18N.en, key)){
+    s = I18N.en[key];
+  } else if(I18N.vi && Object.prototype.hasOwnProperty.call(I18N.vi, key)){
+    s = I18N.vi[key];
+  } else {
+    s = key;
+  }
+  if(s == null) s = key;
+  s = String(s);
   args.forEach((a,i)=>{ s = s.split('{'+i+'}').join(a); });
   return s;
 }
@@ -492,7 +504,11 @@ function applyI18nDom(){
   if(typeof updateScoreUI==='function') try{ updateScoreUI(); }catch(e){}
   if(typeof updateBurstCount==='function') try{ updateBurstCount(); }catch(e){}
   const hb=document.getElementById('hint-bar');
-  if(hb) hb.textContent = t('hintDefault');
+  if(hb){
+    const def = t('hintDefault');
+    hb.textContent = def || '';
+    if(!def){ hb.classList.remove('hint-flash','hint-aim'); }
+  }
 }
 
 function setLang(code){
