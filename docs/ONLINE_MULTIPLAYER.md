@@ -77,6 +77,7 @@ firebase deploy --only firestore:rules
 Firebase sẽ gợi ý link khi chạy lần đầu. Tạo thủ công nếu cần:
 
 - `rooms`: `code` ASC + `status` ASC
+- `rooms`: `gameType` ASC + `status` ASC (danh sách phòng Caro chờ)
 - `matchQueue`: `createdAt` ASC
 - `players`: `pvpPoints` DESC
 - `players`: `bestScore` DESC
