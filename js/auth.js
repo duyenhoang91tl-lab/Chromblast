@@ -77,6 +77,12 @@ function hideAuthScreen(){
   syncMenuOpenState();
   setTimeout(()=>{
     authScreen.style.display='none';
+    // Đảm bảo màn Bắt đầu còn mở thì luôn giữ menu-open (ẩn game)
+    const start = document.getElementById('start-screen');
+    if(start && start.style.display !== 'none'){
+      start.style.display = 'flex';
+      start.classList.remove('hide');
+    }
     syncMenuOpenState();
   }, 500);
 }

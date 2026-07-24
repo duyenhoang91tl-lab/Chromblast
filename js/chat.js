@@ -527,7 +527,9 @@
     const exclusive = document.body.classList.contains('mode-exclusive')
       || document.body.classList.contains('mode-caro')
       || document.body.classList.contains('mode-versus');
-    fab.hidden = authOpen || panelOpen || exclusive;
+    fab.hidden = authOpen || panelOpen || exclusive
+      || document.body.classList.contains('menu-open')
+      || document.body.classList.contains('start-open');
     document.body.classList.toggle('gchat-open', panelOpen);
   }
 
