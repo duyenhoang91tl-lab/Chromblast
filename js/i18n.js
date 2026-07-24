@@ -31,7 +31,7 @@ vi: {
   startSubtitle:'Phá màu · Combo · Chinh phục',
   startBtn:'BẮT ĐẦU', startHint:'Chạm để bắt đầu',
   // HUD
-  scoreLabel:'ĐIỂM SỐ', bestLabel:'Kỷ lục: {0}', levelLabel:'Cấp độ {0}',
+  scoreLabel:'ĐIỂM SỐ', scoreLabelShort:'ĐIỂM', bestLabel:'Kỷ lục: {0}', levelLabel:'Cấp độ {0}',
   badgeNormal:'BÌNH THƯỜNG',
   burstCount:'Chuỗi nổ: {0}/3', progress:'Tiến độ: {0}/{1}đ',
   unlockReady:'🔥 Mở khóa sẵn sàng!', unlockWaiting:'🔓 Map ẩn đang chờ — nhấn để chơi!',
@@ -114,7 +114,7 @@ en: {
   errUserExists:'Username already exists.',
   startSubtitle:'Blast colors · Combo · Conquer',
   startBtn:'START', startHint:'Tap to begin',
-  scoreLabel:'SCORE', bestLabel:'Best: {0}', levelLabel:'Level {0}',
+  scoreLabel:'SCORE', scoreLabelShort:'SCORE', bestLabel:'Best: {0}', levelLabel:'Level {0}',
   badgeNormal:'NORMAL',
   burstCount:'Blast chain: {0}/3', progress:'Progress: {0}/{1} pts',
   unlockReady:'🔥 Unlock ready!', unlockWaiting:'🔓 Hidden map waiting — tap to play!',
