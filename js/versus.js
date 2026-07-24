@@ -147,16 +147,29 @@ function _vsBuildArena(){
   try{ if(typeof setExclusivePlayMode === 'function') setExclusivePlayMode('versus'); }catch(e){}
   arena=document.createElement('div'); arena.id='versus-arena';
   const online = !!( _vs && _vs.online && _vs.online.roomId );
+  const nTop = escapeHtml(_vs.names[0] || 'P1');
+  const nBot = escapeHtml(_vs.names[1] || 'P2');
 
-  // TẠO THANH GIAO DIỆN CHUNG BÊN TRÊN CÙNG
+  // Chip trên/dưới kiểu Caro (ngoài nửa xoay 180° → chữ không bị ngược)
+  // Giữa: timer + thoát (+ chat online)
   arena.innerHTML =
-    '<div id="vs-top-hud" style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.7); padding: 8px 15px; border-radius: 8px; color: white; font-family: Nunito,system-ui,sans-serif;">'+
-      '<div style="font-weight: bold; font-size: 16px; color: #ff4d4d;">'+escapeHtml(_vs.names[1])+': <span id="vs-global-score1">0</span> <span id="vs-global-combo1" style="color:#ffcc00"></span></div>'+
-      '<div style="display: flex; align-items: center; gap: 12px;">'+
-        '<div style="font-weight: bold; font-size: 16px; color: #4da6ff;">'+escapeHtml(_vs.names[0])+': <span id="vs-global-score0">0</span> <span id="vs-global-combo0" style="color:#ffcc00"></span></div>'+
-        '<div id="vs-mid-timer" style="font-size: 22px; font-weight: bold; color: #ffd700;">'+VERSUS_TIME+'</div>'+
-        (online ? '<button type="button" id="vs-chat-toggle" class="vs-chat-toggle" title="Chat">💬</button>' : '')+
-        '<button id="vs-quit-btn" style="position: static; transform: none; width: auto; height: auto; background: #ff4444; border: none; color: white; border-radius: 4px; padding: 4px 10px; font-weight: bold; cursor: pointer;">✕</button>'+
+    '<div id="vs-top-chip" class="vs-player-chip vs-chip-top" aria-label="'+nTop+'">'+
+      '<div class="vs-chip-meta">'+
+        '<span class="vs-chip-name" id="vs-chip-name0">'+nTop+'</span>'+
+        '<span class="vs-chip-score"><span id="vs-global-score0">0</span>'+
+        '<span id="vs-global-combo0" class="vs-chip-combo"></span></span>'+
+      '</div>'+
+    '</div>'+
+    '<div id="vs-controls" class="vs-controls">'+
+      '<div id="vs-mid-timer" class="vs-mid-timer" title="Thời gian">'+VERSUS_TIME+'</div>'+
+      (online ? '<button type="button" id="vs-chat-toggle" class="vs-chat-toggle" title="Chat">💬</button>' : '')+
+      '<button type="button" id="vs-quit-btn" class="vs-quit-btn" title="Thoát">✕</button>'+
+    '</div>'+
+    '<div id="vs-bottom-chip" class="vs-player-chip vs-chip-bottom" aria-label="'+nBot+'">'+
+      '<div class="vs-chip-meta">'+
+        '<span class="vs-chip-name" id="vs-chip-name1">'+nBot+'</span>'+
+        '<span class="vs-chip-score"><span id="vs-global-score1">0</span>'+
+        '<span id="vs-global-combo1" class="vs-chip-combo"></span></span>'+
       '</div>'+
     '</div>'+
     '<div id="vs-countdown"></div>'+
@@ -176,16 +189,16 @@ function _vsBuildArena(){
   _vs.players.forEach((P,i)=>{
     const half=document.createElement('div');
     half.className='vs-half'+(i===0?' vs-top':' vs-bottom');
-    
-    // Ẩn HUD cũ của từng nửa màn hình
+
+    // Không gắn chữ tên trong nửa xoay — chỉ bàn + khay (+ HUD ẩn dự phòng)
     half.innerHTML=
-      '<div class="vs-hud" style="display:none;"><span class="vs-name">'+escapeHtml(_vs.names[i])+'</span>'+
+      '<div class="vs-hud" hidden aria-hidden="true"><span class="vs-name">'+escapeHtml(_vs.names[i])+'</span>'+
       '<span class="vs-score">0</span><span class="vs-combo"></span></div>'+
       '<div class="vs-grid"></div>'+
       '<div class="vs-tray"></div>'+
       '<div class="vs-cards"></div>'+
       '<div class="vs-note"></div>';
-      
+
     arena.appendChild(half);
     P.el.half=half;
     P.el.score=half.querySelector('.vs-score');
@@ -194,7 +207,7 @@ function _vsBuildArena(){
     P.el.tray=half.querySelector('.vs-tray');
     P.el.cards=half.querySelector('.vs-cards');
     P.el.note=half.querySelector('.vs-note');
-    
+
     // lưới ô — pointerdown bắt đầu kéo tinh chỉnh khi đã chọn khối (giống map thường)
     P.el.cells=[];
     for(let r=0;r<VS_N;r++){ P.el.cells[r]=[];
@@ -314,10 +327,10 @@ function _vsAbort(){
 // ── Render ──
 function _vsRenderAll(P){ _vsRenderGrid(P); _vsRenderTray(P); _vsRenderHud(P); }
 function _vsRenderHud(P){
-  P.el.score.textContent=P.score.toLocaleString();
-  P.el.combo.textContent=P.combo>=2?('🔥x'+P.combo):'';
-  
-  // Đồng bộ lên thanh HUD chung
+  if(P.el.score) P.el.score.textContent=P.score.toLocaleString();
+  if(P.el.combo) P.el.combo.textContent=P.combo>=2?('🔥x'+P.combo):'';
+
+  // Chip góc trên (P0) / góc dưới (P1) — ngoài vùng xoay 180°
   const globalScore = document.getElementById('vs-global-score' + P.idx);
   const globalCombo = document.getElementById('vs-global-combo' + P.idx);
   if(globalScore) globalScore.textContent = P.score.toLocaleString();
@@ -547,7 +560,8 @@ document.addEventListener('pointerdown', ev=>{
   if(!t || !t.closest) return;
   // Giữ chọn khi chạm khối, bàn cờ, thẻ chướng ngại, nút thoát
   if(t.closest('.vs-piece') || t.closest('.vs-grid') || t.closest('.vs-cards') ||
-     t.closest('#vs-quit-btn') || t.closest('#vs-top-hud')) return;
+     t.closest('#vs-quit-btn') || t.closest('#vs-controls') ||
+     t.closest('#vs-top-chip') || t.closest('#vs-bottom-chip') || t.closest('#vs-chat')) return;
   // Huỷ mọi drag đang mở của pointer này
   const id=ev.pointerId!==undefined?ev.pointerId:-1;
   const dr=_vsDrags.get(id);
