@@ -343,6 +343,7 @@ function _vsReflowGrids(){
     void g.offsetHeight;
     g.style.display='';
   });
+  try{ _vsPositionChatFab(); }catch(e){}
 }
 
 function _vsAbort(){
@@ -857,6 +858,7 @@ function _vsEndMatch(){
     try{ if(typeof stopListeningChat === 'function') stopListeningChat(); }catch(e){}
   }
   versusMode=false;
+  try{ window.removeEventListener('resize', _vsPositionChatFab); }catch(e){}
   const a=document.getElementById('versus-arena'); if(a) a.remove();
   _vsToggleGlobalUI(false);
   try{ if(typeof setExclusivePlayMode === 'function') setExclusivePlayMode(null); }catch(e){}
