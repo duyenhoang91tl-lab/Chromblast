@@ -661,12 +661,10 @@ function arcadeMapLabel(){
       return 'Map';
     }
   }catch(e){}
-  // Map thường: Map 1 / Map 2 / Map 3… theo vòng tiến trình hiện tại
+  // Map thường: Map 1 / Map 2 / Map 3… theo vòng tiến trình (mainHardTier 0 → Map 1)
   try{
-    let n = 1;
-    if(typeof mainHardTier === 'number' && mainHardTier > 0) n = (mainHardTier|0) + 1;
-    else if(typeof unlockGateStageIndex === 'number') n = (unlockGateStageIndex|0) + 1;
-    n = Math.max(1, n|0);
+    const tier = (typeof mainHardTier === 'number') ? (mainHardTier|0) : 0;
+    const n = Math.max(1, tier + 1);
     return (typeof t==='function' ? t('arcadeMapRound', n) : ('Map '+n));
   }catch(e){}
   return 'Map 1';
