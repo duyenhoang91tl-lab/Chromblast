@@ -74,11 +74,73 @@ async function ensureOnlineAuth(){
 async function _upsertPlayerProfile(){
   if(!_onlineDb || !_onlineUid) return;
   const name = getOnlineDisplayName();
-  await _onlineDb.collection('players').doc(_onlineUid).set({
+  const avatar = (typeof getPlayerAvatar === 'function') ? getPlayerAvatar() : '🐶';
+  const patch = {
     displayName: name,
+    avatar,
     level: (typeof playerLevel !== 'undefined' ? playerLevel : 1),
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-  }, { merge: true });
+  };
+  try{
+    if(typeof getLocalCaroStats === 'function'){
+      const s = getLocalCaroStats();
+      patch.caroWins = s.wins || 0;
+      patch.caroLosses = s.losses || 0;
+      patch.caroDraws = s.draws || 0;
+      patch.caroPoints = s.points || 0;
+    }
+  }catch(e){}
+  await _onlineDb.collection('players').doc(_onlineUid).set(patch, { merge: true });
+}
+
+function getOnlineAvatar(){
+  try{
+    if(typeof getPlayerAvatar === 'function') return getPlayerAvatar();
+  }catch(e){}
+  return '🐶';
+}
+
+async function fetchPlayerPublicProfile(uid){
+  if(!uid) return null;
+  try{
+    if(!_onlineDb){
+      if(typeof initOnlineServices === 'function') await initOnlineServices();
+    }
+    if(!_onlineDb) return null;
+    const snap = await _onlineDb.collection('players').doc(uid).get();
+    if(!snap.exists) return { uid, displayName: 'Player', avatar: '🐶' };
+    const d = snap.data() || {};
+    const stats = (typeof normalizeCaroStats === 'function') ? normalizeCaroStats(d) : {
+      wins: d.caroWins||0, losses: d.caroLosses||0, draws: d.caroDraws||0,
+      points: d.caroPoints||0, winRate: 0, total: 0
+    };
+    return {
+      uid,
+      displayName: d.displayName || 'Player',
+      avatar: d.avatar || '🐶',
+      stats
+    };
+  }catch(e){
+    console.warn('[online] fetchPlayerPublicProfile', e);
+    return null;
+  }
+}
+
+async function addOnlineFriend(friend){
+  const local = (typeof addFriendLocal === 'function') ? addFriendLocal(friend) : { ok:false };
+  if(!local.ok) return local;
+  if(local.already) return local;
+  try{
+    if(!_onlineDb || !_onlineUid || !friend || !friend.uid) return local;
+    await _onlineDb.collection('players').doc(_onlineUid)
+      .collection('friends').doc(friend.uid)
+      .set({
+        name: friend.name || 'Player',
+        avatar: friend.avatar || '🐶',
+        addedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+  }catch(e){ console.warn('[online] addFriend', e); }
+  return local;
 }
 
 async function signInWithGoogle(){
@@ -196,6 +258,7 @@ async function createOnlineRoom(opts){
   const uid = await ensureOnlineAuth();
   const code = _roomCode();
   const name = getOnlineDisplayName();
+  const avatar = getOnlineAvatar();
   const ref = _onlineDb.collection('rooms').doc();
   await ref.set({
     code,
@@ -204,6 +267,8 @@ async function createOnlineRoom(opts){
     guestId: null,
     hostName: name,
     guestName: null,
+    hostAvatar: avatar,
+    guestAvatar: null,
     status: 'open',
     mode: 'casual',
     seed: null,
@@ -227,6 +292,7 @@ async function joinOnlineRoomByCode(code, opts){
   const gameType = opts.gameType || null;
   const uid = await ensureOnlineAuth();
   const name = getOnlineDisplayName();
+  const avatar = getOnlineAvatar();
   const snap = await _onlineDb.collection('rooms')
     .where('code', '==', String(code||'').trim().toUpperCase())
     .where('status', 'in', ['open', 'ready'])
@@ -240,6 +306,7 @@ async function joinOnlineRoomByCode(code, opts){
   await doc.ref.update({
     guestId: uid,
     guestName: name,
+    guestAvatar: avatar,
     guestReady: true,
     status: 'ready'
   });
@@ -251,6 +318,7 @@ async function joinOnlineRoomById(roomId, opts){
   const gameType = opts.gameType || null;
   const uid = await ensureOnlineAuth();
   const name = getOnlineDisplayName();
+  const avatar = getOnlineAvatar();
   const ref = _onlineDb.collection('rooms').doc(roomId);
   return _onlineDb.runTransaction(async tx => {
     const snap = await tx.get(ref);
@@ -263,6 +331,7 @@ async function joinOnlineRoomById(roomId, opts){
     tx.update(ref, {
       guestId: uid,
       guestName: name,
+      guestAvatar: avatar,
       guestReady: true,
       status: 'ready'
     });
@@ -271,6 +340,7 @@ async function joinOnlineRoomById(roomId, opts){
       ...d,
       guestId: uid,
       guestName: name,
+      guestAvatar: avatar,
       guestReady: true,
       status: 'ready'
     };
@@ -285,10 +355,13 @@ async function leaveOnlineRoom(roomId){
   const d = snap.data();
   const uid = _onlineUid;
   if(d.hostId === uid){
-    if(d.guestId) await ref.update({ hostId: d.guestId, hostName: d.guestName, guestId: null, guestName: null, status: 'open', guestReady: false });
+    if(d.guestId) await ref.update({
+      hostId: d.guestId, hostName: d.guestName, hostAvatar: d.guestAvatar || null,
+      guestId: null, guestName: null, guestAvatar: null, status: 'open', guestReady: false
+    });
     else await ref.delete();
   } else if(d.guestId === uid){
-    await ref.update({ guestId: null, guestName: null, guestReady: false, status: 'open' });
+    await ref.update({ guestId: null, guestName: null, guestAvatar: null, guestReady: false, status: 'open' });
   }
   stopListeningRoom();
 }
