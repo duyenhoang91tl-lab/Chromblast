@@ -59,7 +59,7 @@
     const box = document.getElementById('sky-petals');
     if(!box || box.dataset.ready) return;
     box.dataset.ready = '1';
-    const count = 26;
+    const count = 30;
     for(let i=0;i<count;i++){
       const p = document.createElement('div');
       p.className = 'sky-petal';
