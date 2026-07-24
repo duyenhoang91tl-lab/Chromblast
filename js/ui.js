@@ -661,8 +661,15 @@ function arcadeMapLabel(){
       return 'Map';
     }
   }catch(e){}
-  // Map chính (bàn thường) — ngắn gọn, không bị cắt chữ
-  return (typeof t==='function' ? t('arcadeMapMain') : 'Map chính');
+  // Map thường: Map 1 / Map 2 / Map 3… theo vòng tiến trình hiện tại
+  try{
+    let n = 1;
+    if(typeof mainHardTier === 'number' && mainHardTier > 0) n = (mainHardTier|0) + 1;
+    else if(typeof unlockGateStageIndex === 'number') n = (unlockGateStageIndex|0) + 1;
+    n = Math.max(1, n|0);
+    return (typeof t==='function' ? t('arcadeMapRound', n) : ('Map '+n));
+  }catch(e){}
+  return 'Map 1';
 }
 
 /** Ngưỡng 1★ / 2★ / 3★ theo điểm hiện tại (thanh tự scale khi vượt). */
