@@ -523,17 +523,17 @@ function _caroCaroOverlayIds(){
 function _caroApplyStageTheme(){
   const stage = document.getElementById('caro-stage');
   if(!stage) return;
-  // Nền trời đêm chung (sky-atmosphere) — không tô đen/pad đặc
+  // Nền đục — CSS body.mode-caro / sky-atmosphere đảm bảo không lộ Chromablast
   stage.style.background = '';
 }
 
 function _caroSetGameRootHidden(hide){
   const root = document.getElementById('game-root');
   if(!root) return;
-  // #caro-stage và panel Caro nằm TRONG #game-root — nếu ẩn root bằng
-  // visibility:hidden thì bàn cờ cũng biến mất (chỉ còn bầu trời).
-  // Con với visibility:visible vẫn hiện được khi cha bị ẩn.
+  // #caro-stage và panel Caro nằm TRONG #game-root — ẩn root bằng
+  // visibility:hidden + body.mode-caro ẩn cứng HUD/bàn gạch; con Caro vẫn hiện.
   if(hide){
+    try{ if(typeof setExclusivePlayMode === 'function') setExclusivePlayMode('caro'); }catch(e){}
     root.dataset.caroPrevVis = root.style.visibility || '';
     root.style.visibility = 'hidden';
     _caroCaroOverlayIds().forEach(id=>{
@@ -550,6 +550,11 @@ function _caroSetGameRootHidden(hide){
       gw.classList.remove('secret-mode','ultra-glow','combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5','fire-low','fire-mid','fire-high','fire-max');
     }
   } else {
+    try{
+      if(typeof setExclusivePlayMode === 'function'){
+        setExclusivePlayMode(document.body.classList.contains('mode-versus') ? 'versus' : null);
+      }
+    }catch(e){}
     if('caroPrevVis' in root.dataset){
       root.style.visibility = root.dataset.caroPrevVis;
       delete root.dataset.caroPrevVis;
