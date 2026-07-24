@@ -63,7 +63,8 @@ const SHAPES=[
 ];
 const SECRET_COLORS = COLORS.slice(0,4); // 4 màu đầu giống map thường
 const COLOR_BURST_MIN = 12;   // Tăng ngưỡng nổ màu (từ 9 lên 12) để tránh nổ quá sớm khi chưa đầy hàng/cột
-const SECRET_WINDOW = 2500;  // ms — khoảng thời gian giữa 2 lần nổ trong map ẩn (ấn chậm hơn sẽ thoát)
+const SECRET_WINDOW = 2500;  // ms — khoảng thời gian giữa 2 lần nổ trong map ẩn (ấn chậm hơn sẽ mất tim)
+const SECRET_LIVES_MAX = 5;  // tim riêng map ẩn 1 (không đụng Inventory.hearts level chính)
 const SECRET_ULTRA  = 9;     // streak to trigger ultra
 const TEST_UNLOCK_SCORE = 100; // ngưỡng điểm mở khoá Map ẩn 1 (và mốc thắng trong Map ẩn 1)
 
@@ -139,7 +140,7 @@ let secretTimer = null;
 let secretUltra = false;
 let secretTimerEnd = 0;
 let timerRAF = null;
-let secretLives = 3;       // 3 tim — bấm sai liên tiếp 3 lần mất 1 tim, hết tim thì thua về map thường
+let secretLives = SECRET_LIVES_MAX; // tim map ẩn 1 — hết giờ / sai liên tiếp trừ 1; hết tim thì out (không ảnh hưởng tim level chính)
 let secretMissStreak = 0;  // đếm số lần bấm sai liên tiếp
 let borderSparkInterval = null; // continuous outward sparks during secret mode
 let fireInterval = null; // fire border particles for Map ẩn 1 combo

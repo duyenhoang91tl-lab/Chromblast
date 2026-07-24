@@ -948,18 +948,23 @@ function showScorePop(basePoints, totalPoints, x, y, level){
   }
 }
 
-/** Tung vài bông hoa nhỏ từ các ô vừa phá trên map thường */
+/** Tung vài bông hoa nhỏ từ các ô vừa phá (map thường + map ẩn 1) */
 function spawnClearFlowers(cells){
-  if(typeof secretMode!=='undefined' && secretMode) return;
   if(typeof versusMode!=='undefined' && versusMode) return;
   const root=document.getElementById('game-root');
   if(!root || !cells || !cells.length) return;
+  const inSecret = !!(typeof secretMode!=='undefined' && secretMode);
+  const cellAt = (r,c)=>{
+    if(inSecret && typeof getSC==='function') return getSC(r,c);
+    if(typeof getCell==='function') return getCell(r,c);
+    return null;
+  };
   const FLOWERS=['🌸','🌺','🌼','💮','🌷'];
   const pick = cells.length <= 4 ? cells : cells.filter((_,i)=> i%Math.ceil(cells.length/5)===0).slice(0,6);
   const frag=document.createDocumentFragment();
   const nodes=[];
   pick.forEach(([r,c])=>{
-    const cell = typeof getCell==='function' ? getCell(r,c) : null;
+    const cell = cellAt(r,c);
     if(!cell) return;
     const b=cell.getBoundingClientRect();
     const origin=toGameRootXY(b.left+b.width/2, b.top+b.height/2);
