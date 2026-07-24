@@ -237,8 +237,18 @@ function refreshCaroButton(){
   }
 }
 
-function _caroShow(id){ const el=document.getElementById(id); if(el) el.classList.add('show'); }
-function _caroHide(id){ const el=document.getElementById(id); if(el) el.classList.remove('show'); }
+function _caroShow(id){
+  const el=document.getElementById(id);
+  if(!el) return;
+  el.classList.add('show');
+  el.style.display = 'flex';
+}
+function _caroHide(id){
+  const el=document.getElementById(id);
+  if(!el) return;
+  el.classList.remove('show');
+  el.style.display = 'none';
+}
 
 function _caroStatus(msg, err){
   const el=document.getElementById('caro-online-status');
@@ -465,7 +475,7 @@ function _caroEnterAIGame(levelId){
   const profile = CARO_AI_LEVELS[levelId] || CARO_AI_LEVELS.medium;
   const pName = (typeof currentPlayerName === 'function' ? currentPlayerName() : null) || 'Bạn';
 
-  // Đóng mọi panel Caro trước
+  // Đóng mọi panel Caro trước (ép display:none — tránh panel đè bàn cờ)
   ['caro-hub-panel','caro-ai-panel','caro-lobby-panel','caro-mm-panel','caro-result-panel','caro-rank-panel']
     .forEach(id => _caroHide(id));
 
@@ -489,7 +499,14 @@ function _caroEnterAIGame(levelId){
   _caroToggleChrome(true);
 
   const stage = document.getElementById('caro-stage');
-  if(stage) stage.classList.add('active');
+  if(!stage){
+    console.error('[caro-ai] thiếu #caro-stage trong DOM');
+    try{ alert('Lỗi Caro: thiếu bàn cờ (#caro-stage)'); }catch(e){}
+    return;
+  }
+  stage.classList.add('active');
+  stage.style.display = 'flex';
+  stage.style.zIndex = '10060';
   document.getElementById('grid-wrap')?.classList.add('secret-mode');
   const badge = document.getElementById('mode-badge');
   if(badge){
@@ -668,18 +685,24 @@ function _caroQuit(){
     const ctx = canvas.getContext('2d');
     if(ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
   }
-  document.getElementById('caro-stage')?.classList.remove('active');
+  const stage = document.getElementById('caro-stage');
+  if(stage){
+    stage.classList.remove('active');
+    stage.style.display = 'none';
+    stage.style.zIndex = '';
+  }
   document.getElementById('grid-wrap')?.classList.remove('secret-mode');
   const badge = document.getElementById('mode-badge');
   if(badge){
     badge.textContent = typeof t === 'function' ? t('badgeNormal') : 'BÌNH THƯỜNG';
     badge.classList.remove('secret');
   }
-  _caroHide('caro-result-panel');
-  _caroHide('caro-lobby-panel');
-  _caroHide('caro-hub-panel');
-  _caroHide('caro-mm-panel');
-  _caroHide('caro-ai-panel');
+  // Reset inline display để lần sau _caroShow hoạt động đúng
+  ['caro-hub-panel','caro-lobby-panel','caro-mm-panel','caro-result-panel','caro-rank-panel','caro-ai-panel']
+    .forEach(id=>{
+      const el=document.getElementById(id);
+      if(el){ el.classList.remove('show'); el.style.display=''; }
+    });
   try{ startBgm('main'); }catch(e){}
 }
 

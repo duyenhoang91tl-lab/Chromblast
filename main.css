@@ -606,11 +606,11 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px;
 }
 #caro-stage {
-  display: none; position: fixed; inset: 0; z-index: 9000;
+  display: none; position: fixed; inset: 0; z-index: 10060;
   background: linear-gradient(160deg, #1a2a1a 0%, #0d120d 100%);
   flex-direction: column; align-items: center; justify-content: center; padding: 8px;
 }
-#caro-stage.active { display: flex; }
+#caro-stage.active { display: flex !important; }
 .caro-topbar {
   width: min(96vw, 420px); display: flex; justify-content: space-between; align-items: center;
   color: #e8e8e8; font-weight: 700; font-size: 13px; margin-bottom: 8px;
