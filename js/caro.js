@@ -226,12 +226,14 @@ function canPlayCaro(){
 function refreshCaroButton(){
   const btn = document.getElementById('caro-btn');
   if(!btn) return;
+  // Luôn hiện nút Caro — luyện máy không cần Lv.3; online vẫn khoá trong hub
+  btn.style.display = 'flex';
   if(canPlayCaro()){
     btn.classList.add('caro-unlocked');
     btn.title = t('ttCaro');
   } else {
     btn.classList.remove('caro-unlocked');
-    btn.title = t('caroNeedLevel', CARO_MIN_LEVEL);
+    btn.title = t('ttCaroAi');
   }
 }
 
@@ -503,6 +505,10 @@ function _caroEnterAIGame(levelId){
 }
 
 function caroStartAI(levelId){
+  // Chống double-fire (touchend + click)
+  const now = Date.now();
+  if(caroStartAI._last && now - caroStartAI._last < 600) return false;
+  caroStartAI._last = now;
   try{ sfxClick(); }catch(e){}
   try{
     _caroEnterAIGame(levelId || 'medium');
@@ -814,28 +820,32 @@ async function caroStartMatch(){
 }
 
 (function initCaro(){
+  function bindAiButtons(){
+    const start = (level)=>{
+      try{ caroStartAI(level || 'medium'); }catch(e){ console.error('[caro-ai]', e); }
+    };
+    const wire = (el, level)=>{
+      if(!el || el.dataset.aiWired === '1') return;
+      el.dataset.aiWired = '1';
+      el.addEventListener('click', (e)=>{
+        // Nếu HTML đã có onclick gọi caroStartAI thì debounce trong caroStartAI sẽ chặn double
+        if(e){ e.stopPropagation(); }
+        start(level || el.getAttribute('data-level') || 'medium');
+      });
+    };
+    wire(document.getElementById('caro-ai-start-btn'), 'medium');
+    wire(document.getElementById('caro-ai-easy'), 'easy');
+    wire(document.getElementById('caro-ai-medium'), 'medium');
+    wire(document.getElementById('caro-ai-hard'), 'hard');
+    document.querySelectorAll('.caro-ai-level').forEach(btn=>{
+      wire(btn, btn.getAttribute('data-level'));
+    });
+  }
+
   function bind(){
     document.getElementById('caro-btn')?.addEventListener('click', openCaroHub);
     document.getElementById('caro-hub-close')?.addEventListener('click', closeCaroHub);
-
-    // Chọn độ khó ngay trong hub (Dễ / TB / Khó → vào trận luôn)
-    const hub = document.getElementById('caro-hub-panel');
-    if(hub && !hub.dataset.aiBound){
-      hub.dataset.aiBound = '1';
-      let lastAiTap = 0;
-      hub.addEventListener('click', (e)=>{
-        const raw = e.target;
-        const el = raw && raw.nodeType === 3 ? raw.parentElement : raw;
-        const btn = el && typeof el.closest === 'function' ? el.closest('.caro-ai-level') : null;
-        if(!btn || !hub.contains(btn)) return;
-        e.preventDefault();
-        e.stopPropagation();
-        const now = Date.now();
-        if(now - lastAiTap < 500) return;
-        lastAiTap = now;
-        caroStartAI(btn.getAttribute('data-level') || 'medium');
-      });
-    }
+    bindAiButtons();
 
     document.getElementById('caro-create-btn')?.addEventListener('click', caroCreateRoom);
     document.getElementById('caro-join-btn')?.addEventListener('click', caroJoinRoom);
