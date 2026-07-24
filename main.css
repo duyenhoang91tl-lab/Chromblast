@@ -881,6 +881,83 @@ body.menu-open #game-root {
 .caro-result-hearts-left {
   margin-top: 4px; color: #ffc1cc; font-weight: 800; font-size: 12px;
 }
+
+/* ══ Global chat panel ══ */
+#gchat-panel { z-index: 10080; }
+.gchat-card { width: min(420px, 96vw); max-height: min(86vh, 640px); display:flex; flex-direction:column; }
+.gchat-tabs {
+  display: flex; gap: 6px; margin: 4px 0 8px; flex-wrap: wrap;
+}
+.gchat-tab {
+  flex: 1 1 auto; border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.08); color: #fff;
+  border-radius: 999px; padding: 8px 10px; font-size: 12px; font-weight: 800;
+  cursor: pointer;
+}
+.gchat-tab.active {
+  background: linear-gradient(135deg, #ff9800, #ffd54a); color: #1a0a00; border-color: transparent;
+}
+.gchat-status {
+  min-height: 16px; font-size: 11px; color: #ffd54a; margin-bottom: 6px; font-weight: 700;
+}
+.gchat-status.err { color: #ff8a80; }
+.gchat-pane { display: none; flex-direction: column; min-height: 0; flex: 1; }
+.gchat-pane.active { display: flex; }
+.gchat-log {
+  flex: 1; min-height: 180px; max-height: 42vh; overflow-y: auto;
+  background: rgba(0,0,0,0.28); border-radius: 12px; padding: 10px;
+  display: flex; flex-direction: column; gap: 7px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.gchat-row { display:flex; flex-direction:column; gap:2px; align-items:flex-start; }
+.gchat-row.mine { align-items:flex-end; }
+.gchat-who { font-size:10px; color:rgba(255,255,255,0.55); font-weight:700; }
+.gchat-text {
+  max-width: 92%; background: rgba(255,255,255,0.1); border-radius: 10px;
+  padding: 6px 9px; font-size: 12px; color: #fff; font-weight: 700; word-break: break-word;
+}
+.gchat-row.mine .gchat-text {
+  background: linear-gradient(135deg, rgba(255,152,0,0.35), rgba(255,213,74,0.28));
+  border: 1px solid rgba(255,213,74,0.35);
+}
+.gchat-form {
+  display: flex; gap: 6px; margin-top: 8px;
+}
+.gchat-form input {
+  flex: 1; border-radius: 10px; border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.08); color: #fff; padding: 10px 12px; font-size: 13px; outline: none;
+}
+.gchat-form button {
+  border: none; border-radius: 10px; padding: 10px 14px;
+  background: linear-gradient(135deg, #ff9800, #ffd54a);
+  color: #1a0a00; font-weight: 900; cursor: pointer; font-size: 12px;
+}
+.gchat-note {
+  font-size: 11px; color: rgba(255,255,255,0.6); font-weight: 700; margin-bottom: 6px;
+}
+.gchat-empty {
+  text-align: center; color: rgba(255,255,255,0.55); font-size: 12px; padding: 24px 8px; font-weight: 700;
+}
+.gchat-friends-list {
+  display: flex; flex-direction: column; gap: 6px; max-height: 42vh; overflow-y: auto;
+}
+.gchat-friend {
+  display: flex; align-items: center; gap: 10px; text-align: left;
+  border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.07);
+  color: #fff; border-radius: 12px; padding: 8px 10px; cursor: pointer; font-weight: 800;
+}
+.gchat-friend.active { border-color: rgba(255,213,74,0.55); background: rgba(255,213,74,0.12); }
+.gchat-friend-av { font-size: 22px; }
+.gchat-friend-name { font-size: 13px; }
+.gchat-friends-thread { display: flex; flex-direction: column; min-height: 0; flex: 1; }
+.gchat-friend-head {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
+  font-size: 13px; font-weight: 900; color: #ffd54a;
+}
+.gchat-friend-back {
+  border: none; background: rgba(255,255,255,0.12); color: #fff;
+  border-radius: 8px; width: 32px; height: 28px; cursor: pointer; font-weight: 900;
+}
 .caro-prefs-block { margin: 8px 0 12px; }
 .caro-prefs-row {
   display: flex; align-items: center; justify-content: space-between; gap: 10px;
@@ -3021,7 +3098,7 @@ body:has(#secret-stage.active) .streak-dot.lit{
   justify-self: end;
   align-self: center;
 }
-#game-root.hud-arcade #game-controls > button:not(#pause-btn):not(#account-btn):not(#mute-btn):not(#versus-btn):not(#caro-btn):not(#admin-btn) {
+#game-root.hud-arcade #game-controls > button:not(#pause-btn):not(#account-btn):not(#mute-btn):not(#versus-btn):not(#caro-btn):not(#chat-btn):not(#admin-btn) {
   display: none !important;
 }
 #versus-btn { display: none; }
@@ -3030,6 +3107,7 @@ body:has(#secret-stage.active) .streak-dot.lit{
 #game-root.hud-arcade #versus-btn.vs-unlocked,
 #game-root.hud-arcade #caro-btn,
 #game-root.hud-arcade #caro-btn.caro-unlocked,
+#game-root.hud-arcade #chat-btn,
 #game-root.hud-arcade #pause-btn,
 #game-root.hud-arcade #account-btn,
 #game-root.hud-arcade #mute-btn {

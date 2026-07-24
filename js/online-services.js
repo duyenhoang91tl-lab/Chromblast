@@ -662,14 +662,167 @@ function stopListeningMoves(){
 }
 
 let _chatUnsub = null;
+let _roomChatCbs = new Set();
+let _roomChatId = null;
+let _worldChatUnsub = null;
+let _dmChatUnsub = null;
+
 function stopListeningChat(){
   if(_chatUnsub){ _chatUnsub(); _chatUnsub = null; }
+  _roomChatId = null;
+}
+
+function stopListeningWorldChat(){
+  if(_worldChatUnsub){ _worldChatUnsub(); _worldChatUnsub = null; }
+}
+
+function stopListeningDmChat(){
+  if(_dmChatUnsub){ _dmChatUnsub(); _dmChatUnsub = null; }
 }
 
 function stopListeningRoom(){
   stopListeningRoomDoc();
   stopListeningMoves();
   stopListeningChat();
+}
+
+function _chatMsgPayload(text){
+  const raw = String(text || '').trim().slice(0, 120);
+  if(!raw) return null;
+  return {
+    uid: _onlineUid,
+    name: getOnlineDisplayName(),
+    avatar: (typeof getPlayerAvatar === 'function') ? getPlayerAvatar() : '🐶',
+    text: raw,
+    ts: firebase.firestore.FieldValue.serverTimestamp()
+  };
+}
+
+/** Chat trong phòng (Caro / Versus) — hỗ trợ nhiều listener */
+async function sendRoomChat(roomId, text){
+  if(!_onlineDb || !roomId) return null;
+  const payload = _chatMsgPayload(text);
+  if(!payload) return null;
+  const ref = _onlineDb.collection('rooms').doc(roomId).collection('chat').doc();
+  await ref.set(payload);
+  return payload;
+}
+
+function listenRoomChat(roomId, cb){
+  if(typeof cb === 'function') _roomChatCbs.add(cb);
+  if(!_onlineDb || !roomId) return;
+  if(_roomChatId === roomId && _chatUnsub) return;
+  stopListeningChat();
+  _roomChatId = roomId;
+  _chatUnsub = _onlineDb.collection('rooms').doc(roomId).collection('chat')
+    .orderBy('ts', 'asc')
+    .limitToLast(50)
+    .onSnapshot(snap => {
+      snap.docChanges().forEach(chg => {
+        if(chg.type !== 'added') return;
+        const msg = { id: chg.doc.id, ...chg.doc.data() };
+        _roomChatCbs.forEach(fn => { try{ fn(msg); }catch(e){} });
+      });
+    }, err => console.warn('[online] room chat', err));
+}
+
+function unlistenRoomChat(cb){
+  if(cb) _roomChatCbs.delete(cb);
+}
+
+/** Chat thế giới */
+async function sendWorldChat(text){
+  if(!_onlineDb) return null;
+  await ensureOnlineAuth();
+  const payload = _chatMsgPayload(text);
+  if(!payload) return null;
+  const ref = _onlineDb.collection('worldChat').doc('global').collection('messages').doc();
+  await ref.set(payload);
+  return payload;
+}
+
+function listenWorldChat(cb){
+  stopListeningWorldChat();
+  if(!_onlineDb) return;
+  _worldChatUnsub = _onlineDb.collection('worldChat').doc('global').collection('messages')
+    .orderBy('ts', 'asc')
+    .limitToLast(60)
+    .onSnapshot(snap => {
+      snap.docChanges().forEach(chg => {
+        if(chg.type === 'added' && typeof cb === 'function'){
+          cb({ id: chg.doc.id, ...chg.doc.data() });
+        }
+      });
+    }, err => console.warn('[online] world chat', err));
+}
+
+function dmIdFor(uidA, uidB){
+  return [String(uidA||''), String(uidB||'')].sort().join('_');
+}
+
+async function ensureDmDoc(friendUid){
+  await ensureOnlineAuth();
+  if(!_onlineDb || !_onlineUid || !friendUid) return null;
+  const dmId = dmIdFor(_onlineUid, friendUid);
+  const ref = _onlineDb.collection('dms').doc(dmId);
+  const snap = await ref.get();
+  if(!snap.exists){
+    await ref.set({
+      members: [_onlineUid, friendUid].sort(),
+      lastText: '',
+      lastAt: firebase.firestore.FieldValue.serverTimestamp(),
+      lastUid: _onlineUid
+    });
+  }
+  return dmId;
+}
+
+async function sendFriendChat(friendUid, text){
+  if(!friendUid) return null;
+  const dmId = await ensureDmDoc(friendUid);
+  if(!dmId) return null;
+  const payload = _chatMsgPayload(text);
+  if(!payload) return null;
+  const ref = _onlineDb.collection('dms').doc(dmId);
+  const msgRef = ref.collection('messages').doc();
+  await msgRef.set(payload);
+  await ref.set({
+    lastText: payload.text,
+    lastAt: firebase.firestore.FieldValue.serverTimestamp(),
+    lastUid: _onlineUid
+  }, { merge: true });
+  return payload;
+}
+
+function listenFriendChat(friendUid, cb){
+  stopListeningDmChat();
+  if(!_onlineDb || !_onlineUid || !friendUid) return;
+  const dmId = dmIdFor(_onlineUid, friendUid);
+  // Đảm bảo doc tồn tại rồi mới listen messages
+  ensureDmDoc(friendUid).then(()=>{
+    if(_dmChatUnsub){ _dmChatUnsub(); _dmChatUnsub = null; }
+    _dmChatUnsub = _onlineDb.collection('dms').doc(dmId).collection('messages')
+      .orderBy('ts', 'asc')
+      .limitToLast(50)
+      .onSnapshot(snap => {
+        snap.docChanges().forEach(chg => {
+          if(chg.type === 'added' && typeof cb === 'function'){
+            cb({ id: chg.doc.id, ...chg.doc.data() });
+          }
+        });
+      }, err => console.warn('[online] dm chat', err));
+  }).catch(err => console.warn('[online] ensure dm', err));
+}
+
+/** roomId trận đang chơi (Caro / Versus) — cho tab In-game */
+function getActiveOnlineRoomId(){
+  try{
+    if(typeof _caro !== 'undefined' && _caro && _caro.online && _caro.roomId) return _caro.roomId;
+  }catch(e){}
+  try{
+    if(typeof _vs !== 'undefined' && _vs && _vs.online && _vs.online.roomId) return _vs.online.roomId;
+  }catch(e){}
+  return null;
 }
 
 async function fetchAllOnlineMoves(roomId){
@@ -712,40 +865,6 @@ async function sendOnlineMove(roomId, payload){
     });
   });
   return seqOut;
-}
-
-/** Chat trong phòng (Caro / Versus) */
-async function sendRoomChat(roomId, text){
-  if(!_onlineDb || !roomId) return null;
-  const raw = String(text || '').trim().slice(0, 120);
-  if(!raw) return null;
-  const name = getOnlineDisplayName();
-  const avatar = (typeof getPlayerAvatar === 'function') ? getPlayerAvatar() : '🐶';
-  const ref = _onlineDb.collection('rooms').doc(roomId).collection('chat').doc();
-  const payload = {
-    uid: _onlineUid,
-    name: name,
-    avatar: avatar,
-    text: raw,
-    ts: firebase.firestore.FieldValue.serverTimestamp()
-  };
-  await ref.set(payload);
-  return payload;
-}
-
-function listenRoomChat(roomId, cb){
-  stopListeningChat();
-  if(!_onlineDb || !roomId) return;
-  _chatUnsub = _onlineDb.collection('rooms').doc(roomId).collection('chat')
-    .orderBy('ts', 'asc')
-    .limitToLast(40)
-    .onSnapshot(snap => {
-      snap.docChanges().forEach(chg => {
-        if(chg.type === 'added' && typeof cb === 'function'){
-          cb({ id: chg.doc.id, ...chg.doc.data() });
-        }
-      });
-    }, err => console.warn('[online] chat listen', err));
 }
 
 async function updateOnlineScores(roomId, hostScore, guestScore){

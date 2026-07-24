@@ -1115,4 +1115,60 @@ function MILESTONE_MSG(tier){
   if(typeof applyI18nDom === 'function') applyI18nDom();
 })();
 
+// ── Chat thế giới / bạn bè / trong trận ──
+(function(){
+  const gchat = {
+  vi:{
+    gchatTitle:'💬 Chat', gchatTabWorld:'🌍 Thế giới', gchatTabFriends:'🤝 Bạn bè', gchatTabGame:'🎮 Trong trận',
+    gchatSend:'Gửi', gchatPlaceholder:'Nhập tin nhắn...',
+    gchatNeedOnline:'Cần bật online / Firebase', gchatAuthFail:'Đăng nhập online thất bại',
+    gchatNoFriends:'Chưa có bạn — kết bạn từ hồ sơ đối thủ Caro',
+    gchatNoMatch:'Chưa trong trận online (Caro / Versus)', gchatInMatch:'Đang chat trong trận',
+    gchatPickFriend:'Chọn một người bạn', gchatSendFail:'Không gửi được'
+  },
+  en:{
+    gchatTitle:'💬 Chat', gchatTabWorld:'🌍 World', gchatTabFriends:'🤝 Friends', gchatTabGame:'🎮 In match',
+    gchatSend:'Send', gchatPlaceholder:'Type a message...',
+    gchatNeedOnline:'Online / Firebase required', gchatAuthFail:'Online sign-in failed',
+    gchatNoFriends:'No friends yet — add from a Caro opponent card',
+    gchatNoMatch:'Not in an online match (Caro / Versus)', gchatInMatch:'Match chat active',
+    gchatPickFriend:'Pick a friend', gchatSendFail:'Could not send'
+  },
+  ko:{
+    gchatTitle:'💬 채팅', gchatTabWorld:'🌍 월드', gchatTabFriends:'🤝 친구', gchatTabGame:'🎮 경기',
+    gchatSend:'보내기', gchatPlaceholder:'메시지 입력...',
+    gchatNeedOnline:'온라인/Firebase 필요', gchatAuthFail:'온라인 로그인 실패',
+    gchatNoFriends:'친구가 없습니다 — 캐로 상대 프로필에서 추가',
+    gchatNoMatch:'온라인 경기 중이 아님 (캐로/Versus)', gchatInMatch:'경기 채팅 중',
+    gchatPickFriend:'친구를 선택하세요', gchatSendFail:'전송 실패'
+  },
+  ja:{
+    gchatTitle:'💬 チャット', gchatTabWorld:'🌍 ワールド', gchatTabFriends:'🤝 友達', gchatTabGame:'🎮 試合',
+    gchatSend:'送信', gchatPlaceholder:'メッセージを入力...',
+    gchatNeedOnline:'オンライン/Firebaseが必要', gchatAuthFail:'オンラインログイン失敗',
+    gchatNoFriends:'友達がいません — キャロ相手カードから追加',
+    gchatNoMatch:'オンライン試合中ではありません', gchatInMatch:'試合チャット中',
+    gchatPickFriend:'友達を選んでください', gchatSendFail:'送信できません'
+  },
+  zh:{
+    gchatTitle:'💬 聊天', gchatTabWorld:'🌍 世界', gchatTabFriends:'🤝 好友', gchatTabGame:'🎮 对局',
+    gchatSend:'发送', gchatPlaceholder:'输入消息...',
+    gchatNeedOnline:'需要开启线上/Firebase', gchatAuthFail:'线上登录失败',
+    gchatNoFriends:'暂无好友 — 可从五子棋对手资料添加',
+    gchatNoMatch:'未在线上对局中（五子棋/Versus）', gchatInMatch:'对局聊天中',
+    gchatPickFriend:'请选择好友', gchatSendFail:'发送失败'
+  },
+  es:{
+    gchatTitle:'💬 Chat', gchatTabWorld:'🌍 Mundo', gchatTabFriends:'🤝 Amigos', gchatTabGame:'🎮 Partida',
+    gchatSend:'Enviar', gchatPlaceholder:'Escribe un mensaje...',
+    gchatNeedOnline:'Se requiere online / Firebase', gchatAuthFail:'Error al iniciar sesión online',
+    gchatNoFriends:'Sin amigos — añade desde la ficha de rival de Caro',
+    gchatNoMatch:'No estás en partida online (Caro / Versus)', gchatInMatch:'Chat de partida activo',
+    gchatPickFriend:'Elige un amigo', gchatSendFail:'No se pudo enviar'
+  }
+  };
+  Object.keys(gchat).forEach(l=>{ if(I18N[l]) Object.assign(I18N[l], gchat[l]); });
+  if(typeof applyI18nDom === 'function') applyI18nDom();
+})();
+
 // pp* / setHelp đã nằm trong js/i18n.js (đủ 6 ngôn ngữ).
