@@ -2993,15 +2993,90 @@ body:has(#secret-stage.active) .streak-dot.lit{
 #versus-arena{
   position:fixed; inset:0; z-index:9500; background:transparent;
   display:flex; flex-direction:column;
-  padding-top:max(68px, calc(env(safe-area-inset-top) + 18px));
+  padding-top:max(52px, calc(env(safe-area-inset-top) + 44px));
+  padding-bottom:max(52px, calc(env(safe-area-inset-bottom) + 44px));
   box-sizing:border-box;
   overflow:hidden;
 }
-#vs-top-hud{
-  position:absolute !important;
-  top:max(10px, calc(env(safe-area-inset-top) + 6px)) !important;
-  left:10px !important; right:10px !important;
-  z-index:999;
+/* Chip tên/điểm — ngoài nửa xoay 180° nên chữ luôn đọc đúng chiều */
+.vs-player-chip{
+  position:absolute;
+  z-index:12;
+  display:flex; align-items:center; gap:8px;
+  max-width:min(58vw, 280px);
+  padding:4px 10px 4px 8px;
+  border-radius:14px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.14);
+  color:#f2f2f7;
+  font-family:'Nunito', system-ui, sans-serif;
+  pointer-events:none;
+  writing-mode:horizontal-tb;
+  direction:ltr;
+  transform:none !important;
+}
+.vs-chip-top{
+  top:max(8px, calc(env(safe-area-inset-top) + 4px));
+  left:10px;
+  border-color:rgba(255,120,140,0.45);
+  background:rgba(90, 30, 50, 0.45);
+}
+.vs-chip-bottom{
+  bottom:max(8px, calc(env(safe-area-inset-bottom) + 4px));
+  left:10px;
+  border-color:rgba(120, 190, 255, 0.35);
+  background:rgba(40, 70, 110, 0.4);
+}
+.vs-chip-meta{
+  display:flex; flex-direction:column; gap:1px; min-width:0;
+}
+.vs-chip-name{
+  font-size:12px; font-weight:900; line-height:1.15;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  max-width:min(48vw, 220px);
+}
+.vs-chip-score{
+  font-size:13px; font-weight:900; color:#ffd54a;
+  font-variant-numeric:tabular-nums;
+}
+.vs-chip-combo{ color:#ffcc00; font-size:11px; font-weight:800; }
+.vs-controls{
+  position:absolute;
+  top:50%; right:10px;
+  transform:translateY(-50%);
+  z-index:15;
+  display:flex; flex-direction:column; align-items:center; gap:8px;
+}
+.vs-mid-timer,
+#vs-mid-timer{
+  position:static !important;
+  transform:none !important;
+  z-index:8;
+  background:#1a1a2e;
+  border:2px solid #ffd54a;
+  color:#ffd54a;
+  font-weight:900; font-size:18px;
+  width:52px; height:52px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 0 16px rgba(255,213,74,0.4);
+  font-variant-numeric:tabular-nums;
+}
+#vs-mid-timer.danger{
+  color:#ff5252; border-color:#ff5252;
+  animation:vsPulse 0.5s infinite alternate;
+}
+@keyframes vsPulse{
+  from{ transform:scale(1); }
+  to{ transform:scale(1.12); }
+}
+.vs-quit-btn,
+#vs-quit-btn{
+  position:static !important;
+  transform:none !important;
+  width:34px; height:34px; border-radius:10px;
+  border:none; background:#e53935; color:#fff;
+  font-size:14px; font-weight:900; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
 }
 .vs-half{
   flex:1 1 0; display:flex; flex-direction:column; align-items:center;
@@ -3018,7 +3093,7 @@ body:has(#secret-stage.active) .streak-dot.lit{
   justify-content:flex-start;
   padding-top:0;
 }
-.vs-hud{ display:flex; gap:12px; align-items:center; font-weight:800; color:#fff; font-size:14px; }
+.vs-hud{ display:none !important; }
 .vs-hud .vs-score{ color:#ffd54a; font-size:16px; }
 .vs-hud .vs-combo{ color:#ff8a3c; font-size:12px; }
 .vs-grid{
@@ -3135,16 +3210,13 @@ body:has(#secret-stage.active) .streak-dot.lit{
 .vs-card-name{ font-size:11px; font-weight:700; margin-top:4px; text-align:center; }
 .vs-note{ display:none; position:absolute; top:8px; left:50%; transform:translateX(-50%); z-index:6; background:rgba(226,75,74,0.92); color:#fff; font-weight:800; font-size:12px; padding:5px 12px; border-radius:14px; white-space:nowrap; }
 .vs-note.show{ display:block; }
-#vs-mid-timer{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:8; background:#1a1a2e; border:2px solid #ffd54a; color:#ffd54a; font-weight:900; font-size:18px; width:52px; height:52px; border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 0 16px rgba(255,213,74,0.4); }
-#vs-mid-timer.danger{ color:#ff5252; border-color:#ff5252; animation:vsPulse 0.5s infinite alternate; }
-@keyframes vsPulse{ from{transform:translate(-50%,-50%) scale(1);} to{transform:translate(-50%,-50%) scale(1.15);} }
 #vs-countdown{ display:none; position:absolute; inset:0; z-index:20; background:rgba(10,10,26,0.7); align-items:center; justify-content:center; font-size:90px; font-weight:900; color:#ffd54a; }
-#vs-quit-btn{ position:absolute; top:50%; right:10px; transform:translateY(-50%); z-index:9; width:34px; height:34px; border-radius:50%; border:1px solid rgba(255,255,255,0.3); background:rgba(255,255,255,0.08); color:#fff; font-size:14px; cursor:pointer; }
 .vs-chat-toggle {
   width: 34px; height: 34px; border: 1px solid rgba(144,202,249,0.45);
   background: rgba(66, 165, 245, 0.35); color: #fff; border-radius: 10px;
   font-size: 16px; font-weight: 800; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
 }
 .vs-chat {
   position: absolute; right: 10px; bottom: 10px; left: 10px;
@@ -3244,18 +3316,18 @@ body:has(#secret-stage.active) .streak-dot.lit{
 
 @media (orientation: landscape){
   #versus-arena{
-    padding-top:max(52px, calc(env(safe-area-inset-top) + 10px));
+    padding-top:max(40px, calc(env(safe-area-inset-top) + 36px));
+    padding-bottom:max(40px, calc(env(safe-area-inset-bottom) + 36px));
   }
-  #vs-top-hud{
-    top:max(6px, calc(env(safe-area-inset-top) + 4px)) !important; left:6px !important; right:6px !important;
-    padding:4px 10px !important; font-size:12px !important;
-    gap:8px;
+  .vs-player-chip{
+    max-width:min(42vw, 220px);
+    padding:3px 8px;
   }
-  #vs-top-hud > div{ font-size:12px !important; }
-  #vs-mid-timer{
-    position:static !important; transform:none !important;
+  .vs-chip-name{ font-size:11px; max-width:min(36vw, 180px); }
+  .vs-chip-score{ font-size:12px; }
+  .vs-controls{ right:6px; gap:6px; }
+  #vs-mid-timer, .vs-mid-timer{
     width:36px !important; height:36px !important; font-size:14px !important;
-    flex-shrink:0;
   }
   .vs-half{ gap:2px; padding:2px 4px; }
   .vs-top{ border-bottom-width:1px; }
@@ -3272,7 +3344,6 @@ body:has(#secret-stage.active) .streak-dot.lit{
   .vs-card-emoji{ font-size:22px; }
   .vs-card-name{ font-size:10px; }
   #vs-countdown{ font-size:64px; }
-  #vs-quit-btn{ position:static !important; transform:none !important; }
 }
 @media (orientation: landscape) and (max-height: 420px){
   .vs-grid{
