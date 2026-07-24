@@ -398,7 +398,7 @@ async function startOnlineRoomMatch(roomId, opts){
 }
 
 function listenOnlineRoom(roomId, cb){
-  stopListeningRoom();
+  stopListeningRoomDoc();
   if(!_onlineDb) return;
   _roomUnsub = _onlineDb.collection('rooms').doc(roomId).onSnapshot(doc => {
     if(!doc.exists){ cb({ type:'deleted' }); return; }
@@ -407,7 +407,7 @@ function listenOnlineRoom(roomId, cb){
 }
 
 function listenOnlineMoves(roomId, cb){
-  if(_movesUnsub) _movesUnsub();
+  stopListeningMoves();
   if(!_onlineDb) return;
   _movesUnsub = _onlineDb.collection('rooms').doc(roomId).collection('moves')
     .orderBy('seq', 'asc')
@@ -415,12 +415,21 @@ function listenOnlineMoves(roomId, cb){
       snap.docChanges().forEach(chg => {
         if(chg.type === 'added') cb(chg.doc.data());
       });
-    });
+    }, err => console.warn('[online] moves listen', err));
+}
+
+/** Chỉ hủy listener document phòng — KHÔNG hủy moves (tránh mất sync nước đi). */
+function stopListeningRoomDoc(){
+  if(_roomUnsub){ _roomUnsub(); _roomUnsub = null; }
+}
+
+function stopListeningMoves(){
+  if(_movesUnsub){ _movesUnsub(); _movesUnsub = null; }
 }
 
 function stopListeningRoom(){
-  if(_roomUnsub){ _roomUnsub(); _roomUnsub = null; }
-  if(_movesUnsub){ _movesUnsub(); _movesUnsub = null; }
+  stopListeningRoomDoc();
+  stopListeningMoves();
 }
 
 async function fetchAllOnlineMoves(roomId){
@@ -445,13 +454,15 @@ async function updateOnlineRoomMeta(roomId, meta){
 }
 
 async function sendOnlineMove(roomId, payload){
-  if(!_onlineDb || !roomId) return;
+  if(!_onlineDb || !roomId) return null;
   const ref = _onlineDb.collection('rooms').doc(roomId);
+  let seqOut = null;
   await _onlineDb.runTransaction(async tx => {
     const snap = await tx.get(ref);
     if(!snap.exists) return;
     const seq = (snap.data().moveSeq || 0) + 1;
-    tx.update(ref, { moveSeq: seq });
+    seqOut = seq;
+    tx.update(ref, { moveSeq: seq, currentTurn: payload && payload.nextTurn != null ? payload.nextTurn : (snap.data().currentTurn || null) });
     const moveRef = ref.collection('moves').doc();
     tx.set(moveRef, {
       ...payload,
@@ -460,6 +471,7 @@ async function sendOnlineMove(roomId, payload){
       ts: firebase.firestore.FieldValue.serverTimestamp()
     });
   });
+  return seqOut;
 }
 
 async function updateOnlineScores(roomId, hostScore, guestScore){

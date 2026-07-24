@@ -879,8 +879,11 @@ function _caroApplyMove(r, c, slot, fromNet){
   _caroStartTurnTimer();
 
   if(!fromNet && _caro.online && _caro.roomId){
-    sendOnlineMove(_caro.roomId, { type:'caro_place', slot, r, c }).catch(()=>{});
-    updateOnlineRoomTurn(_caro.roomId, _caro.turn).catch(()=>{});
+    const nextTurn = _caro.turn;
+    sendOnlineMove(_caro.roomId, { type:'caro_place', slot, r, c, nextTurn }).then(seq=>{
+      if(seq != null && _caro) _caro.moveSeq = Math.max(_caro.moveSeq || 0, seq);
+    }).catch(err=> console.warn('[caro] send move', err));
+    updateOnlineRoomTurn(_caro.roomId, nextTurn).catch(err=> console.warn('[caro] turn', err));
   }
   if(!fromNet && _caro.ai && !_caro.winner) _caroScheduleAI();
   return true;
@@ -927,34 +930,54 @@ function _caroEnterGame(roomData){
   }
 
   const roomId = _caro.roomId;
-  fetchAllOnlineMoves(roomId).then(moves=>{
-    moves.forEach(m=>{
-      if(m.type==='caro_place' && m.seq > _caro.moveSeq){
-        _caro.moveSeq = m.seq;
-        _caro.board[m.r][m.c] = _caroStone(m.slot);
-        _caro.turn = _caroOpp(m.slot);
-      }
-    });
-    if(roomData.currentTurn) _caro.turn = roomData.currentTurn;
-    _caroRender();
-    _caroStartTurnTimer();
-  });
-
-  listenOnlineMoves(roomId, move=>{
-    if(!_caro || move.type!=='caro_place') return;
-    if(move.seq <= _caro.moveSeq) return;
-    _caro.moveSeq = move.seq;
-    if(move.slot === _caro.mySlot) return;
-    _caroApplyMove(move.r, move.c, move.slot, true);
-  });
-
+  // Đăng ký room TRƯỚC — stopListeningRoomDoc không được hủy moves
   listenOnlineRoom(roomId, ev=>{
     if(ev.type==='deleted'){ _caroQuit(); return; }
     const d = ev.data;
     _caroApplyRoomMetaToGame(d);
+    if(!_caro || _caro.winner) return;
+    if(d.currentTurn === 'host' || d.currentTurn === 'guest'){
+      let stones = 0;
+      for(let r=0;r<CARO_SIZE;r++) for(let c=0;c<CARO_SIZE;c++) if(_caro.board[r][c]) stones++;
+      const expectTurn = (stones % 2 === 0) ? 'host' : 'guest';
+      if(d.currentTurn === expectTurn && _caro.turn !== d.currentTurn){
+        _caro.turn = d.currentTurn;
+        _caroRender();
+        _caroStartTurnTimer();
+      }
+    }
     if(d.status==='finished' && d.winnerId){
       const winSlot = d.winnerId===d.hostId ? 'host' : 'guest';
       if(!_caro.winner) _caroEndGame(winSlot, true);
+    }
+  });
+
+  fetchAllOnlineMoves(roomId).then(moves=>{
+    if(!_caro) return;
+    moves.forEach(m=>{
+      if(m.type==='caro_place' && m.seq > (_caro.moveSeq||0)){
+        _caro.moveSeq = m.seq;
+        if(!_caro.board[m.r][m.c]) _caro.board[m.r][m.c] = _caroStone(m.slot);
+        _caro.turn = _caroOpp(m.slot);
+      }
+    });
+    if(roomData.currentTurn === 'host' || roomData.currentTurn === 'guest') _caro.turn = roomData.currentTurn;
+    _caroRender();
+    _caroStartTurnTimer();
+  }).catch(err=> console.warn('[caro] fetch moves', err));
+
+  listenOnlineMoves(roomId, move=>{
+    if(!_caro || move.type!=='caro_place') return;
+    if(move.seq != null && move.seq <= (_caro.moveSeq||0)) return;
+    if(move.seq != null) _caro.moveSeq = move.seq;
+    if(move.slot === _caro.mySlot) return;
+    if(_caro.turn !== move.slot) _caro.turn = move.slot;
+    const ok = _caroApplyMove(move.r, move.c, move.slot, true);
+    if(!ok && move.r != null && move.c != null && !_caro.board[move.r][move.c]){
+      _caro.board[move.r][move.c] = _caroStone(move.slot);
+      _caro.turn = _caroOpp(move.slot);
+      _caroRender();
+      _caroStartTurnTimer();
     }
   });
 
