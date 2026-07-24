@@ -36,6 +36,7 @@ const FCV = () => document.getElementById('fruit-canvas');
 function triggerFruitUnlock(){
   markMapCleared('dodge');
   pendingUnlock='fruit';
+  if(typeof showSagaUnlock==='function' && showSagaUnlock('fruit')) return;
   document.getElementById('unlock-title').textContent='🍉 MAP ẨN 3 MỞ KHÓA!';
   document.getElementById('unlock-desc').innerHTML=
     'Bạn đã ghi thêm <b>'+TEST_UNLOCK_SCORE+' điểm</b> ở map thường!<br><br>'+

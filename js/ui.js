@@ -642,21 +642,27 @@ function enableArcadeHud(){
 function arcadeMapLabel(){
   try{
     const key = (typeof activeHiddenMapKey!=='undefined' && activeHiddenMapKey) ? activeHiddenMapKey : null;
-    if(key && typeof HIDDEN_MAP_LIST!=='undefined'){
-      const m = HIDDEN_MAP_LIST.find(x=>x && x.key===key);
-      if(m && m.label){
-        const head = String(m.label).split(' — ')[0];
-        return head || m.label;
+    if(key){
+      // Chuẩn hoá secret1 → secret để tra MAP_REGISTRY
+      const regKey = (key === 'secret1') ? 'secret' : key;
+      try{
+        if(typeof getMap==='function'){
+          const d = getMap(regKey) || getMap(key);
+          if(d && d.id != null) return 'Map '+d.id;
+        } else if(typeof MAP_REGISTRY!=='undefined' && MAP_REGISTRY){
+          const d = MAP_REGISTRY[regKey] || MAP_REGISTRY[key];
+          if(d && d.id != null) return 'Map '+d.id;
+        }
+      }catch(e){}
+      if(typeof HIDDEN_MAP_LIST!=='undefined'){
+        const idx = HIDDEN_MAP_LIST.findIndex(x=>x && (x.key===key || x.key===regKey));
+        if(idx >= 0) return 'Map '+(idx+1);
       }
-      return 'Map ẩn';
+      return 'Map';
     }
   }catch(e){}
-  // Map thường: hiện vòng hiện tại nếu có
-  try{
-    const tier = (typeof mainHardTier==='number') ? (mainHardTier|0) : 0;
-    if(tier > 0) return (typeof t==='function' ? t('arcadeMapRound', tier) : ('Vòng '+tier));
-  }catch(e){}
-  return (typeof t==='function' ? t('arcadeMapMain') : 'Map thường');
+  // Map chính (bàn thường) — ngắn gọn, không bị cắt chữ
+  return (typeof t==='function' ? t('arcadeMapMain') : 'Map chính');
 }
 
 /** Ngưỡng 1★ / 2★ / 3★ theo điểm hiện tại (thanh tự scale khi vượt). */
@@ -687,6 +693,9 @@ function updateScoreStarBar(){
   const marks = track.querySelectorAll('.score-star');
   const cuts = [th.s1, th.s2, th.s3];
   marks.forEach((el, i)=>{
+    // Neo sao đúng mốc % trên cùng chiều dài thanh điểm
+    const starPct = Math.max(0, Math.min(100, (cuts[i] / th.target) * 100));
+    el.style.left = starPct.toFixed(2) + '%';
     const lit = th.score >= cuts[i];
     const was = el.classList.contains('is-lit');
     el.classList.toggle('is-lit', lit);
@@ -710,7 +719,14 @@ function refreshArcadeHud(){
   const lb=document.getElementById('level-box');
   if(lb) lb.textContent=String(typeof playerLevel==='number' ? playerLevel : (typeof level==='number' ? level : 1));
 
-  // Trái: tên người chơi + map đang chơi
+  // Trái: avatar + tên người chơi + map đang chơi
+  const avEl=document.getElementById('header-avatar');
+  if(avEl){
+    try{
+      if(typeof applyAvatarElement==='function') applyAvatarElement(avEl);
+      else if(typeof getPlayerAvatar==='function') avEl.textContent=getPlayerAvatar();
+    }catch(e){}
+  }
   const nameEl=document.getElementById('header-player-name');
   if(nameEl){
     let nick='Player';

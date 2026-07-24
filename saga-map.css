@@ -1,0 +1,349 @@
+/* ═══════════════════════════════════════════════════════════════
+   SAGA MAP SCREEN — Candy Crush–style episode (maps 1–4)
+   Vườn hoa + linh vật Samoyed + path chọn màn
+═══════════════════════════════════════════════════════════════ */
+#saga-map-screen {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 12050;
+  overflow: hidden;
+  font-family: 'Nunito', system-ui, sans-serif;
+  color: #3a2a1a;
+}
+#saga-map-screen.show { display: flex; }
+#saga-map-screen.saga-enter .saga-mascot-wrap {
+  animation: sagaMascotIn 0.55s cubic-bezier(0.34, 1.45, 0.64, 1) both;
+}
+#saga-map-screen.saga-enter .saga-path {
+  animation: sagaPathIn 0.5s ease 0.12s both;
+}
+#saga-map-screen.saga-enter .saga-info,
+#saga-map-screen.saga-enter .saga-play-btn {
+  animation: sagaFadeUp 0.45s ease 0.22s both;
+}
+@keyframes sagaMascotIn {
+  from { opacity: 0; transform: translateY(28px) scale(0.86); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes sagaPathIn {
+  from { opacity: 0; transform: translateY(16px) scale(0.94); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes sagaFadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.saga-garden { position: absolute; inset: 0; pointer-events: none; }
+.saga-sky {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 90% 55% at 50% -10%, #fff6c8 0%, transparent 55%),
+    linear-gradient(180deg, #7ec8ff 0%, #b8e4ff 38%, #dff5c8 68%, #b8e89a 100%);
+}
+.saga-sun {
+  position: absolute; top: 8%; right: 12%;
+  width: 64px; height: 64px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fff7b0, #ffd84a 55%, #ffb347 100%);
+  box-shadow: 0 0 36px rgba(255, 210, 80, 0.65);
+  animation: sagaSunPulse 3.2s ease-in-out infinite;
+}
+@keyframes sagaSunPulse {
+  0%, 100% { transform: scale(1); opacity: 0.95; }
+  50% { transform: scale(1.06); opacity: 1; }
+}
+.saga-hills {
+  position: absolute; left: -8%; right: -8%; bottom: 0; height: 42%;
+  background:
+    radial-gradient(ellipse 55% 80% at 18% 100%, #7bc95a 0%, transparent 70%),
+    radial-gradient(ellipse 60% 90% at 78% 100%, #6fbe4e 0%, transparent 72%),
+    linear-gradient(180deg, transparent 0%, #8fd86a 35%, #6db848 100%);
+}
+.saga-bush {
+  position: absolute; bottom: 28%;
+  width: 120px; height: 70px; border-radius: 50% 50% 40% 40%;
+  background: radial-gradient(ellipse at 40% 40%, #7ed957, #3f9a2e 70%);
+  filter: drop-shadow(0 4px 0 rgba(40, 90, 20, 0.25));
+}
+.saga-bush.left { left: -24px; }
+.saga-bush.right { right: -20px; width: 140px; height: 80px; bottom: 26%; }
+.saga-flowers {
+  position: absolute; inset: 0;
+  background-image:
+    radial-gradient(circle at 12% 62%, #ff7eb3 0 7px, transparent 8px),
+    radial-gradient(circle at 22% 70%, #ffd166 0 6px, transparent 7px),
+    radial-gradient(circle at 78% 64%, #ff8fab 0 8px, transparent 9px),
+    radial-gradient(circle at 88% 72%, #c77dff 0 6px, transparent 7px),
+    radial-gradient(circle at 35% 78%, #ff9f1c 0 5px, transparent 6px),
+    radial-gradient(circle at 58% 74%, #ff6b9d 0 7px, transparent 8px),
+    radial-gradient(circle at 45% 66%, #ffe66d 0 5px, transparent 6px),
+    radial-gradient(circle at 68% 80%, #80ed99 0 6px, transparent 7px);
+  opacity: 0.95;
+}
+.saga-petal {
+  position: absolute; width: 10px; height: 14px; border-radius: 50% 50% 50% 0;
+  background: #ff9ec8; opacity: 0.85;
+  animation: sagaPetalFall 7s linear infinite;
+}
+.saga-petal.p1 { left: 18%; top: -5%; animation-delay: 0s; background: #ff9ec8; }
+.saga-petal.p2 { left: 42%; top: -8%; animation-delay: 1.4s; background: #ffd166; }
+.saga-petal.p3 { left: 63%; top: -6%; animation-delay: 2.6s; background: #c77dff; }
+.saga-petal.p4 { left: 78%; top: -10%; animation-delay: 3.8s; background: #ff8fab; }
+.saga-petal.p5 { left: 30%; top: -7%; animation-delay: 5s; background: #ffe66d; }
+@keyframes sagaPetalFall {
+  0%   { transform: translate3d(0,-10px,0) rotate(0deg); opacity: 0; }
+  10%  { opacity: 0.9; }
+  100% { transform: translate3d(30px, 110vh, 0) rotate(360deg); opacity: 0.15; }
+}
+
+#saga-close-btn {
+  position: absolute; top: max(10px, env(safe-area-inset-top)); right: 12px;
+  z-index: 3; width: 36px; height: 36px; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.7);
+  background: rgba(255,255,255,0.55); color: #5a3a2a;
+  font-size: 16px; font-weight: 900; cursor: pointer;
+  backdrop-filter: blur(4px);
+}
+#saga-close-btn:active { transform: scale(0.94); }
+
+.saga-stage {
+  position: relative; z-index: 2;
+  width: min(420px, 100%);
+  margin: 0 auto;
+  padding: max(18px, env(safe-area-inset-top)) 18px max(18px, env(safe-area-inset-bottom));
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  box-sizing: border-box;
+  min-height: 100%;
+}
+
+.saga-mascot-wrap {
+  position: relative;
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 210px;
+  display: flex; align-items: flex-end; justify-content: center;
+  padding-bottom: 8px;
+}
+.saga-speech {
+  position: absolute;
+  top: 12%; left: 50%;
+  transform: translateX(-50%);
+  max-width: 86%;
+  padding: 8px 14px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.92);
+  border: 2px solid #ffb4d0;
+  color: #6a3a4a;
+  font-size: 12.5px; font-weight: 800; text-align: center;
+  box-shadow: 0 6px 16px rgba(80, 40, 60, 0.12);
+  animation: sagaSpeechBob 2.4s ease-in-out infinite;
+}
+@keyframes sagaSpeechBob {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(-4px); }
+}
+
+.saga-samoyed {
+  position: relative;
+  width: 150px; height: 150px;
+  filter: drop-shadow(0 10px 14px rgba(40, 70, 30, 0.22));
+  animation: sagaDogBob 2.8s ease-in-out infinite;
+}
+@keyframes sagaDogBob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.sam-ear {
+  position: absolute; top: 10px; width: 34px; height: 42px;
+  background: #fff; border-radius: 50% 50% 40% 40%;
+  box-shadow: inset 0 -8px 0 #f2e9df;
+}
+.sam-ear.left { left: 18px; transform: rotate(-18deg); }
+.sam-ear.right { right: 18px; transform: rotate(18deg); }
+.sam-ear::after {
+  content: ''; position: absolute; inset: 8px 9px 10px;
+  background: #ffc4d6; border-radius: 50%;
+}
+.sam-head {
+  position: absolute; left: 50%; top: 18px;
+  transform: translateX(-50%);
+  width: 108px; height: 96px;
+  background: radial-gradient(circle at 50% 40%, #fff 0%, #f7f1ea 78%, #efe4d8 100%);
+  border-radius: 50% 50% 46% 46%;
+  box-shadow: inset 0 -10px 0 rgba(230, 210, 190, 0.35);
+}
+.sam-eye {
+  position: absolute; top: 40px; width: 10px; height: 14px;
+  background: #2b2118; border-radius: 50%;
+}
+.sam-eye.left { left: 32px; }
+.sam-eye.right { right: 32px; }
+.sam-eye::after {
+  content: ''; position: absolute; top: 2px; left: 2px;
+  width: 3px; height: 3px; border-radius: 50%; background: #fff;
+}
+.sam-nose {
+  position: absolute; left: 50%; top: 56px;
+  transform: translateX(-50%);
+  width: 16px; height: 12px;
+  background: #2b2118; border-radius: 50% 50% 45% 45%;
+}
+.sam-smile {
+  position: absolute; left: 50%; top: 68px;
+  width: 22px; height: 10px;
+  margin-left: -11px;
+  border-bottom: 3px solid #2b2118;
+  border-radius: 0 0 14px 14px;
+}
+.sam-blush {
+  position: absolute; top: 54px; width: 14px; height: 8px;
+  background: rgba(255, 140, 170, 0.45); border-radius: 50%;
+}
+.sam-blush.left { left: 16px; }
+.sam-blush.right { right: 16px; }
+.sam-body {
+  position: absolute; left: 50%; bottom: 8px;
+  transform: translateX(-50%);
+  width: 92px; height: 54px;
+  background: radial-gradient(circle at 50% 30%, #fff, #f3ebe3 80%);
+  border-radius: 48% 48% 40% 40%;
+}
+.sam-paw {
+  position: absolute; bottom: 0; width: 28px; height: 22px;
+  background: #fff; border-radius: 40% 40% 35% 35%;
+  box-shadow: inset 0 -4px 0 #f0e6dc;
+}
+.sam-paw.left { left: 34px; }
+.sam-paw.right { right: 34px; }
+
+.saga-path {
+  position: relative;
+  width: min(340px, 100%);
+  height: 78px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 6px;
+  box-sizing: border-box;
+}
+.saga-path-rail {
+  position: absolute; left: 18px; right: 18px; top: 50%;
+  height: 14px; margin-top: -7px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ffc2d8, #ff9ec8 40%, #ffb4a2);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,0.55), 0 3px 0 rgba(180, 70, 110, 0.25);
+  overflow: hidden;
+}
+#saga-path-fill {
+  height: 100%; width: 18%;
+  background: linear-gradient(90deg, #5fd0c8, #7ae0a8);
+  border-radius: inherit;
+  transition: width 0.35s ease;
+}
+.saga-node {
+  position: relative; z-index: 1;
+  width: 54px; height: 54px; border-radius: 50%;
+  border: 3px solid rgba(255,255,255,0.9);
+  background: linear-gradient(180deg, #ff8fb8, #ff5f9a);
+  color: #fff;
+  font-size: 22px; font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 5px 0 #c43d6e, 0 8px 16px rgba(180, 40, 90, 0.28);
+  transition: transform 0.12s ease, filter 0.12s ease;
+}
+.saga-node:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 2px 0 #c43d6e; }
+.saga-node.selected,
+.saga-node.current {
+  width: 64px; height: 64px; font-size: 26px;
+  background: linear-gradient(180deg, #ff7eb3, #ff3d87);
+  box-shadow: 0 6px 0 #b02a5a, 0 0 0 4px rgba(255,255,255,0.55), 0 10px 20px rgba(180, 40, 90, 0.35);
+}
+.saga-node.cleared {
+  background: linear-gradient(180deg, #ffb14a, #ff8a1f);
+  box-shadow: 0 5px 0 #c45f10, 0 8px 14px rgba(180, 90, 20, 0.28);
+}
+.saga-node.cleared.selected {
+  box-shadow: 0 6px 0 #c45f10, 0 0 0 4px rgba(255,255,255,0.55), 0 10px 20px rgba(180, 90, 20, 0.35);
+}
+.saga-node.locked {
+  background: linear-gradient(180deg, #d8c4d0, #b8a0b0);
+  color: #7a6570;
+  box-shadow: 0 4px 0 #8a7080;
+  cursor: not-allowed;
+  filter: grayscale(0.15);
+}
+.saga-node-check, .saga-node-lock { font-size: 20px; line-height: 1; }
+
+.saga-info {
+  position: relative;
+  width: min(340px, 100%);
+  background: linear-gradient(180deg, #fff5f8, #ffe4ef);
+  border: 3px solid #ff9ec8;
+  border-radius: 22px;
+  padding: 14px 16px 18px;
+  box-shadow: 0 8px 0 rgba(200, 80, 120, 0.18), 0 12px 24px rgba(80, 40, 60, 0.1);
+  box-sizing: border-box;
+  text-align: center;
+}
+.saga-blurb-title {
+  font-size: 14px; font-weight: 900; color: #c23a6e; margin-bottom: 6px;
+}
+.saga-blurb-text {
+  font-size: 13px; font-weight: 700; color: #5a3a48; line-height: 1.45;
+}
+.saga-progress-badge {
+  position: absolute; left: 50%; bottom: -14px;
+  transform: translateX(-50%);
+  min-width: 48px; height: 28px; padding: 0 10px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ff8fb8, #ff5f9a);
+  color: #fff; font-size: 13px; font-weight: 900;
+  border: 2px solid #fff;
+  box-shadow: 0 3px 0 #c43d6e;
+}
+
+.saga-play-btn {
+  width: min(280px, 86%);
+  margin-top: 10px;
+  padding: 14px 20px;
+  border: none; border-radius: 18px;
+  background: linear-gradient(180deg, #ff7eb3 0%, #ff3d87 55%, #e0216c 100%);
+  color: #fff;
+  font-family: inherit;
+  font-size: 22px; font-weight: 900; letter-spacing: 0.5px;
+  cursor: pointer;
+  border: 2px solid rgba(255,255,255,0.55);
+  box-shadow:
+    0 6px 0 #b01852,
+    0 12px 22px rgba(200, 40, 100, 0.35),
+    inset 0 2px 0 rgba(255,255,255,0.4);
+  text-shadow: 0 2px 0 rgba(120, 20, 60, 0.25);
+  transition: transform 0.1s ease, filter 0.1s ease;
+}
+.saga-play-btn:active:not(:disabled) {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 #b01852, inset 0 2px 0 rgba(255,255,255,0.35);
+}
+.saga-play-btn:disabled {
+  filter: grayscale(0.35) brightness(0.9);
+  cursor: not-allowed;
+}
+.saga-later-btn {
+  background: transparent;
+  border: 1.5px solid rgba(90, 50, 60, 0.28);
+  color: #6a4450;
+  border-radius: 12px;
+  padding: 8px 16px;
+  font-family: inherit;
+  font-size: 13px; font-weight: 800;
+  cursor: pointer;
+}
+.saga-later-btn:active { background: rgba(255,255,255,0.35); }
+
+@media (max-height: 640px) {
+  .saga-mascot-wrap { min-height: 160px; }
+  .saga-samoyed { transform: scale(0.88); transform-origin: bottom center; }
+  .saga-speech { font-size: 11.5px; }
+}

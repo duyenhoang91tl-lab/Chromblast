@@ -28,6 +28,7 @@ const DCV = () => document.getElementById('dodge-canvas');
 function triggerDodgeUnlock(){
   markMapCleared('secret');
   pendingUnlock='dodge';
+  if(typeof showSagaUnlock==='function' && showSagaUnlock('dodge')) return;
   document.getElementById('unlock-title').textContent='🐢 MAP ẨN 2 MỞ KHÓA!';
   document.getElementById('unlock-desc').innerHTML=
     'Bạn đã ghi <b>'+TEST_UNLOCK_SCORE+'+ điểm</b> ở map ẩn!<br><br>'+

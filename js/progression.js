@@ -55,6 +55,10 @@ function startUnlockGate(clearedIdx){
   markMapCleared(UNLOCK_STAGE_ORDER[clearedIdx]);           // ghi "đã phá đảo" (chỉ khi THẮNG)
   addPlayerXP(30+clearedIdx*10); // thưởng XP mỗi lần phá đảo một map ẩn — vòng càng sâu thưởng càng lớn (chỉ khi THẮNG)
   advanceHiddenGate(clearedIdx);
+  // Map ẩn 1–3: sau khi qua màn → màn phụ saga (vườn hoa + Samoyed) rồi chọn màn 1–4
+  if(clearedIdx>=0 && clearedIdx<=2 && typeof showSagaAfterClear==='function'){
+    setTimeout(()=>{ try{ showSagaAfterClear(clearedIdx); }catch(e){} }, 480);
+  }
 }
 // Đẩy tiến trình sang map ẩn kế tiếp — dùng chung cho cả THẮNG (startUnlockGate)
 // lẫn THUA (forfeitHiddenMapScore): sau map ẩn thứ `playedIdx` (0-based), mốc điểm

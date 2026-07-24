@@ -22,6 +22,7 @@ const BCV = () => document.getElementById('bee-canvas');
 function triggerBeeUnlock(){
   markMapCleared('fruit');
   pendingUnlock='bee';
+  if(typeof showSagaUnlock==='function' && showSagaUnlock('bee')) return;
   document.getElementById('unlock-title').textContent='🐝 MAP ẨN 4 MỞ KHÓA!';
   document.getElementById('unlock-desc').innerHTML=
     'Bạn đã ghi thêm <b>'+TEST_UNLOCK_SCORE+' điểm</b> ở map thường!<br><br>'+
