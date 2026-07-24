@@ -92,6 +92,20 @@ function resetNormalStarRun(){
 }
 loadNormalStars();
 
+/** Đồng bộ cổng map ẩn từ danh sách đã phá đảo (sau reload). */
+(function syncUnlockGateFromSave(){
+  try{
+    const cleared = new Set((typeof getSavedClearedMaps==='function') ? getSavedClearedMaps() : []);
+    let maxIdx = -1;
+    UNLOCK_STAGE_ORDER.forEach((key, i)=>{
+      const alias = (key === 'secret') ? 'secret1' : key;
+      if(cleared.has(key) || cleared.has(alias)) maxIdx = i;
+    });
+    unlockGateStageIndex = Math.max(0, Math.min(UNLOCK_STAGE_ORDER.length, maxIdx + 1));
+    unlockGateActive = unlockGateStageIndex < UNLOCK_STAGE_ORDER.length;
+  }catch(e){}
+})();
+
 /** Gọi khi thanh điểm đủ 3★ trên map thường — đếm 1/2 rồi mở map ẩn. */
 function checkNormalMapThreeStars(){
   if(_starClearLock) return false;
