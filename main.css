@@ -2350,7 +2350,7 @@ body:has(#secret-stage.active) .streak-dot.lit{
 
 /* ── ⚔️ Đấu 1-1 song song (versus.js) — cùng nền bàn với map thường ── */
 #versus-arena{
-  position:fixed; inset:0; z-index:9500; background:#1a1a2e;
+  position:fixed; inset:0; z-index:9500; background:transparent;
   display:flex; flex-direction:column;
   padding-top:max(68px, calc(env(safe-area-inset-top) + 18px));
   box-sizing:border-box;
