@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════
-// js/player-profile.js — Nickname + style (màu / đậm / nghiêng / nhạt)
+// js/player-profile.js — Nickname + style (màu / đậm / nghiêng / font)
 // Đổi tên lần 1 miễn phí; các lần sau + đổi style cần xem QC.
 // Nạp SAU save.js + leaderboard.js, TRƯỚC ui.js / auth.js.
 // ═══════════════════════════════════════════════════════════════
@@ -8,15 +8,34 @@ const PLAYER_PROFILE_KEY = 'chromablast_player_profile';
 const NICK_MAX_LEN = 24;
 const NICK_MIN_LEN = 1;
 
+/** ~10 font đặc biệt cho nickname (local woff2 trong nick-fonts.css) */
+const NICK_FONTS = [
+  { id: 'nunito',    family: "'Nunito', system-ui, sans-serif", label: 'Nunito' },
+  { id: 'pacifico',  family: "'Pacifico', cursive",            label: 'Pacifico' },
+  { id: 'lobster',   family: "'Lobster', cursive",             label: 'Lobster' },
+  { id: 'comfortaa', family: "'Comfortaa', sans-serif",        label: 'Comfortaa' },
+  { id: 'fredoka',   family: "'Fredoka', sans-serif",          label: 'Fredoka' },
+  { id: 'caveat',    family: "'Caveat', cursive",              label: 'Caveat' },
+  { id: 'dancing',   family: "'Dancing Script', cursive",      label: 'Dancing' },
+  { id: 'quicksand', family: "'Quicksand', sans-serif",        label: 'Quicksand' },
+  { id: 'josefin',   family: "'Josefin Sans', sans-serif",     label: 'Josefin' },
+  { id: 'bvietnam',  family: "'Be Vietnam Pro', sans-serif",   label: 'Be Vietnam' },
+  { id: 'righteous', family: "'Righteous', cursive",           label: 'Righteous' },
+];
+
+function _ppFontById(id){
+  return NICK_FONTS.find(f => f.id === id) || NICK_FONTS[0];
+}
+
 function _ppDefault(){
   return {
     nick: '',
     color: '#ffffff',
     bold: false,
     italic: false,
-    light: false,
+    fontId: 'nunito',
     renameCount: 0,
-    styleUnlocked: false // đã xem QC để mở quyền đổi style lần đầu trong phiên lưu
+    styleUnlocked: false
   };
 }
 
@@ -31,13 +50,13 @@ function getPlayerProfile(){
         if(typeof j.color === 'string' && /^#[0-9A-Fa-f]{6}$/.test(j.color)) p.color = j.color;
         p.bold = !!j.bold;
         p.italic = !!j.italic;
-        p.light = !!j.light;
+        if(typeof j.fontId === 'string' && _ppFontById(j.fontId).id === j.fontId) p.fontId = j.fontId;
+        else if(j.fontId) p.fontId = 'nunito';
         p.renameCount = Math.max(0, Number(j.renameCount) || 0);
         p.styleUnlocked = !!j.styleUnlocked;
       }
     }
   }catch(e){}
-  // Đồng bộ guest name cũ nếu chưa có nick
   if(!p.nick){
     try{
       const g = typeof safeGet === 'function' ? safeGet('chromablast_guest_name') : null;
@@ -51,13 +70,13 @@ function savePlayerProfile(patch){
   const p = Object.assign(getPlayerProfile(), patch || {});
   p.nick = String(p.nick || '').slice(0, NICK_MAX_LEN);
   if(!/^#[0-9A-Fa-f]{6}$/.test(p.color)) p.color = '#ffffff';
+  if(!_ppFontById(p.fontId) || _ppFontById(p.fontId).id !== p.fontId) p.fontId = 'nunito';
   try{
     const s = JSON.stringify(p);
     if(typeof safeSet === 'function') safeSet(PLAYER_PROFILE_KEY, s);
     else localStorage.setItem(PLAYER_PROFILE_KEY, s);
   }catch(e){}
   try{ if(p.nick) safeSet('chromablast_guest_name', p.nick); }catch(e){}
-  try{ if(typeof _onlineDisplayName !== 'undefined'){ /* sync online below */ } }catch(e){}
   _ppSyncOnlineName(p.nick);
   _ppRefreshUI();
   return p;
@@ -86,17 +105,19 @@ function getPlayerNameStyle(){
     color: p.color || '#ffffff',
     bold: !!p.bold,
     italic: !!p.italic,
-    light: !!p.light
+    fontId: p.fontId || 'nunito'
   };
 }
 
 function formatPlayerNameHtml(name, style){
   const st = style || getPlayerNameStyle();
   const n = (typeof escapeHtml === 'function' ? escapeHtml(name) : String(name||''));
+  const fam = _ppFontById(st.fontId).family;
   const css = [
     'color:'+(st.color||'#ffffff'),
-    'font-weight:'+(st.bold ? '900' : (st.light ? '300' : '700')),
-    st.italic ? 'font-style:italic' : 'font-style:normal'
+    'font-weight:'+(st.bold ? '900' : '700'),
+    st.italic ? 'font-style:italic' : 'font-style:normal',
+    'font-family:'+fam
   ].join(';');
   return '<span class="player-nick" style="'+css+'">'+n+'</span>';
 }
@@ -110,7 +131,6 @@ function _ppWatchAd(onOk, onFail){
   const ok = ()=>{ if(typeof onOk === 'function') onOk(); };
   if(typeof showRewardedAd === 'function'){
     showRewardedAd(ok, ()=>{
-      // Web/không AdMob: giả lập thành công; trên app QC lỗi → báo fail
       try{
         if(typeof Capacitor === 'undefined' || !Capacitor.isNativePlatform || !Capacitor.isNativePlatform()){
           setTimeout(ok, 500);
@@ -150,18 +170,20 @@ function applyNameStyleChange(patch){
     color: patch.color != null ? patch.color : cur.color,
     bold: patch.bold != null ? !!patch.bold : cur.bold,
     italic: patch.italic != null ? !!patch.italic : cur.italic,
-    light: patch.light != null ? !!patch.light : cur.light
+    fontId: patch.fontId != null ? patch.fontId : (cur.fontId || 'nunito')
   };
+  if(!_ppFontById(nextStyle.fontId) || _ppFontById(nextStyle.fontId).id !== nextStyle.fontId){
+    nextStyle.fontId = 'nunito';
+  }
   const changed =
     nextStyle.color !== cur.color ||
     nextStyle.bold !== cur.bold ||
     nextStyle.italic !== cur.italic ||
-    nextStyle.light !== cur.light;
+    nextStyle.fontId !== (cur.fontId || 'nunito');
   if(!changed) return Promise.resolve(cur);
 
   const doSave = ()=> savePlayerProfile(Object.assign({}, nextStyle, { styleUnlocked: true }));
 
-  // Đổi style luôn cần xem QC (kể cả lần đầu)
   return new Promise((resolve, reject)=>{
     _ppWatchAd(()=> resolve(doSave()), ()=> reject(new Error('ad_failed')));
   });
@@ -182,6 +204,49 @@ function getPlayerInfoStats(){
     if(typeof getLocalCaroStats === 'function') caro = getLocalCaroStats();
   }catch(e){}
   return { level, maps, caro, nick: getPlayerNickname(), style: getPlayerNameStyle() };
+}
+
+function _ppSelectedFontId(){
+  const active = document.querySelector('#pp-font-list .pp-font-btn.active');
+  return (active && active.dataset.fontId) || getPlayerProfile().fontId || 'nunito';
+}
+
+function _ppLiveStyle(){
+  return {
+    color: document.getElementById('pp-color-input')?.value || '#ffffff',
+    bold: !!document.getElementById('pp-bold')?.classList.contains('active'),
+    italic: !!document.getElementById('pp-italic')?.classList.contains('active'),
+    fontId: _ppSelectedFontId()
+  };
+}
+
+function _ppUpdatePreview(){
+  const preview = document.getElementById('pp-nick-preview');
+  if(!preview) return;
+  const nick = (document.getElementById('pp-nick-input')?.value || getPlayerNickname()).trim();
+  preview.innerHTML = formatPlayerNameHtml(nick || '—', _ppLiveStyle());
+}
+
+function renderNickFontList(selectedId){
+  const box = document.getElementById('pp-font-list');
+  if(!box) return;
+  const sel = selectedId || getPlayerProfile().fontId || 'nunito';
+  const sample = (document.getElementById('pp-nick-input')?.value || getPlayerNickname() || 'Aa').trim().slice(0, 10) || 'Aa';
+  box.innerHTML = NICK_FONTS.map(f => {
+    const active = f.id === sel ? ' active' : '';
+    return '<button type="button" class="pp-font-btn'+active+'" data-font-id="'+f.id+'" style="font-family:'+f.family+'" title="'+f.label+'">'+
+      '<span class="pp-font-name">'+f.label+'</span>'+
+      '<span class="pp-font-sample">'+ (typeof escapeHtml==='function'?escapeHtml(sample):sample) +'</span>'+
+      '</button>';
+  }).join('');
+  box.querySelectorAll('.pp-font-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      try{sfxClick();}catch(e){}
+      box.querySelectorAll('.pp-font-btn').forEach(b=> b.classList.remove('active'));
+      btn.classList.add('active');
+      _ppUpdatePreview();
+    });
+  });
 }
 
 function _ppRefreshUI(){
@@ -222,7 +287,7 @@ function openPlayerProfilePanel(){
   if(colorIn) colorIn.value = p.color || '#ffffff';
   document.getElementById('pp-bold')?.classList.toggle('active', !!p.bold);
   document.getElementById('pp-italic')?.classList.toggle('active', !!p.italic);
-  document.getElementById('pp-light')?.classList.toggle('active', !!p.light);
+  renderNickFontList(p.fontId || 'nunito');
   const hint = document.getElementById('pp-rename-hint');
   if(hint){
     hint.textContent = canRenameFree()
@@ -232,6 +297,7 @@ function openPlayerProfilePanel(){
   const msg = document.getElementById('pp-msg');
   if(msg){ msg.textContent=''; msg.className='account-msg'; }
   _ppRefreshUI();
+  _ppUpdatePreview();
   try{ if(typeof closeAllSettingsOverlays==='function') closeAllSettingsOverlays(); }catch(e){}
   document.getElementById('player-profile-panel')?.classList.add('show');
 }
@@ -246,51 +312,23 @@ function initPlayerProfileUI(){
   const closeBtn = document.getElementById('pp-close-btn');
   const bold = document.getElementById('pp-bold');
   const italic = document.getElementById('pp-italic');
-  const light = document.getElementById('pp-light');
   const colorIn = document.getElementById('pp-color-input');
 
   closeBtn?.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} closePlayerProfilePanel(); });
 
-  [bold, italic, light].forEach(btn=>{
+  [bold, italic].forEach(btn=>{
     btn?.addEventListener('click', ()=>{
       try{sfxClick();}catch(e){}
       btn.classList.toggle('active');
-      if(btn === bold && btn.classList.contains('active')) light?.classList.remove('active');
-      if(btn === light && btn.classList.contains('active')) bold?.classList.remove('active');
-      const preview = document.getElementById('pp-nick-preview');
-      if(preview){
-        const nick = (document.getElementById('pp-nick-input')?.value || getPlayerNickname()).trim();
-        preview.innerHTML = formatPlayerNameHtml(nick, {
-          color: colorIn?.value || '#ffffff',
-          bold: !!bold?.classList.contains('active'),
-          italic: !!italic?.classList.contains('active'),
-          light: !!light?.classList.contains('active')
-        });
-      }
+      _ppUpdatePreview();
     });
   });
 
-  colorIn?.addEventListener('input', ()=>{
-    const preview = document.getElementById('pp-nick-preview');
-    if(!preview) return;
-    const nick = (document.getElementById('pp-nick-input')?.value || getPlayerNickname()).trim();
-    preview.innerHTML = formatPlayerNameHtml(nick, {
-      color: colorIn.value || '#ffffff',
-      bold: !!bold?.classList.contains('active'),
-      italic: !!italic?.classList.contains('active'),
-      light: !!light?.classList.contains('active')
-    });
-  });
+  colorIn?.addEventListener('input', _ppUpdatePreview);
 
-  document.getElementById('pp-nick-input')?.addEventListener('input', (e)=>{
-    const preview = document.getElementById('pp-nick-preview');
-    if(!preview) return;
-    preview.innerHTML = formatPlayerNameHtml(e.target.value.trim() || getPlayerNickname(), {
-      color: colorIn?.value || '#ffffff',
-      bold: !!bold?.classList.contains('active'),
-      italic: !!italic?.classList.contains('active'),
-      light: !!light?.classList.contains('active')
-    });
+  document.getElementById('pp-nick-input')?.addEventListener('input', ()=>{
+    renderNickFontList(_ppSelectedFontId());
+    _ppUpdatePreview();
   });
 
   saveNick?.addEventListener('click', async ()=>{
@@ -317,13 +355,8 @@ function initPlayerProfileUI(){
     try{sfxClick();}catch(e){}
     const msg = document.getElementById('pp-msg');
     try{
-      await applyNameStyleChange({
-        color: colorIn?.value || '#ffffff',
-        bold: !!bold?.classList.contains('active'),
-        italic: !!italic?.classList.contains('active'),
-        light: !!light?.classList.contains('active')
-      });
-      if(msg){ msg.textContent = typeof t==='function'?t('ppStyleSaved'):'Đã áp dụng style (đã xem QC)'; msg.className='account-msg ok'; }
+      await applyNameStyleChange(_ppLiveStyle());
+      if(msg){ msg.textContent = typeof t==='function'?t('ppStyleSaved'):'Đã áp dụng kiểu chữ (đã xem QC)'; msg.className='account-msg ok'; }
     }catch(err){
       if(msg){
         msg.className = 'account-msg err';
@@ -334,10 +367,9 @@ function initPlayerProfileUI(){
     }
   });
 
-  document.getElementById('set-btn-profile')?.addEventListener('click', openPlayerProfilePanel);
   document.getElementById('settings-player-edit')?.addEventListener('click', openPlayerProfilePanel);
+  document.getElementById('account-edit-profile')?.addEventListener('click', openPlayerProfilePanel);
 
-  // Seed nick từ guest nếu trống
   const p = getPlayerProfile();
   if(!p.nick){
     const n = getPlayerNickname();
@@ -347,7 +379,6 @@ function initPlayerProfileUI(){
   }
 }
 
-// Ghi đè tên cục bộ ưu tiên nickname profile
 (function _ppPatchLocalName(){
   const prev = typeof _localPlayerName === 'function' ? _localPlayerName : null;
   window._localPlayerName = function(){
