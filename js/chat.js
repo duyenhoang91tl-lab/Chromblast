@@ -778,6 +778,10 @@
       else setStatus('');
     });
     syncChatFabVisibility();
+    window.addEventListener('resize', ()=>{ try{ positionChatFab(); }catch(e){} });
+    window.addEventListener('orientationchange', ()=>{
+      setTimeout(()=>{ try{ positionChatFab(); }catch(e){} }, 120);
+    });
     $('friends-close-btn')?.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} closeFriendsPanel(); });
     $('friends-panel')?.addEventListener('click', (e)=>{ if(e.target === $('friends-panel')) closeFriendsPanel(); });
     $('friends-open-chat')?.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} closeFriendsPanel(); openChatPanel('friends'); });
@@ -803,6 +807,7 @@
   window.openChatPanel = openChatPanel;
   window.closeChatPanel = closeChatPanel;
   window.syncChatFabVisibility = syncChatFabVisibility;
+  window.positionChatFab = positionChatFab;
   window.initGlobalChat = initGlobalChat;
   window.showInviteToast = showInviteToast;
 
