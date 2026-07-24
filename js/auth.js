@@ -50,13 +50,13 @@ function doRegister(username, password, password2){
 
 function isOverlayScreenOpen(el){
   if(!el) return false;
-  if(el.classList.contains('hide')) return false;
   const d = el.style.display;
   if(d === 'none') return false;
   // computed: khi vừa set display:none hoặc chưa gắn style
   try{
     if(window.getComputedStyle(el).display === 'none') return false;
   }catch(e){}
+  // Vẫn coi là đang mở trong lúc fade (.hide) — giữ ẩn #game-root đến khi display:none
   return true;
 }
 
