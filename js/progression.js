@@ -104,7 +104,7 @@ function addPlayerXP(n){
     try{ if(typeof refreshVersusButton==='function') refreshVersusButton(); }catch(e){}
     try{ if(typeof refreshCaroButton==='function') refreshCaroButton(); }catch(e){}
     if(prevLevel < 3 && playerLevel >= 3){
-      try{ showComboFlash(0,false,'⬛ Cờ Caro online đã mở khóa!'); }catch(e){}
+      try{ showComboFlash(0,false,'❌⭕ Cờ Caro online đã mở khóa!'); }catch(e){}
     }
     if(prevLevel < 10 && playerLevel >= 10){
       try{ showComboFlash(0,false,'⚔️ Đấu 1-1 đã mở khóa!'); }catch(e){}

@@ -152,7 +152,7 @@
       <button id="brick-skin-btn" title="Kho gạch" data-i18n-title="ttBricks" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">🧱</button>
       <button id="board-skin-btn" title="Kho nền bàn" data-i18n-title="ttBoards" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">🗺️</button>
       <button id="spin-btn-hdr" title="Vòng quay may mắn" data-i18n-title="ttSpin" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">🎡</button>
-      <button id="caro-btn" title="Cờ Caro online (mở từ Lv.3)" data-i18n-title="ttCaro">⬛</button>
+      <button id="caro-btn" title="Cờ Caro online (mở từ Lv.3)" data-i18n-title="ttCaro" aria-label="Caro online"><span class="caro-btn-ico" aria-hidden="true"><b class="caro-x">X</b><b class="caro-o">O</b></span></button>
       <button id="versus-btn" title="Đấu 1-1 (mở từ Lv.10)" data-i18n-title="ttVersus">⚔️</button>
       <button id="leaderboard-btn" title="Bảng xếp hạng" data-i18n-title="ttLeaderboard">🏆</button>
       <button id="roundguide-btn" title="Hướng dẫn cơ chế vòng hiện tại" data-i18n-title="ttRoundGuide" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">📖</button>
@@ -510,7 +510,7 @@
       <div class="lb-tabs">
         <button type="button" class="lb-tab active" data-lb-mode="local" data-i18n="lbTabLocal">📱 Thiết bị</button>
         <button type="button" class="lb-tab" data-lb-mode="global-solo" data-i18n="lbTabGlobal">🌐 Toàn cầu</button>
-        <button type="button" class="lb-tab" data-lb-mode="global-caro" data-i18n="lbTabCaro">⬛ Caro</button>
+        <button type="button" class="lb-tab" data-lb-mode="global-caro" data-i18n="lbTabCaro">❌⭕ Caro</button>
       </div>
       <div class="admin-sub" id="leaderboard-sub" data-i18n="lbSub">Điểm cao nhất của người chơi trên thiết bị này.</div>
       <div id="leaderboard-list"></div>
@@ -597,7 +597,7 @@
   <!-- ══ CỜ CARO (online Lv.3 · đấu máy luôn được) ══ -->
   <div id="caro-hub-panel" class="admin-panel-like">
     <div class="admin-card">
-      <div class="admin-title"><span data-i18n="caroTitle">⬛ Caro</span><button class="admin-close" id="caro-hub-close">✕</button></div>
+      <div class="admin-title"><span data-i18n="caroTitle">❌⭕ Caro</span><button class="admin-close" id="caro-hub-close">✕</button></div>
       <div class="admin-sub" data-i18n="caroSub">15×15 · X vs O · 5 ô thắng</div>
 
       <div class="caro-prefs-block">
@@ -644,7 +644,7 @@
   </div>
   <div id="caro-lobby-panel" class="admin-panel-like">
     <div class="admin-card">
-      <div class="admin-title"><span data-i18n="caroLobby">⬛ Phòng Caro</span> <small id="caro-lobby-room-no" class="caro-lobby-no"></small></div>
+      <div class="admin-title"><span data-i18n="caroLobby">❌⭕ Phòng Caro</span> <small id="caro-lobby-room-no" class="caro-lobby-no"></small></div>
       <div id="caro-lobby-here" class="caro-joined-banner" data-i18n="caroJoinedRoom">✓ Đã vào phòng</div>
       <div class="admin-sub" id="caro-lobby-hint" data-i18n="caroLobbyHint">Đang chờ đối thủ — có thể vào từ danh sách phòng chờ hoặc mã phòng</div>
       <div class="online-room-code-wrap"><span data-i18n="onlineCode">Mã phòng</span>: <strong id="caro-room-code">------</strong></div>
