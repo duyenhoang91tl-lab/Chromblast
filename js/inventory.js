@@ -424,6 +424,7 @@ function renderInventoryHud(){
         : 'Đã hết lượt QC tim hôm nay';
     }
   }
+  try{ if(typeof positionChatFab === 'function') positionChatFab(); }catch(e){}
 }
 
 function usePowerItem(type){
