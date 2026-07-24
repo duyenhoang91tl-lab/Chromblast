@@ -6,38 +6,53 @@
   "use strict";
 
   const KEY = "chromablast_board_skins";
+  function tt(key){
+    try{ if(typeof t==='function') return t.apply(null, arguments); }catch(e){}
+    return key;
+  }
+  function skinDesc(skin){
+    const d=skin && skin.desc;
+    if(d && typeof d==='object'){
+      const lang=(typeof currentLang!=='undefined' && currentLang) || 'vi';
+      if(d[lang]) return d[lang];
+      if(lang!=='vi' && d.en) return d.en;
+      return d.vi || d.en || '';
+    }
+    return d || '';
+  }
+
 
   const BOARD_SKINS = [
-    { id: "classic", name: "Classic", desc: "Nền tối phẳng cổ điển", starter: true },
-    { id: "slate", name: "Slate", desc: "Nền xám tím hiện tại", starter: true },
-    { id: "wood", name: "Wood", desc: "Ván gỗ ấm" },
-    { id: "garden", name: "Garden", desc: "Vườn xanh" },
-    { id: "ocean", name: "Ocean", desc: "Đại dương" },
-    { id: "night", name: "Night", desc: "Đêm sao" },
-    { id: "sunset", name: "Sunset", desc: "Hoàng hôn" },
-    { id: "ice", name: "Ice", desc: "Băng giá" },
-    { id: "lava", name: "Lava", desc: "Nham thạch" },
-    { id: "candy", name: "Candy", desc: "Kẹo ngọt" },
-    { id: "neon", name: "Neon", desc: "Neon city" },
-    { id: "sand", name: "Sand", desc: "Cát vàng" },
-    { id: "marble", name: "Marble", desc: "Cẩm thạch" },
-    { id: "metal", name: "Metal", desc: "Kim loại" },
-    { id: "paper", name: "Paper", desc: "Giấy kraft" },
-    { id: "pixel", name: "Pixel", desc: "Pixel grid" },
-    { id: "forest", name: "Forest", desc: "Rừng sâu" },
-    { id: "sakura", name: "Sakura", desc: "Hoa anh đào" },
-    { id: "aurora", name: "Aurora", desc: "Cực quang" },
-    { id: "retro", name: "Retro", desc: "Retro arcade" },
-    { id: "cloud", name: "Cloud", desc: "Mây trời" },
-    { id: "ink", name: "Ink", desc: "Mực đen" },
-    { id: "gold", name: "Gold", desc: "Hoàng kim" },
-    { id: "mint", name: "Mint", desc: "Bạc hà" },
-    { id: "berry", name: "Berry", desc: "Quả mọng" },
-    { id: "desert", name: "Desert", desc: "Sa mạc" },
-    { id: "coral", name: "Coral", desc: "San hô" },
-    { id: "storm", name: "Storm", desc: "Bão tố" },
-    { id: "honey", name: "Honey", desc: "Mật ong" },
-    { id: "violet", name: "Violet", desc: "Tím huyền" },
+    { id: "classic", name: "Classic", desc: { vi: 'Nền tối phẳng cổ điển', en: 'Flat classic dark board' }, starter: true  },
+    { id: "slate", name: "Slate", desc: { vi: 'Nền xám tím hiện tại', en: 'Current slate purple board' }, starter: true  },
+    { id: "wood", name: "Wood", desc: { vi: 'Ván gỗ ấm', en: 'Warm wood planks' } },
+    { id: "garden", name: "Garden", desc: { vi: 'Vườn xanh', en: 'Green garden' } },
+    { id: "ocean", name: "Ocean", desc: { vi: 'Đại dương', en: 'Ocean depths' } },
+    { id: "night", name: "Night", desc: { vi: 'Đêm sao', en: 'Starry night' } },
+    { id: "sunset", name: "Sunset", desc: { vi: 'Hoàng hôn', en: 'Sunset glow' } },
+    { id: "ice", name: "Ice", desc: { vi: 'Băng giá', en: 'Icy frost' } },
+    { id: "lava", name: "Lava", desc: { vi: 'Nham thạch', en: 'Molten lava' } },
+    { id: "candy", name: "Candy", desc: { vi: 'Kẹo ngọt', en: 'Sweet candy' } },
+    { id: "neon", name: "Neon", desc: { vi: 'Neon city', en: 'Neon city' } },
+    { id: "sand", name: "Sand", desc: { vi: 'Cát vàng', en: 'Golden sand' } },
+    { id: "marble", name: "Marble", desc: { vi: 'Cẩm thạch', en: 'Marble stone' } },
+    { id: "metal", name: "Metal", desc: { vi: 'Kim loại', en: 'Brushed metal' } },
+    { id: "paper", name: "Paper", desc: { vi: 'Giấy kraft', en: 'Kraft paper' } },
+    { id: "pixel", name: "Pixel", desc: { vi: 'Pixel grid', en: 'Pixel grid' } },
+    { id: "forest", name: "Forest", desc: { vi: 'Rừng sâu', en: 'Deep forest' } },
+    { id: "sakura", name: "Sakura", desc: { vi: 'Hoa anh đào', en: 'Cherry blossoms' } },
+    { id: "aurora", name: "Aurora", desc: { vi: 'Cực quang', en: 'Northern lights' } },
+    { id: "retro", name: "Retro", desc: { vi: 'Retro arcade', en: 'Retro arcade' } },
+    { id: "cloud", name: "Cloud", desc: { vi: 'Mây trời', en: 'Sky clouds' } },
+    { id: "ink", name: "Ink", desc: { vi: 'Mực đen', en: 'Black ink' } },
+    { id: "gold", name: "Gold", desc: { vi: 'Hoàng kim', en: 'Royal gold' } },
+    { id: "mint", name: "Mint", desc: { vi: 'Bạc hà', en: 'Fresh mint' } },
+    { id: "berry", name: "Berry", desc: { vi: 'Quả mọng', en: 'Berry tones' } },
+    { id: "desert", name: "Desert", desc: { vi: 'Sa mạc', en: 'Desert dunes' } },
+    { id: "coral", name: "Coral", desc: { vi: 'San hô', en: 'Coral reef' } },
+    { id: "storm", name: "Storm", desc: { vi: 'Bão tố', en: 'Stormy skies' } },
+    { id: "honey", name: "Honey", desc: { vi: 'Mật ong', en: 'Honey amber' } },
+    { id: "violet", name: "Violet", desc: { vi: 'Tím huyền', en: 'Mystic violet' } },
   ];
 
   const STARTER_IDS = BOARD_SKINS.filter(function (s) {
@@ -155,7 +170,7 @@
 
     const desc = document.createElement("div");
     desc.className = "board-skin-desc";
-    desc.textContent = opts.locked ? "🔒 Chưa mở khóa" : skin.desc;
+    desc.textContent = opts.locked ? tt("boardSkinLocked") : skinDesc(skin);
 
     card.appendChild(preview);
     card.appendChild(name);
@@ -180,10 +195,10 @@
     panel.innerHTML =
       '<div class="board-skin-modal" role="dialog" aria-modal="true">' +
       '<button type="button" class="board-skin-x" id="board-skin-close" aria-label="Close">✕</button>' +
-      '<div class="board-skin-title" id="board-skin-title">Chọn nền bàn</div>' +
+      '<div class="board-skin-title" id="board-skin-title"></div>' +
       '<div class="board-skin-sub" id="board-skin-sub"></div>' +
       '<div class="board-skin-grid" id="board-skin-grid"></div>' +
-      '<button type="button" class="board-skin-ok" id="board-skin-ok">Xong</button>' +
+      '<button type="button" class="board-skin-ok" id="board-skin-ok"></button>' +
       "</div>";
     document.body.appendChild(panel);
     panel.addEventListener("click", function (e) {
@@ -219,7 +234,7 @@
 
     grid.innerHTML = "";
     if (mode === "starter") {
-      title.textContent = "Chọn nền bàn khởi đầu";
+      title.textContent = tt("boardSkinStarter");
       sub.textContent = "";
       ok.style.display = "none";
       closeBtn.style.display = "none";
@@ -247,18 +262,18 @@
 
     if (mode === "unlock") {
       const neu = getSkin(highlightId);
-      title.textContent = "🗺️ Nền bàn mới!";
+      title.textContent = tt("boardSkinNew");
       sub.textContent = neu
-        ? "Mở khóa: " + neu.name + " — chọn để dùng hoặc giữ nền hiện tại"
-        : "Chọn nền bàn";
-      ok.textContent = "Tiếp tục";
+        ? tt("boardSkinUnlock", neu.name)
+        : tt("boardSkinPick");
+      ok.textContent = tt("boardSkinContinue");
       ok.style.display = "block";
       closeBtn.style.display = "block";
     } else {
-      title.textContent = "Kho nền bàn";
+      title.textContent = tt("boardSkinTitle");
       sub.textContent =
-        "Đã mở " + state.unlocked.length + "/" + BOARD_SKINS.length;
-      ok.textContent = "Xong";
+        tt("boardSkinOwned", state.unlocked.length, BOARD_SKINS.length);
+      ok.textContent = tt("boardSkinDone");
       ok.style.display = "block";
       closeBtn.style.display = "block";
     }
@@ -339,7 +354,7 @@
       try {
         if (typeof showComboFlash === "function") {
           const s = getSkin(last);
-          showComboFlash(0, false, "🗺️ Mở khóa nền: " + (s ? s.name : last));
+          showComboFlash(0, false, tt("boardUnlockFlash", s ? s.name : last));
         }
       } catch (_) {}
     }, 3200);
@@ -375,7 +390,7 @@
           showComboFlash(
             0,
             false,
-            "🗺️ Spin hiếm! Nền bàn: " + (s ? s.name : id)
+            tt("boardSpinRare", s ? s.name : id)
           );
         }
       } catch (_) {}
