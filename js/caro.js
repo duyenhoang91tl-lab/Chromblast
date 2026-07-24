@@ -19,7 +19,7 @@ const CARO_TURN_FAST = 10;
 const CARO_AI_LEVELS = {
   easy:   { id:'easy',   thinkMs:320, mistakeRate:0.28, radius:2, depth:1, topN:8  },
   medium: { id:'medium', thinkMs:500, mistakeRate:0.05, radius:3, depth:2, topN:10 },
-  hard:   { id:'hard',   thinkMs:700, mistakeRate:0,    radius:4, depth:3, topN:14 },
+  hard:   { id:'hard',   thinkMs:700, mistakeRate:0,    radius:4, depth:3, topN:10 },
 };
 
 /** Nền map xếp hình + màu X/O nổi bật theo từng nền */
@@ -868,7 +868,10 @@ function _caroPickAIMove(profile){
     const playerColor = _caroStone(_caro.mySlot);
     const board = _caro.board;
     const candidates = _caroGetCandidates(board, profile.radius || 3);
-    if(!candidates.length) return _caroRandomEmptyNear(board, 4);
+    if(!candidates.length){
+      const fb = _caroRandomEmptyNear(board, 4);
+      return fb ? { r: fb[0], c: fb[1], score: 0 } : null;
+    }
 
     // 1) Thắng ngay
     const winNow = _caroImmediateWins(board, aiColor, candidates);

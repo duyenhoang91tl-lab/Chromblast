@@ -931,6 +931,11 @@ body.gchat-open .gchat-fab { display: none !important; }
 .gchat-row { display:flex; flex-direction:column; gap:2px; align-items:flex-start; }
 .gchat-row.mine { align-items:flex-end; }
 .gchat-who { font-size:10px; color:rgba(255,255,255,0.55); font-weight:700; }
+.gchat-time {
+  margin-left: 6px; font-size: 9px; font-weight: 700;
+  color: rgba(255,255,255,0.38); white-space: nowrap;
+}
+.gchat-row.mine .gchat-time { margin-left: 0; margin-right: 6px; }
 .gchat-text {
   max-width: 92%; background: rgba(255,255,255,0.1); border-radius: 10px;
   padding: 6px 9px; font-size: 12px; color: #fff; font-weight: 700; word-break: break-word;
@@ -939,6 +944,25 @@ body.gchat-open .gchat-fab { display: none !important; }
   background: linear-gradient(135deg, rgba(255,152,0,0.35), rgba(255,213,74,0.28));
   border: 1px solid rgba(255,213,74,0.35);
 }
+.gchat-tr {
+  max-width: 92%; margin-top: 2px; padding: 4px 8px;
+  border-radius: 8px; font-size: 11px; font-weight: 700;
+  color: #b3e5fc; background: rgba(66,165,245,0.14);
+  border: 1px dashed rgba(144,202,249,0.35); word-break: break-word;
+}
+.gchat-tr.pending { opacity: 0.55; font-style: italic; }
+.gchat-tr.err { color: #ffab91; border-color: rgba(255,138,101,0.35); }
+.gchat-translate-bar {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  margin: 0 0 8px; font-size: 11px; font-weight: 800; color: rgba(255,255,255,0.7);
+}
+.gchat-tl-select {
+  flex: 1 1 auto; min-width: 120px; max-width: 220px;
+  border-radius: 10px; border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(0,0,0,0.35); color: #fff;
+  padding: 7px 10px; font-size: 12px; font-weight: 800; outline: none;
+}
+.gchat-tl-select option { color: #111; }
 .gchat-form {
   display: flex; gap: 6px; margin-top: 8px;
 }

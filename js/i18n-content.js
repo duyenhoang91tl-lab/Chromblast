@@ -1134,6 +1134,9 @@ function MILESTONE_MSG(tier){
     gchatRoomPosted:'Đã tạo phòng — đăng lên Thế giới',
     gchatInviteWaiting:'Đang chờ người vào...',
     gchatInviteCaroShort:'Mời Caro', gchatInviteVersusShort:'Mời Versus',
+    gchatTranslateTo:'🌐 Dịch sang', gchatTranslateOff:'Tắt',
+    gchatTranslating:'Đang dịch...', gchatTranslateFail:'Không dịch được',
+    gchatTranslateOn:'Đã bật dịch tự động',
     gchatInviteFriend:'🤝 Mời bạn bè'
   },
   en:{
@@ -1152,6 +1155,9 @@ function MILESTONE_MSG(tier){
     gchatRoomPosted:'Room created — posted to World',
     gchatInviteWaiting:'Waiting for players...',
     gchatInviteCaroShort:'Invite Caro', gchatInviteVersusShort:'Invite Versus',
+    gchatTranslateTo:'🌐 Translate to', gchatTranslateOff:'Off',
+    gchatTranslating:'Translating...', gchatTranslateFail:'Could not translate',
+    gchatTranslateOn:'Auto-translate on',
     gchatInviteFriend:'🤝 Invite friends'
   },
   ko:{
@@ -1170,6 +1176,9 @@ function MILESTONE_MSG(tier){
     gchatRoomPosted:'방 생성 — 월드에 게시됨',
     gchatInviteWaiting:'입장 대기 중...',
     gchatInviteCaroShort:'캐로 초대', gchatInviteVersusShort:'Versus 초대',
+    gchatTranslateTo:'🌐 번역', gchatTranslateOff:'끄기',
+    gchatTranslating:'번역 중...', gchatTranslateFail:'번역 실패',
+    gchatTranslateOn:'자동 번역 켜짐',
     gchatInviteFriend:'🤝 친구 초대'
   },
   ja:{
@@ -1188,6 +1197,9 @@ function MILESTONE_MSG(tier){
     gchatRoomPosted:'ルーム作成 — ワールドに投稿',
     gchatInviteWaiting:'参加者待ち...',
     gchatInviteCaroShort:'キャロ招待', gchatInviteVersusShort:'Versus招待',
+    gchatTranslateTo:'🌐 翻訳先', gchatTranslateOff:'オフ',
+    gchatTranslating:'翻訳中...', gchatTranslateFail:'翻訳できません',
+    gchatTranslateOn:'自動翻訳オン',
     gchatInviteFriend:'🤝 友達を招待'
   },
   zh:{
@@ -1206,6 +1218,9 @@ function MILESTONE_MSG(tier){
     gchatRoomPosted:'已建房 — 已发到世界频道',
     gchatInviteWaiting:'等待加入...',
     gchatInviteCaroShort:'邀五子棋', gchatInviteVersusShort:'邀Versus',
+    gchatTranslateTo:'🌐 翻译为', gchatTranslateOff:'关闭',
+    gchatTranslating:'翻译中...', gchatTranslateFail:'无法翻译',
+    gchatTranslateOn:'已开启自动翻译',
     gchatInviteFriend:'🤝 邀请好友'
   },
   es:{
@@ -1224,6 +1239,9 @@ function MILESTONE_MSG(tier){
     gchatRoomPosted:'Sala creada — publicada en Mundo',
     gchatInviteWaiting:'Esperando jugadores...',
     gchatInviteCaroShort:'Invitar Caro', gchatInviteVersusShort:'Invitar Versus',
+    gchatTranslateTo:'🌐 Traducir a', gchatTranslateOff:'Off',
+    gchatTranslating:'Traduciendo...', gchatTranslateFail:'No se pudo traducir',
+    gchatTranslateOn:'Traducción automática activada',
     gchatInviteFriend:'🤝 Invitar amigos'
   }
   };
