@@ -376,6 +376,6 @@ function exitMegaToMain(){
   document.getElementById('mode-badge').textContent='BÌNH THƯỜNG';
   document.getElementById('mode-badge').classList.remove('secret');
   document.getElementById('burst-count').textContent='Chuỗi nổ: 0/3';
-  document.getElementById('hint-bar').textContent='Chạm khối → ghost hiện · Di ngón → ghost bám · Thả trên ô → đặt · Thả vùng trống → xoay';
+  document.getElementById('hint-bar').textContent=(typeof t==='function'?t('hintDefault'):'');
   renderPieces(); checkGameOverA();
 }
