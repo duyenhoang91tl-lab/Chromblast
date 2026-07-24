@@ -141,6 +141,37 @@ async function joinOnlineRoomByCode(code, opts){
   return { roomId: doc.id, ...(await (await doc.ref.get()).data()) };
 }
 
+async function joinOnlineRoomById(roomId, opts){
+  opts = opts || {};
+  const gameType = opts.gameType || null;
+  const uid = await ensureOnlineAuth();
+  const name = getOnlineDisplayName();
+  const ref = _onlineDb.collection('rooms').doc(roomId);
+  return _onlineDb.runTransaction(async tx => {
+    const snap = await tx.get(ref);
+    if(!snap.exists) throw new Error('room_not_found');
+    const d = snap.data();
+    if(gameType && d.gameType && d.gameType !== gameType) throw new Error('wrong_game_type');
+    if(d.hostId === uid) return { roomId, ...d };
+    if(d.guestId && d.guestId !== uid) throw new Error('room_full');
+    if(d.status !== 'open') throw new Error('room_not_open');
+    tx.update(ref, {
+      guestId: uid,
+      guestName: name,
+      guestReady: true,
+      status: 'ready'
+    });
+    return {
+      roomId,
+      ...d,
+      guestId: uid,
+      guestName: name,
+      guestReady: true,
+      status: 'ready'
+    };
+  });
+}
+
 async function leaveOnlineRoom(roomId){
   if(!_onlineDb || !roomId) return;
   const ref = _onlineDb.collection('rooms').doc(roomId);
@@ -309,6 +340,8 @@ async function startMatchmaking(onMatched, opts){
           matchmaking: true,
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         };
+        if(opts.turnSec === 10 || opts.turnSec === 15) roomData.turnSec = opts.turnSec;
+        if(opts.boardSkin) roomData.boardSkin = opts.boardSkin;
         tx.set(roomRef, roomData);
         tx.delete(qRef);
         tx.delete(other.ref);
@@ -333,6 +366,32 @@ function cancelMatchmaking(){
   if(_onlineDb && _onlineUid){
     _onlineDb.collection('matchQueue').doc(_onlineUid).delete().catch(()=>{});
   }
+}
+
+let _openCaroRoomsUnsub = null;
+function listenOpenCaroRooms(onUpdate){
+  stopListeningOpenCaroRooms();
+  if(!_onlineDb) return;
+  const q = _onlineDb.collection('rooms')
+    .where('gameType', '==', 'caro')
+    .where('status', '==', 'open')
+    .limit(30);
+  _openCaroRoomsUnsub = q.onSnapshot(snap => {
+    const rooms = snap.docs.map(doc => ({ roomId: doc.id, ...doc.data() }));
+    rooms.sort((a, b) => {
+      const ta = a.createdAt && a.createdAt.toMillis ? a.createdAt.toMillis() : 0;
+      const tb = b.createdAt && b.createdAt.toMillis ? b.createdAt.toMillis() : 0;
+      return ta - tb;
+    });
+    if(typeof onUpdate === 'function') onUpdate(rooms);
+  }, err => {
+    console.warn('[caro-rooms]', err);
+    if(typeof onUpdate === 'function') onUpdate([]);
+  });
+}
+
+function stopListeningOpenCaroRooms(){
+  if(_openCaroRoomsUnsub){ _openCaroRoomsUnsub(); _openCaroRoomsUnsub = null; }
 }
 
 // ── Kết quả & BXH Caro ────────────────────────────────────────

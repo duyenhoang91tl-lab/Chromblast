@@ -62,6 +62,7 @@ let _caroLobby = null;
 let _caroCanvasBound = false;
 let _caroTimerId = null;
 let _caroPrefsDraft = null;
+let _caroLastOpenRooms = [];
 
 function getCaroPrefs(){
   let p = { turnSec: CARO_TURN_NORMAL, skin: 'wood' };
@@ -967,7 +968,68 @@ function openCaroHub(){
   _caroSetOnlineLocked(locked);
   if(locked) return;
   _caroRefreshHubStats();
-  if(isOnlineServicesEnabled()) _caroRequireOnline();
+  if(isOnlineServicesEnabled()){
+    _caroRequireOnline().then(ok => { if(ok) _caroStartRoomListListen(); });
+  }
+}
+
+function _caroStartRoomListListen(){
+  if(typeof listenOpenCaroRooms !== 'function') return;
+  listenOpenCaroRooms(_caroRenderOpenRoomLists);
+}
+
+function _caroStopRoomListListen(){
+  if(typeof stopListeningOpenCaroRooms === 'function') stopListeningOpenCaroRooms();
+}
+
+function _caroRenderOpenRoomLists(rooms){
+  _caroLastOpenRooms = rooms || [];
+  const open = _caroLastOpenRooms.filter(r => r.status === 'open' && !r.guestId);
+  const countEl = document.getElementById('caro-room-list-count');
+  if(countEl) countEl.textContent = open.length ? '(' + open.length + ')' : '';
+  _caroRenderRoomListTo('caro-room-list', 'caro-room-list-empty', open);
+  _caroRenderRoomListTo('caro-lobby-room-list', null, open);
+  if(_caroLobby){
+    const idx = open.findIndex(r => r.roomId === _caroLobby.roomId);
+    const noEl = document.getElementById('caro-lobby-room-no');
+    if(noEl) noEl.textContent = idx >= 0 ? '· ' + t('caroRoomNo', idx + 1) : '';
+  }
+}
+
+function _caroRenderRoomListTo(listId, emptyId, rooms){
+  const list = document.getElementById(listId);
+  const empty = emptyId ? document.getElementById(emptyId) : null;
+  if(!list) return;
+  const uid = typeof getOnlineUid === 'function' ? getOnlineUid() : null;
+  if(empty) empty.style.display = rooms.length ? 'none' : 'block';
+  if(!rooms.length){ list.innerHTML = ''; return; }
+  list.innerHTML = rooms.map((r, i) => {
+    const no = i + 1;
+    const turn = r.turnSec === 10 ? '10s' : '15s';
+    const mine = uid && r.hostId === uid;
+    const name = escapeHtml(r.hostName || 'Host');
+    const joinLabel = mine ? t('caroRoomMine') : t('caroRoomJoin');
+    return '<button type="button" class="caro-room-row'+(mine?' mine':'')+'" data-room="'+r.roomId+'">'+
+      '<span class="caro-room-no">#'+no+'</span>'+
+      '<span class="caro-room-info"><b>'+name+'</b><small>'+turn+(r.code ? ' · '+escapeHtml(r.code) : '')+'</small></span>'+
+      '<span class="caro-room-action">'+joinLabel+'</span></button>';
+  }).join('');
+  list.querySelectorAll('.caro-room-row').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      e.preventDefault();
+      e.stopPropagation();
+      const rid = btn.dataset.room;
+      if(!rid) return;
+      const room = rooms.find(r => r.roomId === rid);
+      if(!room) return;
+      if(uid && room.hostId === uid){
+        if(_caroLobby && _caroLobby.roomId === rid) return;
+        _caroOpenLobby(rid, room.code, 'host', room);
+        return;
+      }
+      caroJoinRoomById(rid);
+    });
+  });
 }
 
 async function _caroRefreshHubStats(){
@@ -979,6 +1041,7 @@ async function _caroRefreshHubStats(){
 
 function closeCaroHub(){
   cancelMatchmaking();
+  _caroStopRoomListListen();
   if(_caroLobby) leaveOnlineRoom(_caroLobby.roomId).catch(()=>{});
   _caroLobby = null;
   stopListeningRoom();
@@ -995,6 +1058,7 @@ function _caroOpenLobby(roomId, code, role, roomData){
   _caroShow('caro-lobby-panel');
   document.getElementById('caro-room-code').textContent = code;
   _caroRenderLobby(roomData);
+  if(typeof listenOpenCaroRooms === 'function') listenOpenCaroRooms(_caroRenderOpenRoomLists);
 
   listenOnlineRoom(roomId, ev=>{
     if(ev.type==='deleted'){ closeCaroHub(); return; }
@@ -1015,7 +1079,12 @@ function _caroRenderLobby(d){
   const startBtn = document.getElementById('caro-start-btn');
   const isHost = _caroLobby && _caroLobby.role==='host';
   if(startBtn) startBtn.style.display = (isHost && d.status==='ready' && d.guestId) ? 'block' : 'none';
+  const hint = document.getElementById('caro-lobby-hint');
+  if(hint){
+    hint.style.display = (d.status==='ready' && d.guestId) ? 'none' : 'block';
+  }
   _caroSyncPrefUI(getCaroPrefs());
+  _caroRenderOpenRoomLists(_caroLastOpenRooms || []);
 }
 
 async function caroCreateRoom(){
@@ -1050,9 +1119,27 @@ async function caroJoinRoom(){
   }
 }
 
+async function caroJoinRoomById(roomId){
+  if(!canPlayCaro()){ _caroStatus(t('caroNeedLevel', CARO_MIN_LEVEL), true); return; }
+  if(!await _caroRequireOnline()) return;
+  try{
+    const data = await joinOnlineRoomById(roomId, { gameType:'caro' });
+    const role = data.hostId === getOnlineUid() ? 'host' : 'guest';
+    _caroOpenLobby(data.roomId, data.code, role, data);
+    _caroStatus(t('onlineJoined'));
+  }catch(e){
+    const msg = e.message==='room_not_found' ? t('onlineRoomNotFound') :
+      e.message==='room_full' ? t('caroRoomFull') :
+      e.message==='room_not_open' ? t('caroRoomNotOpen') :
+      e.message==='wrong_game_type' ? t('caroWrongRoom') : e.message;
+    _caroStatus(msg, true);
+  }
+}
+
 async function caroFindOpponent(){
   if(!canPlayCaro()){ _caroStatus(t('caroNeedLevel', CARO_MIN_LEVEL), true); return; }
   if(!await _caroRequireOnline()) return;
+  const prefs = getCaroPrefs();
   _caroHide('caro-hub-panel');
   _caroShow('caro-mm-panel');
   document.getElementById('caro-mm-status').textContent = t('onlineSearching');
@@ -1061,9 +1148,12 @@ async function caroFindOpponent(){
     const role = room.hostId===getOnlineUid() ? 'host' : 'guest';
     _caroOpenLobby(room.roomId, room.code, role, room);
     if(room.matchmaking && role==='host'){
-      startOnlineRoomMatch(room.roomId).catch(()=>{});
+      startOnlineRoomMatch(room.roomId, {
+        turnSec: prefs.turnSec,
+        boardSkin: prefs.skin
+      }).catch(()=>{});
     }
-  }, { gameType:'caro' });
+  }, { gameType:'caro', turnSec: prefs.turnSec, boardSkin: prefs.skin });
 }
 
 function caroCancelMM(){
