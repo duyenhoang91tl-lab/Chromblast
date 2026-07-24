@@ -41,7 +41,7 @@
   <div class="auth-card">
     <div class="auth-logo"><span class="logo-chroma">CHROMA</span><span class="logo-blast">BLAST</span></div>
     <div class="auth-sub" data-i18n="authSub">🔐 Đăng nhập để bắt đầu chơi</div>
-    <button type="button" id="guest-play-btn" class="auth-submit-btn" style="background:linear-gradient(135deg,#56AB2F,#A8E063);margin-bottom:16px;" data-i18n="guestPlay">Chơi Ngay</button>
+    <button type="button" id="guest-play-btn" class="auth-submit-btn btn-on-color" style="background:linear-gradient(135deg,#56AB2F,#A8E063);margin-bottom:16px;" data-i18n="guestPlay">Chơi Ngay</button>
     <div class="auth-switch" style="margin-bottom:10px;" data-i18n="orDivider">— hoặc —</div>
     <div id="lang-picker-auth" class="lang-picker"></div>
 
@@ -425,7 +425,7 @@
     <div class="admin-card">
       <div class="admin-title"><span data-i18n="accountTitle">👤 Tài khoản</span><button class="admin-close" id="account-close-btn">✕</button></div>
       <div class="account-user">Đang đăng nhập: <b id="account-username-box">—</b></div>
-      <button type="button" class="auth-submit-btn" id="account-edit-profile" style="background:rgba(255,255,255,0.12);margin:10px 0;" data-i18n="ppEdit">✏️ Đổi nickname / màu chữ</button>
+      <button type="button" class="auth-submit-btn btn-ghost" id="account-edit-profile" style="background:rgba(255,255,255,0.12);margin:10px 0;" data-i18n="ppEdit">✏️ Đổi nickname / màu chữ</button>
 
       <div class="account-section-title">🔑 Đổi mật khẩu</div>
       <form id="change-password-form">
@@ -476,7 +476,7 @@
         <button type="button" class="pp-style-btn" id="pp-light" data-i18n="ppLight">Nhạt</button>
         <button type="button" class="pp-style-btn" id="pp-italic" data-i18n="ppItalic"><i>I Nghiêng</i></button>
       </div>
-      <button type="button" id="pp-save-style" class="auth-submit-btn" style="background:linear-gradient(135deg,#6a1b9a,#ab47bc);margin-top:10px;" data-i18n="ppSaveStyle">📺 Áp dụng style (xem QC)</button>
+      <button type="button" id="pp-save-style" class="auth-submit-btn btn-on-color" style="background:linear-gradient(135deg,#6a1b9a,#ab47bc);margin-top:10px;" data-i18n="ppSaveStyle">📺 Áp dụng style (xem QC)</button>
       <div class="account-msg" id="pp-msg"></div>
     </div>
   </div>
@@ -523,7 +523,7 @@
       <div class="admin-title"><span data-i18n="onlineTitle">🌐 Đấu 1-1 Online</span><button class="admin-close" id="online-hub-close">✕</button></div>
       <div id="online-disabled-note" class="online-note" data-i18n="onlineDisabled">Chưa bật Firebase — xem docs/ONLINE_MULTIPLAYER.md để cấu hình trước khi phát hành online.</div>
       <div id="online-status" class="online-status"></div>
-      <button type="button" id="online-google-btn" class="auth-submit-btn" style="background:#4285f4;margin-bottom:10px;" data-i18n="onlineGoogle">Đăng nhập Google</button>
+      <button type="button" id="online-google-btn" class="auth-submit-btn btn-on-color" style="background:#4285f4;margin-bottom:10px;" data-i18n="onlineGoogle">Đăng nhập Google</button>
 
       <div class="caro-waiting-block">
         <div class="caro-waiting-head">
@@ -534,7 +534,7 @@
         <div id="online-room-list-empty" class="admin-sub" data-i18n="onlineWaitingEmpty">Chưa có phòng — tạo phòng hoặc bấm Tìm đối thủ</div>
       </div>
 
-      <button type="button" id="online-find-btn" class="auth-submit-btn" style="margin-top:10px;background:linear-gradient(135deg,#2e7d32,#66bb6a);" data-i18n="onlineFind">🔍 Tìm đối thủ (tự ghép)</button>
+      <button type="button" id="online-find-btn" class="auth-submit-btn btn-on-color" style="margin-top:10px;background:linear-gradient(135deg,#2e7d32,#66bb6a);" data-i18n="onlineFind">🔍 Tìm đối thủ (tự ghép)</button>
       <button type="button" id="online-create-btn" class="auth-submit-btn" style="margin-top:10px;" data-i18n="onlineCreate">🏠 Tạo phòng</button>
       <div class="auth-field" style="margin-top:12px;"><label data-i18n="onlineJoinLabel">Vào phòng bằng mã</label><input type="text" id="online-join-code" maxlength="6" placeholder="ABC123" style="text-transform:uppercase;letter-spacing:2px;text-align:center;font-weight:700;"></div>
       <button type="button" id="online-join-btn" class="auth-submit-btn btn-ghost" style="background:rgba(255,255,255,0.15);" data-i18n="onlineJoin">🚪 Vào phòng</button>
@@ -565,7 +565,7 @@
     <div class="admin-card" style="text-align:center;">
       <div class="admin-title"><span data-i18n="onlineSearchingTitle">🔍 Đang tìm đối thủ</span></div>
       <div id="online-mm-status" class="online-mm-pulse" data-i18n="onlineSearching">Đang tìm người chơi phù hợp...</div>
-      <button type="button" id="online-mm-cancel" class="auth-submit-btn" style="background:rgba(255,255,255,0.12);margin-top:16px;" data-i18n="onlineCancel">✕ Hủy</button>
+      <button type="button" id="online-mm-cancel" class="auth-submit-btn btn-ghost" style="background:rgba(255,255,255,0.12);margin-top:16px;" data-i18n="onlineCancel">✕ Hủy</button>
     </div>
   </div>
 
@@ -574,7 +574,7 @@
       <div class="admin-title"><span id="vs-result-title">🏆</span></div>
       <div id="vs-result-body"></div>
       <button id="vs-again-btn" class="auth-submit-btn" data-i18n="vsAgain" style="margin-top:12px;">🔁 Đấu lại</button>
-      <button id="vs-close-btn" class="auth-submit-btn" data-i18n="vsClose" style="background:rgba(255,255,255,0.12);margin-top:8px;">✕ Đóng</button>
+      <button id="vs-close-btn" class="auth-submit-btn btn-ghost" data-i18n="vsClose" style="background:rgba(255,255,255,0.12);margin-top:8px;">✕ Đóng</button>
     </div>
   </div>
 
@@ -594,11 +594,11 @@
             <button type="button" class="caro-seg-btn caro-hub-turn" data-turn="10">10s</button>
           </div>
         </div>
-        <button type="button" id="caro-hub-skin-btn" class="auth-submit-btn" style="background:rgba(255,255,255,0.12);margin-top:8px;" data-i18n="caroPickBg">🎨 Chọn nền bàn</button>
+        <button type="button" id="caro-hub-skin-btn" class="auth-submit-btn btn-ghost" style="background:rgba(255,255,255,0.12);margin-top:8px;" data-i18n="caroPickBg">🎨 Chọn nền bàn</button>
       </div>
 
       <div class="caro-ai-block">
-        <button type="button" id="caro-ai-start-btn" class="auth-submit-btn caro-ai-hub-btn" data-level="medium" data-i18n="caroAiBtn" onclick="if(window.caroStartAI){window.caroStartAI('medium')}else{alert('Thiếu caroStartAI — kiểm tra js/caro.js')}">🤖 Đấu với máy</button>
+        <button type="button" id="caro-ai-start-btn" class="auth-submit-btn btn-on-color caro-ai-hub-btn" data-level="medium" data-i18n="caroAiBtn" onclick="if(window.caroStartAI){window.caroStartAI('medium')}else{alert('Thiếu caroStartAI — kiểm tra js/caro.js')}">🤖 Đấu với máy</button>
         <div class="caro-ai-levels">
           <button type="button" class="caro-ai-level" id="caro-ai-easy" data-level="easy" data-i18n="caroAiEasy" onclick="if(window.caroStartAI){window.caroStartAI('easy')}else{alert('Thiếu caroStartAI — kiểm tra js/caro.js')}">🌱 Dễ</button>
           <button type="button" class="caro-ai-level" id="caro-ai-medium" data-level="medium" data-i18n="caroAiMedium" onclick="if(window.caroStartAI){window.caroStartAI('medium')}else{alert('Thiếu caroStartAI — kiểm tra js/caro.js')}">⚔️ TB</button>
@@ -610,7 +610,7 @@
       <div id="caro-online-locked-note" class="online-status" style="display:none;" data-i18n="caroOnlineLocked">🔒 Online cần Cấp 3. Đấu với máy vẫn chơi được.</div>
       <div id="caro-online-section">
         <div id="caro-hub-stats" class="caro-hub-stats"></div>
-        <button type="button" id="caro-rank-btn" class="auth-submit-btn" style="background:rgba(255,255,255,0.12);margin-bottom:10px;" data-i18n="caroRankBoard">🏆 BXH</button>
+        <button type="button" id="caro-rank-btn" class="auth-submit-btn btn-ghost" style="background:rgba(255,255,255,0.12);margin-bottom:10px;" data-i18n="caroRankBoard">🏆 BXH</button>
 
         <div class="caro-waiting-block">
           <div class="caro-waiting-head">
@@ -621,10 +621,10 @@
           <div id="caro-room-list-empty" class="admin-sub" data-i18n="caroWaitingEmpty">Chưa có phòng — tạo phòng hoặc bấm Tìm đối thủ</div>
         </div>
 
-        <button type="button" id="caro-find-btn" class="auth-submit-btn" style="margin-top:10px;background:linear-gradient(135deg,#2e7d32,#66bb6a);" data-i18n="onlineFind">🔍 Tìm đối thủ (tự ghép)</button>
+        <button type="button" id="caro-find-btn" class="auth-submit-btn btn-on-color" style="margin-top:10px;background:linear-gradient(135deg,#2e7d32,#66bb6a);" data-i18n="onlineFind">🔍 Tìm đối thủ (tự ghép)</button>
         <button type="button" id="caro-create-btn" class="auth-submit-btn" style="margin-top:10px;" data-i18n="onlineCreate">🏠 Tạo phòng</button>
         <div class="auth-field" style="margin-top:12px;"><label data-i18n="onlineJoinLabel">Vào phòng bằng mã</label><input type="text" id="caro-join-code" maxlength="6" placeholder="ABC123" style="text-transform:uppercase;letter-spacing:2px;text-align:center;font-weight:700;"></div>
-        <button type="button" id="caro-join-btn" class="auth-submit-btn" style="background:rgba(255,255,255,0.15);" data-i18n="onlineJoin">🚪 Vào phòng</button>
+        <button type="button" id="caro-join-btn" class="auth-submit-btn btn-ghost" style="background:rgba(255,255,255,0.15);" data-i18n="onlineJoin">🚪 Vào phòng</button>
       </div>
     </div>
   </div>
@@ -641,7 +641,7 @@
           <button type="button" class="caro-seg-btn caro-lobby-turn" data-turn="10">10s</button>
         </div>
       </div>
-      <button type="button" id="caro-lobby-skin-btn" class="auth-submit-btn" style="background:rgba(255,255,255,0.12);margin-bottom:10px;" data-i18n="caroPickBg">🎨 Chọn nền bàn</button>
+      <button type="button" id="caro-lobby-skin-btn" class="auth-submit-btn btn-ghost" style="background:rgba(255,255,255,0.12);margin-bottom:10px;" data-i18n="caroPickBg">🎨 Chọn nền bàn</button>
       <button type="button" id="caro-start-btn" class="auth-submit-btn" data-i18n="onlineStart">▶ Bắt đầu trận</button>
       <div class="caro-waiting-block" style="margin-top:12px;">
         <div class="caro-waiting-head"><span data-i18n="caroWaitingRooms">📋 Phòng chờ</span></div>
@@ -654,7 +654,7 @@
     <div class="admin-card" style="text-align:center;">
       <div class="admin-title"><span data-i18n="onlineSearchingTitle">🔍 Đang tìm đối thủ</span></div>
       <div id="caro-mm-status" class="online-mm-pulse" data-i18n="onlineSearching">Đang tìm người chơi phù hợp...</div>
-      <button type="button" id="caro-mm-cancel" class="auth-submit-btn" style="background:rgba(255,255,255,0.12);margin-top:16px;" data-i18n="onlineCancel">✕ Hủy</button>
+      <button type="button" id="caro-mm-cancel" class="auth-submit-btn btn-ghost" style="background:rgba(255,255,255,0.12);margin-top:16px;" data-i18n="onlineCancel">✕ Hủy</button>
     </div>
   </div>
   <div id="caro-result-panel" class="admin-panel-like">
