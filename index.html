@@ -463,7 +463,14 @@
         <div id="gchat-friends-thread" class="gchat-friends-thread" hidden>
           <div class="gchat-friend-head">
             <button type="button" id="gchat-friend-back" class="gchat-friend-back">←</button>
-            <span id="gchat-friend-title">—</span>
+            <div class="gchat-friend-head-main">
+              <span id="gchat-friend-title">—</span>
+              <span id="gchat-friend-presence" class="gchat-presence-lab"></span>
+            </div>
+          </div>
+          <div class="gchat-invite-row">
+            <button type="button" id="gchat-invite-caro" class="gchat-invite-btn" data-i18n="gchatInviteCaro">❌⭕ Mời Caro</button>
+            <button type="button" id="gchat-invite-versus" class="gchat-invite-btn" data-i18n="gchatInviteVersus">⚔️ Mời Versus</button>
           </div>
           <div id="gchat-friends-log" class="gchat-log" aria-live="polite"></div>
           <form id="gchat-friends-form" class="gchat-form" autocomplete="off">

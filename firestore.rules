@@ -20,6 +20,17 @@ service cloud.firestore {
         allow read: if signedIn();
         allow create, update, delete: if isOwner(uid);
       }
+
+      /* Lời mời vào phòng — người nhận sở hữu doc */
+      match /invites/{inviteId} {
+        allow read, update, delete: if isOwner(uid);
+        allow create: if signedIn()
+          && request.resource.data.fromUid == request.auth.uid
+          && request.resource.data.toUid == uid
+          && request.resource.data.roomId is string
+          && request.resource.data.code is string
+          && request.resource.data.gameType in ['caro', 'versus'];
+      }
     }
 
     match /matchQueue/{uid} {

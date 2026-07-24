@@ -947,17 +947,60 @@ body.menu-open #game-root {
   color: #fff; border-radius: 12px; padding: 8px 10px; cursor: pointer; font-weight: 800;
 }
 .gchat-friend.active { border-color: rgba(255,213,74,0.55); background: rgba(255,213,74,0.12); }
-.gchat-friend-av { font-size: 22px; }
+.gchat-friend-av-wrap { position: relative; width: 28px; height: 28px; flex-shrink: 0; }
+.gchat-friend-av { font-size: 22px; line-height: 28px; display:block; text-align:center; }
+.gchat-dot {
+  position: absolute; right: -1px; bottom: 0; width: 10px; height: 10px;
+  border-radius: 50%; border: 2px solid #1a1428;
+}
+.gchat-dot.on { background: #4caf50; box-shadow: 0 0 6px rgba(76,175,80,0.8); }
+.gchat-dot.off { background: #78909c; }
+.gchat-friend-meta { display:flex; flex-direction:column; gap:1px; min-width:0; }
 .gchat-friend-name { font-size: 13px; }
+.gchat-friend-status { font-size: 10px; color: rgba(255,255,255,0.5); font-weight: 700; }
 .gchat-friends-thread { display: flex; flex-direction: column; min-height: 0; flex: 1; }
 .gchat-friend-head {
   display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
   font-size: 13px; font-weight: 900; color: #ffd54a;
 }
+.gchat-friend-head-main { display:flex; flex-direction:column; gap:2px; min-width:0; }
+.gchat-presence-lab { font-size: 10px; font-weight: 800; color: #90a4ae; }
+.gchat-presence-lab.on { color: #81c784; }
+.gchat-presence-lab.off { color: #90a4ae; }
 .gchat-friend-back {
   border: none; background: rgba(255,255,255,0.12); color: #fff;
   border-radius: 8px; width: 32px; height: 28px; cursor: pointer; font-weight: 900;
 }
+.gchat-invite-row {
+  display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap;
+}
+.gchat-invite-btn {
+  flex: 1 1 auto; border: 1px solid rgba(255,213,74,0.35);
+  background: rgba(255,213,74,0.12); color: #ffe082;
+  border-radius: 10px; padding: 8px 10px; font-size: 11px; font-weight: 900; cursor: pointer;
+}
+.gchat-invite-btn:active { transform: scale(0.98); }
+
+.gchat-invite-toast {
+  position: fixed; left: 50%; bottom: 88px; transform: translateX(-50%);
+  z-index: 100090; width: min(340px, 92vw);
+  background: linear-gradient(160deg, #1a1428, #0d1020);
+  border: 1px solid rgba(255,213,74,0.55);
+  border-radius: 16px; padding: 12px 14px;
+  box-shadow: 0 12px 36px rgba(0,0,0,0.5);
+  display: flex; flex-direction: column; gap: 10px;
+  pointer-events: auto;
+  animation: toastIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+.gchat-invite-toast-title { font-size: 14px; font-weight: 900; color: #ffd54a; }
+.gchat-invite-toast-desc { font-size: 12px; color: rgba(255,255,255,0.8); font-weight: 700; margin-top: 3px; }
+.gchat-invite-toast-actions { display:flex; gap:8px; }
+.gchat-invite-accept, .gchat-invite-decline {
+  flex: 1; border: none; border-radius: 10px; padding: 10px 12px;
+  font-weight: 900; font-size: 13px; cursor: pointer;
+}
+.gchat-invite-accept { background: linear-gradient(135deg,#56AB2F,#A8E063); color:#0a1a00; }
+.gchat-invite-decline { background: rgba(255,255,255,0.12); color:#fff; }
 .caro-prefs-block { margin: 8px 0 12px; }
 .caro-prefs-row {
   display: flex; align-items: center; justify-content: space-between; gap: 10px;
