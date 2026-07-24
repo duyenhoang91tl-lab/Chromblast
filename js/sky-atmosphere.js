@@ -78,7 +78,9 @@
       p.style.animationDelay = (-Math.random() * 28) + 's';
       p.style.opacity = String(0.78 + Math.random() * 0.2);
       if(Math.random() > 0.4){
-        p.style.background = 'linear-gradient(135deg, #ffe9da 0%, #f0ab8e 48%, #d17a63 100%)';
+        p.style.background = 'linear-gradient(135deg, #fff0f5 0%, #ffb3cc 48%, #ff7aaa 100%)';
+      } else {
+        p.style.background = 'linear-gradient(135deg, #ffe4ef 0%, #ff9ec0 42%, #f06a9a 100%)';
       }
       if(size < 11){
         p.style.filter = 'brightness(0.92)';
