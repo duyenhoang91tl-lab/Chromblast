@@ -52,7 +52,6 @@ function mainBurstFX(cells, streak){
 
   // 2) Tia lấp lánh tại từng ô nổ
   const root=document.getElementById('game-root'); if(!root) return;
-  const rr=root.getBoundingClientRect();
   let budget=big?50:30;
   const per=cells.length>14?1:(cells.length>7?2:3);
   // Đọc vị trí TẤT CẢ ô cần hiệu ứng trước (1 lượt), rồi mới tạo/chèn phần tử (1 lượt).
@@ -65,8 +64,9 @@ function mainBurstFX(cells, streak){
     if(budget<=0) break;
     const cell=getCell(gr,gc); if(!cell) continue;
     const cr=cell.getBoundingClientRect();
+    const p=toGameRootXY(cr.left+cr.width/2, cr.top+cr.height/2);
     const n=Math.min(per,budget); budget-=n;
-    spots.push([cr.left-rr.left+cr.width/2, cr.top-rr.top+cr.height/2, n]);
+    spots.push([p.x, p.y, n]);
   }
   const tFrag=document.createDocumentFragment();
   const twinkles=[];
@@ -85,6 +85,9 @@ function mainBurstFX(cells, streak){
   });
   root.appendChild(tFrag);
   twinkles.forEach(t=>setTimeout(()=>t.remove(),740));
+
+  // 3) Vài bông hoa nhỏ tung ra từ các ô vừa phá (map thường)
+  try{ spawnClearFlowers(cells); }catch(e){}
 }
 
 function secretBurstFX(ci, big, streak){
@@ -875,49 +878,112 @@ function hexToRgba(hex,a){
   return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;
 }
 
+/** Tỷ lệ scale hiện tại của #game-root (fitGameRoot). getBoundingClientRect đã nhân scale,
+ *  còn left/top của con absolute vẫn theo hệ chưa scale — phải chia lại. */
+function gameRootScale(){
+  const root=document.getElementById('game-root');
+  if(!root) return 1;
+  const w=root.offsetWidth;
+  if(!w) return 1;
+  const rw=root.getBoundingClientRect().width;
+  return (rw/w) || 1;
+}
+
+/** Viewport client → toạ độ cục bộ trong #game-root (đã bù scale). */
+function toGameRootXY(clientX, clientY){
+  const root=document.getElementById('game-root');
+  if(!root) return { x:0, y:0 };
+  const r=root.getBoundingClientRect();
+  const s=gameRootScale() || 1;
+  return { x:(clientX - r.left)/s, y:(clientY - r.top)/s };
+}
+
 // Trọng tâm (theo toạ độ #game-root) của các ô vừa phá
 function clearCentroid(coords, getter){
-  const root=document.getElementById('game-root').getBoundingClientRect();
   let sx=0,sy=0,n=0;
   coords.forEach(([r,c])=>{
     const el=getter(r,c);
-    if(el){ const b=el.getBoundingClientRect(); sx+=b.left+b.width/2-root.left; sy+=b.top+b.height/2-root.top; n++; }
+    if(el){
+      const b=el.getBoundingClientRect();
+      const p=toGameRootXY(b.left+b.width/2, b.top+b.height/2);
+      sx+=p.x; sy+=p.y; n++;
+    }
   });
-  const gw=document.getElementById('grid-wrap').getBoundingClientRect();
-  if(!n) return { x: gw.left-root.left+gw.width/2, y: gw.top-root.top+gw.height/2 };
+  if(!n){
+    const gw=document.getElementById('grid-wrap');
+    if(!gw) return { x:160, y:240 };
+    const b=gw.getBoundingClientRect();
+    return toGameRootXY(b.left+b.width/2, b.top+b.height/2);
+  }
   return { x: sx/n, y: sy/n };
 }
 
 // "+N" điểm bay lên ngay tại chỗ phá — tách riêng điểm GỐC (trắng) và điểm THƯỞNG combo (màu, nếu có nhân)
 function showScorePop(basePoints, totalPoints, x, y, level){
+  const root=document.getElementById('game-root');
+  if(!root) return;
+  const shown = Math.round(totalPoints > 0 ? totalPoints : basePoints);
+  if(!(shown > 0)) return;
   const i=pIdx(level);
-  const bonus=Math.round(totalPoints-basePoints);
+  const bonus=Math.max(0, Math.round(totalPoints - basePoints));
 
-  // 1) Điểm gốc — luôn trắng, cỡ cố định, bay lên ngay lập tức
+  // 1) Điểm cộng chính — hiện tổng điểm vừa nhận (+N)
   const d=document.createElement('div');
   d.className='score-pop';
-  d.textContent='+'+Math.round(basePoints);
+  d.textContent='+'+shown;
   d.style.left=x+'px'; d.style.top=y+'px';
-  d.style.fontSize='22px';
-  d.style.color='#fff';
-  d.style.textShadow='0 2px 8px rgba(0,0,0,0.7)';
-  document.getElementById('game-root').appendChild(d);
-  setTimeout(()=>d.remove(), 950);
+  root.appendChild(d);
+  setTimeout(()=>d.remove(), 1100);
 
-  // 2) Điểm thưởng combo — chỉ hiện khi có nhân (x2/x3...), bay chậm hơn 1 nhịp, màu theo cấp khen
+  // 2) Điểm thưởng combo — chỉ hiện khi có nhân (x2/x3...), bay chậm hơn 1 nhịp
   if(bonus>0){
     const b=document.createElement('div');
     b.className='score-pop score-pop-bonus';
-    b.textContent='+'+bonus+' 🔥 combo';
-    b.style.left=x+'px'; b.style.top=(y+30)+'px';
-    b.style.fontSize=(18+i*3)+'px';
+    b.textContent='+'+bonus+' 🔥';
+    b.style.left=x+'px'; b.style.top=(y+28)+'px';
+    b.style.fontSize=(18+i*2)+'px';
     b.style.color=i>=2?PRAISE_COLOR[i]:'#ffd24a';
-    b.style.textShadow=i>=5
-      ? `0 2px 8px rgba(0,0,0,0.7), 0 0 ${10+i*4}px ${PRAISE_COLOR[i]}`
-      : '0 2px 8px rgba(0,0,0,0.7)';
-    document.getElementById('game-root').appendChild(b);
-    setTimeout(()=>b.remove(), 1150);
+    root.appendChild(b);
+    setTimeout(()=>b.remove(), 1200);
   }
+}
+
+/** Tung vài bông hoa nhỏ từ các ô vừa phá trên map thường */
+function spawnClearFlowers(cells){
+  if(typeof secretMode!=='undefined' && secretMode) return;
+  if(typeof versusMode!=='undefined' && versusMode) return;
+  const root=document.getElementById('game-root');
+  if(!root || !cells || !cells.length) return;
+  const FLOWERS=['🌸','🌺','🌼','💮','🌷'];
+  const pick = cells.length <= 4 ? cells : cells.filter((_,i)=> i%Math.ceil(cells.length/5)===0).slice(0,6);
+  const frag=document.createDocumentFragment();
+  const nodes=[];
+  pick.forEach(([r,c])=>{
+    const cell = typeof getCell==='function' ? getCell(r,c) : null;
+    if(!cell) return;
+    const b=cell.getBoundingClientRect();
+    const origin=toGameRootXY(b.left+b.width/2, b.top+b.height/2);
+    const count = 2 + ((Math.random()*2)|0); // 2–3 hoa / ô
+    for(let i=0;i<count;i++){
+      const f=document.createElement('div');
+      f.className='clear-flower';
+      f.textContent=FLOWERS[(Math.random()*FLOWERS.length)|0];
+      f.style.left=origin.x+'px';
+      f.style.top=origin.y+'px';
+      const fx = (Math.random()*70 - 35);
+      // Tung ra phía dưới / xung quanh ô rồi bay nhẹ lên
+      const fy = 18 + Math.random()*46;
+      f.style.setProperty('--fx', fx+'px');
+      f.style.setProperty('--fy', fy+'px');
+      f.style.setProperty('--rot', ((Math.random()*160)-80)+'deg');
+      f.style.animationDelay=(Math.random()*0.08)+'s';
+      f.style.fontSize=(11 + Math.random()*6)+'px';
+      frag.appendChild(f);
+      nodes.push(f);
+    }
+  });
+  root.appendChild(frag);
+  nodes.forEach(f=>setTimeout(()=>f.remove(), 1100));
 }
 
 // Vòng sáng nổ — to & sáng dần theo level
