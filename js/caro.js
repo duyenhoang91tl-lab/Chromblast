@@ -1567,6 +1567,10 @@ function openCaroSettings(fromGame){
 
 function applyCaroSettings(){
   const draft = _caroPrefsDraft || getCaroPrefs();
+  if(!_caroBoardSkinUnlocked(draft.skin)){
+    draft.skin = _caroDefaultUnlockedSkin();
+    _caroPrefsDraft = draft;
+  }
   const p = setCaroPrefs(draft);
   _caroHide('caro-settings-panel');
   if(_caro && !_caro.winner){
