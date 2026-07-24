@@ -197,17 +197,21 @@ function _renderLobby(d){
 async function onCreateRoom(){
   if(!await _onlineRequireEnabled()) return;
   try{
-    // Nếu đang trong phòng khác → rời trước
+    // Nếu đang guest trong phòng khác → rời; host thì giữ để tái dùng (1 phòng)
     if(_onlineLobby && _onlineLobby.roomId){
       const prev = _onlineLobby.roomId;
+      const wasHost = _onlineLobby.role === 'host';
       stopListeningRoom();
       _onlineLobby = null;
-      await leaveOnlineRoom(prev);
+      if(!wasHost) await leaveOnlineRoom(prev);
     }
-    const { roomId, code } = await createOnlineRoom({ gameType:'versus' });
+    const { roomId, code, reused } = await createOnlineRoom({ gameType:'versus' });
     openOnlineLobby(roomId, code, 'host', { status:'open', hostName:getOnlineDisplayName(), gameType:'versus' });
-    _onlineStatus(t('onlineRoomCreated', code));
-  }catch(e){ _onlineStatus(e.message, true); }
+    _onlineStatus(t(reused ? 'onlineRoomReuse' : 'onlineRoomCreated', code));
+  }catch(e){
+    const msg = e.message==='already_hosting' ? t('onlineAlreadyHosting') : e.message;
+    _onlineStatus(msg, true);
+  }
 }
 
 async function onJoinRoom(){
@@ -227,6 +231,7 @@ async function onJoinRoom(){
   }catch(e){
     const msg = e.message==='room_not_found' ? t('onlineRoomNotFound')
       : e.message==='wrong_game_type' ? (typeof t==='function'?t('caroWrongRoom'):e.message)
+      : e.message==='already_hosting' ? t('onlineAlreadyHosting')
       : e.message;
     _onlineStatus(msg, true);
   }
@@ -237,14 +242,21 @@ async function onFindOpponent(){
   _onlineHide('online-hub-panel');
   _onlineShow('online-matchmaking-panel');
   document.getElementById('online-mm-status').textContent=t('onlineSearching');
-  startMatchmaking(room => {
+  try{
+    await startMatchmaking(room => {
+      _onlineHide('online-matchmaking-panel');
+      const role = room.hostId===getOnlineUid() ? 'host' : 'guest';
+      openOnlineLobby(room.roomId, room.code, role, room);
+      if(room.matchmaking && role==='host'){
+        startOnlineRoomMatch(room.roomId).catch(()=>{});
+      }
+    });
+  }catch(e){
     _onlineHide('online-matchmaking-panel');
-    const role = room.hostId===getOnlineUid() ? 'host' : 'guest';
-    openOnlineLobby(room.roomId, room.code, role, room);
-    if(room.matchmaking && role==='host'){
-      startOnlineRoomMatch(room.roomId).catch(()=>{});
-    }
-  });
+    _onlineShow('online-hub-panel');
+    const msg = e.message==='already_hosting' ? t('onlineAlreadyHosting') : e.message;
+    _onlineStatus(msg, true);
+  }
 }
 
 function onCancelMatchmaking(){
