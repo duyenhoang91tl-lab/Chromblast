@@ -162,6 +162,7 @@
       <button id="leaderboard-btn" title="Bảng xếp hạng" data-i18n-title="ttLeaderboard">🏆</button>
       <button id="roundguide-btn" title="Hướng dẫn cơ chế vòng hiện tại" data-i18n-title="ttRoundGuide" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">📖</button>
       <button id="adventure-toggle-btn" title="Chế độ Adventure" data-i18n-title="ttAdventure">🚀 ADV</button>
+      <button id="chat-btn" title="Chat" data-i18n-title="ttChat" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">💬</button>
       <button id="account-btn" title="Cài đặt" data-i18n-title="ttSettings">⚙️</button>
       <button id="mute-btn" title="Tắt/bật âm thanh" data-i18n-title="ttMute" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">🔊</button>
       <button id="pause-btn" title="Tạm dừng" data-i18n-title="ttPause" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">⏸</button>
@@ -433,6 +434,53 @@
         </div>
       </div>
       <button type="button" class="spin-close-round" data-close-spin aria-label="Close">✕</button>
+    </div>
+  </div>
+
+  <div id="gchat-panel" class="admin-panel-like">
+    <div class="admin-card gchat-card">
+      <div class="admin-title">
+        <span data-i18n="gchatTitle">💬 Chat</span>
+        <button class="admin-close" id="gchat-close" aria-label="Close">✕</button>
+      </div>
+      <div class="gchat-tabs" role="tablist">
+        <button type="button" class="gchat-tab active" data-tab="world" data-i18n="gchatTabWorld">🌍 Thế giới</button>
+        <button type="button" class="gchat-tab" data-tab="friends" data-i18n="gchatTabFriends">🤝 Bạn bè</button>
+        <button type="button" class="gchat-tab" data-tab="game" data-i18n="gchatTabGame">🎮 Trong trận</button>
+      </div>
+      <div id="gchat-status" class="gchat-status"></div>
+
+      <div class="gchat-pane active" data-pane="world">
+        <div id="gchat-world-log" class="gchat-log" aria-live="polite"></div>
+        <form id="gchat-world-form" class="gchat-form" autocomplete="off">
+          <input id="gchat-world-input" type="text" maxlength="120" data-i18n-placeholder="gchatPlaceholder" placeholder="Nhắn chat thế giới..." />
+          <button type="submit" data-i18n="gchatSend">Gửi</button>
+        </form>
+      </div>
+
+      <div class="gchat-pane" data-pane="friends">
+        <div id="gchat-friends-list" class="gchat-friends-list"></div>
+        <div id="gchat-friends-thread" class="gchat-friends-thread" hidden>
+          <div class="gchat-friend-head">
+            <button type="button" id="gchat-friend-back" class="gchat-friend-back">←</button>
+            <span id="gchat-friend-title">—</span>
+          </div>
+          <div id="gchat-friends-log" class="gchat-log" aria-live="polite"></div>
+          <form id="gchat-friends-form" class="gchat-form" autocomplete="off">
+            <input id="gchat-friends-input" type="text" maxlength="120" data-i18n-placeholder="gchatPlaceholder" placeholder="Nhắn bạn bè..." />
+            <button type="submit" data-i18n="gchatSend">Gửi</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="gchat-pane" data-pane="game">
+        <div id="gchat-game-note" class="gchat-note"></div>
+        <div id="gchat-game-log" class="gchat-log" aria-live="polite"></div>
+        <form id="gchat-game-form" class="gchat-form" autocomplete="off" style="display:none">
+          <input id="gchat-game-input" type="text" maxlength="120" data-i18n-placeholder="gchatPlaceholder" placeholder="Nhắn trong trận..." />
+          <button type="submit" data-i18n="gchatSend">Gửi</button>
+        </form>
+      </div>
     </div>
   </div>
 
@@ -997,6 +1045,7 @@
 <script src="js/native.js"></script>
 <script src="js/versus.js"></script>
 <script src="js/online-ui.js"></script>
+<script src="js/chat.js"></script>
 <script src="js/caro.js"></script>
 </body>
 </html>

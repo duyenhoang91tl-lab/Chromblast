@@ -4,10 +4,22 @@ service cloud.firestore {
 
     function signedIn() { return request.auth != null; }
     function isOwner(uid) { return signedIn() && request.auth.uid == uid; }
+    function chatPayloadOk() {
+      return request.resource.data.keys().hasAll(['uid','name','text','ts'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0
+        && request.resource.data.text.size() <= 120;
+    }
 
     match /players/{uid} {
       allow read: if signedIn();
       allow create, update: if isOwner(uid);
+
+      match /friends/{fid} {
+        allow read: if signedIn();
+        allow create, update, delete: if isOwner(uid);
+      }
     }
 
     match /matchQueue/{uid} {
@@ -33,12 +45,37 @@ service cloud.firestore {
 
       match /chat/{msgId} {
         allow read: if signedIn();
+        allow create: if signedIn() && chatPayloadOk();
+      }
+    }
+
+    /* Chat thế giới */
+    match /worldChat/{channelId} {
+      allow read: if signedIn();
+      match /messages/{msgId} {
+        allow read: if signedIn();
+        allow create: if signedIn() && chatPayloadOk();
+      }
+    }
+
+    /* Chat bạn bè (DM) — dmId = uidA_uidB (sorted) */
+    match /dms/{dmId} {
+      allow read: if signedIn() && (
+        !exists(/databases/$(database)/documents/dms/$(dmId)) ||
+        request.auth.uid in resource.data.members
+      );
+      allow create: if signedIn()
+        && request.resource.data.members is list
+        && request.auth.uid in request.resource.data.members
+        && request.resource.data.members.size() == 2;
+      allow update: if signedIn() && request.auth.uid in resource.data.members;
+
+      match /messages/{msgId} {
+        allow read: if signedIn()
+          && request.auth.uid in get(/databases/$(database)/documents/dms/$(dmId)).data.members;
         allow create: if signedIn()
-          && request.resource.data.keys().hasAll(['uid','name','text','ts'])
-          && request.resource.data.uid == request.auth.uid
-          && request.resource.data.text is string
-          && request.resource.data.text.size() > 0
-          && request.resource.data.text.size() <= 120;
+          && chatPayloadOk()
+          && request.auth.uid in get(/databases/$(database)/documents/dms/$(dmId)).data.members;
       }
     }
   }

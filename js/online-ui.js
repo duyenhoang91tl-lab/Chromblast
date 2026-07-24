@@ -322,6 +322,11 @@ function enterOnlineVersusMatch(roomId, roomData){
     _vsApplyNetworkMove(move);
   });
 
+  // Cho phép tab "Trong trận" của chat toàn cục lắng nghe
+  try{
+    if(typeof listenRoomChat === 'function') listenRoomChat(roomId, function(){});
+  }catch(e){}
+
   let cd=3;
   const cdEl=document.getElementById('vs-countdown');
   cdEl.style.display='flex'; cdEl.textContent=cd;
