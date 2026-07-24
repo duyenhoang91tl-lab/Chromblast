@@ -33,7 +33,7 @@ vi: {
     'Cứ 12 bước Vua Rồng tung 1 đòn ngẫu nhiên (đốt hàng, đóng băng, gieo gai...). Phá trúng ô rồng đứng 15 lần để hạ gục.',
     'Mỗi khối bạn đặt sẽ tự sinh 1 khối đối xứng qua giữa bàn. Đối xứng hết chỗ đặt là thua — luôn chừa chỗ cho cả 2 bên.'],
   mapHelp:{
-    secret1:{title:'🔥 Map ẩn 1 — Nổ màu bí mật', body:'Bấm vào <b>3+ ô cùng màu liền kề</b> để nổ. Nổ tiếp trong 2.5 giây để giữ chuỗi. Hết giờ hoặc bấm sai liên tiếp → mất 1 tim (có <b>5 tim riêng</b> map ẩn, không trừ tim level chính); hết 5 tim ❤️ thì out.'},
+    secret1:{title:'🔥 Map ẩn 1 — Nổ màu bí mật', body:'Bấm vào <b>3+ ô cùng màu liền kề</b> để nổ. Nổ tiếp trong 2.5 giây để giữ chuỗi. Hết giờ hoặc bấm sai liên tiếp → mất 1 tim (có <b>3 tim riêng</b> map ẩn, không trừ tim level chính); hết 3 tim ❤️ thì out.'},
     dodge:{title:'🐢 Map ẩn 2 — Rùa né cà rốt', body:'Kéo trái/phải (hoặc bấm ◀ ▶) cho Rùa né cà rốt Thỏ bắn ra. Sống càng lâu càng tốt.'},
     fruit:{title:'🍉 Map ẩn 3 — Chém hoa quả', body:'Mỗi đợt random 1–3 quả, bom 1–2 xen kẽ. Combo 2–3 quả → đợt sau nhiều hơn; chém trúng >70% đợt quả nhiều mới tăng tiếp. Chém trung tâm = CRITICAL ×5. Tránh 💣.'},
     bee:{title:'🐝 Map ẩn 4 — Chó trốn ong', body:'Chạm màn hình để chỉ đường cho chó chạy trốn, chạm vào ong để đập bay. Đừng để ong chích chó hết tim.'},
@@ -81,7 +81,7 @@ en: {
     'Every 12 moves the Dragon King unleashes a random attack (burn a row, freeze, thorns...). Hit his cell 15 times to defeat him.',
     'Every piece you place spawns a mirrored copy across the board center. If the mirror can\'t fit, you lose — always leave room on both sides.'],
   mapHelp:{
-    secret1:{title:'🔥 Hidden Map 1 — Secret Color Blast', body:'Tap <b>3+ adjacent same-color cells</b> to pop them. Keep popping within 2.5s to hold the chain. Timeout or wrong taps cost 1 heart (<b>5 map-only hearts</b>, not main-level hearts); lose all 5 ❤️ and you exit.'},
+    secret1:{title:'🔥 Hidden Map 1 — Secret Color Blast', body:'Tap <b>3+ adjacent same-color cells</b> to pop them. Keep popping within 2.5s to hold the chain. Timeout or wrong taps cost 1 heart (<b>3 map-only hearts</b>, not main-level hearts); lose all 3 ❤️ and you exit.'},
     dodge:{title:'🐢 Hidden Map 2 — Turtle Dodge', body:'Drag left/right (or tap ◀ ▶) to dodge the carrots the Rabbit shoots. Survive as long as you can.'},
     fruit:{title:'🍉 Hidden Map 3 — Fruit Slash', body:'Each wave: random 1–3 fruits, with 0–2 bombs mixed in. Combo 2–3 → bigger waves; hit >70% of a big wave to grow further. Center hit = CRITICAL ×5. Avoid 💣.'},
     bee:{title:'🐝 Hidden Map 4 — Dog vs Bees', body:'Tap the screen to guide the dog away, tap bees to swat them. Don\'t let the bees sting the dog too much.'},
@@ -129,7 +129,7 @@ ko: {
     '12턴마다 드래곤 킹이 무작위 공격(줄 태우기, 얼리기, 가시…)을 합니다. 드래곤 칸을 15번 맞혀 쓰러뜨리세요.',
     '블록을 놓을 때마다 보드 중앙 기준 대칭 위치에 복사본이 생깁니다. 복사본이 놓일 자리가 없으면 패배 — 항상 양쪽에 자리를 남기세요.'],
   mapHelp:{
-    secret1:{title:'🔥 히든 맵 1 — 비밀 컬러 블라스트', body:'<b>같은 색 3칸 이상 인접</b>한 곳을 탭해 터뜨리세요. 2.5초 안에 계속 터뜨리면 연쇄 유지. 시간 초과/연속 실수 시 하트 1개 차감(<b>맵 전용 하트 5개</b>, 메인 레벨 하트와 무관); ❤️ 5개 소진 시 종료.'},
+    secret1:{title:'🔥 히든 맵 1 — 비밀 컬러 블라스트', body:'<b>같은 색 3칸 이상 인접</b>한 곳을 탭해 터뜨리세요. 2.5초 안에 계속 터뜨리면 연쇄 유지. 시간 초과/연속 실수 시 하트 1개 차감(<b>맵 전용 하트 3개</b>, 메인 레벨 하트와 무관); ❤️ 3개 소진 시 종료.'},
     dodge:{title:'🐢 히든 맵 2 — 거북이 피하기', body:'좌우로 드래그(또는 ◀ ▶)해 토끼가 쏘는 당근을 피하세요. 오래 버틸수록 좋아요.'},
     fruit:{title:'🍉 히든 맵 3 — 과일 베기', body:'60초 동안 날아오르는 과일을 스와이프로 베세요. 💣 폭탄은 절대 베지 마세요 — 맞으면 즉시 패배.'},
     bee:{title:'🐝 히든 맵 4 — 강아지와 벌', body:'화면을 탭해 강아지의 도망길을 안내하고, 벌을 탭해 쳐내세요. 벌에 많이 쏘이면 안 돼요.'},
@@ -177,7 +177,7 @@ ja: {
     '12手ごとにドラゴンキングがランダム攻撃（行を焼く、凍らせる、いばら…）。竜のマスに15回当てて倒しましょう。',
     '置いたブロックごとに盤中央をはさんで鏡写しのコピーが生まれます。コピーが置けないと敗北 — 常に両側にスペースを。'],
   mapHelp:{
-    secret1:{title:'🔥 隠しマップ1 — シークレットカラー', body:'<b>同色3つ以上隣接</b>したマスをタップで爆発。2.5秒以内に連続で消すとチェーン継続。時間切れ/連続ミスでハート1つ減（<b>マップ専用ハート5</b>、メインレベルと別）；❤️5つ失うと終了。'},
+    secret1:{title:'🔥 隠しマップ1 — シークレットカラー', body:'<b>同色3つ以上隣接</b>したマスをタップで爆発。2.5秒以内に連続で消すとチェーン継続。時間切れ/連続ミスでハート1つ減（<b>マップ専用ハート3</b>、メインレベルと別）；❤️3つ失うと終了。'},
     dodge:{title:'🐢 隠しマップ2 — カメよけ', body:'左右にドラッグ（または◀ ▶）してウサギが撃つニンジンをよけましょう。長く生き残るほど良し。'},
     fruit:{title:'🍉 隠しマップ3 — フルーツ斬り', body:'60秒間、飛んでくるフルーツをスワイプで斬りましょう。💣爆弾は斬らないで — 当たると即敗北。'},
     bee:{title:'🐝 隠しマップ4 — 犬とハチ', body:'画面をタップして犬の逃げ道を誘導、ハチをタップして叩き落とそう。ハチに刺されすぎないように。'},
@@ -225,7 +225,7 @@ zh: {
     '每12步龙王发动随机攻击（烧行、冰冻、种刺…）。击中龙所在格15次将其击败。',
     '你每放一块砖，棋盘中线对称处会自动生成镜像块。镜像放不下就输——始终给两边留空间。'],
   mapHelp:{
-    secret1:{title:'🔥 隐藏关1 — 神秘色块消除', body:'点击<b>3个以上相邻同色格</b>引爆。2.5秒内连续消除保持连锁。超时或连错扣1心（<b>本关专用5心</b>，不影响主关生命）；❤️5心用完即退出。'},
+    secret1:{title:'🔥 隐藏关1 — 神秘色块消除', body:'点击<b>3个以上相邻同色格</b>引爆。2.5秒内连续消除保持连锁。超时或连错扣1心（<b>本关专用3心</b>，不影响主关生命）；❤️3心用完即退出。'},
     dodge:{title:'🐢 隐藏关2 — 乌龟躲萝卜', body:'左右拖动（或按 ◀ ▶）让乌龟躲开兔子射来的萝卜。活得越久越好。'},
     fruit:{title:'🍉 隐藏关3 — 切水果', body:'60秒内滑动切飞起的水果。别切到💣炸弹——碰到立刻失败。'},
     bee:{title:'🐝 隐藏关4 — 小狗躲蜜蜂', body:'点屏幕给小狗指路逃跑，点蜜蜂将其拍飞。别让蜜蜂把小狗蛰到没血。'},
@@ -273,7 +273,7 @@ es: {
     'Cada 12 movimientos el Rey Dragón lanza un ataque al azar (quemar fila, congelar, espinas...). Golpea su celda 15 veces para derrotarlo.',
     'Cada pieza que colocas genera una copia espejada respecto al centro. Si la copia no cabe, pierdes — deja siempre sitio en ambos lados.'],
   mapHelp:{
-    secret1:{title:'🔥 Mapa oculto 1 — Explosión secreta', body:'Toca <b>3+ celdas adyacentes del mismo color</b> para explotarlas. Sigue explotando en 2.5s para mantener la cadena. Tiempo agotado o fallos cuestan 1 corazón (<b>5 corazones solo del mapa</b>, no del nivel principal); sin los 5 ❤️ sales.'},
+    secret1:{title:'🔥 Mapa oculto 1 — Explosión secreta', body:'Toca <b>3+ celdas adyacentes del mismo color</b> para explotarlas. Sigue explotando en 2.5s para mantener la cadena. Tiempo agotado o fallos cuestan 1 corazón (<b>3 corazones solo del mapa</b>, no del nivel principal); sin los 3 ❤️ sales.'},
     dodge:{title:'🐢 Mapa oculto 2 — Tortuga esquiva', body:'Arrastra izquierda/derecha (o pulsa ◀ ▶) para esquivar las zanahorias del Conejo. Sobrevive lo máximo posible.'},
     fruit:{title:'🍉 Mapa oculto 3 — Corta frutas', body:'Desliza para cortar frutas durante 60 segundos. No cortes la 💣 bomba — un toque y pierdes.'},
     bee:{title:'🐝 Mapa oculto 4 — Perro y abejas', body:'Toca la pantalla para guiar al perro y toca las abejas para espantarlas. No dejes que piquen mucho al perro.'},

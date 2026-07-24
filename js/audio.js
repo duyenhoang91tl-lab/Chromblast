@@ -41,6 +41,30 @@ function stopBgm() {
 let _sfxCtx = null;
 let sfxMuted = false;
 let bgmMuted = false;
+/** Rung khi nổ combo — lưu localStorage */
+let vibrateEnabled = true;
+(function loadVibratePref(){
+  try{
+    const v = localStorage.getItem('chromablast_vibrate');
+    if(v === '0') vibrateEnabled = false;
+    else if(v === '1') vibrateEnabled = true;
+  }catch(e){}
+})();
+function setVibrateEnabled(on){
+  vibrateEnabled = !!on;
+  try{ localStorage.setItem('chromablast_vibrate', vibrateEnabled ? '1' : '0'); }catch(e){}
+}
+function vibrateCombo(level){
+  if(!vibrateEnabled) return;
+  try{
+    if(typeof navigator==='undefined' || typeof navigator.vibrate!=='function') return;
+    const n = level|0;
+    if(n >= 6) navigator.vibrate([24, 32, 40, 32, 50]);
+    else if(n >= 3) navigator.vibrate([18, 28, 36]);
+    else if(n >= 2) navigator.vibrate(22);
+    else navigator.vibrate(14);
+  }catch(e){}
+}
 function getSfxCtx(){
   if(!_sfxCtx) _sfxCtx = new (window.AudioContext||window.webkitAudioContext)();
   return _sfxCtx;
@@ -83,6 +107,7 @@ function sfxMatch(groupSize){
 }
 function sfxComboUp(combo, praiseLevel){
   // Âm thanh tăng dần theo độ dài combo VÀ theo mức khen (cool→...→god like) — càng cao càng vang, càng chói
+  try{ vibrateCombo(combo); }catch(e){}
   const lvl = praiseLevel||0;
   const base=440;
   const vol=Math.min(0.55, 0.28+lvl*0.035);
@@ -90,6 +115,7 @@ function sfxComboUp(combo, praiseLevel){
   if(lvl>=3) playTone(base*1.5*(1+lvl*0.06),'sine',0.15,vol*0.6,0.05);
 }
 function sfxStreak(streak){
+  try{ if((streak|0) >= 2) vibrateCombo(streak); }catch(e){}
   playTone(440+streak*55,'sine',0.18, 0.28);
 }
 function sfxUltra(){
