@@ -572,13 +572,13 @@ function MILESTONE_MSG(tier){
 (function(){
   const vs = {
   vi:{ ttVersus:'Đấu 1-1 (mở từ Lv.10)', vsTitle:'⚔️ Đấu 1-1', vsSub:'Hai người chơi thi đấu trên máy này — cùng bộ khối, 90 giây mỗi lượt, điểm cao hơn thắng.',
-       vsP1:'Người chơi 1', vsP2:'Người chơi 2', vsStart:'⚔️ BẮT ĐẦU TRẬN ĐẤU', vsReady:'▶ SẴN SÀNG!', vsAgain:'🔁 Đấu lại', vsClose:'✕ Đóng',
+       vsP1:'Người chơi 1', vsP2:'Người chơi 2', vsStart:'⚔️ BẮT ĐẦU TRẬN ĐẤU', vsReady:'▶ SẴN SÀNG!', vsAgain:'🔁 Đấu lại', vsClose:'✕ Đóng', vsQuit:'Thoát',
        vsNeedLevel:'⚔️ Đạt Cấp {0} để mở phòng đấu 1-1!', vsHandoffTitle:'⚔️ Đến lượt {0}',
        vsHandoffFirst:'Bạn có {0} giây — ghi điểm cao nhất có thể! Bấm khi đã cầm máy.',
        vsHandoffSecond:'{0} đạt {1} điểm. Đưa máy cho đối thủ — cùng bộ khối, vượt qua đi!',
        vsWin:'🏆 {0} THẮNG!', vsDraw:'🤝 HÒA!', vsXpNote:'Người thắng +{0} XP · điểm thắng được ghi vào bảng xếp hạng' },
   en:{ ttVersus:'1v1 Duel (unlocks at Lv.10)', vsTitle:'⚔️ 1v1 Duel', vsSub:'Two players compete on this device — same pieces, 90 seconds each, higher score wins.',
-       vsP1:'Player 1', vsP2:'Player 2', vsStart:'⚔️ START MATCH', vsReady:'▶ READY!', vsAgain:'🔁 Rematch', vsClose:'✕ Close',
+       vsP1:'Player 1', vsP2:'Player 2', vsStart:'⚔️ START MATCH', vsReady:'▶ READY!', vsAgain:'🔁 Rematch', vsClose:'✕ Close', vsQuit:'Exit',
        vsNeedLevel:'⚔️ Reach Level {0} to host a 1v1 duel!', vsHandoffTitle:'⚔️ {0}\'s turn',
        vsHandoffFirst:'You have {0} seconds — score as high as you can! Tap when you have the device.',
        vsHandoffSecond:'{0} scored {1} points. Hand the device over — same pieces, beat it!',
