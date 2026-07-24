@@ -317,7 +317,14 @@ function placeAt(R,C){
   piece.used=true;
   sfxPlacePiece();
   // Đặt khối lên bàn cờ cũng được cộng điểm — bằng đúng số ô của khối vừa đặt
-  score+=piece.shape.length; if(score>best) best=score; updateScoreUI();
+  const placePts=piece.shape.length;
+  score+=placePts; if(score>best) best=score; updateScoreUI();
+  try{
+    if(typeof showScorePop==='function' && typeof clearCentroid==='function'){
+      const ctr=clearCentroid(_mirrorPlacedCells, getCell);
+      showScorePop(placePts, placePts, ctr.x, ctr.y, 1);
+    }
+  }catch(e){}
   endDrag();                 // xoá chọn + ghost + preview
   stepRoundMechanics(_mirrorPlacedCells,_mirrorPlacedColor);
   renderGrid(); renderPieces();
