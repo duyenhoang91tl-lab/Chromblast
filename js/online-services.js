@@ -48,6 +48,13 @@ async function initOnlineServices(){
     await _onlineAuth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
     _onlineAuth.onAuthStateChanged(user => {
       _onlineUid = user ? user.uid : null;
+      if(user){
+        try{ startPresenceHeartbeat(); }catch(e){}
+        try{ startInviteListener(); }catch(e){}
+      } else {
+        try{ stopPresenceHeartbeat(); }catch(e){}
+        try{ stopInviteListener(); }catch(e){}
+      }
     });
     if(!_onlineAuth.currentUser) await _onlineAuth.signInAnonymously();
     _onlineUid = _onlineAuth.currentUser.uid;
@@ -55,6 +62,8 @@ async function initOnlineServices(){
     await _upsertPlayerProfile();
     _onlineReady = true;
     try{ bindOnlineRoomUnloadCleanup(); }catch(e){}
+    try{ startPresenceHeartbeat(); }catch(e){}
+    try{ startInviteListener(); }catch(e){}
     return true;
   }catch(e){
     console.warn('[online] init failed', e);
@@ -80,6 +89,8 @@ async function _upsertPlayerProfile(){
     displayName: name,
     avatar,
     level: (typeof playerLevel !== 'undefined' ? playerLevel : 1),
+    online: true,
+    lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   };
   try{
@@ -119,6 +130,8 @@ async function fetchPlayerPublicProfile(uid){
       uid,
       displayName: d.displayName || 'Player',
       avatar: d.avatar || '🐶',
+      online: !!d.online,
+      lastSeen: d.lastSeen || null,
       stats
     };
   }catch(e){
@@ -142,6 +155,184 @@ async function addOnlineFriend(friend){
       }, { merge: true });
   }catch(e){ console.warn('[online] addFriend', e); }
   return local;
+}
+
+// ── Presence (online / offline) ───────────────────────────────
+const PRESENCE_ONLINE_MS = 70000;
+let _presenceTimer = null;
+let _presenceBound = false;
+
+function _lastSeenMs(lastSeen){
+  if(!lastSeen) return 0;
+  if(typeof lastSeen.toMillis === 'function') return lastSeen.toMillis();
+  if(lastSeen.seconds) return lastSeen.seconds * 1000;
+  if(typeof lastSeen === 'number') return lastSeen;
+  return 0;
+}
+
+function isFriendOnline(profile){
+  if(!profile) return false;
+  const ms = _lastSeenMs(profile.lastSeen);
+  if(!ms) return false;
+  return !!(profile.online && (Date.now() - ms) < PRESENCE_ONLINE_MS);
+}
+
+async function _writePresence(online){
+  if(!_onlineDb || !_onlineUid) return;
+  try{
+    await _onlineDb.collection('players').doc(_onlineUid).set({
+      online: !!online,
+      lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+  }catch(e){}
+}
+
+function startPresenceHeartbeat(){
+  if(!_onlineUid || !_onlineDb) return;
+  _writePresence(true);
+  if(_presenceTimer) clearInterval(_presenceTimer);
+  _presenceTimer = setInterval(()=>{ _writePresence(true); }, 25000);
+  if(!_presenceBound){
+    _presenceBound = true;
+    document.addEventListener('visibilitychange', ()=>{
+      if(document.visibilityState === 'hidden') _writePresence(false);
+      else _writePresence(true);
+    });
+    window.addEventListener('pagehide', ()=>{ _writePresence(false); });
+  }
+}
+
+function stopPresenceHeartbeat(){
+  if(_presenceTimer){ clearInterval(_presenceTimer); _presenceTimer = null; }
+  _writePresence(false);
+}
+
+async function fetchFriendsPresence(friends){
+  const list = Array.isArray(friends) ? friends : [];
+  const out = {};
+  await Promise.all(list.map(async f=>{
+    if(!f || !f.uid) return;
+    const p = await fetchPlayerPublicProfile(f.uid);
+    out[f.uid] = {
+      online: isFriendOnline(p),
+      displayName: (p && p.displayName) || f.name || 'Player',
+      avatar: (p && p.avatar) || f.avatar || '🐶'
+    };
+  }));
+  return out;
+}
+
+// ── Room invites ──────────────────────────────────────────────
+let _invitesUnsub = null;
+const _seenInviteIds = new Set();
+
+function stopInviteListener(){
+  if(_invitesUnsub){ _invitesUnsub(); _invitesUnsub = null; }
+}
+
+function startInviteListener(){
+  stopInviteListener();
+  if(!_onlineDb || !_onlineUid) return;
+  _invitesUnsub = _onlineDb.collection('players').doc(_onlineUid).collection('invites')
+    .where('status', '==', 'pending')
+    .onSnapshot(snap => {
+      snap.docChanges().forEach(chg => {
+        if(chg.type !== 'added') return;
+        const id = chg.doc.id;
+        if(_seenInviteIds.has(id)) return;
+        _seenInviteIds.add(id);
+        const data = { id, ...chg.doc.data() };
+        try{
+          if(typeof onRoomInviteReceived === 'function') onRoomInviteReceived(data);
+        }catch(e){ console.warn('[invite]', e); }
+      });
+    }, err => console.warn('[online] invites', err));
+}
+
+async function sendRoomInvite(opts){
+  opts = opts || {};
+  await ensureOnlineAuth();
+  const toUid = opts.toUid;
+  if(!toUid || toUid === _onlineUid) throw new Error('bad_friend');
+  if(!opts.roomId || !opts.code) throw new Error('no_room');
+  const gameType = opts.gameType === 'versus' ? 'versus' : 'caro';
+  const ref = _onlineDb.collection('players').doc(toUid).collection('invites').doc();
+  const payload = {
+    fromUid: _onlineUid,
+    fromName: getOnlineDisplayName(),
+    fromAvatar: getOnlineAvatar(),
+    toUid,
+    gameType,
+    roomId: opts.roomId,
+    code: String(opts.code || '').toUpperCase(),
+    status: 'pending',
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  await ref.set(payload);
+  return { id: ref.id, ...payload };
+}
+
+async function respondRoomInvite(inviteId, accept){
+  await ensureOnlineAuth();
+  if(!inviteId) return null;
+  const ref = _onlineDb.collection('players').doc(_onlineUid).collection('invites').doc(inviteId);
+  await ref.set({
+    status: accept ? 'accepted' : 'declined',
+    respondedAt: firebase.firestore.FieldValue.serverTimestamp()
+  }, { merge: true });
+  const snap = await ref.get();
+  return snap.exists ? { id: inviteId, ...snap.data() } : null;
+}
+
+/** Host đang mở lobby Caro/Versus (nếu có) */
+function getHostableLobby(){
+  try{
+    if(typeof _caroLobby !== 'undefined' && _caroLobby && _caroLobby.role === 'host' && _caroLobby.roomId){
+      return { gameType:'caro', roomId:_caroLobby.roomId, code:_caroLobby.code };
+    }
+  }catch(e){}
+  try{
+    if(typeof _onlineLobby !== 'undefined' && _onlineLobby && _onlineLobby.role === 'host' && _onlineLobby.roomId){
+      return { gameType:'versus', roomId:_onlineLobby.roomId, code:_onlineLobby.code };
+    }
+  }catch(e){}
+  return null;
+}
+
+/**
+ * Mời bạn vào phòng. Nếu chưa host lobby → tạo phòng Caro (mặc định) rồi mời.
+ * gameType: 'caro' | 'versus'
+ */
+async function inviteFriendToRoom(friendUid, gameType){
+  await ensureOnlineAuth();
+  if(!friendUid) throw new Error('bad_friend');
+  gameType = gameType === 'versus' ? 'versus' : 'caro';
+
+  let lobby = getHostableLobby();
+  if(lobby && lobby.gameType !== gameType) lobby = null;
+
+  if(!lobby){
+    if(gameType === 'caro'){
+      if(typeof caroCreateRoom === 'function') await caroCreateRoom();
+      lobby = getHostableLobby();
+    } else {
+      if(typeof onCreateRoom === 'function') await onCreateRoom();
+      else if(typeof createOnlineRoom === 'function'){
+        const created = await createOnlineRoom({ gameType:'versus' });
+        if(typeof openOnlineLobby === 'function'){
+          openOnlineLobby(created.roomId, created.code, 'host', created.room || {});
+        }
+      }
+      lobby = getHostableLobby();
+    }
+  }
+  if(!lobby || !lobby.roomId) throw new Error('no_room');
+  return sendRoomInvite({
+    toUid: friendUid,
+    gameType: lobby.gameType,
+    roomId: lobby.roomId,
+    code: lobby.code
+  });
 }
 
 async function signInWithGoogle(){
