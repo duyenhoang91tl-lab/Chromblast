@@ -528,13 +528,23 @@
 
   <div id="versus-timer" style="display:none;position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:9000;background:rgba(20,20,40,0.92);border:1px solid #ffd54a;border-radius:20px;padding:6px 16px;font-weight:800;color:#ffd54a;font-size:14px;box-shadow:0 2px 12px rgba(255,213,74,0.35);pointer-events:none;"></div>
 
-  <!-- ══ CỜ CARO ONLINE (Lv.3) ══ -->
+  <!-- ══ CỜ CARO (online Lv.3 · đấu máy luôn được) ══ -->
   <div id="caro-hub-panel" class="admin-panel-like">
     <div class="admin-card">
       <div class="admin-title"><span data-i18n="caroTitle">⬛ Caro</span><button class="admin-close" id="caro-hub-close">✕</button></div>
       <div class="admin-sub" data-i18n="caroSub">15×15 · 5 quân thắng</div>
+
+      <div class="caro-ai-block">
+        <button type="button" id="caro-ai-start-btn" class="auth-submit-btn caro-ai-hub-btn" data-level="medium" data-i18n="caroAiBtn" onclick="try{window.caroStartAI&&window.caroStartAI('medium')}catch(e){}">🤖 Đấu với máy</button>
+        <div class="caro-ai-levels">
+          <button type="button" class="caro-ai-level" id="caro-ai-easy" data-level="easy" data-i18n="caroAiEasy" onclick="try{window.caroStartAI&&window.caroStartAI('easy')}catch(e){}">🌱 Dễ</button>
+          <button type="button" class="caro-ai-level" id="caro-ai-medium" data-level="medium" data-i18n="caroAiMedium" onclick="try{window.caroStartAI&&window.caroStartAI('medium')}catch(e){}">⚔️ TB</button>
+          <button type="button" class="caro-ai-level" id="caro-ai-hard" data-level="hard" data-i18n="caroAiHard" onclick="try{window.caroStartAI&&window.caroStartAI('hard')}catch(e){}">🔥 Khó</button>
+        </div>
+      </div>
+
       <div id="caro-online-status" class="online-status"></div>
-      <div id="caro-online-locked-note" class="online-status" style="display:none;" data-i18n="caroOnlineLocked">🔒 Chơi online (tạo/vào phòng, tìm đối thủ, BXH) cần đạt Cấp 3. Bạn vẫn có thể đấu với máy ngay bên dưới, kể cả khi offline.</div>
+      <div id="caro-online-locked-note" class="online-status" style="display:none;" data-i18n="caroOnlineLocked">🔒 Online cần Cấp 3. Đấu với máy vẫn chơi được.</div>
       <div id="caro-online-section">
         <div id="caro-hub-stats" class="caro-hub-stats"></div>
         <button type="button" id="caro-rank-btn" class="auth-submit-btn" style="background:rgba(255,255,255,0.12);margin-bottom:10px;" data-i18n="caroRankBoard">🏆 BXH</button>
@@ -542,14 +552,6 @@
         <div class="auth-field" style="margin-top:12px;"><label data-i18n="onlineJoinLabel">Vào phòng bằng mã</label><input type="text" id="caro-join-code" maxlength="6" placeholder="ABC123" style="text-transform:uppercase;letter-spacing:2px;text-align:center;font-weight:700;"></div>
         <button type="button" id="caro-join-btn" class="auth-submit-btn" style="background:rgba(255,255,255,0.15);" data-i18n="onlineJoin">🚪 Vào phòng</button>
         <button type="button" id="caro-find-btn" class="auth-submit-btn" style="margin-top:10px;background:linear-gradient(135deg,#333,#666);" data-i18n="onlineFind">🔍 Tìm đối thủ</button>
-      </div>
-      <div class="caro-ai-block">
-        <div class="caro-ai-label" data-i18n="caroAiBtn">🤖 Đấu với máy</div>
-        <div class="caro-ai-levels">
-          <button type="button" class="caro-ai-level" data-level="easy" data-i18n="caroAiEasy">🌱 Dễ</button>
-          <button type="button" class="caro-ai-level" data-level="medium" data-i18n="caroAiMedium">⚔️ Trung bình</button>
-          <button type="button" class="caro-ai-level" data-level="hard" data-i18n="caroAiHard">🔥 Khó</button>
-        </div>
       </div>
     </div>
   </div>
