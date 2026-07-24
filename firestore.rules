@@ -12,6 +12,17 @@ service cloud.firestore {
         && request.resource.data.text.size() <= 120;
     }
 
+    /* BXH kỳ (ngày/tuần/tháng) */
+    match /periodScores/{periodId} {
+      allow read: if signedIn();
+      match /entries/{uid} {
+        allow read: if signedIn();
+        allow create, update: if isOwner(uid)
+          && request.resource.data.score is number
+          && request.resource.data.score >= 0;
+      }
+    }
+
     match /players/{uid} {
       allow read: if signedIn();
       allow create, update: if isOwner(uid);
@@ -19,6 +30,10 @@ service cloud.firestore {
       match /friends/{fid} {
         allow read: if signedIn();
         allow create, update, delete: if isOwner(uid);
+      }
+
+      match /lbClaims/{claimId} {
+        allow read, create, update: if isOwner(uid);
       }
 
       /* Lời mời kết bạn — người nhận sở hữu doc */

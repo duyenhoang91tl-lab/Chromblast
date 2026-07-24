@@ -1,6 +1,7 @@
 // ═══════════════════════════════════════════════════════════════
-// js/leaderboard.js — BXH local + toàn cầu (Firebase) khi đã cấu hình
-// Nạp SAU save.js + online-services.js, TRƯỚC main.js.
+// js/leaderboard.js — BXH local / thế giới / châu lục / đất nước / bạn bè
+// + kỳ ngày·tuần·tháng + nhận thưởng top 1–100
+// Nạp SAU save.js + online-services.js + lb-period.js
 // ═══════════════════════════════════════════════════════════════
 
 const LEADERBOARD_KEY = 'chromablast_leaderboard_local';
@@ -12,7 +13,9 @@ const LEADERBOARD_DEV_SEED = [
   {name:'Nam',          score: 2340},
 ];
 
-let _lbMode = 'local'; // 'local' | 'global-solo' | 'global-pvp'
+let _lbMode = 'period'; // 'local' | 'period' | 'global-solo' | 'global-caro' | 'friends-alltime'
+let _lbScope = 'world'; // world | continent | country | friends
+let _lbPeriod = 'day';  // day | week | month
 
 function getLeaderboardEntries(){
   let entries = [];
@@ -25,8 +28,6 @@ function getLeaderboardEntries(){
   return cleaned;
 }
 
-/** Tên cục bộ (không đụng tới Firebase) — dùng làm fallback, TRÁNH gọi vòng lại
- * getOnlineDisplayName() (chống đệ quy vô hạn currentPlayerName <-> getOnlineDisplayName). */
 function _localPlayerName(){
   if(typeof currentUser !== 'undefined' && currentUser && currentUser.username) return currentUser.username;
   let gid = safeGet('chromablast_guest_name');
@@ -67,6 +68,7 @@ function submitScoreToLeaderboard(score){
   if(typeof submitGlobalSoloScore === 'function'){
     submitGlobalSoloScore(score).catch(()=>{});
   }
+  try{ if(typeof submitPeriodScore === 'function') submitPeriodScore(score); }catch(e){}
 }
 
 function fetchTopScores(limit){
@@ -88,18 +90,81 @@ function escapeHtml(s){
 function _renderLbRows(list, top, myName){
   list.innerHTML = '';
   if(!top.length){
-    list.innerHTML = '<div class="lb-empty">'+t('lbEmpty')+'</div>';
+    list.innerHTML = '<div class="lb-empty">'+(typeof t==='function'?t('lbEmpty'):'Trống')+'</div>';
     return;
   }
   top.forEach((e,i) => {
     const row = document.createElement('div');
+    const rank = e.rank || (i+1);
     row.className = 'lb-row' + (e.name === myName ? ' me' : '');
-    const medal = i===0 ? '🥇' : i===1 ? '🥈' : i===2 ? '🥉' : String(i+1);
+    const medal = rank===1 ? '🥇' : rank===2 ? '🥈' : rank===3 ? '🥉' : String(rank);
+    const geo = e.country ? (' <span class="lb-geo">'+escapeHtml(e.country)+'</span>') : '';
     row.innerHTML = '<span class="lb-rank">'+medal+'</span>'
-      + '<span class="lb-name">'+escapeHtml(e.name)+'</span>'
-      + '<span class="lb-score">'+e.score.toLocaleString()+'</span>';
+      + '<span class="lb-name">'+escapeHtml(e.name)+geo+'</span>'
+      + '<span class="lb-score">'+(e.score|0).toLocaleString()+'</span>';
     list.appendChild(row);
   });
+}
+
+function _syncLbTabUi(){
+  document.querySelectorAll('.lb-tab').forEach(x=>{
+    x.classList.toggle('active', x.dataset.lbMode === _lbMode);
+  });
+  document.querySelectorAll('.lb-scope-tab').forEach(x=>{
+    x.classList.toggle('active', x.dataset.lbScope === _lbScope);
+  });
+  document.querySelectorAll('.lb-period-tab').forEach(x=>{
+    x.classList.toggle('active', x.dataset.lbPeriod === _lbPeriod);
+  });
+  const scopeRow = document.getElementById('lb-scope-tabs');
+  const periodRow = document.getElementById('lb-period-tabs');
+  const showPeriod = _lbMode === 'period';
+  if(scopeRow) scopeRow.style.display = showPeriod ? '' : 'none';
+  if(periodRow) periodRow.style.display = showPeriod ? '' : 'none';
+  const claimWrap = document.getElementById('lb-claim-wrap');
+  if(claimWrap) claimWrap.style.display = showPeriod ? '' : 'none';
+  const rewards = document.getElementById('lb-reward-preview');
+  if(rewards) rewards.style.display = showPeriod ? '' : 'none';
+}
+
+function _renderRewardPreview(){
+  const el = document.getElementById('lb-reward-preview');
+  if(!el || typeof rewardPreviewRows !== 'function') return;
+  const rows = rewardPreviewRows(_lbPeriod);
+  el.innerHTML = '<div class="lb-reward-title">'+(typeof t==='function'?t('lbRewardTitle'):'Quà top (kỳ trước)')+'</div>'+
+    rows.map(r=>{
+      const dia = r.diamond > 0 ? (' · 💎'+r.diamond) : '';
+      return '<span class="lb-reward-chip">'+r.label+': 🪙'+r.gold+dia+'</span>';
+    }).join('');
+}
+
+async function _updateClaimButton(){
+  const btn = document.getElementById('lb-claim-btn');
+  const note = document.getElementById('lb-claim-note');
+  if(!btn) return;
+  if(_lbMode !== 'period' || typeof findMyPeriodRank !== 'function'){
+    btn.disabled = true;
+    return;
+  }
+  const mine = await findMyPeriodRank(_lbPeriod, _lbScope, { previous: true });
+  const claimed = typeof hasClaimedPeriod === 'function' && hasClaimedPeriod(mine.periodId, _lbScope);
+  if(note){
+    note.textContent = mine.rank
+      ? ((typeof t==='function'?t('lbPrevRank'):'Hạng kỳ trước')+': #'+mine.rank+' · '+(mine.score||0).toLocaleString())
+      : (typeof t==='function'?t('lbPrevNoRank'):'Kỳ trước chưa vào top');
+  }
+  if(!mine.rank || mine.rank > 100 || claimed){
+    btn.disabled = true;
+    btn.textContent = claimed
+      ? (typeof t==='function'?t('lbClaimed'):'✅ Đã nhận thưởng kỳ trước')
+      : (typeof t==='function'?t('lbClaimUnavailable'):'Chưa đủ điều kiện nhận thưởng');
+    return;
+  }
+  const reward = typeof rewardForRank === 'function' ? rewardForRank(_lbPeriod, mine.rank) : null;
+  btn.disabled = false;
+  const dia = reward && reward.diamond ? (' + 💎'+reward.diamond) : '';
+  btn.textContent = (typeof t==='function'?t('lbClaimBtn'):'🎁 Nhận thưởng')+
+    ' · #'+mine.rank+' · 🪙'+(reward?reward.gold:0)+dia;
 }
 
 async function renderLeaderboardPanel(){
@@ -107,20 +172,40 @@ async function renderLeaderboardPanel(){
   const myRankBox = document.getElementById('leaderboard-my-rank');
   const sub = document.getElementById('leaderboard-sub');
   const myName = currentPlayerName();
+  _syncLbTabUi();
+  _renderRewardPreview();
 
+  const region = typeof getPlayerRegion === 'function' ? getPlayerRegion() : { country:'VN', continent:'AS' };
   if(sub){
-    if(_lbMode === 'local') sub.textContent = t('lbSub');
-    else if(_lbMode === 'global-pvp') sub.textContent = t('lbSubPvp');
-    else if(_lbMode === 'global-caro') sub.textContent = t('lbSubCaro');
-    else sub.textContent = t('lbSubGlobal');
+    if(_lbMode === 'local') sub.textContent = typeof t==='function'?t('lbSub'):'';
+    else if(_lbMode === 'global-caro') sub.textContent = typeof t==='function'?t('lbSubCaro'):'';
+    else if(_lbMode === 'global-solo') sub.textContent = typeof t==='function'?t('lbSubGlobal'):'';
+    else if(_lbMode === 'friends-alltime') sub.textContent = typeof t==='function'?t('lbSubFriends'):'BXH bạn bè (điểm cao nhất)';
+    else {
+      const scopeLab = {
+        world: typeof t==='function'?t('lbScopeWorld'):'Thế giới',
+        continent: (typeof labelContinent==='function'?labelContinent(region.continent):region.continent),
+        country: (typeof labelCountry==='function'?labelCountry(region.country):region.country),
+        friends: typeof t==='function'?t('lbScopeFriends'):'Bạn bè'
+      }[_lbScope] || _lbScope;
+      const perLab = { day:'Ngày', week:'Tuần', month:'Tháng' }[_lbPeriod];
+      sub.textContent = '🏆 '+scopeLab+' · '+perLab+' · Top 100';
+    }
+  }
+
+  // Region picker label
+  const regionLab = document.getElementById('lb-region-label');
+  if(regionLab){
+    regionLab.textContent = (typeof labelCountry==='function'?labelCountry(region.country):region.country)+
+      ' · '+(typeof labelContinent==='function'?labelContinent(region.continent):region.continent);
   }
 
   if(!list) return;
-  list.innerHTML = '<div class="lb-empty">'+t('lbLoading')+'</div>';
+  list.innerHTML = '<div class="lb-empty">'+(typeof t==='function'?t('lbLoading'):'…')+'</div>';
 
   if(_lbMode === 'global-caro'){
     if(typeof fetchCaroLeaderboard !== 'function' || !isOnlineServicesEnabled()){
-      list.innerHTML = '<div class="lb-empty">'+t('lbOfflineGlobal')+'</div>';
+      list.innerHTML = '<div class="lb-empty">'+(typeof t==='function'?t('lbOfflineGlobal'):'')+'</div>';
       if(myRankBox) myRankBox.textContent = '';
       return;
     }
@@ -136,16 +221,49 @@ async function renderLeaderboardPanel(){
     return;
   }
 
+  if(_lbMode === 'friends-alltime'){
+    let rows = [];
+    if(typeof fetchFriendsLeaderboard === 'function' && isOnlineServicesEnabled()){
+      rows = await fetchFriendsLeaderboard(100) || [];
+    }
+    if(!rows.length){
+      const friends = typeof getFriendsList === 'function' ? getFriendsList() : [];
+      list.innerHTML = friends.length
+        ? '<div class="lb-empty">'+(typeof t==='function'?t('lbFriendsNoScore'):'Bạn bè chưa có điểm online')+'</div>'
+        : '<div class="lb-empty">'+(typeof t==='function'?t('gchatNoFriends'):'Chưa có bạn')+'</div>';
+      if(myRankBox) myRankBox.textContent = '';
+      return;
+    }
+    _renderLbRows(list, rows, myName);
+    const mine = rows.find(r => r.name === myName || (typeof getOnlineUid==='function' && r.playerId===getOnlineUid()));
+    if(myRankBox) myRankBox.textContent = mine
+      ? (typeof t==='function'?t('lbMyRank', mine.rank, rows.length, mine.score.toLocaleString()):('#'+mine.rank))
+      : (typeof t==='function'?t('lbNoRank'):'');
+    return;
+  }
+
+  if(_lbMode === 'period' && typeof fetchPeriodLeaderboard === 'function'){
+    const board = await fetchPeriodLeaderboard(_lbPeriod, _lbScope, { previous: false });
+    _renderLbRows(list, board.entries.slice(0, 100), myName);
+    const mine = board.entries.find(e => e.name === myName || (typeof getOnlineUid==='function' && e.playerId===getOnlineUid()));
+    if(myRankBox){
+      myRankBox.textContent = mine
+        ? (typeof t==='function'?t('lbMyRank', mine.rank, board.entries.length, mine.score.toLocaleString()):('#'+mine.rank))
+        : (typeof t==='function'?t('lbNoRank'):'');
+    }
+    await _updateClaimButton();
+    return;
+  }
+
   let top = [], mine = null;
   if(_lbMode === 'local'){
-    top = fetchTopScores(20);
+    top = fetchTopScores(100);
     mine = fetchMyRank();
   } else if(typeof fetchGlobalLeaderboard === 'function' && isOnlineServicesEnabled()){
-    const mode = _lbMode === 'global-pvp' ? 'pvp' : 'solo';
-    top = await fetchGlobalLeaderboard(20, mode) || [];
-    mine = await fetchMyGlobalRank(mode);
+    top = await fetchGlobalLeaderboard(100, 'solo') || [];
+    mine = await fetchMyGlobalRank('solo');
   } else {
-    list.innerHTML = '<div class="lb-empty">'+t('lbOfflineGlobal')+'</div>';
+    list.innerHTML = '<div class="lb-empty">'+(typeof t==='function'?t('lbOfflineGlobal'):'')+'</div>';
     if(myRankBox) myRankBox.textContent = '';
     return;
   }
@@ -165,12 +283,53 @@ function initLeaderboardPanel(){
 
   document.querySelectorAll('.lb-tab').forEach(tab => {
     tab.addEventListener('click', () => {
-      document.querySelectorAll('.lb-tab').forEach(x => x.classList.remove('active'));
-      tab.classList.add('active');
-      _lbMode = tab.dataset.lbMode || 'local';
+      _lbMode = tab.dataset.lbMode || 'period';
       renderLeaderboardPanel();
     });
   });
+  document.querySelectorAll('.lb-scope-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      _lbScope = tab.dataset.lbScope || 'world';
+      renderLeaderboardPanel();
+    });
+  });
+  document.querySelectorAll('.lb-period-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      _lbPeriod = tab.dataset.lbPeriod || 'day';
+      renderLeaderboardPanel();
+    });
+  });
+
+  document.getElementById('lb-claim-btn')?.addEventListener('click', async ()=>{
+    try{ sfxClick(); }catch(e){}
+    if(typeof claimPeriodReward !== 'function') return;
+    const res = await claimPeriodReward(_lbPeriod, _lbScope);
+    if(res && res.ok){
+      try{
+        showComboFlash(0, false, '🎁 Top '+res.rank+' · 🪙'+res.gold+(res.diamond?(' · 💎'+res.diamond):''));
+      }catch(e){}
+      try{ if(typeof sfxUnlock==='function') sfxUnlock(); }catch(e){}
+    } else {
+      try{
+        showComboFlash(0, false, res && res.reason==='claimed'
+          ? (typeof t==='function'?t('lbClaimed'):'Đã nhận')
+          : (typeof t==='function'?t('lbClaimUnavailable'):'Chưa nhận được'));
+      }catch(e){}
+    }
+    await _updateClaimButton();
+  });
+
+  const regionSel = document.getElementById('lb-country-select');
+  if(regionSel && typeof countryOptions === 'function'){
+    const cur = typeof getPlayerRegion === 'function' ? getPlayerRegion().country : 'VN';
+    regionSel.innerHTML = countryOptions().map(o=>
+      '<option value="'+o.code+'"'+(o.code===cur?' selected':'')+'>'+escapeHtml(o.label)+'</option>'
+    ).join('');
+    regionSel.addEventListener('change', ()=>{
+      if(typeof setPlayerCountry === 'function') setPlayerCountry(regionSel.value);
+      renderLeaderboardPanel();
+    });
+  }
 
   function openPanel(){
     if(typeof sfxClick === 'function') sfxClick();

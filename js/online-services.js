@@ -88,10 +88,13 @@ async function _upsertPlayerProfile(){
   if(!_onlineDb || !_onlineUid) return;
   const name = getOnlineDisplayName();
   const avatar = (typeof getPlayerAvatar === 'function') ? getPlayerAvatar() : '🐶';
+  const region = (typeof getPlayerRegion === 'function') ? getPlayerRegion() : { country:'VN', continent:'AS' };
   const patch = {
     displayName: name,
     avatar,
     level: (typeof playerLevel !== 'undefined' ? playerLevel : 1),
+    country: region.country || 'VN',
+    continent: region.continent || 'AS',
     online: true,
     lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -106,6 +109,19 @@ async function _upsertPlayerProfile(){
     }
   }catch(e){}
   await _onlineDb.collection('players').doc(_onlineUid).set(patch, { merge: true });
+}
+
+async function syncPlayerRegionOnline(){
+  if(!_onlineDb || !_onlineUid) return;
+  const region = (typeof getPlayerRegion === 'function') ? getPlayerRegion() : null;
+  if(!region) return;
+  try{
+    await _onlineDb.collection('players').doc(_onlineUid).set({
+      country: region.country,
+      continent: region.continent,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+  }catch(e){}
 }
 
 function getOnlineAvatar(){
@@ -1532,11 +1548,109 @@ async function submitGlobalSoloScore(score){
   const ref = _onlineDb.collection('players').doc(_onlineUid);
   const snap = await ref.get();
   const prev = snap.exists ? (snap.data().bestScore || 0) : 0;
+  const region = (typeof getPlayerRegion === 'function') ? getPlayerRegion() : { country:'VN', continent:'AS' };
   if(score > prev){
     await ref.set({
       displayName: getOnlineDisplayName(),
       bestScore: score,
+      country: region.country,
+      continent: region.continent,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
   }
+  try{ if(typeof submitPeriodScoreOnline === 'function') await submitPeriodScoreOnline(score, region); }catch(e){}
+}
+
+async function submitPeriodScoreOnline(score, region){
+  if(!score || score <= 0) return;
+  if(!await initOnlineServices() || !_onlineUid) return;
+  region = region || (typeof getPlayerRegion === 'function' ? getPlayerRegion() : { country:'VN', continent:'AS' });
+  const kinds = ['day','week','month'];
+  const name = getOnlineDisplayName();
+  const avatar = (typeof getPlayerAvatar === 'function') ? getPlayerAvatar() : '🐶';
+  await Promise.all(kinds.map(async kind=>{
+    const pid = (typeof periodKey === 'function') ? periodKey(kind) : null;
+    if(!pid) return;
+    const ref = _onlineDb.collection('periodScores').doc(pid).collection('entries').doc(_onlineUid);
+    const snap = await ref.get();
+    const prev = snap.exists ? (snap.data().score || 0) : 0;
+    if(score > prev){
+      await ref.set({
+        uid: _onlineUid,
+        name,
+        avatar,
+        score,
+        country: region.country || 'VN',
+        continent: region.continent || 'AS',
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+    }
+  }));
+}
+
+async function fetchPeriodLeaderboardOnline(periodId, limit){
+  if(!periodId) return [];
+  if(!await initOnlineServices()) return [];
+  try{
+    const snap = await _onlineDb.collection('periodScores').doc(periodId)
+      .collection('entries').orderBy('score', 'desc').limit(limit || 100).get();
+    return snap.docs.map((doc, i)=>{
+      const d = doc.data() || {};
+      return {
+        rank: i + 1,
+        name: d.name || 'Player',
+        score: d.score || 0,
+        playerId: doc.id,
+        avatar: d.avatar || '🐶',
+        country: d.country,
+        continent: d.continent
+      };
+    }).filter(e => e.score > 0);
+  }catch(e){
+    console.warn('[period LB]', e);
+    return [];
+  }
+}
+
+async function claimPeriodRewardOnline(periodId, scope, rank, reward){
+  if(!periodId || !await initOnlineServices() || !_onlineUid) return;
+  try{
+    await _onlineDb.collection('players').doc(_onlineUid)
+      .collection('lbClaims').doc(periodId + '_' + (scope||'world'))
+      .set({
+        periodId,
+        scope: scope || 'world',
+        rank: rank|0,
+        gold: (reward && reward.gold)|0,
+        diamond: (reward && reward.diamond)|0,
+        claimedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+  }catch(e){}
+}
+
+async function fetchFriendsLeaderboard(limit){
+  const friends = (typeof getFriendsList === 'function') ? getFriendsList() : [];
+  if(!await initOnlineServices()) return [];
+  const uids = friends.map(f => f && f.uid).filter(Boolean).slice(0, 60);
+  if(_onlineUid) uids.push(_onlineUid);
+  const out = [];
+  await Promise.all(uids.map(async uid=>{
+    try{
+      const snap = await _onlineDb.collection('players').doc(uid).get();
+      if(!snap.exists) return;
+      const d = snap.data() || {};
+      const score = d.bestScore || 0;
+      if(score <= 0) return;
+      out.push({
+        name: d.displayName || 'Player',
+        score,
+        playerId: uid,
+        avatar: d.avatar || '🐶',
+        country: d.country,
+        continent: d.continent
+      });
+    }catch(e){}
+  }));
+  out.sort((a,b)=> b.score - a.score);
+  return out.slice(0, limit || 100).map((e,i)=> Object.assign(e, { rank: i+1 }));
 }
