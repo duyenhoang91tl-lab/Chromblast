@@ -625,7 +625,10 @@ function MILESTONE_MSG(tier){ const c=_i18nContent(); const a=c.milestones||I18N
        onlineAuthNativeSetup:'Thiếu plugin Google Sign-In — chạy npm run cap:sync rồi build lại APK.',
        onlineAuthSha:'Google Sign-In chưa khớp SHA-1. Thêm SHA-1 (debug + release) vào Firebase Android app, tải lại google-services.json.',
        onlineAuthNetwork:'Mất mạng — kiểm tra kết nối rồi thử lại',
-       onlineAuthFail:'Đăng nhập Google chưa thành công — vẫn chơi online bằng tài khoản ẩn danh được' },
+       onlineAuthFail:'Đăng nhập Google chưa thành công — vẫn chơi online bằng tài khoản ẩn danh được',
+       onlineWaitingRooms:'📋 Phòng chờ', onlineWaitingEmpty:'Chưa có phòng — tạo phòng hoặc bấm Tìm đối thủ',
+       onlineRoomNo:'Phòng {0}', onlineYouInRoom:'Bạn đang ở phòng này', onlineYouHere:'Bạn',
+       onlineRoomHere:'Đang ở' },
   en:{ vsModeLocal:'📱 Local', vsModeOnline:'🌐 Online',
        onlineTitle:'🌐 Online 1v1', onlineDisabled:'Firebase not configured — see docs/ONLINE_MULTIPLAYER.md.',
        onlineGoogle:'Sign in with Google', onlineCreate:'🏠 Create room', onlineJoinLabel:'Join with code', onlineJoin:'🚪 Join room',
@@ -638,7 +641,10 @@ function MILESTONE_MSG(tier){ const c=_i18nContent(); const a=c.milestones||I18N
        onlineAuthNativeSetup:'Google Sign-In plugin missing — run npm run cap:sync and rebuild the APK.',
        onlineAuthSha:'Google Sign-In SHA-1 mismatch. Add debug+release SHA-1 to the Firebase Android app, re-download google-services.json.',
        onlineAuthNetwork:'Network error — check connection and retry',
-       onlineAuthFail:'Google sign-in failed — you can still play online anonymously' },
+       onlineAuthFail:'Google sign-in failed — you can still play online anonymously',
+       onlineWaitingRooms:'📋 Waiting rooms', onlineWaitingEmpty:'No rooms yet — create one or tap Find opponent',
+       onlineRoomNo:'Room {0}', onlineYouInRoom:'You are in this room', onlineYouHere:'You',
+       onlineRoomHere:'Here' },
   };
   Object.keys(on).forEach(l=>{ if(I18N[l]) Object.assign(I18N[l], on[l]); });
 })();
