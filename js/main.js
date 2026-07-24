@@ -5,17 +5,21 @@
   const root=document.getElementById('game-root');
   function fitGameRoot(){
     if(!root) return;
-    // Bỏ scale tạm để đo đúng — rồi căn giữa lại bằng transform-origin top center
+    // Bỏ scale tạm để đo đúng
     root.style.transform = 'none';
-    const availH = window.innerHeight - 16;
+    root.style.transformOrigin = 'top center';
+    // clientWidth loại trừ thanh cuộn — tránh lệch ngang so với visual viewport
+    const availW = Math.max(0, (document.documentElement.clientWidth || window.innerWidth) - 24);
+    const availH = Math.max(0, window.innerHeight - 16);
     const contentH = root.scrollHeight;
-    if(contentH > availH && availH > 0){
-      const scale = Math.max(0.55, availH / contentH);
-      // Giữ tâm ngang khi co — tránh bàn 8×8 lệch phải trên WebView
-      root.style.transformOrigin = 'top center';
+    const contentW = root.offsetWidth || root.getBoundingClientRect().width;
+    let scale = 1;
+    if(contentH > availH && availH > 0) scale = Math.min(scale, availH / contentH);
+    if(contentW > availW && availW > 0) scale = Math.min(scale, availW / contentW);
+    scale = Math.max(0.55, Math.min(1, scale));
+    if(scale < 0.999){
+      // top center giữ tâm ngang; không dùng left/translate để tránh lệch phải
       root.style.transform = 'scale(' + scale + ')';
-    } else {
-      root.style.transformOrigin = 'top center';
     }
     // #game-root vừa co giãn lại — toạ độ getBoundingClientRect() của lưới (cache trong
     // engine.js) không còn đúng nữa, phải tính lại ở lần kéo-thả kế tiếp.
