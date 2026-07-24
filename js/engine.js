@@ -1061,6 +1061,20 @@ function checkGameOverA(){
     hasMove=true;
   }
   if(!hasMove){
+    // Còn skill 🔥/🫧/💨 chưa dùng → chưa thua: người chơi vẫn phá được bàn
+    let skillLeft=0;
+    try{
+      if(window.Inventory){
+        skillLeft=(Inventory.fires|0)+(Inventory.bubbles|0)+(Inventory.winds|0);
+      }
+    }catch(e){ skillLeft=0; }
+    if(skillLeft>0){
+      try{
+        showHint('Còn skill ×'+skillLeft+' — dùng 🔥 / 🫧 / 💨 để tiếp tục!');
+        showComboFlash(0,false,'💫 Còn skill — chưa hết lượt!');
+      }catch(e){}
+      return false;
+    }
     sfxGameOver();
     document.getElementById('go-score').textContent=t('finalScore', score.toLocaleString());
     document.getElementById('game-over-overlay').classList.add('show');
