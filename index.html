@@ -740,26 +740,31 @@
     </div>
   </div>
 
-  <div id="friends-panel" class="admin-panel-like">
-    <div class="admin-card friends-screen-card">
-      <div class="admin-title"><span data-i18n="friendsTitle">🤝 Danh sách bạn bè</span><button class="admin-close" id="friends-close-btn">✕</button></div>
-      <div id="friends-cap-line" class="gchat-friend-cap"></div>
-      <div class="friends-search-row">
-        <input type="search" id="friends-search-input" class="friends-search-input" maxlength="40" autocomplete="off" data-i18n-placeholder="friendsSearchPh" placeholder="Tìm theo tên hoặc ID...">
-        <button type="button" id="friends-search-btn" class="friends-search-btn" data-i18n="friendsSearch">Tìm</button>
+  <div id="friends-panel" class="friends-screen" aria-hidden="true">
+    <div class="friends-shell">
+      <div class="friends-head">
+        <span data-i18n="friendsTitle">🤝 Danh sách bạn bè</span>
+        <button type="button" class="friends-x" id="friends-close-btn" aria-label="Close">✕</button>
       </div>
-      <div id="friends-search-result" class="friends-search-result"></div>
-      <div class="friends-section-title" data-i18n="friendsMyList">Bạn của bạn</div>
-      <div id="friends-panel-list" class="friends-panel-list"></div>
-      <div class="friends-section-title" data-i18n="friendsSuggest">Gợi ý kết bạn</div>
-      <div class="admin-sub" data-i18n="friendsSuggestHint">20 người chơi ngẫu nhiên trên server — gửi lời mời hàng loạt</div>
-      <div id="friends-suggest-list" class="friends-suggest-list"></div>
-      <div class="friends-suggest-actions">
-        <button type="button" id="friends-suggest-refresh" class="auth-submit-btn btn-ghost" style="background:rgba(255,255,255,0.12);" data-i18n="friendsRefresh">🔄 Đổi danh sách</button>
-        <button type="button" id="friends-suggest-invite" class="auth-submit-btn" data-i18n="friendsInviteAll">📨 Gửi xin kết bạn</button>
+      <div class="friends-body">
+        <div id="friends-cap-line" class="gchat-friend-cap"></div>
+        <div class="friends-search-row">
+          <input type="search" id="friends-search-input" class="friends-search-input" maxlength="40" autocomplete="off" data-i18n-placeholder="friendsSearchPh" placeholder="Tìm theo tên hoặc ID...">
+          <button type="button" id="friends-search-btn" class="friends-search-btn" data-i18n="friendsSearch">Tìm</button>
+        </div>
+        <div id="friends-search-result" class="friends-search-result"></div>
+        <div class="friends-section-title" data-i18n="friendsMyList">Bạn của bạn</div>
+        <div id="friends-panel-list" class="friends-panel-list"></div>
+        <div class="friends-section-title" data-i18n="friendsSuggest">Gợi ý kết bạn</div>
+        <div class="admin-sub" data-i18n="friendsSuggestHint">20 người chơi ngẫu nhiên trên server — gửi lời mời hàng loạt</div>
+        <div id="friends-suggest-list" class="friends-suggest-list"></div>
+        <div class="friends-suggest-actions">
+          <button type="button" id="friends-suggest-refresh" class="auth-submit-btn btn-ghost" style="background:rgba(255,255,255,0.12);" data-i18n="friendsRefresh">🔄 Đổi danh sách</button>
+          <button type="button" id="friends-suggest-invite" class="auth-submit-btn" data-i18n="friendsInviteAll">📨 Gửi xin kết bạn</button>
+        </div>
+        <div id="friends-status" class="friends-status" aria-live="polite"></div>
+        <button type="button" id="friends-open-chat" class="auth-submit-btn" style="margin-top:10px;" data-i18n="friendsOpenChat">💬 Mở chat bạn bè</button>
       </div>
-      <div id="friends-status" class="friends-status" aria-live="polite"></div>
-      <button type="button" id="friends-open-chat" class="auth-submit-btn" style="margin-top:10px;" data-i18n="friendsOpenChat">💬 Mở chat bạn bè</button>
     </div>
   </div>
 
