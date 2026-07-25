@@ -1679,7 +1679,7 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
   from { box-shadow: 0 0 0 5px #E24B4A, 0 0 60px rgba(226,75,74,0.75),  0 0 140px rgba(212,83,126,0.35), 0 0 240px rgba(212,83,126,0.15); }
   to   { box-shadow: 0 0 0 10px #ff88c8, 0 0 100px rgba(226,75,74,1),   0 0 210px rgba(212,83,126,0.65), 0 0 350px rgba(127,119,221,0.25); }
 }
-/* Lv5 — LEGENDARY/GODLIKE (streak 8+): rainbow điên cuồng siêu mạnh */
+/* Lv5 — LEGENDARY (streak cao): rainbow điên cuồng siêu mạnh */
 #grid-wrap.combo-glow-5 {
   animation: cg5 0.28s linear infinite !important;
 }
@@ -1692,7 +1692,7 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
   83%  { box-shadow: 0 0 0 10px #7F77DD, 0 0 110px rgba(127,119,221,1),  0 0 240px rgba(127,119,221,0.6),  0 0 420px rgba(127,119,221,0.22); }
   100% { box-shadow: 0 0 0 8px #ff4444,  0 0 100px rgba(255,68,68,1),    0 0 220px rgba(255,68,68,0.55),   0 0 400px rgba(255,68,68,0.2); }
 }
-/* Screen shake for LEGENDARY/GODLIKE */
+/* Screen shake for UNREAL/LEGENDARY */
 @keyframes screen-shake {
   0%,100%{ transform:translate(0,0) rotate(0deg); }
   15%    { transform:translate(-3px,2px) rotate(-0.5deg); }

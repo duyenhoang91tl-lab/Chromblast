@@ -346,7 +346,7 @@ function sfxMegaPhaseChange(){if(sfxMuted)return; playTone(110,'square',0.2,0.5)
 // khớp thứ tự với mảng PRAISE. Được preload 1 lần khi trang tải xong.
 const PRAISE_SOUND_FILES = [
   'cool.wav','good.wav','great.wav','impressive.wav',
-  'amazing.wav','perfect.wav','spectacular.wav','unreal.wav','legendary.wav','godlike.wav'
+  'amazing.wav','perfect.wav','spectacular.wav','unreal.wav','legendary.wav'
 ];
 const PRAISE_AUDIO = PRAISE_SOUND_FILES.map(f=>{
   const a = new Audio('sounds/'+f);
@@ -363,8 +363,8 @@ function speakPraise(level) {
     audio.currentTime = 0;
     audio.volume = 1;
     audio.play().catch(()=>{}); // trình duyệt có thể chặn autoplay trước tương tác đầu tiên — bỏ qua lỗi
-    // Ở 2 cấp cao nhất (Legendary/Godlike), hô lại lần 2 dồn dập hơn cho khí thế
-    if (i>=8) {
+    // Ở 2 cấp cao nhất (Unreal/Legendary), hô lại lần 2 dồn dập hơn cho khí thế
+    if (i>=7) {
       setTimeout(()=>{
         const a2 = PRAISE_AUDIO[i];
         a2.currentTime = 0;

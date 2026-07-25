@@ -10,7 +10,7 @@ Tài liệu này liệt kê font, âm thanh, thư viện và dịch vụ bên th
 | Nhóm | Số file |
 |---|---:|
 | AI-generated | **0** |
-| Tự thu âm (voice recording gốc) | **10** |
+| Tự thu âm (voice recording gốc) | **9** |
 | Nguồn chưa rõ / bên thứ ba | **0** |
 
 ---
@@ -45,7 +45,6 @@ Dùng làm lồng tiếng khen combo (`js/audio.js` → `PRAISE_SOUND_FILES`).
 |---|---|
 | `sounds/amazing.wav` | Tự thu âm — sở hữu gốc nhà phát triển |
 | `sounds/cool.wav` | Tự thu âm — sở hữu gốc nhà phát triển |
-| `sounds/godlike.wav` | Tự thu âm — sở hữu gốc nhà phát triển |
 | `sounds/good.wav` | Tự thu âm — sở hữu gốc nhà phát triển |
 | `sounds/great.wav` | Tự thu âm — sở hữu gốc nhà phát triển |
 | `sounds/impressive.wav` | Tự thu âm — sở hữu gốc nhà phát triển |
@@ -132,7 +131,7 @@ Praise bằng file WAV ở mục 2.
 
 ## 6. Checklist trước phát hành
 
-- [x] Xác nhận `sounds/` — 10 file tự thu âm, sở hữu gốc nhà phát triển (2026-07-25)
+- [x] Xác nhận `sounds/` — 9 file tự thu âm, sở hữu gốc nhà phát triển (2026-07-25; đã bỏ `godlike.wav`)
 - [ ] Giữ OFL credit cho Nunito + font nickname khi phân phối font
 - [ ] Rà điều khoản Firebase, AdMob, Google Sign-In cho Data safety / Privacy
 - [ ] Quyết định giữ hay thay API dịch chat (Google gtx / MyMemory)
