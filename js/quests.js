@@ -260,6 +260,11 @@
           ? getDailyState()
           : null;
       if (ds && ds.lastClaim) st.checkins[ds.lastClaim] = 1;
+      // Đã điểm danh → đánh dấu quest checkin đã nhận (tránh nút Nhận kẹt)
+      if (st.checkins[todayStr()]) {
+        if (!st.day.claimed) st.day.claimed = {};
+        st.day.claimed.checkin = 1;
+      }
     } catch (e) {}
   }
 
