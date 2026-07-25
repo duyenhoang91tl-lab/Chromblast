@@ -842,6 +842,15 @@ body.notif-open #start-screen{
   background:rgba(255,255,255,0.06); color:#ddd; font-size:12px; font-weight:700; cursor:pointer;
 }
 .vs-mode-tab.active { border-color:#7b61ff; background:rgba(123,97,255,0.2); color:#fff; }
+.vs-online-entry { margin:4px 0 12px !important; }
+.vs-local-block{
+  margin-top:14px; padding-top:12px;
+  border-top:1px solid rgba(255,255,255,0.12);
+}
+.vs-local-label{
+  font-size:13px; font-weight:900; color:#ffd54a; margin-bottom:6px; text-align:center;
+}
+.vs-local-block-hub{ margin-top:16px; }
 .online-note { font-size:11px; color:#ffcc55; margin-bottom:10px; line-height:1.4; }
 .online-status { font-size:11px; color:#8ee08e; margin-bottom:10px; min-height:16px; }
 .online-status.err { color:#ff6b6b; }
