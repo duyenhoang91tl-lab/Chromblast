@@ -315,6 +315,14 @@ function exchangeGoldForDiamonds(count){
   grantDiamonds(count, typeof t==='function'?t('shopDiamondExchange'):'Đổi vàng');
   return { ok:true, diamonds:count, gold:cost };
 }
+/** Đổi kim cương → vàng: 1 kim cương = 100 vàng */
+function exchangeDiamondsForGold(count){
+  count = Math.max(1, count|0);
+  const gain = count * GOLD_PER_DIAMOND;
+  if(!spendDiamonds(count)) return { ok:false, reason:'diamond' };
+  grantGold(gain, typeof t==='function'?t('shopGoldExchange'):'Đổi kim cương');
+  return { ok:true, diamonds:count, gold:gain };
+}
 function diamondPriceForGold(goldPrice){
   const p = Math.max(0, goldPrice|0);
   if(p < GOLD_PER_DIAMOND) return 0;
@@ -639,6 +647,7 @@ window.Inventory = {
   spendDiamonds: spendDiamonds,
   getDiamonds: getDiamonds,
   exchangeGoldForDiamonds: exchangeGoldForDiamonds,
+  exchangeDiamondsForGold: exchangeDiamondsForGold,
   diamondPriceForGold: diamondPriceForGold,
   GOLD_PER_DIAMOND: GOLD_PER_DIAMOND,
   addFires: function(n, reason){ grantPower('fire', n, reason||''); },

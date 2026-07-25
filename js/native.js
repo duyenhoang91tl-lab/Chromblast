@@ -91,7 +91,7 @@
     'versus-setup-panel','versus-result-panel','online-hub-panel','online-lobby-panel','online-matchmaking-panel',
     'caro-hub-panel','caro-lobby-panel','caro-mm-panel','caro-result-panel','caro-rank-panel','caro-settings-panel',
     'player-profile-panel','player-card-panel',
-    'friends-panel',
+    'friends-panel','shop-panel',
     'settings-panel','settings-more-panel','settings-lang-panel','settings-cup-panel','settings-text-panel',
     'brick-skin-panel',
     'board-skin-panel',
