@@ -78,19 +78,7 @@
     const key = tl+'|'+raw;
     if(state.tlCache[key]) return state.tlCache[key];
 
-    // 1) Google gtx (không cần API key)
-    try{
-      const url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl='
-        + encodeURIComponent(tl)+'&dt=t&q='+encodeURIComponent(raw);
-      const res = await fetch(url);
-      if(res.ok){
-        const data = await res.json();
-        const out = (data && data[0] || []).map(x => x && x[0] ? x[0] : '').join('');
-        if(out){ state.tlCache[key] = out; return out; }
-      }
-    }catch(e){}
-
-    // 2) MyMemory fallback
+    // 1) MyMemory Translated (API công khai, có điều khoản sử dụng)
     try{
       const url = 'https://api.mymemory.translated.net/get?q='+encodeURIComponent(raw)
         +'&langpair=autodetect|'+encodeURIComponent(tl);
@@ -98,10 +86,24 @@
       if(res.ok){
         const data = await res.json();
         const out = data && data.responseData && data.responseData.translatedText;
-        if(out && !/INVALID SOURCE LANGUAGE|PLEASE SELECT/i.test(out)){
+        if(out && !/INVALID SOURCE LANGUAGE|PLEASE SELECT|MYMEMORY WARNING/i.test(out)){
           state.tlCache[key] = out;
           return out;
         }
+      }
+    }catch(e){}
+
+    // 2) LibreTranslate (instance công khai Argos) — fallback
+    try{
+      const res = await fetch('https://translate.argosopentech.com/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ q: raw, source: 'auto', target: tl, format: 'text' })
+      });
+      if(res.ok){
+        const data = await res.json();
+        const out = data && data.translatedText;
+        if(out){ state.tlCache[key] = out; return out; }
       }
     }catch(e){}
 

@@ -348,7 +348,7 @@
       theirWin: false,
       at: Date.now()
     });
-    await sendRoomChat(_caro.roomId, '💍 '+tt('caroCoupleInvite','Mời kết đôi — cùng thắng Cực khó!'), {
+    await sendRoomChat(_caro.roomId, '💍 '+tt('caroCoupleInvite','Mời kết đôi — cùng thắng máy Siêu!'), {
       kind: 'couple_invite',
       bubbleStyle: currentBubbleStyle()
     });
@@ -370,12 +370,12 @@
       at: Date.now()
     });
     if(_caro && _caro.roomId){
-      await sendRoomChat(_caro.roomId, '💍 '+tt('caroCoupleAccepted','Đã nhận kết đôi — đi thắng Cực khó!'), {
+      await sendRoomChat(_caro.roomId, '💍 '+tt('caroCoupleAccepted','Đã nhận kết đôi — đi thắng máy Siêu!'), {
         kind: 'couple_accept',
         bubbleStyle: currentBubbleStyle()
       });
     }
-    try{ showComboFlash(0,false, tt('caroCoupleQuestHint','Cùng thắng máy Cực khó để ghép đôi')); }catch(e){}
+    try{ showComboFlash(0,false, tt('caroCoupleQuestHint','Cùng thắng máy Siêu để ghép đôi')); }catch(e){}
   }
 
   function tryCompleteCouple(){
@@ -401,7 +401,7 @@
     q.status = 'questing';
     setQuest(q);
     if(_caro && _caro.online && _caro.roomId){
-      sendRoomChat(_caro.roomId, '✅ '+tt('caroCoupleExtremeWin','Đã thắng Cực khó'), {
+      sendRoomChat(_caro.roomId, '✅ '+tt('caroCoupleExtremeWin','Đã thắng máy Siêu'), {
         kind: 'couple_extreme_win',
         bubbleStyle: currentBubbleStyle()
       }).catch(()=>{});
