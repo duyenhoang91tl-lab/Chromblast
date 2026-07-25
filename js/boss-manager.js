@@ -8,7 +8,7 @@
 const BOSS_REGISTRY = {
   boss: {   // Map ẩn 10
     key: 'boss',
-    name: 'Phi cơ bắn gà (Chicken Invaders)',
+    name: 'Gà Nổi Loạn (Feather Storm)',
     canvasId: 'boss-canvas',
     trigger: (typeof triggerBossUnlock === 'function') ? triggerBossUnlock : null,
     enter:   (typeof enterBossMode    === 'function') ? enterBossMode    : null,

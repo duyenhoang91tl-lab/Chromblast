@@ -609,7 +609,7 @@ body.notif-open #start-screen{
 .admin-map-btn:hover { background: rgba(255,180,0,0.15); border-color: rgba(255,180,0,0.4); }
 .admin-map-btn b { color:#ffcc55; }
 
-/* ══════════════════ HƯỚNG DẪN CHƠI (HELP) — kiểu modal Block Blast ══════════════════ */
+/* ══════════════════ HƯỚNG DẪN CHƠI (HELP) — modal hướng dẫn ══════════════════ */
 #help-btn {
   display: none !important;
 }
@@ -1124,7 +1124,7 @@ body.notif-open #start-screen{
   border: 1px solid rgba(255,213,74,0.35);
 }
 .caro-chat-text.bubble-neon { border: 1px solid #00e5ff; box-shadow: 0 0 10px rgba(0,229,255,0.35); }
-.caro-chat-text.bubble-candy { background: linear-gradient(135deg,#ff80ab,#ea80fc); color:#1a0a12; }
+.caro-chat-text.bubble-sweet { background: linear-gradient(135deg,#ff80ab,#ea80fc); color:#1a0a12; }
 .caro-chat-text.bubble-gold { background: linear-gradient(135deg,#ffe082,#ffb300); color:#3e2723; }
 .caro-chat-text.bubble-ink { background: #111; border: 1px dashed #90caf9; }
 .caro-chat-fx { font-size: 14px; }
@@ -1257,7 +1257,7 @@ body.notif-open #start-screen{
 }
 .caro-float-bubble.out { opacity: 0; transform: translateY(-6px); transition: 0.25s ease; }
 .caro-float-bubble.style-neon { border-color: #00e5ff; box-shadow: 0 0 12px rgba(0,229,255,0.4); }
-.caro-float-bubble.style-candy { background: linear-gradient(135deg,#ff80ab,#ea80fc); color:#1a0a12; }
+.caro-float-bubble.style-sweet { background: linear-gradient(135deg,#ff80ab,#ea80fc); color:#1a0a12; }
 .caro-float-bubble.style-gold { background: linear-gradient(135deg,#ffe082,#ffb300); color:#3e2723; }
 .caro-float-bubble.style-ink { background: #0a0a12; border-style: dashed; border-color: #90caf9; }
 @keyframes caroBubbleIn {
@@ -1963,7 +1963,7 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
 body.is-dragging .cell.filled,
 body.is-dragging .cell.preview-ok,
 body.is-dragging .sc.gem,
-body.is-dragging .g-cell.candy {
+body.is-dragging .g-cell.sweet {
   filter: none !important;
 }
 /* Khi kéo: đóng băng glow/combo box-shadow nặng + transition ô — ưu tiên FPS cho ghost */
@@ -2637,7 +2637,7 @@ body:has(#secret-stage.active) .streak-dot.lit{
 }
 #timer-bar.danger { background: #E24B4A; }
 
-/* ── PIECES AREA — khay khối gọn kiểu Block Blast ── */
+/* ── PIECES AREA — khay khối gọn ── */
 #pieces-area {
   margin-top: 12px;
   margin-left: auto;
@@ -2669,7 +2669,7 @@ body:has(#secret-stage.active) .streak-dot.lit{
 .piece-slot.used { opacity: 0.15; pointer-events: none; transform: none; }
 .piece-slot.selected { border: 2px solid #5BB0FF; background: linear-gradient(165deg, rgba(55,100,160,0.95) 0%, rgba(40,70,120,0.9) 100%); opacity: 0.55; box-shadow: 0 0 0 2px rgba(91,176,255,0.25), 0 6px 14px rgba(0,0,0,0.28); }
 .p-cell { width: 14px; height: 14px; border-radius: 4px; }
-.p-cell.candy {
+.p-cell.sweet {
   --cc: #888;
   border: none !important;
   border-radius: 4px;
@@ -2684,7 +2684,7 @@ body:has(#secret-stage.active) .streak-dot.lit{
     0 1px 2px rgba(0,0,0,0.22);
   /* Không dùng SVG filter trên khay (nhiều ô nhỏ) — mượt hơn rõ */
 }
-.p-cell.candy::after {
+.p-cell.sweet::after {
   content:''; position:absolute; inset:-1px; border-radius:inherit; pointer-events:none;
   opacity:0.4;
   background:
@@ -2706,7 +2706,7 @@ body:has(#secret-stage.active) .streak-dot.lit{
   border-radius: 12px;
   opacity: 0.98;
 }
-#drag-ghost .g-cell.candy {
+#drag-ghost .g-cell.sweet {
   --cc: #888;
   overflow: visible;
   position: relative;
@@ -2720,7 +2720,7 @@ body:has(#secret-stage.active) .streak-dot.lit{
     0 3px 6px rgba(0,0,0,0.25);
   /* Ghost không dùng SVG filter — kéo mượt */
 }
-#drag-ghost .g-cell.candy::before {
+#drag-ghost .g-cell.sweet::before {
   content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
   opacity:0.35;
   background:
@@ -2945,7 +2945,7 @@ body:has(#secret-stage.active) .streak-dot.lit{
 
 /* ── MISC ── */
 #status-bar { display:none; }
-/* Gợi ý chơi — kiểu tip Block Blast: luôn hiện, gọn, pill */
+/* Gợi ý chơi — tip luôn hiện, gọn */
 #hint-bar {
   display: block;
   margin: 10px auto 2px;
@@ -3410,7 +3410,7 @@ body:has(#secret-stage.active) .streak-dot.lit{
 }
 .vs-ghost.active{ display:grid; }
 .vs-ghost .vs-g-cell{ border-radius:10px; opacity:0.98; }
-.vs-ghost .vs-g-cell.candy{
+.vs-ghost .vs-g-cell.sweet{
   --cc:#888; position:relative; overflow:visible;
   background:
     radial-gradient(ellipse 70% 55% at 32% 26%, color-mix(in srgb, var(--cc) 45%, #fff) 0%, transparent 52%),
@@ -3421,7 +3421,7 @@ body:has(#secret-stage.active) .streak-dot.lit{
     inset 0 2px 3px rgba(255,255,255,0.3),
     0 3px 6px rgba(0,0,0,0.25);
 }
-.vs-mini-candy{
+.vs-mini-sweet{
   --cc:#888;
   border-radius:3px;
   background:
@@ -3612,7 +3612,7 @@ body:has(#secret-stage.active) .streak-dot.lit{
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  .cell.filled, .sc.gem, .p-cell.candy, .g-cell.candy {
+  .cell.filled, .sc.gem, .p-cell.sweet, .g-cell.sweet {
     filter: none !important;
   }
   body.is-dragging .cell.filled { filter: none !important; }

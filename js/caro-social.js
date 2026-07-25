@@ -25,7 +25,7 @@
   const BUBBLE_STYLES = [
     { id:'classic', label:'Cổ điển', free:true },
     { id:'neon',    label:'Neon', premium:true },
-    { id:'candy',   label:'Kẹo', premium:true },
+    { id:'sweet',   label:'Ngọt', premium:true },
     { id:'gold',    label:'Vàng', premium:true },
     { id:'ink',     label:'Mực', premium:true }
   ];

@@ -162,7 +162,7 @@ function drawFlood(ctx,W,H){
       const x=offX+c*(cellSize+gap), y=offY+r*(cellSize+gap);
       const ci=floodGrid[r][c];
       const isFlooded=regionSet.has(r+','+c);
-      drawSoftCandyCell(ctx,x,y,cellSize,cellSize,FLOOD_COLORS[ci],{glow:isFlooded,glowBlur:isFlooded?8:3});
+      drawSoftSweetCell(ctx,x,y,cellSize,cellSize,FLOOD_COLORS[ci],{glow:isFlooded,glowBlur:isFlooded?8:3});
     }
   }
 

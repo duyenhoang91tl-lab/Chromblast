@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════
-// maps/map03.js — MAP ẨN 3: Chém hoa quả (Fruit Ninja)
+// maps/map03.js — MAP ẨN 3: Vườn Trái Cây (Fruit Garden)
 // Tách verbatim khỏi main.js, nạp TRƯỚC main.js. (fruitSlicedTotal — biến
 // đếm dùng chung cho reset — vẫn ở main.js; map gọi lúc chạy.)
 // ═══════════════════════════════════════════════════════════════

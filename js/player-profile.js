@@ -205,9 +205,9 @@ function getPlayerProfile(){
         if(typeof j.customAvatar === 'string' && j.customAvatar.startsWith('data:image') && j.customAvatar.length < 220000){
           p.customAvatar = j.customAvatar;
         }
-        if(typeof j.bubbleStyle === 'string') p.bubbleStyle = j.bubbleStyle;
+        if(typeof j.bubbleStyle === 'string') p.bubbleStyle = j.bubbleStyle === 'candy' ? 'sweet' : j.bubbleStyle;
         if(Array.isArray(j.unlockedFx)) p.unlockedFx = j.unlockedFx.filter(x=>typeof x==='string').slice(0, 40);
-        if(Array.isArray(j.unlockedBubbles)) p.unlockedBubbles = j.unlockedBubbles.filter(x=>typeof x==='string').slice(0, 20);
+        if(Array.isArray(j.unlockedBubbles)) p.unlockedBubbles = j.unlockedBubbles.map(x=>x==='candy'?'sweet':x).filter(x=>typeof x==='string').slice(0, 20);
         if(!p.unlockedBubbles || !p.unlockedBubbles.length) p.unlockedBubbles = ['classic'];
         p.renameCount = Math.max(0, Number(j.renameCount) || 0);
         p.styleUnlocked = !!j.styleUnlocked;

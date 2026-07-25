@@ -243,7 +243,7 @@ function triggerUnlock(){
   // (hoặc treo im nếu popup bị bỏ qua) mà không bao giờ báo thua. Phải kiểm tra trước.
   if(checkGameOverA()) return; // đã hiện Game Over overlay — không hiện popup mở khoá nữa
   pendingUnlock='secret';
-  // Map 1–4: màn phụ saga (Candy Crush) thay overlay khoá cũ
+  // Map 1–4: màn phụ saga (Sweet Crush) thay overlay khoá cũ
   if(typeof showSagaUnlock==='function' && showSagaUnlock('secret')) return;
   document.getElementById('unlock-title').textContent=t('unlockTitle');
   document.getElementById('unlock-desc').innerHTML=t('unlockDesc', TEST_UNLOCK_SCORE);
@@ -328,7 +328,7 @@ document.addEventListener('keyup', e=>{
 });
 
 /* ══════════════════════════════════════════
-   MAP ẨN 3 — CHÉM HOA QUẢ 60 GIÂY (kiểu Fruit Ninja)
+   MAP ẨN 3 — VƯỜN TRÁI CÂY 60 GIÂY
    Vuốt/kéo để chém quả bay lên — chạm vào BOM sẽ "nổ", thua ngay.
    Hết 60s mà không trúng bom → qua màn, cả 2 trường hợp đều về map thường,
    ghi thêm điểm ở map thường sẽ mở khoá Map ẩn 4.
@@ -423,7 +423,7 @@ function updateComboUI(){
 }
 
 
-// Chữ "Combo xN" phong cách Woodoku — hiện riêng, không đè lên câu khen (showPraise)
+// Chữ "Combo xN" — hiệu ứng flash khi hoàn thành hàng/cột; hiện riêng, không đè lên câu khen (showPraise)
 
 
 
@@ -644,14 +644,14 @@ document.getElementById('restart-btn').addEventListener('click', ()=>{ sfxClick(
 const HIDDEN_MAP_LIST = [
   { key:'secret1', label:'Map ẩn 1 — Đấu màu bí ẩn',        run: enterSecretMode },
   { key:'dodge',   label:'Map ẩn 2 — Rùa né cà rốt',         run: enterDodgeMode },
-  { key:'fruit',   label:'Map ẩn 3 — Chém hoa quả',          run: enterFruitMode },
+  { key:'fruit',   label:'Map ẩn 3 — Vườn Trái Cây',         run: enterFruitMode },
   { key:'bee',     label:'Map ẩn 4 — Bảo vệ chó khỏi ong',   run: enterBeeMode },
   { key:'gold',    label:'Map ẩn 5 — Truy tìm kho báu',     run: enterGoldMode },
   { key:'mole',    label:'Map ẩn 6 — Đập thú (Whack-a-Mole)',run: enterMoleMode },
   { key:'memory',  label:'Map ẩn 7 — Lật thẻ ký ức',         run: enterMemoryMode },
   { key:'bubble',  label:'Map ẩn 8 — Bắn bong bóng',         run: enterBubbleMode },
   { key:'stack',   label:'Map ẩn 9 — Xếp tháp',              run: enterStackMode },
-  { key:'boss',    label:'Map ẩn 10 — Đại chiến Boss',       run: enterBossMode },
+  { key:'boss',    label:'Map ẩn 10 — Gà Nổi Loạn',          run: enterBossMode },
   { key:'catch',   label:'Map ẩn 11 — Bắt thú',              run: enterCatchMode },
   { key:'flood',   label:'Map ẩn 12 — Tràn màu (Color Flood)',run: enterFloodMode },
   { key:'arena',   label:'Map ẩn 13 — Đấu trường sinh tồn',  run: enterArenaMode },
@@ -660,7 +660,7 @@ const HIDDEN_MAP_LIST = [
   { key:'runner',  label:'Map ẩn 16 — Chạy vô tận (Runner)', run: enterRunnerMode },
   { key:'space',   label:'Map ẩn 17 — Space Shooter',        run: enterSpaceMode },
   { key:'rhythm',  label:'Map ẩn 18 — Rhythm Tap',           run: enterRhythmMode },
-  { key:'maze',    label:'Map ẩn 19 — Mê cung (Maze)',       run: enterMazeMode },
+  { key:'maze',    label:'Map ẩn 19 — Mê Cung Bí Ẩn',        run: enterMazeMode },
   { key:'mega',    label:'Map ẩn 20 — MEGA BOSS cuối cùng',  run: enterMegaMode },
   { key:'floodpig',label:'Map ẩn 22 — Cẩu cứu heo mùa lũ',   run: () => startMap('floodpig') },
 ];
