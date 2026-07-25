@@ -4853,7 +4853,7 @@ body:has(#secret-stage.active) .streak-dot.lit{
   letter-spacing:0.2px;
 }
 .friends-panel-list,
-.friends-suggest-list{ display:flex; flex-direction:column; gap:6px; max-height:28vh; overflow:auto; }
+.friends-suggest-list{ display:flex; flex-direction:column; gap:6px; max-height:min(36vh,320px); overflow:auto; }
 .friends-panel-row{
   display:flex; align-items:center; gap:8px; padding:8px;
   border-radius:12px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1);
