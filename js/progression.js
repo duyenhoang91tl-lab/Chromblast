@@ -83,7 +83,9 @@ function loadNormalStars(){
     normalStarClears = Math.max(0, Math.min(NORMAL_STARS_PER_HIDDEN - 1, j.clears|0));
     normalMapStage = Math.max(1, j.stage|0 || 1);
     normalStarBaseline = Math.max(0, j.baseline|0);
-    normalStarTarget = Math.max(80, j.target|0 || normalStarTargetForStage(normalMapStage));
+    // Dùng công thức 4★ mới — không giữ target thấp của bản 3★ cũ
+    const fresh = normalStarTargetForStage(normalMapStage);
+    normalStarTarget = Math.max(fresh, j.target|0 || 0);
   }catch(e){}
 }
 function resetNormalStarRun(){
