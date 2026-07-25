@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════
-// maps/map17.js — MAP ẨN 17: Space Shooter
+// maps/map17.js — MAP ẨN 17: Bắn tàu vũ trụ
 // Tách verbatim khỏi main.js, nạp TRƯỚC main.js (global scope).
 // ═══════════════════════════════════════════════════════════════
 
@@ -11,7 +11,7 @@ function triggerSpaceUnlock(){
   markMapCleared('runner');
   pendingUnlock='space';
   document.getElementById('unlock-title').textContent='🚀 BẢN ĐỒ 17 MỞ KHÓA!';
-  document.getElementById('unlock-desc').innerHTML='<b>Space Shooter</b><br>Bay vào vũ trụ, tiêu diệt quân xâm lăng!';
+  document.getElementById('unlock-desc').innerHTML='<b>Bắn tàu vũ trụ</b><br>Bay vào vũ trụ, tiêu diệt quân xâm lăng!';
   document.getElementById('unlock-btn').textContent='CHIẾN ĐẤU!';
   showUnlockOverlay();
 }

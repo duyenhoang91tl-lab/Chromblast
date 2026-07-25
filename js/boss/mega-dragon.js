@@ -53,7 +53,7 @@ function triggerMegaUnlock(){
   markMapCleared('maze');
   pendingUnlock='mega';
   document.getElementById('unlock-title').textContent='🐉 BẢN ĐỒ 20 MỞ KHÓA!';
-  document.getElementById('unlock-desc').innerHTML='<b>Dũng sĩ diệt rồng</b><br>Trận chiến cuối cùng! Hạ gục Rồng Huyền Thoại!';
+  document.getElementById('unlock-desc').innerHTML='<b>Dũng sĩ diệt rồng</b><br>Hạ gục Rồng Huyền Thoại để mở đường sang map kế!';
   document.getElementById('unlock-btn').textContent='CHIẾN ĐẤU!';
   showUnlockOverlay();
 }
@@ -337,16 +337,16 @@ function megaLoop(){
     ctx.fillStyle='#ffd700';
     ctx.font='bold 13px monospace';
     ctx.fillText('CHROMABLAST HUYỀN THOẠI!',W/2,H/2+32);
-    ctx.fillText('20 BẢN ĐỒ HOÀN THÀNH! 👑',W/2,H/2+52);
+    ctx.fillText('MAP 20 PHÁ ĐẢO! 👑',W/2,H/2+52);
     setTimeout(()=>exitMegaToMain(),5000);
     s.won=false; s.gameOver=true;
   } else if(s.gameOver){
     if(!s._forfeited){
       s._forfeited=true;
-      // Boss CUỐI (Rồng Huyền Thoại) — thua thì KHÔNG được coi là "đã qua vòng 20":
-      // mở lại đúng cổng của map Rồng (không advance sang vòng kế) để bắt buộc
+      // Rồng Huyền Thoại — thua thì KHÔNG được coi là "đã qua vòng 20":
+      // mở lại đúng cổng của map Rồng (không advance sang ếch) để bắt buộc
       // phải diệt được rồng mới đi tiếp. Vẫn giữ nguyên toàn bộ điểm đã kiếm.
-      unlockGateStageIndex = 19; // vẫn là vòng Rồng (index cuối trong UNLOCK_STAGE_ORDER)
+      unlockGateStageIndex = 19; // vẫn là vòng Rồng (index mega)
       unlockGateBaseline = score;
       unlockGateActive = true;
       consecutiveBursts = 0;
@@ -366,7 +366,7 @@ function exitMegaToMain(){
   if(megaWon){
     markMapCleared('mega');
     if(megaState.score){ score+=megaState.score; if(score>best) best=score; updateScoreUI(); }
-    // Thắng map ẩn CUỐI (vòng 20) → mở tiến trình "qua màn" cho các level 21+ (không có map ẩn).
+    // Thắng map ẩn 20 → mở cổng map ẩn 21 (Ếch ộp ham ăn).
     if(typeof advanceHiddenGate==='function') advanceHiddenGate(19);
   }
   MGC().classList.remove('active');

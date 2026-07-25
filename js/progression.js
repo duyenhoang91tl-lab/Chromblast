@@ -43,7 +43,7 @@ function forfeitHiddenMapScore(){
   if(typeof updateScoreUI==='function') updateScoreUI();
   advanceHiddenGate(unlockGateStageIndex);
 }
-const UNLOCK_STAGE_ORDER = ['secret','dodge','fruit','bee','gold','mole','memory','bubble','stack','boss','catch','flood','arena','snake','brick','runner','space','rhythm','maze','mega'];
+const UNLOCK_STAGE_ORDER = ['secret','dodge','fruit','bee','gold','mole','memory','bubble','stack','boss','catch','flood','arena','snake','brick','runner','space','rhythm','maze','mega','frog'];
 const NORMAL_STARS_PER_HIDDEN = 2; // 2 map thường ★★★ → 1 map ẩn
 function unlockThresholdForStage(stageNum){ return 100*stageNum; } // giữ API cũ (HUD/test)
 let unlockGateStageIndex = 0;   // index (0-based) trong UNLOCK_STAGE_ORDER của map ẩn TIẾP THEO cần mở
@@ -212,7 +212,7 @@ function advanceHiddenGate(playedIdx){
   normalStarBaseline = score;
   normalStarTarget = normalStarTargetForStage(normalMapStage);
   persistNormalStars();
-  // 🌗 Vừa qua map ẩn CUỐI CÙNG (Mega) → tiến trình vòng 21-41 trên bàn thường
+  // 🌗 Vừa qua map ẩn CUỐI CÙNG → tiến trình vòng tiếp trên bàn thường
   if(!unlockGateActive){
     comboGateActive=true;
     comboGateBaseline=score;

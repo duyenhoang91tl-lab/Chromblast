@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════
 // map-manager.js — Trình quản lý MAP tập trung
 // Thay cho các chuỗi if(map==N) / switch(stageKey): mọi map được đăng ký
-// vào MAP_REGISTRY theo SỐ (1-20) và theo KHOÁ ('secret'...'mega').
+// vào MAP_REGISTRY theo SỐ (1-21+) và theo KHOÁ ('secret'...'frog'...).
 //   startMap(10) / startMap('boss')  → vào map (tự lazy-load maps/mapN.js nếu là map ngoài)
 //   triggerMapUnlock('boss')         → hiện overlay mở khoá của map
 // Map mới chỉ cần bỏ file vào maps/mapNN.js rồi đăng ký — KHÔNG cần sửa switch.
@@ -31,10 +31,10 @@ function registerMap(desc){
   {id:11, key:'catch',  name:'Bắt thú',            enter:enterCatchMode,  trigger:triggerCatchUnlock},
   {id:12, key:'flood',  name:'Tràn màu',           enter:enterFloodMode,  trigger:triggerFloodUnlock},
   {id:13, key:'arena',  name:'Đấu trường sinh tồn',enter:enterArenaMode,  trigger:triggerArenaUnlock},
-  {id:14, key:'snake',  name:'Rắn',                enter:enterSnakeMode,  trigger:triggerSnakeUnlock},
-  {id:15, key:'brick',  name:'Bắn gạch',           enter:enterBrickMode,  trigger:triggerBrickUnlock},
+  {id:14, key:'snake',  name:'Rắn săn mồi',        enter:enterSnakeMode,  trigger:triggerSnakeUnlock},
+  {id:15, key:'brick',  name:'Phá gạch',           enter:enterBrickMode,  trigger:triggerBrickUnlock},
   {id:16, key:'runner', name:'Chạy vô tận',        enter:enterRunnerMode, trigger:triggerRunnerUnlock},
-  {id:17, key:'space',  name:'Space Shooter',      enter:enterSpaceMode,  trigger:triggerSpaceUnlock},
+  {id:17, key:'space',  name:'Bắn tàu vũ trụ',    enter:enterSpaceMode,  trigger:triggerSpaceUnlock},
   {id:18, key:'rhythm', name:'Phiêu theo âm nhạc', enter:enterRhythmMode, trigger:triggerRhythmUnlock},
   {id:19, key:'maze',   name:'Thoát khỏi mê cung', enter:enterMazeMode,   trigger:triggerMazeUnlock},
   {id:20, key:'mega',   name:'Dũng sĩ diệt rồng',  enter:enterMegaMode,   trigger:triggerMegaUnlock},
@@ -43,7 +43,8 @@ function registerMap(desc){
 // ── Map "ngoài" nạp động (chuẩn plugin init/update/draw) ──
 // File maps/mapNN.js chỉ gọi registerMapModule({...}); startMap(NN) sẽ tự lazy-load.
 [
-  {id:21, key:'map21', name:'Map mẫu (plugin)', file:'maps/map21.js'},
+  {id:21, key:'frog', name:'Ếch ộp ham ăn', file:'maps/map21.js',
+    trigger(){ loadMapModule(MAP_REGISTRY[21], ()=>{ if(typeof triggerFrogUnlock==='function') triggerFrogUnlock(); }); }},
   {id:22, key:'floodpig', name:'Cẩu cứu heo mùa lũ', file:'maps/map22.js'},
 ].forEach(registerMap);
 
@@ -107,6 +108,12 @@ function _pluginLoop(now){
   ctx.clearRect(0,0,360,460);
   if(typeof mod.draw==='function') try{ mod.draw(ctx, mod._api); }catch(e){ console.error('[map '+mod.id+'] draw lỗi', e); }
   _pluginRAF = requestAnimationFrame(_pluginLoop);
+}
+
+function stopActiveMapModule(){
+  if(_pluginRAF){ cancelAnimationFrame(_pluginRAF); _pluginRAF=null; }
+  _activeMapModule = null;
+  const cv = PGCV(); if(cv) cv.classList.remove('active');
 }
 
 function exitMapModule(mod, won){
