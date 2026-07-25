@@ -18,7 +18,7 @@ const BOSS_REGISTRY = {
   },
   mega: {   // Map ẩn 20
     key: 'mega',
-    name: 'MEGA BOSS — Rồng huyền thoại',
+    name: 'Dũng sĩ diệt rồng',
     canvasId: 'mega-canvas',
     trigger: (typeof triggerMegaUnlock === 'function') ? triggerMegaUnlock : null,
     enter:   (typeof enterMegaMode     === 'function') ? enterMegaMode     : null,
