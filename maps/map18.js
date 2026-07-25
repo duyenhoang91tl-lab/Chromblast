@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════
-// maps/map18.js — MAP ẨN 18: Rhythm Tap
+// maps/map18.js — MAP ẨN 18: Phiêu theo âm nhạc
 // Tách verbatim khỏi main.js, nạp TRƯỚC main.js (global scope).
 // ═══════════════════════════════════════════════════════════════
 
@@ -57,7 +57,7 @@ function triggerRhythmUnlock(){
   markMapCleared('space');
   pendingUnlock='rhythm';
   document.getElementById('unlock-title').textContent='🎵 BẢN ĐỒ 18 MỞ KHÓA!';
-  document.getElementById('unlock-desc').innerHTML='<b>Rhythm Tap</b><br>Gõ theo nhịp điệu — PERFECT để ghi điểm cao!';
+  document.getElementById('unlock-desc').innerHTML='<b>Phiêu theo âm nhạc</b><br>Gõ theo nhịp điệu — PERFECT để ghi điểm cao!';
   document.getElementById('unlock-btn').textContent='CHIẾN ĐẤU!';
   showUnlockOverlay();
 }

@@ -35,9 +35,9 @@ function registerMap(desc){
   {id:15, key:'brick',  name:'Bắn gạch',           enter:enterBrickMode,  trigger:triggerBrickUnlock},
   {id:16, key:'runner', name:'Chạy vô tận',        enter:enterRunnerMode, trigger:triggerRunnerUnlock},
   {id:17, key:'space',  name:'Space Shooter',      enter:enterSpaceMode,  trigger:triggerSpaceUnlock},
-  {id:18, key:'rhythm', name:'Rhythm Tap',         enter:enterRhythmMode, trigger:triggerRhythmUnlock},
-  {id:19, key:'maze',   name:'Mê Cung Bí Ẩn',      enter:enterMazeMode,   trigger:triggerMazeUnlock},
-  {id:20, key:'mega',   name:'MEGA BOSS',          enter:enterMegaMode,   trigger:triggerMegaUnlock},
+  {id:18, key:'rhythm', name:'Phiêu theo âm nhạc', enter:enterRhythmMode, trigger:triggerRhythmUnlock},
+  {id:19, key:'maze',   name:'Thoát khỏi mê cung', enter:enterMazeMode,   trigger:triggerMazeUnlock},
+  {id:20, key:'mega',   name:'Dũng sĩ diệt rồng',  enter:enterMegaMode,   trigger:triggerMegaUnlock},
 ].forEach(registerMap);
 
 // ── Map "ngoài" nạp động (chuẩn plugin init/update/draw) ──

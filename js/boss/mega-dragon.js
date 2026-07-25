@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════
-// boss/mega-dragon.js — BOSS Map ẩn 20 (MEGA BOSS — Rồng huyền thoại)
+// boss/mega-dragon.js — BOSS Map ẩn 20 (Dũng sĩ diệt rồng)
 // Tách khỏi main.js, nạp TRƯỚC main.js (dùng chung global scope).
 // ═══════════════════════════════════════════════════════════════
 
@@ -52,8 +52,8 @@ function drawMegaBg(ctx,W,H,now){
 function triggerMegaUnlock(){
   markMapCleared('maze');
   pendingUnlock='mega';
-  document.getElementById('unlock-title').textContent='💀 BẢN ĐỒ 20 MỞ KHÓA!';
-  document.getElementById('unlock-desc').innerHTML='<b>MEGA BOSS Final Battle</b><br>Trận chiến cuối cùng! Hạ gục Rồng Huyền Thoại!';
+  document.getElementById('unlock-title').textContent='🐉 BẢN ĐỒ 20 MỞ KHÓA!';
+  document.getElementById('unlock-desc').innerHTML='<b>Dũng sĩ diệt rồng</b><br>Trận chiến cuối cùng! Hạ gục Rồng Huyền Thoại!';
   document.getElementById('unlock-btn').textContent='CHIẾN ĐẤU!';
   showUnlockOverlay();
 }

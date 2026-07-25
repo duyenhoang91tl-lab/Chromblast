@@ -659,9 +659,9 @@ const HIDDEN_MAP_LIST = [
   { key:'brick',   label:'Map ẩn 15 — Bắn gạch (Brick Breaker)',run: enterBrickMode },
   { key:'runner',  label:'Map ẩn 16 — Chạy vô tận (Runner)', run: enterRunnerMode },
   { key:'space',   label:'Map ẩn 17 — Space Shooter',        run: enterSpaceMode },
-  { key:'rhythm',  label:'Map ẩn 18 — Rhythm Tap',           run: enterRhythmMode },
-  { key:'maze',    label:'Map ẩn 19 — Mê Cung Bí Ẩn',        run: enterMazeMode },
-  { key:'mega',    label:'Map ẩn 20 — MEGA BOSS cuối cùng',  run: enterMegaMode },
+  { key:'rhythm',  label:'Map ẩn 18 — Phiêu theo âm nhạc',  run: enterRhythmMode },
+  { key:'maze',    label:'Map ẩn 19 — Thoát khỏi mê cung',  run: enterMazeMode },
+  { key:'mega',    label:'Map ẩn 20 — Dũng sĩ diệt rồng',   run: enterMegaMode },
   { key:'floodpig',label:'Map ẩn 22 — Cẩu cứu heo mùa lũ',   run: () => startMap('floodpig') },
 ];
 let clearedHiddenMaps = new Set(getSavedClearedMaps());
@@ -811,10 +811,10 @@ document.getElementById('best-box').textContent=t('bestLabel', best.toLocaleStri
 ═══════════════════════════════════════════════════════ */
 
 /* ═══════════════════════════════════════════════════════
-   MAP 18 — RHYTHM TAP 🎵
+   MAP 18 — PHIÊU THEO ÂM NHẠC 🎵
 ═══════════════════════════════════════════════════════ */
 
 /* ═══════════════════════════════════════════════════════
-   MAP 19 — MAZE RUNNER 🌀
+   MAP 19 — THOÁT KHỎI MÊ CUNG 🌀
 ═══════════════════════════════════════════════════════ */
 
