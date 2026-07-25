@@ -1101,7 +1101,7 @@ function checkGameOverA(){
     if(goEl && goEl.classList.contains('show')) return true; // đã thua — tránh trừ tim/ad lặp
     sfxGameOver();
     document.getElementById('go-score').textContent=t('finalScore', score.toLocaleString());
-    goEl.classList.add('show');
+    if(goEl) goEl.classList.add('show');
     if(typeof submitScoreToLeaderboard==='function') submitScoreToLeaderboard(score);
     // Hết nước đi + hết skill → mất 1 tim
     try{
