@@ -1539,6 +1539,11 @@ body.gchat-open .gchat-fab { display: none !important; }
 .caro-result-wld { font-size: 11px; color: #c0c0c8; }
 .caro-hub-divider { text-align: center; font-size: 11px; color: rgba(255,255,255,0.55); margin: 14px 0 10px; letter-spacing: 1px; }
 .caro-ai-block { margin: 8px 0 16px; }
+.caro-ai-block-bottom {
+  margin: 18px 0 4px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255,255,255,0.12);
+}
 .caro-ai-label { font-size: 13px; font-weight: 800; color: #9dce9d; margin-bottom: 8px; }
 .caro-ai-hub-btn {
   margin-top: 0 !important; margin-bottom: 10px;
