@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════
 // map-manager.js — Trình quản lý MAP tập trung
 // Thay cho các chuỗi if(map==N) / switch(stageKey): mọi map được đăng ký
-// vào MAP_REGISTRY theo SỐ (1-20) và theo KHOÁ ('secret'...'mega').
+// vào MAP_REGISTRY theo SỐ (1-21+) và theo KHOÁ ('secret'...'frog'...).
 //   startMap(10) / startMap('boss')  → vào map (tự lazy-load maps/mapN.js nếu là map ngoài)
 //   triggerMapUnlock('boss')         → hiện overlay mở khoá của map
 // Map mới chỉ cần bỏ file vào maps/mapNN.js rồi đăng ký — KHÔNG cần sửa switch.
@@ -43,7 +43,8 @@ function registerMap(desc){
 // ── Map "ngoài" nạp động (chuẩn plugin init/update/draw) ──
 // File maps/mapNN.js chỉ gọi registerMapModule({...}); startMap(NN) sẽ tự lazy-load.
 [
-  {id:21, key:'map21', name:'Map mẫu (plugin)', file:'maps/map21.js'},
+  {id:21, key:'frog', name:'Ếch bắt côn trùng', file:'maps/map21.js',
+    trigger(){ loadMapModule(MAP_REGISTRY[21], ()=>{ if(typeof triggerFrogUnlock==='function') triggerFrogUnlock(); }); }},
   {id:22, key:'floodpig', name:'Cẩu cứu heo mùa lũ', file:'maps/map22.js'},
 ].forEach(registerMap);
 
@@ -107,6 +108,12 @@ function _pluginLoop(now){
   ctx.clearRect(0,0,360,460);
   if(typeof mod.draw==='function') try{ mod.draw(ctx, mod._api); }catch(e){ console.error('[map '+mod.id+'] draw lỗi', e); }
   _pluginRAF = requestAnimationFrame(_pluginLoop);
+}
+
+function stopActiveMapModule(){
+  if(_pluginRAF){ cancelAnimationFrame(_pluginRAF); _pluginRAF=null; }
+  _activeMapModule = null;
+  const cv = PGCV(); if(cv) cv.classList.remove('active');
 }
 
 function exitMapModule(mod, won){

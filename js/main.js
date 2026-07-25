@@ -640,7 +640,7 @@ document.getElementById('restart-btn').addEventListener('click', ()=>{ sfxClick(
 /* ══════════════════════════════════════════
    AUTH — Đăng nhập / Đăng ký / Admin
 ══════════════════════════════════════════ */
-// Danh sách 20 map ẩn: {key, label, run}
+// Danh sách map ẩn: {key, label, run}
 const HIDDEN_MAP_LIST = [
   { key:'secret1', label:'Map ẩn 1 — Đấu màu bí ẩn',        run: enterSecretMode },
   { key:'dodge',   label:'Map ẩn 2 — Rùa né cà rốt',         run: enterDodgeMode },
@@ -662,6 +662,7 @@ const HIDDEN_MAP_LIST = [
   { key:'rhythm',  label:'Map ẩn 18 — Phiêu theo âm nhạc',  run: enterRhythmMode },
   { key:'maze',    label:'Map ẩn 19 — Thoát khỏi mê cung',  run: enterMazeMode },
   { key:'mega',    label:'Map ẩn 20 — Dũng sĩ diệt rồng',   run: enterMegaMode },
+  { key:'frog',    label:'Map ẩn 21 — Ếch bắt côn trùng',   run: () => startMap('frog') },
   { key:'floodpig',label:'Map ẩn 22 — Cẩu cứu heo mùa lũ',   run: () => startMap('floodpig') },
 ];
 let clearedHiddenMaps = new Set(getSavedClearedMaps());
@@ -714,11 +715,14 @@ function hardResetAllModes(){
   if(typeof fireInterval!=='undefined' && fireInterval){ clearInterval(fireInterval); fireInterval=null; }
   try{ endDrag(); }catch(e){}
 
+  // Dừng plugin-map (map 21+) nếu đang chạy
+  try{ if(typeof stopActiveMapModule==='function') stopActiveMapModule(); }catch(e){}
+
   // Ẩn hết mọi canvas/khung của map ẩn
   ['secret-grid','dodge-canvas','bee-canvas','fruit-canvas','gold-canvas','mole-canvas',
    'memory-canvas','bubble-canvas','stack-canvas','boss-canvas','catch-canvas','flood-canvas',
    'arena-canvas','snake-canvas','brick-canvas','runner-canvas','space-canvas','rhythm-canvas',
-   'maze-canvas','mega-canvas'].forEach(id=>{
+   'maze-canvas','mega-canvas','plugin-canvas'].forEach(id=>{
     const el=document.getElementById(id);
     if(el) el.classList.remove('active');
   });

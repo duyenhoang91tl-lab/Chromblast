@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Ếch bắt côn trùng — mô phỏng Map 21</title>
+<style>
+  :root{ --bg:#062a30; --panel:#0d3d42; --ink:#eaf8f5; --accent:#ffe08a; }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; min-height:100vh; display:flex; flex-direction:column; align-items:center;
+    background:radial-gradient(1000px 520px at 50% -8%, #1a6b7a, var(--bg));
+    color:var(--ink); font-family:Nunito, system-ui, sans-serif; padding:16px;
+  }
+  h1{ font-size:1.25rem; margin:8px 0 4px; color:var(--accent); text-align:center; }
+  p{ margin:0 0 12px; opacity:.85; font-size:.9rem; text-align:center; max-width:420px; line-height:1.4; }
+  .wrap{
+    background:var(--panel); border-radius:18px; padding:12px; box-shadow:0 12px 40px rgba(0,0,0,.45);
+    border:1px solid rgba(255,255,220,.12);
+  }
+  canvas{ display:block; width:min(360px,92vw); height:auto; touch-action:none; border-radius:12px; }
+  .bar{ display:flex; gap:8px; justify-content:center; margin-top:12px; flex-wrap:wrap; }
+  button{
+    border:none; border-radius:999px; padding:10px 18px; font-weight:800; cursor:pointer;
+    background:linear-gradient(180deg,#ffe08a,#e0b84a); color:#1a1400;
+  }
+  button.ghost{ background:rgba(255,255,255,.1); color:#fff; }
+  .hint{ font-size:.8rem; opacity:.7; margin-top:10px; text-align:center; }
+</style>
+</head>
+<body>
+  <h1>🐸 Ếch bắt côn trùng</h1>
+  <p>Mô phỏng Map ẩn 21 — ao sen nhìn từ trên xuống. Chạm để phóng lưỡi, căn lúc ong · dế · châu chấu · bướm · cánh cứng bay gần.</p>
+  <div class="wrap">
+    <canvas id="c" width="720" height="920"></canvas>
+  </div>
+  <div class="bar">
+    <button type="button" id="btn-new">Chơi lại</button>
+  </div>
+  <div class="hint">Mục tiêu: bắt 12 côn trùng trong 60 giây</div>
+<script>
+(function(){
+  const cvs = document.getElementById('c');
+  const ctx = cvs.getContext('2d');
+  const W = 360, H = 460, DPR = 2;
+  cvs.width = W * DPR; cvs.height = H * DPR;
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+  const GOAL = 12, TIME = 60;
+  const KINDS = [
+    { id:'bee', name:'Ong', color:'#f0c040' },
+    { id:'cricket', name:'Dế mèn', color:'#6a8f3c' },
+    { id:'grasshopper', name:'Châu chấu', color:'#8bc34a' },
+    { id:'butterfly', name:'Bướm', color:'#e91e8c' },
+    { id:'beetle', name:'Cánh cứng', color:'#5d4037' },
+  ];
+
+  let frog, pads, flowers, bugs, tongue, particles, ripples;
+  let score, timeLeft, spawnT, pop, ended, last, raf;
+
+  function reset(){
+    ended = false; score = 0; timeLeft = TIME; spawnT = 0.2;
+    tongue = null; particles = []; ripples = []; bugs = []; pop = null;
+    frog = { x: W*0.5, y: H*0.52, r: 22, blink: 2 };
+    pads = []; flowers = [];
+    for (let i = 0; i < 12; i++) {
+      const a = (i/12)*Math.PI*2 + (Math.random()-0.5)*0.25;
+      const r = Math.min(W,H)*(0.16+Math.random()*0.28);
+      pads.push({
+        x: Math.max(28, Math.min(W-28, frog.x + Math.cos(a)*r)),
+        y: Math.max(28, Math.min(H-28, frog.y + Math.sin(a)*r*0.85)),
+        r: 16+Math.random()*22, rot: Math.random()*Math.PI*2,
+        notch: 0.35+Math.random()*0.35, home:false
+      });
+    }
+    pads.push({ x:frog.x, y:frog.y, r:frog.r*2.35, rot:-0.35, notch:0.55, home:true });
+    for (let i = 0; i < 8; i++) {
+      const a = Math.random()*Math.PI*2, r = Math.min(W,H)*(0.12+Math.random()*0.32);
+      flowers.push({
+        x: Math.max(36, Math.min(W-36, frog.x+Math.cos(a)*r)),
+        y: Math.max(36, Math.min(H-36, frog.y+Math.sin(a)*r*0.9)),
+        s: 0.65+Math.random()*0.5, rot: Math.random()*Math.PI*2, phase: Math.random()*Math.PI*2
+      });
+    }
+    for (let i = 0; i < 4; i++) spawn();
+    last = 0;
+    if (raf) cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(loop);
+  }
+
+  function spawn(){
+    if (bugs.length >= 8) return;
+    const kind = KINDS[(Math.random()*KINDS.length)|0];
+    const side = (Math.random()*4)|0;
+    let x,y;
+    if (side===0){ x=Math.random()*W; y=-18; }
+    else if (side===1){ x=W+18; y=Math.random()*H; }
+    else if (side===2){ x=Math.random()*W; y=H+18; }
+    else { x=-18; y=Math.random()*H; }
+    const hop = kind.id==='cricket'||kind.id==='grasshopper';
+    bugs.push({
+      kind, x, y, vx:0, vy:0,
+      ang: Math.atan2(y-frog.y, x-frog.x),
+      orbitR: Math.min(W,H)*(0.16+Math.random()*0.2),
+      orbitSpeed: (0.55+Math.random()*0.8)*(Math.random()<0.5?1:-1),
+      hopT: Math.random()*Math.PI*2,
+      hopAmp: hop ? 10+Math.random()*12 : 3+Math.random()*5,
+      flap: Math.random()*Math.PI*2,
+      r: kind.id==='butterfly'?13:kind.id==='beetle'?11:10,
+      alive:true, enter:0.5
+    });
+  }
+
+  function fire(tx, ty){
+    if (ended || tongue) return;
+    const dx = tx-frog.x, dy = ty-frog.y, len = Math.hypot(dx,dy)||1;
+    const max = Math.min(W,H)*0.42;
+    tongue = { ux:dx/len, uy:dy/len, len:0, max:Math.min(len,max), out:true, hit:false };
+  }
+
+  function catchBug(b){
+    b.alive = false; score++;
+    pop = { text:'+'+score+' · '+b.kind.name, life:0.85 };
+    for (let i=0;i<9;i++) particles.push({
+      x:b.x,y:b.y, vx:(Math.random()-0.5)*220, vy:-40-Math.random()*140,
+      life:0.35+Math.random()*0.35, max:0.7, color:b.kind.color
+    });
+    if (score >= GOAL) { ended = true; pop = { text:'🏆 Thắng!', life:2 }; }
+  }
+
+  function update(dt){
+    if (ended) return;
+    timeLeft -= dt;
+    frog.blink -= dt;
+    if (frog.blink < -0.1) frog.blink = 1.6+Math.random()*1.8;
+    spawnT -= dt;
+    if (spawnT <= 0){ spawn(); spawnT = 0.85*(0.75+Math.random()*0.5); }
+
+    for (let i=bugs.length-1;i>=0;i--){
+      const b = bugs[i];
+      if (!b.alive){ bugs.splice(i,1); continue; }
+      if (b.enter>0) b.enter -= dt;
+      b.ang += b.orbitSpeed*dt;
+      const hopFast = b.kind.id==='cricket'||b.kind.id==='grasshopper';
+      b.hopT += dt*(hopFast?7:3.2);
+      b.flap += dt*(b.kind.id==='butterfly'?14:b.kind.id==='bee'?22:8);
+      const hop = Math.sin(b.hopT)*b.hopAmp;
+      let tx = frog.x + Math.cos(b.ang)*b.orbitR;
+      let ty = frog.y + Math.sin(b.ang)*b.orbitR*0.82 + hop;
+      if (b.kind.id==='bee'){ tx += Math.sin(b.flap*0.7)*14; ty += Math.cos(b.flap*0.9)*10; }
+      const dx=tx-b.x, dy=ty-b.y, d=Math.hypot(dx,dy)||1, sp=b.enter>0?200:145;
+      b.x += (dx/d)*sp*dt; b.y += (dy/d)*sp*dt; b.vx=(dx/d)*sp; b.vy=(dy/d)*sp;
+    }
+
+    if (tongue){
+      if (tongue.out){ tongue.len += 980*dt; if (tongue.len>=tongue.max){ tongue.len=tongue.max; tongue.out=false; } }
+      else { tongue.len -= 980*1.15*dt; if (tongue.len<=0) tongue=null; }
+      if (tongue && tongue.out && !tongue.hit){
+        const tipX=frog.x+tongue.ux*tongue.len, tipY=frog.y+tongue.uy*tongue.len;
+        for (const b of bugs){
+          if (!b.alive) continue;
+          if (Math.hypot(tipX-b.x, tipY-b.y) < b.r+9){
+            tongue.hit=true; tongue.out=false; tongue.max=tongue.len; catchBug(b); break;
+          }
+        }
+      }
+    }
+
+    if (Math.random()<dt*0.7) ripples.push({x:20+Math.random()*(W-40),y:20+Math.random()*(H-40),t:0,life:1.2+Math.random()});
+    for (let i=ripples.length-1;i>=0;i--){ ripples[i].t+=dt; if(ripples[i].t>ripples[i].life) ripples.splice(i,1); }
+    for (let i=particles.length-1;i>=0;i--){
+      const p=particles[i]; p.life-=dt; p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy+=200*dt; if(p.life<=0) particles.splice(i,1);
+    }
+    if (pop){ pop.life-=dt; if(pop.life<=0) pop=null; }
+    if (timeLeft<=0){ timeLeft=0; ended=true; pop={text: score>=GOAL?'🏆 Thắng!':('⏱ '+score+'/'+GOAL), life:2}; }
+  }
+
+  function draw(t){
+    const g = ctx.createLinearGradient(0,0,0,H);
+    g.addColorStop(0,'#1a6b7a'); g.addColorStop(0.45,'#148a78'); g.addColorStop(1,'#0d5c62');
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    for (const rp of ripples){
+      const k=rp.t/rp.life; ctx.beginPath(); ctx.arc(rp.x,rp.y,6+k*28,0,Math.PI*2);
+      ctx.strokeStyle='rgba(220,255,250,'+(0.32*(1-k)).toFixed(3)+')'; ctx.lineWidth=1.2; ctx.stroke();
+    }
+    for (const pad of pads){
+      ctx.save(); ctx.translate(pad.x,pad.y); ctx.rotate(pad.rot);
+      ctx.beginPath(); ctx.arc(0,0,pad.r,pad.notch,Math.PI*2-pad.notch*0.12); ctx.lineTo(0,0); ctx.closePath();
+      const pg=ctx.createRadialGradient(-pad.r*0.2,-pad.r*0.2,2,0,0,pad.r);
+      pg.addColorStop(0, pad.home?'#7dca4a':'#5cb84a'); pg.addColorStop(1, pad.home?'#3f8f2e':'#2f7a32');
+      ctx.fillStyle=pg; ctx.fill(); ctx.restore();
+    }
+    for (const f of flowers){
+      const bob=Math.sin(t*1.4+f.phase)*1.8;
+      ctx.save(); ctx.translate(f.x,f.y+bob); ctx.rotate(f.rot); ctx.scale(f.s,f.s);
+      for (let i=0;i<8;i++){ const a=(i/8)*Math.PI*2; ctx.beginPath();
+        ctx.ellipse(Math.cos(a)*8,Math.sin(a)*8,7,4,a,0,Math.PI*2);
+        ctx.fillStyle=i%2?'#ff6b9d':'#ff8fb8'; ctx.fill(); }
+      ctx.beginPath(); ctx.arc(0,0,5,0,Math.PI*2); ctx.fillStyle='#ffe066'; ctx.fill(); ctx.restore();
+    }
+    for (const b of bugs){
+      ctx.save(); ctx.translate(b.x,b.y); ctx.rotate(Math.atan2(b.vy,b.vx||1));
+      const k=b.kind.id;
+      if (k==='bee'){
+        ctx.fillStyle='#f0c040'; ctx.beginPath(); ctx.ellipse(0,0,8,5.5,0,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle='#222'; ctx.fillRect(-3,-5.5,2.2,11); ctx.fillRect(1,-5.5,2.2,11);
+      } else if (k==='butterfly'){
+        const flap=0.55+Math.sin(b.flap)*0.35; ctx.fillStyle=b.kind.color;
+        ctx.beginPath(); ctx.ellipse(-7,-2,7*flap,9,-0.4,0,Math.PI*2); ctx.ellipse(7,-2,7*flap,9,0.4,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle='#5a2a6a'; ctx.fillRect(-1.2,-7,2.4,14);
+      } else if (k==='beetle'){
+        ctx.fillStyle='#4e342e'; ctx.beginPath(); ctx.ellipse(0,0,9,6.5,0,0,Math.PI*2); ctx.fill();
+      } else if (k==='cricket'){
+        ctx.fillStyle='#6a8f3c'; ctx.beginPath(); ctx.ellipse(0,0,9,4.5,0,0,Math.PI*2); ctx.fill();
+        ctx.strokeStyle='#4a6b28'; ctx.lineWidth=1.8; ctx.beginPath(); ctx.moveTo(2,2); ctx.quadraticCurveTo(11,-9,14,3); ctx.stroke();
+      } else {
+        ctx.fillStyle='#8bc34a'; ctx.beginPath(); ctx.ellipse(0,0,10,5,0,0,Math.PI*2); ctx.fill();
+        ctx.strokeStyle='#558b2f'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(0,2); ctx.quadraticCurveTo(12,-12,16,5); ctx.stroke();
+      }
+      ctx.restore();
+    }
+    if (tongue){
+      const tipX=frog.x+tongue.ux*tongue.len, tipY=frog.y+tongue.uy*tongue.len;
+      ctx.lineCap='round'; ctx.beginPath(); ctx.moveTo(frog.x,frog.y+frog.r*0.18); ctx.lineTo(tipX,tipY);
+      ctx.strokeStyle='#e85a7a'; ctx.lineWidth=6; ctx.stroke();
+      ctx.beginPath(); ctx.arc(tipX,tipY,7,0,Math.PI*2); ctx.fillStyle='#ff6b8a'; ctx.fill();
+    }
+    // frog
+    ctx.save(); ctx.translate(frog.x,frog.y);
+    ctx.beginPath(); ctx.ellipse(0,2,frog.r*1.05,frog.r*0.85,0,0,Math.PI*2);
+    const body=ctx.createRadialGradient(-frog.r*0.2,-frog.r*0.3,2,0,0,frog.r*1.15);
+    body.addColorStop(0,'#8fd84a'); body.addColorStop(1,'#3d9a2e');
+    ctx.fillStyle=body; ctx.fill();
+    ctx.beginPath(); ctx.ellipse(0,frog.r*0.15,frog.r*0.55,frog.r*0.38,0,0,Math.PI*2); ctx.fillStyle='#d8f2a8'; ctx.fill();
+    for (const e of [[-frog.r*0.45,-frog.r*0.55],[frog.r*0.45,-frog.r*0.55]]){
+      ctx.beginPath(); ctx.arc(e[0],e[1],frog.r*0.3,0,Math.PI*2); ctx.fillStyle='#2e7d32'; ctx.fill();
+      ctx.beginPath(); ctx.arc(e[0],e[1],frog.r*0.2,0,Math.PI*2); ctx.fillStyle='#fff'; ctx.fill();
+      if (frog.blink>0){ ctx.beginPath(); ctx.arc(e[0]+1.5,e[1]+1,frog.r*0.09,0,Math.PI*2); ctx.fillStyle='#1a1a1a'; ctx.fill(); }
+    }
+    ctx.restore();
+
+    for (const p of particles){
+      ctx.globalAlpha=Math.max(0,p.life/p.max); ctx.fillStyle=p.color;
+      ctx.beginPath(); ctx.arc(p.x,p.y,2.5,0,Math.PI*2); ctx.fill(); ctx.globalAlpha=1;
+    }
+    ctx.fillStyle='#fff'; ctx.font='bold 15px Nunito,system-ui'; ctx.textBaseline='top';
+    ctx.textAlign='center'; ctx.fillText('🐸 '+score+'/'+GOAL, W/2, 10);
+    ctx.textAlign='right'; ctx.fillText('⏱ '+Math.max(0,Math.ceil(timeLeft))+'s', W-12, 10);
+    if (pop){ ctx.globalAlpha=Math.min(1,pop.life*2); ctx.font='800 18px Nunito,system-ui';
+      ctx.textAlign='center'; ctx.fillStyle='#fff59d'; ctx.fillText(pop.text,W/2,48); ctx.globalAlpha=1; }
+    if (ended){
+      ctx.fillStyle='rgba(0,0,0,0.35)'; ctx.fillRect(0,0,W,H);
+      ctx.fillStyle='#fff'; ctx.font='800 22px Nunito,system-ui'; ctx.textAlign='center';
+      ctx.fillText(score>=GOAL?'🏆 Phá đảo!':'Hết giờ', W/2, H/2);
+    }
+  }
+
+  function loop(ts){
+    if (!last) last = ts;
+    const dt = Math.min(0.033, (ts-last)/1000); last = ts;
+    update(dt); draw(ts/1000);
+    raf = requestAnimationFrame(loop);
+  }
+
+  function toLocal(e){
+    const r = cvs.getBoundingClientRect();
+    return { x:(e.clientX-r.left)*(W/r.width), y:(e.clientY-r.top)*(H/r.height) };
+  }
+  cvs.addEventListener('pointerdown', e=>{ e.preventDefault(); const p=toLocal(e); if(!ended) fire(p.x,p.y); });
+  document.getElementById('btn-new').onclick = reset;
+  reset();
+})();
+</script>
+</body>
+</html>

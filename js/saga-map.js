@@ -9,6 +9,7 @@ const SAGA_BLURBS = {
   2: 'Thỏ đang bắn cà rốt lung tung! Điều khiển rùa né đạn càng lâu càng nhiều điểm.',
   3: 'Hoa quả bay lên khắp vườn — chém thật nhiều, tránh bom, săn CRITICAL ×5!',
   4: 'Samoyed đang chơi giữa vườn hoa. Chỉ đường chạy giúp chó và đập ong bay đi!',
+  21: 'Ao sen nhìn từ trên xuống — ếch ngồi giữa lá sen, căn thời gian phóng lưỡi bắt ong, dế, châu chấu, bướm và cánh cứng!',
 };
 const SAGA_RAINBOW = ['#ff4d6d','#ff8c42','#ffd60a','#70e000','#4cc9f0','#7b2cbf','#f72585'];
 /** Mỗi 4 map ẩn = 1 chặng Samoyed (nền khác nhau). */
@@ -17,7 +18,7 @@ const SAGA_EPISODES = [
   { id:1, from:5,  to:8,  theme:'forest', title:'Khu rừng', speech:'Rừng sâu có nhiều bí mật — đi nào! 🌲' },
   { id:2, from:9,  to:12, theme:'castle', title:'Lâu đài', speech:'Lâu đài cổ đang chờ bạn khám phá! 🏰' },
   { id:3, from:13, to:16, theme:'ocean',  title:'Bờ biển', speech:'Sóng biển và kho báu đang chờ! 🌊' },
-  { id:4, from:17, to:20, theme:'sky',    title:'Trời mây', speech:'Bay lên bầu trời cùng Samoyed! ☁️' },
+  { id:4, from:17, to:21, theme:'sky',    title:'Trời mây', speech:'Bay lên bầu trời cùng Samoyed! ☁️' },
 ];
 
 let _sagaSelectedId = 1;
@@ -36,7 +37,7 @@ let _sagaLevelsCache = null;
 let _sagaEpisode = SAGA_EPISODES[0];
 
 function sagaEpisodeForMapId(id){
-  const n = Math.max(1, Math.min(20, id|0));
+  const n = Math.max(1, Math.min(21, id|0));
   return SAGA_EPISODES.find(e => n >= e.from && n <= e.to) || SAGA_EPISODES[0];
 }
 function sagaEpisodeLevels(ep){
@@ -46,7 +47,7 @@ function sagaEpisodeLevels(ep){
 
 function sagaBuildLevels(){
   const out = [];
-  for(let id = 1; id <= 20; id++){
+  for(let id = 1; id <= 21; id++){
     let key = 'map'+id, name = 'Map '+id;
     try{
       const d = (typeof getMap === 'function') ? getMap(id)
@@ -94,7 +95,7 @@ function sagaIsCleared(lv){
   return false;
 }
 
-/** Id map cao nhất được chơi (1–20). */
+/** Id map cao nhất được chơi (1–21). */
 function sagaMaxUnlockedId(){
   let max = 0;
   try{
@@ -110,7 +111,7 @@ function sagaMaxUnlockedId(){
   for(const lv of sagaLevels()){
     if(sagaIsCleared(lv)) max = Math.max(max, lv.id);
   }
-  return Math.max(0, Math.min(20, max|0));
+  return Math.max(0, Math.min(21, max|0));
 }
 
 function sagaIsUnlocked(lv){
@@ -140,7 +141,7 @@ function _sagaPickDefaultId(opts){
     if(lv) return lv.id;
   }
   if(typeof o.afterClear === 'number' && o.afterClear >= 0){
-    const nextId = Math.min(20, (o.afterClear|0) + 2);
+    const nextId = Math.min(21, (o.afterClear|0) + 2);
     const maxU = sagaMaxUnlockedId();
     if(nextId <= maxU) return nextId;
     return Math.max(1, maxU || 1);
