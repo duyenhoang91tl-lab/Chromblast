@@ -91,7 +91,7 @@
     'versus-setup-panel','versus-result-panel','online-hub-panel','online-lobby-panel','online-matchmaking-panel',
     'caro-hub-panel','caro-lobby-panel','caro-mm-panel','caro-result-panel','caro-rank-panel','caro-settings-panel',
     'player-profile-panel','player-card-panel',
-    'friends-panel','shop-panel',
+    'friends-panel','shop-panel','quests-screen',
     'settings-panel','settings-more-panel','settings-lang-panel','settings-cup-panel','settings-text-panel',
     'brick-skin-panel',
     'board-skin-panel',
@@ -109,6 +109,13 @@
   }
 
   App.addListener('backButton', ()=>{
+    // 0. Nhiệm vụ: detail → hub → đóng
+    try{
+      if(typeof questsHandleBack==='function' && document.getElementById('quests-screen')?.classList.contains('show')){
+        questsHandleBack();
+        return;
+      }
+    }catch(e){}
     // 1. Đóng panel đang mở
     for(const id of CLOSABLE_PANELS){
       const el=document.getElementById(id);

@@ -1,0 +1,625 @@
+// ═══════════════════════════════════════════════════════════════
+// js/quests.js — Nhiệm vụ ngày / tuần / tháng (màn hình fullscreen)
+// Nạp SAU daily-rewards.js + inventory.js, TRƯỚC ui.js / main.js
+// ═══════════════════════════════════════════════════════════════
+(function (g) {
+  "use strict";
+
+  const KEY_PREFIX = "chromablast_quests_";
+  let _view = "hub"; // hub | day | week | month
+
+  function tt(key, fallback) {
+    try {
+      if (typeof t === "function") {
+        const v = t(key);
+        if (v != null && v !== key) return v;
+      }
+    } catch (e) {}
+    return fallback != null ? fallback : key;
+  }
+
+  function ttf(key, fallback) {
+    const args = Array.prototype.slice.call(arguments, 2);
+    try {
+      if (typeof t === "function") {
+        const v = t.apply(null, [key].concat(args));
+        if (v != null && v !== key) return v;
+      }
+    } catch (e) {}
+    let s = fallback != null ? String(fallback) : String(key);
+    args.forEach(function (a, i) {
+      s = s.split("{" + i + "}").join(a);
+    });
+    return s;
+  }
+
+  function who() {
+    try {
+      if (typeof currentUser !== "undefined" && currentUser && currentUser.username)
+        return currentUser.username;
+    } catch (e) {}
+    return "_guest";
+  }
+
+  function storageKey() {
+    return KEY_PREFIX + who();
+  }
+
+  function todayStr() {
+    if (typeof g.todayStr === "function") return g.todayStr();
+    const d = new Date();
+    return (
+      d.getFullYear() +
+      "-" +
+      String(d.getMonth() + 1).padStart(2, "0") +
+      "-" +
+      String(d.getDate()).padStart(2, "0")
+    );
+  }
+
+  function weekKey(d) {
+    d = d || new Date();
+    const tmp = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    const dayNum = tmp.getUTCDay() || 7;
+    tmp.setUTCDate(tmp.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(tmp.getUTCFullYear(), 0, 1));
+    const weekNo = Math.ceil(((tmp - yearStart) / 86400000 + 1) / 7);
+    return tmp.getUTCFullYear() + "-W" + String(weekNo).padStart(2, "0");
+  }
+
+  function monthKey(d) {
+    d = d || new Date();
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
+  }
+
+  function emptyBucket() {
+    return { play: 0, clears: 0, scoreMax: 0, spin: 0, comboMax: 0, claimed: {} };
+  }
+
+  function defaultState() {
+    return {
+      dayKey: todayStr(),
+      weekKey: weekKey(),
+      monthKey: monthKey(),
+      day: emptyBucket(),
+      week: emptyBucket(),
+      month: emptyBucket(),
+      checkins: {},
+    };
+  }
+
+  function loadState() {
+    let st = defaultState();
+    try {
+      const raw =
+        (typeof safeGet === "function" ? safeGet(storageKey()) : null) ||
+        localStorage.getItem(storageKey());
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === "object") st = Object.assign(st, parsed);
+      }
+    } catch (e) {}
+    rollPeriods(st);
+    return st;
+  }
+
+  function saveState(st) {
+    try {
+      const payload = JSON.stringify(st);
+      if (typeof safeSet === "function") safeSet(storageKey(), payload);
+      else localStorage.setItem(storageKey(), payload);
+    } catch (e) {}
+  }
+
+  function rollPeriods(st) {
+    const d = todayStr();
+    const w = weekKey();
+    const m = monthKey();
+    if (st.dayKey !== d) {
+      st.dayKey = d;
+      st.day = emptyBucket();
+    }
+    if (st.weekKey !== w) {
+      st.weekKey = w;
+      st.week = emptyBucket();
+    }
+    if (st.monthKey !== m) {
+      st.monthKey = m;
+      st.month = emptyBucket();
+    }
+    if (!st.checkins || typeof st.checkins !== "object") st.checkins = {};
+    ["day", "week", "month"].forEach(function (k) {
+      if (!st[k] || typeof st[k] !== "object") st[k] = emptyBucket();
+      if (!st[k].claimed) st[k].claimed = {};
+    });
+  }
+
+  /** Định nghĩa nhiệm vụ */
+  const QUEST_DEFS = {
+    day: [
+      { id: "checkin", icon: "🎁", target: 1, metric: "checkin", reward: { xp: 0, gold: 0, hearts: 0 }, useDailyClaim: true },
+      { id: "play1", icon: "🎮", target: 1, metric: "play", reward: { xp: 15, gold: 1, hearts: 0 } },
+      { id: "clear3", icon: "💥", target: 3, metric: "clears", reward: { xp: 20, gold: 1, hearts: 0 } },
+      { id: "score300", icon: "⭐", target: 300, metric: "scoreMax", reward: { xp: 25, gold: 1, hearts: 0 } },
+      { id: "spin1", icon: "🎡", target: 1, metric: "spin", reward: { xp: 10, gold: 1, hearts: 0 } },
+    ],
+    week: [
+      { id: "play5", icon: "🎮", target: 5, metric: "play", reward: { xp: 60, gold: 3, hearts: 1 } },
+      { id: "clear30", icon: "💥", target: 30, metric: "clears", reward: { xp: 80, gold: 4, hearts: 1 } },
+      { id: "login3", icon: "📅", target: 3, metric: "weekCheckins", reward: { xp: 50, gold: 3, hearts: 1 } },
+      { id: "combo5", icon: "🔥", target: 5, metric: "comboMax", reward: { xp: 70, gold: 3, hearts: 0 } },
+    ],
+    month: [
+      { id: "login15", icon: "🗓️", target: 15, metric: "monthCheckins", reward: { xp: 200, gold: 10, hearts: 2 } },
+      { id: "play20", icon: "🎮", target: 20, metric: "play", reward: { xp: 180, gold: 8, hearts: 2 } },
+      { id: "clear100", icon: "💥", target: 100, metric: "clears", reward: { xp: 220, gold: 12, hearts: 2 } },
+      { id: "combo8", icon: "🔥", target: 8, metric: "comboMax", reward: { xp: 150, gold: 6, hearts: 1 } },
+    ],
+  };
+
+  function countCheckinsInRange(st, startMs, endMs) {
+    let n = 0;
+    Object.keys(st.checkins || {}).forEach(function (k) {
+      if (!st.checkins[k]) return;
+      const t0 = new Date(k + "T00:00:00").getTime();
+      if (t0 >= startMs && t0 <= endMs) n++;
+    });
+    return n;
+  }
+
+  function weekBounds() {
+    const now = new Date();
+    const day = now.getDay() || 7; // Mon=1 … Sun=7
+    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (day - 1));
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(start);
+    end.setDate(start.getDate() + 6);
+    end.setHours(23, 59, 59, 999);
+    return { start: start.getTime(), end: end.getTime() };
+  }
+
+  function monthBounds() {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth(), 1);
+    const end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+    return { start: start.getTime(), end: end.getTime() };
+  }
+
+  function progressOf(st, cat, def) {
+    const bucket = st[cat] || emptyBucket();
+    if (def.metric === "checkin") {
+      return st.checkins && st.checkins[todayStr()] ? 1 : 0;
+    }
+    if (def.metric === "weekCheckins") {
+      const b = weekBounds();
+      return countCheckinsInRange(st, b.start, b.end);
+    }
+    if (def.metric === "monthCheckins") {
+      const b = monthBounds();
+      return countCheckinsInRange(st, b.start, b.end);
+    }
+    return Math.max(0, bucket[def.metric] | 0);
+  }
+
+  function isClaimed(st, cat, id) {
+    return !!(st[cat] && st[cat].claimed && st[cat].claimed[id]);
+  }
+
+  function grantReward(reward) {
+    reward = reward || {};
+    if (reward.xp && typeof addPlayerXP === "function") addPlayerXP(reward.xp | 0);
+    if (reward.gold && typeof grantGold === "function")
+      grantGold(reward.gold | 0, tt("questsReward", "Nhiệm vụ"));
+    if (reward.hearts) {
+      try {
+        if (typeof grantDailyQuestHearts === "function")
+          grantDailyQuestHearts(reward.hearts | 0, tt("questsReward", "Nhiệm vụ"));
+        else if (typeof grantHearts === "function")
+          grantHearts(reward.hearts | 0, tt("questsReward", "Nhiệm vụ"));
+      } catch (e) {}
+    }
+  }
+
+  function claimQuest(cat, id) {
+    const st = loadState();
+    const def = (QUEST_DEFS[cat] || []).find(function (q) {
+      return q.id === id;
+    });
+    if (!def) return { ok: false };
+    if (isClaimed(st, cat, id)) return { ok: false, reason: "claimed" };
+
+    if (def.useDailyClaim) {
+      if (typeof claimDailyReward !== "function") return { ok: false };
+      const res = claimDailyReward();
+      if (!res) return { ok: false, reason: "claimed" };
+      st.checkins[todayStr()] = 1;
+      st[cat].claimed[id] = 1;
+      saveState(st);
+      try {
+        if (typeof updateDailyBadge === "function") updateDailyBadge();
+      } catch (e) {}
+      return { ok: true, daily: res, reward: { xp: res.xp, gold: res.gold, hearts: res.hearts } };
+    }
+
+    const prog = progressOf(st, cat, def);
+    if (prog < def.target) return { ok: false, reason: "progress" };
+    st[cat].claimed[id] = 1;
+    saveState(st);
+    grantReward(def.reward);
+    return { ok: true, reward: def.reward };
+  }
+
+  function syncCheckinFromDaily(st) {
+    try {
+      if (typeof getDailyStatus === "function") {
+        const s = getDailyStatus();
+        if (s && s.alreadyClaimedToday) st.checkins[todayStr()] = 1;
+      }
+      const ds =
+        typeof getDailyState === "function"
+          ? getDailyState()
+          : null;
+      if (ds && ds.lastClaim) st.checkins[ds.lastClaim] = 1;
+    } catch (e) {}
+  }
+
+  /** Ghi tiến độ từ gameplay */
+  function noteQuestEvent(type, amount) {
+    amount = amount == null ? 1 : Number(amount) || 0;
+    if (!(amount > 0) && type !== "score" && type !== "combo") return;
+    const st = loadState();
+    syncCheckinFromDaily(st);
+
+    function bump(metric, n, mode) {
+      ["day", "week", "month"].forEach(function (cat) {
+        const b = st[cat];
+        if (mode === "max") b[metric] = Math.max(b[metric] | 0, n);
+        else b[metric] = (b[metric] | 0) + n;
+      });
+    }
+
+    if (type === "play") bump("play", amount, "add");
+    else if (type === "clear") bump("clears", amount, "add");
+    else if (type === "score") bump("scoreMax", amount, "max");
+    else if (type === "spin") bump("spin", amount, "add");
+    else if (type === "combo") bump("comboMax", amount, "max");
+    else if (type === "checkin") st.checkins[todayStr()] = 1;
+
+    saveState(st);
+    if (_view !== "hub") renderDetail(_view);
+    updateQuestsBadge();
+  }
+
+  const QUEST_TITLE_FB = {
+    checkin: "Điểm danh hôm nay",
+    play1: "Chơi 1 ván",
+    clear3: "Phá 3 hàng",
+    score300: "Đạt 300 điểm",
+    spin1: "Quay vòng quay 1 lần",
+    play5: "Chơi 5 ván trong tuần",
+    clear30: "Phá 30 hàng trong tuần",
+    login3: "Điểm danh 3 ngày trong tuần",
+    combo5: "Đạt combo x5",
+    login15: "Điểm danh 15 ngày trong tháng",
+    play20: "Chơi 20 ván trong tháng",
+    clear100: "Phá 100 hàng trong tháng",
+    combo8: "Đạt combo x8",
+  };
+  function questTitle(def) {
+    return tt("quest_" + def.id, QUEST_TITLE_FB[def.id] || def.id);
+  }
+
+  function rewardText(reward) {
+    if (!reward) return "";
+    const parts = [];
+    if (reward.xp) parts.push("+" + reward.xp + " XP");
+    if (reward.gold) parts.push("🪙 +" + reward.gold);
+    if (reward.hearts) parts.push("❤️ +" + reward.hearts);
+    return parts.join(" · ");
+  }
+
+  function renderMonthCalendar(st) {
+    const cal = document.getElementById("quests-month-cal");
+    if (!cal) return;
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = now.getMonth();
+    const daysInMonth = new Date(y, m + 1, 0).getDate();
+    const firstDow = new Date(y, m, 1).getDay(); // 0 Sun
+    const startPad = (firstDow + 6) % 7; // Mon-first
+    const today = todayStr();
+    cal.innerHTML = "";
+    const head = document.createElement("div");
+    head.className = "quests-cal-head";
+    head.textContent = ttf("questsCalMonth", "Tháng {0}/{1}", m + 1, y);
+    cal.appendChild(head);
+    const grid = document.createElement("div");
+    grid.className = "quests-cal-grid";
+    ["T2", "T3", "T4", "T5", "T6", "T7", "CN"].forEach(function (lab) {
+      const el = document.createElement("div");
+      el.className = "quests-cal-dow";
+      el.textContent = lab;
+      grid.appendChild(el);
+    });
+    for (let i = 0; i < startPad; i++) {
+      const blank = document.createElement("div");
+      blank.className = "quests-cal-day empty";
+      grid.appendChild(blank);
+    }
+    for (let day = 1; day <= daysInMonth; day++) {
+      const key =
+        y +
+        "-" +
+        String(m + 1).padStart(2, "0") +
+        "-" +
+        String(day).padStart(2, "0");
+      const cell = document.createElement("div");
+      let cls = "quests-cal-day";
+      if (st.checkins[key]) cls += " claimed";
+      if (key === today) cls += " today";
+      if (key > today) cls += " future";
+      cell.className = cls;
+      cell.textContent = String(day);
+      grid.appendChild(cell);
+    }
+    cal.appendChild(grid);
+  }
+
+  function renderDetail(cat) {
+    _view = cat;
+    const hub = document.getElementById("quests-hub");
+    const detail = document.getElementById("quests-detail");
+    const list = document.getElementById("quests-list");
+    const checkWrap = document.getElementById("quests-checkin-wrap");
+    const head = document.getElementById("quests-head-title");
+    if (hub) hub.hidden = true;
+    if (detail) detail.hidden = false;
+    if (head) {
+      head.textContent =
+        cat === "day"
+          ? tt("questsDay", "Nhiệm vụ ngày")
+          : cat === "week"
+            ? tt("questsWeek", "Nhiệm vụ tuần")
+            : tt("questsMonth", "Nhiệm vụ tháng");
+    }
+    const st = loadState();
+    syncCheckinFromDaily(st);
+    saveState(st);
+    if (!list) return;
+    list.innerHTML = "";
+    (QUEST_DEFS[cat] || []).forEach(function (def) {
+      const prog = Math.min(def.target, progressOf(st, cat, def));
+      const claimed = isClaimed(st, cat, def.id);
+      const done = prog >= def.target || (def.useDailyClaim && !!st.checkins[todayStr()]);
+      const row = document.createElement("div");
+      row.className =
+        "quests-row" + (claimed ? " claimed" : done ? " ready" : "");
+      const pct = Math.min(100, Math.round((prog / def.target) * 100));
+      row.innerHTML =
+        '<div class="quests-row-ico">' +
+        def.icon +
+        "</div>" +
+        '<div class="quests-row-main">' +
+        '<div class="quests-row-title">' +
+        questTitle(def) +
+        "</div>" +
+        '<div class="quests-row-reward">' +
+        (def.useDailyClaim
+          ? tt("questsCheckinReward", "XP + vàng + tim")
+          : rewardText(def.reward)) +
+        "</div>" +
+        '<div class="quests-bar"><i style="width:' +
+        pct +
+        '%"></i></div>' +
+        '<div class="quests-row-prog">' +
+        prog +
+        "/" +
+        def.target +
+        "</div>" +
+        "</div>" +
+        '<button type="button" class="quests-claim-btn"' +
+        (claimed || !done ? " disabled" : "") +
+        ">" +
+        (claimed
+          ? tt("questsClaimed", "Đã nhận")
+          : tt("questsClaim", "Nhận")) +
+        "</button>";
+      row.querySelector(".quests-claim-btn")?.addEventListener("click", function () {
+        try {
+          if (typeof sfxClick === "function") sfxClick();
+        } catch (e) {}
+        const r = claimQuest(cat, def.id);
+        if (r && r.ok) {
+          try {
+            if (typeof sfxUnlock === "function") sfxUnlock();
+          } catch (e) {}
+          const rw = r.reward || {};
+          try {
+            if (typeof showComboFlash === "function")
+              showComboFlash(
+                0,
+                false,
+                tt("questsClaimFlash", "Nhiệm vụ hoàn thành") +
+                  (rw.xp ? " · +" + rw.xp + " XP" : "") +
+                  (rw.gold ? " · 🪙 +" + rw.gold : "") +
+                  (rw.hearts ? " · ❤️ +" + rw.hearts : "")
+              );
+          } catch (e) {}
+          renderDetail(cat);
+          updateQuestsBadge();
+        }
+      });
+      list.appendChild(row);
+    });
+
+    if (checkWrap) {
+      const showCal = cat === "day" || cat === "month";
+      checkWrap.hidden = !showCal;
+      if (showCal) {
+        renderMonthCalendar(st);
+        const btn = document.getElementById("quests-checkin-btn");
+        if (btn) {
+          const can =
+            typeof getDailyStatus === "function" ? getDailyStatus().canClaim : !st.checkins[todayStr()];
+          btn.disabled = !can;
+          btn.textContent = can
+            ? tt("questsCheckinBtn", "🎁 Điểm danh hôm nay")
+            : tt("dailyClaimed", "✅ Đã điểm danh hôm nay");
+        }
+      }
+    }
+  }
+
+  function showHub() {
+    _view = "hub";
+    const hub = document.getElementById("quests-hub");
+    const detail = document.getElementById("quests-detail");
+    const head = document.getElementById("quests-head-title");
+    if (hub) hub.hidden = false;
+    if (detail) detail.hidden = true;
+    if (head) head.textContent = tt("questsTitle", "📋 Nhiệm vụ");
+  }
+
+  function openQuestsScreen(cat) {
+    try {
+      if (typeof closeAllSettingsOverlays === "function") closeAllSettingsOverlays();
+    } catch (e) {}
+    try {
+      if (typeof closeSettingsHub === "function") closeSettingsHub();
+    } catch (e) {}
+    // Đóng panel modal khác để không lẫn
+    [
+      "daily-panel",
+      "shop-panel",
+      "friends-panel",
+      "account-panel",
+      "player-profile-panel",
+      "leaderboard-panel",
+      "settings-panel",
+      "settings-more-panel",
+    ].forEach(function (id) {
+      document.getElementById(id)?.classList.remove("show");
+    });
+    const screen = document.getElementById("quests-screen");
+    if (!screen) return;
+    screen.classList.add("show");
+    screen.setAttribute("aria-hidden", "false");
+    if (cat && QUEST_DEFS[cat]) renderDetail(cat);
+    else showHub();
+    updateQuestsBadge();
+  }
+
+  function closeQuestsScreen() {
+    const screen = document.getElementById("quests-screen");
+    if (!screen) return;
+    screen.classList.remove("show");
+    screen.setAttribute("aria-hidden", "true");
+    showHub();
+  }
+
+  function questsHandleBack() {
+    const screen = document.getElementById("quests-screen");
+    if (!screen || !screen.classList.contains("show")) return false;
+    if (_view !== "hub") {
+      showHub();
+      return true;
+    }
+    closeQuestsScreen();
+    return true;
+  }
+
+  function hasClaimable() {
+    const st = loadState();
+    syncCheckinFromDaily(st);
+    let yes = false;
+    Object.keys(QUEST_DEFS).forEach(function (cat) {
+      QUEST_DEFS[cat].forEach(function (def) {
+        if (isClaimed(st, cat, def.id)) return;
+        const prog = progressOf(st, cat, def);
+        const done =
+          prog >= def.target || (def.useDailyClaim && !!st.checkins[todayStr()]);
+        // checkin claimable if daily can claim
+        if (def.useDailyClaim) {
+          try {
+            if (typeof getDailyStatus === "function" && getDailyStatus().canClaim) yes = true;
+          } catch (e) {}
+          return;
+        }
+        if (done) yes = true;
+      });
+    });
+    return yes;
+  }
+
+  function updateQuestsBadge() {
+    const btn = document.getElementById("set-btn-quests");
+    if (btn) btn.classList.toggle("has-quest", hasClaimable());
+    const hdr = document.getElementById("daily-btn");
+    // keep daily badge via daily module
+  }
+
+  function initQuestsUI() {
+    document.getElementById("set-btn-quests")?.addEventListener("click", function () {
+      try {
+        if (typeof sfxClick === "function") sfxClick();
+      } catch (e) {}
+      openQuestsScreen();
+    });
+    document.getElementById("quests-close-btn")?.addEventListener("click", function () {
+      try {
+        if (typeof sfxClick === "function") sfxClick();
+      } catch (e) {}
+      closeQuestsScreen();
+    });
+    document.getElementById("quests-back-btn")?.addEventListener("click", function () {
+      try {
+        if (typeof sfxClick === "function") sfxClick();
+      } catch (e) {}
+      questsHandleBack();
+    });
+    document.querySelectorAll("[data-quest-cat]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        try {
+          if (typeof sfxClick === "function") sfxClick();
+        } catch (e) {}
+        renderDetail(btn.getAttribute("data-quest-cat"));
+      });
+    });
+    document.getElementById("quests-checkin-btn")?.addEventListener("click", function () {
+      try {
+        if (typeof sfxClick === "function") sfxClick();
+      } catch (e) {}
+      const r = claimQuest("day", "checkin");
+      if (r && r.ok) {
+        try {
+          if (typeof sfxUnlock === "function") sfxUnlock();
+        } catch (e) {}
+        try {
+          if (typeof showComboFlash === "function" && r.daily)
+            showComboFlash(
+              0,
+              false,
+              typeof t === "function"
+                ? t("dailyFlash", r.daily.xp, r.daily.day, r.daily.hearts | 0)
+                : "🎁 Điểm danh"
+            );
+        } catch (e) {}
+        renderDetail(_view === "hub" ? "day" : _view);
+        updateQuestsBadge();
+      }
+    });
+
+    // Sync check-in if already claimed via old daily panel
+    const st = loadState();
+    syncCheckinFromDaily(st);
+    saveState(st);
+    updateQuestsBadge();
+  }
+
+  g.noteQuestEvent = noteQuestEvent;
+  g.openQuestsScreen = openQuestsScreen;
+  g.closeQuestsScreen = closeQuestsScreen;
+  g.questsHandleBack = questsHandleBack;
+  g.initQuestsUI = initQuestsUI;
+  g.updateQuestsBadge = updateQuestsBadge;
+})(typeof window !== "undefined" ? window : globalThis);

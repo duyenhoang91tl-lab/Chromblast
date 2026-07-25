@@ -238,7 +238,10 @@
       </div>
       <div class="settings-inner menu-inner">
         <div id="settings-player-info" class="pp-info-card"></div>
-        <button type="button" class="set-action set-c-purple" id="settings-player-edit" style="margin-bottom:10px;"><span class="set-act-ico">✏️</span><span data-i18n="ppEdit">Đổi tên</span></button>
+        <div class="menu-top-row">
+          <button type="button" class="set-action set-c-purple" id="settings-player-edit"><span class="set-act-ico">✏️</span><span data-i18n="ppEdit">Đổi tên</span></button>
+          <button type="button" class="set-action set-c-purple" id="set-btn-quests"><span class="set-act-ico">📋</span><span data-i18n="setQuests">Nhiệm vụ</span></button>
+        </div>
         <div class="settings-actions menu-actions">
           <button type="button" class="set-action set-c-purple" id="set-btn-account"><span class="set-act-ico">👤</span><span data-i18n="setAccount">Tài khoản</span></button>
           <button type="button" class="set-action set-c-purple" id="set-btn-help"><span class="set-act-ico">❓</span><span data-i18n="setHelp">Hướng dẫn</span></button>
@@ -660,6 +663,44 @@
       <div class="admin-sub" data-i18n="dailySub">Điểm danh mỗi ngày: XP + 🪙1 vàng. Bỏ lỡ 1 ngày sẽ mất chuỗi. Cup / lên cấp cũng thưởng vàng.</div>
       <div id="daily-reward-list" class="daily-grid"></div>
       <button id="daily-claim-btn" class="auth-submit-btn" style="margin-top:14px;">🎁 Nhận quà</button>
+    </div>
+  </div>
+
+  <!-- ══ NHIỆM VỤ (fullscreen riêng) ══ -->
+  <div id="quests-screen" class="quests-screen" aria-hidden="true">
+    <div class="quests-shell">
+      <div class="quests-head">
+        <button type="button" class="quests-back" id="quests-back-btn" aria-label="Back">‹</button>
+        <span id="quests-head-title" data-i18n="questsTitle">📋 Nhiệm vụ</span>
+        <button type="button" class="quests-x" id="quests-close-btn" aria-label="Close">✕</button>
+      </div>
+      <div class="quests-body">
+        <div id="quests-hub" class="quests-hub">
+          <button type="button" class="quests-cat-card" data-quest-cat="day">
+            <span class="quests-cat-ico">📅</span>
+            <span class="quests-cat-name" data-i18n="questsDay">Nhiệm vụ ngày</span>
+            <span class="quests-cat-sub" data-i18n="questsDaySub">Danh sách ngày · điểm danh tháng</span>
+          </button>
+          <button type="button" class="quests-cat-card" data-quest-cat="week">
+            <span class="quests-cat-ico">📆</span>
+            <span class="quests-cat-name" data-i18n="questsWeek">Nhiệm vụ tuần</span>
+            <span class="quests-cat-sub" data-i18n="questsWeekSub">Mục tiêu trong tuần</span>
+          </button>
+          <button type="button" class="quests-cat-card" data-quest-cat="month">
+            <span class="quests-cat-ico">🗓️</span>
+            <span class="quests-cat-name" data-i18n="questsMonth">Nhiệm vụ tháng</span>
+            <span class="quests-cat-sub" data-i18n="questsMonthSub">Mục tiêu trong tháng</span>
+          </button>
+        </div>
+        <div id="quests-detail" class="quests-detail" hidden>
+          <div id="quests-list" class="quests-list"></div>
+          <div id="quests-checkin-wrap" class="quests-checkin-wrap" hidden>
+            <div class="quests-checkin-title" data-i18n="questsMonthCheckin">Ô điểm danh theo tháng</div>
+            <div id="quests-month-cal" class="quests-month-cal"></div>
+            <button type="button" id="quests-checkin-btn" class="auth-submit-btn quests-checkin-btn">🎁 Điểm danh hôm nay</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1206,6 +1247,7 @@
 <script src="js/mech-config.js"></script>
 <script src="js/progression.js"></script>
 <script src="js/inventory.js"></script>
+<script src="js/quests.js"></script>
 <script src="js/lb-period.js"></script>
 <script src="js/leaderboard.js"></script>
 <script src="js/economy-shop.js"></script>
