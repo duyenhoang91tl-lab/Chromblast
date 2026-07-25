@@ -3,7 +3,7 @@
   "use strict";
 
   const KEY_SPIN = "chromablast_lucky_spin";
-  const WHEEL_BUILD = "floral-v5";
+  const WHEEL_BUILD = "floral-v6";
   /** 10 ô đều nhau → mỗi ô 10%. Tim chỉ ×1/×2; 😢 = miss; 🍀 = quà bất kỳ. */
   const SEGMENTS = [
     { kind: "heart", amount: 1, icon: "❤️", color: "#FDA4AF" },
@@ -151,8 +151,8 @@
       const label = document.createElement("div");
       label.className = "spin-seg-label";
       const mid = i * SEG + SEG / 2 - 90;
-      // Đưa nhãn vào giữa bán kính ô (gọn trong wedge)
-      label.style.transform = "rotate(" + mid + "deg) translateY(-58px)";
+      // Đưa nhãn ra gần vành ngoài / giữa cung (tránh sát tâm)
+      label.style.transform = "rotate(" + mid + "deg) translateY(-82px)";
       let amtHtml = "";
       if (seg.kind === "miss" || seg.kind === "any") {
         amtHtml = "";
