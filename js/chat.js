@@ -739,11 +739,9 @@
       setTimeout(()=>{ try{ positionChatFab(); }catch(e){} }, 120);
     });
     $('friends-close-btn')?.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} closeFriendsPanel(); });
-    $('friends-panel')?.addEventListener('click', (e)=>{ if(e.target === $('friends-panel')) closeFriendsPanel(); });
     $('friends-open-chat')?.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} closeFriendsPanel(); openChatPanel('friends'); });
     $('set-btn-friends')?.addEventListener('click', ()=>{
       try{sfxClick();}catch(e){}
-      try{ if(typeof closeSettingsHub==='function') closeSettingsHub(); }catch(e){}
       openFriendsPanel();
     });
     $('friends-search-btn')?.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} runFriendsSearch(); });
@@ -759,17 +757,26 @@
 
   function closeFriendsPanel(){
     const panel = $('friends-panel');
-    if(panel) panel.classList.remove('show');
+    if(!panel) return;
+    panel.classList.remove('show');
+    panel.setAttribute('aria-hidden', 'true');
   }
   function openFriendsPanel(){
     const panel = $('friends-panel');
     if(!panel) return;
+    // Đóng menu + overlay khác → màn Bạn bè là màn hình mới hoàn toàn
+    try{ if(typeof closeAllSettingsOverlays==='function') closeAllSettingsOverlays(); }catch(e){}
+    try{ if(typeof closeSettingsHub==='function') closeSettingsHub(); }catch(e){}
+    ['daily-panel','shop-panel','quests-screen','account-panel','player-profile-panel','leaderboard-panel']
+      .forEach(id=>{ document.getElementById(id)?.classList.remove('show'); });
     panel.classList.add('show');
+    panel.setAttribute('aria-hidden', 'false');
     const sr = $('friends-search-result');
     if(sr) sr.innerHTML = '';
     setFriendsStatus('');
     renderFriendsPanelList();
     loadFriendsSuggestions(false);
+    try{ if(typeof applyI18nDom==='function') applyI18nDom(); }catch(e){}
   }
 
   window.openChatPanel = openChatPanel;

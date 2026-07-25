@@ -795,6 +795,8 @@ function closeAllSettingsOverlays(){
   try{ if(typeof closeBrickSkinPanel==='function') closeBrickSkinPanel(); }catch(e){}
   try{ if(typeof closeBoardSkinPanel==='function') closeBoardSkinPanel(); }catch(e){}
 }
+/** Alias — shop/friends/quests gọi tên này khi mở màn riêng từ Menu */
+function closeSettingsHub(){ closeAllSettingsOverlays(); }
 
 function openSettingsPanel(){
   syncSettingsToggles();
