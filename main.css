@@ -1966,6 +1966,28 @@ body.is-dragging .sc.gem,
 body.is-dragging .g-cell.candy {
   filter: none !important;
 }
+/* Khi kéo: đóng băng glow/combo box-shadow nặng + transition ô — ưu tiên FPS cho ghost */
+body.is-dragging #grid-wrap.combo-glow-1,
+body.is-dragging #grid-wrap.combo-glow-2,
+body.is-dragging #grid-wrap.combo-glow-3,
+body.is-dragging #grid-wrap.combo-glow-4,
+body.is-dragging #grid-wrap.combo-glow-5,
+body.is-dragging #grid-wrap.ultra-glow,
+body.is-dragging #grid-wrap.fire-low,
+body.is-dragging #grid-wrap.fire-mid,
+body.is-dragging #grid-wrap.fire-high,
+body.is-dragging #grid-wrap.fire-max {
+  animation-play-state: paused !important;
+}
+body.is-dragging .cell.filled,
+body.is-dragging .cell.preview-ok {
+  transition: none !important;
+}
+body.is-dragging #sky-atmosphere .sky-mist,
+body.is-dragging #sky-stars .sky-star,
+body.is-dragging #sky-petals .sky-petal {
+  animation-play-state: paused !important;
+}
 .cell.filled::before,
 .cell.preview-ok::before {
   content:''; position:absolute; inset:-1px; border-radius:inherit; pointer-events:none; z-index:1;
@@ -2674,8 +2696,10 @@ body:has(#secret-stage.active) .streak-dot.lit{
 #drag-ghost {
   position: fixed; pointer-events: none; z-index: 9999;
   display: none; gap: 3px;
-  transform: translate(-50%, -50%);
-  will-change: left, top;
+  left: 0; top: 0;
+  transform: translate3d(-9999px, -9999px, 0);
+  will-change: transform;
+  contain: layout style;
 }
 #drag-ghost.active { display: grid; }
 #drag-ghost .g-cell {
@@ -3379,11 +3403,12 @@ body:has(#secret-stage.active) .streak-dot.lit{
 .vs-ghost{
   position:fixed; pointer-events:none; z-index:9600;
   display:none; gap:3px;
-  transform:translate(-50%,-50%);
-  will-change:left,top;
+  left:0; top:0;
+  transform:translate3d(-9999px,-9999px,0);
+  will-change:transform;
+  contain:layout style;
 }
 .vs-ghost.active{ display:grid; }
-.vs-ghost.vs-ghost-flip{ transform:translate(-50%,-50%) rotate(180deg); }
 .vs-ghost .vs-g-cell{ border-radius:10px; opacity:0.98; }
 .vs-ghost .vs-g-cell.candy{
   --cc:#888; position:relative; overflow:visible;
