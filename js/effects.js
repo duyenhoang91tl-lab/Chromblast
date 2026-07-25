@@ -869,9 +869,9 @@ function scenicStormBg(ctx,W,H,t){
 /* ══════════════════════════════════════════
    ĐIỂM BAY + CÂU KHEN + HIỆU ỨNG PHÁT SÁNG
 ══════════════════════════════════════════ */
-const PRAISE = ['COOL','GOOD','GREAT','IMPRESSIVE','AMAZING','PERFECT','SPECTACULAR','UNREAL','LEGENDARY','GODLIKE'];
+const PRAISE = ['COOL','GOOD','GREAT','IMPRESSIVE','AMAZING','PERFECT','SPECTACULAR','UNREAL','LEGENDARY'];
 // Colors escalate: teal → blue → purple → gold → red → pink → blaze → fire
-const PRAISE_COLOR = ['#5DCAA5','#378ADD','#7F77DD','#4dd0e1','#ab47bc','#EF9F27','#E24B4A','#D4537E','#f7c948','#ff6b35'];
+const PRAISE_COLOR = ['#5DCAA5','#378ADD','#7F77DD','#4dd0e1','#ab47bc','#EF9F27','#E24B4A','#D4537E','#f7c948'];
 // level = số lần nổ liên tiếp (combo streak). Kiểu Block Blast: lần nổ ĐẦU TIÊN (streak 1)
 // chỉ là 1 pha bình thường, chưa tính là combo nên KHÔNG có câu khen — câu khen chỉ bắt đầu
 // từ lần nổ liên tiếp thứ 2 trở đi (streak 2 → 'COOL', streak 3 → 'GOOD', ...).
@@ -1000,7 +1000,7 @@ function spawnClearFlowers(cells){
 /* ── Viền toả sáng lấp lánh theo combo — cả map thường lẫn map ẩn ── */
 
 
-// Câu khen leo thang mạnh dần theo 9 cấp độ
+// Câu khen leo thang mạnh dần theo các cấp độ PRAISE
 function showPraise(level){
   const el=document.getElementById('combo-flash');
   const i=pIdx(level);
@@ -1011,8 +1011,8 @@ function showPraise(level){
   // Lồng tiếng
   speakPraise(level);
 
-  // Font size: nhỏ ở COOL, siêu to ở GODLIKE
-  const base=22+i*9;  // 22 → 94px
+  // Font size: nhỏ ở COOL, to dần tới LEGENDARY
+  const base=22+i*9;  // 22 → ~94px
   const maxW=(document.getElementById('grid-wrap').clientWidth||360)*0.88;
   const fit=maxW/(el.textContent.length*0.62);
   el.style.fontSize=Math.max(18, Math.min(base, fit))+'px';
@@ -1032,7 +1032,7 @@ function showPraise(level){
 
   el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
 
-  // Screen shake at LEGENDARY(7) and GODLIKE(8)
+  // Screen shake ở 2 cấp cao nhất (UNREAL / LEGENDARY)
   if(i>=7){
     const root=document.getElementById('game-root');
     root.classList.remove('screen-shake');
