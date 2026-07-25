@@ -4464,13 +4464,6 @@ body:has(#secret-stage.active) .streak-dot.lit{
   display:flex; flex-direction:column; align-items:center; line-height:0.95;
   margin-bottom:8px; margin-top:6px;
 }
-.spin-title-slide{
-  font-size:30px; font-weight:900; color:#FFC93C;
-  -webkit-text-stroke:3px #5B2C8A;
-  paint-order:stroke fill;
-  text-shadow:0 3px 0 #3B1A5C;
-  letter-spacing:0.5px;
-}
 .spin-title-lucky{
   font-size:28px; font-weight:900; color:#FF9F1C;
   -webkit-text-stroke:3px #5B2C8A;
