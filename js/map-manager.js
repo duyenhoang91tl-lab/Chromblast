@@ -22,7 +22,7 @@ function registerMap(desc){
   {id:2,  key:'dodge',  name:'Rùa né cà rốt',      enter:enterDodgeMode,  trigger:triggerDodgeUnlock},
   {id:3,  key:'fruit',  name:'Chém hoa quả',       enter:enterFruitMode,  trigger:triggerFruitUnlock},
   {id:4,  key:'bee',    name:'Bảo vệ chó khỏi ong',enter:enterBeeMode,    trigger:triggerBeeUnlock},
-  {id:5,  key:'gold',   name:'Đào vàng',           enter:enterGoldMode,   trigger:triggerGoldUnlock},
+  {id:5,  key:'gold',   name:'Truy tìm kho báu',   enter:enterGoldMode,   trigger:triggerGoldUnlock},
   {id:6,  key:'mole',   name:'Đập thú',            enter:enterMoleMode,   trigger:triggerMoleUnlock},
   {id:7,  key:'memory', name:'Lật thẻ ký ức',      enter:enterMemoryMode, trigger:triggerMemoryUnlock},
   {id:8,  key:'bubble', name:'Bắn bong bóng',      enter:enterBubbleMode, trigger:triggerBubbleUnlock},
