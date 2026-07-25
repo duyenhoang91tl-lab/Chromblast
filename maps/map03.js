@@ -7,9 +7,14 @@
 let fruitMode=false, fruitRAF=null, fruitLast=0, fruitElapsed=0, fruitSpawnTimer=0;
 let fruits=[], fruitTrail=[], fruitTimeLeft=60;
 let fruitCombo=0, fruitComboTimer=0;
-const FRUIT_COMBO_MIN=2; // combo từ 2 quả liên tiếp → đợt sau rơi nhiều hơn
+const FRUIT_COMBO_MIN=2; // combo từ 2 quả liên tiếp → đợt sau rơi nhiều hơn + giữ tốc độ gốc
 const FRUIT_COMBO_WINDOW_MS=1100;
 const FRUIT_CORE_FRAC=0.35; // chém trong lõi (~35% bán kính) = CRITICAL ×5
+/** Tốc độ gốc (giữ khi combo ≥2). Không combo → nhân FRUIT_SLOW_SCALE để rơi chậm hơn. */
+const FRUIT_GRAV=900;
+const FRUIT_VY_BASE=580;
+const FRUIT_VY_VAR=180;
+const FRUIT_SLOW_SCALE=0.72;
 let fruitMissStreak=0;
 let fruitLives=5;
 /** Bậc spawn thêm — chỉ tăng khi chém trúng >70% đợt quả "nhiều" (do combo) */
@@ -123,10 +128,13 @@ function _pushFruitEntity(isBomb,W,H,waveId){
     ? {emoji:'💣',r:22,pts:0,color:'#333',juice:'#888',petals:[]}
     : FRUIT_TYPES[Math.floor(Math.random()*FRUIT_TYPES.length)];
   const x=W*0.18+Math.random()*W*0.64;
-  const vx=(Math.random()*2-1)*70;
-  const vy=-(580+Math.random()*180);
+  // Không combo: chậm hơn. Combo liên tiếp (≥2): giữ tốc độ gốc.
+  const speedScale = fruitCombo>=FRUIT_COMBO_MIN ? 1 : FRUIT_SLOW_SCALE;
+  const vx=(Math.random()*2-1)*70*speedScale;
+  const vy=-(FRUIT_VY_BASE+Math.random()*FRUIT_VY_VAR)*speedScale;
+  const grav=FRUIT_GRAV*speedScale;
   fruits.push({
-    x,y:H+30,vx,vy,r:type.r,emoji:type.emoji,pts:type.pts,isBomb,
+    x,y:H+30,vx,vy,grav,r:type.r,emoji:type.emoji,pts:type.pts,isBomb,
     color:type.color,juice:type.juice,petals:type.petals||[],
     rot:Math.random()*Math.PI*2,rotSpeed:(Math.random()*2-1)*3.5,sliced:false,
     waveId: waveId||0,
@@ -186,7 +194,6 @@ function fruitLoop(now){
   fruitLast=now; fruitElapsed+=dt*1000;
   fruitTimeLeft=Math.max(0,60-fruitElapsed/1000);
   const cv=FCV(), ctx=cv.getContext('2d'), W=360, H=460; ctx.setTransform(2,0,0,2,0,0);
-  const GRAV=900;
 
   fruitSpawnTimer+=dt*1000;
   if(fruitSpawnTimer>=fruitSpawnInterval() && fruitTimeLeft>0){
@@ -195,7 +202,8 @@ function fruitLoop(now){
   }
 
   for(const f of fruits){
-    f.x+=f.vx*dt; f.y+=f.vy*dt; f.vy+=GRAV*dt; f.rot+=f.rotSpeed*dt;
+    const g = (typeof f.grav==='number') ? f.grav : FRUIT_GRAV;
+    f.x+=f.vx*dt; f.y+=f.vy*dt; f.vy+=g*dt; f.rot+=f.rotSpeed*dt;
   }
   let missedDie=false;
   fruits=fruits.filter(f=>{
