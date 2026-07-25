@@ -16,6 +16,8 @@ let stackMode=false, stackRAF=null, stackLast=0, stackElapsed=0;
 let stackBlocks=[], stackMoving={x:0,w:0,color:'#e84040'};
 let stackDir=1, stackSpeed=80, stackScore=0, stackCount=0, stackPerfectStreak=0;
 let stackCameraY=0, stackFx=[], stackSwayPhase=0;
+/** Đang chờ dùng skill 🔥/🫧/💨 để cứu tháp sau khi trượt hết */
+let stackRescuePending=false;
 
 const STCV=()=>document.getElementById('stack-canvas');
 
@@ -26,7 +28,7 @@ function triggerStackUnlock(){
   document.getElementById('unlock-desc').innerHTML=
     '🏗️ <b>Xếp Tháp!</b><br><br>'+
     'Một khối đang di chuyển qua lại. Chạm → thả xuống!<br>'+
-    'Phần thừa bị cắt đi. Trượt hết → game over!<br>'+
+    'Phần thừa bị cắt đi. Trượt hết → hết lượt (còn skill 🔥🫧💨 thì cứu được tháp)!<br>'+
     'Xếp <b>'+STACK_KPI+' tầng</b> trong <b>'+STACK_TIME+'s</b> để thắng!<br>'+
     'Từ <b>gạch thứ 20</b> gió thổi — tháp lắc lư, càng cao càng khó canh!<br>'+
     'Căn giữa hoàn hảo → Thưởng điểm PERFECT!';
@@ -47,21 +49,68 @@ function enterStackMode(){
   document.getElementById('grid-wrap').classList.add('secret-mode');
   document.getElementById('mode-badge').textContent='🏗️ MAP ẨN 9';
   document.getElementById('mode-badge').classList.add('secret');
-  document.getElementById('burst-count').textContent='🏗️ 0/'+STACK_KPI+' tầng';
+  document.getElementById('burst-count').textContent='🏗️ 0 tầng';
   stackMode=true;
+  stackRescuePending=false;
   initStack();
   stackLast=performance.now();
   stackRAF=requestAnimationFrame(stackLoop);
+  try{ if(typeof renderInventoryHud==='function') renderInventoryHud(); }catch(e){}
 }
 
 function initStack(){
   const cv=STCV(), W=360, H=460;
   stackScore=0; stackCount=0; stackElapsed=0; stackFx=[]; stackCameraY=0; stackPerfectStreak=0;
   stackSwayPhase=0;
+  stackRescuePending=false;
   stackDir=1; stackSpeed=80;
   // base block at bottom
   stackBlocks=[{x:(W-BLOCK_BASE_W)/2, y:H-BLOCK_H, w:BLOCK_BASE_W, color:'#888'}];
   stackMoving={x:0, w:BLOCK_BASE_W, color:STACK_COLORS[0]};
+}
+
+function stackSkillCount(){
+  try{
+    if(!window.Inventory) return 0;
+    return (Inventory.fires|0)+(Inventory.bubbles|0)+(Inventory.winds|0);
+  }catch(e){ return 0; }
+}
+
+/** Trượt hết: còn skill → chờ cứu; hết skill → thua */
+function stackMissOrRescue(){
+  if(stackSkillCount()>0){
+    stackRescuePending=true;
+    try{
+      showComboFlash(0,false,'💫 Còn skill — bấm 🔥 / 🫧 / 💨 để cứu tháp!');
+      showHint('Còn skill! Bấm 🔥 / 🫧 / 💨 để tiếp tục xếp tháp');
+      if(typeof renderInventoryHud==='function') renderInventoryHud();
+    }catch(e){}
+    return true;
+  }
+  stackDone(false);
+  return false;
+}
+
+/** Dùng 1 skill để cứu tháp / canh lại khối đang bay */
+function useStackSkill(type){
+  if(!stackMode) return false;
+  const info=(typeof POWER_INFO!=='undefined' && POWER_INFO[type]) ? POWER_INFO[type] : null;
+  const icon=info ? info.icon : '✨';
+  if(typeof spendPower!=='function' || !spendPower(type,1)){
+    try{ showComboFlash(0,false,'Thiếu '+icon); }catch(e){}
+    return false;
+  }
+  const top=stackBlocks[stackBlocks.length-1];
+  const w=Math.max(24, top ? top.w : BLOCK_BASE_W);
+  stackMoving={x:0, w:w, color:STACK_COLORS[stackCount%STACK_COLORS.length]};
+  stackDir=1;
+  stackRescuePending=false;
+  try{
+    showComboFlash(0,false,icon+' Cứu tháp! Canh lại nào');
+    showHint('Chạm để thả khối — skill đã cứu bạn một lượt!');
+    if(typeof renderInventoryHud==='function') renderInventoryHud();
+  }catch(e){}
+  return true;
 }
 
 /** Lắc tháp theo gió — bắt đầu khi xếp gạch thứ 20, càng cao càng mạnh */
@@ -91,9 +140,10 @@ function stackLoop(now){
   if(!stackMode){ stackRAF=null; return; }
   const dt=Math.min(0.08,Math.max(0,(now-(stackLast||now))/1000));
   stackLast=now;
-  stackElapsed+=dt;
+  // Đang chờ skill cứu → tạm dừng đếm giờ & lắc (khối vẫn trượt để canh)
+  if(!stackRescuePending) stackElapsed+=dt;
 
-  const sway=getStackSway(dt);
+  const sway=stackRescuePending ? getStackSway(0) : getStackSway(dt);
 
   const cv=STCV(), W=360;
   // move the platform
@@ -109,9 +159,10 @@ function stackLoop(now){
   drawStack(ctx,W,460,sway);
 
   const timeLeft=Math.max(0,STACK_TIME-stackElapsed);
-  document.getElementById('burst-count').textContent='🏗️ '+stackCount+'/'+STACK_KPI+'  ⏱'+timeLeft.toFixed(0)+'s';
+  const rescueTag=stackRescuePending ? '  💫skill' : '';
+  document.getElementById('burst-count').textContent='🏗️ '+stackCount+' tầng  ⏱'+timeLeft.toFixed(0)+'s'+rescueTag;
 
-  if(timeLeft<=0){
+  if(!stackRescuePending && timeLeft<=0){
     stackDone(stackCount>=STACK_KPI); return;
   }
   stackRAF=requestAnimationFrame(stackLoop);
@@ -119,6 +170,10 @@ function stackLoop(now){
 
 function dropStack(){
   if(!stackMode||stackMoving.w<=0) return;
+  if(stackRescuePending){
+    try{ showHint('Bấm 🔥 / 🫧 / 💨 để cứu tháp trước!'); }catch(e){}
+    return;
+  }
   const cv=STCV(), W=360, H=460;
   const sway=getStackSway(0);
   // top block (tính lệch gió khi canh khối)
@@ -129,8 +184,8 @@ function dropStack(){
   const overlapR=Math.min(stackMoving.x+stackMoving.w, topX+top.w);
   const overlapW=overlapR-overlapL;
   if(overlapW<=0){
-    // missed completely
-    stackDone(false); return;
+    // missed completely — còn skill thì chưa thua
+    stackMissOrRescue(); return;
   }
   const newY=top.y-BLOCK_H;
   // camera scroll
@@ -254,14 +309,15 @@ function drawStack(ctx,W,H,sway){
 
   const sTimeLeft=Math.max(0,STACK_TIME-stackElapsed);
   drawHudTop(ctx,W,{
-    left:'🏗️ '+stackCount+'/'+STACK_KPI+' tầng',
-    right:(sway.active?'💨 ':'⏱ ')+sTimeLeft.toFixed(0)+'s',
+    left:'🏗️ '+stackCount+' tầng',
+    right:stackRescuePending ? '💫 skill' : ((sway.active?'💨 ':'⏱ ')+sTimeLeft.toFixed(0)+'s'),
   });
 }
 
 function stackDone(won){
   if(stackRAF){ cancelAnimationFrame(stackRAF); stackRAF=null; }
   stackMode=false;
+  stackRescuePending=false;
   if(won){
     sfxWaveWin();
     showComboFlash(0,false,'🏆 '+stackCount+' tầng! Tháp hoàn thành!');
@@ -275,6 +331,7 @@ function stackDone(won){
 function exitStackToMain(){
   setActiveHiddenMap(null);
   stackMode=false;
+  stackRescuePending=false;
   startBgm('main');
   if(stackRAF){ cancelAnimationFrame(stackRAF); stackRAF=null; }
   STCV().classList.remove('active');
