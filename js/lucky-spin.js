@@ -3,7 +3,8 @@
   "use strict";
 
   const KEY_SPIN = "chromablast_lucky_spin";
-  /** 10 ô đều nhau → mỗi ô 10% (miss / gạch / nền mỗi cái đúng 10%). */
+  const WHEEL_BUILD = "floral-v5";
+  /** 10 ô đều nhau → mỗi ô 10%. Tim chỉ ×1/×2; 😢 = miss; 🍀 = quà bất kỳ. */
   const SEGMENTS = [
     { kind: "heart", amount: 1, icon: "❤️", color: "#FDA4AF" },
     { kind: "fire", amount: 2, icon: "🔥", color: "#FF9E80" },
@@ -13,10 +14,32 @@
     { kind: "board", amount: 1, icon: "🗺️", color: "#93C5FD" },
     { kind: "heart", amount: 2, icon: "❤️", color: "#C4B5FD" },
     { kind: "fire", amount: 3, icon: "🔥", color: "#FCD34D" },
-    { kind: "heart", amount: 3, icon: "❤️", color: "#F9A8D4" },
-    { kind: "miss", amount: 0, icon: "🍀", color: "#A8A29E" },
+    { kind: "miss", amount: 0, icon: "😢", color: "#F9A8D4" },
+    { kind: "any", amount: 0, icon: "🍀", color: "#A8A29E" },
+  ];
+  const ANY_POOL = [
+    { kind: "heart", amount: 1, icon: "❤️" },
+    { kind: "heart", amount: 2, icon: "❤️" },
+    { kind: "fire", amount: 2, icon: "🔥" },
+    { kind: "fire", amount: 3, icon: "🔥" },
+    { kind: "bubble", amount: 2, icon: "🫧" },
+    { kind: "wind", amount: 2, icon: "💨" },
+    { kind: "brick", amount: 1, icon: "🧱" },
+    { kind: "board", amount: 1, icon: "🗺️" },
   ];
   const SEG = 360 / SEGMENTS.length;
+
+  function resolvePrizeSeg(seg) {
+    if (!seg || seg.kind !== "any") return seg;
+    const pick = ANY_POOL[Math.floor(Math.random() * ANY_POOL.length)];
+    return {
+      kind: pick.kind,
+      amount: pick.amount,
+      icon: pick.icon,
+      color: seg.color,
+      fromAny: true,
+    };
+  }
 
   let spinning = false;
   let awaitingRewardConfirm = false;
@@ -82,7 +105,7 @@
 
   function prizeDetail(seg, bonus) {
     const tt = typeof t === "function" ? t : function (k) { return k; };
-    if (seg.kind === "miss") return tt("prizeMiss", "Chúc bạn may mắn lần sau");
+    if (seg.kind === "miss") return tt("prizeMiss", "Chúc bạn may mắn lần sau nhé");
     if (seg.kind === "heart") return tt("prizeHeart", seg.amount);
     if (seg.kind === "fire") return tt("prizeFire", seg.amount);
     if (seg.kind === "bubble") return tt("prizeBubble", seg.amount);
@@ -95,6 +118,7 @@
       if (bonus && bonus.boardName) return tt("prizeBoard", bonus.boardName);
       return tt("prizeBoardNone", "Nền bàn (đã đủ / chưa mở được)");
     }
+    if (seg.kind === "any") return tt("prizeAny", "Quà bất kỳ");
     return seg.icon || "";
   }
 
@@ -113,10 +137,9 @@
   function buildWheel() {
     const wheel = document.getElementById("spin-wheel");
     if (!wheel) return;
-    // Force rebuild when segment set changes
-    if (wheel.dataset.built === "floral-v4") return;
+    if (wheel.dataset.built === WHEEL_BUILD) return;
     wheel.innerHTML = "";
-    wheel.dataset.built = "floral-v4";
+    wheel.dataset.built = WHEEL_BUILD;
     const stops = SEGMENTS.map((_, i) => {
       const a0 = i * SEG;
       const a1 = (i + 1) * SEG;
@@ -128,13 +151,14 @@
       const label = document.createElement("div");
       label.className = "spin-seg-label";
       const mid = i * SEG + SEG / 2 - 90;
-      label.style.transform = "rotate(" + mid + "deg) translateY(-70px)";
+      // Đưa nhãn vào giữa bán kính ô (gọn trong wedge)
+      label.style.transform = "rotate(" + mid + "deg) translateY(-58px)";
       let amtHtml = "";
-      if (seg.kind === "miss") {
-        amtHtml = '<span class="spin-seg-amt spin-seg-miss">?</span>';
+      if (seg.kind === "miss" || seg.kind === "any") {
+        amtHtml = "";
       } else if (seg.kind === "brick" || seg.kind === "board") {
         amtHtml = "";
-      } else {
+      } else if (seg.amount) {
         amtHtml = '<span class="spin-seg-amt">×' + seg.amount + "</span>";
       }
       label.innerHTML =
@@ -225,13 +249,13 @@
         : tt("spinCongratsTitle", "Chúc mừng!");
     }
     if (icon) {
-      if (isMiss) icon.textContent = seg.icon || "🍀";
+      if (isMiss) icon.textContent = seg.icon || "😢";
       else if (seg.kind === "brick" || seg.kind === "board") icon.textContent = seg.icon || "🎁";
       else icon.textContent = (seg.icon || "") + (seg.amount ? "×" + seg.amount : "");
     }
     if (text) {
       if (isMiss) {
-        text.textContent = tt("prizeMiss", "Chúc bạn may mắn lần sau");
+        text.textContent = tt("prizeMiss", "Chúc bạn may mắn lần sau nhé");
       } else {
         text.textContent = tt("spinGot", prizeDetail(seg, bonus));
       }
@@ -303,17 +327,18 @@
       try {
         if (typeof g.noteQuestEvent === "function") g.noteQuestEvent("spin", 1);
       } catch (_) {}
-      const bonus = grantPrize(seg);
+      const prizeSeg = resolvePrizeSeg(seg);
+      const bonus = grantPrize(prizeSeg);
       pendingBonus = bonus;
       spinning = false;
-      showSpinReward(seg, bonus);
+      showSpinReward(prizeSeg, bonus);
     }, 4300);
   }
 
   function openLuckySpin() {
     if (typeof g.closeAllSettingsOverlays === "function") g.closeAllSettingsOverlays();
     const wheel = document.getElementById("spin-wheel");
-    if (wheel && wheel.dataset.built !== "floral-v4") {
+    if (wheel && wheel.dataset.built !== WHEEL_BUILD) {
       delete wheel.dataset.built;
     }
     buildWheel();
