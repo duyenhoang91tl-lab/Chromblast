@@ -4157,7 +4157,7 @@ body:has(#secret-stage.active) .streak-dot.lit{
   -webkit-text-stroke:0;
   text-shadow:none;
 }
-/* Đổi tên + Nhiệm vụ (hàng đầu) */
+/* Tài khoản + Nhiệm vụ (hàng đầu) */
 .settings-overlay.menu-fullscreen .menu-top-row .set-action{
   background:linear-gradient(180deg,#E889A8,#C4567A);
 }
