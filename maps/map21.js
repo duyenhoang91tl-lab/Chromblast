@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════
-// maps/map21.js — MAP ẨN 21: Ếch bắt côn trùng
+// maps/map21.js — MAP ẨN 21: Ếch ộp ham ăn (Feed to Frog)
 // Ao sen nhìn từ trên xuống (canvas). Ếch ngồi giữa lá sen, phóng lưỡi
 // bắt: ong · dế mèn · châu chấu · bươm bướm · cánh cứng.
 // api: W/H 360×460 · input · addScore · sfx · flash · finish(won)
@@ -10,7 +10,7 @@ function triggerFrogUnlock(){
   pendingUnlock = 'frog';
   document.getElementById('unlock-title').textContent = '🐸 BẢN ĐỒ 21 MỞ KHÓA!';
   document.getElementById('unlock-desc').innerHTML =
-    '<b>Ếch bắt côn trùng</b><br>Căn thời gian — phóng lưỡi bắt ong, dế, châu chấu, bướm và cánh cứng trên ao sen!';
+    '<b>Ếch ộp ham ăn</b><br>Căn thời gian — phóng lưỡi cho ếch ộp no bụng: ong, dế, châu chấu, bướm và cánh cứng!';
   document.getElementById('unlock-btn').textContent = 'BẮT ĐẦU!';
   showUnlockOverlay();
 }
@@ -18,7 +18,7 @@ function triggerFrogUnlock(){
 registerMapModule({
   id: 21,
   key: 'frog',
-  name: 'Ếch bắt côn trùng',
+  name: 'Ếch ộp ham ăn',
   bgm: 'action',
 
   GOAL: 12,

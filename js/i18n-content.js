@@ -53,7 +53,7 @@ vi: {
     rhythm:{title:'🎵 Map ẩn 18 — Phiêu theo âm nhạc', body:'Chạm vào tâm đúng lúc vòng ngoài thu nhỏ khớp với vòng trong. Hoàn thành hết số vòng để thắng.'},
     maze:{title:'🌀 Map ẩn 19 — Thoát khỏi mê cung', body:'Vuốt để dẫn chú Samoyed thoát mê cung trong 90 giây. Ô cỏ dày che tường — nhớ đường. Đến cổng góc dưới phải để thắng.'},
     mega:{title:'🐉 Map ẩn 20 — Dũng sĩ diệt rồng', body:'Di ngón tay né đạn, tàu tự động bắn Rồng. Bắn cạn máu Rồng để phá đảo map 20 và mở map kế!'},
-    frog:{title:'🐸 Map ẩn 21 — Ếch bắt côn trùng', body:'Ao sen nhìn từ trên xuống. Chạm để ếch phóng lưỡi — căn thời gian bắt ong, dế mèn, châu chấu, bươm bướm và cánh cứng. Bắt đủ số trước khi hết giờ!'},
+    frog:{title:'🐸 Map ẩn 21 — Ếch ộp ham ăn', body:'Ao sen nhìn từ trên xuống. Chạm để ếch phóng lưỡi — căn thời gian cho ếch ộp ăn ong, dế mèn, châu chấu, bươm bướm và cánh cứng. Cho ăn đủ trước khi hết giờ!'},
   },
 },
 
@@ -102,7 +102,7 @@ en: {
     rhythm:{title:'🎵 Hidden Map 18 — Music Adventure', body:'Tap the center exactly when the shrinking ring matches the inner ring. Complete all notes to win.'},
     maze:{title:'🌀 Hidden Map 19 — Escape the Maze', body:'Swipe to guide the Samoyed out within 90 seconds. Dense grass hides walls — remember the path. Reach the bottom-right gate to win.'},
     mega:{title:'🐉 Hidden Map 20 — Dragon Slayer', body:'Slide to dodge bullets while your ship auto-fires at the Dragon. Drain its HP to clear map 20 and unlock the next map!'},
-    frog:{title:'🐸 Hidden Map 21 — Frog Catch', body:'Top-down lotus pond. Tap to shoot the frog’s tongue — time it to catch bees, crickets, grasshoppers, butterflies, and beetles. Catch enough before time runs out!'},
+    frog:{title:'🐸 Hidden Map 21 — Feed to Frog', body:'Top-down lotus pond. Tap to shoot the frog’s tongue — time it to feed bees, crickets, grasshoppers, butterflies, and beetles to the hungry frog. Feed enough before time runs out!'},
   },
 },
 
@@ -151,7 +151,7 @@ ko: {
     rhythm:{title:'🎵 히든 맵 18 — 음악 모험', body:'줄어드는 바깥 원이 안쪽 원과 겹치는 순간 중앙을 탭하세요. 모든 노트를 완료하면 승리.'},
     maze:{title:'🌀 히든 맵 19 — 미로 탈출', body:'스와이프로 사모예드를 안내해 90초 안에 미로를 탈출하세요. 풀숲이 벽을 가립니다. 오른쪽 아래 도착점에 닿으면 승리.'},
     mega:{title:'🐉 히든 맵 20 — 드래곤 슬레이어', body:'손가락으로 탄막을 피하면 함선이 자동으로 드래곤을 공격합니다. HP를 다 깎으면 맵 20 클리어 후 다음 맵이 열려요!'},
-    frog:{title:'🐸 히든 맵 21 — 개구리 곤충 잡기', body:'위에서 본 연꽃 연못. 탭하면 개구리가 혀를 뻗어 벌·귀뚜라미·메뚜기·나비·딱정벌레를 잡습니다. 시간 안에 목표 수를 잡으세요!'},
+    frog:{title:'🐸 히든 맵 21 — Feed to Frog', body:'위에서 본 연꽃 연못. 탭하면 배고픈 개구리가 혀를 뻗어 벌·귀뚜라미·메뚜기·나비·딱정벌레를 먹습니다. 시간 안에 충분히 먹이세요!'},
   },
 },
 
@@ -200,7 +200,7 @@ ja: {
     rhythm:{title:'🎵 隠しマップ18 — 音楽の冒険', body:'縮む外側の輪が内側の輪に重なる瞬間に中心をタップ。全ノーツをこなせば勝利。'},
     maze:{title:'🌀 隠しマップ19 — 迷路脱出', body:'スワイプでサモエドを導き、90秒以内に迷路を脱出。草が壁を隠します。右下のゴールに着けば勝利。'},
     mega:{title:'🐉 隠しマップ20 — ドラゴンスレイヤー', body:'指で弾幕をよければ、機体が自動でドラゴンを攻撃。HPを削り切ればマップ20クリア＆次のマップ解放！'},
-    frog:{title:'🐸 隠しマップ21 — カエルの虫とり', body:'真上から見た蓮池。タップでカエルが舌を伸ばし、ハチ・コオロギ・バッタ・チョウ・カブトムシをキャッチ。制限時間内に目標数を捕まえよう！'},
+    frog:{title:'🐸 隠しマップ21 — Feed to Frog', body:'真上から見た蓮池。タップでお腹を空かせたカエルが舌を伸ばし、ハチ・コオロギ・バッタ・チョウ・カブトムシを食べる。制限時間内にいっぱい食べさせよう！'},
   },
 },
 
@@ -249,7 +249,7 @@ zh: {
     rhythm:{title:'🎵 隐藏关18 — 音乐冒险', body:'在外圈缩到与内圈重合的瞬间点击中心。完成所有音符获胜。'},
     maze:{title:'🌀 隐藏关19 — 逃出迷宫', body:'滑动引导萨摩耶在90秒内逃出迷宫。密草会挡住墙壁。到达右下角终点获胜。'},
     mega:{title:'🐉 隐藏关20 — 屠龙勇士', body:'滑动躲避弹幕，飞船自动攻击巨龙。耗尽龙的血量即可通关第20关并解锁下一关！'},
-    frog:{title:'🐸 隐藏关21 — 青蛙捉虫', body:'俯视荷塘。点击让青蛙吐舌头，把握时机捕捉蜜蜂、蟋蟀、蚱蜢、蝴蝶和甲虫。在时间结束前抓够数量！'},
+    frog:{title:'🐸 隐藏关21 — Feed to Frog', body:'俯视荷塘。点击让贪吃青蛙吐舌头，把握时机喂它蜜蜂、蟋蟀、蚱蜢、蝴蝶和甲虫。在时间结束前喂够数量！'},
   },
 },
 
@@ -298,7 +298,7 @@ es: {
     rhythm:{title:'🎵 Mapa oculto 18 — Aventura musical', body:'Toca el centro justo cuando el anillo exterior encaje con el interior. Completa todas las notas para ganar.'},
     maze:{title:'🌀 Mapa oculto 19 — Escapa del laberinto', body:'Desliza para guiar al Samoyedo en 90 segundos. La hierba densa oculta muros. Llega a la meta abajo a la derecha para ganar.'},
     mega:{title:'🐉 Mapa oculto 20 — Cazadragones', body:'Desliza para esquivar balas mientras la nave dispara sola al Dragón. ¡Agota su vida para superar el mapa 20 y abrir el siguiente!'},
-    frog:{title:'🐸 Mapa oculto 21 — Rana cazainsectos', body:'Estanque de lotos visto desde arriba. Toca para lanzar la lengua de la rana y atrapar abejas, grillos, saltamontes, mariposas y escarabajos a tiempo. ¡Atrapa suficientes antes de que acabe el tiempo!'},
+    frog:{title:'🐸 Mapa oculto 21 — Feed to Frog', body:'Estanque de lotos visto desde arriba. Toca para lanzar la lengua de la rana glotona y alimentarla con abejas, grillos, saltamontes, mariposas y escarabajos. ¡Aliméntala lo suficiente antes de que acabe el tiempo!'},
   },
 },
 

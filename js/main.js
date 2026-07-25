@@ -662,7 +662,7 @@ const HIDDEN_MAP_LIST = [
   { key:'rhythm',  label:'Map ẩn 18 — Phiêu theo âm nhạc',  run: enterRhythmMode },
   { key:'maze',    label:'Map ẩn 19 — Thoát khỏi mê cung',  run: enterMazeMode },
   { key:'mega',    label:'Map ẩn 20 — Dũng sĩ diệt rồng',   run: enterMegaMode },
-  { key:'frog',    label:'Map ẩn 21 — Ếch bắt côn trùng',   run: () => startMap('frog') },
+  { key:'frog',    label:'Map ẩn 21 — Ếch ộp ham ăn',   run: () => startMap('frog') },
   { key:'floodpig',label:'Map ẩn 22 — Cẩu cứu heo mùa lũ',   run: () => startMap('floodpig') },
 ];
 let clearedHiddenMaps = new Set(getSavedClearedMaps());

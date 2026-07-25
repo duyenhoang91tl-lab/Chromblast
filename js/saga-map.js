@@ -9,7 +9,7 @@ const SAGA_BLURBS = {
   2: 'Thỏ đang bắn cà rốt lung tung! Điều khiển rùa né đạn càng lâu càng nhiều điểm.',
   3: 'Hoa quả bay lên khắp vườn — chém thật nhiều, tránh bom, săn CRITICAL ×5!',
   4: 'Samoyed đang chơi giữa vườn hoa. Chỉ đường chạy giúp chó và đập ong bay đi!',
-  21: 'Ao sen nhìn từ trên xuống — ếch ngồi giữa lá sen, căn thời gian phóng lưỡi bắt ong, dế, châu chấu, bướm và cánh cứng!',
+  21: 'Ếch ộp ham ăn trên ao sen! Căn thời gian phóng lưỡi cho ếch no bụng — ong, dế, châu chấu, bướm và cánh cứng.',
 };
 const SAGA_RAINBOW = ['#ff4d6d','#ff8c42','#ffd60a','#70e000','#4cc9f0','#7b2cbf','#f72585'];
 /** Mỗi 4 map ẩn = 1 chặng Samoyed (nền khác nhau). */

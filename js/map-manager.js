@@ -43,7 +43,7 @@ function registerMap(desc){
 // ── Map "ngoài" nạp động (chuẩn plugin init/update/draw) ──
 // File maps/mapNN.js chỉ gọi registerMapModule({...}); startMap(NN) sẽ tự lazy-load.
 [
-  {id:21, key:'frog', name:'Ếch bắt côn trùng', file:'maps/map21.js',
+  {id:21, key:'frog', name:'Ếch ộp ham ăn', file:'maps/map21.js',
     trigger(){ loadMapModule(MAP_REGISTRY[21], ()=>{ if(typeof triggerFrogUnlock==='function') triggerFrogUnlock(); }); }},
   {id:22, key:'floodpig', name:'Cẩu cứu heo mùa lũ', file:'maps/map22.js'},
 ].forEach(registerMap);
