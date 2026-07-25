@@ -32,7 +32,7 @@
     { id: "sunset", name: "Sunset", desc: { vi: 'Hoàng hôn', en: 'Sunset glow' }, price: 18 },
     { id: "ice", name: "Ice", desc: { vi: 'Băng giá', en: 'Icy frost' }, price: 20 },
     { id: "lava", name: "Lava", desc: { vi: 'Nham thạch', en: 'Molten lava' }, price: 28 },
-    { id: "candy", name: "Candy", desc: { vi: 'Kẹo ngọt', en: 'Sweet candy' }, price: 24 },
+    { id: "sweet", name: "Sweet", desc: { vi: 'Nền ngọt pastel', en: 'Pastel sweet board' }, price: 24 },
     { id: "neon", name: "Neon", desc: { vi: 'Neon city', en: 'Neon city' }, price: 36 },
     { id: "sand", name: "Sand", desc: { vi: 'Cát vàng', en: 'Golden sand' }, price: 12 },
     { id: "marble", name: "Marble", desc: { vi: 'Cẩm thạch', en: 'Marble stone' }, price: 48 },
@@ -80,10 +80,12 @@
           "{}"
       );
       if (!raw || typeof raw !== "object") return;
-      if (typeof raw.active === "string") state.active = raw.active;
+      if (typeof raw.active === "string") state.active = raw.active === "candy" ? "sweet" : raw.active;
       if (Array.isArray(raw.unlocked)) {
         state.unlocked = Array.from(
-          new Set(STARTER_IDS.concat(raw.unlocked.filter(Boolean)))
+          new Set(STARTER_IDS.concat(raw.unlocked.map(function (id) {
+            return id === "candy" ? "sweet" : id;
+          }).filter(Boolean)))
         );
       }
       state.starterPicked = !!raw.starterPicked;

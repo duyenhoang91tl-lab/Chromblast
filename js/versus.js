@@ -399,7 +399,7 @@ function _vsRenderTray(P){
     for(let r=0;r<=maxR;r++)for(let c=0;c<=maxC;c++){
       const b=document.createElement('div');
       if(cells.some(([rr,cc])=>rr===r&&cc===c)){ 
-         b.className='vs-mini-candy';
+         b.className='vs-mini-sweet';
          b.style.setProperty('--cc',pc.color);
          const ci=COLORS.indexOf(pc.color);
          if(ci>=0) b.dataset.ci=String(ci);
@@ -483,7 +483,7 @@ function _vsBuildGhost(P){
   pc.shape.forEach(([r,c])=>{ cells[r*(maxC+1)+c]=pc.color; });
   cells.forEach(color=>{
     const d=document.createElement('div');
-    d.className='vs-g-cell'+(color?' candy':'');
+    d.className='vs-g-cell'+(color?' sweet':'');
     d.style.width=g.cell+'px';
     d.style.height=g.cell+'px';
     if(color){
