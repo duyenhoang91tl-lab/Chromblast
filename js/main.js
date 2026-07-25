@@ -647,7 +647,7 @@ const HIDDEN_MAP_LIST = [
   { key:'fruit',   label:'Map ẩn 3 — Vườn Trái Cây',         run: enterFruitMode },
   { key:'bee',     label:'Map ẩn 4 — Bảo vệ chó khỏi ong',   run: enterBeeMode },
   { key:'gold',    label:'Map ẩn 5 — Truy tìm kho báu',     run: enterGoldMode },
-  { key:'mole',    label:'Map ẩn 6 — Đập thú (Whack-a-Mole)',run: enterMoleMode },
+  { key:'mole',    label:'Map ẩn 6 — Đánh thú',              run: enterMoleMode },
   { key:'memory',  label:'Map ẩn 7 — Lật thẻ ký ức',         run: enterMemoryMode },
   { key:'bubble',  label:'Map ẩn 8 — Bắn bong bóng',         run: enterBubbleMode },
   { key:'stack',   label:'Map ẩn 9 — Xếp tháp',              run: enterStackMode },

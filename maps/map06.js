@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════
-// maps/map06.js — MAP ẨN 6: Đập thú (Whack-a-Mole)
+// maps/map06.js — MAP ẨN 6: Đánh thú (Beat Animal)
 // Tách verbatim khỏi main.js, nạp TRƯỚC main.js (global scope).
 // ═══════════════════════════════════════════════════════════════
 
@@ -29,11 +29,11 @@ function triggerMoleUnlock(){
   pendingUnlock='mole';
   document.getElementById('unlock-title').textContent='🔨 MAP ẨN 6 MỞ KHÓA!';
   document.getElementById('unlock-desc').innerHTML=
-    '🌿 <b>Vườn thú bí ẩn!</b><br><br>'+
-    '8 hố trong vườn — thú lộ đầu rồi bay ra. <b>Chỉ đập khi đã bay hết ra khỏi hố</b>!<br>'+
-    'Lúc mới nhô lên chỉ nhìn được, chưa đập được. Thời gian bay trên không dài hơn để kịp đập.<br>'+
+    '🌿 <b>Đánh thú!</b><br><br>'+
+    '8 hố trong vườn — thú lộ đầu rồi bay ra. <b>Chỉ đánh khi đã bay hết ra khỏi hố</b>!<br>'+
+    'Lúc mới nhô lên chỉ nhìn được, chưa đánh được. Thời gian bay trên không dài hơn để kịp đánh.<br>'+
     '🦫🐰🐢🐶🐱 cộng điểm · 🦔🐍 trừ điểm. Cần <b>'+MOLE_KPI+' điểm</b> trong '+MOLE_TIME+'s!';
-  document.getElementById('unlock-btn').textContent='🔨 ĐẬP THÔI!';
+  document.getElementById('unlock-btn').textContent='🔨 ĐÁNH THÔI!';
   showUnlockOverlay();
 }
 
@@ -45,7 +45,7 @@ function enterMoleMode(){
   document.getElementById('grid').style.display='none';
   document.getElementById('pieces-area').style.display='none';
   document.getElementById('hint-bar').style.display='';
-  document.getElementById('hint-bar').textContent='Chỉ đập khi thú bay lên! Đập trống / chưa bay lên = −1 điểm. Tránh 🦔🐍!';
+  document.getElementById('hint-bar').textContent='Chỉ đánh khi thú bay lên! Đánh trống / chưa bay lên = −1 điểm. Tránh 🦔🐍!';
   MCV().classList.add('active');
   document.getElementById('grid-wrap').classList.add('secret-mode');
   document.getElementById('mode-badge').textContent='🔨 MAP ẨN 6';

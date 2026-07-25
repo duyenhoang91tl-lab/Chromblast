@@ -34,9 +34,9 @@ Thêm biểu tượng ứng dụng thích ứng vào `mipmap-*`, kiểm tra tên
 ## 4. Kiểm thử trước khi xuất bản
 
 1. Cài bản debug lên thiết bị Android thật, kiểm tra màn hình dọc, thao tác chạm/kéo, âm thanh, tạm dừng và chế độ máy bay.
-2. Kiểm tra đăng ký/đăng nhập sau khi đóng mở lại ứng dụng. Dữ liệu hiện lưu cục bộ nên không được mô tả là đồng bộ đám mây.
-3. Đăng chính sách tại một URL HTTPS công khai. Cập nhật email liên hệ trong `privacy-policy.html` trước khi xuất bản.
-4. Trong Play Console, trả lời biểu mẫu **Data safety** theo đúng hành vi bản phát hành thực tế. Nếu giữ Google Fonts từ mạng, cần rà soát chính sách của Google Fonts và khai báo phù hợp.
+2. Kiểm tra đăng ký/đăng nhập sau khi đóng mở lại ứng dụng. Dữ liệu local vẫn lưu trên thiết bị; tính năng online dùng Firebase (xem `privacy-policy.html`).
+3. Đăng `privacy-policy.html` tại một URL HTTPS công khai trước khi xuất bản.
+4. Trong Play Console, trả lời biểu mẫu **Data safety** theo `PLAY_STORE_DATA_SAFETY.md` (Firebase, AdMob, dịch chat, font offline — không còn Google Fonts CDN).
 
 ## 5. Xuất App Bundle
 

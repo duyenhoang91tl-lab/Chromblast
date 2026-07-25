@@ -32,6 +32,8 @@ OFL cho phép nhúng font vào app/game (kể cả thương mại), miễn là:
 - giữ notice/license khi phân phối lại font;
 - không dùng tên dành riêng của font theo cách gây nhầm lẫn về nguồn gốc (Reserved Font Name — xem OFL).
 
+**Credit đóng gói:** `fonts/OFL.txt` (toàn văn SIL OFL 1.1) + `fonts/FONT_CREDITS.md` (danh sách Nunito + font nickname).
+
 ---
 
 ## 2. Âm thanh trong `sounds/`
@@ -76,7 +78,8 @@ Các họ font Google Fonts / OFL thường gặp — cần giữ credit OFL khi
 | Righteous | `fonts/nick/righteous-400-*.woff2` | OFL 1.1 |
 
 Credit gộp (OFL): mỗi font thuộc dự án Google Fonts / tác giả tương ứng; phân phối theo SIL Open Font License 1.1.  
-Danh sách dùng trong UI: `js/player-profile.js` → `NICK_FONTS`.
+Danh sách dùng trong UI: `js/player-profile.js` → `NICK_FONTS`.  
+Chi tiết + `OFL.txt`: xem `fonts/FONT_CREDITS.md`.
 
 ---
 
@@ -108,8 +111,8 @@ Không thấy `<link>` tới Google Fonts CDN trong `index.html` (font đã bund
 
 | API | File | Mục đích | Ghi chú |
 |---|---|---|---|
-| Google Translate (gtx unofficial) | `js/chat.js` | Dịch chat | Endpoint không chính thức — rủi ro ToS/ổn định; cân nhắc thay bằng API có license |
-| MyMemory Translated | `js/chat.js` | Fallback dịch | Theo điều khoản MyMemory |
+| MyMemory Translated | `js/chat.js` | Dịch chat (chính) | Theo điều khoản MyMemory |
+| LibreTranslate (Argos public) | `js/chat.js` | Dịch chat (fallback) | Instance công khai; theo điều khoản nhà vận hành |
 
 ### 4.4. Icon / hình ảnh / UI khác
 
@@ -132,7 +135,8 @@ Praise bằng file WAV ở mục 2.
 ## 6. Checklist trước phát hành
 
 - [x] Xác nhận `sounds/` — 9 file tự thu âm, sở hữu gốc nhà phát triển (2026-07-25; đã bỏ `godlike.wav`)
-- [ ] Giữ OFL credit cho Nunito + font nickname khi phân phối font
-- [ ] Rà điều khoản Firebase, AdMob, Google Sign-In cho Data safety / Privacy
-- [ ] Quyết định giữ hay thay API dịch chat (Google gtx / MyMemory)
-- [ ] Đồng bộ `privacy-policy.html` với việc font đã offline
+- [x] OFL credit: `fonts/OFL.txt` + `fonts/FONT_CREDITS.md`
+- [x] Đồng bộ `privacy-policy.html` (Firebase / AdMob / Sign-In / dịch chat / font offline)
+- [x] Data safety guide: `PLAY_STORE_DATA_SAFETY.md`
+- [x] Dịch chat: bỏ gtx — MyMemory + LibreTranslate
+- [ ] Rà lại form Data safety trên Play Console trước khi submit

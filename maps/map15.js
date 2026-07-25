@@ -18,7 +18,7 @@ function triggerBrickUnlock(){
   markMapCleared('snake');
   pendingUnlock='brick';
   document.getElementById('unlock-title').textContent='🧱 MAP ẨN 15 MỞ KHÓA!';
-  document.getElementById('unlock-desc').innerHTML='Phá gạch kiểu Arkanoid! Bóng nảy phá 24 viên gạch. 3 mạng ❤️❤️❤️';
+  document.getElementById('unlock-desc').innerHTML='Phá gạch cổ điển! Bóng nảy phá 24 viên gạch. 3 mạng ❤️❤️❤️';
   document.getElementById('unlock-btn').textContent='🧱 PHÁ THÔI!';
   showUnlockOverlay();
   sfxUnlock();

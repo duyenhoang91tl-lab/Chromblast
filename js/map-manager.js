@@ -23,7 +23,7 @@ function registerMap(desc){
   {id:3,  key:'fruit',  name:'Vườn Trái Cây',      enter:enterFruitMode,  trigger:triggerFruitUnlock},
   {id:4,  key:'bee',    name:'Bảo vệ chó khỏi ong',enter:enterBeeMode,    trigger:triggerBeeUnlock},
   {id:5,  key:'gold',   name:'Truy tìm kho báu',   enter:enterGoldMode,   trigger:triggerGoldUnlock},
-  {id:6,  key:'mole',   name:'Đập thú',            enter:enterMoleMode,   trigger:triggerMoleUnlock},
+  {id:6,  key:'mole',   name:'Đánh thú',           enter:enterMoleMode,   trigger:triggerMoleUnlock},
   {id:7,  key:'memory', name:'Lật thẻ ký ức',      enter:enterMemoryMode, trigger:triggerMemoryUnlock},
   {id:8,  key:'bubble', name:'Bắn bong bóng',      enter:enterBubbleMode, trigger:triggerBubbleUnlock},
   {id:9,  key:'stack',  name:'Xếp tháp',           enter:enterStackMode,  trigger:triggerStackUnlock},
