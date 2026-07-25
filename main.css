@@ -4478,26 +4478,29 @@ body:has(#secret-stage.active) .streak-dot.lit{
   position:relative; z-index:2;
   will-change:transform;
 }
-/* Nhãn radial: đáy (×N) hướng vào tâm, icon hướng ra ngoài */
+/* Nhãn radial: icon + ×N gọn giữa mỗi ô, kích thước đều */
 .spin-seg-label{
   position:absolute; left:50%; top:50%;
-  width:52px; margin-left:-26px; margin-top:-22px;
+  width:40px; margin-left:-20px; margin-top:-18px;
   text-align:center; font-weight:900;
-  color:#3b2a1a; pointer-events:none; line-height:1.05;
-  display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
-  gap:2px;
+  color:#3b2a1a; pointer-events:none; line-height:1;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:1px;
   text-shadow:0 1px 0 rgba(255,255,255,0.75);
   transform-origin: 50% 50%;
 }
 .spin-seg-ico{
-  font-size:20px; line-height:1;
+  font-size:16px; line-height:1;
+  width:20px; height:20px;
+  display:flex; align-items:center; justify-content:center;
   filter:drop-shadow(0 1px 2px rgba(0,0,0,0.22));
 }
 .spin-seg-amt{
-  font-size:11px; font-weight:900; color:#5b2c0a;
-  background:rgba(255,255,255,0.72); border-radius:999px;
-  padding:1px 7px; letter-spacing:0.15px;
+  font-size:10px; font-weight:900; color:#5b2c0a;
+  background:rgba(255,255,255,0.78); border-radius:999px;
+  padding:0 5px; letter-spacing:0.1px; line-height:1.35;
   box-shadow:0 1px 2px rgba(0,0,0,0.12);
+  max-width:100%;
 }
 /* Kim chỉ = chiếc lá cách điệu (đỉnh vòng, mũi hướng tâm) */
 .spin-pointer,
