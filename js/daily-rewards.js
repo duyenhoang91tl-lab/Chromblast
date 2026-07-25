@@ -47,14 +47,24 @@ function claimDailyReward(){
   if(!status.canClaim) return null;
   const xp = DAILY_REWARD_XP[(status.streakDay - 1) % 7];
   const gold = 1; // nhiệm vụ ngày: đăng nhập +1 vàng
+  const heartWant = 1; // +1 tim / điểm danh (tổng nhiệm vụ ngày ≤ 5 tim)
   const st = getDailyState();
   st.lastClaim = todayStr();
   st.streak = status.streakDay;
   saveDailyState(st);
   if(typeof addPlayerXP === 'function') addPlayerXP(xp);
-  if(typeof grantGold === 'function') grantGold(gold, typeof t==='function'?t('dailyGold'):'Đăng nhập');
+  if(typeof grantGold === 'function') grantGold(gold, typeof t==='function'?t('dailyGold'):'Điểm danh');
+  let hearts = 0;
+  try{
+    if(typeof grantDailyQuestHearts === 'function'){
+      hearts = grantDailyQuestHearts(heartWant, typeof t==='function'?t('dailyHeart'):'Điểm danh') || 0;
+    } else if(typeof grantHearts === 'function'){
+      grantHearts(heartWant, typeof t==='function'?t('dailyHeart'):'Điểm danh');
+      hearts = heartWant;
+    }
+  }catch(e){}
   try{ if(typeof noteCupLoginClaim==='function') noteCupLoginClaim(); }catch(e){}
-  return { day: status.streakDay, xp, gold };
+  return { day: status.streakDay, xp, gold, hearts };
 }
 
 function updateDailyBadge(){
@@ -113,9 +123,10 @@ function initDailyRewardPanel(){
     const res = claimDailyReward();
     if(res){
       if(typeof showComboFlash === 'function'){
+        const h = res.hearts|0;
         showComboFlash(0, false, typeof t==='function'
-          ? t('dailyFlash', res.xp, res.day)
-          : ('🎁 +'+res.xp+' XP · 🪙 +'+(res.gold||1)+' (ngày '+res.day+'/7)'));
+          ? t('dailyFlash', res.xp, res.day, h)
+          : ('🎁 +'+res.xp+' XP · 🪙 +'+(res.gold||1)+(h?(' · ❤️ +'+h):'')+' (ngày '+res.day+'/7)'));
       }
       if(typeof sfxUnlock === 'function') sfxUnlock();
       renderDailyPanel();
