@@ -3724,14 +3724,12 @@ body:has(#secret-stage.active) .streak-dot.lit{
   width: 100%;
   font-size: clamp(16px, 4.6vw, 22px);
   font-weight: 900;
-  color: #ff4fa3;
+  color: #fff;
   text-align: center !important;
   line-height: 1;
   margin-top: 0;
-  -webkit-text-stroke: 1px #fff;
-  text-shadow:
-    0 1px 0 #c2185b,
-    0 0 8px rgba(255,120,180,0.5);
+  -webkit-text-stroke: 0;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.45);
   font-variant-numeric: tabular-nums;
   overflow: visible;
   white-space: nowrap;
@@ -4333,13 +4331,14 @@ body:has(#secret-stage.active) .streak-dot.lit{
   from{ filter:brightness(1); }
   to{ filter:brightness(1.12); }
 }
-.pw-fire{ background:linear-gradient(180deg,#ff8a50,#e8481f); color:#2a0e00; }
-.pw-bubble{ background:linear-gradient(180deg,#6fd8ff,#2a8fd8); color:#04263a; }
-.pw-wind{ background:linear-gradient(180deg,#8ef0c8,#2ab88a); color:#04301f; }
-.skill-ad{ background:linear-gradient(180deg,#ff6b8a,#d63a5c) !important; flex-direction:row; gap:4px; min-width:auto; padding:10px 14px; font-size:13px; }
+.pw-fire{ background:linear-gradient(180deg,#ff8a50,#e8481f); color:#fff; }
+.pw-bubble{ background:linear-gradient(180deg,#6fd8ff,#2a8fd8); color:#fff; }
+.pw-wind{ background:linear-gradient(180deg,#8ef0c8,#2ab88a); color:#fff; }
+.skill-ad{ background:linear-gradient(180deg,#ff6b8a,#d63a5c) !important; flex-direction:row; gap:4px; min-width:auto; padding:10px 14px; font-size:13px; color:#fff; }
 .skill-lab{
   font-size:10.5px; font-weight:900; letter-spacing:0.6px;
   text-transform:uppercase; line-height:1.1; opacity:0.95;
+  color:#fff;
 }
 
 /* Đang nhắm skill: con trỏ + viền bàn gợi ý chạm ô */
