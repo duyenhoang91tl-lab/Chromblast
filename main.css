@@ -2524,7 +2524,7 @@ body:has(#secret-stage.active) .streak-dot.lit{
   border-radius: 14px; touch-action: none; margin: 0 auto;
 }
 #fruit-canvas.active { display: block; }
-/* ── MAP ẨN 5: GOLD CANVAS (mode F) ── */
+/* ── MAP ẨN 5: Truy tìm kho báu — GOLD CANVAS (mode F) ── */
 #gold-canvas {
   display: none; width: 100%; max-width: 393px;
   aspect-ratio: 360 / 460; background: linear-gradient(180deg,#7EC8E3 0%,#ADE0F2 12%,#3E2723 12%,#1a0e05 100%);

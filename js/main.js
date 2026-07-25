@@ -337,8 +337,8 @@ document.addEventListener('keyup', e=>{
 
 
 /* ══════════════════════════════════════════
-   MAP ẨN 5 — MÈO ĐÀO VÀNG
-   Chạm ô đất kề bên mèo để đào lấy vàng/đá quý.
+   MAP ẨN 5 — TRUY TÌM KHO BÁU
+   Chạm ô đất kề bên mèo để tìm vàng/đá quý.
    Chạm xa hơn để dẫn mèo di chuyển tới gần.
    Chuột chạy qua mang theo kim cương — chạm trúng để bắt, +150 điểm!
    KPI: đạt đủ điểm trong 30 giây.
@@ -646,7 +646,7 @@ const HIDDEN_MAP_LIST = [
   { key:'dodge',   label:'Map ẩn 2 — Rùa né cà rốt',         run: enterDodgeMode },
   { key:'fruit',   label:'Map ẩn 3 — Chém hoa quả',          run: enterFruitMode },
   { key:'bee',     label:'Map ẩn 4 — Bảo vệ chó khỏi ong',   run: enterBeeMode },
-  { key:'gold',    label:'Map ẩn 5 — Đào vàng (Gold Miner)', run: enterGoldMode },
+  { key:'gold',    label:'Map ẩn 5 — Truy tìm kho báu',     run: enterGoldMode },
   { key:'mole',    label:'Map ẩn 6 — Đập thú (Whack-a-Mole)',run: enterMoleMode },
   { key:'memory',  label:'Map ẩn 7 — Lật thẻ ký ức',         run: enterMemoryMode },
   { key:'bubble',  label:'Map ẩn 8 — Bắn bong bóng',         run: enterBubbleMode },

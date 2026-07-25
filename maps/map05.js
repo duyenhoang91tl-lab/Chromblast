@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════
-// maps/map05.js — MAP ẨN 5: Mèo đào vàng (Gold Miner)
+// maps/map05.js — MAP ẨN 5: Truy tìm kho báu (Treasure Hunt)
 // Tách verbatim khỏi main.js, nạp TRƯỚC main.js (global scope).
 // ═══════════════════════════════════════════════════════════════
 
@@ -41,12 +41,12 @@ function triggerGoldUnlock(){
   pendingUnlock='gold';
   document.getElementById('unlock-title').textContent='⛏️ MAP ẨN 5 MỞ KHÓA!';
   document.getElementById('unlock-desc').innerHTML=
-    'Bạn đã bảo vệ chó xong! Phần thưởng: mỏ vàng bí ẩn!<br><br>'+
-    '🐱 <b>Mèo đào vàng — đào 30 giây!</b><br>'+
+    'Bạn đã bảo vệ chó xong! Phần thưởng: kho báu bí ẩn!<br><br>'+
+    '🐱 <b>Truy tìm kho báu — 30 giây!</b><br>'+
     'Chạm ô đất gần mèo để <b>đào</b> lấy vàng/đá quý. Chạm xa hơn để dẫn mèo di chuyển.<br>'+
     '🐭 Bắt được <b>chuột mang kim cương</b> chạy qua → thưởng lớn +150!<br>'+
     'Cần đạt <b>'+GOLD_KPI_SCORE+' điểm</b> để qua màn!';
-  document.getElementById('unlock-btn').textContent='⛏️ ĐÀO THÔI!';
+  document.getElementById('unlock-btn').textContent='⛏️ ĐI TÌM!';
   showUnlockOverlay();
 }
 
@@ -58,7 +58,7 @@ function enterGoldMode(){
   document.getElementById('grid').style.display='none';
   document.getElementById('pieces-area').style.display='none';
   document.getElementById('hint-bar').style.display='';
-  document.getElementById('hint-bar').textContent='Chạm đất gần mèo để đào! Bắt chuột mang kim cương +150!';
+  document.getElementById('hint-bar').textContent='Chạm đất gần mèo để tìm kho báu! Bắt chuột mang kim cương +150!';
   GCV().classList.add('active');
   document.getElementById('grid-wrap').classList.add('secret-mode');
   document.getElementById('mode-badge').textContent='⛏️ MAP ẨN 5';
