@@ -35,7 +35,7 @@ let _pieceRand = null; // null = Math.random như bình thường
 function setPieceRand(f){ _pieceRand = f || null; }
 function makePiece(){
   const R = _pieceRand || Math.random;
-  // Map thường càng cao (mainHardTier = Map N), khối càng thiên về hình to/khó xếp
+  // Map thường càng cao (mainHardTier = Map N - 1), khối càng thiên về hình to/khó xếp
   // (mặc định ~55% khối lớn giống tỉ lệ cũ, mỗi bậc +3%, tối đa 90%)
   const hardP=Math.min(0.9, 0.55+mainHardTier*0.03);
   const wantHard=R()<hardP;

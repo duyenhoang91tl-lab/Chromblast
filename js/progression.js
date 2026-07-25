@@ -10,8 +10,9 @@
    Sau map ẩn → lại cần 2 map thường ★★★ để mở map ẩn tiếp.
    Màn Samoyed hiện khi vừa đủ điều kiện mở map ẩn (theo chặng 4 map).
 
-   Cơ chế map thường = số Map N (Map 1 = dây gai, Map 2 = núi, Map 3 = sóc…):
-   mainHardTier = normalMapStage. Đủ ★★★★ mới qua map.
+   Cơ chế map thường lệch 1 bậc so với số Map:
+   Map 1 = chưa có cơ chế; Map 2 = dây gai; Map 3 = núi…
+   mainHardTier = normalMapStage - 1. Đủ ★★★★ mới qua map (+ thông báo level up).
 ══════════════════════════════════════════════════════ */
 /* ══════ CHẾ ĐỘ ADVENTURE — mở khóa khi đạt 10.000 điểm ══════ */
 const ADVENTURE_UNLOCK_SCORE = 10000;
@@ -98,9 +99,9 @@ function resetNormalStarRun(){
 }
 loadNormalStars();
 
-/** Map N → mainHardTier = N (Map 1 = dây gai / Vòng 1, Map 3 = Vòng 3…). */
+/** Map N → mainHardTier = N-1 (Map 1 = 0 / chưa cơ chế, Map 2 = dây gai…). */
 function syncMainHardTierFromNormalStage(applyMechs){
-  const next = Math.max(0, normalMapStage|0);
+  const next = Math.max(0, (normalMapStage|0) - 1);
   try{ mainHardTier = next; }catch(e){}
   if(applyMechs){
     try{ if(typeof resetMechanicState==='function') resetMechanicState(); }catch(e){}
@@ -147,8 +148,8 @@ function checkNormalMapThreeStars(){
   try{ if(typeof sfxUnlock==='function') sfxUnlock(); }catch(e){}
   try{
     const msg = (typeof t==='function')
-      ? t('starMapClear', doneStage, normalStarClears, NORMAL_STARS_PER_HIDDEN)
-      : ('★★★ Map thường '+doneStage+' ('+normalStarClears+'/'+NORMAL_STARS_PER_HIDDEN+')');
+      ? t('mapLevelUp', normalMapStage, doneStage)
+      : ('⬆ Level up — Map '+normalMapStage+'!');
     if(typeof showComboFlash==='function') showComboFlash(0, false, msg);
   }catch(e){}
 
@@ -158,7 +159,7 @@ function checkNormalMapThreeStars(){
     normalStarClears = 0;
     persistNormalStars();
     unlockGateActive = false;
-    // Stage đã nhảy (vd. Map 3) — áp núi/cơ chế khi về từ map ẩn, tránh nháy board trước Samoyed
+    // Stage đã nhảy — áp cơ chế khi về từ map ẩn, tránh nháy board trước Samoyed
     syncMainHardTierFromNormalStage(false);
     try{ consecutiveBursts = 0; }catch(e){}
     try{ if(typeof updateBurstCount==='function') updateBurstCount(); }catch(e){}
@@ -170,7 +171,7 @@ function checkNormalMapThreeStars(){
       }catch(e){}
     }, 480);
   } else {
-    // Map N ★★★★ → Map N+1 + cơ chế Map N+1
+    // Map N ★★★★ → Map N+1 + cơ chế của Map N+1 (tier = stage-1)
     syncMainHardTierFromNormalStage(true);
     try{ if(typeof updateBurstCount==='function') updateBurstCount(); }catch(e){}
   }
