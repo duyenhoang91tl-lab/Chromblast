@@ -4644,11 +4644,53 @@ body:has(#secret-stage.active) .streak-dot.lit{
 .shop-tab{ flex:1; border:1px solid rgba(255,255,255,0.16); background:rgba(255,255,255,0.06); color:#fff; border-radius:10px; padding:8px 6px; font-weight:800; font-size:12px; cursor:pointer; }
 .shop-tab.active{ border-color:#ffd54a; background:rgba(255,213,74,0.16); color:#ffd54a; }
 .shop-grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; max-height:55vh; overflow:auto; }
-.shop-item{ border:1px solid rgba(255,255,255,0.14); background:rgba(255,255,255,0.06); border-radius:12px; padding:10px 8px; color:#fff; cursor:pointer; text-align:center; }
+.shop-item{ border:1px solid rgba(255,255,255,0.14); background:rgba(255,255,255,0.06); border-radius:12px; padding:10px 8px; color:#fff; text-align:center; }
 .shop-item.owned{ opacity:0.55; cursor:default; }
+.shop-item-preview{ display:flex; justify-content:center; margin:0 auto 6px; }
+.shop-board-preview .board-swatch{ width:100%; max-width:120px; height:56px; border-radius:10px; }
+.shop-brick-preview{
+  display:flex; gap:3px; justify-content:center; flex-wrap:nowrap;
+  min-height:28px; align-items:center;
+}
+.shop-brick-preview .brick-swatch{ width:22px; height:22px; border-radius:5px; }
 .shop-item-ico{ font-size:22px; }
 .shop-item-name{ font-size:12px; font-weight:900; margin-top:4px; }
 .shop-item-price{ font-size:11px; color:#ffd54a; font-weight:800; margin-top:2px; }
+.shop-buy-btn{
+  flex:1; border:1px solid rgba(255,213,74,0.45); background:rgba(255,213,74,0.18);
+  border-radius:10px; min-height:32px; padding:6px 10px; cursor:pointer;
+  font-size:12px; font-weight:900; color:#ffe082;
+}
+.shop-buy-dia{
+  border-color:rgba(100,200,255,0.5); background:rgba(100,200,255,0.16); color:#b3e5fc;
+}
+.shop-exchange-box{ display:flex; flex-direction:column; gap:10px; }
+.shop-exchange-grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+.shop-exchange-card{
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+  border:1px solid rgba(255,255,255,0.14); background:rgba(255,255,255,0.06);
+  border-radius:14px; padding:12px 10px 10px; text-align:center; color:#fff;
+}
+.shop-ex-top,.shop-ex-bot{
+  display:flex; flex-direction:column; align-items:center; gap:2px; min-height:52px; justify-content:center;
+}
+.shop-ex-ico{ font-size:28px; line-height:1; }
+.shop-ex-amt{ font-size:12px; font-weight:900; color:#ffd54a; }
+.shop-ex-arrow{ font-size:16px; font-weight:900; color:rgba(255,255,255,0.55); }
+.shop-ex-label{ font-size:11px; font-weight:800; color:rgba(255,255,255,0.7); }
+.shop-qty-row{ display:flex; align-items:center; gap:6px; margin-top:2px; }
+.shop-qty-btn{
+  width:32px; height:32px; border-radius:10px; border:1px solid rgba(255,255,255,0.2);
+  background:rgba(255,255,255,0.1); color:#fff; font-size:18px; font-weight:900; cursor:pointer;
+}
+.shop-qty-input{
+  width:48px; height:32px; border-radius:10px; border:1px solid rgba(255,255,255,0.22);
+  background:rgba(0,0,0,0.28); color:#fff; text-align:center; font-weight:900; font-size:14px;
+  -moz-appearance:textfield;
+}
+.shop-qty-input::-webkit-outer-spin-button,
+.shop-qty-input::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
+.shop-ex-go{ width:100%; margin:4px 0 0 !important; padding:10px 8px !important; font-size:13px !important; }
 .shop-hearts-box{ display:flex; flex-direction:column; gap:8px; }
 .shop-hint{ font-size:12px; color:rgba(255,255,255,0.7); font-weight:700; margin:0 0 4px; }
 .shop-heart-status{
@@ -4702,6 +4744,9 @@ body:has(#secret-stage.active) .streak-dot.lit{
   border-radius:8px; width:36px; height:28px; cursor:pointer; font-size:14px;
 }
 .shop-mini-dia{ border-color:rgba(100,200,255,0.45); }
+@media (max-width:380px){
+  .shop-exchange-grid{ grid-template-columns:1fr; }
+}
 .friends-screen-card{ max-height:min(88vh,720px); overflow:auto; }
 .friends-search-row{ display:flex; gap:8px; margin:8px 0 6px; }
 .friends-search-input{

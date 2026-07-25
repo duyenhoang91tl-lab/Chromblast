@@ -5,15 +5,35 @@
 (function (g) {
   "use strict";
 
-  function tt() {
+  function tt(key, fallback) {
     try {
-      if (typeof t === "function") return t.apply(null, arguments);
+      if (typeof t === "function") {
+        const v = t(key);
+        if (v != null && v !== key) return v;
+      }
     } catch (e) {}
-    return arguments[1] != null ? arguments[1] : arguments[0];
+    return fallback != null ? fallback : key;
+  }
+
+  /** i18n với placeholder {0},{1}… (không dùng chuỗi fallback làm arg) */
+  function ttf(key, fallback) {
+    const args = Array.prototype.slice.call(arguments, 2);
+    try {
+      if (typeof t === "function") {
+        const v = t.apply(null, [key].concat(args));
+        if (v != null && v !== key) return v;
+      }
+    } catch (e) {}
+    let s = fallback != null ? String(fallback) : String(key);
+    args.forEach(function (a, i) {
+      s = s.split("{" + i + "}").join(a);
+    });
+    return s;
   }
 
   const HEART_GOLD_PRICE = 8;
   const HEART_PACK = 1;
+  const BRICK_PREVIEW_COLORS = ["#E24B4A", "#378ADD", "#1D9E75", "#EF9F27"];
 
   function gold() {
     return typeof getGold === "function" ? getGold() : 0;
@@ -60,6 +80,177 @@
     return panel;
   }
 
+  function makeBoardPreviewEl(skinId) {
+    const wrap = document.createElement("div");
+    wrap.className = "shop-item-preview shop-board-preview";
+    const sw = document.createElement("div");
+    sw.className = "board-swatch";
+    sw.setAttribute("data-board-skin", skinId || "classic");
+    wrap.appendChild(sw);
+    return wrap;
+  }
+
+  function makeBrickPreviewEl(skinId) {
+    const wrap = document.createElement("div");
+    wrap.className = "shop-item-preview shop-brick-preview brick-skin-preview";
+    BRICK_PREVIEW_COLORS.forEach(function (c) {
+      const d = document.createElement("div");
+      d.className = "brick-swatch";
+      d.setAttribute("data-brick-skin", skinId || "classic");
+      d.style.setProperty("--cc", c);
+      wrap.appendChild(d);
+    });
+    return wrap;
+  }
+
+  function makeQtyRow(idPrefix, initial) {
+    const row = document.createElement("div");
+    row.className = "shop-qty-row";
+    row.innerHTML =
+      '<button type="button" class="shop-qty-btn" data-qty-delta="-1" aria-label="-">−</button>' +
+      '<input type="number" class="shop-qty-input" id="' +
+      idPrefix +
+      '-qty" min="1" max="99" value="' +
+      (initial || 1) +
+      '" inputmode="numeric">' +
+      '<button type="button" class="shop-qty-btn" data-qty-delta="1" aria-label="+">+</button>';
+    const input = row.querySelector("input");
+    function clamp() {
+      let n = Math.floor(Number(input.value) || 1);
+      if (n < 1) n = 1;
+      if (n > 99) n = 99;
+      input.value = String(n);
+      return n;
+    }
+    row.querySelectorAll("[data-qty-delta]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        try {
+          sfxClick();
+        } catch (e) {}
+        const d = Number(btn.getAttribute("data-qty-delta")) || 0;
+        input.value = String(clamp() + d);
+        clamp();
+        row.dispatchEvent(new CustomEvent("shop-qty-change", { bubbles: true }));
+      });
+    });
+    input.addEventListener("change", function () {
+      clamp();
+      row.dispatchEvent(new CustomEvent("shop-qty-change", { bubbles: true }));
+    });
+    row.getQty = clamp;
+    return row;
+  }
+
+  function renderDiamondExchange() {
+    const body = document.getElementById("shop-body");
+    if (!body) return;
+    const rate = typeof GOLD_PER_DIAMOND === "number" ? GOLD_PER_DIAMOND : 100;
+    const box = document.createElement("div");
+    box.className = "shop-exchange-box";
+    box.innerHTML =
+      '<p class="shop-hint">' +
+      tt(
+        "shopDiamondHint",
+        "100 vàng = 1 kim cương. Chọn số lượng rồi đổi. Item ≥100 vàng mua được bằng KC."
+      ) +
+      "</p>" +
+      '<div class="shop-exchange-grid">' +
+      '<div class="shop-exchange-card" id="shop-ex-to-dia">' +
+      '<div class="shop-ex-top"><span class="shop-ex-ico">💎</span><span class="shop-ex-amt" data-ex-gain>×1</span></div>' +
+      '<div class="shop-ex-arrow">↓</div>' +
+      '<div class="shop-ex-bot"><span class="shop-ex-ico">🪙</span><span class="shop-ex-amt" data-ex-cost>' +
+      rate +
+      " " +
+      tt("shopGoldUnit", "vàng") +
+      "</span></div>" +
+      '<div class="shop-ex-label">' +
+      tt("shopExGoldToDia", "Đổi vàng → KC") +
+      "</div>" +
+      '<div class="shop-ex-qty-host" data-qty-host="to-dia"></div>' +
+      '<button type="button" class="auth-submit-btn shop-ex-go" id="shop-ex-to-dia-btn">' +
+      tt("shopExchange", "Đổi") +
+      "</button>" +
+      "</div>" +
+      '<div class="shop-exchange-card" id="shop-ex-to-gold">' +
+      '<div class="shop-ex-top"><span class="shop-ex-ico">🪙</span><span class="shop-ex-amt" data-ex-gain>' +
+      rate +
+      " " +
+      tt("shopGoldUnit", "vàng") +
+      "</span></div>" +
+      '<div class="shop-ex-arrow">↓</div>' +
+      '<div class="shop-ex-bot"><span class="shop-ex-ico">💎</span><span class="shop-ex-amt" data-ex-cost>×1</span></div>' +
+      '<div class="shop-ex-label">' +
+      tt("shopExDiaToGold", "Đổi KC → vàng") +
+      "</div>" +
+      '<div class="shop-ex-qty-host" data-qty-host="to-gold"></div>' +
+      '<button type="button" class="auth-submit-btn shop-ex-go" id="shop-ex-to-gold-btn">' +
+      tt("shopExchange", "Đổi") +
+      "</button>" +
+      "</div>" +
+      "</div>";
+    body.appendChild(box);
+
+    const qtyToDia = makeQtyRow("shop-ex-to-dia", 1);
+    const qtyToGold = makeQtyRow("shop-ex-to-gold", 1);
+    box.querySelector('[data-qty-host="to-dia"]').appendChild(qtyToDia);
+    box.querySelector('[data-qty-host="to-gold"]').appendChild(qtyToGold);
+
+    function syncLabels() {
+      const n1 = qtyToDia.getQty();
+      const n2 = qtyToGold.getQty();
+      const card1 = box.querySelector("#shop-ex-to-dia");
+      const card2 = box.querySelector("#shop-ex-to-gold");
+      if (card1) {
+        card1.querySelector("[data-ex-gain]").textContent = "×" + n1;
+        card1.querySelector("[data-ex-cost]").textContent =
+          n1 * rate + " " + tt("shopGoldUnit", "vàng");
+      }
+      if (card2) {
+        card2.querySelector("[data-ex-gain]").textContent =
+          n2 * rate + " " + tt("shopGoldUnit", "vàng");
+        card2.querySelector("[data-ex-cost]").textContent = "×" + n2;
+      }
+    }
+    box.addEventListener("shop-qty-change", syncLabels);
+    syncLabels();
+
+    document.getElementById("shop-ex-to-dia-btn")?.addEventListener("click", function () {
+      try {
+        sfxClick();
+      } catch (e) {}
+      const n = qtyToDia.getQty();
+      const r =
+        typeof exchangeGoldForDiamonds === "function"
+          ? exchangeGoldForDiamonds(n)
+          : { ok: false };
+      if (!r.ok) {
+        try {
+          showComboFlash(0, false, tt("shopNotEnoughGold", "Không đủ vàng"));
+        } catch (e) {}
+      }
+      renderShop("diamond");
+    });
+    document.getElementById("shop-ex-to-gold-btn")?.addEventListener("click", function () {
+      try {
+        sfxClick();
+      } catch (e) {}
+      const n = qtyToGold.getQty();
+      const fn =
+        typeof exchangeDiamondsForGold === "function"
+          ? exchangeDiamondsForGold
+          : typeof Inventory !== "undefined" && Inventory.exchangeDiamondsForGold
+            ? Inventory.exchangeDiamondsForGold
+            : null;
+      const r = fn ? fn(n) : { ok: false };
+      if (!r.ok) {
+        try {
+          showComboFlash(0, false, tt("shopNotEnoughDiamond", "Không đủ kim cương"));
+        } catch (e) {}
+      }
+      renderShop("diamond");
+    });
+  }
+
   function renderShop(tab) {
     tab = tab || "boards";
     const body = document.getElementById("shop-body");
@@ -69,26 +260,7 @@
     body.innerHTML = "";
 
     if (tab === "diamond") {
-      const rate = typeof GOLD_PER_DIAMOND === "number" ? GOLD_PER_DIAMOND : 100;
-      const box = document.createElement("div");
-      box.className = "shop-hearts-box";
-      box.innerHTML =
-        '<p class="shop-hint">' +
-        tt("shopDiamondHint", "100 vàng = 1 kim cương. Item ≥100 vàng có thể mua bằng kim cương. KC thưởng top 1–3 BXH.") +
-        "</p>" +
-        '<button type="button" class="auth-submit-btn" id="shop-ex-1">💎 +1 · 🪙 ' + rate + "</button>" +
-        '<button type="button" class="auth-submit-btn" id="shop-ex-5">💎 +5 · 🪙 ' + rate * 5 + "</button>";
-      body.appendChild(box);
-      function doEx(n) {
-        try { sfxClick(); } catch (e) {}
-        const r = typeof exchangeGoldForDiamonds === "function" ? exchangeGoldForDiamonds(n) : { ok: false };
-        if (!r.ok) {
-          try { showComboFlash(0, false, tt("shopNotEnoughGold", "Không đủ vàng")); } catch (e) {}
-        }
-        renderShop("diamond");
-      }
-      document.getElementById("shop-ex-1")?.addEventListener("click", function () { doEx(1); });
-      document.getElementById("shop-ex-5")?.addEventListener("click", function () { doEx(5); });
+      renderDiamondExchange();
       return;
     }
 
@@ -120,16 +292,37 @@
             heartStatus = "❤️ " + h + " / " + maxH + " · " + tt("shopHeartFull", "Đầy");
           } else if (regenLeft < 1) {
             heartStatus =
-              "❤️ " + h + " / " + maxH + " · " + tt("shopHeartRegenDayCap", "Hết hồi hôm nay") +
-              " (" + regenMax + "/" + regenMax + ")";
+              "❤️ " +
+              h +
+              " / " +
+              maxH +
+              " · " +
+              tt("shopHeartRegenDayCap", "Hết hồi hôm nay") +
+              " (" +
+              regenMax +
+              "/" +
+              regenMax +
+              ")";
           } else if (rem > 0) {
             const sec = Math.ceil(rem / 1000);
             const mm = Math.floor(sec / 60);
             const ss = sec % 60;
-            const pad = (n) => (n < 10 ? "0" : "") + n;
+            const pad = function (n) {
+              return (n < 10 ? "0" : "") + n;
+            };
             heartStatus =
-              "❤️ " + h + " / " + maxH + " · +1 " + pad(mm) + ":" + pad(ss) +
-              " · " + regenLeft + "/" + regenMax;
+              "❤️ " +
+              h +
+              " / " +
+              maxH +
+              " · +1 " +
+              pad(mm) +
+              ":" +
+              pad(ss) +
+              " · " +
+              regenLeft +
+              "/" +
+              regenMax;
           } else {
             heartStatus = "❤️ " + h + " / " + maxH + " · " + regenLeft + "/" + regenMax;
           }
@@ -137,7 +330,10 @@
       } catch (e) {}
       box.innerHTML =
         '<p class="shop-hint">' +
-        tt("shopHeartHint", "Tim tự hồi +1 mỗi 30 phút (tối đa 5). Thêm tim: mua vàng, xem QC (5/ngày), quay thưởng, bạn bè, lên level.") +
+        tt(
+          "shopHeartHint",
+          "Tim tự hồi +1 mỗi 30 phút (tối đa 5). Thêm tim: mua vàng, xem QC (5/ngày), quay thưởng, bạn bè, lên level."
+        ) +
         "</p>" +
         (heartStatus ? '<p class="shop-heart-status">' + heartStatus + "</p>" : "") +
         '<button type="button" class="auth-submit-btn shop-buy-heart" id="shop-buy-heart">' +
@@ -151,44 +347,69 @@
         ">" +
         (gLeft < 1
           ? tt("shopAdGoldCap", "Đã hết lượt QC vàng hôm nay")
-          : tt("shopAdGold", "📺 Xem QC +" + nextG + " vàng (" + gLeft + "/5)")) +
+          : ttf("shopAdGold", "📺 Xem QC +{0} vàng ({1}/5)", nextG, gLeft)) +
         "</button>" +
         '<button type="button" class="auth-submit-btn shop-ad-heart" id="shop-ad-heart" ' +
         (left < 1 ? "disabled" : "") +
         ">" +
         (left < 1
           ? tt("shopAdHeartCap", "Đã hết lượt QC tim hôm nay")
-          : tt("shopAdHeart", "📺 Xem QC +1 tim (" + left + "/5)")) +
+          : ttf("shopAdHeart", "📺 Xem QC +1 tim ({0}/5)", left)) +
         "</button>";
       body.appendChild(box);
       document.getElementById("shop-buy-heart")?.addEventListener("click", function () {
-        try { sfxClick(); } catch (e) {}
+        try {
+          sfxClick();
+        } catch (e) {}
         if (typeof buyHeartWithGold !== "function") return;
         const r = buyHeartWithGold(HEART_PACK, HEART_GOLD_PRICE);
         if (!r || !r.ok) {
-          try { showComboFlash(0, false, tt("shopNotEnoughGold", "Không đủ vàng")); } catch (e) {}
+          try {
+            showComboFlash(0, false, tt("shopNotEnoughGold", "Không đủ vàng"));
+          } catch (e) {}
         }
         renderShop("hearts");
       });
       document.getElementById("shop-ad-gold")?.addEventListener("click", function () {
-        try { sfxClick(); } catch (e) {}
-        if (typeof watchAdForGold === "function") watchAdForGold(function () { renderShop("hearts"); });
+        try {
+          sfxClick();
+        } catch (e) {}
+        if (typeof watchAdForGold === "function")
+          watchAdForGold(function () {
+            renderShop("hearts");
+          });
       });
       document.getElementById("shop-ad-heart")?.addEventListener("click", function () {
-        try { sfxClick(); } catch (e) {}
+        try {
+          sfxClick();
+        } catch (e) {}
         if (typeof watchAdForHeart === "function") watchAdForHeart();
-        setTimeout(function () { renderShop("hearts"); }, 800);
+        setTimeout(function () {
+          renderShop("hearts");
+        }, 800);
       });
       return;
     }
 
     const isBoard = tab === "boards";
     const list = isBoard
-      ? typeof BOARD_SKINS !== "undefined" ? BOARD_SKINS : []
-      : typeof BRICK_SKINS !== "undefined" ? BRICK_SKINS : [];
+      ? typeof BOARD_SKINS !== "undefined"
+        ? BOARD_SKINS
+        : []
+      : typeof BRICK_SKINS !== "undefined"
+        ? BRICK_SKINS
+        : [];
     const unlockedFn = isBoard
-      ? typeof isBoardSkinUnlocked === "function" ? isBoardSkinUnlocked : function () { return true; }
-      : typeof isBrickSkinUnlocked === "function" ? isBrickSkinUnlocked : function () { return true; };
+      ? typeof isBoardSkinUnlocked === "function"
+        ? isBoardSkinUnlocked
+        : function () {
+            return true;
+          }
+      : typeof isBrickSkinUnlocked === "function"
+        ? isBrickSkinUnlocked
+        : function () {
+            return true;
+          };
 
     const grid = document.createElement("div");
     grid.className = "shop-grid";
@@ -197,26 +418,43 @@
       const owned = unlockedFn(skin.id);
       const price = skin.price | 0 || 20;
       const diaCost =
-        typeof diamondPriceForGold === "function" ? diamondPriceForGold(price) : price >= 100 ? Math.ceil(price / 100) : 0;
+        typeof diamondPriceForGold === "function"
+          ? diamondPriceForGold(price)
+          : price >= 100
+            ? Math.ceil(price / 100)
+            : 0;
       const card = document.createElement("div");
       card.className = "shop-item" + (owned ? " owned" : "");
-      card.innerHTML =
-        '<div class="shop-item-ico">' + (isBoard ? "🗺️" : "🧱") + "</div>" +
-        '<div class="shop-item-name">' + (skin.name || skin.id) + "</div>" +
-        '<div class="shop-item-price">' +
-        (owned ? tt("shopOwned", "Đã sở hữu") : "🪙 " + price + (diaCost ? " / 💎 " + diaCost : "")) +
-        "</div>";
+
+      card.appendChild(isBoard ? makeBoardPreviewEl(skin.id) : makeBrickPreviewEl(skin.id));
+
+      const nameEl = document.createElement("div");
+      nameEl.className = "shop-item-name";
+      nameEl.textContent = skin.name || skin.id;
+      card.appendChild(nameEl);
+
+      const priceEl = document.createElement("div");
+      priceEl.className = "shop-item-price";
+      priceEl.textContent = owned
+        ? tt("shopOwned", "Đã sở hữu")
+        : "🪙 " + price + (diaCost ? " / 💎 " + diaCost : "");
+      card.appendChild(priceEl);
+
       if (!owned) {
         const row = document.createElement("div");
         row.className = "shop-item-actions";
         const bGold = document.createElement("button");
         bGold.type = "button";
-        bGold.className = "shop-mini-btn";
-        bGold.textContent = "🪙";
-        bGold.title = "Mua bằng vàng";
+        bGold.className = "shop-buy-btn";
+        bGold.textContent = tt("shopBuy", "Mua");
+        bGold.title = tt("shopBuyGold", "Mua bằng vàng");
         bGold.addEventListener("click", function () {
-          try { sfxClick(); } catch (e) {}
-          const r = isBoard ? buyBoardWithGold(skin.id, price) : buyBrickWithGold(skin.id, price);
+          try {
+            sfxClick();
+          } catch (e) {}
+          const r = isBoard
+            ? buyBoardWithGold(skin.id, price)
+            : buyBrickWithGold(skin.id, price);
           flashBuy(r, skin, price, false);
           renderShop(tab);
         });
@@ -224,11 +462,13 @@
         if (diaCost > 0) {
           const bDia = document.createElement("button");
           bDia.type = "button";
-          bDia.className = "shop-mini-btn shop-mini-dia";
-          bDia.textContent = "💎";
-          bDia.title = "Mua bằng kim cương";
+          bDia.className = "shop-buy-btn shop-buy-dia";
+          bDia.textContent = tt("shopBuyDia", "KC");
+          bDia.title = tt("shopBuyWithDia", "Mua bằng kim cương");
           bDia.addEventListener("click", function () {
-            try { sfxClick(); } catch (e) {}
+            try {
+              sfxClick();
+            } catch (e) {}
             const r = isBoard
               ? buyBoardWithDiamond(skin.id, diaCost)
               : buyBrickWithDiamond(skin.id, diaCost);
@@ -262,7 +502,9 @@
     try {
       showComboFlash(0, false, (isDia ? "💎 −" : "🪙 −") + cost + " · " + (skin.name || skin.id));
     } catch (e) {}
-    try { if (typeof sfxUnlock === "function") sfxUnlock(); } catch (e) {}
+    try {
+      if (typeof sfxUnlock === "function") sfxUnlock();
+    } catch (e) {}
   }
 
   function buyBoardWithGold(id, price) {
@@ -341,20 +583,16 @@
         openShop("boards");
       });
     }
-    // Khi mở kho gạch/nền mà chưa mua — nhắc shop
-    document.getElementById("brick-skin-btn")?.addEventListener(
-      "click",
-      function () {
-        /* giữ picker cũ để chọn skin đã mua */
-      },
-      true
-    );
   }
 
   g.openShop = openShop;
   g.closeShop = closeShop;
   g.buyBoardWithGold = buyBoardWithGold;
   g.buyBrickWithGold = buyBrickWithGold;
+  g.exchangeDiamondsForGold = function (n) {
+    if (typeof exchangeDiamondsForGold === "function") return exchangeDiamondsForGold(n);
+    return { ok: false };
+  };
   g.HEART_GOLD_PRICE = HEART_GOLD_PRICE;
 
   if (document.readyState === "loading")
