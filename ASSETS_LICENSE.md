@@ -29,7 +29,7 @@ OFL cho phép nhúng font vào app/game (kể cả thương mại), miễn là:
 
 ## 2. Âm thanh trong `sounds/`
 
-Phân loại theo `sounds/ASSET_SOURCES.md` (bằng chứng git/metadata tại thời điểm 2026-07-25).
+Phân loại theo `sounds/ASSET_SOURCES.md` (cập nhật 2026-07-25 theo xác nhận nhà phát hành).
 
 ### 2.1. Âm thanh AI-generated (theo ASSET_SOURCES.md)
 
@@ -42,33 +42,27 @@ Khi có file được xác nhận là AI-generated, ghi nhận theo mẫu:
 
 ### 2.2. Giọng đọc tự thu âm (voice recording gốc)
 
-**Danh sách hiện tại: trống (0 file).**  
-Chưa có bằng chứng git/metadata đủ để khẳng định file nào là bạn tự thu.
-
-Khi có file được xác nhận là tự thu âm, ghi nhận:
+**Danh sách hiện tại: 10 file** — nhà phát hành xác nhận (2026-07-25): giọng của mình, tự thu âm.  
+Dùng làm lồng tiếng khen combo (`js/audio.js` → `PRAISE_SOUND_FILES`).
 
 > Sở hữu gốc của nhà phát triển.
 
-### 2.3. Âm thanh — nguồn chưa rõ (đang dùng trong game)
-
-Theo `ASSET_SOURCES.md`, **toàn bộ 10 file** hiện có thuộc nhóm này.  
-Dùng làm lồng tiếng khen combo (`js/audio.js` → `PRAISE_SOUND_FILES`).
-
-| File | Ghi chú license / rủi ro |
+| File | Ghi chú license |
 |---|---|
-| `sounds/amazing.wav` | Nguồn chưa rõ — **cần review trước khi phát hành** |
-| `sounds/cool.wav` | Nguồn chưa rõ — **cần review trước khi phát hành** |
-| `sounds/godlike.wav` | Nguồn chưa rõ — **cần review trước khi phát hành** |
-| `sounds/good.wav` | Nguồn chưa rõ — **cần review trước khi phát hành** |
-| `sounds/great.wav` | Nguồn chưa rõ — **cần review trước khi phát hành** |
-| `sounds/impressive.wav` | Nguồn chưa rõ — **cần review trước khi phát hành** |
-| `sounds/legendary.wav` | Nguồn chưa rõ — **cần review trước khi phát hành** |
-| `sounds/perfect.wav` | Nguồn chưa rõ — **cần review trước khi phát hành** |
-| `sounds/spectacular.wav` | Nguồn chưa rõ — **cần review trước khi phát hành** |
-| `sounds/unreal.wav` | Nguồn chưa rõ — **cần review trước khi phát hành** |
+| `sounds/amazing.wav` | Sở hữu gốc nhà phát hành (tự thu âm) |
+| `sounds/cool.wav` | Sở hữu gốc nhà phát hành (tự thu âm) |
+| `sounds/godlike.wav` | Sở hữu gốc nhà phát hành (tự thu âm) |
+| `sounds/good.wav` | Sở hữu gốc nhà phát hành (tự thu âm) |
+| `sounds/great.wav` | Sở hữu gốc nhà phát hành (tự thu âm) |
+| `sounds/impressive.wav` | Sở hữu gốc nhà phát hành (tự thu âm) |
+| `sounds/legendary.wav` | Sở hữu gốc nhà phát hành (tự thu âm) |
+| `sounds/perfect.wav` | Sở hữu gốc nhà phát hành (tự thu âm) |
+| `sounds/spectacular.wav` | Sở hữu gốc nhà phát hành (tự thu âm) |
+| `sounds/unreal.wav` | Sở hữu gốc nhà phát hành (tự thu âm) |
 
-Nếu sau này xác nhận file nào là AI-generated: áp dụng disclaimer ở mục 2.1.  
-Nếu xác nhận tự thu âm: chuyển sang mục 2.2 — *sở hữu gốc của nhà phát triển*.
+### 2.3. Âm thanh — nguồn chưa rõ
+
+**Danh sách hiện tại: trống (0 file).**
 
 Chi tiết provenance: xem `sounds/ASSET_SOURCES.md`.
 
@@ -148,7 +142,7 @@ Praise bằng file WAV ở mục 2; trước đây Claude từng thử **Web Spe
 
 ## 6. Checklist trước phát hành
 
-- [ ] Xác nhận từng file trong `sounds/` (tự thu / AI / mua stock) và cập nhật mục 2 + `ASSET_SOURCES.md`
+- [x] Xác nhận từng file trong `sounds/` (tự thu âm — nhà phát hành, 2026-07-25) và cập nhật mục 2 + `ASSET_SOURCES.md`
 - [ ] Giữ OFL credit cho Nunito + font nickname khi phân phối font
 - [ ] Rà điều khoản Firebase, AdMob, Google Sign-In cho Data safety / Privacy
 - [ ] Quyết định giữ hay thay API dịch chat (Google gtx / MyMemory)
