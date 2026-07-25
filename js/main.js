@@ -146,8 +146,8 @@ let borderSparkInterval = null; // continuous outward sparks during secret mode
 let fireInterval = null; // fire border particles for Map ẩn 1 combo
 
 
-// Map thường N → mainHardTier = N (Map 1 = dây gai, Map 3 = sóc…). Đồng bộ từ normalMapStage nếu đã load.
-let mainHardTier = Math.max(0, (typeof normalMapStage === 'number' ? normalMapStage : 1) | 0);
+// Map thường N → mainHardTier = N-1 (Map 1 = chưa cơ chế, Map 2 = dây gai…).
+let mainHardTier = Math.max(0, ((typeof normalMapStage === 'number' ? normalMapStage : 1) | 0) - 1);
 // 🌗 Cổng tiến trình cho vòng 21-40: phải kiếm đủ điểm ở vòng hiện tại mới được
 // bước sang vòng kế tiếp — tuần tự từng vòng một, không nhảy cóc.
 let comboGateActive=false;   // đang đếm điểm để vượt qua vòng cơ chế đôi hiện tại?
@@ -444,8 +444,8 @@ function startGame(){
   try{ if(typeof resetNormalStarRun==='function') resetNormalStarRun(); }catch(e){}
   try{
     if(typeof syncMainHardTierFromNormalStage==='function') syncMainHardTierFromNormalStage(false);
-    else mainHardTier = Math.max(0, (typeof normalMapStage==='number'?normalMapStage:1)|0);
-  }catch(e){ mainHardTier = 1; }
+    else mainHardTier = Math.max(0, ((typeof normalMapStage==='number'?normalMapStage:1)|0) - 1);
+  }catch(e){ mainHardTier = 0; }
   memoryMode=false; if(memoryRAF){cancelAnimationFrame(memoryRAF);memoryRAF=null;}
   bubbleMode=false; if(typeof bubbleRAF!=='undefined'&&bubbleRAF){cancelAnimationFrame(bubbleRAF);bubbleRAF=null;}
   stackMode=false; if(typeof stackRAF!=='undefined'&&stackRAF){cancelAnimationFrame(stackRAF);stackRAF=null;}
