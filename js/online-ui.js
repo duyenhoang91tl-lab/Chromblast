@@ -424,10 +424,13 @@ function onLeaveLobbyToHub(){
 
 (function initOnlineUI(){
   document.getElementById('vs-online-btn')?.addEventListener('click', openOnlineHub);
-  document.getElementById('vs-local-btn')?.addEventListener('click', ()=>{
+  function backToVersusLocal(){
     _onlineHide('online-hub-panel');
     _vsShow('versus-setup-panel');
-  });
+    try{ if(typeof sfxClick==='function') sfxClick(); }catch(e){}
+  }
+  document.getElementById('vs-local-btn')?.addEventListener('click', backToVersusLocal);
+  document.getElementById('online-local-btn')?.addEventListener('click', backToVersusLocal);
   document.getElementById('online-hub-close')?.addEventListener('click', closeOnlineHub);
   document.getElementById('online-create-btn')?.addEventListener('click', onCreateRoom);
   document.getElementById('online-lobby-create')?.addEventListener('click', onCreateRoom);

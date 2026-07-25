@@ -726,14 +726,15 @@
   <div id="versus-setup-panel" class="admin-panel-like">
     <div class="admin-card">
       <div class="admin-title"><span data-i18n="vsTitle">⚔️ Đấu 1-1</span><button class="admin-close" id="vs-cancel-btn">✕</button></div>
-      <div class="vs-mode-tabs">
-        <button type="button" class="vs-mode-tab active" id="vs-local-btn" data-i18n="vsModeLocal">📱 Cùng máy</button>
-        <button type="button" class="vs-mode-tab" id="vs-online-btn" data-i18n="vsModeOnline">🌐 Online <span id="online-status-badge">📴</span></button>
+      <button type="button" class="auth-submit-btn btn-on-color vs-online-entry" id="vs-online-btn" data-i18n="vsModeOnline">🌐 Online <span id="online-status-badge">📴</span></button>
+      <div class="vs-local-block">
+        <div class="vs-local-label" data-i18n="vsModeLocal">📱 Cùng máy</div>
+        <div class="admin-sub" data-i18n="vsSub">Hai người chơi thi đấu trên máy này — cùng bộ khối, 90 giây mỗi lượt, điểm cao hơn thắng.</div>
+        <div class="auth-field"><label data-i18n="vsP1">Người chơi 1</label><input type="text" id="vs-name1" maxlength="16"></div>
+        <div class="auth-field"><label data-i18n="vsP2">Người chơi 2</label><input type="text" id="vs-name2" maxlength="16"></div>
+        <button id="vs-start-btn" class="auth-submit-btn" data-i18n="vsStart">⚔️ BẮT ĐẦU TRẬN ĐẤU</button>
       </div>
-      <div class="admin-sub" data-i18n="vsSub">Hai người chơi thi đấu trên máy này — cùng bộ khối, 90 giây mỗi lượt, điểm cao hơn thắng.</div>
-      <div class="auth-field"><label data-i18n="vsP1">Người chơi 1</label><input type="text" id="vs-name1" maxlength="16"></div>
-      <div class="auth-field"><label data-i18n="vsP2">Người chơi 2</label><input type="text" id="vs-name2" maxlength="16"></div>
-      <button id="vs-start-btn" class="auth-submit-btn" data-i18n="vsStart">⚔️ BẮT ĐẦU TRẬN ĐẤU</button>
+      <button type="button" class="vs-mode-tab" id="vs-local-btn" hidden aria-hidden="true" data-i18n="vsModeLocal">📱 Cùng máy</button>
     </div>
   </div>
 
@@ -757,6 +758,10 @@
       <button type="button" id="online-create-btn" class="auth-submit-btn" style="margin-top:10px;" data-i18n="onlineCreate">🏠 Tạo phòng</button>
       <div class="auth-field" style="margin-top:12px;"><label data-i18n="onlineJoinLabel">Vào phòng bằng mã</label><input type="text" id="online-join-code" maxlength="6" placeholder="ABC123" style="text-transform:uppercase;letter-spacing:2px;text-align:center;font-weight:700;"></div>
       <button type="button" id="online-join-btn" class="auth-submit-btn btn-ghost" style="background:rgba(255,255,255,0.15);" data-i18n="onlineJoin">🚪 Vào phòng</button>
+      <div class="vs-local-block vs-local-block-hub">
+        <div class="caro-hub-divider" data-i18n="vsModeLocal">📱 Cùng máy</div>
+        <button type="button" id="online-local-btn" class="auth-submit-btn btn-ghost" style="background:rgba(255,255,255,0.12);" data-i18n="vsModeLocal">📱 Cùng máy</button>
+      </div>
     </div>
   </div>
 
@@ -817,16 +822,6 @@
         <button type="button" id="caro-hub-skin-btn" class="auth-submit-btn btn-ghost" style="background:rgba(255,255,255,0.12);margin-top:8px;" data-i18n="caroPickBg">🎨 Chọn nền bàn</button>
       </div>
 
-      <div class="caro-ai-block">
-        <button type="button" id="caro-ai-start-btn" class="auth-submit-btn btn-on-color caro-ai-hub-btn" data-level="medium" data-i18n="caroAiBtn" onclick="if(window.caroStartAI){window.caroStartAI('medium')}else{alert('Thiếu caroStartAI — kiểm tra js/caro.js')}">🤖 Đấu với máy</button>
-        <div class="caro-ai-levels">
-          <button type="button" class="caro-ai-level" id="caro-ai-easy" data-level="easy" data-i18n="caroAiEasy" onclick="if(window.caroStartAI){window.caroStartAI('easy')}else{alert('Thiếu caroStartAI — kiểm tra js/caro.js')}">🌱 Dễ</button>
-          <button type="button" class="caro-ai-level" id="caro-ai-medium" data-level="medium" data-i18n="caroAiMedium" onclick="if(window.caroStartAI){window.caroStartAI('medium')}else{alert('Thiếu caroStartAI — kiểm tra js/caro.js')}">⚔️ TB</button>
-          <button type="button" class="caro-ai-level" id="caro-ai-hard" data-level="hard" data-i18n="caroAiHard" onclick="if(window.caroStartAI){window.caroStartAI('hard')}else{alert('Thiếu caroStartAI — kiểm tra js/caro.js')}">🔥 Khó</button>
-          <button type="button" class="caro-ai-level" id="caro-ai-extreme" data-level="extreme" data-i18n="caroAiExtreme" onclick="if(window.caroStartAI){window.caroStartAI('extreme')}else{alert('Thiếu caroStartAI — kiểm tra js/caro.js')}">💀 Cực khó</button>
-        </div>
-      </div>
-
       <div id="caro-online-status" class="online-status"></div>
       <div id="caro-online-locked-note" class="online-status" style="display:none;" data-i18n="caroOnlineLocked">🔒 Online cần Cấp 3. Đấu với máy vẫn chơi được.</div>
       <div id="caro-online-section">
@@ -846,6 +841,17 @@
         <button type="button" id="caro-create-btn" class="auth-submit-btn" style="margin-top:10px;" data-i18n="onlineCreate">🏠 Tạo phòng</button>
         <div class="auth-field" style="margin-top:12px;"><label data-i18n="onlineJoinLabel">Vào phòng bằng mã</label><input type="text" id="caro-join-code" maxlength="6" placeholder="ABC123" style="text-transform:uppercase;letter-spacing:2px;text-align:center;font-weight:700;"></div>
         <button type="button" id="caro-join-btn" class="auth-submit-btn btn-ghost" style="background:rgba(255,255,255,0.15);" data-i18n="onlineJoin">🚪 Vào phòng</button>
+      </div>
+
+      <div class="caro-ai-block caro-ai-block-bottom">
+        <div class="caro-hub-divider" data-i18n="caroAiTitle">🤖 Đấu với máy</div>
+        <button type="button" id="caro-ai-start-btn" class="auth-submit-btn btn-on-color caro-ai-hub-btn" data-level="medium" data-i18n="caroAiBtn" onclick="if(window.caroStartAI){window.caroStartAI('medium')}else{alert('Thiếu caroStartAI — kiểm tra js/caro.js')}">🤖 Đấu với máy</button>
+        <div class="caro-ai-levels">
+          <button type="button" class="caro-ai-level" id="caro-ai-easy" data-level="easy" data-i18n="caroAiEasy" onclick="if(window.caroStartAI){window.caroStartAI('easy')}else{alert('Thiếu caroStartAI — kiểm tra js/caro.js')}">🌱 Dễ</button>
+          <button type="button" class="caro-ai-level" id="caro-ai-medium" data-level="medium" data-i18n="caroAiMedium" onclick="if(window.caroStartAI){window.caroStartAI('medium')}else{alert('Thiếu caroStartAI — kiểm tra js/caro.js')}">⚔️ TB</button>
+          <button type="button" class="caro-ai-level" id="caro-ai-hard" data-level="hard" data-i18n="caroAiHard" onclick="if(window.caroStartAI){window.caroStartAI('hard')}else{alert('Thiếu caroStartAI — kiểm tra js/caro.js')}">🔥 Khó</button>
+          <button type="button" class="caro-ai-level" id="caro-ai-extreme" data-level="extreme" data-i18n="caroAiExtreme" onclick="if(window.caroStartAI){window.caroStartAI('extreme')}else{alert('Thiếu caroStartAI — kiểm tra js/caro.js')}">💀 Cực khó</button>
+        </div>
       </div>
     </div>
   </div>
