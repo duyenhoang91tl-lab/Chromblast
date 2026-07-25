@@ -4015,7 +4015,7 @@ body:has(#secret-stage.active) .streak-dot.lit{
     flex-basis: 38px;
   }
   #game-root.hud-arcade #header-stats-row { gap: 4px; }
-  #game-root.hud-arcade #score-box { font-size: 15px; -webkit-text-stroke-width: 0.8px; }
+  #game-root.hud-arcade #score-box { font-size: 15px; -webkit-text-stroke-width: 0; }
   #game-root.hud-arcade #level-box { font-size: 14px; }
   #game-root.hud-arcade #level-cap { font-size: 6px; }
   #game-root.hud-arcade #score-star-track { min-width: 72px; max-width: 110px; }
