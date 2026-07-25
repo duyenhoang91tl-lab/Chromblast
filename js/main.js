@@ -749,7 +749,7 @@ function hardResetAllModes(){
   // Ẩn các lớp HUD riêng của Map ẩn 4 (tim/điểm/đợt/sức chịu) và Map ẩn 1 (tim) — trước đây bị sót lại
   // đè lên các map khác khi chuyển map trực tiếp qua admin panel / menu chọn map ẩn.
   const burstCount=document.getElementById('burst-count'); if(burstCount) burstCount.style.display='';
-  ['bee-hearts','bee-scoreUI','bee-waveUI','bee-stamina-label','bee-stamina-wrap','secret-hearts',
+  ['bee-hearts','bee-scoreUI','bee-stamina-label','bee-stamina-wrap','secret-hearts',
    'space-autofire-btn'].forEach(id=>{ // nút Tự bắn của Map 17 trước đây bị sót, lộ sang map khác khi chuyển map trực tiếp
     const el=document.getElementById(id); if(el) el.style.display='none';
   });
