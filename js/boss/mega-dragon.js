@@ -366,7 +366,7 @@ function exitMegaToMain(){
   if(megaWon){
     markMapCleared('mega');
     if(megaState.score){ score+=megaState.score; if(score>best) best=score; updateScoreUI(); }
-    // Thắng map ẩn 20 → mở cổng map ẩn 21 (ếch bắt côn trùng).
+    // Thắng map ẩn 20 → mở cổng map ẩn 21 (Ếch ộp ham ăn).
     if(typeof advanceHiddenGate==='function') advanceHiddenGate(19);
   }
   MGC().classList.remove('active');
