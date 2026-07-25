@@ -49,8 +49,7 @@ function enterBeeMode(){
   document.getElementById('mode-badge').classList.add('secret');
   document.getElementById('burst-count').style.display='none';
   document.getElementById('bee-hearts').style.display='flex';
-  document.getElementById('bee-scoreUI').style.display='';
-  document.getElementById('bee-waveUI').style.display='';
+  document.getElementById('bee-scoreUI').style.display='flex';
   document.getElementById('bee-stamina-label').style.display='';
   document.getElementById('bee-stamina-wrap').style.display='';
 
@@ -113,8 +112,13 @@ function initBee(){
 }
 
 function updateBeeHUD(){
-  document.getElementById('bee-scoreUI').textContent=Math.round(score).toLocaleString();
-  document.getElementById('bee-waveUI').textContent='Đợt '+gdWave;
+  const scoreEl=document.getElementById('bee-score-num') || document.getElementById('bee-scoreUI');
+  const waveEl=document.getElementById('bee-waveUI');
+  if(scoreEl) scoreEl.textContent=Math.round(score).toLocaleString();
+  if(waveEl){
+    waveEl.style.display='block';
+    waveEl.textContent='Đợt '+gdWave;
+  }
   const el=document.getElementById('bee-hearts'); el.innerHTML='';
   for(let i=0;i<gdMaxHearts;i++){
     const span=document.createElement('span');
@@ -571,7 +575,6 @@ function exitBeeToMain(){
   BCV().classList.remove('active');
   document.getElementById('bee-hearts').style.display='none';
   document.getElementById('bee-scoreUI').style.display='none';
-  document.getElementById('bee-waveUI').style.display='none';
   document.getElementById('bee-stamina-label').style.display='none';
   document.getElementById('bee-stamina-wrap').style.display='none';
   document.getElementById('burst-count').style.display='';
