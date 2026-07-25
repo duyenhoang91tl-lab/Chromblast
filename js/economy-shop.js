@@ -111,16 +111,27 @@
             typeof Inventory.heartRegenRemainingMs === "function"
               ? Inventory.heartRegenRemainingMs()
               : 0;
+          const regenLeft =
+            typeof Inventory.regenHeartsLeftToday === "function"
+              ? Inventory.regenHeartsLeftToday()
+              : 5;
+          const regenMax = Inventory.MAX_REGEN_HEARTS_PER_DAY || 5;
           if (Number(Inventory.hearts) + 1e-9 >= maxH) {
             heartStatus = "❤️ " + h + " / " + maxH + " · " + tt("shopHeartFull", "Đầy");
+          } else if (regenLeft < 1) {
+            heartStatus =
+              "❤️ " + h + " / " + maxH + " · " + tt("shopHeartRegenDayCap", "Hết hồi hôm nay") +
+              " (" + regenMax + "/" + regenMax + ")";
           } else if (rem > 0) {
             const sec = Math.ceil(rem / 1000);
             const mm = Math.floor(sec / 60);
             const ss = sec % 60;
             const pad = (n) => (n < 10 ? "0" : "") + n;
-            heartStatus = "❤️ " + h + " / " + maxH + " · +1 " + pad(mm) + ":" + pad(ss);
+            heartStatus =
+              "❤️ " + h + " / " + maxH + " · +1 " + pad(mm) + ":" + pad(ss) +
+              " · " + regenLeft + "/" + regenMax;
           } else {
-            heartStatus = "❤️ " + h + " / " + maxH;
+            heartStatus = "❤️ " + h + " / " + maxH + " · " + regenLeft + "/" + regenMax;
           }
         }
       } catch (e) {}

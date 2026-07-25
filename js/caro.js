@@ -1260,7 +1260,7 @@ function _caroEndGame(winnerSlot, fromRemote){
     if(winnerSlot !== 'draw'){
       localOutcome = winnerSlot === _caro.mySlot ? 'win' : 'loss';
     }
-    // Thua người (PvP): trừ ½ tim chung với Chromablast
+    // Thua người (PvP online): trừ 1/2 tim — thông báo ngắn (−1/2 tim)
     if(localOutcome === 'loss' && !_caro.heartTaken){
       _caro.heartTaken = true;
       try{

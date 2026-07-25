@@ -5,10 +5,14 @@
 
 const INV_KEY = 'chromablast_inventory';
 const HEART_GIFTS_KEY = 'chromablast_heart_gifts';
-/** Cap tim hồi theo thời gian (kiểu Candy Crush). Thưởng QC/shop/spin/bạn/level có thể vượt cap. */
+/** Cap tim trên HUD / hồi theo thời gian. Lần đầu vào game = 5 tim. */
 const MAX_HEARTS = 5;
-/** 30 phút / 1 tim — chuẩn lives game hiện tại (Candy Crush ~30', nhiều match-3 20–30'). */
+/** 30 phút / 1 tim — chuẩn lives game hiện tại. */
 const HEART_REGEN_MS = 30 * 60 * 1000;
+/** Hồi tim tối đa 5/ngày — hết ngân sách thì chờ ngày mới (không cộng dồn). */
+const MAX_REGEN_HEARTS_PER_DAY = 5;
+/** Tim nhận từ nhiệm vụ/điểm danh mỗi ngày tối đa 5. */
+const MAX_DAILY_QUEST_HEARTS = 5;
 const START_GOLD = 20;
 const MAX_AD_HEART_VIEWS = 5;
 const MAX_AD_GOLD_VIEWS = 5;
@@ -22,19 +26,24 @@ let inv = {
   fires: 1,
   bubbles: 1,
   winds: 1,
-  /** Timestamp ms khi hồi +1 tim; 0 khi đầy cap */
+  /** Timestamp ms khi hồi +1 tim; 0 khi đầy cap hoặc hết ngân sách hồi ngày */
   nextHeartAt: 0,
   combo5Seen: false,
   combo10Seen: false,
   goldBootstrapped: false,
+  heartsBootstrapped: true,
   adHeartDay: '',
   adHeartViews: 0,
   adGoldDay: '',
-  adGoldViews: 0
+  adGoldViews: 0,
+  regenDay: '',
+  regenToday: 0,
+  dailyQuestDay: '',
+  dailyQuestHearts: 0
 };
 let _heartRegenTimer = null;
 
-/** Tim dùng nửa đơn vị (0.5) — dùng chung Chromablast + Caro PvP */
+/** Tim dùng nửa đơn vị (0.5) — Caro PvP trừ 1/2 khi thua */
 function roundHalf(n){
   const x = Number(n);
   if(!isFinite(x)) return 0;
@@ -52,8 +61,15 @@ function _invDay(){
 (function loadInventory(){
   try{
     const s = JSON.parse(safeGet(INV_KEY) || '{}');
-    if(s && typeof s === 'object'){
-      if('hearts' in s) inv.hearts = roundHalf(s.hearts);
+    if(s && typeof s === 'object' && Object.keys(s).length){
+      if('hearts' in s){
+        inv.hearts = roundHalf(s.hearts);
+        inv.heartsBootstrapped = true;
+      } else {
+        // Lần đầu / save cũ không có tim → mặc định 5
+        inv.hearts = MAX_HEARTS;
+        inv.heartsBootstrapped = true;
+      }
       if('fires' in s) inv.fires = Math.max(0, s.fires|0);
       if('bubbles' in s) inv.bubbles = Math.max(0, s.bubbles|0);
       if('winds' in s) inv.winds = Math.max(0, s.winds|0);
@@ -67,6 +83,10 @@ function _invDay(){
       inv.adHeartViews = Math.max(0, s.adHeartViews|0);
       inv.adGoldDay = s.adGoldDay || '';
       inv.adGoldViews = Math.max(0, s.adGoldViews|0);
+      inv.regenDay = s.regenDay || '';
+      inv.regenToday = Math.max(0, s.regenToday|0);
+      inv.dailyQuestDay = s.dailyQuestDay || '';
+      inv.dailyQuestHearts = Math.max(0, s.dailyQuestHearts|0);
       if('gold' in s && Number.isFinite(Number(s.gold))){
         inv.gold = Math.max(0, Math.floor(Number(s.gold)));
         inv.goldBootstrapped = true;
@@ -78,10 +98,15 @@ function _invDay(){
         inv.diamonds = Math.max(0, Math.floor(Number(s.diamonds)));
       }
     } else {
+      // Lần đầu vào game: 5 tim + vàng khởi đầu
+      inv.hearts = MAX_HEARTS;
+      inv.heartsBootstrapped = true;
       inv.gold = START_GOLD;
       inv.goldBootstrapped = true;
     }
   }catch(e){
+    inv.hearts = MAX_HEARTS;
+    inv.heartsBootstrapped = true;
     inv.gold = START_GOLD;
     inv.goldBootstrapped = true;
   }
@@ -100,10 +125,15 @@ function saveInventory(){
       combo5Seen: !!inv.combo5Seen,
       combo10Seen: !!inv.combo10Seen,
       goldBootstrapped: true,
+      heartsBootstrapped: true,
       adHeartDay: inv.adHeartDay || '',
       adHeartViews: inv.adHeartViews|0,
       adGoldDay: inv.adGoldDay || '',
-      adGoldViews: inv.adGoldViews|0
+      adGoldViews: inv.adGoldViews|0,
+      regenDay: inv.regenDay || '',
+      regenToday: inv.regenToday|0,
+      dailyQuestDay: inv.dailyQuestDay || '',
+      dailyQuestHearts: inv.dailyQuestHearts|0
     }));
   }catch(e){}
 }
@@ -123,32 +153,62 @@ function formatHeartRegen(ms){
   return pad(m) + ':' + pad(s);
 }
 
+/** Đổi ngày → reset ngân sách hồi (không cộng dồn sang hôm sau). */
+function _rollRegenDay(now){
+  const day = _invDay();
+  if(inv.regenDay === day) return false;
+  inv.regenDay = day;
+  inv.regenToday = 0;
+  // Timer cũ từ hôm qua không mang sang — bắt đầu đếm lại trong ngày mới
+  if(heartsBelowMax()){
+    inv.nextHeartAt = (now || Date.now()) + HEART_REGEN_MS;
+  } else {
+    inv.nextHeartAt = 0;
+  }
+  return true;
+}
+
+function regenHeartsLeftToday(){
+  _rollRegenDay();
+  return Math.max(0, MAX_REGEN_HEARTS_PER_DAY - (inv.regenToday|0));
+}
+
 function heartRegenRemainingMs(){
-  if(!heartsBelowMax() || !(inv.nextHeartAt > 0)) return 0;
+  _rollRegenDay();
+  if(!heartsBelowMax()) return 0;
+  if(regenHeartsLeftToday() < 1) return 0;
+  if(!(inv.nextHeartAt > 0)) return 0;
   return Math.max(0, (inv.nextHeartAt|0) - Date.now());
 }
 
-/** Hồi tim offline/online theo nextHeartAt; chỉ hồi tới MAX_HEARTS. */
+/** Hồi tim theo nextHeartAt; tối đa MAX_HEARTS và tối đa 5 tim/ngày. */
 function applyHeartRegen(){
   const now = Date.now();
-  let changed = false;
-  while(heartsBelowMax() && inv.nextHeartAt > 0 && now >= inv.nextHeartAt){
+  let changed = _rollRegenDay(now);
+  while(
+    heartsBelowMax() &&
+    regenHeartsLeftToday() > 0 &&
+    inv.nextHeartAt > 0 &&
+    now >= inv.nextHeartAt
+  ){
     const cur = roundHalf(inv.hearts);
     inv.hearts = roundHalf(Math.min(MAX_HEARTS, cur + 1));
+    inv.regenToday = (inv.regenToday|0) + 1;
     changed = true;
-    if(heartsBelowMax()){
+    if(heartsBelowMax() && regenHeartsLeftToday() > 0){
       inv.nextHeartAt = (inv.nextHeartAt|0) + HEART_REGEN_MS;
     } else {
       inv.nextHeartAt = 0;
       break;
     }
   }
-  if(heartsBelowMax()){
+  if(heartsBelowMax() && regenHeartsLeftToday() > 0){
     if(!(inv.nextHeartAt > 0)){
       inv.nextHeartAt = now + HEART_REGEN_MS;
       changed = true;
     }
   } else if(inv.nextHeartAt){
+    // Đầy tim hoặc hết ngân sách hồi ngày → dừng đếm
     inv.nextHeartAt = 0;
     changed = true;
   }
@@ -157,11 +217,40 @@ function applyHeartRegen(){
 }
 
 function syncHeartRegenAfterChange(){
-  if(heartsBelowMax()){
+  _rollRegenDay();
+  if(heartsBelowMax() && regenHeartsLeftToday() > 0){
     if(!(inv.nextHeartAt > 0)) inv.nextHeartAt = Date.now() + HEART_REGEN_MS;
   } else {
     inv.nextHeartAt = 0;
   }
+}
+
+function _rollDailyQuestHearts(){
+  const day = _invDay();
+  if(inv.dailyQuestDay !== day){
+    inv.dailyQuestDay = day;
+    inv.dailyQuestHearts = 0;
+    return true;
+  }
+  return false;
+}
+
+function dailyQuestHeartsLeft(){
+  _rollDailyQuestHearts();
+  return Math.max(0, MAX_DAILY_QUEST_HEARTS - (inv.dailyQuestHearts|0));
+}
+
+/** Tim từ điểm danh / nhiệm vụ ngày — tối đa 5/ngày. */
+function grantDailyQuestHearts(n, reason){
+  n = roundHalf(n);
+  if(!(n > 0)) return 0;
+  _rollDailyQuestHearts();
+  const left = dailyQuestHeartsLeft();
+  const give = roundHalf(Math.min(n, left));
+  if(!(give > 0)) return 0;
+  inv.dailyQuestHearts = roundHalf((inv.dailyQuestHearts|0) + give);
+  grantHearts(give, reason);
+  return give;
 }
 
 const POWER_INFO = {
@@ -370,6 +459,7 @@ function heartHudLabel(){
   applyHeartRegen();
   const h = formatHearts(inv.hearts);
   if(!heartsBelowMax()) return '❤️ '+h;
+  if(regenHeartsLeftToday() < 1) return '❤️ '+h;
   const left = heartRegenRemainingMs();
   if(left <= 0) return '❤️ '+h;
   return '❤️ '+h+' · '+formatHeartRegen(left);
@@ -379,20 +469,21 @@ function renderInventoryHud(){
   applyHeartRegen();
   const el = document.getElementById('inv-hud');
   if(el){
-    const regenTip = heartsBelowMax()
-      ? (' · hồi +1 / '+Math.round(HEART_REGEN_MS/60000)+' phút')
-      : '';
+    let regenTip = '';
+    if(!heartsBelowMax()) regenTip = ' · đủ '+MAX_HEARTS;
+    else if(regenHeartsLeftToday() < 1) regenTip = ' · hết hồi hôm nay ('+MAX_REGEN_HEARTS_PER_DAY+'/'+MAX_REGEN_HEARTS_PER_DAY+')';
+    else regenTip = ' · hồi +1 / '+Math.round(HEART_REGEN_MS/60000)+' phút · còn '+regenHeartsLeftToday()+'/'+MAX_REGEN_HEARTS_PER_DAY+' hôm nay';
     el.innerHTML =
-      '<span class="inv-chip inv-heart" title="Tim (chung với Caro)'+regenTip+'">'+heartHudLabel()+'</span>'+
+      '<span class="inv-chip inv-heart" title="Tim'+regenTip+'">'+heartHudLabel()+'</span>'+
       '<span class="inv-chip inv-gold" title="Vàng">🪙 '+getGold()+'</span>'+
       '<span class="inv-chip inv-diamond" title="Kim cương">💎 '+getDiamonds()+'</span>';
   }
   const caroHud = document.getElementById('caro-hearts-hud');
   if(caroHud){
     caroHud.textContent = heartHudLabel();
-    caroHud.title = heartsBelowMax()
-      ? ('Tim chung · hồi +1 sau '+formatHeartRegen(heartRegenRemainingMs()))
-      : 'Tim chung với Chromablast';
+    if(!heartsBelowMax()) caroHud.title = 'Tim';
+    else if(regenHeartsLeftToday() < 1) caroHud.title = 'Tim · hết hồi hôm nay';
+    else caroHud.title = 'Tim · hồi +1 sau '+formatHeartRegen(heartRegenRemainingMs());
   }
   const sk = document.getElementById('skill-bar');
   if(sk){
@@ -558,6 +649,9 @@ window.Inventory = {
   spendPower: spendPower,
   applyHeartRegen: applyHeartRegen,
   heartRegenRemainingMs: heartRegenRemainingMs,
+  regenHeartsLeftToday: regenHeartsLeftToday,
+  grantDailyQuestHearts: grantDailyQuestHearts,
+  dailyQuestHeartsLeft: dailyQuestHeartsLeft,
   unlockSkillByLevel: unlockSkillByLevel,
   onComboSkillMilestone: onComboSkillMilestone,
   render: renderInventoryHud,
@@ -571,6 +665,8 @@ window.Inventory = {
   getHeartGiftState: getHeartGiftState,
   MAX_HEARTS: MAX_HEARTS,
   HEART_REGEN_MS: HEART_REGEN_MS,
+  MAX_REGEN_HEARTS_PER_DAY: MAX_REGEN_HEARTS_PER_DAY,
+  MAX_DAILY_QUEST_HEARTS: MAX_DAILY_QUEST_HEARTS,
   MAX_HEART_GIFT_PEOPLE: MAX_HEART_GIFT_PEOPLE
 };
 try{ window.GOLD_PER_DIAMOND = GOLD_PER_DIAMOND; }catch(e){}
