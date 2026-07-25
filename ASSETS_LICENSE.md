@@ -94,7 +94,7 @@ Chi tiết + `OFL.txt`: xem `fonts/FONT_CREDITS.md`.
 | Firebase Firestore (compat) | `…/firebase-firestore-compat.js` | Database online | như trên |
 
 Không thấy `<link>` tới Google Fonts CDN trong `index.html` (font đã bundle offline).  
-`privacy-policy.html` vẫn còn câu “tải phông chữ từ Google Fonts” — **lệch thực tế hiện tại**, nên cập nhật riêng khi sửa policy.
+`privacy-policy.html` đã mô tả font offline (cập nhật 25/07/2026).
 
 ### 4.2. npm / Capacitor (`package.json`)
 
