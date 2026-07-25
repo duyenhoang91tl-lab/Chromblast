@@ -34,7 +34,7 @@ function registerMap(desc){
   {id:14, key:'snake',  name:'Rắn',                enter:enterSnakeMode,  trigger:triggerSnakeUnlock},
   {id:15, key:'brick',  name:'Bắn gạch',           enter:enterBrickMode,  trigger:triggerBrickUnlock},
   {id:16, key:'runner', name:'Chạy vô tận',        enter:enterRunnerMode, trigger:triggerRunnerUnlock},
-  {id:17, key:'space',  name:'Space Shooter',      enter:enterSpaceMode,  trigger:triggerSpaceUnlock},
+  {id:17, key:'space',  name:'Bắn tàu vũ trụ',    enter:enterSpaceMode,  trigger:triggerSpaceUnlock},
   {id:18, key:'rhythm', name:'Phiêu theo âm nhạc', enter:enterRhythmMode, trigger:triggerRhythmUnlock},
   {id:19, key:'maze',   name:'Thoát khỏi mê cung', enter:enterMazeMode,   trigger:triggerMazeUnlock},
   {id:20, key:'mega',   name:'Dũng sĩ diệt rồng',  enter:enterMegaMode,   trigger:triggerMegaUnlock},

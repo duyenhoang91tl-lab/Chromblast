@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════
-// maps/map21.js — MAP ẨN 21: Ếch ộp ham ăn (Feed to Frog)
+// maps/map21.js — MAP ẨN 21: Ếch ộp ham ăn
 // Ao sen nhìn từ trên xuống (canvas). Ếch ngồi giữa lá sen, phóng lưỡi
 // bắt: ong · dế mèn · châu chấu · bươm bướm · cánh cứng.
 // api: W/H 360×460 · input · addScore · sfx · flash · finish(won)

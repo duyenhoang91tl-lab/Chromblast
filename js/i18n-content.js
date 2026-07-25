@@ -49,7 +49,7 @@ vi: {
     snake:{title:'🐍 Map ẩn 14 — Rắn săn mồi', body:'Vuốt để đổi hướng rắn, ăn trái cây để dài ra. Đừng đâm vào tường hoặc đuôi. Đạt độ dài 20 để thắng.'},
     brick:{title:'🧱 Map ẩn 15 — Phá gạch', body:'Kéo thanh đỡ cho bóng nảy phá gạch. Đừng để bóng rơi xuống đáy — có 3 mạng ❤️. Phá hết gạch để thắng.'},
     runner:{title:'🏃 Map ẩn 16 — Chạy vô tận', body:'Chạm để nhảy qua chướng ngại vật, chạm 2 lần để nhảy đôi. Sống sót 60 giây để thắng.'},
-    space:{title:'🚀 Map ẩn 17 — Space Shooter', body:'Di ngón tay để lái tàu, chạm để bắn (hoặc bật Tự bắn). Diệt hết các đợt quái để thắng.'},
+    space:{title:'🚀 Map ẩn 17 — Bắn tàu vũ trụ', body:'Di ngón tay để lái tàu, chạm để bắn (hoặc bật Tự bắn). Diệt hết các đợt quái để thắng.'},
     rhythm:{title:'🎵 Map ẩn 18 — Phiêu theo âm nhạc', body:'Chạm vào tâm đúng lúc vòng ngoài thu nhỏ khớp với vòng trong. Hoàn thành hết số vòng để thắng.'},
     maze:{title:'🌀 Map ẩn 19 — Thoát khỏi mê cung', body:'Vuốt để dẫn chú Samoyed thoát mê cung trong 90 giây. Ô cỏ dày che tường — nhớ đường. Đến cổng góc dưới phải để thắng.'},
     mega:{title:'🐉 Map ẩn 20 — Dũng sĩ diệt rồng', body:'Di ngón tay né đạn, tàu tự động bắn Rồng. Bắn cạn máu Rồng để phá đảo map 20 và mở map kế!'},
