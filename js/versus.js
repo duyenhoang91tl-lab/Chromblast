@@ -502,31 +502,38 @@ function _vsHideGhost(P){
   const gEl=P.el.ghost; if(!gEl) return;
   gEl.classList.remove('active','vs-ghost-flip');
   gEl.innerHTML='';
+  gEl.style.transform='';
+  P._prevKey='';
 }
 function _vsMoveGhost(P,x,y,ptype){
   const gEl=P.el.ghost; if(!gEl||!gEl.classList.contains('active')||P.selected<0) return;
   const pc=P.pieces[P.selected]; if(!pc) return;
   const {bbH}=_vsPieceBox(P,pc);
   const [ax,ay]=_vsGhostAnchor(x,y,bbH,ptype);
-  gEl.style.left=ax+'px';
-  gEl.style.top=ay+'px';
+  // flip (P0 nửa trên) gộp vào cùng transform để vẫn dùng compositor
+  const flip=gEl.classList.contains('vs-ghost-flip') ? ' rotate(180deg)' : '';
+  gEl.style.transform='translate3d('+ax+'px,'+ay+'px,0) translate(-50%,-50%)'+flip;
 }
 
 function _vsClearPreview(P){
-  if(!P._prev) return;
+  if(!P._prev){ P._prevKey=''; return; }
   P._prev.forEach(([r,c])=>{
     const d=P.el.cells[r][c];
     d.classList.remove('vs-prev','vs-filled');
     if(!P.board[r][c]){ d.style.background=''; d.style.removeProperty('--cc'); delete d.dataset.ci; }
   });
   P._prev=null;
+  P._prevKey='';
 }
 function _vsShowPreviewAt(P,R,C){
+  const key=P.selected+':'+R+','+C;
+  if(P._prevKey===key) return;
   _vsClearPreview(P);
   if(P.selected<0) return;
   const pc=P.pieces[P.selected];
   if(!pc||pc.used) return;
   if(!_vsCanPlace(P,pc.shape,R,C)) return;
+  P._prevKey=key;
   P._prev=pc.shape.map(([dr,dc])=>[R+dr,C+dc]);
   P._prev.forEach(([r,c])=>{
     const d=P.el.cells[r][c];

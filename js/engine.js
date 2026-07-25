@@ -57,8 +57,9 @@ function rotatePiece(idx){
   const minR=Math.min(...piece.shape.map(([r])=>r));
   const minC=Math.min(...piece.shape.map(([,c])=>c));
   piece.shape=piece.shape.map(([r,c])=>[r-minR, c-minC]);
+  invalidateDragBox();
   renderPieces();
-  if(selected===idx){ showGhost(piece); updatePreview(lastMouseX||0, lastMouseY||0); }
+  if(selected===idx){ showGhost(piece); moveGhost(lastMouseX||0, lastMouseY||0); updatePreview(lastMouseX||0, lastMouseY||0); }
 }
 
 // Ô bị chặn không đặt khối lên được (do các cơ chế độ khó chiếm giữ)
@@ -180,7 +181,9 @@ let rotateLocked=false;           // true sau khi bấm ✓ — chạm nền lư
 // Giờ CACHE lại, chỉ tính lại khi bố cục thực sự có thể đổi (resize/xoay màn/cuộn/
 // #game-root co giãn lại qua fitGameRoot — xem invalidateGridGeom() gọi từ main.js).
 let _gridGeomCache=null;
-function invalidateGridGeom(){ _gridGeomCache=null; }
+let _dragBox=null, _dragBoxPiece=null; // cache hình học khối đang kéo
+function invalidateDragBox(){ _dragBox=null; _dragBoxPiece=null; }
+function invalidateGridGeom(){ _gridGeomCache=null; invalidateDragBox(); }
 function gridGeom(){
   if(_gridGeomCache) return _gridGeomCache;
   const a=getCell(0,0).getBoundingClientRect();
@@ -207,9 +210,16 @@ function pieceBox(piece){
   return { maxR, maxC, g, bbW:maxC*g.stepX+g.cell, bbH:maxR*g.stepY+g.cell };
 }
 
+// Cache hình học khối đang kéo — tránh pieceBox() 2 lần/khung (moveGhost + updatePreview).
+function activePieceBox(piece){
+  if(_dragBox && _dragBoxPiece===piece && _gridGeomCache) return _dragBox;
+  _dragBoxPiece=piece;
+  return (_dragBox=pieceBox(piece));
+}
+
 // Quy đổi vị trí con trỏ → ô gốc (góc trên-trái khung bao của khối).
 function originFromPointer(x,y,piece,forceType){
-  const {g,bbW,bbH,maxR,maxC}=pieceBox(piece);
+  const {g,bbW,bbH,maxR,maxC}=activePieceBox(piece);
   const [ax,ay]=ghostAnchor(x,y,bbH,forceType);
   const ox=ax-bbW/2, oy=ay-bbH/2;             // góc trên-trái khung bao của khối trong viewport
   let C=Math.round((ox-g.x0)/g.stepX);
@@ -248,6 +258,8 @@ function buildGhost(piece){
 }
 
 function showGhost(piece){
+  invalidateDragBox();
+  _previewKey='';
   buildGhost(piece);
   ghostEl.classList.add('active');
   document.body.classList.add('is-dragging');
@@ -255,18 +267,22 @@ function showGhost(piece){
 function hideGhost(){
   ghostEl.classList.remove('active');
   ghostEl.innerHTML='';
+  ghostEl.style.transform='';
+  invalidateDragBox();
+  _previewKey='';
   document.body.classList.remove('is-dragging');
 }
 
 function moveGhost(x,y){
   if(selected===null) return;
-  const {bbH}=pieceBox(pieces[selected]);
+  const {bbH}=activePieceBox(pieces[selected]);
   const [ax,ay]=ghostAnchor(x,y,bbH);
-  ghostEl.style.left=ax+'px';
-  ghostEl.style.top=ay+'px';
+  // transform (compositor) thay vì left/top (layout) → kéo mượt hơn rõ trên mobile
+  ghostEl.style.transform='translate3d('+ax+'px,'+ay+'px,0) translate(-50%,-50%)';
 }
 
 let previewedCells = []; // ô đang được tô preview — tránh phải quét lại toàn bộ DOM mỗi lần di chuột
+let _previewKey='';      // cache key origin+valid — bỏ rewrite DOM khi ngón tay vẫn trong cùng ô
 function clearPreview(){
   for(const c of previewedCells){
     c.classList.remove('preview-ok');
@@ -277,16 +293,21 @@ function clearPreview(){
     }
   }
   previewedCells.length=0;
+  _previewKey='';
 }
 
 // Làm mờ các ô khối sẽ đáp xuống. Vị trí KHÔNG đặt được → giữ nguyên mọi ô, không đụng tới.
 function updatePreview(x,y){
-  clearPreview();
-  if(selected===null) return;
+  if(selected===null){ clearPreview(); return; }
   const piece=pieces[selected];
-  if(!piece||piece.used) return;
+  if(!piece||piece.used){ clearPreview(); return; }
   const o=originFromPointer(x,y,piece);
-  if(!o || !canPlace(piece,o.R,o.C)) return;
+  const ok=!!(o && canPlace(piece,o.R,o.C));
+  const key=ok ? (selected+':'+o.R+','+o.C) : '';
+  if(key===_previewKey) return; // cùng ô đích — chỉ cần moveGhost, không đụng DOM preview
+  clearPreview();
+  if(!ok) return;
+  _previewKey=key;
   piece.shape.forEach(([dr,dc])=>{
     const cell=getCell(o.R+dr,o.C+dc);
     if(cell){

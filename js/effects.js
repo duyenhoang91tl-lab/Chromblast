@@ -19,7 +19,7 @@ function mainBurstFX(cells, streak){
     fx.classList.add('active');
     const W=wrap.clientWidth, H=wrap.clientHeight;
     const palette=[baseColor, '#ffd24a', '#ff7a3c', '#ffffff', '#ffe9a8', baseColor];
-    const N = big ? 55 : 28;
+    const N = big ? 32 : 18;
     const frag=document.createDocumentFragment();
     const sparks=[];
     for(let i=0;i<N;i++){
@@ -52,8 +52,8 @@ function mainBurstFX(cells, streak){
 
   // 2) Tia lấp lánh tại từng ô nổ
   const root=document.getElementById('game-root'); if(!root) return;
-  let budget=big?50:30;
-  const per=cells.length>14?1:(cells.length>7?2:3);
+  let budget=big?28:16;
+  const per=cells.length>14?1:(cells.length>7?1:2);
   // Đọc vị trí TẤT CẢ ô cần hiệu ứng trước (1 lượt), rồi mới tạo/chèn phần tử (1 lượt).
   // TRƯỚC ĐÂY: đọc getBoundingClientRect() rồi appendChild() xen kẽ NGAY trong vòng lặp
   // — mỗi appendChild làm layout "bẩn", nên lần đọc kế tiếp lại buộc trình duyệt reflow
@@ -463,7 +463,9 @@ function spawnComboBorderSparks(streak){
   ];
   const pi = streak>=10?5:streak>=8?4:streak>=6?3:streak>=4?2:streak>=2?1:0;
   const palette=palettes[pi];
-  const N = Math.min(4 + streak*4, 60);  // nhiều tia hơn ở combo cao
+  const N = Math.min(4 + streak*3, 36);  // đủ cảm giác combo, tránh tạo quá nhiều DOM
+  const frag=document.createDocumentFragment();
+  const sparks=[];
   for(let i=0;i<N;i++){
     const side=i%4; const t=Math.random();
     let x,y,ang;
@@ -482,9 +484,11 @@ function spawnComboBorderSparks(streak){
     s.style.setProperty('--len',len+'px');
     s.style.setProperty('--col',col);
     s.style.setProperty('--dur',dur);
-    cbs.appendChild(s);
-    setTimeout(()=>{ s.remove(); if(!cbs.children.length) cbs.classList.remove('active'); }, 900);
+    frag.appendChild(s);
+    sparks.push(s);
   }
+  cbs.appendChild(frag);
+  sparks.forEach(s=>setTimeout(()=>{ s.remove(); if(!cbs.children.length) cbs.classList.remove('active'); }, 900));
 }
 
 function showComboCountFlash(n){
@@ -501,7 +505,7 @@ function spawnConfetti(){
   const wrap=document.getElementById('grid-wrap');
   const W=(wrap&&wrap.clientWidth)||360, H=(wrap&&wrap.clientHeight)||500;
   const colors=['#ffd700','#ff7a3c','#5DCAA5','#378ADD','#ab47bc','#f7c948','#E24B4A','#ffffff'];
-  const N=42;
+  const N=24;
   for(let i=0;i<N;i++){
     const p=document.createElement('div'); p.className='confetti-piece';
     const size=6+Math.random()*7;
@@ -960,7 +964,7 @@ function spawnClearFlowers(cells){
     return null;
   };
   const FLOWERS=['🌸','🌺','🌼','💮','🌷'];
-  const pick = cells.length <= 4 ? cells : cells.filter((_,i)=> i%Math.ceil(cells.length/5)===0).slice(0,6);
+  const pick = cells.length <= 4 ? cells : cells.filter((_,i)=> i%Math.ceil(cells.length/4)===0).slice(0,4);
   const frag=document.createDocumentFragment();
   const nodes=[];
   pick.forEach(([r,c])=>{
@@ -968,7 +972,7 @@ function spawnClearFlowers(cells){
     if(!cell) return;
     const b=cell.getBoundingClientRect();
     const origin=toGameRootXY(b.left+b.width/2, b.top+b.height/2);
-    const count = 2 + ((Math.random()*2)|0); // 2–3 hoa / ô
+    const count = 1 + ((Math.random()*2)|0); // 1–2 hoa / ô
     for(let i=0;i<count;i++){
       const f=document.createElement('div');
       f.className='clear-flower';

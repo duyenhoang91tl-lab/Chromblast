@@ -9,8 +9,8 @@
     if(!box || box.dataset.ready) return;
     box.dataset.ready = '1';
     const frag = document.createDocumentFragment();
-    // Field dày: nhiều sao nhỏ + vài sao sáng/lóe
-    const n = 260;
+    // Field vừa đủ dày — cắt ~40% so với 260 để nền bớt tranh GPU với gameplay
+    const n = 150;
     for(let i=0;i<n;i++){
       const s = document.createElement('div');
       const roll = Math.random();
@@ -59,7 +59,7 @@
     const box = document.getElementById('sky-petals');
     if(!box || box.dataset.ready) return;
     box.dataset.ready = '1';
-    const count = 30;
+    const count = 18;
     for(let i=0;i<count;i++){
       const p = document.createElement('div');
       p.className = 'sky-petal';

@@ -77,21 +77,22 @@ html, body {
 #sky-atmosphere .sky-mist {
   position: absolute;
   border-radius: 50%;
-  filter: blur(36px);
+  /* Blur nhẹ hơn — mist lớn blur 40px+ rất tốn fill-rate trên mobile */
+  filter: blur(22px);
   opacity: 0.5;
   z-index: 1;
   animation: skyMistDrift ease-in-out infinite alternate;
-  will-change: transform, opacity;
+  will-change: transform;
 }
 #sky-atmosphere .sky-mist.m1 {
   width: 58vw; height: 34vh; bottom: 8%; left: 8%;
   background: radial-gradient(ellipse at 45% 50%, rgba(70, 130, 255, 0.65) 0%, transparent 70%);
-  animation-duration: 22s; filter: blur(42px); opacity: 0.55;
+  animation-duration: 22s; filter: blur(26px); opacity: 0.55;
 }
 #sky-atmosphere .sky-mist.m2 {
   width: 52vw; height: 32vh; bottom: 14%; right: -4%; left: auto;
   background: radial-gradient(ellipse at 55% 45%, rgba(200, 50, 230, 0.5) 0%, transparent 68%);
-  animation-duration: 26s; animation-delay: -6s; filter: blur(40px); opacity: 0.48;
+  animation-duration: 26s; animation-delay: -6s; filter: blur(24px); opacity: 0.48;
 }
 #sky-atmosphere .sky-mist.m3 {
   width: 70vw; height: 28vh; top: 38%; left: 10%;
@@ -106,22 +107,22 @@ html, body {
 #sky-atmosphere .sky-mist.m5 {
   width: 42vw; height: 22vh; top: 6%; right: 18%; left: auto;
   background: radial-gradient(ellipse at 50% 50%, rgba(160, 120, 255, 0.32) 0%, transparent 65%);
-  animation-duration: 18s; filter: blur(28px); opacity: 0.34;
+  animation-duration: 18s; filter: blur(18px); opacity: 0.34;
 }
 #sky-atmosphere .sky-mist.m6 {
   width: 80vw; height: 36vh; bottom: -4%; left: 5%;
   background: radial-gradient(ellipse at 50% 40%, rgba(90, 40, 180, 0.45) 0%, rgba(40, 80, 200, 0.2) 45%, transparent 72%);
-  animation-duration: 28s; animation-delay: -9s; filter: blur(48px); opacity: 0.5;
+  animation-duration: 28s; animation-delay: -9s; filter: blur(28px); opacity: 0.5;
 }
 #sky-atmosphere .sky-mist.m7 {
   width: 36vw; height: 20vh; top: 28%; left: 55%;
   background: radial-gradient(ellipse at 50% 50%, rgba(100, 180, 255, 0.35) 0%, transparent 68%);
-  animation-duration: 20s; animation-delay: -3s; filter: blur(30px); opacity: 0.32;
+  animation-duration: 20s; animation-delay: -3s; filter: blur(18px); opacity: 0.32;
 }
 #sky-atmosphere .sky-mist.m8 {
   width: 44vw; height: 24vh; top: 32%; left: 22%;
   background: radial-gradient(ellipse at 50% 50%, rgba(70, 210, 220, 0.32) 0%, transparent 66%);
-  animation-duration: 25s; animation-delay: -14s; filter: blur(38px); opacity: 0.3;
+  animation-duration: 25s; animation-delay: -14s; filter: blur(22px); opacity: 0.3;
 }
 @keyframes skyMistDrift {
   from { transform: translate3d(0, 0, 0) scale(1); }
@@ -144,7 +145,7 @@ html, body {
   animation-name: skyTwinkle;
   animation-timing-function: ease-in-out;
   animation-iteration-count: infinite;
-  will-change: opacity, transform, filter;
+  will-change: opacity, transform;
 }
 #sky-stars .sky-star.bright {
   background: radial-gradient(circle, #fff 0%, #e8f0ff 55%, rgba(180, 200, 255, 0.2) 100%);
@@ -209,23 +210,24 @@ html, body {
   animation: skyFlareRay inherit;
 }
 
+/* Chỉ animate opacity/scale — bỏ filter:brightness (rất tốn GPU trên mobile) */
 @keyframes skyTwinkle {
-  0%   { opacity: 0.25; transform: scale(0.8); filter: brightness(0.75); }
-  40%  { opacity: 0.9; transform: scale(1.15); filter: brightness(1.25); }
-  70%  { opacity: 0.35; transform: scale(0.85); filter: brightness(0.8); }
-  100% { opacity: 0.7; transform: scale(1.05); filter: brightness(1.1); }
+  0%   { opacity: 0.25; transform: scale(0.8); }
+  40%  { opacity: 0.9; transform: scale(1.15); }
+  70%  { opacity: 0.35; transform: scale(0.85); }
+  100% { opacity: 0.7; transform: scale(1.05); }
 }
 @keyframes skyTwinkleBright {
-  0%   { opacity: 0.35; transform: scale(0.8); filter: brightness(0.85); }
-  35%  { opacity: 1; transform: scale(1.25); filter: brightness(1.45); }
-  60%  { opacity: 0.45; transform: scale(0.92); filter: brightness(0.9); }
-  100% { opacity: 0.85; transform: scale(1.08); filter: brightness(1.15); }
+  0%   { opacity: 0.35; transform: scale(0.8); }
+  35%  { opacity: 1; transform: scale(1.25); }
+  60%  { opacity: 0.45; transform: scale(0.92); }
+  100% { opacity: 0.85; transform: scale(1.08); }
 }
 @keyframes skyStarFlare {
-  0%, 92%, 100% { opacity: 0.5; transform: scale(1); filter: brightness(1); }
-  94% { opacity: 0.85; transform: scale(1.35); filter: brightness(1.5); }
-  96% { opacity: 1; transform: scale(1.9); filter: brightness(2.2); }
-  98% { opacity: 0.75; transform: scale(1.25); filter: brightness(1.35); }
+  0%, 92%, 100% { opacity: 0.5; transform: scale(1); }
+  94% { opacity: 0.85; transform: scale(1.35); }
+  96% { opacity: 1; transform: scale(1.9); }
+  98% { opacity: 0.75; transform: scale(1.25); }
 }
 @keyframes skyFlareRay {
   0%, 92%, 100% { opacity: 0; transform: translate(-50%, -50%) rotate(25deg) scale(0.12); }
