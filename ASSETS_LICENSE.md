@@ -3,8 +3,15 @@
 Ngày cập nhật: 2026-07-25  
 Nguồn đối chiếu: `sounds/ASSET_SOURCES.md`, `package.json`, `index.html`, CSS/JS trong repo.
 
-Tài liệu này liệt kê font, âm thanh, thư viện và dịch vụ bên thứ ba đang dùng.  
-**Không** thay thế tư vấn pháp lý; cần review trước khi phát hành CH Play / bản thương mại.
+Tài liệu này liệt kê font, âm thanh, thư viện và dịch vụ bên thứ ba đang dùng.
+
+### Tổng kết `sounds/`
+
+| Nhóm | Số file |
+|---|---:|
+| AI-generated | **0** |
+| Tự thu âm (voice recording gốc) | **10** |
+| Nguồn chưa rõ / bên thứ ba | **0** |
 
 ---
 
@@ -29,46 +36,23 @@ OFL cho phép nhúng font vào app/game (kể cả thương mại), miễn là:
 
 ## 2. Âm thanh trong `sounds/`
 
-Phân loại theo `sounds/ASSET_SOURCES.md` (bằng chứng git/metadata tại thời điểm 2026-07-25).
+**`sounds/` — toàn bộ là giọng đọc tự thu âm bởi nhà phát triển, sở hữu gốc 100%, không dùng AI generate, không dính license bên thứ ba.**
 
-### 2.1. Âm thanh AI-generated (theo ASSET_SOURCES.md)
-
-**Danh sách hiện tại: trống (0 file).**  
-`ASSET_SOURCES.md` không xác nhận file `.wav` nào do AI tạo trong các lần chat Cursor/Claude.
-
-Khi có file được xác nhận là AI-generated, ghi nhận theo mẫu:
-
-> Tạo bằng AI hỗ trợ trong Cursor, Claude chưa xác minh thương mại — cần review trước khi phát hành.
-
-### 2.2. Giọng đọc tự thu âm (voice recording gốc)
-
-**Danh sách hiện tại: trống (0 file).**  
-Chưa có bằng chứng git/metadata đủ để khẳng định file nào là bạn tự thu.
-
-Khi có file được xác nhận là tự thu âm, ghi nhận:
-
-> Sở hữu gốc của nhà phát triển.
-
-### 2.3. Âm thanh — nguồn chưa rõ (đang dùng trong game)
-
-Theo `ASSET_SOURCES.md`, **toàn bộ 10 file** hiện có thuộc nhóm này.  
+Phân loại theo `sounds/ASSET_SOURCES.md` (xác nhận nhà phát triển, 2026-07-25).  
 Dùng làm lồng tiếng khen combo (`js/audio.js` → `PRAISE_SOUND_FILES`).
 
-| File | Ghi chú license / rủi ro |
+| File | Ownership |
 |---|---|
-| `sounds/amazing.wav` | Nguồn chưa rõ — **cần review trước khi phát hành** |
-| `sounds/cool.wav` | Nguồn chưa rõ — **cần review trước khi phát hành** |
-| `sounds/godlike.wav` | Nguồn chưa rõ — **cần review trước khi phát hành** |
-| `sounds/good.wav` | Nguồn chưa rõ — **cần review trước khi phát hành** |
-| `sounds/great.wav` | Nguồn chưa rõ — **cần review trước khi phát hành** |
-| `sounds/impressive.wav` | Nguồn chưa rõ — **cần review trước khi phát hành** |
-| `sounds/legendary.wav` | Nguồn chưa rõ — **cần review trước khi phát hành** |
-| `sounds/perfect.wav` | Nguồn chưa rõ — **cần review trước khi phát hành** |
-| `sounds/spectacular.wav` | Nguồn chưa rõ — **cần review trước khi phát hành** |
-| `sounds/unreal.wav` | Nguồn chưa rõ — **cần review trước khi phát hành** |
-
-Nếu sau này xác nhận file nào là AI-generated: áp dụng disclaimer ở mục 2.1.  
-Nếu xác nhận tự thu âm: chuyển sang mục 2.2 — *sở hữu gốc của nhà phát triển*.
+| `sounds/amazing.wav` | Tự thu âm — sở hữu gốc nhà phát triển |
+| `sounds/cool.wav` | Tự thu âm — sở hữu gốc nhà phát triển |
+| `sounds/godlike.wav` | Tự thu âm — sở hữu gốc nhà phát triển |
+| `sounds/good.wav` | Tự thu âm — sở hữu gốc nhà phát triển |
+| `sounds/great.wav` | Tự thu âm — sở hữu gốc nhà phát triển |
+| `sounds/impressive.wav` | Tự thu âm — sở hữu gốc nhà phát triển |
+| `sounds/legendary.wav` | Tự thu âm — sở hữu gốc nhà phát triển |
+| `sounds/perfect.wav` | Tự thu âm — sở hữu gốc nhà phát triển |
+| `sounds/spectacular.wav` | Tự thu âm — sở hữu gốc nhà phát triển |
+| `sounds/unreal.wav` | Tự thu âm — sở hữu gốc nhà phát triển |
 
 Chi tiết provenance: xem `sounds/ASSET_SOURCES.md`.
 
@@ -133,7 +117,7 @@ Không thấy `<link>` tới Google Fonts CDN trong `index.html` (font đã bund
 | Loại | Nguồn trong project | Ghi chú |
 |---|---|---|
 | Icon app / splash | `resources/icon.png`, `resources/splash.png`, `resources/splash-dark.png`, `resources/play-store/` | Coi là asset nhà phát triển trừ khi có nguồn khác — cần xác nhận provenance |
-| Icon nút menu / UI | Emoji Unicode trong HTML/JS (🛒 🤝 🧱 …) | Emoji là ký tự Unicode do font hệ thống vẽ — không phải file icon bên thứ ba trong repo |
+| Icon nút menu / UI | Emoji Unicode trong HTML/JS (🛒 🤝 ⚙️ …) | Emoji là ký tự Unicode do font hệ thống vẽ — không phải file icon bên thứ ba trong repo |
 | SVG trang trí vòng quay | Inline SVG trong `index.html` (`spin-vine-svg`, …) | Coi là mã/đồ họa trong repo — xác nhận sở hữu nhà phát triển nếu tự vẽ / AI-assisted |
 | Liên kết mạng xã hội | `index.html` (TikTok/Discord/X/Facebook/YouTube) | Chỉ là URL ngoài; logo hiển thị bằng ký tự/text CSS, không nhúng file trademark riêng |
 
@@ -142,13 +126,13 @@ Không thấy `<link>` tới Google Fonts CDN trong `index.html` (font đã bund
 ## 5. Âm thanh tổng hợp trong code (không phải file `sounds/`)
 
 `js/audio.js` tạo SFX/BGM bằng **Web Audio API** (oscillator / noise) — mã nguồn trong repo, không dùng sample WAV bên ngoài cho phần đó.  
-Praise bằng file WAV ở mục 2; trước đây Claude từng thử **Web Speech API** (không còn là file trong `sounds/`).
+Praise bằng file WAV ở mục 2.
 
 ---
 
 ## 6. Checklist trước phát hành
 
-- [ ] Xác nhận từng file trong `sounds/` (tự thu / AI / mua stock) và cập nhật mục 2 + `ASSET_SOURCES.md`
+- [x] Xác nhận `sounds/` — 10 file tự thu âm, sở hữu gốc nhà phát triển (2026-07-25)
 - [ ] Giữ OFL credit cho Nunito + font nickname khi phân phối font
 - [ ] Rà điều khoản Firebase, AdMob, Google Sign-In cho Data safety / Privacy
 - [ ] Quyết định giữ hay thay API dịch chat (Google gtx / MyMemory)
