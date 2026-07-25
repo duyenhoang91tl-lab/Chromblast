@@ -89,8 +89,13 @@ async function _upsertPlayerProfile(){
   const name = getOnlineDisplayName();
   const avatar = (typeof getPlayerAvatar === 'function') ? getPlayerAvatar() : '🐶';
   const region = (typeof getPlayerRegion === 'function') ? getPlayerRegion() : { country:'VN', continent:'AS' };
+  let publicId = '';
+  try{
+    if(typeof ensurePublicPlayerId === 'function') publicId = ensurePublicPlayerId();
+  }catch(e){}
   const patch = {
     displayName: name,
+    displayNameLower: String(name || '').toLowerCase(),
     avatar,
     level: (typeof playerLevel !== 'undefined' ? playerLevel : 1),
     country: region.country || 'VN',
@@ -99,6 +104,7 @@ async function _upsertPlayerProfile(){
     lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   };
+  if(publicId) patch.publicId = publicId;
   try{
     if(typeof getLocalCaroStats === 'function'){
       const s = getLocalCaroStats();
@@ -109,6 +115,176 @@ async function _upsertPlayerProfile(){
     }
   }catch(e){}
   await _onlineDb.collection('players').doc(_onlineUid).set(patch, { merge: true });
+  if(publicId){
+    try{
+      await _onlineDb.collection('playerIds').doc(publicId).set({
+        uid: _onlineUid,
+        displayName: name,
+        avatar,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+    }catch(e){}
+  }
+}
+
+function _genPublicPlayerId(){
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let out = 'CB';
+  for(let i=0;i<6;i++) out += alphabet[Math.floor(Math.random()*alphabet.length)];
+  return out;
+}
+
+async function registerPublicPlayerIdOnline(publicId){
+  let id = String(publicId || '').trim().toUpperCase();
+  if(!id) return;
+  try{
+    if(!_onlineDb){
+      if(typeof initOnlineServices === 'function') await initOnlineServices();
+    }
+    if(!_onlineDb || !_onlineUid) return;
+    // Tránh đụng ID người khác — thử lại tối đa 5 lần
+    for(let attempt = 0; attempt < 5; attempt++){
+      const ref = _onlineDb.collection('playerIds').doc(id);
+      const snap = await ref.get();
+      if(snap.exists){
+        const owner = (snap.data() || {}).uid;
+        if(owner && owner !== _onlineUid){
+          id = _genPublicPlayerId();
+          continue;
+        }
+      }
+      await ref.set({
+        uid: _onlineUid,
+        displayName: getOnlineDisplayName(),
+        avatar: (typeof getPlayerAvatar === 'function') ? getPlayerAvatar() : '🐶',
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+      await _onlineDb.collection('players').doc(_onlineUid).set({
+        publicId: id,
+        displayNameLower: String(getOnlineDisplayName()||'').toLowerCase()
+      }, { merge: true });
+      if(id !== String(publicId || '').trim().toUpperCase()){
+        try{ if(typeof savePlayerProfile === 'function') savePlayerProfile({ publicId: id }); }catch(e){}
+      }
+      return;
+    }
+  }catch(e){
+    console.warn('[online] registerPublicPlayerIdOnline', e);
+  }
+}
+
+/** Tìm người chơi theo publicId (CBxxxxxx) hoặc Firebase uid. */
+async function findPlayerByPublicId(code){
+  const q = String(code || '').trim().toUpperCase();
+  if(!q) return null;
+  try{
+    if(!_onlineDb){
+      if(typeof initOnlineServices === 'function') await initOnlineServices();
+    }
+    if(!_onlineDb) return null;
+    // ID công khai CBxxxxxx
+    if(/^CB[A-Z0-9]{6}$/.test(q)){
+      const idSnap = await _onlineDb.collection('playerIds').doc(q).get();
+      if(idSnap.exists){
+        const d = idSnap.data() || {};
+        if(d.uid){
+          const prof = await fetchPlayerPublicProfile(d.uid);
+          if(prof){ prof.publicId = q; return prof; }
+        }
+      }
+    }
+    // Cho phép dán uid Firebase dài
+    if(q.length >= 12){
+      const prof = await fetchPlayerPublicProfile(code.trim());
+      if(prof) return prof;
+    }
+  }catch(e){
+    console.warn('[online] findPlayerByPublicId', e);
+  }
+  return null;
+}
+
+/** Tìm theo tên (prefix, không phân biệt hoa thường) — tối đa 12 kết quả. */
+async function searchPlayersByName(nameQuery){
+  const q = String(nameQuery || '').trim().toLowerCase();
+  if(q.length < 2) return [];
+  try{
+    if(!_onlineDb){
+      if(typeof initOnlineServices === 'function') await initOnlineServices();
+    }
+    if(!_onlineDb) return [];
+    const end = q + '\uf8ff';
+    let snap;
+    try{
+      snap = await _onlineDb.collection('players')
+        .orderBy('displayNameLower')
+        .startAt(q).endAt(end)
+        .limit(12).get();
+    }catch(e){
+      // Fallback nếu chưa có index / field: lấy top gần đây rồi lọc client
+      snap = await _onlineDb.collection('players')
+        .orderBy('lastSeen', 'desc').limit(40).get();
+    }
+    const me = _onlineUid;
+    const out = [];
+    snap.forEach(doc=>{
+      if(doc.id === me) return;
+      const d = doc.data() || {};
+      const dn = String(d.displayName || '').toLowerCase();
+      const dnl = String(d.displayNameLower || dn);
+      if(dnl.indexOf(q) < 0 && dn.indexOf(q) < 0) return;
+      out.push({
+        uid: doc.id,
+        displayName: d.displayName || 'Player',
+        avatar: d.avatar || '🐶',
+        publicId: d.publicId || '',
+        online: !!d.online
+      });
+    });
+    return out.slice(0, 12);
+  }catch(e){
+    console.warn('[online] searchPlayersByName', e);
+    return [];
+  }
+}
+
+/** 20 người chơi ngẫu nhiên trên server (ưu tiên mới online). */
+async function fetchRandomPlayers(limit){
+  const n = Math.max(1, Math.min(40, limit|0 || 20));
+  try{
+    if(!_onlineDb){
+      if(typeof initOnlineServices === 'function') await initOnlineServices();
+    }
+    if(!_onlineDb) return [];
+    const snap = await _onlineDb.collection('players')
+      .orderBy('lastSeen', 'desc').limit(Math.max(40, n * 3)).get();
+    const me = _onlineUid;
+    const friends = (typeof getFriendsList === 'function')
+      ? new Set(getFriendsList().map(f=>f && f.uid).filter(Boolean))
+      : new Set();
+    const pool = [];
+    snap.forEach(doc=>{
+      if(doc.id === me) return;
+      if(friends.has(doc.id)) return;
+      const d = doc.data() || {};
+      pool.push({
+        uid: doc.id,
+        displayName: d.displayName || 'Player',
+        avatar: d.avatar || '🐶',
+        publicId: d.publicId || '',
+        online: !!d.online
+      });
+    });
+    // Xáo trộn rồi lấy n
+    for(let i=pool.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      const t = pool[i]; pool[i]=pool[j]; pool[j]=t;
+    }
+    return pool.slice(0, n);
+  }catch(e){
+    console.warn('[online] fetchRandomPlayers', e);
+    return [];
+  }
 }
 
 async function syncPlayerRegionOnline(){

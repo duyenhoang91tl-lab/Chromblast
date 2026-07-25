@@ -412,9 +412,18 @@
     });
   }
 
-  /** Không mở gạch bằng vòng quay — chỉ Shop */
+  /** Ô gạch trên vòng quay — mở skin kế tiếp chưa có (chance=1 khi trúng ô). */
   function tryUnlockRandomBrickFromSpin(chance, quiet) {
-    return null;
+    if (Math.random() > (chance == null ? 1 : Number(chance))) return null;
+    const id = nextLockedSkinId();
+    if (!id) return null;
+    if (!unlockBrickSkin(id)) return null;
+    if (!quiet) {
+      try {
+        announceBrickUnlock(id);
+      } catch (_) {}
+    }
+    return id;
   }
 
   g.BRICK_SKINS = BRICK_SKINS;

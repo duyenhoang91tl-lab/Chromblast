@@ -55,8 +55,33 @@ function _ppDefault(){
     unlockedFx: [],
     unlockedBubbles: ['classic'],
     renameCount: 0,
-    styleUnlocked: false
+    styleUnlocked: false,
+    /** ID công khai ngắn — chỉ hiện trong hồ sơ, dùng để tìm bạn */
+    publicId: ''
   };
+}
+
+function _ppMakePublicId(){
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let out = 'CB';
+  for(let i=0;i<6;i++) out += alphabet[Math.floor(Math.random()*alphabet.length)];
+  return out;
+}
+
+/** Sinh / trả về ID riêng không trùng (local); đồng bộ lên server khi online. */
+function ensurePublicPlayerId(){
+  const p = getPlayerProfile();
+  if(p.publicId && /^CB[A-Z0-9]{6}$/.test(p.publicId)) return p.publicId;
+  const id = _ppMakePublicId();
+  savePlayerProfile({ publicId: id });
+  try{
+    if(typeof registerPublicPlayerIdOnline === 'function') registerPublicPlayerIdOnline(id);
+  }catch(e){}
+  return id;
+}
+
+function getPublicPlayerId(){
+  return ensurePublicPlayerId();
 }
 
 function getPlayerAvatar(){
@@ -186,6 +211,7 @@ function getPlayerProfile(){
         if(!p.unlockedBubbles || !p.unlockedBubbles.length) p.unlockedBubbles = ['classic'];
         p.renameCount = Math.max(0, Number(j.renameCount) || 0);
         p.styleUnlocked = !!j.styleUnlocked;
+        if(typeof j.publicId === 'string' && /^CB[A-Z0-9]{6}$/.test(j.publicId)) p.publicId = j.publicId;
       }
     }
   }catch(e){}
@@ -193,6 +219,14 @@ function getPlayerProfile(){
     try{
       const g = typeof safeGet === 'function' ? safeGet('chromablast_guest_name') : null;
       if(g) p.nick = String(g).slice(0, NICK_MAX_LEN);
+    }catch(e){}
+  }
+  if(!p.publicId){
+    p.publicId = _ppMakePublicId();
+    try{
+      const s = JSON.stringify(p);
+      if(typeof safeSet === 'function') safeSet(PLAYER_PROFILE_KEY, s);
+      else localStorage.setItem(PLAYER_PROFILE_KEY, s);
     }catch(e){}
   }
   return p;
@@ -450,6 +484,8 @@ function openPlayerProfilePanel(){
   document.getElementById('pp-italic')?.classList.toggle('active', !!p.italic);
   renderAvatarPicker(p.avatar || getPlayerAvatar());
   renderNickFontList(p.fontId || 'nunito');
+  const idEl = document.getElementById('pp-player-id');
+  if(idEl) idEl.textContent = ensurePublicPlayerId();
   const hint = document.getElementById('pp-rename-hint');
   if(hint){
     hint.textContent = canRenameFree()
@@ -477,6 +513,23 @@ function initPlayerProfileUI(){
   const colorIn = document.getElementById('pp-color-input');
 
   closeBtn?.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} closePlayerProfilePanel(); });
+
+  document.getElementById('pp-copy-id')?.addEventListener('click', async ()=>{
+    try{sfxClick();}catch(e){}
+    const id = ensurePublicPlayerId();
+    try{
+      if(navigator.clipboard && navigator.clipboard.writeText) await navigator.clipboard.writeText(id);
+      else {
+        const ta = document.createElement('textarea');
+        ta.value = id; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+      }
+      const msg = document.getElementById('pp-msg');
+      if(msg){
+        msg.textContent = (typeof t==='function'?t('ppIdCopied'):'Đã sao chép ID');
+        msg.className = 'account-msg ok';
+      }
+    }catch(e){}
+  });
 
   [bold, italic].forEach(btn=>{
     btn?.addEventListener('click', ()=>{

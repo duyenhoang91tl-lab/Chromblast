@@ -1,15 +1,20 @@
-/* Lucky Spin — 1 free spin / day. Prizes: heart, fire, bubble, wind ×2/×3. */
+/* Lucky Spin — 1 free spin / day. Ô gạch + nền riêng, 10% miss, popup Nhận. */
 (function (g) {
   "use strict";
 
   const KEY_SPIN = "chromablast_lucky_spin";
+  /** 10 ô đều nhau → mỗi ô 10% (miss / gạch / nền mỗi cái đúng 10%). */
   const SEGMENTS = [
-    { kind: "fire", amount: 2, icon: "🔥", label: "🔥×2", color: "#FF9E80" },
-    { kind: "bubble", amount: 2, icon: "🫧", label: "🫧×2", color: "#7DD3FC" },
-    { kind: "heart", amount: 2, icon: "❤️", label: "❤️×2", color: "#FDA4AF" },
-    { kind: "wind", amount: 2, icon: "💨", label: "💨×2", color: "#86EFAC" },
-    { kind: "fire", amount: 3, icon: "🔥", label: "🔥×3", color: "#FCD34D" },
-    { kind: "heart", amount: 3, icon: "❤️", label: "❤️×3", color: "#C4B5FD" },
+    { kind: "heart", amount: 1, icon: "❤️", color: "#FDA4AF" },
+    { kind: "fire", amount: 2, icon: "🔥", color: "#FF9E80" },
+    { kind: "bubble", amount: 2, icon: "🫧", color: "#7DD3FC" },
+    { kind: "wind", amount: 2, icon: "💨", color: "#86EFAC" },
+    { kind: "brick", amount: 1, icon: "🧱", color: "#FDBA74" },
+    { kind: "board", amount: 1, icon: "🗺️", color: "#93C5FD" },
+    { kind: "heart", amount: 2, icon: "❤️", color: "#C4B5FD" },
+    { kind: "fire", amount: 3, icon: "🔥", color: "#FCD34D" },
+    { kind: "heart", amount: 3, icon: "❤️", color: "#F9A8D4" },
+    { kind: "miss", amount: 0, icon: "🍀", color: "#A8A29E" },
   ];
   const SEG = 360 / SEGMENTS.length;
 
@@ -75,18 +80,30 @@
     );
   }
 
-  function prizeDetail(seg) {
+  function prizeDetail(seg, bonus) {
     const tt = typeof t === "function" ? t : function (k) { return k; };
+    if (seg.kind === "miss") return tt("prizeMiss", "Chúc bạn may mắn lần sau");
     if (seg.kind === "heart") return tt("prizeHeart", seg.amount);
     if (seg.kind === "fire") return tt("prizeFire", seg.amount);
     if (seg.kind === "bubble") return tt("prizeBubble", seg.amount);
     if (seg.kind === "wind") return tt("prizeWind", seg.amount);
-    return seg.label;
+    if (seg.kind === "brick") {
+      if (bonus && bonus.brickName) return tt("prizeBrick", bonus.brickName);
+      return tt("prizeBrickNone", "Gạch (đã đủ / chưa mở được)");
+    }
+    if (seg.kind === "board") {
+      if (bonus && bonus.boardName) return tt("prizeBoard", bonus.boardName);
+      return tt("prizeBoardNone", "Nền bàn (đã đủ / chưa mở được)");
+    }
+    return seg.icon || "";
   }
 
   function invSummary() {
     if (!g.Inventory) return "";
-    const h = g.Inventory.hearts | 0;
+    const h =
+      typeof g.Inventory.formatHearts === "function"
+        ? g.Inventory.formatHearts(g.Inventory.hearts)
+        : String(g.Inventory.hearts | 0);
     const f = g.Inventory.fires | 0;
     const b = g.Inventory.bubbles | 0;
     const w = g.Inventory.winds | 0;
@@ -96,10 +113,10 @@
   function buildWheel() {
     const wheel = document.getElementById("spin-wheel");
     if (!wheel) return;
-    // floral-v3: nhãn hướng đáy vào tâm (radial)
-    if (wheel.dataset.built === "floral-v3") return;
+    // Force rebuild when segment set changes
+    if (wheel.dataset.built === "floral-v4") return;
     wheel.innerHTML = "";
-    wheel.dataset.built = "floral-v3";
+    wheel.dataset.built = "floral-v4";
     const stops = SEGMENTS.map((_, i) => {
       const a0 = i * SEG;
       const a1 = (i + 1) * SEG;
@@ -110,15 +127,21 @@
     SEGMENTS.forEach(function (seg, i) {
       const label = document.createElement("div");
       label.className = "spin-seg-label";
-      // mid góc tâm ô; chỉ xoay theo bán kính — đáy (×N) hướng vào tâm
       const mid = i * SEG + SEG / 2 - 90;
       label.style.transform = "rotate(" + mid + "deg) translateY(-70px)";
+      let amtHtml = "";
+      if (seg.kind === "miss") {
+        amtHtml = '<span class="spin-seg-amt spin-seg-miss">?</span>';
+      } else if (seg.kind === "brick" || seg.kind === "board") {
+        amtHtml = "";
+      } else {
+        amtHtml = '<span class="spin-seg-amt">×' + seg.amount + "</span>";
+      }
       label.innerHTML =
         '<span class="spin-seg-ico" aria-hidden="true">' +
         (seg.icon || "") +
-        '</span><span class="spin-seg-amt">×' +
-        seg.amount +
-        "</span>";
+        "</span>" +
+        amtHtml;
       wheel.appendChild(label);
     });
   }
@@ -150,55 +173,80 @@
     }
   }
 
-  /** Cộng thưởng thẳng vào tài khoản (không flash ngoài popup) */
   function grantPrize(seg) {
-    if (!g.Inventory) return;
-    if (seg.kind === "heart") g.Inventory.addHearts(seg.amount);
-    else if (seg.kind === "fire") g.Inventory.addFires(seg.amount);
-    else if (seg.kind === "bubble") g.Inventory.addBubbles(seg.amount);
-    else if (seg.kind === "wind") g.Inventory.addWinds(seg.amount);
-    try {
-      if (typeof g.Inventory.render === "function") g.Inventory.render();
-    } catch (_) {}
-  }
-
-  function rollBonusQuiet(fn, chance) {
-    if (typeof fn !== "function") return null;
-    try {
-      return fn(chance, true);
-    } catch (_) {
+    if (seg.kind === "miss") return null;
+    if (seg.kind === "heart" || seg.kind === "fire" || seg.kind === "bubble" || seg.kind === "wind") {
+      if (!g.Inventory) return null;
+      if (seg.kind === "heart") g.Inventory.addHearts(seg.amount);
+      else if (seg.kind === "fire") g.Inventory.addFires(seg.amount);
+      else if (seg.kind === "bubble") g.Inventory.addBubbles(seg.amount);
+      else if (seg.kind === "wind") g.Inventory.addWinds(seg.amount);
+      try {
+        if (typeof g.Inventory.render === "function") g.Inventory.render();
+      } catch (_) {}
       return null;
     }
+    const bonus = { brick: null, board: null, brickName: "", boardName: "" };
+    if (seg.kind === "brick" && typeof g.tryUnlockRandomBrickFromSpin === "function") {
+      bonus.brick = g.tryUnlockRandomBrickFromSpin(1, true);
+      if (bonus.brick && g.BRICK_SKINS) {
+        const s = g.BRICK_SKINS.find(function (x) { return x.id === bonus.brick; });
+        if (s) bonus.brickName = s.name;
+      }
+    }
+    if (seg.kind === "board" && typeof g.tryUnlockRandomBoardFromSpin === "function") {
+      bonus.board = g.tryUnlockRandomBoardFromSpin(1, true);
+      if (bonus.board && g.BOARD_SKINS) {
+        const s = g.BOARD_SKINS.find(function (x) { return x.id === bonus.board; });
+        if (s) bonus.boardName = s.name;
+      }
+    }
+    return bonus.brick || bonus.board ? bonus : null;
   }
 
   function showSpinReward(seg, bonus) {
     const layer = document.getElementById("spin-reward-layer");
     const icon = document.getElementById("spin-reward-icon");
     const text = document.getElementById("spin-reward-text");
+    const title = document.querySelector(".spin-reward-title");
     const extra = document.getElementById("spin-reward-extra");
     const inv = document.getElementById("spin-reward-inv");
+    const ok = document.getElementById("spin-reward-ok");
     if (!layer) return;
 
     awaitingRewardConfirm = true;
     setSpinChromeLocked(true);
-    if (icon) icon.textContent = (seg.icon || "") + "×" + seg.amount;
-    const tt = typeof t === "function" ? t : function (k) { return k; };
-    if (text) text.textContent = tt("spinGot", prizeDetail(seg));
-    if (extra) {
-      const parts = [];
-      if (bonus && bonus.brick) {
-        parts.push(tt("spinBonusBrick", bonus.brickName || bonus.brick));
-      }
-      if (bonus && bonus.board) {
-        parts.push(tt("spinBonusBoard", bonus.boardName || bonus.board));
-      }
-      extra.textContent = parts.join(" · ");
+    const tt = typeof t === "function" ? t : function (k, a) { return k; };
+    const isMiss = seg.kind === "miss";
+
+    if (title) {
+      title.textContent = isMiss
+        ? tt("spinMissTitle", "Tiếc quá!")
+        : tt("spinCongratsTitle", "Chúc mừng!");
     }
-    if (inv) inv.textContent = tt("spinInv", invSummary());
+    if (icon) {
+      if (isMiss) icon.textContent = seg.icon || "🍀";
+      else if (seg.kind === "brick" || seg.kind === "board") icon.textContent = seg.icon || "🎁";
+      else icon.textContent = (seg.icon || "") + (seg.amount ? "×" + seg.amount : "");
+    }
+    if (text) {
+      if (isMiss) {
+        text.textContent = tt("prizeMiss", "Chúc bạn may mắn lần sau");
+      } else {
+        text.textContent = tt("spinGot", prizeDetail(seg, bonus));
+      }
+    }
+    if (extra) extra.textContent = "";
+    if (inv) {
+      inv.textContent = isMiss ? "" : tt("spinInv", invSummary());
+      inv.style.display = isMiss ? "none" : "";
+    }
+    if (ok) ok.textContent = tt("spinClaim", "Nhận");
     layer.hidden = false;
     updateSpinUi();
     try {
-      if (typeof g.sfxUnlock === "function") g.sfxUnlock();
+      if (!isMiss && typeof g.sfxUnlock === "function") g.sfxUnlock();
+      else if (typeof g.sfxClick === "function") g.sfxClick();
     } catch (_) {}
   }
 
@@ -252,33 +300,19 @@
 
     setTimeout(function () {
       markFreeSpinUsed();
-      grantPrize(seg);
-
-      const bonus = { brick: null, board: null, brickName: "", boardName: "" };
-      bonus.brick = rollBonusQuiet(g.tryUnlockRandomBrickFromSpin, 0.02);
-      bonus.board = rollBonusQuiet(g.tryUnlockRandomBoardFromSpin, 0.02);
-      if (bonus.brick && g.BRICK_SKINS) {
-        const s = g.BRICK_SKINS.find(function (x) {
-          return x.id === bonus.brick;
-        });
-        if (s) bonus.brickName = s.name;
-      }
-      if (bonus.board && g.BOARD_SKINS) {
-        const s = g.BOARD_SKINS.find(function (x) {
-          return x.id === bonus.board;
-        });
-        if (s) bonus.boardName = s.name;
-      }
-      pendingBonus =
-        bonus.brick || bonus.board ? bonus : null;
-
+      const bonus = grantPrize(seg);
+      pendingBonus = bonus;
       spinning = false;
-      showSpinReward(seg, pendingBonus);
+      showSpinReward(seg, bonus);
     }, 4300);
   }
 
   function openLuckySpin() {
     if (typeof g.closeAllSettingsOverlays === "function") g.closeAllSettingsOverlays();
+    const wheel = document.getElementById("spin-wheel");
+    if (wheel && wheel.dataset.built !== "floral-v4") {
+      delete wheel.dataset.built;
+    }
     buildWheel();
     const panel = document.getElementById("spin-panel");
     if (panel) panel.classList.add("show");

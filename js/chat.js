@@ -260,6 +260,16 @@
 
   function setStatus(text, isErr){
     const el = $('gchat-status');
+    if(el){
+      el.textContent = text || '';
+      el.classList.toggle('err', !!isErr);
+    }
+    const fp = $('friends-panel');
+    if(fp && fp.classList.contains('show')) setFriendsStatus(text, isErr);
+  }
+
+  function setFriendsStatus(text, isErr){
+    const el = $('friends-status');
     if(!el) return;
     el.textContent = text || '';
     el.classList.toggle('err', !!isErr);
@@ -736,9 +746,17 @@
       try{ if(typeof closeSettingsHub==='function') closeSettingsHub(); }catch(e){}
       openFriendsPanel();
     });
+    $('friends-search-btn')?.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} runFriendsSearch(); });
+    $('friends-search-input')?.addEventListener('keydown', (e)=>{
+      if(e.key === 'Enter'){ e.preventDefault(); try{sfxClick();}catch(err){} runFriendsSearch(); }
+    });
+    $('friends-suggest-refresh')?.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} loadFriendsSuggestions(true); });
+    $('friends-suggest-invite')?.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} inviteSelectedSuggestions(); });
   }
 
   // friends panel helpers declared before init uses them
+  let _friendSuggestCache = [];
+
   function closeFriendsPanel(){
     const panel = $('friends-panel');
     if(panel) panel.classList.remove('show');
@@ -747,7 +765,11 @@
     const panel = $('friends-panel');
     if(!panel) return;
     panel.classList.add('show');
+    const sr = $('friends-search-result');
+    if(sr) sr.innerHTML = '';
+    setFriendsStatus('');
     renderFriendsPanelList();
+    loadFriendsSuggestions(false);
   }
 
   window.openChatPanel = openChatPanel;
@@ -772,7 +794,7 @@
     }
     list.innerHTML = '';
     if(!friends.length){
-      list.innerHTML = '<div class="gchat-empty">'+tt('gchatNoFriends','Chưa có bạn')+'</div>';
+      list.innerHTML = '<div class="gchat-empty">'+tt('gchatNoFriends','Chưa có bạn — tìm theo tên/ID hoặc gửi lời mời bên dưới')+'</div>';
       return;
     }
     let presence = {};
@@ -801,6 +823,162 @@
       });
       list.appendChild(row);
     });
+  }
+
+  function _friendResultRow(p, opts){
+    opts = opts || {};
+    const row = document.createElement('div');
+    row.className = 'friends-panel-row friends-suggest-row';
+    const name = p.displayName || p.name || 'Player';
+    const av = p.avatar || '🐶';
+    const checked = opts.checked !== false;
+    row.innerHTML =
+      (opts.check
+        ? '<label class="friends-suggest-check"><input type="checkbox" '+(checked?'checked':'')+' data-uid="'+escapeHtml(p.uid)+'"><span class="gchat-friend-av">'+escapeHtml(av)+'</span></label>'
+        : '<span class="gchat-friend-av">'+escapeHtml(av)+'</span>')+
+      '<span class="friends-panel-meta">'+
+        '<span class="gchat-friend-name">'+escapeHtml(name)+'</span>'+
+        '<span class="gchat-friend-status">'+(p.online?tt('gchatOnline','Online'):tt('gchatOffline','Offline'))+'</span>'+
+      '</span>'+
+      '<button type="button" class="friends-panel-add">'+tt('friendsAdd','Kết bạn')+'</button>';
+    row.querySelector('.friends-panel-add')?.addEventListener('click', async ()=>{
+      try{ sfxClick(); }catch(e){}
+      await sendOneFriendInvite({ uid: p.uid, name, avatar: av });
+    });
+    return row;
+  }
+
+  async function sendOneFriendInvite(friend){
+    if(!friend || !friend.uid) return;
+    try{
+      if(typeof isFriend === 'function' && isFriend(friend.uid)){
+        setStatus(tt('gchatFriendAccepted','Đã là bạn'));
+        return;
+      }
+      if(!(await ensureOnline())){
+        setStatus(tt('gchatNeedOnline','Cần đăng nhập online'));
+        return;
+      }
+      const res = typeof sendFriendRequest === 'function'
+        ? await sendFriendRequest(friend)
+        : { ok:false };
+      if(res && res.ok){
+        setStatus(tt('gchatFriendReq','Đã gửi lời mời kết bạn'));
+      } else if(res && res.reason === 'cap'){
+        setStatus(tt('gchatFriendCapFull','Đã đủ số bạn tối đa'));
+      } else if(res && res.reason === 'already'){
+        setStatus(tt('gchatFriendAlready','Đã gửi / đã là bạn'));
+      } else {
+        setStatus(tt('gchatFriendFail','Không gửi được lời mời'));
+      }
+    }catch(e){
+      setStatus(tt('gchatFriendFail','Không gửi được lời mời'));
+    }
+  }
+
+  async function runFriendsSearch(){
+    const input = $('friends-search-input');
+    const box = $('friends-search-result');
+    if(!input || !box) return;
+    const q = String(input.value || '').trim();
+    box.innerHTML = '<div class="gchat-empty">…</div>';
+    if(q.length < 2){
+      box.innerHTML = '<div class="gchat-empty">'+tt('friendsSearchShort','Nhập ít nhất 2 ký tự')+'</div>';
+      return;
+    }
+    if(!(await ensureOnline())){
+      box.innerHTML = '<div class="gchat-empty">'+tt('gchatNeedOnline','Cần đăng nhập online')+'</div>';
+      return;
+    }
+    let results = [];
+    const looksLikeId = /^CB[A-Z0-9]{6}$/i.test(q) || q.length >= 12;
+    try{
+      if(looksLikeId && typeof findPlayerByPublicId === 'function'){
+        const one = await findPlayerByPublicId(q);
+        if(one) results = [one];
+      }
+      if(!results.length && typeof searchPlayersByName === 'function'){
+        results = await searchPlayersByName(q) || [];
+      }
+      // Thử ID sau khi name không ra
+      if(!results.length && !looksLikeId && typeof findPlayerByPublicId === 'function'){
+        const one = await findPlayerByPublicId(q);
+        if(one) results = [one];
+      }
+    }catch(e){}
+    box.innerHTML = '';
+    if(!results.length){
+      box.innerHTML = '<div class="gchat-empty">'+tt('friendsSearchEmpty','Không tìm thấy')+'</div>';
+      return;
+    }
+    results.forEach(p=>{
+      if(!p || !p.uid) return;
+      if(typeof getOnlineUid === 'function' && p.uid === getOnlineUid()) return;
+      box.appendChild(_friendResultRow(p, { check:false }));
+    });
+  }
+
+  async function loadFriendsSuggestions(force){
+    const list = $('friends-suggest-list');
+    if(!list) return;
+    if(!force && _friendSuggestCache.length){
+      renderFriendsSuggestions(_friendSuggestCache);
+      return;
+    }
+    list.innerHTML = '<div class="gchat-empty">…</div>';
+    if(!(await ensureOnline())){
+      list.innerHTML = '<div class="gchat-empty">'+tt('gchatNeedOnline','Cần đăng nhập online')+'</div>';
+      return;
+    }
+    let rows = [];
+    try{
+      if(typeof fetchRandomPlayers === 'function') rows = await fetchRandomPlayers(20) || [];
+    }catch(e){}
+    _friendSuggestCache = rows;
+    renderFriendsSuggestions(rows);
+  }
+
+  function renderFriendsSuggestions(rows){
+    const list = $('friends-suggest-list');
+    if(!list) return;
+    list.innerHTML = '';
+    if(!rows || !rows.length){
+      list.innerHTML = '<div class="gchat-empty">'+tt('friendsSuggestEmpty','Chưa có gợi ý')+'</div>';
+      return;
+    }
+    rows.forEach(p=>{
+      if(!p || !p.uid) return;
+      list.appendChild(_friendResultRow(p, { check:true, checked:true }));
+    });
+  }
+
+  async function inviteSelectedSuggestions(){
+    const list = $('friends-suggest-list');
+    if(!list) return;
+    const boxes = list.querySelectorAll('input[type="checkbox"][data-uid]:checked');
+    if(!boxes.length){
+      setStatus(tt('friendsPickSome','Chọn ít nhất 1 người'));
+      return;
+    }
+    if(!(await ensureOnline())){
+      setStatus(tt('gchatNeedOnline','Cần đăng nhập online'));
+      return;
+    }
+    let sent = 0, fail = 0;
+    for(const box of boxes){
+      const uid = box.getAttribute('data-uid');
+      const row = _friendSuggestCache.find(x=>x && x.uid === uid) || { uid, displayName:'Player', avatar:'🐶' };
+      try{
+        const res = typeof sendFriendRequest === 'function'
+          ? await sendFriendRequest({ uid, name: row.displayName || row.name || 'Player', avatar: row.avatar || '🐶' })
+          : { ok:false };
+        if(res && res.ok) sent++;
+        else fail++;
+      }catch(e){ fail++; }
+    }
+    setStatus(tt('friendsInviteDone','Đã gửi {0} lời mời').replace('{0}', String(sent)) +
+      (fail ? (' · '+fail+' lỗi') : ''));
+    renderFriendsPanelList();
   }
 
   window.openFriendsPanel = openFriendsPanel;
