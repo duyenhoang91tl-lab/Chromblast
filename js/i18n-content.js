@@ -1348,6 +1348,105 @@ function MILESTONE_MSG(tier){
 // pp* / setHelp đã nằm trong js/i18n.js (đủ 6 ngôn ngữ).
 
 
+// ── Nhiệm vụ ngày / tuần / tháng ──
+(function(){
+  const quests = {
+  vi:{
+    setQuests:'Nhiệm vụ', questsTitle:'📋 Nhiệm vụ',
+    questsDay:'Nhiệm vụ ngày', questsDaySub:'Danh sách ngày · điểm danh tháng',
+    questsWeek:'Nhiệm vụ tuần', questsWeekSub:'Mục tiêu trong tuần',
+    questsMonth:'Nhiệm vụ tháng', questsMonthSub:'Mục tiêu trong tháng',
+    questsMonthCheckin:'Ô điểm danh theo tháng',
+    questsCheckinBtn:'🎁 Điểm danh hôm nay',
+    questsCheckinReward:'XP + vàng + tim',
+    questsClaim:'Nhận', questsClaimed:'Đã nhận',
+    questsClaimFlash:'Nhiệm vụ hoàn thành', questsReward:'Nhiệm vụ',
+    questsCalMonth:'Tháng {0}/{1}',
+    quest_checkin:'Điểm danh hôm nay',
+    quest_play1:'Chơi 1 ván',
+    quest_clear3:'Phá 3 hàng',
+    quest_score300:'Đạt 300 điểm',
+    quest_spin1:'Quay vòng quay 1 lần',
+    quest_play5:'Chơi 5 ván trong tuần',
+    quest_clear30:'Phá 30 hàng trong tuần',
+    quest_login3:'Điểm danh 3 ngày trong tuần',
+    quest_combo5:'Đạt combo x5',
+    quest_login15:'Điểm danh 15 ngày trong tháng',
+    quest_play20:'Chơi 20 ván trong tháng',
+    quest_clear100:'Phá 100 hàng trong tháng',
+    quest_combo8:'Đạt combo x8',
+  },
+  en:{
+    setQuests:'Quests', questsTitle:'📋 Quests',
+    questsDay:'Daily quests', questsDaySub:'Daily list · monthly check-in',
+    questsWeek:'Weekly quests', questsWeekSub:'This week’s goals',
+    questsMonth:'Monthly quests', questsMonthSub:'This month’s goals',
+    questsMonthCheckin:'Monthly check-in',
+    questsCheckinBtn:'🎁 Check in today',
+    questsCheckinReward:'XP + gold + hearts',
+    questsClaim:'Claim', questsClaimed:'Claimed',
+    questsClaimFlash:'Quest complete', questsReward:'Quest',
+    questsCalMonth:'{0}/{1}',
+    quest_checkin:'Daily check-in',
+    quest_play1:'Play 1 game',
+    quest_clear3:'Clear 3 lines',
+    quest_score300:'Reach 300 score',
+    quest_spin1:'Spin the wheel once',
+    quest_play5:'Play 5 games this week',
+    quest_clear30:'Clear 30 lines this week',
+    quest_login3:'Check in 3 days this week',
+    quest_combo5:'Reach combo x5',
+    quest_login15:'Check in 15 days this month',
+    quest_play20:'Play 20 games this month',
+    quest_clear100:'Clear 100 lines this month',
+    quest_combo8:'Reach combo x8',
+  },
+  ko:{
+    setQuests:'퀘스트', questsTitle:'📋 퀘스트',
+    questsDay:'일일 퀘스트', questsDaySub:'일일 목록 · 월간 출석',
+    questsWeek:'주간 퀘스트', questsWeekSub:'이번 주 목표',
+    questsMonth:'월간 퀘스트', questsMonthSub:'이번 달 목표',
+    questsMonthCheckin:'월간 출석판',
+    questsCheckinBtn:'🎁 오늘 출석',
+    questsClaim:'받기', questsClaimed:'완료',
+    quest_checkin:'오늘 출석', quest_play1:'1판 플레이', quest_clear3:'3줄 제거',
+    quest_score300:'300점 달성', quest_spin1:'룰렛 1회',
+  },
+  ja:{
+    setQuests:'クエスト', questsTitle:'📋 クエスト',
+    questsDay:'デイリークエスト', questsDaySub:'日次リスト · 月間チェックイン',
+    questsWeek:'ウィークリー', questsWeekSub:'今週の目標',
+    questsMonth:'マンスリー', questsMonthSub:'今月の目標',
+    questsMonthCheckin:'月間チェックイン',
+    questsCheckinBtn:'🎁 今日チェックイン',
+    questsClaim:'受け取る', questsClaimed:'受取済',
+    quest_checkin:'今日のチェックイン', quest_play1:'1プレイ', quest_clear3:'3ライン消去',
+  },
+  zh:{
+    setQuests:'任务', questsTitle:'📋 任务',
+    questsDay:'每日任务', questsDaySub:'每日列表 · 月签到',
+    questsWeek:'每周任务', questsWeekSub:'本周目标',
+    questsMonth:'每月任务', questsMonthSub:'本月目标',
+    questsMonthCheckin:'月签到',
+    questsCheckinBtn:'🎁 今日签到',
+    questsClaim:'领取', questsClaimed:'已领',
+    quest_checkin:'今日签到', quest_play1:'玩1局', quest_clear3:'消除3行',
+  },
+  es:{
+    setQuests:'Misiones', questsTitle:'📋 Misiones',
+    questsDay:'Misiones diarias', questsDaySub:'Lista diaria · check-in mensual',
+    questsWeek:'Misiones semanales', questsWeekSub:'Metas de la semana',
+    questsMonth:'Misiones mensuales', questsMonthSub:'Metas del mes',
+    questsMonthCheckin:'Check-in mensual',
+    questsCheckinBtn:'🎁 Check-in de hoy',
+    questsClaim:'Reclamar', questsClaimed:'Reclamado',
+    quest_checkin:'Check-in diario', quest_play1:'Jugar 1 partida', quest_clear3:'Borrar 3 líneas',
+  }
+  };
+  Object.keys(quests).forEach(l=>{ if(typeof I18N!=='undefined' && I18N[l]) Object.assign(I18N[l], quests[l]); });
+  if(typeof applyI18nDom === 'function') applyI18nDom();
+})();
+
 // ── Caro social / couple / FX ──
 (function(){
   const social = {

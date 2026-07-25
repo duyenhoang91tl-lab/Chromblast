@@ -795,6 +795,11 @@ function processClears(opts){
   try{ if(typeof checkPersistentCups==='function') checkPersistentCups(); }catch(e){}
   const clearedRows=new Set([...lineKeys].map(k=>k.split(',')[0]));
   linesCleared+=clearedRows.size;
+  try{ if(typeof noteQuestEvent==='function'){
+    noteQuestEvent('clear', clearedRows.size||1);
+    noteQuestEvent('score', score);
+    noteQuestEvent('combo', consecutiveBursts|0);
+  }}catch(e){}
   const prevLevel=level; level=Math.floor(linesCleared/5)+1;
   if(level>prevLevel) setTimeout(()=>applyLevelDifficulty(), 600);
   try{ if(typeof checkRunCups==='function') checkRunCups(); }catch(e){}
@@ -1063,6 +1068,10 @@ function checkGameOverA(){
     if(typeof submitScoreToLeaderboard==='function') submitScoreToLeaderboard(score);
    window._adGameOverCount = (window._adGameOverCount||0) + 1;
        if(typeof showInterstitialAd==='function' && window._adGameOverCount % 2 === 0) showInterstitialAd();
+    try{ if(typeof noteQuestEvent==='function'){
+      noteQuestEvent('play', 1);
+      noteQuestEvent('score', score);
+    }}catch(e){}
     return true; // đã báo thua
   }
   return false;

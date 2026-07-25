@@ -300,6 +300,9 @@
 
     setTimeout(function () {
       markFreeSpinUsed();
+      try {
+        if (typeof g.noteQuestEvent === "function") g.noteQuestEvent("spin", 1);
+      } catch (_) {}
       const bonus = grantPrize(seg);
       pendingBonus = bonus;
       spinning = false;
