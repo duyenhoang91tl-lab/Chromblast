@@ -529,6 +529,15 @@ function renderInventoryHud(){
 function usePowerItem(type){
   const info = POWER_INFO[type];
   if(!info) return;
+  // Map 9 xếp tháp: dùng skill để cứu tháp / canh lại khi trượt hết
+  if(typeof stackMode!=='undefined' && stackMode){
+    if((inv[info.field]|0) < 1){
+      try{ showComboFlash(0,false, typeof t==='function'?t('invMissing', info.icon):('Thiếu '+info.icon)); }catch(e){}
+      return;
+    }
+    if(typeof useStackSkill==='function'){ useStackSkill(type); }
+    return;
+  }
   const inHidden = (typeof secretMode!=='undefined' && secretMode) ||
                    (typeof activeHiddenMapKey!=='undefined' && activeHiddenMapKey) ||
                    (typeof versusMode!=='undefined' && versusMode);

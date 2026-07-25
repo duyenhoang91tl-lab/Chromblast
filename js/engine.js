@@ -1083,12 +1083,34 @@ function checkGameOverA(){
     hasMove=true;
   }
   if(!hasMove){
+    // Còn skill 🔥/🫧/💨 chưa dùng → chưa thua: người chơi vẫn phá được bàn
+    let skillLeft=0;
+    try{
+      if(window.Inventory){
+        skillLeft=(Inventory.fires|0)+(Inventory.bubbles|0)+(Inventory.winds|0);
+      }
+    }catch(e){ skillLeft=0; }
+    if(skillLeft>0){
+      try{
+        showHint('Còn skill ×'+skillLeft+' — dùng 🔥 / 🫧 / 💨 để tiếp tục!');
+        showComboFlash(0,false,'💫 Còn skill — chưa hết lượt!');
+      }catch(e){}
+      return false;
+    }
+    const goEl=document.getElementById('game-over-overlay');
+    if(goEl && goEl.classList.contains('show')) return true; // đã thua — tránh trừ tim/ad lặp
     sfxGameOver();
     document.getElementById('go-score').textContent=t('finalScore', score.toLocaleString());
-    document.getElementById('game-over-overlay').classList.add('show');
+    if(goEl) goEl.classList.add('show');
     if(typeof submitScoreToLeaderboard==='function') submitScoreToLeaderboard(score);
-   window._adGameOverCount = (window._adGameOverCount||0) + 1;
-       if(typeof showInterstitialAd==='function' && window._adGameOverCount % 2 === 0) showInterstitialAd();
+    // Hết nước đi + hết skill → mất 1 tim
+    try{
+      if(typeof spendHearts==='function') spendHearts(1, { allowPartial:true });
+      else if(window.Inventory && typeof Inventory.spendHearts==='function') Inventory.spendHearts(1, { allowPartial:true });
+      if(typeof renderInventoryHud==='function') renderInventoryHud();
+    }catch(e){}
+    window._adGameOverCount = (window._adGameOverCount||0) + 1;
+    if(typeof showInterstitialAd==='function' && window._adGameOverCount % 2 === 0) showInterstitialAd();
     try{ if(typeof noteQuestEvent==='function'){
       noteQuestEvent('play', 1);
       noteQuestEvent('score', score);
