@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════
-// boss/chicken-invader.js — BOSS Map ẩn 10 (Phi cơ bắn gà / Chicken Invaders)
+// boss/feather-storm-boss.js — BOSS Map ẩn 10 (Gà Nổi Loạn / Feather Storm)
 // Tách khỏi main.js, nạp TRƯỚC main.js (dùng chung global scope).
 // ═══════════════════════════════════════════════════════════════
 
@@ -23,8 +23,8 @@ function triggerBossUnlock(){
   pendingUnlock='boss';
   document.getElementById('unlock-title').textContent='🐔 MAP ẨN 10 MỞ KHÓA!';
   document.getElementById('unlock-desc').innerHTML=
-    '🚀 <b>Phi Cơ Bắn Gà!</b><br><br>'+
-    'Điều khiển phi cơ bắn hạ đàn gà xâm lăng!<br>'+
+    '🚀 <b>Gà Nổi Loạn!</b><br><br>'+
+    'Điều khiển phi cơ bắn hạ đàn gà nổi loạn!<br>'+
     'Kéo ngón tay để lái — phi cơ trượt dần sang hai bên (không nhảy tức thì) và tự động bắn!<br>'+
     'Né trứng gà rơi xuống — bạn có <b>3 mạng ❤️</b>!<br>'+
     'Tiêu diệt hết <b>'+BOSS_TOTAL_WAVES+' đợt gà</b> trước <b>'+BOSS_TIME+'s</b> để chiến thắng!';

@@ -280,14 +280,14 @@ function drawStack(ctx,W,H,sway){
   stackBlocks.forEach((b,i)=>{
     const by=b.y-camOff;
     const bx=b.x+stackBlockSwayX(i, sway.x);
-    drawSoftCandyCell(ctx,bx,by,b.w,BLOCK_H,b.color,{r:8,glowBlur:4});
+    drawSoftSweetCell(ctx,bx,by,b.w,BLOCK_H,b.color,{r:8,glowBlur:4});
   });
 
   // draw moving block with glow
   const mb=stackMoving;
   const topIdx=stackBlocks.length-1;
   const mby=stackBlocks[topIdx].y-BLOCK_H*1.5-camOff;
-  drawSoftCandyCell(ctx,mb.x,mby,mb.w,BLOCK_H,mb.color,{r:8,glow:true,glowBlur:12});
+  drawSoftSweetCell(ctx,mb.x,mby,mb.w,BLOCK_H,mb.color,{r:8,glow:true,glowBlur:12});
 
   // fx
   stackFx.forEach(f=>{

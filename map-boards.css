@@ -165,17 +165,17 @@ html[data-board-skin="lava"] .piece-slot:not(.selected):not(.used) {
   background: linear-gradient(165deg, #4A2010 0%, #1E0A00 100%) !important;
   border-color: #C05020 !important;
 }
-.board-swatch[data-board-skin="candy"]{ background:repeating-linear-gradient(45deg, rgba(255,255,255,0.12) 0 8px, transparent 8px 16px), linear-gradient(135deg, #FF8EC8 0%, #FFB86B 50%, #A78BFA 100%); border-color:#FFE0F0; }
+.board-swatch[data-board-skin="sweet"]{ background:repeating-linear-gradient(45deg, rgba(255,255,255,0.12) 0 8px, transparent 8px 16px), linear-gradient(135deg, #FF8EC8 0%, #FFB86B 50%, #A78BFA 100%); border-color:#FFE0F0; }
 
-html[data-board-skin="candy"] #grid {
+html[data-board-skin="sweet"] #grid {
   background: repeating-linear-gradient(45deg, rgba(255,255,255,0.12) 0 8px, transparent 8px 16px), linear-gradient(135deg, #FF8EC8 0%, #FFB86B 50%, #A78BFA 100%) !important;
   border-color: #FFE0F0 !important;
   box-shadow: inset 0 2px 0 rgba(255,255,255,0.45), 0 8px 16px rgba(160,80,140,0.3) !important;
 }
-html[data-board-skin="candy"] #grid .cell:not(.filled):not(.preview-ok) {
+html[data-board-skin="sweet"] #grid .cell:not(.filled):not(.preview-ok) {
   background: rgba(255,255,255,0.28) !important;
 }
-html[data-board-skin="candy"] .piece-slot:not(.selected):not(.used) {
+html[data-board-skin="sweet"] .piece-slot:not(.selected):not(.used) {
   background: linear-gradient(165deg, #F0A0D0 0%, #C080E8 100%) !important;
   border-color: #FFE0F0 !important;
 }

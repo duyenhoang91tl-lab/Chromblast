@@ -708,7 +708,7 @@ function roundRect(ctx,x,y,w,h,r){
 }
 
 /* ── Ô plush / pom-pom lông xù (canvas) — giống ảnh tham chiếu ── */
-function drawSoftCandyCell(ctx,x,y,w,h,color,opts){
+function drawSoftSweetCell(ctx,x,y,w,h,color,opts){
   const o=opts||{};
   const r=o.r!=null?o.r:Math.min(w,h)*0.28;
   const cx=x+w/2, cy=y+h/2;
@@ -872,7 +872,7 @@ function scenicStormBg(ctx,W,H,t){
 const PRAISE = ['COOL','GOOD','GREAT','IMPRESSIVE','AMAZING','PERFECT','SPECTACULAR','UNREAL','LEGENDARY'];
 // Colors escalate: teal → blue → purple → gold → red → pink → blaze → fire
 const PRAISE_COLOR = ['#5DCAA5','#378ADD','#7F77DD','#4dd0e1','#ab47bc','#EF9F27','#E24B4A','#D4537E','#f7c948'];
-// level = số lần nổ liên tiếp (combo streak). Kiểu Block Blast: lần nổ ĐẦU TIÊN (streak 1)
+// level = số lần nổ liên tiếp (combo streak). Hiệu ứng glow khi ghép combo: lần nổ ĐẦU TIÊN (streak 1)
 // chỉ là 1 pha bình thường, chưa tính là combo nên KHÔNG có câu khen — câu khen chỉ bắt đầu
 // từ lần nổ liên tiếp thứ 2 trở đi (streak 2 → 'COOL', streak 3 → 'GOOD', ...).
 function pIdx(level){ return Math.min(Math.max((level||1)-1,1),PRAISE.length)-1; }
