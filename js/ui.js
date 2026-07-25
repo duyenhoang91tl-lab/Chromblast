@@ -614,13 +614,23 @@ function renderRoundHelp(){
   ensureComboRoundHelp();
   const list = document.getElementById('round-help-list');
   if(!list) return;
-  const reached = clearedHiddenMaps.size; // số map ẩn từng thắng ~ số vòng cơ chế từng mở khoá
+  // Map 1–20: mở theo Map/cơ chế đã chạm (Map N = cơ chế N)
+  const reached = (typeof highestReachedTier==='function')
+    ? highestReachedTier()
+    : Math.max(
+        (typeof mainHardTier==='number' ? mainHardTier|0 : 0),
+        (typeof normalMapStage==='number' ? normalMapStage|0 : 0),
+        (typeof maxComboTierReached==='number' ? maxComboTierReached|0 : 0)
+      );
+  const hiddenCleared = (typeof clearedHiddenMaps!=='undefined' && clearedHiddenMaps)
+    ? clearedHiddenMaps.size : 0;
   list.innerHTML='';
   ROUND_HELP.forEach((r,i)=>{
-    // Vòng 1-20 (i<20): mở dần từng vòng theo số map ẩn đã thắng.
-    // Vòng 21-40 (i>=20, cơ chế đôi): mở TUẦN TỰ từng vòng một — phải vượt qua vòng
-    // trước (đạt đủ điểm mốc trên bàn cờ thường) mới mở khoá vòng kế tiếp.
-    const unlocked = (i<20 ? (i<reached) : (reached>=20 && (i+1)<=maxComboTierReached));
+    // Map 1-20 (i<20): mở khi đã chơi tới Map/cơ chế đó.
+    // Map 21-40 (cơ chế đôi): mở tuần tự sau khi phá đủ map ẩn.
+    const unlocked = (i<20
+      ? ((i+1) <= reached)
+      : (hiddenCleared>=20 && (i+1)<=maxComboTierReached));
     if(unlocked){
       const det = document.createElement('details');
       det.innerHTML = '<summary>'+r.title+'</summary><div class="map-detail-body">'+r.body+'</div>';
@@ -631,7 +641,7 @@ function renderRoundHelp(){
       locked.style.cursor='default';
       locked.innerHTML = i<20
         ? t('lockedPlay', i+1)
-        : (reached>=20 ? t('lockedPass', i+1, i) : t('lockedAll', i+1));
+        : (hiddenCleared>=20 ? t('lockedPass', i+1, i) : t('lockedAll', i+1));
       list.appendChild(locked);
     }
   });
@@ -677,7 +687,7 @@ function arcadeMapLabel(){
       return 'Map';
     }
   }catch(e){}
-  // Map thường: Map 1 / Map 2 / Map 3… theo normalMapStage (mỗi map cần ★★★)
+  // Map thường: Map 1 / Map 2 / Map 3… theo normalMapStage (mỗi map cần ★★★★)
   try{
     const n = (typeof normalMapStage === 'number' && normalMapStage > 0)
       ? (normalMapStage|0)
@@ -687,9 +697,9 @@ function arcadeMapLabel(){
   return 'Map 1';
 }
 
-/** Ngưỡng 1★ / 2★ / 3★ theo map thường hiện tại (baseline + target cố định). */
+/** Ngưỡng 1★ / 2★ / 3★ / 4★ theo map thường hiện tại (baseline + target cố định). */
 function scoreStarThresholds(){
-  let target = 150;
+  let target = 220;
   let s = 0;
   try{
     if(typeof normalStarTarget === 'number' && normalStarTarget > 0) target = normalStarTarget|0;
@@ -699,13 +709,14 @@ function scoreStarThresholds(){
       s = Math.max(0, Math.round(((typeof score==='number'?score:0)||0) - base));
     }
   }catch(e){}
-  target = Math.max(60, target|0);
+  target = Math.max(100, target|0);
   return {
     score: s,
     target,
-    s1: Math.max(1, Math.round(target * 0.33)),
-    s2: Math.max(2, Math.round(target * 0.66)),
-    s3: target
+    s1: Math.max(1, Math.round(target * 0.25)),
+    s2: Math.max(2, Math.round(target * 0.50)),
+    s3: Math.max(3, Math.round(target * 0.75)),
+    s4: target
   };
 }
 
@@ -717,7 +728,7 @@ function updateScoreStarBar(){
   const pct = Math.max(0, Math.min(100, (th.score / th.target) * 100));
   fill.style.width = pct.toFixed(1) + '%';
   const marks = track.querySelectorAll('.score-star');
-  const cuts = [th.s1, th.s2, th.s3];
+  const cuts = [th.s1, th.s2, th.s3, th.s4];
   marks.forEach((el, i)=>{
     // Neo sao đúng mốc % trên cùng chiều dài thanh điểm
     const starPct = Math.max(0, Math.min(100, (cuts[i] / th.target) * 100));

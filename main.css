@@ -3736,13 +3736,13 @@ body:has(#secret-stage.active) .streak-dot.lit{
   max-width: 100%;
   padding: 0;
 }
-/* Thanh điểm + 3 sao (neo đúng 1/3 · 2/3 · hết thanh) */
+/* Thanh điểm + 4 sao (neo 1/4 · 2/4 · 3/4 · hết thanh) */
 #game-root.hud-arcade #score-star-track {
   display: block;
   position: relative;
   flex: 1 1 auto;
-  min-width: 88px;
-  max-width: 140px;
+  min-width: 100px;
+  max-width: 160px;
   height: 26px;
   margin: 0 0 2px;
   overflow: visible;

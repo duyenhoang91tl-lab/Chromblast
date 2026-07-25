@@ -10,8 +10,8 @@
    Sau map ẩn → lại cần 2 map thường ★★★ để mở map ẩn tiếp.
    Màn Samoyed hiện khi vừa đủ điều kiện mở map ẩn (theo chặng 4 map).
 
-   Cơ chế map thường theo số Map N (không theo số map ẩn đã xong):
-   Map 1 = không, Map 2 = dây gai, Map 3 = núi, Map 4 = … (mainHardTier = N-1).
+   Cơ chế map thường = số Map N (Map 1 = dây gai, Map 2 = núi, Map 3 = sóc…):
+   mainHardTier = normalMapStage. Đủ ★★★★ mới qua map.
 ══════════════════════════════════════════════════════ */
 /* ══════ CHẾ ĐỘ ADVENTURE — mở khóa khi đạt 10.000 điểm ══════ */
 const ADVENTURE_UNLOCK_SCORE = 10000;
@@ -50,16 +50,17 @@ let unlockGateBaseline = 0;     // mốc điểm map thường lúc bắt đầu
 let unlockGateActive = true;    // đang chờ ★★★ map thường để mở map ẩn tiếp theo?
 
 /** Tiến trình map thường theo sao */
-let normalStarClears = 0;     // 0..1 — số map thường ★★★ đã phá hướng tới map ẩn kế
+let normalStarClears = 0;     // 0..1 — số map thường ★★★★ đã phá hướng tới map ẩn kế
 let normalMapStage = 1;       // Map thường đang chơi (1, 2, 3…)
 let normalStarBaseline = 0;   // mốc điểm bắt đầu thanh ★ của map thường hiện tại
-let normalStarTarget = 150;   // điểm cần (từ baseline) để đủ 3★
+let normalStarTarget = 220;   // điểm cần (từ baseline) để đủ 4★
 let _starClearLock = false;
 
+/** Điểm cần cho 4★ — cao hơn bản 3★ cũ để kéo dài mỗi map. */
 function normalStarTargetForStage(stage){
   const gate = (typeof unlockGateStageIndex === 'number') ? unlockGateStageIndex : 0;
   const st = Math.max(1, stage|0);
-  return 120 + gate * 40 + Math.max(0, st - 1) * 15;
+  return 220 + gate * 55 + Math.max(0, st - 1) * 30;
 }
 function relativeStarScore(){
   return Math.max(0, Math.round(((typeof score==='number')?score:0) - (normalStarBaseline|0)));
@@ -95,9 +96,9 @@ function resetNormalStarRun(){
 }
 loadNormalStars();
 
-/** Map N → mainHardTier = N-1 (Map 2 = dây gai, Map 3 = núi…). */
+/** Map N → mainHardTier = N (Map 1 = dây gai / Vòng 1, Map 3 = Vòng 3…). */
 function syncMainHardTierFromNormalStage(applyMechs){
-  const next = Math.max(0, (normalMapStage|0) - 1);
+  const next = Math.max(0, normalMapStage|0);
   try{ mainHardTier = next; }catch(e){}
   if(applyMechs){
     try{ if(typeof resetMechanicState==='function') resetMechanicState(); }catch(e){}
@@ -120,7 +121,7 @@ function syncMainHardTierFromNormalStage(applyMechs){
   }catch(e){}
 })();
 
-/** Gọi khi thanh điểm đủ 3★ trên map thường — đếm 1/2 rồi mở map ẩn. */
+/** Gọi khi thanh điểm đủ 4★ trên map thường — đếm 1/2 rồi mở map ẩn. */
 function checkNormalMapThreeStars(){
   if(_starClearLock) return false;
   try{
@@ -167,7 +168,7 @@ function checkNormalMapThreeStars(){
       }catch(e){}
     }, 480);
   } else {
-    // Map 1 ★★★ → Map 2 + dây gai; các bước lẻ khác tương tự
+    // Map N ★★★★ → Map N+1 + cơ chế Map N+1
     syncMainHardTierFromNormalStage(true);
     try{ if(typeof updateBurstCount==='function') updateBurstCount(); }catch(e){}
   }
