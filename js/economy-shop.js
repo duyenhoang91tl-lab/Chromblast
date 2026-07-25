@@ -148,12 +148,6 @@
     const box = document.createElement("div");
     box.className = "shop-exchange-box";
     box.innerHTML =
-      '<p class="shop-hint">' +
-      tt(
-        "shopDiamondHint",
-        "100 vàng = 1 kim cương. Chọn số lượng rồi đổi. Item ≥100 vàng mua được bằng KC."
-      ) +
-      "</p>" +
       '<div class="shop-exchange-grid">' +
       '<div class="shop-exchange-card" id="shop-ex-to-dia">' +
       '<div class="shop-ex-top"><span class="shop-ex-ico">💎</span><span class="shop-ex-amt" data-ex-gain>×1</span></div>' +
@@ -267,9 +261,10 @@
     if (tab === "hearts") {
       const box = document.createElement("div");
       box.className = "shop-hearts-box";
-      const left = typeof adHeartViewsLeft === "function" ? adHeartViewsLeft() : 0;
-      const gLeft = typeof adGoldViewsLeft === "function" ? adGoldViewsLeft() : 0;
-      const nextG = typeof nextAdGoldReward === "function" ? nextAdGoldReward() : 0;
+      const adMax = 5;
+      const left = typeof adHeartViewsLeft === "function" ? adHeartViewsLeft() : adMax;
+      const gLeft = typeof adGoldViewsLeft === "function" ? adGoldViewsLeft() : adMax;
+      const nextG = typeof nextAdGoldReward === "function" ? nextAdGoldReward() : 1;
       let heartStatus = "";
       try {
         if (typeof Inventory !== "undefined") {
@@ -279,62 +274,26 @@
               ? Inventory.formatHearts(Inventory.hearts)
               : String(Inventory.hearts);
           const maxH = Inventory.MAX_HEARTS || 5;
-          const rem =
-            typeof Inventory.heartRegenRemainingMs === "function"
-              ? Inventory.heartRegenRemainingMs()
-              : 0;
-          const regenLeft =
-            typeof Inventory.regenHeartsLeftToday === "function"
-              ? Inventory.regenHeartsLeftToday()
-              : 5;
-          const regenMax = Inventory.MAX_REGEN_HEARTS_PER_DAY || 5;
-          if (Number(Inventory.hearts) + 1e-9 >= maxH) {
-            heartStatus = "❤️ " + h + " / " + maxH + " · " + tt("shopHeartFull", "Đầy");
-          } else if (regenLeft < 1) {
-            heartStatus =
-              "❤️ " +
-              h +
-              " / " +
-              maxH +
-              " · " +
-              tt("shopHeartRegenDayCap", "Hết hồi hôm nay") +
-              " (" +
-              regenMax +
-              "/" +
-              regenMax +
-              ")";
-          } else if (rem > 0) {
-            const sec = Math.ceil(rem / 1000);
-            const mm = Math.floor(sec / 60);
-            const ss = sec % 60;
-            const pad = function (n) {
-              return (n < 10 ? "0" : "") + n;
-            };
-            heartStatus =
-              "❤️ " +
-              h +
-              " / " +
-              maxH +
-              " · +1 " +
-              pad(mm) +
-              ":" +
-              pad(ss) +
-              " · " +
-              regenLeft +
-              "/" +
-              regenMax;
-          } else {
-            heartStatus = "❤️ " + h + " / " + maxH + " · " + regenLeft + "/" + regenMax;
-          }
+          heartStatus = "❤️ " + h + " / " + maxH;
         }
       } catch (e) {}
+      const goldAdTitle =
+        gLeft < 1
+          ? tt("shopAdGoldCap", "Hết lượt xem ad vàng hôm nay")
+          : ttf("shopAdGold", "📺 Xem ad để +{0} vàng", nextG || 1);
+      const goldAdLeft =
+        gLeft < 1
+          ? ttf("shopAdLeftZero", "còn 0/{0} · reset mỗi ngày", adMax)
+          : ttf("shopAdLeft", "còn {0}/{1} · reset mỗi ngày", gLeft, adMax);
+      const heartAdTitle =
+        left < 1
+          ? tt("shopAdHeartCap", "Hết lượt xem ad tim hôm nay")
+          : tt("shopAdHeart", "📺 Xem ad để +1 tim");
+      const heartAdLeft =
+        left < 1
+          ? ttf("shopAdLeftZero", "còn 0/{0} · reset mỗi ngày", adMax)
+          : ttf("shopAdLeft", "còn {0}/{1} · reset mỗi ngày", left, adMax);
       box.innerHTML =
-        '<p class="shop-hint">' +
-        tt(
-          "shopHeartHint",
-          "Tim tự hồi +1 mỗi 30 phút (tối đa 5). Thêm tim: mua vàng, xem QC (5/ngày), quay thưởng, bạn bè, lên level."
-        ) +
-        "</p>" +
         (heartStatus ? '<p class="shop-heart-status">' + heartStatus + "</p>" : "") +
         '<button type="button" class="auth-submit-btn shop-buy-heart" id="shop-buy-heart">' +
         "❤️ +" +
@@ -342,19 +301,25 @@
         " · 🪙 " +
         HEART_GOLD_PRICE +
         "</button>" +
-        '<button type="button" class="auth-submit-btn shop-ad-gold" id="shop-ad-gold" ' +
+        '<button type="button" class="auth-submit-btn shop-ad-btn shop-ad-gold" id="shop-ad-gold" ' +
         (gLeft < 1 ? "disabled" : "") +
         ">" +
-        (gLeft < 1
-          ? tt("shopAdGoldCap", "Đã hết lượt QC vàng hôm nay")
-          : ttf("shopAdGold", "📺 Xem QC +{0} vàng ({1}/5)", nextG, gLeft)) +
+        '<span class="shop-ad-title">' +
+        goldAdTitle +
+        "</span>" +
+        '<span class="shop-ad-left">' +
+        goldAdLeft +
+        "</span>" +
         "</button>" +
-        '<button type="button" class="auth-submit-btn shop-ad-heart" id="shop-ad-heart" ' +
+        '<button type="button" class="auth-submit-btn shop-ad-btn shop-ad-heart" id="shop-ad-heart" ' +
         (left < 1 ? "disabled" : "") +
         ">" +
-        (left < 1
-          ? tt("shopAdHeartCap", "Đã hết lượt QC tim hôm nay")
-          : ttf("shopAdHeart", "📺 Xem QC +1 tim ({0}/5)", left)) +
+        '<span class="shop-ad-title">' +
+        heartAdTitle +
+        "</span>" +
+        '<span class="shop-ad-left">' +
+        heartAdLeft +
+        "</span>" +
         "</button>";
       body.appendChild(box);
       document.getElementById("shop-buy-heart")?.addEventListener("click", function () {

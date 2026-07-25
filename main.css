@@ -4712,6 +4712,13 @@ body:has(#secret-stage.active) .streak-dot.lit{
   font-variant-numeric: tabular-nums;
 }
 .shop-buy-heart,.shop-ad-gold,.shop-ad-heart{ margin:0 !important; }
+.shop-ad-btn{
+  display:flex !important; flex-direction:column; align-items:center; justify-content:center;
+  gap:2px; line-height:1.25; padding:12px 14px !important;
+}
+.shop-ad-title{ font-size:14px; font-weight:900; }
+.shop-ad-left{ font-size:11px; font-weight:800; opacity:0.85; }
+.shop-hint:empty{ display:none; }
 .gchat-friend-cap{ font-size:11px; font-weight:800; color:rgba(255,236,180,0.85); padding:4px 2px 8px; }
 .gchat-friend-requests{ display:flex; flex-direction:column; gap:6px; margin-bottom:6px; }
 .gchat-heart-btn{ background:rgba(255,80,120,0.25) !important; border-color:rgba(255,120,150,0.45) !important; }
