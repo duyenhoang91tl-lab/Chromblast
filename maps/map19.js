@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════
-// maps/map19.js — MAP ẨN 19: Mê cung (Maze Runner)
+// maps/map19.js — MAP ẨN 19: Mê Cung Bí Ẩn (Labyrinth Rush)
 // Tách verbatim khỏi main.js, nạp TRƯỚC main.js (global scope).
 // ═══════════════════════════════════════════════════════════════
 
@@ -11,7 +11,7 @@ function triggerMazeUnlock(){
   markMapCleared('rhythm');
   pendingUnlock='maze';
   document.getElementById('unlock-title').textContent='🌀 BẢN ĐỒ 19 MỞ KHÓA!';
-  document.getElementById('unlock-desc').innerHTML='<b>Maze Runner</b><br>Tìm đường thoát khỏi mê cung trong 60 giây!';
+  document.getElementById('unlock-desc').innerHTML='<b>Mê Cung Bí Ẩn</b><br>Tìm đường thoát khỏi mê cung trong 60 giây!';
   document.getElementById('unlock-btn').textContent='CHIẾN ĐẤU!';
   showUnlockOverlay();
 }

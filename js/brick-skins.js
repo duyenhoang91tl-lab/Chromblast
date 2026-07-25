@@ -26,7 +26,7 @@
   const BRICK_SKINS = [
     { id: "classic", name: "Classic", desc: { vi: 'Gạch bevel cổ điển', en: 'Classic beveled bricks' }, starter: true  },
     { id: "plush", name: "Plush", desc: { vi: 'Bông xù hiện tại', en: 'Current plush style' }, starter: true  },
-    { id: "chroma", name: "Chroma", desc: { vi: 'Kẹo bóng + icon', en: 'Candy gloss + icons' }, price: 45 },
+    { id: "chroma", name: "Chroma", desc: { vi: 'Bóng ngọt + icon', en: 'Sweet gloss + icons' }, price: 45 },
     { id: "glass", name: "Glass", desc: { vi: 'Thủy tinh trong', en: 'Clear glass' }, price: 18 },
     { id: "neon", name: "Neon", desc: { vi: 'Ô neon + thú màu gạch thường', en: 'Neon tiles + pet icons' }, price: 36 },
     { id: "metal", name: "Metal", desc: { vi: 'Kim loại xước', en: 'Brushed metal' }, price: 28 },

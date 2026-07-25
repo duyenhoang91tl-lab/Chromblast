@@ -159,7 +159,7 @@ function drawBrick(ctx,W,H,pw,paddleY){
   // Bricks — kẹo bông mềm
   brickBricks.forEach(b=>{
     if(!b.alive) return;
-    drawSoftCandyCell(ctx,b.x+1,b.y+1,b.w-2,b.h-2,b.color,{r:7,glowBlur:3});
+    drawSoftSweetCell(ctx,b.x+1,b.y+1,b.w-2,b.h-2,b.color,{r:7,glowBlur:3});
     if(b.maxHp===2&&b.hp===2){
       ctx.fillStyle='rgba(255,255,255,0.92)';
       ctx.font='bold 11px Nunito,system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';

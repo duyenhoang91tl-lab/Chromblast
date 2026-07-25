@@ -20,14 +20,14 @@ function registerMap(desc){
 [
   {id:1,  key:'secret', name:'Đấu màu bí ẩn',     enter:enterSecretMode, trigger:triggerUnlock},
   {id:2,  key:'dodge',  name:'Rùa né cà rốt',      enter:enterDodgeMode,  trigger:triggerDodgeUnlock},
-  {id:3,  key:'fruit',  name:'Chém hoa quả',       enter:enterFruitMode,  trigger:triggerFruitUnlock},
+  {id:3,  key:'fruit',  name:'Vườn Trái Cây',      enter:enterFruitMode,  trigger:triggerFruitUnlock},
   {id:4,  key:'bee',    name:'Bảo vệ chó khỏi ong',enter:enterBeeMode,    trigger:triggerBeeUnlock},
   {id:5,  key:'gold',   name:'Đào vàng',           enter:enterGoldMode,   trigger:triggerGoldUnlock},
   {id:6,  key:'mole',   name:'Đập thú',            enter:enterMoleMode,   trigger:triggerMoleUnlock},
   {id:7,  key:'memory', name:'Lật thẻ ký ức',      enter:enterMemoryMode, trigger:triggerMemoryUnlock},
   {id:8,  key:'bubble', name:'Bắn bong bóng',      enter:enterBubbleMode, trigger:triggerBubbleUnlock},
   {id:9,  key:'stack',  name:'Xếp tháp',           enter:enterStackMode,  trigger:triggerStackUnlock},
-  {id:10, key:'boss',   name:'Phi cơ bắn gà',      enter:enterBossMode,   trigger:triggerBossUnlock},
+  {id:10, key:'boss',   name:'Gà Nổi Loạn',        enter:enterBossMode,   trigger:triggerBossUnlock},
   {id:11, key:'catch',  name:'Bắt thú',            enter:enterCatchMode,  trigger:triggerCatchUnlock},
   {id:12, key:'flood',  name:'Tràn màu',           enter:enterFloodMode,  trigger:triggerFloodUnlock},
   {id:13, key:'arena',  name:'Đấu trường sinh tồn',enter:enterArenaMode,  trigger:triggerArenaUnlock},
@@ -36,7 +36,7 @@ function registerMap(desc){
   {id:16, key:'runner', name:'Chạy vô tận',        enter:enterRunnerMode, trigger:triggerRunnerUnlock},
   {id:17, key:'space',  name:'Space Shooter',      enter:enterSpaceMode,  trigger:triggerSpaceUnlock},
   {id:18, key:'rhythm', name:'Rhythm Tap',         enter:enterRhythmMode, trigger:triggerRhythmUnlock},
-  {id:19, key:'maze',   name:'Mê cung',            enter:enterMazeMode,   trigger:triggerMazeUnlock},
+  {id:19, key:'maze',   name:'Mê Cung Bí Ẩn',      enter:enterMazeMode,   trigger:triggerMazeUnlock},
   {id:20, key:'mega',   name:'MEGA BOSS',          enter:enterMegaMode,   trigger:triggerMegaUnlock},
 ].forEach(registerMap);
 

@@ -34,7 +34,7 @@ const CARO_THEMES = {
   sunset:  { bg:['#FF8A5C','#2A1A40'], cell:'rgba(255,255,255,0.12)', line:'rgba(255,255,255,0.25)', x:'#FFF05A', o:'#5AD0FF', pad:'#1a1030' },
   ice:     { bg:['#E8F7FF','#7AB8D8'], cell:'rgba(255,255,255,0.35)', line:'rgba(30,80,120,0.25)',   x:'#E63946', o:'#1D3557', pad:'#5a9ab8' },
   lava:    { bg:['#2A0A00','#1A0500'], cell:'rgba(255,120,0,0.12)',   line:'rgba(255,140,40,0.35)',  x:'#FFE566', o:'#4DE1FF', pad:'#100300' },
-  candy:   { bg:['#FFB6C8','#C9B6FF'], cell:'rgba(255,255,255,0.28)', line:'rgba(120,60,120,0.2)',   x:'#E91E63', o:'#3F51B5', pad:'#b08ad8' },
+  sweet:   { bg:['#FFB6C8','#C9B6FF'], cell:'rgba(255,255,255,0.28)', line:'rgba(120,60,120,0.2)',   x:'#E91E63', o:'#3F51B5', pad:'#b08ad8' },
   neon:    { bg:['#0A0A14','#12102A'], cell:'rgba(0,255,200,0.06)',   line:'rgba(0,255,200,0.28)',   x:'#FF2D95', o:'#00FFC8', pad:'#060610' },
   sand:    { bg:['#E8D5A8','#C4A06A'], cell:'rgba(255,255,255,0.2)',  line:'rgba(90,60,20,0.28)',    x:'#C62828', o:'#1565C0', pad:'#a88850' },
   marble:  { bg:['#F5F0EA','#D8D0C8'], cell:'rgba(255,255,255,0.35)', line:'rgba(80,70,60,0.22)',    x:'#D32F2F', o:'#1976D2', pad:'#c0b8b0' },
@@ -96,7 +96,8 @@ function getCaroPrefs(){
     if(raw){
       const j = JSON.parse(raw);
       if(j.turnSec === 10 || j.turnSec === 15) p.turnSec = j.turnSec;
-      if(j.skin && CARO_THEMES[j.skin] && _caroBoardSkinUnlocked(j.skin)) p.skin = j.skin;
+      let skin = j.skin === 'candy' ? 'sweet' : j.skin;
+      if(skin && CARO_THEMES[skin] && _caroBoardSkinUnlocked(skin)) p.skin = skin;
     }
   }catch(e){}
   // Đồng bộ nền map đang dùng nếu chưa có prefs riêng và nền đó đã mở

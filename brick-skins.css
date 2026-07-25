@@ -107,17 +107,17 @@ html[data-brick-skin="classic"] .vs-cell.vs-filled::before {
   opacity: 0 !important;
   content: none !important;
 }
-html[data-brick-skin="classic"] .p-cell.candy,
-html[data-brick-skin="classic"] #drag-ghost .g-cell.candy,
-html[data-brick-skin="classic"] .vs-mini-candy {
+html[data-brick-skin="classic"] .p-cell.sweet,
+html[data-brick-skin="classic"] #drag-ghost .g-cell.sweet,
+html[data-brick-skin="classic"] .vs-mini-sweet {
   border: 1px solid rgba(0,0,0,0.25) !important;
   border-radius: 3px !important;
   background: linear-gradient(180deg, color-mix(in srgb, var(--cc) 55%, #fff) 0%, var(--cc) 42%, color-mix(in srgb, var(--cc) 55%, #000) 100%) !important;
   box-shadow: inset 0 2px 0 rgba(255,255,255,0.5), inset 0 -3px 5px rgba(0,0,0,0.4), 0 2px 4px rgba(0,0,0,0.35) !important;
   filter: none !important;
 }
-html[data-brick-skin="classic"] .p-cell.candy::after,
-html[data-brick-skin="classic"] #drag-ghost .g-cell.candy::before {
+html[data-brick-skin="classic"] .p-cell.sweet::after,
+html[data-brick-skin="classic"] #drag-ghost .g-cell.sweet::before {
   opacity: 0.1 !important;
   content: none !important;
 }
@@ -148,17 +148,17 @@ html[data-brick-skin="glass"] .vs-cell.vs-filled::before {
   opacity: 0 !important;
   content: none !important;
 }
-html[data-brick-skin="glass"] .p-cell.candy,
-html[data-brick-skin="glass"] #drag-ghost .g-cell.candy,
-html[data-brick-skin="glass"] .vs-mini-candy {
+html[data-brick-skin="glass"] .p-cell.sweet,
+html[data-brick-skin="glass"] #drag-ghost .g-cell.sweet,
+html[data-brick-skin="glass"] .vs-mini-sweet {
   border: 1px solid rgba(255,255,255,0.45) !important;
   border-radius: 4px !important;
   background: linear-gradient(145deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 55%, transparent) 55%, color-mix(in srgb, var(--cc) 40%, #fff) 100%) !important;
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.7), inset 0 -1px 0 rgba(255,255,255,0.2), 0 0 0 1px rgba(255,255,255,0.35), 0 4px 12px color-mix(in srgb, var(--cc) 30%, transparent) !important;
   filter: none !important;
 }
-html[data-brick-skin="glass"] .p-cell.candy::after,
-html[data-brick-skin="glass"] #drag-ghost .g-cell.candy::before {
+html[data-brick-skin="glass"] .p-cell.sweet::after,
+html[data-brick-skin="glass"] #drag-ghost .g-cell.sweet::before {
   opacity: 0.1 !important;
   content: none !important;
 }
@@ -254,10 +254,10 @@ html[data-brick-skin="neon"] .sc.gem[data-ci="7"],
 html[data-brick-skin="neon"] .vs-cell.vs-filled[data-ci="7"]{
   background-image:var(--neon-animal-7), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
 }
-html[data-brick-skin="neon"] .p-cell.candy,
-html[data-brick-skin="neon"] #drag-ghost .g-cell.candy,
-html[data-brick-skin="neon"] .vs-mini-candy,
-html[data-brick-skin="neon"] .vs-g-cell.candy{
+html[data-brick-skin="neon"] .p-cell.sweet,
+html[data-brick-skin="neon"] #drag-ghost .g-cell.sweet,
+html[data-brick-skin="neon"] .vs-mini-sweet,
+html[data-brick-skin="neon"] .vs-g-cell.sweet{
   border:none !important;
   border-radius:4px !important;
   overflow:hidden !important;
@@ -270,58 +270,58 @@ html[data-brick-skin="neon"] .vs-g-cell.candy{
   box-shadow:0 0 0 2px var(--cc), 0 0 12px 2px color-mix(in srgb, var(--cc) 75%, transparent), inset 0 0 14px color-mix(in srgb, var(--cc) 50%, transparent) !important;
   filter:none !important;
 }
-html[data-brick-skin="neon"] .p-cell.candy::after,
-html[data-brick-skin="neon"] #drag-ghost .g-cell.candy::before,
-html[data-brick-skin="neon"] .vs-g-cell.candy::before{
+html[data-brick-skin="neon"] .p-cell.sweet::after,
+html[data-brick-skin="neon"] #drag-ghost .g-cell.sweet::before,
+html[data-brick-skin="neon"] .vs-g-cell.sweet::before{
   opacity:0 !important;
   content:none !important;
 }
-html[data-brick-skin="neon"] .p-cell.candy[data-ci="0"],
-html[data-brick-skin="neon"] #drag-ghost .g-cell.candy[data-ci="0"],
-html[data-brick-skin="neon"] .vs-g-cell.candy[data-ci="0"],
-html[data-brick-skin="neon"] .vs-mini-candy[data-ci="0"]{
+html[data-brick-skin="neon"] .p-cell.sweet[data-ci="0"],
+html[data-brick-skin="neon"] #drag-ghost .g-cell.sweet[data-ci="0"],
+html[data-brick-skin="neon"] .vs-g-cell.sweet[data-ci="0"],
+html[data-brick-skin="neon"] .vs-mini-sweet[data-ci="0"]{
   background-image:var(--neon-animal-0), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
 }
-html[data-brick-skin="neon"] .p-cell.candy[data-ci="1"],
-html[data-brick-skin="neon"] #drag-ghost .g-cell.candy[data-ci="1"],
-html[data-brick-skin="neon"] .vs-g-cell.candy[data-ci="1"],
-html[data-brick-skin="neon"] .vs-mini-candy[data-ci="1"]{
+html[data-brick-skin="neon"] .p-cell.sweet[data-ci="1"],
+html[data-brick-skin="neon"] #drag-ghost .g-cell.sweet[data-ci="1"],
+html[data-brick-skin="neon"] .vs-g-cell.sweet[data-ci="1"],
+html[data-brick-skin="neon"] .vs-mini-sweet[data-ci="1"]{
   background-image:var(--neon-animal-1), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
 }
-html[data-brick-skin="neon"] .p-cell.candy[data-ci="2"],
-html[data-brick-skin="neon"] #drag-ghost .g-cell.candy[data-ci="2"],
-html[data-brick-skin="neon"] .vs-g-cell.candy[data-ci="2"],
-html[data-brick-skin="neon"] .vs-mini-candy[data-ci="2"]{
+html[data-brick-skin="neon"] .p-cell.sweet[data-ci="2"],
+html[data-brick-skin="neon"] #drag-ghost .g-cell.sweet[data-ci="2"],
+html[data-brick-skin="neon"] .vs-g-cell.sweet[data-ci="2"],
+html[data-brick-skin="neon"] .vs-mini-sweet[data-ci="2"]{
   background-image:var(--neon-animal-2), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
 }
-html[data-brick-skin="neon"] .p-cell.candy[data-ci="3"],
-html[data-brick-skin="neon"] #drag-ghost .g-cell.candy[data-ci="3"],
-html[data-brick-skin="neon"] .vs-g-cell.candy[data-ci="3"],
-html[data-brick-skin="neon"] .vs-mini-candy[data-ci="3"]{
+html[data-brick-skin="neon"] .p-cell.sweet[data-ci="3"],
+html[data-brick-skin="neon"] #drag-ghost .g-cell.sweet[data-ci="3"],
+html[data-brick-skin="neon"] .vs-g-cell.sweet[data-ci="3"],
+html[data-brick-skin="neon"] .vs-mini-sweet[data-ci="3"]{
   background-image:var(--neon-animal-3), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
 }
-html[data-brick-skin="neon"] .p-cell.candy[data-ci="4"],
-html[data-brick-skin="neon"] #drag-ghost .g-cell.candy[data-ci="4"],
-html[data-brick-skin="neon"] .vs-g-cell.candy[data-ci="4"],
-html[data-brick-skin="neon"] .vs-mini-candy[data-ci="4"]{
+html[data-brick-skin="neon"] .p-cell.sweet[data-ci="4"],
+html[data-brick-skin="neon"] #drag-ghost .g-cell.sweet[data-ci="4"],
+html[data-brick-skin="neon"] .vs-g-cell.sweet[data-ci="4"],
+html[data-brick-skin="neon"] .vs-mini-sweet[data-ci="4"]{
   background-image:var(--neon-animal-4), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
 }
-html[data-brick-skin="neon"] .p-cell.candy[data-ci="5"],
-html[data-brick-skin="neon"] #drag-ghost .g-cell.candy[data-ci="5"],
-html[data-brick-skin="neon"] .vs-g-cell.candy[data-ci="5"],
-html[data-brick-skin="neon"] .vs-mini-candy[data-ci="5"]{
+html[data-brick-skin="neon"] .p-cell.sweet[data-ci="5"],
+html[data-brick-skin="neon"] #drag-ghost .g-cell.sweet[data-ci="5"],
+html[data-brick-skin="neon"] .vs-g-cell.sweet[data-ci="5"],
+html[data-brick-skin="neon"] .vs-mini-sweet[data-ci="5"]{
   background-image:var(--neon-animal-5), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
 }
-html[data-brick-skin="neon"] .p-cell.candy[data-ci="6"],
-html[data-brick-skin="neon"] #drag-ghost .g-cell.candy[data-ci="6"],
-html[data-brick-skin="neon"] .vs-g-cell.candy[data-ci="6"],
-html[data-brick-skin="neon"] .vs-mini-candy[data-ci="6"]{
+html[data-brick-skin="neon"] .p-cell.sweet[data-ci="6"],
+html[data-brick-skin="neon"] #drag-ghost .g-cell.sweet[data-ci="6"],
+html[data-brick-skin="neon"] .vs-g-cell.sweet[data-ci="6"],
+html[data-brick-skin="neon"] .vs-mini-sweet[data-ci="6"]{
   background-image:var(--neon-animal-6), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
 }
-html[data-brick-skin="neon"] .p-cell.candy[data-ci="7"],
-html[data-brick-skin="neon"] #drag-ghost .g-cell.candy[data-ci="7"],
-html[data-brick-skin="neon"] .vs-g-cell.candy[data-ci="7"],
-html[data-brick-skin="neon"] .vs-mini-candy[data-ci="7"]{
+html[data-brick-skin="neon"] .p-cell.sweet[data-ci="7"],
+html[data-brick-skin="neon"] #drag-ghost .g-cell.sweet[data-ci="7"],
+html[data-brick-skin="neon"] .vs-g-cell.sweet[data-ci="7"],
+html[data-brick-skin="neon"] .vs-mini-sweet[data-ci="7"]{
   background-image:var(--neon-animal-7), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
 }
 html[data-brick-skin="neon"] .sc.gem.glow-1,
@@ -387,17 +387,17 @@ html[data-brick-skin="metal"] .vs-cell.vs-filled::before {
   opacity: 0 !important;
   content: none !important;
 }
-html[data-brick-skin="metal"] .p-cell.candy,
-html[data-brick-skin="metal"] #drag-ghost .g-cell.candy,
-html[data-brick-skin="metal"] .vs-mini-candy {
+html[data-brick-skin="metal"] .p-cell.sweet,
+html[data-brick-skin="metal"] #drag-ghost .g-cell.sweet,
+html[data-brick-skin="metal"] .vs-mini-sweet {
   border: 1px solid rgba(0,0,0,0.3) !important;
   border-radius: 2px !important;
   background: linear-gradient(115deg, color-mix(in srgb, var(--cc) 30%, #eee) 0%, var(--cc) 28%, color-mix(in srgb, var(--cc) 40%, #fff) 42%, var(--cc) 58%, color-mix(in srgb, var(--cc) 35%, #222) 100%) !important;
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.55), inset 0 -2px 3px rgba(0,0,0,0.45), 0 2px 3px rgba(0,0,0,0.4) !important;
   filter: none !important;
 }
-html[data-brick-skin="metal"] .p-cell.candy::after,
-html[data-brick-skin="metal"] #drag-ghost .g-cell.candy::before {
+html[data-brick-skin="metal"] .p-cell.sweet::after,
+html[data-brick-skin="metal"] #drag-ghost .g-cell.sweet::before {
   opacity: 0.1 !important;
   content: none !important;
 }
@@ -428,17 +428,17 @@ html[data-brick-skin="wood"] .vs-cell.vs-filled::before {
   opacity: 0 !important;
   content: none !important;
 }
-html[data-brick-skin="wood"] .p-cell.candy,
-html[data-brick-skin="wood"] #drag-ghost .g-cell.candy,
-html[data-brick-skin="wood"] .vs-mini-candy {
+html[data-brick-skin="wood"] .p-cell.sweet,
+html[data-brick-skin="wood"] #drag-ghost .g-cell.sweet,
+html[data-brick-skin="wood"] .vs-mini-sweet {
   border: 1px solid rgba(40,20,5,0.35) !important;
   border-radius: 3px !important;
   background: repeating-linear-gradient(90deg, color-mix(in srgb, var(--cc) 75%, #5a3a1a) 0 3px, color-mix(in srgb, var(--cc) 90%, #3a2410) 3px 6px) !important;
   box-shadow: inset 0 2px 0 rgba(255,220,160,0.25), inset 0 -2px 4px rgba(0,0,0,0.35), 0 2px 4px rgba(0,0,0,0.3) !important;
   filter: none !important;
 }
-html[data-brick-skin="wood"] .p-cell.candy::after,
-html[data-brick-skin="wood"] #drag-ghost .g-cell.candy::before {
+html[data-brick-skin="wood"] .p-cell.sweet::after,
+html[data-brick-skin="wood"] #drag-ghost .g-cell.sweet::before {
   opacity: 0.1 !important;
   content: none !important;
 }
@@ -469,17 +469,17 @@ html[data-brick-skin="crystal"] .vs-cell.vs-filled::before {
   opacity: 0.15 !important;
   
 }
-html[data-brick-skin="crystal"] .p-cell.candy,
-html[data-brick-skin="crystal"] #drag-ghost .g-cell.candy,
-html[data-brick-skin="crystal"] .vs-mini-candy {
+html[data-brick-skin="crystal"] .p-cell.sweet,
+html[data-brick-skin="crystal"] #drag-ghost .g-cell.sweet,
+html[data-brick-skin="crystal"] .vs-mini-sweet {
   border: none !important;
   border-radius: 4px !important;
   background: linear-gradient(135deg, color-mix(in srgb, var(--cc) 30%, #fff) 0%, var(--cc) 38%, color-mix(in srgb, var(--cc) 50%, #fff) 52%, var(--cc) 100%) !important;
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--cc) 40%, #fff), inset 0 0 10px rgba(255,255,255,0.35), 0 0 14px color-mix(in srgb, var(--cc) 40%, transparent) !important;
   filter: none !important;
 }
-html[data-brick-skin="crystal"] .p-cell.candy::after,
-html[data-brick-skin="crystal"] #drag-ghost .g-cell.candy::before {
+html[data-brick-skin="crystal"] .p-cell.sweet::after,
+html[data-brick-skin="crystal"] #drag-ghost .g-cell.sweet::before {
   opacity: 0.25 !important;
   
 }
@@ -510,17 +510,17 @@ html[data-brick-skin="ice"] .vs-cell.vs-filled::before {
   opacity: 0.2 !important;
   
 }
-html[data-brick-skin="ice"] .p-cell.candy,
-html[data-brick-skin="ice"] #drag-ghost .g-cell.candy,
-html[data-brick-skin="ice"] .vs-mini-candy {
+html[data-brick-skin="ice"] .p-cell.sweet,
+html[data-brick-skin="ice"] #drag-ghost .g-cell.sweet,
+html[data-brick-skin="ice"] .vs-mini-sweet {
   border: 1px solid rgba(200,240,255,0.55) !important;
   border-radius: 4px !important;
   background: linear-gradient(180deg, color-mix(in srgb, var(--cc) 40%, #e8f7ff) 0%, color-mix(in srgb, var(--cc) 70%, #b8e0ff) 55%, var(--cc) 100%) !important;
   box-shadow: inset 0 2px 0 rgba(255,255,255,0.65), 0 0 0 1px rgba(180,230,255,0.5), 0 2px 6px rgba(100,180,220,0.35) !important;
   filter: none !important;
 }
-html[data-brick-skin="ice"] .p-cell.candy::after,
-html[data-brick-skin="ice"] #drag-ghost .g-cell.candy::before {
+html[data-brick-skin="ice"] .p-cell.sweet::after,
+html[data-brick-skin="ice"] #drag-ghost .g-cell.sweet::before {
   opacity: 0.30000000000000004 !important;
   
 }
@@ -551,17 +551,17 @@ html[data-brick-skin="lava"] .vs-cell.vs-filled::before {
   opacity: 0 !important;
   content: none !important;
 }
-html[data-brick-skin="lava"] .p-cell.candy,
-html[data-brick-skin="lava"] #drag-ghost .g-cell.candy,
-html[data-brick-skin="lava"] .vs-mini-candy {
+html[data-brick-skin="lava"] .p-cell.sweet,
+html[data-brick-skin="lava"] #drag-ghost .g-cell.sweet,
+html[data-brick-skin="lava"] .vs-mini-sweet {
   border: 1px solid #3a1000 !important;
   border-radius: 3px !important;
   background: radial-gradient(ellipse at 50% 80%, #ff6a00 0%, color-mix(in srgb, var(--cc) 60%, #1a0500) 45%, #120800 100%) !important;
   box-shadow: 0 0 8px 2px color-mix(in srgb, var(--cc) 55%, #ff4500), inset 0 -4px 8px rgba(255,80,0,0.45), inset 0 2px 0 rgba(255,200,100,0.25) !important;
   filter: none !important;
 }
-html[data-brick-skin="lava"] .p-cell.candy::after,
-html[data-brick-skin="lava"] #drag-ghost .g-cell.candy::before {
+html[data-brick-skin="lava"] .p-cell.sweet::after,
+html[data-brick-skin="lava"] #drag-ghost .g-cell.sweet::before {
   opacity: 0.1 !important;
   content: none !important;
 }
@@ -592,17 +592,17 @@ html[data-brick-skin="gold"] .vs-cell.vs-filled::before {
   opacity: 0 !important;
   content: none !important;
 }
-html[data-brick-skin="gold"] .p-cell.candy,
-html[data-brick-skin="gold"] #drag-ghost .g-cell.candy,
-html[data-brick-skin="gold"] .vs-mini-candy {
+html[data-brick-skin="gold"] .p-cell.sweet,
+html[data-brick-skin="gold"] #drag-ghost .g-cell.sweet,
+html[data-brick-skin="gold"] .vs-mini-sweet {
   border: 1px solid #a8841a !important;
   border-radius: 3px !important;
   background: linear-gradient(160deg, #fff3c0 0%, color-mix(in srgb, var(--cc) 50%, #ffd700) 35%, #c9a227 55%, color-mix(in srgb, var(--cc) 40%, #8a6a10) 100%) !important;
   box-shadow: inset 0 2px 0 rgba(255,255,220,0.7), inset 0 -2px 4px rgba(80,50,0,0.4), 0 2px 5px rgba(120,80,0,0.35) !important;
   filter: none !important;
 }
-html[data-brick-skin="gold"] .p-cell.candy::after,
-html[data-brick-skin="gold"] #drag-ghost .g-cell.candy::before {
+html[data-brick-skin="gold"] .p-cell.sweet::after,
+html[data-brick-skin="gold"] #drag-ghost .g-cell.sweet::before {
   opacity: 0.1 !important;
   content: none !important;
 }
@@ -633,17 +633,17 @@ html[data-brick-skin="silver"] .vs-cell.vs-filled::before {
   opacity: 0 !important;
   content: none !important;
 }
-html[data-brick-skin="silver"] .p-cell.candy,
-html[data-brick-skin="silver"] #drag-ghost .g-cell.candy,
-html[data-brick-skin="silver"] .vs-mini-candy {
+html[data-brick-skin="silver"] .p-cell.sweet,
+html[data-brick-skin="silver"] #drag-ghost .g-cell.sweet,
+html[data-brick-skin="silver"] .vs-mini-sweet {
   border: 1px solid #9aa0aa !important;
   border-radius: 3px !important;
   background: linear-gradient(145deg, #fff 0%, color-mix(in srgb, var(--cc) 35%, #d0d5dc) 40%, color-mix(in srgb, var(--cc) 25%, #8a909a) 70%, #c8cdd4 100%) !important;
   box-shadow: inset 0 1px 0 #fff, inset 0 -2px 3px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.3) !important;
   filter: none !important;
 }
-html[data-brick-skin="silver"] .p-cell.candy::after,
-html[data-brick-skin="silver"] #drag-ghost .g-cell.candy::before {
+html[data-brick-skin="silver"] .p-cell.sweet::after,
+html[data-brick-skin="silver"] #drag-ghost .g-cell.sweet::before {
   opacity: 0.1 !important;
   content: none !important;
 }
@@ -674,17 +674,17 @@ html[data-brick-skin="marble"] .vs-cell.vs-filled::before {
   opacity: 0.12 !important;
   
 }
-html[data-brick-skin="marble"] .p-cell.candy,
-html[data-brick-skin="marble"] #drag-ghost .g-cell.candy,
-html[data-brick-skin="marble"] .vs-mini-candy {
+html[data-brick-skin="marble"] .p-cell.sweet,
+html[data-brick-skin="marble"] #drag-ghost .g-cell.sweet,
+html[data-brick-skin="marble"] .vs-mini-sweet {
   border: 1px solid rgba(255,255,255,0.3) !important;
   border-radius: 3px !important;
   background: linear-gradient(120deg, color-mix(in srgb, var(--cc) 40%, #f5f0ea) 0%, var(--cc) 30%, color-mix(in srgb, var(--cc) 55%, #fff) 48%, var(--cc) 70%, color-mix(in srgb, var(--cc) 45%, #ddd) 100%) !important;
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 2px 5px rgba(0,0,0,0.25) !important;
   filter: none !important;
 }
-html[data-brick-skin="marble"] .p-cell.candy::after,
-html[data-brick-skin="marble"] #drag-ghost .g-cell.candy::before {
+html[data-brick-skin="marble"] .p-cell.sweet::after,
+html[data-brick-skin="marble"] #drag-ghost .g-cell.sweet::before {
   opacity: 0.22 !important;
   
 }
@@ -715,17 +715,17 @@ html[data-brick-skin="pixel"] .vs-cell.vs-filled::before {
   opacity: 0 !important;
   content: none !important;
 }
-html[data-brick-skin="pixel"] .p-cell.candy,
-html[data-brick-skin="pixel"] #drag-ghost .g-cell.candy,
-html[data-brick-skin="pixel"] .vs-mini-candy {
+html[data-brick-skin="pixel"] .p-cell.sweet,
+html[data-brick-skin="pixel"] #drag-ghost .g-cell.sweet,
+html[data-brick-skin="pixel"] .vs-mini-sweet {
   border: 2px solid rgba(0,0,0,0.4) !important;
   border-radius: 0px !important;
   background: var(--cc) !important;
   box-shadow: 2px 2px 0 rgba(0,0,0,0.45), inset -2px -2px 0 rgba(0,0,0,0.25), inset 2px 2px 0 rgba(255,255,255,0.35) !important;
   filter: none !important;
 }
-html[data-brick-skin="pixel"] .p-cell.candy::after,
-html[data-brick-skin="pixel"] #drag-ghost .g-cell.candy::before {
+html[data-brick-skin="pixel"] .p-cell.sweet::after,
+html[data-brick-skin="pixel"] #drag-ghost .g-cell.sweet::before {
   opacity: 0.1 !important;
   content: none !important;
 }
@@ -756,17 +756,17 @@ html[data-brick-skin="watercolor"] .vs-cell.vs-filled::before {
   opacity: 0.35 !important;
   
 }
-html[data-brick-skin="watercolor"] .p-cell.candy,
-html[data-brick-skin="watercolor"] #drag-ghost .g-cell.candy,
-html[data-brick-skin="watercolor"] .vs-mini-candy {
+html[data-brick-skin="watercolor"] .p-cell.sweet,
+html[data-brick-skin="watercolor"] #drag-ghost .g-cell.sweet,
+html[data-brick-skin="watercolor"] .vs-mini-sweet {
   border: none !important;
   border-radius: 6px !important;
   background: radial-gradient(circle at 40% 35%, color-mix(in srgb, var(--cc) 55%, #fff) 0%, color-mix(in srgb, var(--cc) 85%, transparent) 70%, transparent 100%) !important;
   box-shadow: 0 0 6px color-mix(in srgb, var(--cc) 40%, transparent) !important;
   filter: none !important;
 }
-html[data-brick-skin="watercolor"] .p-cell.candy::after,
-html[data-brick-skin="watercolor"] #drag-ghost .g-cell.candy::before {
+html[data-brick-skin="watercolor"] .p-cell.sweet::after,
+html[data-brick-skin="watercolor"] #drag-ghost .g-cell.sweet::before {
   opacity: 0.44999999999999996 !important;
   
 }
@@ -797,17 +797,17 @@ html[data-brick-skin="holo"] .vs-cell.vs-filled::before {
   opacity: 0.2 !important;
   
 }
-html[data-brick-skin="holo"] .p-cell.candy,
-html[data-brick-skin="holo"] #drag-ghost .g-cell.candy,
-html[data-brick-skin="holo"] .vs-mini-candy {
+html[data-brick-skin="holo"] .p-cell.sweet,
+html[data-brick-skin="holo"] #drag-ghost .g-cell.sweet,
+html[data-brick-skin="holo"] .vs-mini-sweet {
   border: none !important;
   border-radius: 4px !important;
   background: linear-gradient(135deg, color-mix(in srgb, var(--cc) 50%, #ff9ad5) 0%, color-mix(in srgb, var(--cc) 50%, #9ad5ff) 35%, color-mix(in srgb, var(--cc) 50%, #d5ff9a) 65%, color-mix(in srgb, var(--cc) 50%, #ffd59a) 100%) !important;
   box-shadow: 0 0 0 1px rgba(255,255,255,0.5), 0 0 12px color-mix(in srgb, var(--cc) 50%, transparent), inset 0 1px 0 rgba(255,255,255,0.6) !important;
   filter: none !important;
 }
-html[data-brick-skin="holo"] .p-cell.candy::after,
-html[data-brick-skin="holo"] #drag-ghost .g-cell.candy::before {
+html[data-brick-skin="holo"] .p-cell.sweet::after,
+html[data-brick-skin="holo"] #drag-ghost .g-cell.sweet::before {
   opacity: 0.30000000000000004 !important;
   
 }
@@ -838,17 +838,17 @@ html[data-brick-skin="matte"] .vs-cell.vs-filled::before {
   opacity: 0 !important;
   content: none !important;
 }
-html[data-brick-skin="matte"] .p-cell.candy,
-html[data-brick-skin="matte"] #drag-ghost .g-cell.candy,
-html[data-brick-skin="matte"] .vs-mini-candy {
+html[data-brick-skin="matte"] .p-cell.sweet,
+html[data-brick-skin="matte"] #drag-ghost .g-cell.sweet,
+html[data-brick-skin="matte"] .vs-mini-sweet {
   border: none !important;
   border-radius: 4px !important;
   background: color-mix(in srgb, var(--cc) 92%, #444) !important;
   box-shadow: 0 2px 4px rgba(0,0,0,0.3) !important;
   filter: none !important;
 }
-html[data-brick-skin="matte"] .p-cell.candy::after,
-html[data-brick-skin="matte"] #drag-ghost .g-cell.candy::before {
+html[data-brick-skin="matte"] .p-cell.sweet::after,
+html[data-brick-skin="matte"] #drag-ghost .g-cell.sweet::before {
   opacity: 0.1 !important;
   content: none !important;
 }
@@ -879,17 +879,17 @@ html[data-brick-skin="glossy"] .vs-cell.vs-filled::before {
   opacity: 0 !important;
   content: none !important;
 }
-html[data-brick-skin="glossy"] .p-cell.candy,
-html[data-brick-skin="glossy"] #drag-ghost .g-cell.candy,
-html[data-brick-skin="glossy"] .vs-mini-candy {
+html[data-brick-skin="glossy"] .p-cell.sweet,
+html[data-brick-skin="glossy"] #drag-ghost .g-cell.sweet,
+html[data-brick-skin="glossy"] .vs-mini-sweet {
   border: none !important;
   border-radius: 5px !important;
   background: linear-gradient(180deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, var(--cc) 38%, color-mix(in srgb, var(--cc) 70%, #000) 100%) !important;
   box-shadow: inset 0 3px 0 rgba(255,255,255,0.55), inset 0 -4px 6px rgba(0,0,0,0.25), 0 3px 6px rgba(0,0,0,0.3) !important;
   filter: none !important;
 }
-html[data-brick-skin="glossy"] .p-cell.candy::after,
-html[data-brick-skin="glossy"] #drag-ghost .g-cell.candy::before {
+html[data-brick-skin="glossy"] .p-cell.sweet::after,
+html[data-brick-skin="glossy"] #drag-ghost .g-cell.sweet::before {
   opacity: 0.1 !important;
   content: none !important;
 }
@@ -920,17 +920,17 @@ html[data-brick-skin="chalk"] .vs-cell.vs-filled::before {
   opacity: 0.45 !important;
   
 }
-html[data-brick-skin="chalk"] .p-cell.candy,
-html[data-brick-skin="chalk"] #drag-ghost .g-cell.candy,
-html[data-brick-skin="chalk"] .vs-mini-candy {
+html[data-brick-skin="chalk"] .p-cell.sweet,
+html[data-brick-skin="chalk"] #drag-ghost .g-cell.sweet,
+html[data-brick-skin="chalk"] .vs-mini-sweet {
   border: 1px dashed rgba(255,255,255,0.25) !important;
   border-radius: 2px !important;
   background: color-mix(in srgb, var(--cc) 70%, #c8c4b8) !important;
   box-shadow: inset 0 0 0 1px rgba(255,255,255,0.15), 1px 1px 0 rgba(0,0,0,0.2) !important;
   filter: none !important;
 }
-html[data-brick-skin="chalk"] .p-cell.candy::after,
-html[data-brick-skin="chalk"] #drag-ghost .g-cell.candy::before {
+html[data-brick-skin="chalk"] .p-cell.sweet::after,
+html[data-brick-skin="chalk"] #drag-ghost .g-cell.sweet::before {
   opacity: 0.5 !important;
   
 }
@@ -961,17 +961,17 @@ html[data-brick-skin="leather"] .vs-cell.vs-filled::before {
   opacity: 0 !important;
   content: none !important;
 }
-html[data-brick-skin="leather"] .p-cell.candy,
-html[data-brick-skin="leather"] #drag-ghost .g-cell.candy,
-html[data-brick-skin="leather"] .vs-mini-candy {
+html[data-brick-skin="leather"] .p-cell.sweet,
+html[data-brick-skin="leather"] #drag-ghost .g-cell.sweet,
+html[data-brick-skin="leather"] .vs-mini-sweet {
   border: 1px solid rgba(0,0,0,0.35) !important;
   border-radius: 3px !important;
   background: radial-gradient(circle at 30% 25%, color-mix(in srgb, var(--cc) 70%, #fff) 0%, var(--cc) 50%, color-mix(in srgb, var(--cc) 60%, #000) 100%) !important;
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -3px 6px rgba(0,0,0,0.45), 0 2px 4px rgba(0,0,0,0.35) !important;
   filter: none !important;
 }
-html[data-brick-skin="leather"] .p-cell.candy::after,
-html[data-brick-skin="leather"] #drag-ghost .g-cell.candy::before {
+html[data-brick-skin="leather"] .p-cell.sweet::after,
+html[data-brick-skin="leather"] #drag-ghost .g-cell.sweet::before {
   opacity: 0.1 !important;
   content: none !important;
 }
@@ -1002,17 +1002,17 @@ html[data-brick-skin="felt"] .vs-cell.vs-filled::before {
   opacity: 0.5 !important;
   
 }
-html[data-brick-skin="felt"] .p-cell.candy,
-html[data-brick-skin="felt"] #drag-ghost .g-cell.candy,
-html[data-brick-skin="felt"] .vs-mini-candy {
+html[data-brick-skin="felt"] .p-cell.sweet,
+html[data-brick-skin="felt"] #drag-ghost .g-cell.sweet,
+html[data-brick-skin="felt"] .vs-mini-sweet {
   border: none !important;
   border-radius: 5px !important;
   background: radial-gradient(circle at 40% 35%, color-mix(in srgb, var(--cc) 75%, #fff) 0%, var(--cc) 100%) !important;
   box-shadow: 0 2px 3px rgba(0,0,0,0.22), inset 0 1px 1px rgba(255,255,255,0.2) !important;
   filter: none !important;
 }
-html[data-brick-skin="felt"] .p-cell.candy::after,
-html[data-brick-skin="felt"] #drag-ghost .g-cell.candy::before {
+html[data-brick-skin="felt"] .p-cell.sweet::after,
+html[data-brick-skin="felt"] #drag-ghost .g-cell.sweet::before {
   opacity: 0.5 !important;
   
 }
@@ -1043,17 +1043,17 @@ html[data-brick-skin="ceramic"] .vs-cell.vs-filled::before {
   opacity: 0 !important;
   content: none !important;
 }
-html[data-brick-skin="ceramic"] .p-cell.candy,
-html[data-brick-skin="ceramic"] #drag-ghost .g-cell.candy,
-html[data-brick-skin="ceramic"] .vs-mini-candy {
+html[data-brick-skin="ceramic"] .p-cell.sweet,
+html[data-brick-skin="ceramic"] #drag-ghost .g-cell.sweet,
+html[data-brick-skin="ceramic"] .vs-mini-sweet {
   border: 2px solid rgba(255,255,255,0.35) !important;
   border-radius: 50% !important;
   background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--cc) 40%, #fff) 0%, var(--cc) 55%, color-mix(in srgb, var(--cc) 70%, #333) 100%) !important;
   box-shadow: inset 0 2px 3px rgba(255,255,255,0.55), 0 2px 5px rgba(0,0,0,0.28) !important;
   filter: none !important;
 }
-html[data-brick-skin="ceramic"] .p-cell.candy::after,
-html[data-brick-skin="ceramic"] #drag-ghost .g-cell.candy::before {
+html[data-brick-skin="ceramic"] .p-cell.sweet::after,
+html[data-brick-skin="ceramic"] #drag-ghost .g-cell.sweet::before {
   opacity: 0.1 !important;
   content: none !important;
 }
@@ -1084,17 +1084,17 @@ html[data-brick-skin="rubber"] .vs-cell.vs-filled::before {
   opacity: 0 !important;
   content: none !important;
 }
-html[data-brick-skin="rubber"] .p-cell.candy,
-html[data-brick-skin="rubber"] #drag-ghost .g-cell.candy,
-html[data-brick-skin="rubber"] .vs-mini-candy {
+html[data-brick-skin="rubber"] .p-cell.sweet,
+html[data-brick-skin="rubber"] #drag-ghost .g-cell.sweet,
+html[data-brick-skin="rubber"] .vs-mini-sweet {
   border: none !important;
   border-radius: 6px !important;
   background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--cc) 80%, #222) 0%, color-mix(in srgb, var(--cc) 70%, #000) 100%) !important;
   box-shadow: inset 0 2px 4px rgba(255,255,255,0.12), inset 0 -3px 5px rgba(0,0,0,0.5), 0 3px 5px rgba(0,0,0,0.35) !important;
   filter: none !important;
 }
-html[data-brick-skin="rubber"] .p-cell.candy::after,
-html[data-brick-skin="rubber"] #drag-ghost .g-cell.candy::before {
+html[data-brick-skin="rubber"] .p-cell.sweet::after,
+html[data-brick-skin="rubber"] #drag-ghost .g-cell.sweet::before {
   opacity: 0.1 !important;
   content: none !important;
 }
@@ -1125,17 +1125,17 @@ html[data-brick-skin="jelly"] .vs-cell.vs-filled::before {
   opacity: 0 !important;
   content: none !important;
 }
-html[data-brick-skin="jelly"] .p-cell.candy,
-html[data-brick-skin="jelly"] #drag-ghost .g-cell.candy,
-html[data-brick-skin="jelly"] .vs-mini-candy {
+html[data-brick-skin="jelly"] .p-cell.sweet,
+html[data-brick-skin="jelly"] #drag-ghost .g-cell.sweet,
+html[data-brick-skin="jelly"] .vs-mini-sweet {
   border: none !important;
   border-radius: 7px !important;
   background: radial-gradient(circle at 35% 28%, color-mix(in srgb, var(--cc) 45%, #fff) 0%, color-mix(in srgb, var(--cc) 75%, transparent) 60%, var(--cc) 100%) !important;
   box-shadow: inset 0 3px 6px rgba(255,255,255,0.45), 0 0 0 2px color-mix(in srgb, var(--cc) 40%, #fff), 0 4px 10px color-mix(in srgb, var(--cc) 35%, transparent) !important;
   filter: none !important;
 }
-html[data-brick-skin="jelly"] .p-cell.candy::after,
-html[data-brick-skin="jelly"] #drag-ghost .g-cell.candy::before {
+html[data-brick-skin="jelly"] .p-cell.sweet::after,
+html[data-brick-skin="jelly"] #drag-ghost .g-cell.sweet::before {
   opacity: 0.1 !important;
   content: none !important;
 }
@@ -1166,17 +1166,17 @@ html[data-brick-skin="pastel"] .vs-cell.vs-filled::before {
   opacity: 0.15 !important;
   
 }
-html[data-brick-skin="pastel"] .p-cell.candy,
-html[data-brick-skin="pastel"] #drag-ghost .g-cell.candy,
-html[data-brick-skin="pastel"] .vs-mini-candy {
+html[data-brick-skin="pastel"] .p-cell.sweet,
+html[data-brick-skin="pastel"] #drag-ghost .g-cell.sweet,
+html[data-brick-skin="pastel"] .vs-mini-sweet {
   border: 1px solid rgba(255,255,255,0.5) !important;
   border-radius: 5px !important;
   background: linear-gradient(180deg, color-mix(in srgb, var(--cc) 45%, #fff) 0%, color-mix(in srgb, var(--cc) 65%, #fff) 100%) !important;
   box-shadow: 0 2px 4px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.7) !important;
   filter: none !important;
 }
-html[data-brick-skin="pastel"] .p-cell.candy::after,
-html[data-brick-skin="pastel"] #drag-ghost .g-cell.candy::before {
+html[data-brick-skin="pastel"] .p-cell.sweet::after,
+html[data-brick-skin="pastel"] #drag-ghost .g-cell.sweet::before {
   opacity: 0.25 !important;
   
 }
@@ -1207,17 +1207,17 @@ html[data-brick-skin="retro"] .vs-cell.vs-filled::before {
   opacity: 0 !important;
   content: none !important;
 }
-html[data-brick-skin="retro"] .p-cell.candy,
-html[data-brick-skin="retro"] #drag-ghost .g-cell.candy,
-html[data-brick-skin="retro"] .vs-mini-candy {
+html[data-brick-skin="retro"] .p-cell.sweet,
+html[data-brick-skin="retro"] #drag-ghost .g-cell.sweet,
+html[data-brick-skin="retro"] .vs-mini-sweet {
   border: 3px solid rgba(0,0,0,0.35) !important;
   border-radius: 1px !important;
   background: var(--cc) !important;
   box-shadow: 0 3px 0 color-mix(in srgb, var(--cc) 50%, #000), inset 0 0 0 2px rgba(255,255,255,0.25) !important;
   filter: none !important;
 }
-html[data-brick-skin="retro"] .p-cell.candy::after,
-html[data-brick-skin="retro"] #drag-ghost .g-cell.candy::before {
+html[data-brick-skin="retro"] .p-cell.sweet::after,
+html[data-brick-skin="retro"] #drag-ghost .g-cell.sweet::before {
   opacity: 0.1 !important;
   content: none !important;
 }
@@ -1248,17 +1248,17 @@ html[data-brick-skin="galaxy"] .vs-cell.vs-filled::before {
   opacity: 0.55 !important;
   
 }
-html[data-brick-skin="galaxy"] .p-cell.candy,
-html[data-brick-skin="galaxy"] #drag-ghost .g-cell.candy,
-html[data-brick-skin="galaxy"] .vs-mini-candy {
+html[data-brick-skin="galaxy"] .p-cell.sweet,
+html[data-brick-skin="galaxy"] #drag-ghost .g-cell.sweet,
+html[data-brick-skin="galaxy"] .vs-mini-sweet {
   border: 1px solid rgba(180,140,255,0.35) !important;
   border-radius: 4px !important;
   background: radial-gradient(circle at 30% 30%, color-mix(in srgb, var(--cc) 55%, #fff) 0%, #1a1030 45%, #050510 100%) !important;
   box-shadow: 0 0 8px color-mix(in srgb, var(--cc) 50%, transparent), inset 0 0 12px rgba(120,80,200,0.35) !important;
   filter: none !important;
 }
-html[data-brick-skin="galaxy"] .p-cell.candy::after,
-html[data-brick-skin="galaxy"] #drag-ghost .g-cell.candy::before {
+html[data-brick-skin="galaxy"] .p-cell.sweet::after,
+html[data-brick-skin="galaxy"] #drag-ghost .g-cell.sweet::before {
   opacity: 0.5 !important;
   
 }
@@ -1289,17 +1289,17 @@ html[data-brick-skin="bubble"] .vs-cell.vs-filled::before {
   opacity: 0 !important;
   content: none !important;
 }
-html[data-brick-skin="bubble"] .p-cell.candy,
-html[data-brick-skin="bubble"] #drag-ghost .g-cell.candy,
-html[data-brick-skin="bubble"] .vs-mini-candy {
+html[data-brick-skin="bubble"] .p-cell.sweet,
+html[data-brick-skin="bubble"] #drag-ghost .g-cell.sweet,
+html[data-brick-skin="bubble"] .vs-mini-sweet {
   border: none !important;
   border-radius: 50% !important;
   background: radial-gradient(circle at 30% 25%, rgba(255,255,255,0.85) 0%, color-mix(in srgb, var(--cc) 50%, transparent) 40%, color-mix(in srgb, var(--cc) 70%, #fff) 100%) !important;
   box-shadow: inset 0 -4px 8px color-mix(in srgb, var(--cc) 40%, transparent), 0 0 0 2px rgba(255,255,255,0.5), 0 4px 10px rgba(0,0,0,0.15) !important;
   filter: none !important;
 }
-html[data-brick-skin="bubble"] .p-cell.candy::after,
-html[data-brick-skin="bubble"] #drag-ghost .g-cell.candy::before {
+html[data-brick-skin="bubble"] .p-cell.sweet::after,
+html[data-brick-skin="bubble"] #drag-ghost .g-cell.sweet::before {
   opacity: 0.1 !important;
   content: none !important;
 }
@@ -1330,17 +1330,17 @@ html[data-brick-skin="stone"] .vs-cell.vs-filled::before {
   opacity: 0.2 !important;
   
 }
-html[data-brick-skin="stone"] .p-cell.candy,
-html[data-brick-skin="stone"] #drag-ghost .g-cell.candy,
-html[data-brick-skin="stone"] .vs-mini-candy {
+html[data-brick-skin="stone"] .p-cell.sweet,
+html[data-brick-skin="stone"] #drag-ghost .g-cell.sweet,
+html[data-brick-skin="stone"] .vs-mini-sweet {
   border: 1px solid rgba(0,0,0,0.3) !important;
   border-radius: 2px !important;
   background: linear-gradient(180deg, color-mix(in srgb, var(--cc) 60%, #888) 0%, color-mix(in srgb, var(--cc) 70%, #555) 100%) !important;
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -2px 4px rgba(0,0,0,0.4), 0 2px 3px rgba(0,0,0,0.35) !important;
   filter: none !important;
 }
-html[data-brick-skin="stone"] .p-cell.candy::after,
-html[data-brick-skin="stone"] #drag-ghost .g-cell.candy::before {
+html[data-brick-skin="stone"] .p-cell.sweet::after,
+html[data-brick-skin="stone"] #drag-ghost .g-cell.sweet::before {
   opacity: 0.30000000000000004 !important;
   
 }
@@ -1371,17 +1371,17 @@ html[data-brick-skin="paper"] .vs-cell.vs-filled::before {
   opacity: 0 !important;
   content: none !important;
 }
-html[data-brick-skin="paper"] .p-cell.candy,
-html[data-brick-skin="paper"] #drag-ghost .g-cell.candy,
-html[data-brick-skin="paper"] .vs-mini-candy {
+html[data-brick-skin="paper"] .p-cell.sweet,
+html[data-brick-skin="paper"] #drag-ghost .g-cell.sweet,
+html[data-brick-skin="paper"] .vs-mini-sweet {
   border: 1px solid rgba(0,0,0,0.1) !important;
   border-radius: 2px !important;
   background: linear-gradient(180deg, color-mix(in srgb, var(--cc) 50%, #fff) 0%, color-mix(in srgb, var(--cc) 70%, #f0e8d8) 100%) !important;
   box-shadow: 1px 1px 0 rgba(0,0,0,0.08), 2px 3px 0 rgba(0,0,0,0.06), inset 0 0 0 1px rgba(0,0,0,0.06) !important;
   filter: none !important;
 }
-html[data-brick-skin="paper"] .p-cell.candy::after,
-html[data-brick-skin="paper"] #drag-ghost .g-cell.candy::before {
+html[data-brick-skin="paper"] .p-cell.sweet::after,
+html[data-brick-skin="paper"] #drag-ghost .g-cell.sweet::before {
   opacity: 0.1 !important;
   content: none !important;
 }
@@ -1412,17 +1412,17 @@ html[data-brick-skin="chrome"] .vs-cell.vs-filled::before {
   opacity: 0 !important;
   content: none !important;
 }
-html[data-brick-skin="chrome"] .p-cell.candy,
-html[data-brick-skin="chrome"] #drag-ghost .g-cell.candy,
-html[data-brick-skin="chrome"] .vs-mini-candy {
+html[data-brick-skin="chrome"] .p-cell.sweet,
+html[data-brick-skin="chrome"] #drag-ghost .g-cell.sweet,
+html[data-brick-skin="chrome"] .vs-mini-sweet {
   border: 1px solid #aaa !important;
   border-radius: 3px !important;
   background: linear-gradient(115deg, #fff 0%, color-mix(in srgb, var(--cc) 40%, #ddd) 18%, #fff 32%, color-mix(in srgb, var(--cc) 50%, #999) 48%, #eee 62%, color-mix(in srgb, var(--cc) 35%, #666) 80%, #ccc 100%) !important;
   box-shadow: inset 0 1px 0 #fff, inset 0 -2px 4px rgba(0,0,0,0.35), 0 2px 6px rgba(0,0,0,0.35) !important;
   filter: none !important;
 }
-html[data-brick-skin="chrome"] .p-cell.candy::after,
-html[data-brick-skin="chrome"] #drag-ghost .g-cell.candy::before {
+html[data-brick-skin="chrome"] .p-cell.sweet::after,
+html[data-brick-skin="chrome"] #drag-ghost .g-cell.sweet::before {
   opacity: 0.1 !important;
   content: none !important;
 }
@@ -1435,7 +1435,7 @@ html[data-brick-skin="chrome"] .sc.gem.glow-5 {
   animation: none !important;
 }
 
-/* ── chroma — flush candy + embossed icons (feature graphic) ── */
+/* ── chroma — flush sweet + embossed icons (feature graphic) ── */
 :root{
   --chroma-icon-heart:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Cpath%20fill%3D%22%23fff%22%20fill-opacity%3D%22.95%22%20d%3D%22M32%2054S8%2038%208%2022C8%2013%2015%208%2022%208c5%200%208%203%2010%206%202-3%205-6%2010-6%207%200%2014%205%2014%2014%200%2016-24%2032-24%2032z%22%2F%3E%3C%2Fsvg%3E");
   --chroma-icon-star:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Cpath%20fill%3D%22%23fff%22%20fill-opacity%3D%22.95%22%20d%3D%22M32%206l6.5%2018.5H58L42.5%2036l6%2018.5L32%2043.5%2015.5%2054.5l6-18.5L6%2024.5h19.5z%22%2F%3E%3C%2Fsvg%3E");
@@ -1526,10 +1526,10 @@ html[data-brick-skin="chroma"] .sc.gem[data-ci="7"],
 html[data-brick-skin="chroma"] .vs-cell.vs-filled[data-ci="7"]{
   background-image:var(--chroma-icon-leaf), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
 }
-html[data-brick-skin="chroma"] .p-cell.candy,
-html[data-brick-skin="chroma"] #drag-ghost .g-cell.candy,
-html[data-brick-skin="chroma"] .vs-mini-candy,
-html[data-brick-skin="chroma"] .vs-g-cell.candy{
+html[data-brick-skin="chroma"] .p-cell.sweet,
+html[data-brick-skin="chroma"] #drag-ghost .g-cell.sweet,
+html[data-brick-skin="chroma"] .vs-mini-sweet,
+html[data-brick-skin="chroma"] .vs-g-cell.sweet{
   border:none !important;
   border-radius:6px !important;
   overflow:hidden !important;
@@ -1542,58 +1542,58 @@ html[data-brick-skin="chroma"] .vs-g-cell.candy{
   box-shadow:inset 0 2px 0 rgba(255,255,255,0.55), inset 0 -3px 6px rgba(0,0,0,0.22), 0 1px 0 rgba(255,255,255,0.25), 0 3px 6px rgba(0,0,0,0.28) !important;
   filter:none !important;
 }
-html[data-brick-skin="chroma"] .p-cell.candy::after,
-html[data-brick-skin="chroma"] #drag-ghost .g-cell.candy::before,
-html[data-brick-skin="chroma"] .vs-g-cell.candy::before{
+html[data-brick-skin="chroma"] .p-cell.sweet::after,
+html[data-brick-skin="chroma"] #drag-ghost .g-cell.sweet::before,
+html[data-brick-skin="chroma"] .vs-g-cell.sweet::before{
   opacity:0 !important;
   content:none !important;
 }
-html[data-brick-skin="chroma"] .p-cell.candy[data-ci="0"],
-html[data-brick-skin="chroma"] #drag-ghost .g-cell.candy[data-ci="0"],
-html[data-brick-skin="chroma"] .vs-g-cell.candy[data-ci="0"],
-html[data-brick-skin="chroma"] .vs-mini-candy[data-ci="0"]{
+html[data-brick-skin="chroma"] .p-cell.sweet[data-ci="0"],
+html[data-brick-skin="chroma"] #drag-ghost .g-cell.sweet[data-ci="0"],
+html[data-brick-skin="chroma"] .vs-g-cell.sweet[data-ci="0"],
+html[data-brick-skin="chroma"] .vs-mini-sweet[data-ci="0"]{
   background-image:var(--chroma-icon-heart), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
 }
-html[data-brick-skin="chroma"] .p-cell.candy[data-ci="1"],
-html[data-brick-skin="chroma"] #drag-ghost .g-cell.candy[data-ci="1"],
-html[data-brick-skin="chroma"] .vs-g-cell.candy[data-ci="1"],
-html[data-brick-skin="chroma"] .vs-mini-candy[data-ci="1"]{
+html[data-brick-skin="chroma"] .p-cell.sweet[data-ci="1"],
+html[data-brick-skin="chroma"] #drag-ghost .g-cell.sweet[data-ci="1"],
+html[data-brick-skin="chroma"] .vs-g-cell.sweet[data-ci="1"],
+html[data-brick-skin="chroma"] .vs-mini-sweet[data-ci="1"]{
   background-image:var(--chroma-icon-drop), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
 }
-html[data-brick-skin="chroma"] .p-cell.candy[data-ci="2"],
-html[data-brick-skin="chroma"] #drag-ghost .g-cell.candy[data-ci="2"],
-html[data-brick-skin="chroma"] .vs-g-cell.candy[data-ci="2"],
-html[data-brick-skin="chroma"] .vs-mini-candy[data-ci="2"]{
+html[data-brick-skin="chroma"] .p-cell.sweet[data-ci="2"],
+html[data-brick-skin="chroma"] #drag-ghost .g-cell.sweet[data-ci="2"],
+html[data-brick-skin="chroma"] .vs-g-cell.sweet[data-ci="2"],
+html[data-brick-skin="chroma"] .vs-mini-sweet[data-ci="2"]{
   background-image:var(--chroma-icon-leaf), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
 }
-html[data-brick-skin="chroma"] .p-cell.candy[data-ci="3"],
-html[data-brick-skin="chroma"] #drag-ghost .g-cell.candy[data-ci="3"],
-html[data-brick-skin="chroma"] .vs-g-cell.candy[data-ci="3"],
-html[data-brick-skin="chroma"] .vs-mini-candy[data-ci="3"]{
+html[data-brick-skin="chroma"] .p-cell.sweet[data-ci="3"],
+html[data-brick-skin="chroma"] #drag-ghost .g-cell.sweet[data-ci="3"],
+html[data-brick-skin="chroma"] .vs-g-cell.sweet[data-ci="3"],
+html[data-brick-skin="chroma"] .vs-mini-sweet[data-ci="3"]{
   background-image:var(--chroma-icon-star), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
 }
-html[data-brick-skin="chroma"] .p-cell.candy[data-ci="4"],
-html[data-brick-skin="chroma"] #drag-ghost .g-cell.candy[data-ci="4"],
-html[data-brick-skin="chroma"] .vs-g-cell.candy[data-ci="4"],
-html[data-brick-skin="chroma"] .vs-mini-candy[data-ci="4"]{
+html[data-brick-skin="chroma"] .p-cell.sweet[data-ci="4"],
+html[data-brick-skin="chroma"] #drag-ghost .g-cell.sweet[data-ci="4"],
+html[data-brick-skin="chroma"] .vs-g-cell.sweet[data-ci="4"],
+html[data-brick-skin="chroma"] .vs-mini-sweet[data-ci="4"]{
   background-image:var(--chroma-icon-flower), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
 }
-html[data-brick-skin="chroma"] .p-cell.candy[data-ci="5"],
-html[data-brick-skin="chroma"] #drag-ghost .g-cell.candy[data-ci="5"],
-html[data-brick-skin="chroma"] .vs-g-cell.candy[data-ci="5"],
-html[data-brick-skin="chroma"] .vs-mini-candy[data-ci="5"]{
+html[data-brick-skin="chroma"] .p-cell.sweet[data-ci="5"],
+html[data-brick-skin="chroma"] #drag-ghost .g-cell.sweet[data-ci="5"],
+html[data-brick-skin="chroma"] .vs-g-cell.sweet[data-ci="5"],
+html[data-brick-skin="chroma"] .vs-mini-sweet[data-ci="5"]{
   background-image:var(--chroma-icon-flower), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
 }
-html[data-brick-skin="chroma"] .p-cell.candy[data-ci="6"],
-html[data-brick-skin="chroma"] #drag-ghost .g-cell.candy[data-ci="6"],
-html[data-brick-skin="chroma"] .vs-g-cell.candy[data-ci="6"],
-html[data-brick-skin="chroma"] .vs-mini-candy[data-ci="6"]{
+html[data-brick-skin="chroma"] .p-cell.sweet[data-ci="6"],
+html[data-brick-skin="chroma"] #drag-ghost .g-cell.sweet[data-ci="6"],
+html[data-brick-skin="chroma"] .vs-g-cell.sweet[data-ci="6"],
+html[data-brick-skin="chroma"] .vs-mini-sweet[data-ci="6"]{
   background-image:var(--chroma-icon-star), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
 }
-html[data-brick-skin="chroma"] .p-cell.candy[data-ci="7"],
-html[data-brick-skin="chroma"] #drag-ghost .g-cell.candy[data-ci="7"],
-html[data-brick-skin="chroma"] .vs-g-cell.candy[data-ci="7"],
-html[data-brick-skin="chroma"] .vs-mini-candy[data-ci="7"]{
+html[data-brick-skin="chroma"] .p-cell.sweet[data-ci="7"],
+html[data-brick-skin="chroma"] #drag-ghost .g-cell.sweet[data-ci="7"],
+html[data-brick-skin="chroma"] .vs-g-cell.sweet[data-ci="7"],
+html[data-brick-skin="chroma"] .vs-mini-sweet[data-ci="7"]{
   background-image:var(--chroma-icon-leaf), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
 }
 html[data-brick-skin="chroma"] .sc.gem.glow-1,

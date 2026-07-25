@@ -244,7 +244,7 @@ function buildGhost(piece){
   piece.shape.forEach(([r,c])=>cells[r*(maxC+1)+c]=piece.color);
   cells.forEach(color=>{
     const d=document.createElement('div');
-    d.className='g-cell'+(color?' candy':'');
+    d.className='g-cell'+(color?' sweet':'');
     d.style.width=g.cell+'px';
     d.style.height=g.cell+'px';
     if(color){
@@ -829,7 +829,7 @@ function processClears(opts){
   showScorePop(totalKeys.size, pts, _ctr.x, _ctr.y, consecutiveBursts);
   showShockwave(_ctr.x, _ctr.y, consecutiveBursts);
   // Chỉ hiện câu khen (COOL/GOOD/...) khi đạt MỐC 5 lần nổ liên tiếp — không phải cứ nổ
-  // là khen ngay, phải thật sự khó (combo dài) mới được khen (tham khảo Block Blast).
+  // là khen ngay, phải thật sự khó (combo dài) mới được khen.
   if(shouldPraise(consecutiveBursts)) showPraise(praiseLevelForStreak(consecutiveBursts));
   showComboCountFlash(combo);
   updateComboBorderGlow(consecutiveBursts); // viền sáng theo combo map thường
@@ -1140,7 +1140,7 @@ function renderPieces(){
     piece.shape.forEach(([r,c])=>cells[r*(maxC+1)+c]=piece.color);
     cells.forEach(color=>{
       const d=document.createElement('div');
-      d.className='p-cell'+(color?' candy':'');
+      d.className='p-cell'+(color?' sweet':'');
       
       // --- CHỈNH SỬA TẠI ĐÂY: Ép tỷ lệ ô luôn luôn vuông 1:1 ---
       d.style.aspectRatio='1 / 1';
