@@ -493,12 +493,12 @@
       <div id="spin-hint" class="spin-hint">1 lượt quay miễn phí mỗi ngày</div>
       <div id="spin-reward-layer" class="spin-reward-layer" hidden>
         <div class="spin-reward-box">
-          <div class="spin-reward-title">Chúc mừng!</div>
+          <div class="spin-reward-title" data-i18n="spinCongratsTitle">Chúc mừng!</div>
           <div id="spin-reward-icon" class="spin-reward-icon">🎁</div>
-          <div id="spin-reward-text" class="spin-reward-text">Bạn nhận được phần thưởng</div>
+          <div id="spin-reward-text" class="spin-reward-text">Chúc mừng bạn nhận được: 1 tim</div>
           <div id="spin-reward-extra" class="spin-reward-extra"></div>
           <div id="spin-reward-inv" class="spin-reward-inv"></div>
-          <button type="button" id="spin-reward-ok" class="spin-go-btn spin-reward-ok">Xác nhận</button>
+          <button type="button" id="spin-reward-ok" class="spin-go-btn spin-reward-ok" data-i18n="spinClaim">Nhận</button>
         </div>
       </div>
       <button type="button" class="spin-close-round" data-close-spin aria-label="Close">✕</button>
@@ -617,6 +617,10 @@
     <div class="admin-card">
       <div class="admin-title"><span data-i18n="ppTitle">🪪 Hồ sơ người chơi</span><button class="admin-close" id="pp-close-btn">✕</button></div>
       <div class="admin-sub" data-i18n="ppSub">Nickname tùy ý · ký tự đặc biệt được phép</div>
+      <div class="pp-id-row" id="pp-id-row">
+        <span data-i18n="ppPlayerId">ID</span>: <b id="pp-player-id">—</b>
+        <button type="button" id="pp-copy-id" class="pp-copy-id" data-i18n="ppCopyId">Sao chép</button>
+      </div>
       <div class="pp-preview-wrap"><span data-i18n="ppPreview">Xem trước</span>: <span id="pp-nick-preview" class="pp-preview">—</span></div>
       <div class="pp-font-label" data-i18n="ppAvatar">Avatar</div>
       <div class="admin-sub" data-i18n="ppAvatarHint">Chọn thú làm ảnh đại diện</div>
@@ -697,10 +701,24 @@
   </div>
 
   <div id="friends-panel" class="admin-panel-like">
-    <div class="admin-card">
+    <div class="admin-card friends-screen-card">
       <div class="admin-title"><span data-i18n="friendsTitle">🤝 Danh sách bạn bè</span><button class="admin-close" id="friends-close-btn">✕</button></div>
       <div id="friends-cap-line" class="gchat-friend-cap"></div>
+      <div class="friends-search-row">
+        <input type="search" id="friends-search-input" class="friends-search-input" maxlength="40" autocomplete="off" data-i18n-placeholder="friendsSearchPh" placeholder="Tìm theo tên hoặc ID...">
+        <button type="button" id="friends-search-btn" class="friends-search-btn" data-i18n="friendsSearch">Tìm</button>
+      </div>
+      <div id="friends-search-result" class="friends-search-result"></div>
+      <div class="friends-section-title" data-i18n="friendsMyList">Bạn của bạn</div>
       <div id="friends-panel-list" class="friends-panel-list"></div>
+      <div class="friends-section-title" data-i18n="friendsSuggest">Gợi ý kết bạn</div>
+      <div class="admin-sub" data-i18n="friendsSuggestHint">20 người chơi ngẫu nhiên trên server — gửi lời mời hàng loạt</div>
+      <div id="friends-suggest-list" class="friends-suggest-list"></div>
+      <div class="friends-suggest-actions">
+        <button type="button" id="friends-suggest-refresh" class="auth-submit-btn btn-ghost" style="background:rgba(255,255,255,0.12);" data-i18n="friendsRefresh">🔄 Đổi danh sách</button>
+        <button type="button" id="friends-suggest-invite" class="auth-submit-btn" data-i18n="friendsInviteAll">📨 Gửi xin kết bạn</button>
+      </div>
+      <div id="friends-status" class="friends-status" aria-live="polite"></div>
       <button type="button" id="friends-open-chat" class="auth-submit-btn" style="margin-top:10px;" data-i18n="friendsOpenChat">💬 Mở chat bạn bè</button>
     </div>
   </div>

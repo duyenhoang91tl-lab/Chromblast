@@ -335,9 +335,18 @@
     return null;
   }
 
+  /** Ô nền trên vòng quay — mở nền kế tiếp chưa có (chance=1 khi trúng ô). */
   function tryUnlockRandomBoardFromSpin(chance, quiet) {
-    // Không mở nền bằng vòng quay — chỉ Shop
-    return null;
+    if (Math.random() > (chance == null ? 1 : Number(chance))) return null;
+    const id = nextLockedSkinId();
+    if (!id) return null;
+    if (!unlockBoardSkin(id)) return null;
+    if (!quiet) {
+      try {
+        if (typeof openBoardSkinPanel === "function") openBoardSkinPanel("unlock", id);
+      } catch (_) {}
+    }
+    return id;
   }
 
   function initBoardSkins() {
