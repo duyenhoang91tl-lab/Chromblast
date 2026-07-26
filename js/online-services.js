@@ -864,7 +864,57 @@ function friendlyOnlineAuthError(e){
 
 // ── Phòng ─────────────────────────────────────────────────────
 // Mỗi người chỉ host được 1 phòng đang sống (open/ready/playing) tại một thời điểm.
-const ROOM_STALE_MS = 45 * 60 * 1000; // phòng playing/ready treo quá lâu → coi như bỏ
+const ROOM_STALE_MS = 45 * 60 * 1000; // lưới an toàn chậm — chỉ dùng khi quét lại phòng của mình (F5 vào hub)
+const ROOM_HEARTBEAT_MS = 4000;   // chủ phòng ghi "nhịp tim" mỗi 4s trong khi còn ở trong phòng
+const ROOM_LIVE_STALE_MS = 12000; // quá 12s không có nhịp tim → coi như chủ phòng đã mất kết nối/thoát
+
+// ── Nhịp tim của chủ phòng (presence) ───────────────────────────
+// Firestore không có onDisconnect() như Realtime Database, nên ta tự mô phỏng bằng
+// cách chủ phòng ghi timestamp định kỳ; ai cũng có thể phát hiện + dọn phòng khi
+// nhịp tim đó im lặng quá lâu (xem thêm rule "lastSeen" trong firestore.rules).
+let _roomHeartbeatTimer = null;
+let _roomHeartbeatRoomId = null;
+
+function startRoomHeartbeat(roomId){
+  stopRoomHeartbeat();
+  if(!_onlineDb || !roomId) return;
+  _roomHeartbeatRoomId = roomId;
+  const beat = () => {
+    if(!_onlineDb || _roomHeartbeatRoomId !== roomId) return;
+    _onlineDb.collection('rooms').doc(roomId).update({
+      lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+    }).catch(()=>{});
+  };
+  beat();
+  _roomHeartbeatTimer = setInterval(beat, ROOM_HEARTBEAT_MS);
+}
+
+function stopRoomHeartbeat(){
+  if(_roomHeartbeatTimer){ clearInterval(_roomHeartbeatTimer); _roomHeartbeatTimer = null; }
+  _roomHeartbeatRoomId = null;
+}
+
+function _roomLastSeenMs(r){
+  const t = r && (r.lastSeen || r.updatedAt || r.startedAt || r.createdAt);
+  if(!t) return 0;
+  try{
+    if(typeof t.toMillis === 'function') return t.toMillis();
+    if(t.seconds) return t.seconds * 1000;
+  }catch(e){}
+  return 0;
+}
+
+/** true nếu phòng không còn nhịp tim từ chủ phòng trong ROOM_LIVE_STALE_MS gần đây. */
+function isRoomHostStale(r){
+  const ms = _roomLastSeenMs(r);
+  if(!ms) return false; // chưa có mốc thời gian nào → chưa đủ dữ liệu, tránh xoá nhầm phòng vừa tạo
+  return (Date.now() - ms) > ROOM_LIVE_STALE_MS;
+}
+
+/** Xoá best-effort một phòng đã xác định là "chết" (chủ phòng hết nhịp tim). */
+function deleteOnlineRoom(roomId){
+  return _deleteRoomDoc(roomId);
+}
 
 async function _listHostedRooms(uid){
   if(!_onlineDb || !uid) return [];
@@ -1078,7 +1128,8 @@ async function createOnlineRoom(opts){
     turnSec: opts.turnSec === 10 ? 10 : (opts.turnSec === 15 ? 15 : null),
     boardSkin: opts.boardSkin || null,
     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    lastSeen: firebase.firestore.FieldValue.serverTimestamp()
   };
   await ref.set(roomData);
   return { roomId: ref.id, code, reused: false, room: Object.assign({ roomId: ref.id }, roomData) };
@@ -1160,18 +1211,18 @@ async function joinOnlineRoomById(roomId, opts){
 
 async function leaveOnlineRoom(roomId){
   if(!_onlineDb || !roomId) return;
+  // Dừng nhịp tim ngay lập tức nếu đây là phòng mình đang host — không chờ vòng lặp tiếp theo.
+  if(_roomHeartbeatRoomId === roomId) stopRoomHeartbeat();
   const ref = _onlineDb.collection('rooms').doc(roomId);
   const snap = await ref.get();
   if(!snap.exists) return;
   const d = snap.data();
   const uid = _onlineUid;
   if(d.hostId === uid){
-    if(d.guestId) await ref.update({
-      hostId: d.guestId, hostName: d.guestName, hostAvatar: d.guestAvatar || null,
-      guestId: null, guestName: null, guestAvatar: null, status: 'open', guestReady: false,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    else await ref.delete();
+    // Chủ phòng thoát (đóng tab / bấm thoát / mất kết nối) → luôn xoá phòng ngay lập tức,
+    // kể cả khi đang có khách trong phòng. Khách sẽ nhận sự kiện 'deleted' qua listenOnlineRoom
+    // và được báo "Chủ phòng đã rời phòng" rồi tự động về danh sách phòng (xem caro.js).
+    await ref.delete();
   } else if(d.guestId === uid){
     await ref.update({
       guestId: null, guestName: null, guestAvatar: null, guestReady: false, status: 'open',
@@ -1181,7 +1232,13 @@ async function leaveOnlineRoom(roomId){
   stopListeningRoom();
 }
 
-/** Best-effort: F5 / đóng tab → xóa phòng trống đang host (tránh phòng ma). */
+/**
+ * Best-effort: đóng tab / F5 / thoát app → xoá NGAY phòng đang host, dù đang có khách
+ * hay đang chơi dở (yêu cầu: chủ phòng thoát dưới bất kỳ hình thức nào cũng phải dọn phòng).
+ * Đây chỉ là lớp "nhanh nhất có thể" khi trình duyệt còn kịp bắn sự kiện; trường hợp mất
+ * mạng đột ngột / crash / kill app không bắn được sự kiện này thì đã có cơ chế nhịp tim
+ * (startRoomHeartbeat/isRoomHostStale ở trên) tự dọn trong tối đa ~ROOM_LIVE_STALE_MS.
+ */
 function bindOnlineRoomUnloadCleanup(){
   if(bindOnlineRoomUnloadCleanup._done) return;
   bindOnlineRoomUnloadCleanup._done = true;
@@ -1190,16 +1247,10 @@ function bindOnlineRoomUnloadCleanup(){
       const uid = _onlineUid;
       const db = _onlineDb;
       if(!uid || !db || typeof db.collection !== 'function') return;
-      // Chỉ dọn khi không trong trận đang chơi (caroMode / versusMode)
-      const inMatch = (typeof caroMode !== 'undefined' && caroMode) ||
-        (typeof versusMode !== 'undefined' && versusMode);
-      if(inMatch) return;
       db.collection('rooms').where('hostId', '==', uid).limit(10).get().then(snap=>{
         snap.docs.forEach(doc=>{
           const d = doc.data() || {};
-          if(d.status === 'playing') return;
-          if(d.guestId) return;
-          if(d.status === 'open' || d.status === 'ready'){
+          if(d.status === 'open' || d.status === 'ready' || d.status === 'playing'){
             doc.ref.delete().catch(()=>{});
           }
         });
@@ -1208,6 +1259,10 @@ function bindOnlineRoomUnloadCleanup(){
   };
   window.addEventListener('pagehide', flush);
   window.addEventListener('beforeunload', flush);
+  // Lưu ý: KHÔNG dùng 'visibilitychange' để xoá ngay — chuyển tab/khoá màn hình tạm thời
+  // không phải là "thoát phòng". Trường hợp app bị đưa xuống nền hẳn/kill/mất mạng được
+  // xử lý bởi nhịp tim (heartbeat) ở trên: timer sẽ bị trình duyệt tạm dừng khi ở nền, nên
+  // sau tối đa ~ROOM_LIVE_STALE_MS người khác sẽ tự phát hiện phòng "chết" và dọn.
 }
 
 async function startOnlineRoomMatch(roomId, opts){
@@ -1587,20 +1642,41 @@ function listenOpenRoomsByGameType(gameType, onUpdate, unsubKey){
     .where('gameType', '==', gameType)
     .where('status', '==', 'open')
     .limit(30);
-  const unsub = q.onSnapshot(snap => {
-    const rooms = snap.docs.map(doc => ({ roomId: doc.id, ...doc.data() }));
+  const _gcAttempted = new Set(); // tránh gửi nhiều lệnh xoá trùng cho cùng 1 phòng chết
+  let _lastDocs = [];
+  const emit = () => {
+    // Phòng mà chủ đã im nhịp tim quá ROOM_LIVE_STALE_MS → coi như đã thoát:
+    // ẩn khỏi danh sách NGAY (không đợi xoá xong) + tranh dọn luôn document đó.
+    const rooms = _lastDocs.filter(r => {
+      if(!isRoomHostStale(r)) return true;
+      if(!_gcAttempted.has(r.roomId)){
+        _gcAttempted.add(r.roomId);
+        deleteOnlineRoom(r.roomId);
+      }
+      return false;
+    });
     rooms.sort((a, b) => {
       const ta = a.createdAt && a.createdAt.toMillis ? a.createdAt.toMillis() : 0;
       const tb = b.createdAt && b.createdAt.toMillis ? b.createdAt.toMillis() : 0;
       return ta - tb;
     });
     if(typeof onUpdate === 'function') onUpdate(rooms);
+  };
+  const unsub = q.onSnapshot(snap => {
+    _lastDocs = snap.docs.map(doc => ({ roomId: doc.id, ...doc.data() }));
+    _gcAttempted.clear(); // dữ liệu mới → cho phép tranh dọn lại nếu vẫn còn phòng chết
+    emit();
   }, err => {
     console.warn('['+gameType+'-rooms]', err);
     if(typeof onUpdate === 'function') onUpdate([]);
   });
-  if(unsubKey === '_openCaroRoomsUnsub') _openCaroRoomsUnsub = unsub;
-  else if(unsubKey === '_openVersusRoomsUnsub') _openVersusRoomsUnsub = unsub;
+  // Firestore chỉ bắn snapshot khi dữ liệu đổi — nếu chủ phòng im re bặt (mất mạng) thì
+  // không có snapshot mới nào tới cả. Cần tự chấm lại độ "sống" định kỳ để danh sách vẫn
+  // ẩn phòng chết đúng lúc, không phải chờ ai đó vô tình làm phòng thay đổi mới cập nhật.
+  const staleCheckTimer = setInterval(emit, 3000);
+  const unsubAndClear = () => { unsub(); clearInterval(staleCheckTimer); };
+  if(unsubKey === '_openCaroRoomsUnsub') _openCaroRoomsUnsub = unsubAndClear;
+  else if(unsubKey === '_openVersusRoomsUnsub') _openVersusRoomsUnsub = unsubAndClear;
 }
 
 // ── Kết quả & BXH Caro ────────────────────────────────────────

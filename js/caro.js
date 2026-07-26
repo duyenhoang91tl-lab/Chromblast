@@ -1165,12 +1165,23 @@ function _caroEnterGame(roomData){
   }
 
   const roomId = _caro.roomId;
+  // Chỉ chủ phòng ghi nhịp tim trong trận — khách phát hiện mất nhịp tim này để biết
+  // chủ phòng đã thoát/mất kết nối gần như ngay lập tức thay vì bị treo màn hình chờ.
+  if(isHost && typeof startRoomHeartbeat === 'function') startRoomHeartbeat(roomId);
+
   // Đăng ký room TRƯỚC — stopListeningRoomDoc không được hủy moves
   listenOnlineRoom(roomId, ev=>{
-    if(ev.type==='deleted'){ _caroQuit(); return; }
+    if(ev.type==='deleted'){ _caroQuit(); _caroHandleHostLeft(); return; }
     const d = ev.data;
     _caroApplyRoomMetaToGame(d);
     if(!_caro || _caro.winner) return;
+    // Khách rời trận giữa chừng (đóng tab/thoát) → báo cho chủ phòng và đưa về danh sách,
+    // tương tự chiều ngược lại, để chủ phòng không bị treo chờ vô thời hạn.
+    if(isHost && !d.guestId && d.status === 'playing'){
+      _caroQuit();
+      _caroHandleGuestLeft();
+      return;
+    }
     if(d.currentTurn === 'host' || d.currentTurn === 'guest'){
       let stones = 0;
       for(let r=0;r<CARO_SIZE;r++) for(let c=0;c<CARO_SIZE;c++) if(_caro.board[r][c]) stones++;
@@ -1390,6 +1401,13 @@ async function _caroSendChat(e){
 }
 
 function _caroQuit(){
+  // Bấm "Thoát" giữa trận online (hoặc đang bị dọn do phòng đã mất) → báo Firestore ngay:
+  // chủ phòng thoát thì xoá phòng thật (đối thủ sẽ nhận sự kiện 'deleted' và được đưa về
+  // danh sách phòng), khách thoát thì trả phòng lại trạng thái mở cho chủ phòng.
+  if(_caro && _caro.online && _caro.roomId && typeof leaveOnlineRoom === 'function'){
+    leaveOnlineRoom(_caro.roomId).catch(()=>{});
+  }
+  try{ if(typeof stopRoomHeartbeat === 'function') stopRoomHeartbeat(); }catch(e){}
   caroMode = false;
   _caroStopTimer();
   if(_caro && _caro.aiTimer) clearTimeout(_caro.aiTimer);
@@ -1597,14 +1615,40 @@ function _caroOpenLobby(roomId, code, role, roomData){
   _caroRenderLobby(roomData);
   if(typeof listenOpenCaroRooms === 'function') listenOpenCaroRooms(_caroRenderOpenRoomLists);
 
+  // Chỉ chủ phòng ghi nhịp tim — dùng để mọi người phát hiện phòng "chết" gần như tức thời
+  // (xem startRoomHeartbeat/isRoomHostStale trong online-services.js).
+  if(typeof startRoomHeartbeat === 'function'){
+    if(role === 'host') startRoomHeartbeat(roomId);
+    else if(typeof stopRoomHeartbeat === 'function') stopRoomHeartbeat();
+  }
+
   listenOnlineRoom(roomId, ev=>{
-    if(ev.type==='deleted'){ closeCaroHub(); return; }
+    if(ev.type==='deleted'){ closeCaroHub(); _caroHandleHostLeft(); return; }
     const d = ev.data;
     _caroLobby.roomData = d;
     _caroSyncRoomPrefsFromData(d);
     _caroRenderLobby(d);
     if(d.status==='playing' && !caroMode) _caroEnterGame({ roomId, ...d });
   });
+}
+
+/** Phòng/trận không còn người chơi kia nữa (họ rời/mất kết nối) trong lúc mình đang chờ
+ * hoặc đang chơi: báo bằng thông báo rồi tự động đưa về danh sách phòng — không để bị
+ * treo/đứng hình. */
+function _caroReturnToRoomList(msg){
+  try{ if(typeof stopRoomHeartbeat === 'function') stopRoomHeartbeat(); }catch(e){}
+  try{ showHint(msg, { hold: 2600 }); }catch(e){}
+  openCaroHub();
+}
+
+/** Phòng bị xoá vì chủ phòng đã rời/mất kết nối (trường hợp chính yêu cầu ở đây). */
+function _caroHandleHostLeft(){
+  _caroReturnToRoomList(typeof t==='function' ? t('caroHostLeftRoom') : 'Chủ phòng đã rời phòng');
+}
+
+/** Khách rời/mất kết nối giữa trận — báo cho chủ phòng để không bị treo chờ vô thời hạn. */
+function _caroHandleGuestLeft(){
+  _caroReturnToRoomList(typeof t==='function' ? t('caroGuestLeftRoom') : 'Đối thủ đã rời trận');
 }
 
 function _caroRenderLobby(d){
