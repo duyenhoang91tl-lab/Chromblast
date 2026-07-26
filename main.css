@@ -1636,11 +1636,12 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
   transition: box-shadow 0.3s ease;
 }
 @keyframes ultraFrameSpin {
-  0%   { box-shadow: 0 0 0 5px #ff4444, 0 0 0 10px rgba(255,68,68,0.6),  0 0 55px rgba(255,68,68,0.7),  0 0 120px rgba(255,68,68,0.3); }
-  25%  { box-shadow: 0 0 0 5px #ff9900, 0 0 0 10px rgba(255,153,0,0.6),  0 0 55px rgba(255,153,0,0.7),  0 0 120px rgba(255,153,0,0.3); }
-  50%  { box-shadow: 0 0 0 5px #00e5ff, 0 0 0 10px rgba(0,229,255,0.6),  0 0 55px rgba(0,229,255,0.7),  0 0 120px rgba(0,229,255,0.3); }
-  75%  { box-shadow: 0 0 0 5px #cc44ff, 0 0 0 10px rgba(204,68,255,0.6), 0 0 55px rgba(204,68,255,0.7), 0 0 120px rgba(204,68,255,0.3); }
-  100% { box-shadow: 0 0 0 5px #ff4444, 0 0 0 10px rgba(255,68,68,0.6),  0 0 55px rgba(255,68,68,0.7),  0 0 120px rgba(255,68,68,0.3); }
+  /* Perf: giảm 4 lớp shadow → 2 lớp, bỏ lớp blur 120px */
+  0%   { box-shadow: 0 0 0 5px #ff4444, 0 0 40px rgba(255,68,68,0.6); }
+  25%  { box-shadow: 0 0 0 5px #ff9900, 0 0 40px rgba(255,153,0,0.6); }
+  50%  { box-shadow: 0 0 0 5px #00e5ff, 0 0 40px rgba(0,229,255,0.6); }
+  75%  { box-shadow: 0 0 0 5px #cc44ff, 0 0 40px rgba(204,68,255,0.6); }
+  100% { box-shadow: 0 0 0 5px #ff4444, 0 0 40px rgba(255,68,68,0.6); }
 }
 
 /* ══════════════════════════════════════════════════════
@@ -1668,29 +1669,35 @@ hr.account-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); ma
   animation: cg3 0.75s ease-in-out infinite alternate !important;
 }
 @keyframes cg3 {
-  from { box-shadow: 0 0 0 4px #EF9F27, 0 0 45px rgba(239,159,39,0.65), 0 0 110px rgba(239,159,39,0.3); }
-  to   { box-shadow: 0 0 0 8px #ffe060, 0 0 85px rgba(239,159,39,1),    0 0 180px rgba(255,140,0,0.5), 0 0 260px rgba(255,100,0,0.2); }
+  /* Perf: giảm số lớp shadow (4→2) và bán kính blur (tối đa 260px→100px) — vẫn ra
+     cùng cảm giác glow trên màn hình điện thoại nhưng vùng phải paint lại mỗi frame nhỏ hơn nhiều. */
+  from { box-shadow: 0 0 0 4px #EF9F27, 0 0 35px rgba(239,159,39,0.5); }
+  to   { box-shadow: 0 0 0 8px #ffe060, 0 0 70px rgba(255,140,0,0.6); }
 }
 /* Lv4 — SPECTACULAR/UNREAL (streak 6-7): đỏ-hồng dữ dội */
 #grid-wrap.combo-glow-4 {
   animation: cg4 0.5s ease-in-out infinite alternate !important;
 }
 @keyframes cg4 {
-  from { box-shadow: 0 0 0 5px #E24B4A, 0 0 60px rgba(226,75,74,0.75),  0 0 140px rgba(212,83,126,0.35), 0 0 240px rgba(212,83,126,0.15); }
-  to   { box-shadow: 0 0 0 10px #ff88c8, 0 0 100px rgba(226,75,74,1),   0 0 210px rgba(212,83,126,0.65), 0 0 350px rgba(127,119,221,0.25); }
+  /* Perf: giảm số lớp shadow (4→2) và bán kính blur (tối đa 350px→110px) */
+  from { box-shadow: 0 0 0 5px #E24B4A, 0 0 45px rgba(226,75,74,0.6); }
+  to   { box-shadow: 0 0 0 10px #ff88c8, 0 0 80px rgba(212,83,126,0.7); }
 }
 /* Lv5 — LEGENDARY (streak cao): rainbow điên cuồng siêu mạnh */
 #grid-wrap.combo-glow-5 {
   animation: cg5 0.28s linear infinite !important;
 }
 @keyframes cg5 {
-  0%   { box-shadow: 0 0 0 8px #ff4444,  0 0 100px rgba(255,68,68,1),    0 0 220px rgba(255,68,68,0.55),   0 0 400px rgba(255,68,68,0.2); }
-  16%  { box-shadow: 0 0 0 10px #ff9900, 0 0 110px rgba(255,153,0,1),    0 0 240px rgba(255,153,0,0.6),    0 0 420px rgba(255,153,0,0.22); }
-  33%  { box-shadow: 0 0 0 9px #f7c948,  0 0 105px rgba(247,201,72,1),   0 0 230px rgba(247,201,72,0.58),  0 0 410px rgba(247,201,72,0.2); }
-  50%  { box-shadow: 0 0 0 10px #00e5ff, 0 0 110px rgba(0,229,255,1),    0 0 240px rgba(0,229,255,0.6),    0 0 420px rgba(0,229,255,0.22); }
-  66%  { box-shadow: 0 0 0 9px #D4537E,  0 0 105px rgba(212,83,126,1),   0 0 230px rgba(212,83,126,0.58),  0 0 410px rgba(212,83,126,0.2); }
-  83%  { box-shadow: 0 0 0 10px #7F77DD, 0 0 110px rgba(127,119,221,1),  0 0 240px rgba(127,119,221,0.6),  0 0 420px rgba(127,119,221,0.22); }
-  100% { box-shadow: 0 0 0 8px #ff4444,  0 0 100px rgba(255,68,68,1),    0 0 220px rgba(255,68,68,0.55),   0 0 400px rgba(255,68,68,0.2); }
+  /* Perf: đây là animation nặng nhất trong game (0.28s linear = chạy lại ~3.5 lần/giây,
+     và trước đây có 4 lớp shadow blur tới 420px mỗi lớp). Giảm còn 2 lớp, blur tối đa 130px
+     — vẫn giữ hiệu ứng rainbow đổi màu nhanh, nhưng vùng paint lại mỗi frame nhỏ hơn nhiều lần. */
+  0%   { box-shadow: 0 0 0 8px #ff4444,  0 0 55px rgba(255,68,68,0.8); }
+  16%  { box-shadow: 0 0 0 10px #ff9900, 0 0 60px rgba(255,153,0,0.85); }
+  33%  { box-shadow: 0 0 0 9px #f7c948,  0 0 58px rgba(247,201,72,0.8); }
+  50%  { box-shadow: 0 0 0 10px #00e5ff, 0 0 60px rgba(0,229,255,0.85); }
+  66%  { box-shadow: 0 0 0 9px #D4537E,  0 0 58px rgba(212,83,126,0.8); }
+  83%  { box-shadow: 0 0 0 10px #7F77DD, 0 0 60px rgba(127,119,221,0.85); }
+  100% { box-shadow: 0 0 0 8px #ff4444,  0 0 55px rgba(255,68,68,0.8); }
 }
 /* Screen shake for UNREAL/LEGENDARY */
 @keyframes screen-shake {
