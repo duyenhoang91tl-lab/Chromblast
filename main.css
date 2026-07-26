@@ -4907,16 +4907,18 @@ body:has(#secret-stage.active) .streak-dot.lit{
 }
 .quests-head{
   position:relative; display:flex; align-items:center; justify-content:center;
-  padding:16px 52px 12px; font-weight:900; font-size:20px; flex-shrink:0;
+  padding:max(16px, calc(env(safe-area-inset-top, 0px) + 14px)) 52px 12px;
+  font-weight:900; font-size:20px; flex-shrink:0;
   letter-spacing:0.3px;
 }
 .quests-back,.quests-x{
-  position:absolute; top:10px; width:36px; height:36px; border:none; border-radius:50%;
+  position:absolute; top:max(10px, calc(env(safe-area-inset-top, 0px) + 8px));
+  width:40px; height:40px; border:none; border-radius:50%;
   background:rgba(255,255,255,0.14); color:#fff; font-size:20px; font-weight:900;
   cursor:pointer; display:flex; align-items:center; justify-content:center;
 }
-.quests-back{ left:12px; font-size:28px; padding-bottom:2px; }
-.quests-x{ right:12px; }
+.quests-back{ left:max(12px, env(safe-area-inset-left, 0px)); font-size:28px; padding-bottom:2px; }
+.quests-x{ right:max(12px, env(safe-area-inset-right, 0px)); }
 .quests-body{
   flex:1; min-height:0; overflow:auto; padding:8px 14px 24px;
 }
