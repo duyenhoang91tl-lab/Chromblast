@@ -83,7 +83,16 @@ service cloud.firestore {
         !resource.data.keys().hasAny(['guestId']) ||
         request.resource.data.guestId == request.auth.uid
       );
-      allow delete: if signedIn() && resource.data.hostId == request.auth.uid;
+      // Chủ phòng luôn được tự xoá phòng của mình. Ngoài ra, BẤT KỲ ai đã đăng nhập cũng
+      // được xoá một phòng nếu "nhịp tim" (lastSeen) của chủ phòng đã im quá 15 giây — đây
+      // là cơ chế dọn phòng "chết" (chủ phòng mất mạng/tắt app/crash) khi Firestore không có
+      // onDisconnect() như Realtime Database. Ngưỡng 15s > ROOM_LIVE_STALE_MS (12s) phía
+      // client để client luôn là người phát hiện + xoá trước trong điều kiện bình thường.
+      allow delete: if signedIn() && (
+        resource.data.hostId == request.auth.uid ||
+        (resource.data.lastSeen is timestamp &&
+         request.time > resource.data.lastSeen + duration.value(15, 's'))
+      );
 
       match /moves/{moveId} {
         allow read: if signedIn();
