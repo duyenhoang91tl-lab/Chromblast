@@ -1,7 +1,7 @@
 // Gom các file game tĩnh vào www/ để Capacitor đóng gói vào APK.
 // Chạy: npm run build:www
 import { rmSync, mkdirSync, cpSync } from 'node:fs';
-const items = ['index.html', 'main.css', 'sky-atmosphere.css', 'nick-fonts.css', 'brick-skins.css', 'map-boards.css', 'js', 'maps', 'fonts'];
+const items = ['index.html', 'main.css', 'sky-atmosphere.css', 'nick-fonts.css', 'brick-skins.css', 'map-boards.css', 'saga-map.css', 'js', 'maps', 'fonts', 'sounds'];
 rmSync('www', { recursive: true, force: true });
 mkdirSync('www', { recursive: true });
 for (const it of items) cpSync(it, 'www/' + it, { recursive: true });
