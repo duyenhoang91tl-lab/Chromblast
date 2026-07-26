@@ -22,6 +22,14 @@ allprojects {
         google()
         mavenCentral()
     }
+
+    configurations.configureEach {
+        resolutionStrategy {
+            // Force a version of androidx.browser:browser compatible with compileSdk 35 and AGP 8.7.2
+            // version 1.9.0 requires compileSdk 36 and AGP 8.9.1+
+            force "androidx.browser:browser:$rootProject.ext.androidxBrowserVersion"
+        }
+    }
 }
 
 task clean(type: Delete) {
