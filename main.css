@@ -853,6 +853,15 @@ body.notif-open #start-screen{
   font-size:13px; font-weight:900; color:#ffd54a; margin-bottom:6px; text-align:center;
 }
 .vs-local-block-hub{ margin-top:16px; }
+.vs-setup-player{ margin-top:10px; padding:8px 10px; border-radius:12px; background:rgba(255,255,255,0.06); }
+.vs-setup-player-label{ font-weight:900; font-size:11px; opacity:0.85; margin-bottom:6px; }
+.vs-skin-row{ display:flex; align-items:center; gap:6px; margin-top:5px; }
+.vs-skin-row-label{ font-size:10px; font-weight:800; opacity:0.7; min-width:34px; flex:0 0 auto; }
+.vs-skin-scroll{ display:flex; gap:6px; overflow-x:auto; padding:2px 2px 4px; flex:1 1 auto; scrollbar-width:thin; }
+.vs-skin-pick{ flex:0 0 auto; border:2px solid transparent; border-radius:10px; padding:0; cursor:pointer; background:none; opacity:0.9; }
+.vs-skin-pick .board-swatch{ width:32px; height:22px; border-radius:6px; }
+.vs-skin-pick .brick-swatch{ width:20px; height:20px; border-radius:6px; }
+.vs-skin-pick.active{ border-color:#ffd24a; opacity:1; box-shadow:0 0 0 2px rgba(255,210,74,0.35); }
 .online-note { font-size:11px; color:#ffcc55; margin-bottom:10px; line-height:1.4; }
 .online-status { font-size:11px; color:#8ee08e; margin-bottom:10px; min-height:16px; }
 .online-status.err { color:#ff6b6b; }

@@ -77,6 +77,100 @@ function _rotShape(s){
   return next.map(([r,c])=>[r-minR, c-minC]);
 }
 
+// ── Nền (board skin) + Gạch (brick skin) RIÊNG cho mỗi người khi đấu CÙNG MÁY ──
+// Chế độ online đã đồng bộ qua room (hostBoardSkin/guestBoardSkin — xem online-services.js).
+// Còn "Cùng máy" (2 người ngồi đối diện, xoay 180°) trước đây cả 2 nửa đều dùng
+// chung skin đang equip của TÀI KHOẢN — Người chơi 2 không có cách chọn khác.
+// Bổ sung: mỗi người tự chọn nền/gạch riêng (chỉ trong số đã sở hữu), lưu theo
+// từng ô (P1/P2) qua localStorage, độc lập với skin solo đang active.
+function _vsLocalSkinKey(slot){ return 'chromablast_vs_local_skin_p'+slot; }
+function _vsLocalFallbackBoardSkin(){
+  try{
+    const active=(typeof getActiveBoardSkin==='function')?getActiveBoardSkin():null;
+    if(active && typeof isBoardSkinUnlocked==='function' && isBoardSkinUnlocked(active)) return active;
+    if(typeof getUnlockedBoardSkinIds==='function'){
+      const ids=getUnlockedBoardSkinIds()||[];
+      if(ids.length) return ids[0];
+    }
+  }catch(e){}
+  return 'classic';
+}
+function _vsLocalFallbackBrickSkin(){
+  try{
+    const active=(typeof getActiveBrickSkin==='function')?getActiveBrickSkin():null;
+    if(active && typeof isBrickSkinUnlocked==='function' && isBrickSkinUnlocked(active)) return active;
+    if(typeof getUnlockedBrickSkins==='function'){
+      const ids=getUnlockedBrickSkins()||[];
+      if(ids.length) return ids[0];
+    }
+  }catch(e){}
+  return 'plush';
+}
+function _vsGetLocalSkinPrefs(slot){
+  let p={ board:_vsLocalFallbackBoardSkin(), brick:_vsLocalFallbackBrickSkin() };
+  try{
+    const raw=localStorage.getItem(_vsLocalSkinKey(slot));
+    if(raw){
+      const j=JSON.parse(raw);
+      if(j && typeof j.board==='string' && typeof isBoardSkinUnlocked==='function' && isBoardSkinUnlocked(j.board)) p.board=j.board;
+      if(j && typeof j.brick==='string' && typeof isBrickSkinUnlocked==='function' && isBrickSkinUnlocked(j.brick)) p.brick=j.brick;
+    }
+  }catch(e){}
+  return p;
+}
+function _vsSetLocalSkinPref(slot,type,id){
+  const p=_vsGetLocalSkinPrefs(slot);
+  p[type]=id;
+  try{ localStorage.setItem(_vsLocalSkinKey(slot), JSON.stringify(p)); }catch(e){}
+  return p;
+}
+function _vsFillLocalSkinPicker(slot){
+  const prefs=_vsGetLocalSkinPrefs(slot);
+  const nenEl=document.getElementById('vs-nen-p'+slot);
+  const gachEl=document.getElementById('vs-gach-p'+slot);
+  if(nenEl && typeof BOARD_SKINS!=='undefined' && Array.isArray(BOARD_SKINS)){
+    nenEl.innerHTML='';
+    BOARD_SKINS.forEach(skin=>{
+      if(typeof isBoardSkinUnlocked==='function' && !isBoardSkinUnlocked(skin.id)) return;
+      const btn=document.createElement('button');
+      btn.type='button';
+      btn.className='vs-skin-pick'+(prefs.board===skin.id?' active':'');
+      btn.title=skin.name;
+      const sw=document.createElement('div');
+      sw.className='board-swatch';
+      sw.setAttribute('data-board-skin', skin.id);
+      btn.appendChild(sw);
+      btn.addEventListener('click',()=>{
+        try{ sfxClick(); }catch(e){}
+        _vsSetLocalSkinPref(slot,'board',skin.id);
+        nenEl.querySelectorAll('.vs-skin-pick').forEach(c=>c.classList.toggle('active', c===btn));
+      });
+      nenEl.appendChild(btn);
+    });
+  }
+  if(gachEl && typeof BRICK_SKINS!=='undefined' && Array.isArray(BRICK_SKINS)){
+    gachEl.innerHTML='';
+    BRICK_SKINS.forEach(skin=>{
+      if(typeof isBrickSkinUnlocked==='function' && !isBrickSkinUnlocked(skin.id)) return;
+      const btn=document.createElement('button');
+      btn.type='button';
+      btn.className='vs-skin-pick'+(prefs.brick===skin.id?' active':'');
+      btn.title=skin.name;
+      const sw=document.createElement('div');
+      sw.className='brick-swatch';
+      sw.style.setProperty('--cc','#8b93ff');
+      sw.setAttribute('data-brick-skin', skin.id);
+      btn.appendChild(sw);
+      btn.addEventListener('click',()=>{
+        try{ sfxClick(); }catch(e){}
+        _vsSetLocalSkinPref(slot,'brick',skin.id);
+        gachEl.querySelectorAll('.vs-skin-pick').forEach(c=>c.classList.toggle('active', c===btn));
+      });
+      gachEl.appendChild(btn);
+    });
+  }
+}
+
 // ── Khởi tạo trận ──
 function openVersusSetup(){
   try{ sfxClick(); }catch(e){}
@@ -87,6 +181,7 @@ function openVersusSetup(){
   }
   const p1=document.getElementById('vs-name1');
   if(p1 && typeof currentUser!=='undefined' && currentUser && currentUser.username) p1.value=currentUser.username;
+  try{ _vsFillLocalSkinPicker(1); _vsFillLocalSkinPicker(2); }catch(e){}
   _vsShow('versus-setup-panel');
   _vsHide('online-hub-panel');
 }
@@ -106,6 +201,7 @@ function startVersusMatch(){
   const seed=(Date.now() ^ (Math.random()*0xFFFFFFF))>>>0;
   const avMe = (typeof getPlayerAvatar === 'function') ? getPlayerAvatar() : '🐶';
   _vs={ seed, names:[n1,n2], avatars:[avMe, '🐱'], timeLeft:VERSUS_TIME, timer:null,
+        localSkins:[_vsGetLocalSkinPrefs(1), _vsGetLocalSkinPrefs(2)],
         players:[_vsNewPlayer(0,seed), _vsNewPlayer(1,seed)] };
   versusMode=true;
   _vsBuildArena();
@@ -201,13 +297,21 @@ function _vsBuildArena(){
   const myBrickSkin = (typeof getActiveBrickSkin === 'function') ? getActiveBrickSkin() : 'plush';
   const myBoardSkin  = (typeof getActiveBoardSkin === 'function') ? getActiveBoardSkin() : 'classic';
   const oppSkins = (_vs && _vs.online && _vs.online.oppSkins) || null;
+  const localSkins = (!online && _vs && _vs.localSkins) || null;
   _vs.players.forEach((P,i)=>{
     const half=document.createElement('div');
     half.className='vs-half'+(i===0?' vs-top':' vs-bottom');
     // P.idx===0 luôn là "mình" (xem enterOnlineVersusMatch: names=[myName,oppName]).
-    // Đối thủ dùng skin họ tự chọn (đồng bộ qua room) — nếu không có dữ liệu (offline/local 2P) thì dùng skin của mình.
-    const brickSkin = (i===0) ? myBrickSkin : (oppSkins ? oppSkins.brickSkin : myBrickSkin);
-    const boardSkin  = (i===0) ? myBoardSkin  : (oppSkins ? oppSkins.boardSkin  : myBoardSkin);
+    // Online: đối thủ dùng skin họ tự chọn (đồng bộ qua room) — nếu không có dữ liệu thì dùng skin của mình.
+    // Cùng máy (2 người ngồi đối diện): mỗi người tự chọn riêng ở màn thiết lập (vs-nen-p1/p2, vs-gach-p1/p2).
+    let brickSkin, boardSkin;
+    if(localSkins){
+      brickSkin = (localSkins[i] && localSkins[i].brick) || myBrickSkin;
+      boardSkin = (localSkins[i] && localSkins[i].board) || myBoardSkin;
+    } else {
+      brickSkin = (i===0) ? myBrickSkin : (oppSkins ? oppSkins.brickSkin : myBrickSkin);
+      boardSkin  = (i===0) ? myBoardSkin  : (oppSkins ? oppSkins.boardSkin  : myBoardSkin);
+    }
     half.setAttribute('data-brick-skin', brickSkin || 'plush');
     half.setAttribute('data-board-skin', boardSkin || 'classic');
 

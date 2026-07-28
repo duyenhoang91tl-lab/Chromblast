@@ -636,6 +636,19 @@ function MILESTONE_MSG(tier){
   Object.keys(vs2).forEach(l=>{ if(I18N[l]) Object.assign(I18N[l], vs2[l]); });
 })();
 
+// ── BỔ SUNG: chọn nền/gạch riêng cho từng người (Đấu 1-1 Cùng máy) ──
+(function(){
+  const vs3 = {
+  vi:{ vsSkinPickFor1:'🎨 Nền & gạch của Người chơi 1', vsSkinPickFor2:'🎨 Nền & gạch của Người chơi 2', vsSkinNen:'Nền', vsSkinGach:'Gạch' },
+  en:{ vsSkinPickFor1:'🎨 Player 1\'s board & bricks', vsSkinPickFor2:'🎨 Player 2\'s board & bricks', vsSkinNen:'Board', vsSkinGach:'Bricks' },
+  ko:{ vsSkinPickFor1:'🎨 플레이어 1의 보드 & 블록', vsSkinPickFor2:'🎨 플레이어 2의 보드 & 블록', vsSkinNen:'보드', vsSkinGach:'블록' },
+  ja:{ vsSkinPickFor1:'🎨 プレイヤー1のボード＆ブロック', vsSkinPickFor2:'🎨 プレイヤー2のボード＆ブロック', vsSkinNen:'ボード', vsSkinGach:'ブロック' },
+  zh:{ vsSkinPickFor1:'🎨 玩家1的棋盘与方块', vsSkinPickFor2:'🎨 玩家2的棋盘与方块', vsSkinNen:'棋盘', vsSkinGach:'方块' },
+  es:{ vsSkinPickFor1:'🎨 Tablero y ladrillos del Jugador 1', vsSkinPickFor2:'🎨 Tablero y ladrillos del Jugador 2', vsSkinNen:'Tablero', vsSkinGach:'Ladrillos' },
+  };
+  Object.keys(vs3).forEach(l=>{ if(I18N[l]) Object.assign(I18N[l], vs3[l]); });
+})();
+
 // ── BỔ SUNG: online 1v1 + BXH toàn cầu ──
 (function(){
   const on = {
