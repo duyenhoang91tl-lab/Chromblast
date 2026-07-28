@@ -64,6 +64,10 @@ let _caroCanvasBound = false;
 let _caroTimerId = null;
 let _caroPrefsDraft = null;
 let _caroLastOpenRooms = [];
+// Trạng thái phóng to / thu nhỏ bàn cờ bằng 2 ngón tay (pinch-to-zoom)
+let _caroZoom = { scale: 1, tx: 0, ty: 0 };
+const CARO_ZOOM_MIN = 1;
+const CARO_ZOOM_MAX = 3;
 
 function _caroBoardSkinUnlocked(id){
   if(!id || !CARO_THEMES[id]) return false;
@@ -138,7 +142,7 @@ function _caroMeasure(){
   const canvas = _caroGetCanvas();
   if(!canvas) return null;
   const wrap = canvas.parentElement;
-  const maxW = Math.min((wrap && wrap.clientWidth) || 400, 460);
+  const maxW = (wrap && wrap.clientWidth) || window.innerWidth || 400;
   const maxH = Math.min(window.innerHeight - 110, maxW);
   const cssSize = Math.floor(Math.min(maxW, maxH));
   const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
@@ -315,15 +319,144 @@ function _caroOnPointerMove(ev){
   if((prev?.r !== cell?.r) || (prev?.c !== cell?.c)) _caroDrawBoard();
 }
 
+const _caroActivePointers = new Map();
+let _caroPlaceTimer = null;
+
 function _caroOnPointerDown(ev){
   if(!caroMode || !_caro || _caro.winner || _caro.aiThinking) return;
   ev.preventDefault();
+  _caroActivePointers.set(ev.pointerId, true);
+  if(_caroPlaceTimer){ clearTimeout(_caroPlaceTimer); _caroPlaceTimer = null; }
+  // Nếu có từ 2 ngón tay trở lên đang chạm (đang chụm để zoom) thì không đặt quân
+  if(_caroActivePointers.size > 1) return;
   const pos = _caroPointerPos(ev);
   if(!pos || !_caro.metrics) return;
   const cell = _caroCellAt(pos.px, pos.py, _caro.metrics);
   if(!cell) return;
-  if(_caro.turn !== _caro.mySlot) return;
-  _caroApplyMove(cell.r, cell.c, _caro.mySlot, false);
+  // Đợi một nhịp ngắn để chắc chắn đây là chạm 1 ngón (không phải vừa bắt đầu chụm 2 ngón)
+  _caroPlaceTimer = setTimeout(()=>{
+    _caroPlaceTimer = null;
+    if(_caroActivePointers.size > 1) return;
+    if(_caro.turn !== _caro.mySlot) return;
+    _caroApplyMove(cell.r, cell.c, _caro.mySlot, false);
+  }, 60);
+}
+
+function _caroOnPointerUp(ev){
+  _caroActivePointers.delete(ev.pointerId);
+}
+
+function _caroApplyZoomTransform(){
+  const canvas = _caroGetCanvas();
+  if(!canvas) return;
+  const z = _caroZoom;
+  canvas.style.transformOrigin = '0 0';
+  canvas.style.transform = `translate(${z.tx}px, ${z.ty}px) scale(${z.scale})`;
+}
+
+function _caroZoomClampPan(){
+  const canvas = _caroGetCanvas();
+  const wrap = canvas && canvas.parentElement;
+  if(!canvas || !wrap) return;
+  const z = _caroZoom;
+  const baseW = canvas.clientWidth || canvas.offsetWidth;
+  const baseH = canvas.clientHeight || canvas.offsetHeight;
+  if(!baseW || !baseH) return;
+  const scaledW = baseW * z.scale;
+  const scaledH = baseH * z.scale;
+  const wrapW = wrap.clientWidth;
+  const wrapH = wrap.clientHeight;
+  // Vị trí canvas gốc (chưa transform) đã được canh giữa bởi flex, nên offset gốc là (wrapW-baseW)/2
+  const baseLeft = (wrapW - baseW) / 2;
+  const baseTop = (wrapH - baseH) / 2;
+  const minTx = Math.min(0, wrapW - scaledW - baseLeft) - baseLeft;
+  const maxTx = Math.max(0, -baseLeft);
+  const minTy = Math.min(0, wrapH - scaledH - baseTop) - baseTop;
+  const maxTy = Math.max(0, -baseTop);
+  z.tx = Math.min(Math.max(z.tx, minTx), maxTx);
+  z.ty = Math.min(Math.max(z.ty, minTy), maxTy);
+}
+
+function _caroResetZoom(){
+  _caroZoom = { scale: 1, tx: 0, ty: 0 };
+  const canvas = _caroGetCanvas();
+  if(canvas){ canvas.style.transform = ''; canvas.style.transformOrigin = ''; }
+}
+
+function _caroDist(t0, t1){
+  const dx = t0.clientX - t1.clientX, dy = t0.clientY - t1.clientY;
+  return Math.hypot(dx, dy);
+}
+
+function _caroBindPinchZoom(){
+  const canvas = _caroGetCanvas();
+  const wrap = canvas && canvas.parentElement;
+  if(!canvas || !wrap) return;
+  let pinch = null; // { startDist, startScale, startTx, startTy, midX, midY }
+  let panTouch = null; // 1 ngón khi đã zoom, để kéo bàn cờ xem các phần bị che
+
+  wrap.addEventListener('touchstart', (ev)=>{
+    if(!caroMode) return;
+    if(ev.touches.length === 2){
+      ev.preventDefault();
+      panTouch = null;
+      const rect = wrap.getBoundingClientRect();
+      const canvasRect = canvas.getBoundingClientRect();
+      const baseW = canvas.clientWidth || canvas.offsetWidth;
+      const baseH = canvas.clientHeight || canvas.offsetHeight;
+      const t0 = ev.touches[0], t1 = ev.touches[1];
+      pinch = {
+        startDist: _caroDist(t0, t1),
+        startScale: _caroZoom.scale,
+        startTx: _caroZoom.tx,
+        startTy: _caroZoom.ty,
+        // Vị trí tự nhiên (chưa transform) của canvas trong khung, dùng để quy đổi toạ độ
+        baseLeft: (canvasRect.left - rect.left) - _caroZoom.tx,
+        baseTop: (canvasRect.top - rect.top) - _caroZoom.ty,
+        midX: (t0.clientX + t1.clientX) / 2 - rect.left,
+        midY: (t0.clientY + t1.clientY) / 2 - rect.top
+      };
+    } else if(ev.touches.length === 1 && _caroZoom.scale > 1){
+      panTouch = { x: ev.touches[0].clientX, y: ev.touches[0].clientY, startTx: _caroZoom.tx, startTy: _caroZoom.ty };
+    }
+  }, { passive: false });
+
+  wrap.addEventListener('touchmove', (ev)=>{
+    if(!caroMode) return;
+    if(pinch && ev.touches.length === 2){
+      ev.preventDefault();
+      const t0 = ev.touches[0], t1 = ev.touches[1];
+      const dist = _caroDist(t0, t1);
+      const ratio = dist / (pinch.startDist || dist);
+      let scale = pinch.startScale * ratio;
+      scale = Math.min(Math.max(scale, CARO_ZOOM_MIN), CARO_ZOOM_MAX);
+      // Giữ nguyên điểm giữa 2 ngón tay khi phóng to / thu nhỏ (quy đổi theo vị trí gốc của canvas)
+      const scaleDelta = scale / pinch.startScale;
+      _caroZoom.scale = scale;
+      _caroZoom.tx = (pinch.midX - pinch.baseLeft) * (1 - scaleDelta) + pinch.startTx * scaleDelta;
+      _caroZoom.ty = (pinch.midY - pinch.baseTop) * (1 - scaleDelta) + pinch.startTy * scaleDelta;
+      _caroZoomClampPan();
+      _caroApplyZoomTransform();
+    } else if(panTouch && ev.touches.length === 1){
+      ev.preventDefault();
+      const t = ev.touches[0];
+      _caroZoom.tx = panTouch.startTx + (t.clientX - panTouch.x);
+      _caroZoom.ty = panTouch.startTy + (t.clientY - panTouch.y);
+      _caroZoomClampPan();
+      _caroApplyZoomTransform();
+    }
+  }, { passive: false });
+
+  const endTouch = (ev)=>{
+    if(ev.touches.length < 2) pinch = null;
+    if(ev.touches.length === 0){
+      panTouch = null;
+      // Về gần 1x thì snap lại đúng vị trí gốc cho gọn gàng
+      if(_caroZoom.scale <= CARO_ZOOM_MIN + 0.02) _caroResetZoom();
+    }
+  };
+  wrap.addEventListener('touchend', endTouch, { passive: true });
+  wrap.addEventListener('touchcancel', endTouch, { passive: true });
 }
 
 function _caroBindCanvas(){
@@ -333,11 +466,14 @@ function _caroBindCanvas(){
   _caroCanvasBound = true;
   canvas.addEventListener('pointerdown', _caroOnPointerDown);
   canvas.addEventListener('pointermove', _caroOnPointerMove);
+  canvas.addEventListener('pointerup', _caroOnPointerUp);
+  canvas.addEventListener('pointercancel', _caroOnPointerUp);
   canvas.addEventListener('pointerleave', ()=>{
     if(_caro && _caro.hover){ _caro.hover = null; _caroDrawBoard(); }
   });
-  window.addEventListener('resize', ()=>{ if(caroMode) _caroDrawBoard(); });
-  window.addEventListener('orientationchange', ()=>setTimeout(()=>{ if(caroMode) _caroDrawBoard(); }, 120));
+  window.addEventListener('resize', ()=>{ if(caroMode){ _caroResetZoom(); _caroDrawBoard(); } });
+  window.addEventListener('orientationchange', ()=>setTimeout(()=>{ if(caroMode){ _caroResetZoom(); _caroDrawBoard(); } }, 120));
+  _caroBindPinchZoom();
 }
 
 function _caroRender(){
