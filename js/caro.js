@@ -1184,6 +1184,8 @@ function _caroEnterAIGame(levelId){
     turnLeft: prefs.turnSec
   };
   caroMode = true;
+  // FIX: reset pinch-zoom còn sót từ ván trước khi vào ván AI mới
+  _caroResetZoom();
   _caroToggleChrome(true);
   _caroSetGameRootHidden(true);
   _caroApplyStageTheme();
@@ -1292,6 +1294,8 @@ function _caroEnterGame(roomData){
     turnLeft: turnSec
   };
   caroMode = true;
+  // FIX: reset pinch-zoom còn sót từ ván trước khi vào ván online mới
+  _caroResetZoom();
   _caroHide('caro-lobby-panel');
   _caroHide('caro-hub-panel');
   _caroToggleChrome(true);
@@ -1558,6 +1562,8 @@ function _caroQuit(){
   if(_caro && _caro.aiTimer) clearTimeout(_caro.aiTimer);
   _caro = null;
   _caroLobby = null;
+  // FIX: dọn zoom khi thoát ván, tránh mang trạng thái zoom sang lần mở caro tiếp theo
+  _caroResetZoom();
   stopListeningRoom();
   _caroSetupChat(false);
   _caroToggleChrome(false);
