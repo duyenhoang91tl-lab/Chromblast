@@ -149,7 +149,7 @@ function _caroMeasure(){
   const pad = Math.max(8, cssSize * 0.035) * dpr;
   const inner = cssSize * dpr - pad * 2;
   const cell = inner / CARO_SIZE;
-  const gap = Math.max(1, cell * 0.06);
+  const gap = 0; // Các ô chạm nhau, chỉ ngăn cách bằng kẻ vạch — không còn khe hở giữa ô
   return { dpr, pad, cell, gap, px: cssSize * dpr };
 }
 
@@ -252,18 +252,27 @@ function _caroDrawBoard(){
   _caroRoundRect(ctx, frame, frame, W - frame*2, H - frame*2, m.dpr * 14);
   ctx.stroke();
 
-  // Ô vuông
-  for(let r = 0; r < CARO_SIZE; r++){
-    for(let c = 0; c < CARO_SIZE; c++){
-      const { x, y, s, inset } = _caroCellRect(r, c, m);
-      _caroRoundRect(ctx, x + inset, y + inset, s - inset*2, s - inset*2, Math.max(2, s * 0.14));
-      ctx.fillStyle = theme.cell;
-      ctx.fill();
-      ctx.strokeStyle = theme.line;
-      ctx.lineWidth = Math.max(1, m.dpr * 0.8);
-      ctx.stroke();
-    }
+ // 1. Tô nền chung cho toàn bộ bàn cờ Caro
+  ctx.fillStyle = theme.cell;
+  ctx.fillRect(m.pad, m.pad, m.cell * CARO_SIZE, m.cell * CARO_SIZE);
+
+  // 2. Kẻ các vạch ngang và dọc phân ô
+  ctx.strokeStyle = theme.line;
+  ctx.lineWidth = Math.max(1, m.dpr * 0.8);
+  ctx.beginPath();
+
+  for (let i = 0; i <= CARO_SIZE; i++) {
+    // Vạch dọc
+    const x = m.pad + i * m.cell;
+    ctx.moveTo(x, m.pad);
+    ctx.lineTo(x, m.pad + CARO_SIZE * m.cell);
+
+    // Vạch ngang
+    const y = m.pad + i * m.cell;
+    ctx.moveTo(m.pad, y);
+    ctx.lineTo(m.pad + CARO_SIZE * m.cell, y);
   }
+  ctx.stroke();
 
   // Quân X / O
   for(let r = 0; r < CARO_SIZE; r++){
