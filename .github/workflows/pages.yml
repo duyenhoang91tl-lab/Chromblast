@@ -1,7 +1,7 @@
 # Tự động đăng toàn bộ game (kèm privacy-policy.html) lên GitHub Pages
 # mỗi khi push lên main. URL sau khi chạy:
 #   https://duyenhoang91tl-lab.github.io/chromblast/                     ← chơi game trên web
-#   https://duyenhoang91tl-lab.github.io/chromblast/privacy-policy.html ← điền vào Play Console
+#   https://duyenhoang91tl-lab.github.io/Chromblast/privacy-policy.html ← điền vào Play Console
 #
 # TỐI ƯU HIỆU SUẤT (thêm 28/07/26): trước đây bước deploy đăng thẳng path: .
 # (toàn bộ repo, JS/CSS bản gốc CHƯA minify) — chỉ bản Android mới được minify
