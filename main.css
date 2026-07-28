@@ -148,7 +148,7 @@ body.mode-caro #caro-stage.active {
   opacity: 1 !important;
   pointer-events: auto !important;
   z-index: 10060 !important;
-  background: linear-gradient(165deg, #1a1428 0%, #0d0a1a 45%, #0a0a12 100%) !important;
+  background: transparent !important;
 }
 body.mode-versus #game-root {
   visibility: hidden !important;
@@ -921,7 +921,7 @@ body.notif-open #start-screen{
 }
 #caro-stage {
   display: none; position: fixed; inset: 0; z-index: 10060;
-  background: linear-gradient(165deg, #1a1428 0%, #0a0a12 100%);
+  background: transparent;
   flex-direction: column; align-items: center; justify-content: flex-start;
   padding: max(8px, env(safe-area-inset-top, 0px)) 12px max(12px, env(safe-area-inset-bottom));
   gap: 8px;
