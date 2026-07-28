@@ -19,9 +19,12 @@ function initMegaBg(W,H){
     megaStars.push({x:Math.random()*W,y:Math.random()*H,r:0.5+Math.random()*1.8,speed:12+Math.random()*40,phase:Math.random()*Math.PI*2});
   }
   megaNebulas=[
-    {x:W*0.2,y:H*0.25,r:120,hue:'rgba(120,20,90,0.35)'},
-    {x:W*0.8,y:H*0.5,r:150,hue:'rgba(60,10,120,0.3)'},
-    {x:W*0.5,y:H*0.85,r:130,hue:'rgba(150,10,40,0.28)'},
+    {x:W*0.15,y:H*0.22,r:68,hue:'rgba(120,20,90,0.14)'},
+    {x:W*0.30,y:H*0.34,r:48,hue:'rgba(150,30,110,0.10)'},
+    {x:W*0.78,y:H*0.44,r:88,hue:'rgba(60,10,120,0.12)'},
+    {x:W*0.88,y:H*0.60,r:52,hue:'rgba(90,20,140,0.09)'},
+    {x:W*0.48,y:H*0.82,r:72,hue:'rgba(150,10,40,0.11)'},
+    {x:W*0.60,y:H*0.92,r:42,hue:'rgba(180,20,60,0.08)'},
   ];
 }
 
