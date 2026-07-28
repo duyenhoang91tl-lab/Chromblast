@@ -142,9 +142,11 @@ function _caroMeasure(){
   const canvas = _caroGetCanvas();
   if(!canvas) return null;
   const wrap = canvas.parentElement;
-  const maxW = (wrap && wrap.clientWidth) || window.innerWidth || 400;
-  const maxH = (wrap && wrap.clientHeight) || (window.innerHeight - 110) || 400;
-  const cssSize = Math.floor(Math.min(maxW, maxH));
+  const rect = wrap ? wrap.getBoundingClientRect() : null;
+  const maxW = (rect && rect.width) || (wrap && wrap.clientWidth) || window.innerWidth || 400;
+  const maxH = (rect && rect.height) || (wrap && wrap.clientHeight) || (window.innerHeight - 110) || 400;
+  // An toàn: không bao giờ để cssSize = 0/NaN (tránh mất hẳn bàn cờ khi layout chưa ổn định)
+  const cssSize = Math.floor(Math.min(maxW, maxH)) || Math.floor(Math.min(window.innerWidth, window.innerHeight - 110)) || 400;
   const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
   canvas.width = Math.floor(cssSize * dpr);
   canvas.height = Math.floor(cssSize * dpr);
@@ -471,8 +473,15 @@ function _caroBindCanvas(){
   canvas.addEventListener('pointerleave', ()=>{
     if(_caro && _caro.hover){ _caro.hover = null; _caroDrawBoard(); }
   });
-  window.addEventListener('resize', ()=>{ if(caroMode){ _caroResetZoom(); _caroDrawBoard(); } });
-  window.addEventListener('orientationchange', ()=>setTimeout(()=>{ if(caroMode){ _caroResetZoom(); _caroDrawBoard(); } }, 120));
+  const _caroRedrawSafe = ()=>{
+    if(!caroMode) return;
+    _caroResetZoom();
+    _caroDrawBoard();
+    // Vẽ lại thêm 2 frame sau để tự sửa nếu phép đo layout ban đầu bị lệch (0/tạm thời)
+    requestAnimationFrame(()=>{ if(caroMode) _caroDrawBoard(); requestAnimationFrame(()=>{ if(caroMode) _caroDrawBoard(); }); });
+  };
+  window.addEventListener('resize', _caroRedrawSafe);
+  window.addEventListener('orientationchange', ()=>setTimeout(_caroRedrawSafe, 120));
   _caroBindPinchZoom();
 }
 
