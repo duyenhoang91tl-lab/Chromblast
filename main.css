@@ -3634,6 +3634,59 @@ body:has(#secret-stage.active) .streak-dot.lit{
   .vs-mini{ transform:scale(0.75); }
 }
 
+/* ══ CỜ CARO — xoay ngang: trái (đối thủ) / giữa (bàn cờ) / phải (bạn), giữ nguyên theme hiện tại ══ */
+@media (orientation: landscape) {
+  #caro-stage {
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: center;
+    gap: clamp(8px, 2vw, 18px);
+    padding: max(8px, env(safe-area-inset-top,0px)) max(10px, env(safe-area-inset-right,0px)) max(8px, env(safe-area-inset-bottom,0px)) max(10px, env(safe-area-inset-left,0px));
+  }
+  #caro-stage .caro-topbar {
+    order: 1; flex: 0 0 auto; width: auto; max-width: min(30vw, 210px);
+    flex-direction: column; align-items: stretch; justify-content: flex-start;
+    gap: 10px; margin-top: 0;
+  }
+  #caro-stage .caro-opp-chip,
+  #caro-stage .caro-me-chip {
+    flex-direction: column; align-items: center; text-align: center;
+    gap: 6px; padding: 10px 8px; max-width: none; width: 100%;
+  }
+  #caro-stage .caro-opp-meta,
+  #caro-stage .caro-me-meta { align-items: center; }
+  #caro-stage .caro-opp-name,
+  #caro-stage .caro-me-name { max-width: 100%; white-space: normal; text-align: center; }
+  #caro-stage .caro-top-right {
+    flex-direction: column; align-items: center; justify-content: flex-start; gap: 8px;
+  }
+  #caro-stage .caro-board-wrap {
+    order: 2; flex: 1 1 auto; width: auto; max-width: none; height: 100%;
+  }
+  #caro-stage #caro-canvas {
+    max-height: calc(100vh - max(16px, env(safe-area-inset-top,0px)) - max(16px, env(safe-area-inset-bottom,0px)));
+    max-width: 100%; width: auto; height: 100%;
+  }
+  #caro-stage .caro-bottombar {
+    order: 3; flex: 0 0 auto; width: auto; max-width: min(30vw, 210px);
+    align-items: stretch; align-content: flex-start;
+    flex-direction: column; justify-content: flex-start; gap: 10px;
+  }
+  #caro-stage .caro-quick-fx { justify-content: center; max-width: none; }
+}
+@media (orientation: landscape) and (max-height: 420px) {
+  #caro-stage .caro-topbar,
+  #caro-stage .caro-bottombar { max-width: min(26vw, 170px); gap: 6px; }
+  #caro-stage .caro-opp-avatar,
+  #caro-stage .caro-me-avatar { width: 32px; height: 32px; font-size: 18px; }
+  #caro-stage .caro-timer { min-width: 34px; height: 30px; font-size: 15px; }
+  #caro-stage .caro-hearts-hud { height: 26px; font-size: 11px; }
+  #caro-stage .caro-settings-btn,
+  #caro-stage .caro-quit,
+  #caro-stage .caro-chat-toggle { width: 30px; height: 30px; font-size: 14px; }
+  #caro-stage .caro-quick-fx .caro-fx-btn { width: 30px; height: 30px; font-size: 14px; }
+}
+
 /* ── Typography polish extras ── */
 .logo-chroma, .logo-blast, .auth-logo, .start-logo {
   font-family: 'Nunito', system-ui, sans-serif;
