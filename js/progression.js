@@ -90,10 +90,13 @@ function loadNormalStars(){
   }catch(e){}
 }
 function resetNormalStarRun(){
-  normalStarClears = 0;
-  normalMapStage = 1;
+  // QUAN TRỌNG: hàm này chạy mỗi khi bắt đầu VÁN MỚI (kể cả bấm "Chơi lại" sau
+  // game over) — chỉ được reset mốc điểm bắt đầu tính sao của ván này, TUYỆT ĐỐI
+  // không được ép normalMapStage/normalStarClears về lại ban đầu, vì đó là tiến
+  // trình Map đã đạt (đã lưu), người chơi phải được chơi tiếp đúng Map đó ở ván
+  // mới chứ không bị đá ngược về Map 1.
   normalStarBaseline = (typeof score==='number') ? score : 0;
-  normalStarTarget = normalStarTargetForStage(1);
+  normalStarTarget = normalStarTargetForStage(normalMapStage);
   _starClearLock = false;
   persistNormalStars();
 }
