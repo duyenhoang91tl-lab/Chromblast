@@ -4,7 +4,7 @@
 // Host = X, Guest = O. Online dùng Firebase rooms/moves (gameType:'caro').
 // ═══════════════════════════════════════════════════════════════
 
-const CARO_MIN_LEVEL = 3;
+const CARO_MIN_LEVEL = 1;
 const CARO_SIZE = 15;
 const CARO_EMPTY = 0;
 const CARO_X = 1; // host
