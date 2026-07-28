@@ -99,7 +99,7 @@ body.auth-open #notif-gate {
 /* Màn Bắt đầu: lớp phủ đục hơn + ép ẩn game (phòng khi thiếu class) */
 body.start-open #start-screen,
 body.menu-open:not(.auth-open) #start-screen {
-  background: rgba(8, 10, 28, 0.88) !important;
+  background: rgba(8, 10, 28, 0.5) !important;
 }
 
 /* ═══ Exclusive play modes: Caro / Versus — không chồng nền Chromablast ═══ */
@@ -272,7 +272,7 @@ body.mode-exclusive #gchat-fab {
   display: flex; align-items: center; justify-content: center;
   overflow: hidden;
   font-family: inherit;
-  background: rgba(8, 10, 28, 0.88);
+  background: rgba(8, 10, 28, 0.5);
 }
 .start-bg {
   position: absolute; inset: 0;
