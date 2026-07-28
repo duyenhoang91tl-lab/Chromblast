@@ -119,7 +119,9 @@
     const count = 18;
     for(let i=0;i<count;i++){
       const p = document.createElement('div');
-      p.className = 'sky-petal';
+      const shapes = ['v1', 'v2', 'v3', 'v4'];
+      const shape = shapes[Math.floor(Math.random() * shapes.length)];
+      p.className = 'sky-petal' + (shape === 'v1' ? '' : ' ' + shape);
       // Kích thước đa dạng (độ sâu) — cánh to hơn
       const size = 16 + Math.random() * 22;
       p.style.width = size + 'px';
@@ -134,11 +136,13 @@
       p.style.animationDuration = (16 + Math.random() * 18) + 's';
       p.style.animationDelay = (-Math.random() * 28) + 's';
       p.style.opacity = String(0.78 + Math.random() * 0.2);
-      if(Math.random() > 0.4){
-        p.style.background = 'linear-gradient(135deg, #fff0f5 0%, #ffb3cc 48%, #ff7aaa 100%)';
-      } else {
-        p.style.background = 'linear-gradient(135deg, #ffe4ef 0%, #ff9ec0 42%, #f06a9a 100%)';
-      }
+      // Lớp sáng mềm phía trên + màu nền — gộp chung 1 background nên
+      // vẫn chỉ 1 khai báo inline, không tốn thêm phần tử nào.
+      const highlight = 'radial-gradient(ellipse at 35% 28%, rgba(255,255,255,0.5), transparent 55%)';
+      const colorGrad = Math.random() > 0.4
+        ? 'linear-gradient(135deg, #fff0f5 0%, #ffb3cc 48%, #ff7aaa 100%)'
+        : 'linear-gradient(135deg, #ffe4ef 0%, #ff9ec0 42%, #f06a9a 100%)';
+      p.style.background = highlight + ', ' + colorGrad;
       if(size < 24){
         p.style.filter = 'brightness(0.92)';
       }
