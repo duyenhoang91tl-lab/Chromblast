@@ -459,3 +459,265 @@ html[data-board-skin="violet"] .piece-slot:not(.selected):not(.used) {
   background: linear-gradient(165deg, #4A2280 0%, #2A1048 100%) !important;
   border-color: #9A60D0 !important;
 }
+
+/* ── Bản dành riêng cho arena 1v1 (mỗi nửa dùng nền của người chơi đó) ── */
+.vs-half[data-board-skin="classic"] .vs-grid {
+  background: linear-gradient(180deg, #2a2a3a 0%, #1e1e2c 100%) !important;
+  border-color: #3a3a4a !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 6px 14px rgba(0,0,0,0.35) !important;
+}
+.vs-half[data-board-skin="classic"] .vs-cell:not(.vs-filled) {
+  background: rgba(0,0,0,0.28) !important;
+}
+
+.vs-half[data-board-skin="wood"] .vs-grid {
+  background: repeating-linear-gradient(90deg, rgba(80,45,15,0.25) 0 4px, transparent 4px 10px), linear-gradient(165deg, #8B5E3C 0%, #6B4226 50%, #4A2C14 100%) !important;
+  border-color: #A0724A !important;
+  box-shadow: inset 0 2px 0 rgba(255,220,160,0.2), 0 8px 16px rgba(40,20,0,0.35) !important;
+}
+.vs-half[data-board-skin="wood"] .vs-cell:not(.vs-filled) {
+  background: rgba(40,20,8,0.35) !important;
+}
+
+.vs-half[data-board-skin="garden"] .vs-grid {
+  background: radial-gradient(ellipse at 30% 20%, rgba(180,255,160,0.25) 0%, transparent 45%), linear-gradient(165deg, #3D7A4A 0%, #2A5A35 50%, #1E4028 100%) !important;
+  border-color: #5A9A62 !important;
+  box-shadow: inset 0 2px 0 rgba(200,255,180,0.15), 0 8px 16px rgba(10,40,15,0.35) !important;
+}
+.vs-half[data-board-skin="garden"] .vs-cell:not(.vs-filled) {
+  background: rgba(10,40,15,0.3) !important;
+}
+
+.vs-half[data-board-skin="ocean"] .vs-grid {
+  background: radial-gradient(ellipse at 70% 80%, rgba(80,200,255,0.3) 0%, transparent 50%), linear-gradient(180deg, #1A5F8A 0%, #0E3A5C 55%, #072438 100%) !important;
+  border-color: #3A8AB8 !important;
+  box-shadow: inset 0 2px 0 rgba(160,230,255,0.2), 0 8px 18px rgba(5,30,50,0.4) !important;
+}
+.vs-half[data-board-skin="ocean"] .vs-cell:not(.vs-filled) {
+  background: rgba(5,25,45,0.35) !important;
+}
+
+.vs-half[data-board-skin="night"] .vs-grid {
+  background: radial-gradient(circle at 20% 25%, rgba(255,255,255,0.35) 0 1px, transparent 2px), radial-gradient(circle at 70% 40%, rgba(255,255,255,0.25) 0 1px, transparent 2px), radial-gradient(circle at 45% 70%, rgba(255,255,255,0.2) 0 0.8px, transparent 1.6px), linear-gradient(180deg, #0B1026 0%, #050812 100%) !important;
+  border-color: #2A3560 !important;
+  box-shadow: 0 0 20px rgba(80,120,255,0.15), 0 8px 18px rgba(0,0,0,0.5) !important;
+}
+.vs-half[data-board-skin="night"] .vs-cell:not(.vs-filled) {
+  background: rgba(0,0,20,0.4) !important;
+}
+
+.vs-half[data-board-skin="sunset"] .vs-grid {
+  background: linear-gradient(180deg, #FF8A5C 0%, #E05A3C 35%, #8A2A4A 70%, #2A1A40 100%) !important;
+  border-color: #FFB08A !important;
+  box-shadow: inset 0 2px 0 rgba(255,220,180,0.25), 0 8px 18px rgba(80,20,40,0.35) !important;
+}
+.vs-half[data-board-skin="sunset"] .vs-cell:not(.vs-filled) {
+  background: rgba(40,10,20,0.3) !important;
+}
+
+.vs-half[data-board-skin="ice"] .vs-grid {
+  background: linear-gradient(160deg, #E8F7FF 0%, #B8E0F5 40%, #7AB8D8 100%) !important;
+  border-color: #9AD0EC !important;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,0.7), 0 8px 16px rgba(80,140,180,0.3) !important;
+}
+.vs-half[data-board-skin="ice"] .vs-cell:not(.vs-filled) {
+  background: rgba(255,255,255,0.35) !important;
+}
+
+.vs-half[data-board-skin="lava"] .vs-grid {
+  background: radial-gradient(ellipse at 50% 90%, #FF6A00 0%, transparent 45%), linear-gradient(180deg, #3A1808 0%, #1A0800 60%, #0A0400 100%) !important;
+  border-color: #C05020 !important;
+  box-shadow: 0 0 18px rgba(255,80,0,0.25), inset 0 -4px 12px rgba(255,60,0,0.15) !important;
+}
+.vs-half[data-board-skin="lava"] .vs-cell:not(.vs-filled) {
+  background: rgba(0,0,0,0.4) !important;
+}
+
+.vs-half[data-board-skin="sweet"] .vs-grid {
+  background: repeating-linear-gradient(45deg, rgba(255,255,255,0.12) 0 8px, transparent 8px 16px), linear-gradient(135deg, #FF8EC8 0%, #FFB86B 50%, #A78BFA 100%) !important;
+  border-color: #FFE0F0 !important;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,0.45), 0 8px 16px rgba(160,80,140,0.3) !important;
+}
+.vs-half[data-board-skin="sweet"] .vs-cell:not(.vs-filled) {
+  background: rgba(255,255,255,0.28) !important;
+}
+
+.vs-half[data-board-skin="neon"] .vs-grid {
+  background: linear-gradient(180deg, #0A0A14 0%, #12102A 100%) !important;
+  border-color: #00FFC8 !important;
+  box-shadow: 0 0 0 1px #00FFC8, 0 0 16px rgba(0,255,200,0.35), inset 0 0 20px rgba(0,255,200,0.08) !important;
+}
+.vs-half[data-board-skin="neon"] .vs-cell:not(.vs-filled) {
+  background: rgba(0,255,200,0.08) !important;
+}
+
+.vs-half[data-board-skin="sand"] .vs-grid {
+  background: repeating-linear-gradient(0deg, rgba(180,140,80,0.15) 0 2px, transparent 2px 8px), linear-gradient(165deg, #E8D5A8 0%, #D2B48C 50%, #C4A06A 100%) !important;
+  border-color: #C9A86C !important;
+  box-shadow: inset 0 2px 0 rgba(255,245,220,0.4), 0 8px 14px rgba(100,70,30,0.25) !important;
+}
+.vs-half[data-board-skin="sand"] .vs-cell:not(.vs-filled) {
+  background: rgba(120,80,30,0.2) !important;
+}
+
+.vs-half[data-board-skin="marble"] .vs-grid {
+  background: linear-gradient(120deg, #F5F0EA 0%, #E0D8D0 30%, #F8F4F0 55%, #D8D0C8 100%) !important;
+  border-color: #C8C0B8 !important;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,0.7), 0 8px 16px rgba(80,70,60,0.2) !important;
+}
+.vs-half[data-board-skin="marble"] .vs-cell:not(.vs-filled) {
+  background: rgba(0,0,0,0.08) !important;
+}
+
+.vs-half[data-board-skin="metal"] .vs-grid {
+  background: linear-gradient(145deg, #D8DCE2 0%, #A8B0BA 40%, #8A929C 70%, #C0C6CE 100%) !important;
+  border-color: #9AA2AC !important;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,0.55), inset 0 -3px 6px rgba(0,0,0,0.25), 0 6px 14px rgba(0,0,0,0.3) !important;
+}
+.vs-half[data-board-skin="metal"] .vs-cell:not(.vs-filled) {
+  background: rgba(0,0,0,0.18) !important;
+}
+
+.vs-half[data-board-skin="paper"] .vs-grid {
+  background: linear-gradient(180deg, #F3E9D8 0%, #E8D9C0 100%) !important;
+  border-color: #D0C0A4 !important;
+  box-shadow: 2px 3px 0 rgba(0,0,0,0.06), 0 8px 14px rgba(80,60,30,0.15) !important;
+}
+.vs-half[data-board-skin="paper"] .vs-cell:not(.vs-filled) {
+  background: rgba(100,70,30,0.1) !important;
+}
+
+.vs-half[data-board-skin="pixel"] .vs-grid {
+  background: repeating-linear-gradient(0deg, transparent 0 10px, rgba(0,0,0,0.12) 10px 11px), repeating-linear-gradient(90deg, transparent 0 10px, rgba(0,0,0,0.12) 10px 11px), #3A3A5A !important;
+  border-color: #22223A !important;
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.35) !important;
+}
+.vs-half[data-board-skin="pixel"] .vs-cell:not(.vs-filled) {
+  background: rgba(0,0,0,0.3) !important;
+}
+
+.vs-half[data-board-skin="forest"] .vs-grid {
+  background: radial-gradient(ellipse at 20% 30%, rgba(60,120,40,0.4) 0%, transparent 40%), linear-gradient(180deg, #1E3A22 0%, #0F2214 100%) !important;
+  border-color: #3A6A40 !important;
+  box-shadow: inset 0 2px 0 rgba(120,180,80,0.12), 0 8px 16px rgba(0,20,5,0.4) !important;
+}
+.vs-half[data-board-skin="forest"] .vs-cell:not(.vs-filled) {
+  background: rgba(0,20,5,0.4) !important;
+}
+
+.vs-half[data-board-skin="sakura"] .vs-grid {
+  background: radial-gradient(circle at 15% 20%, rgba(255,180,200,0.5) 0%, transparent 25%), radial-gradient(circle at 80% 60%, rgba(255,200,220,0.35) 0%, transparent 30%), linear-gradient(165deg, #FFE4EC 0%, #F5C0D0 50%, #E8A0B8 100%) !important;
+  border-color: #F0B0C4 !important;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,0.55), 0 8px 16px rgba(160,80,110,0.2) !important;
+}
+.vs-half[data-board-skin="sakura"] .vs-cell:not(.vs-filled) {
+  background: rgba(255,255,255,0.35) !important;
+}
+
+.vs-half[data-board-skin="aurora"] .vs-grid {
+  background: linear-gradient(135deg, #0A1A2A 0%, #1A3A4A 25%, #2A5A6A 45%, #3A2A6A 70%, #0A1020 100%) !important;
+  border-color: #5AD0C0 !important;
+  box-shadow: 0 0 20px rgba(80,220,200,0.2), inset 0 0 24px rgba(120,80,220,0.12) !important;
+}
+.vs-half[data-board-skin="aurora"] .vs-cell:not(.vs-filled) {
+  background: rgba(0,0,20,0.35) !important;
+}
+
+.vs-half[data-board-skin="retro"] .vs-grid {
+  background: repeating-linear-gradient(0deg, #1A0A2A 0 4px, #220E34 4px 8px) !important;
+  border-color: #FF66AA !important;
+  box-shadow: 0 0 0 2px #FF66AA, 0 0 12px rgba(255,100,180,0.35) !important;
+}
+.vs-half[data-board-skin="retro"] .vs-cell:not(.vs-filled) {
+  background: rgba(255,100,180,0.1) !important;
+}
+
+.vs-half[data-board-skin="cloud"] .vs-grid {
+  background: radial-gradient(ellipse at 30% 40%, rgba(255,255,255,0.7) 0%, transparent 40%), radial-gradient(ellipse at 70% 55%, rgba(255,255,255,0.55) 0%, transparent 35%), linear-gradient(180deg, #87CEEB 0%, #B0E0F0 100%) !important;
+  border-color: #E8F6FF !important;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,0.6), 0 8px 16px rgba(60,120,160,0.25) !important;
+}
+.vs-half[data-board-skin="cloud"] .vs-cell:not(.vs-filled) {
+  background: rgba(255,255,255,0.4) !important;
+}
+
+.vs-half[data-board-skin="ink"] .vs-grid {
+  background: radial-gradient(circle at 40% 30%, #2A2A3A 0%, #0A0A10 60%, #000 100%) !important;
+  border-color: #3A3A48 !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 8px 18px rgba(0,0,0,0.55) !important;
+}
+.vs-half[data-board-skin="ink"] .vs-cell:not(.vs-filled) {
+  background: rgba(255,255,255,0.04) !important;
+}
+
+.vs-half[data-board-skin="gold"] .vs-grid {
+  background: linear-gradient(160deg, #FFF0C0 0%, #E0B840 40%, #C09020 70%, #8A6810 100%) !important;
+  border-color: #E8C860 !important;
+  box-shadow: inset 0 2px 0 rgba(255,255,220,0.5), 0 8px 16px rgba(100,70,0,0.3) !important;
+}
+.vs-half[data-board-skin="gold"] .vs-cell:not(.vs-filled) {
+  background: rgba(80,50,0,0.22) !important;
+}
+
+.vs-half[data-board-skin="mint"] .vs-grid {
+  background: linear-gradient(165deg, #C8F5E4 0%, #7ED9B8 50%, #3AA888 100%) !important;
+  border-color: #8EE0C4 !important;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,0.45), 0 8px 16px rgba(30,100,80,0.25) !important;
+}
+.vs-half[data-board-skin="mint"] .vs-cell:not(.vs-filled) {
+  background: rgba(255,255,255,0.3) !important;
+}
+
+.vs-half[data-board-skin="berry"] .vs-grid {
+  background: linear-gradient(165deg, #8A2A4A 0%, #5A1830 50%, #2A0A18 100%) !important;
+  border-color: #C05070 !important;
+  box-shadow: inset 0 2px 0 rgba(255,160,180,0.15), 0 8px 16px rgba(40,5,20,0.4) !important;
+}
+.vs-half[data-board-skin="berry"] .vs-cell:not(.vs-filled) {
+  background: rgba(0,0,0,0.3) !important;
+}
+
+.vs-half[data-board-skin="desert"] .vs-grid {
+  background: linear-gradient(180deg, #F0C878 0%, #D4A04A 45%, #B07830 100%) !important;
+  border-color: #E0B860 !important;
+  box-shadow: inset 0 2px 0 rgba(255,240,200,0.35), 0 8px 14px rgba(100,60,10,0.28) !important;
+}
+.vs-half[data-board-skin="desert"] .vs-cell:not(.vs-filled) {
+  background: rgba(100,60,10,0.2) !important;
+}
+
+.vs-half[data-board-skin="coral"] .vs-grid {
+  background: radial-gradient(ellipse at 60% 70%, rgba(80,220,200,0.35) 0%, transparent 45%), linear-gradient(165deg, #FF7A6A 0%, #E05080 50%, #2A6A8A 100%) !important;
+  border-color: #FFA090 !important;
+  box-shadow: inset 0 2px 0 rgba(255,220,200,0.3), 0 8px 16px rgba(60,30,50,0.3) !important;
+}
+.vs-half[data-board-skin="coral"] .vs-cell:not(.vs-filled) {
+  background: rgba(0,30,40,0.25) !important;
+}
+
+.vs-half[data-board-skin="storm"] .vs-grid {
+  background: linear-gradient(160deg, #3A4A6A 0%, #1A2438 40%, #0A101C 100%) !important;
+  border-color: #6A80A8 !important;
+  box-shadow: 0 0 16px rgba(120,160,220,0.2), inset 0 0 20px rgba(40,60,100,0.3) !important;
+}
+.vs-half[data-board-skin="storm"] .vs-cell:not(.vs-filled) {
+  background: rgba(0,0,0,0.35) !important;
+}
+
+.vs-half[data-board-skin="honey"] .vs-grid {
+  background: repeating-linear-gradient(60deg, rgba(255,200,80,0.2) 0 6px, transparent 6px 12px), linear-gradient(165deg, #F5C84A 0%, #D4A020 55%, #A87810 100%) !important;
+  border-color: #E8B830 !important;
+  box-shadow: inset 0 2px 0 rgba(255,240,180,0.45), 0 8px 14px rgba(100,70,0,0.28) !important;
+}
+.vs-half[data-board-skin="honey"] .vs-cell:not(.vs-filled) {
+  background: rgba(80,50,0,0.2) !important;
+}
+
+.vs-half[data-board-skin="violet"] .vs-grid {
+  background: radial-gradient(ellipse at 40% 20%, rgba(200,140,255,0.35) 0%, transparent 45%), linear-gradient(165deg, #5A2A8A 0%, #3A1860 50%, #1A0A30 100%) !important;
+  border-color: #9A60D0 !important;
+  box-shadow: 0 0 18px rgba(160,80,255,0.25), inset 0 2px 0 rgba(220,180,255,0.15) !important;
+}
+.vs-half[data-board-skin="violet"] .vs-cell:not(.vs-filled) {
+  background: rgba(20,0,40,0.35) !important;
+}

@@ -1127,6 +1127,10 @@ async function createOnlineRoom(opts){
     winnerId: null,
     turnSec: opts.turnSec === 10 ? 10 : (opts.turnSec === 15 ? 15 : null),
     boardSkin: opts.boardSkin || null,
+    hostBrickSkin: (typeof getActiveBrickSkin === 'function') ? getActiveBrickSkin() : null,
+    hostBoardSkin: (typeof getActiveBoardSkin === 'function') ? getActiveBoardSkin() : null,
+    guestBrickSkin: null,
+    guestBoardSkin: null,
     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
     updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
     lastSeen: firebase.firestore.FieldValue.serverTimestamp()
@@ -1168,6 +1172,8 @@ async function joinOnlineRoomByCode(code, opts){
     guestId: uid,
     guestName: name,
     guestAvatar: avatar,
+    guestBrickSkin: (typeof getActiveBrickSkin === 'function') ? getActiveBrickSkin() : null,
+    guestBoardSkin: (typeof getActiveBoardSkin === 'function') ? getActiveBoardSkin() : null,
     guestReady: true,
     status: 'ready'
   });
@@ -1194,6 +1200,8 @@ async function joinOnlineRoomById(roomId, opts){
       guestId: uid,
       guestName: name,
       guestAvatar: avatar,
+      guestBrickSkin: (typeof getActiveBrickSkin === 'function') ? getActiveBrickSkin() : null,
+      guestBoardSkin: (typeof getActiveBoardSkin === 'function') ? getActiveBoardSkin() : null,
       guestReady: true,
       status: 'ready'
     });
@@ -1203,6 +1211,8 @@ async function joinOnlineRoomById(roomId, opts){
       guestId: uid,
       guestName: name,
       guestAvatar: avatar,
+      guestBrickSkin: (typeof getActiveBrickSkin === 'function') ? getActiveBrickSkin() : null,
+      guestBoardSkin: (typeof getActiveBoardSkin === 'function') ? getActiveBoardSkin() : null,
       guestReady: true,
       status: 'ready'
     };
@@ -1290,6 +1300,8 @@ async function startOnlineRoomMatch(roomId, opts){
   await ref.update({
     status: 'playing',
     seed,
+    hostBrickSkin: (typeof getActiveBrickSkin === 'function') ? getActiveBrickSkin() : (d.hostBrickSkin || null),
+    hostBoardSkin: (typeof getActiveBoardSkin === 'function') ? getActiveBoardSkin() : (d.hostBoardSkin || null),
     startedAt: firebase.firestore.FieldValue.serverTimestamp(),
     moveSeq: 0
   });

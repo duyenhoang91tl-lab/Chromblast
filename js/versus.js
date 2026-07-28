@@ -198,9 +198,18 @@ function _vsBuildArena(){
       : '');
 
   document.body.appendChild(arena);
+  const myBrickSkin = (typeof getActiveBrickSkin === 'function') ? getActiveBrickSkin() : 'plush';
+  const myBoardSkin  = (typeof getActiveBoardSkin === 'function') ? getActiveBoardSkin() : 'classic';
+  const oppSkins = (_vs && _vs.online && _vs.online.oppSkins) || null;
   _vs.players.forEach((P,i)=>{
     const half=document.createElement('div');
     half.className='vs-half'+(i===0?' vs-top':' vs-bottom');
+    // P.idx===0 luôn là "mình" (xem enterOnlineVersusMatch: names=[myName,oppName]).
+    // Đối thủ dùng skin họ tự chọn (đồng bộ qua room) — nếu không có dữ liệu (offline/local 2P) thì dùng skin của mình.
+    const brickSkin = (i===0) ? myBrickSkin : (oppSkins ? oppSkins.brickSkin : myBrickSkin);
+    const boardSkin  = (i===0) ? myBoardSkin  : (oppSkins ? oppSkins.boardSkin  : myBoardSkin);
+    half.setAttribute('data-brick-skin', brickSkin || 'plush');
+    half.setAttribute('data-board-skin', boardSkin || 'classic');
 
     // Không gắn chữ tên trong nửa xoay — chỉ bàn + khay (+ HUD ẩn dự phòng)
     half.innerHTML=

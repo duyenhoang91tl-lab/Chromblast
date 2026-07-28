@@ -326,7 +326,12 @@ function enterOnlineVersusMatch(roomId, roomData){
         ],
         timeLeft:VERSUS_TIME, timer:null,
         players:[_vsNewPlayer(0,roomData.seed), _vsNewPlayer(1,roomData.seed)],
-        online:{ roomId, mySlot, appliedSeq:0, isHost, startedAtMs } };
+        online:{ roomId, mySlot, appliedSeq:0, isHost, startedAtMs,
+          oppSkins: {
+            brickSkin: isHost ? roomData.guestBrickSkin : roomData.hostBrickSkin,
+            boardSkin:  isHost ? roomData.guestBoardSkin  : roomData.hostBoardSkin
+          }
+        } };
   versusMode=true;
   _vsBuildArena();
   _vs.players.forEach(P=>{ _vsRefill(P); _vsRenderAll(P); });

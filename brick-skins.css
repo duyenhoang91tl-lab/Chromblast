@@ -93,7 +93,7 @@
 html[data-brick-skin="classic"] .cell.filled,
 html[data-brick-skin="classic"] .cell.preview-ok,
 html[data-brick-skin="classic"] .sc.gem,
-html[data-brick-skin="classic"] .vs-cell.vs-filled {
+.vs-half[data-brick-skin="classic"] .vs-cell.vs-filled {
   border: 1px solid rgba(0,0,0,0.25) !important;
   border-radius: 6px !important;
   background: linear-gradient(180deg, color-mix(in srgb, var(--cc) 55%, #fff) 0%, var(--cc) 42%, color-mix(in srgb, var(--cc) 55%, #000) 100%) !important;
@@ -103,13 +103,13 @@ html[data-brick-skin="classic"] .vs-cell.vs-filled {
 html[data-brick-skin="classic"] .cell.filled::before,
 html[data-brick-skin="classic"] .cell.preview-ok::before,
 html[data-brick-skin="classic"] .sc.gem::before,
-html[data-brick-skin="classic"] .vs-cell.vs-filled::before {
+.vs-half[data-brick-skin="classic"] .vs-cell.vs-filled::before {
   opacity: 0 !important;
   content: none !important;
 }
 html[data-brick-skin="classic"] .p-cell.sweet,
 html[data-brick-skin="classic"] #drag-ghost .g-cell.sweet,
-html[data-brick-skin="classic"] .vs-mini-sweet {
+.vs-half[data-brick-skin="classic"] .vs-mini-sweet {
   border: 1px solid rgba(0,0,0,0.25) !important;
   border-radius: 3px !important;
   background: linear-gradient(180deg, color-mix(in srgb, var(--cc) 55%, #fff) 0%, var(--cc) 42%, color-mix(in srgb, var(--cc) 55%, #000) 100%) !important;
@@ -134,7 +134,7 @@ html[data-brick-skin="classic"] .sc.gem.glow-5 {
 html[data-brick-skin="glass"] .cell.filled,
 html[data-brick-skin="glass"] .cell.preview-ok,
 html[data-brick-skin="glass"] .sc.gem,
-html[data-brick-skin="glass"] .vs-cell.vs-filled {
+.vs-half[data-brick-skin="glass"] .vs-cell.vs-filled {
   border: 1px solid rgba(255,255,255,0.45) !important;
   border-radius: 10px !important;
   background: linear-gradient(145deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 55%, transparent) 55%, color-mix(in srgb, var(--cc) 40%, #fff) 100%) !important;
@@ -144,13 +144,13 @@ html[data-brick-skin="glass"] .vs-cell.vs-filled {
 html[data-brick-skin="glass"] .cell.filled::before,
 html[data-brick-skin="glass"] .cell.preview-ok::before,
 html[data-brick-skin="glass"] .sc.gem::before,
-html[data-brick-skin="glass"] .vs-cell.vs-filled::before {
+.vs-half[data-brick-skin="glass"] .vs-cell.vs-filled::before {
   opacity: 0 !important;
   content: none !important;
 }
 html[data-brick-skin="glass"] .p-cell.sweet,
 html[data-brick-skin="glass"] #drag-ghost .g-cell.sweet,
-html[data-brick-skin="glass"] .vs-mini-sweet {
+.vs-half[data-brick-skin="glass"] .vs-mini-sweet {
   border: 1px solid rgba(255,255,255,0.45) !important;
   border-radius: 4px !important;
   background: linear-gradient(145deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 55%, transparent) 55%, color-mix(in srgb, var(--cc) 40%, #fff) 100%) !important;
@@ -186,7 +186,7 @@ html[data-brick-skin="glass"] .sc.gem.glow-5 {
 html[data-brick-skin="neon"] .cell.filled,
 html[data-brick-skin="neon"] .cell.preview-ok,
 html[data-brick-skin="neon"] .sc.gem,
-html[data-brick-skin="neon"] .vs-cell.vs-filled{
+.vs-half[data-brick-skin="neon"] .vs-cell.vs-filled{
   border:none !important;
   border-radius:8px !important;
   overflow:hidden !important;
@@ -202,62 +202,62 @@ html[data-brick-skin="neon"] .vs-cell.vs-filled{
 html[data-brick-skin="neon"] .cell.filled:not(.bomb-cell):not(.cloud-cell):not(.squirrel-cell)::before,
 html[data-brick-skin="neon"] .cell.preview-ok:not(.bomb-cell):not(.cloud-cell):not(.squirrel-cell)::before,
 html[data-brick-skin="neon"] .sc.gem::before,
-html[data-brick-skin="neon"] .vs-cell.vs-filled::before{
+.vs-half[data-brick-skin="neon"] .vs-cell.vs-filled::before{
   opacity:0 !important;
   content:none !important;
 }
 html[data-brick-skin="neon"] .cell.filled[data-ci="0"],
 html[data-brick-skin="neon"] .cell.preview-ok[data-ci="0"],
 html[data-brick-skin="neon"] .sc.gem[data-ci="0"],
-html[data-brick-skin="neon"] .vs-cell.vs-filled[data-ci="0"]{
+.vs-half[data-brick-skin="neon"] .vs-cell.vs-filled[data-ci="0"]{
   background-image:var(--neon-animal-0), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
 }
 html[data-brick-skin="neon"] .cell.filled[data-ci="1"],
 html[data-brick-skin="neon"] .cell.preview-ok[data-ci="1"],
 html[data-brick-skin="neon"] .sc.gem[data-ci="1"],
-html[data-brick-skin="neon"] .vs-cell.vs-filled[data-ci="1"]{
+.vs-half[data-brick-skin="neon"] .vs-cell.vs-filled[data-ci="1"]{
   background-image:var(--neon-animal-1), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
 }
 html[data-brick-skin="neon"] .cell.filled[data-ci="2"],
 html[data-brick-skin="neon"] .cell.preview-ok[data-ci="2"],
 html[data-brick-skin="neon"] .sc.gem[data-ci="2"],
-html[data-brick-skin="neon"] .vs-cell.vs-filled[data-ci="2"]{
+.vs-half[data-brick-skin="neon"] .vs-cell.vs-filled[data-ci="2"]{
   background-image:var(--neon-animal-2), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
 }
 html[data-brick-skin="neon"] .cell.filled[data-ci="3"],
 html[data-brick-skin="neon"] .cell.preview-ok[data-ci="3"],
 html[data-brick-skin="neon"] .sc.gem[data-ci="3"],
-html[data-brick-skin="neon"] .vs-cell.vs-filled[data-ci="3"]{
+.vs-half[data-brick-skin="neon"] .vs-cell.vs-filled[data-ci="3"]{
   background-image:var(--neon-animal-3), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
 }
 html[data-brick-skin="neon"] .cell.filled[data-ci="4"],
 html[data-brick-skin="neon"] .cell.preview-ok[data-ci="4"],
 html[data-brick-skin="neon"] .sc.gem[data-ci="4"],
-html[data-brick-skin="neon"] .vs-cell.vs-filled[data-ci="4"]{
+.vs-half[data-brick-skin="neon"] .vs-cell.vs-filled[data-ci="4"]{
   background-image:var(--neon-animal-4), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
 }
 html[data-brick-skin="neon"] .cell.filled[data-ci="5"],
 html[data-brick-skin="neon"] .cell.preview-ok[data-ci="5"],
 html[data-brick-skin="neon"] .sc.gem[data-ci="5"],
-html[data-brick-skin="neon"] .vs-cell.vs-filled[data-ci="5"]{
+.vs-half[data-brick-skin="neon"] .vs-cell.vs-filled[data-ci="5"]{
   background-image:var(--neon-animal-5), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
 }
 html[data-brick-skin="neon"] .cell.filled[data-ci="6"],
 html[data-brick-skin="neon"] .cell.preview-ok[data-ci="6"],
 html[data-brick-skin="neon"] .sc.gem[data-ci="6"],
-html[data-brick-skin="neon"] .vs-cell.vs-filled[data-ci="6"]{
+.vs-half[data-brick-skin="neon"] .vs-cell.vs-filled[data-ci="6"]{
   background-image:var(--neon-animal-6), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
 }
 html[data-brick-skin="neon"] .cell.filled[data-ci="7"],
 html[data-brick-skin="neon"] .cell.preview-ok[data-ci="7"],
 html[data-brick-skin="neon"] .sc.gem[data-ci="7"],
-html[data-brick-skin="neon"] .vs-cell.vs-filled[data-ci="7"]{
+.vs-half[data-brick-skin="neon"] .vs-cell.vs-filled[data-ci="7"]{
   background-image:var(--neon-animal-7), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
 }
 html[data-brick-skin="neon"] .p-cell.sweet,
 html[data-brick-skin="neon"] #drag-ghost .g-cell.sweet,
-html[data-brick-skin="neon"] .vs-mini-sweet,
-html[data-brick-skin="neon"] .vs-g-cell.sweet{
+.vs-half[data-brick-skin="neon"] .vs-mini-sweet,
+.vs-half[data-brick-skin="neon"] .vs-g-cell.sweet{
   border:none !important;
   border-radius:4px !important;
   overflow:hidden !important;
@@ -272,56 +272,56 @@ html[data-brick-skin="neon"] .vs-g-cell.sweet{
 }
 html[data-brick-skin="neon"] .p-cell.sweet::after,
 html[data-brick-skin="neon"] #drag-ghost .g-cell.sweet::before,
-html[data-brick-skin="neon"] .vs-g-cell.sweet::before{
+.vs-half[data-brick-skin="neon"] .vs-g-cell.sweet::before{
   opacity:0 !important;
   content:none !important;
 }
 html[data-brick-skin="neon"] .p-cell.sweet[data-ci="0"],
 html[data-brick-skin="neon"] #drag-ghost .g-cell.sweet[data-ci="0"],
-html[data-brick-skin="neon"] .vs-g-cell.sweet[data-ci="0"],
-html[data-brick-skin="neon"] .vs-mini-sweet[data-ci="0"]{
+.vs-half[data-brick-skin="neon"] .vs-g-cell.sweet[data-ci="0"],
+.vs-half[data-brick-skin="neon"] .vs-mini-sweet[data-ci="0"]{
   background-image:var(--neon-animal-0), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
 }
 html[data-brick-skin="neon"] .p-cell.sweet[data-ci="1"],
 html[data-brick-skin="neon"] #drag-ghost .g-cell.sweet[data-ci="1"],
-html[data-brick-skin="neon"] .vs-g-cell.sweet[data-ci="1"],
-html[data-brick-skin="neon"] .vs-mini-sweet[data-ci="1"]{
+.vs-half[data-brick-skin="neon"] .vs-g-cell.sweet[data-ci="1"],
+.vs-half[data-brick-skin="neon"] .vs-mini-sweet[data-ci="1"]{
   background-image:var(--neon-animal-1), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
 }
 html[data-brick-skin="neon"] .p-cell.sweet[data-ci="2"],
 html[data-brick-skin="neon"] #drag-ghost .g-cell.sweet[data-ci="2"],
-html[data-brick-skin="neon"] .vs-g-cell.sweet[data-ci="2"],
-html[data-brick-skin="neon"] .vs-mini-sweet[data-ci="2"]{
+.vs-half[data-brick-skin="neon"] .vs-g-cell.sweet[data-ci="2"],
+.vs-half[data-brick-skin="neon"] .vs-mini-sweet[data-ci="2"]{
   background-image:var(--neon-animal-2), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
 }
 html[data-brick-skin="neon"] .p-cell.sweet[data-ci="3"],
 html[data-brick-skin="neon"] #drag-ghost .g-cell.sweet[data-ci="3"],
-html[data-brick-skin="neon"] .vs-g-cell.sweet[data-ci="3"],
-html[data-brick-skin="neon"] .vs-mini-sweet[data-ci="3"]{
+.vs-half[data-brick-skin="neon"] .vs-g-cell.sweet[data-ci="3"],
+.vs-half[data-brick-skin="neon"] .vs-mini-sweet[data-ci="3"]{
   background-image:var(--neon-animal-3), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
 }
 html[data-brick-skin="neon"] .p-cell.sweet[data-ci="4"],
 html[data-brick-skin="neon"] #drag-ghost .g-cell.sweet[data-ci="4"],
-html[data-brick-skin="neon"] .vs-g-cell.sweet[data-ci="4"],
-html[data-brick-skin="neon"] .vs-mini-sweet[data-ci="4"]{
+.vs-half[data-brick-skin="neon"] .vs-g-cell.sweet[data-ci="4"],
+.vs-half[data-brick-skin="neon"] .vs-mini-sweet[data-ci="4"]{
   background-image:var(--neon-animal-4), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
 }
 html[data-brick-skin="neon"] .p-cell.sweet[data-ci="5"],
 html[data-brick-skin="neon"] #drag-ghost .g-cell.sweet[data-ci="5"],
-html[data-brick-skin="neon"] .vs-g-cell.sweet[data-ci="5"],
-html[data-brick-skin="neon"] .vs-mini-sweet[data-ci="5"]{
+.vs-half[data-brick-skin="neon"] .vs-g-cell.sweet[data-ci="5"],
+.vs-half[data-brick-skin="neon"] .vs-mini-sweet[data-ci="5"]{
   background-image:var(--neon-animal-5), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
 }
 html[data-brick-skin="neon"] .p-cell.sweet[data-ci="6"],
 html[data-brick-skin="neon"] #drag-ghost .g-cell.sweet[data-ci="6"],
-html[data-brick-skin="neon"] .vs-g-cell.sweet[data-ci="6"],
-html[data-brick-skin="neon"] .vs-mini-sweet[data-ci="6"]{
+.vs-half[data-brick-skin="neon"] .vs-g-cell.sweet[data-ci="6"],
+.vs-half[data-brick-skin="neon"] .vs-mini-sweet[data-ci="6"]{
   background-image:var(--neon-animal-6), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
 }
 html[data-brick-skin="neon"] .p-cell.sweet[data-ci="7"],
 html[data-brick-skin="neon"] #drag-ghost .g-cell.sweet[data-ci="7"],
-html[data-brick-skin="neon"] .vs-g-cell.sweet[data-ci="7"],
-html[data-brick-skin="neon"] .vs-mini-sweet[data-ci="7"]{
+.vs-half[data-brick-skin="neon"] .vs-g-cell.sweet[data-ci="7"],
+.vs-half[data-brick-skin="neon"] .vs-mini-sweet[data-ci="7"]{
   background-image:var(--neon-animal-7), radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--cc) 55%, #1a1028) 0%, #0a0a14 78%) !important;
 }
 html[data-brick-skin="neon"] .sc.gem.glow-1,
@@ -373,7 +373,7 @@ html[data-brick-skin="neon"] .sc.gem.glow-5{
 html[data-brick-skin="metal"] .cell.filled,
 html[data-brick-skin="metal"] .cell.preview-ok,
 html[data-brick-skin="metal"] .sc.gem,
-html[data-brick-skin="metal"] .vs-cell.vs-filled {
+.vs-half[data-brick-skin="metal"] .vs-cell.vs-filled {
   border: 1px solid rgba(0,0,0,0.3) !important;
   border-radius: 5px !important;
   background: linear-gradient(115deg, color-mix(in srgb, var(--cc) 30%, #eee) 0%, var(--cc) 28%, color-mix(in srgb, var(--cc) 40%, #fff) 42%, var(--cc) 58%, color-mix(in srgb, var(--cc) 35%, #222) 100%) !important;
@@ -383,13 +383,13 @@ html[data-brick-skin="metal"] .vs-cell.vs-filled {
 html[data-brick-skin="metal"] .cell.filled::before,
 html[data-brick-skin="metal"] .cell.preview-ok::before,
 html[data-brick-skin="metal"] .sc.gem::before,
-html[data-brick-skin="metal"] .vs-cell.vs-filled::before {
+.vs-half[data-brick-skin="metal"] .vs-cell.vs-filled::before {
   opacity: 0 !important;
   content: none !important;
 }
 html[data-brick-skin="metal"] .p-cell.sweet,
 html[data-brick-skin="metal"] #drag-ghost .g-cell.sweet,
-html[data-brick-skin="metal"] .vs-mini-sweet {
+.vs-half[data-brick-skin="metal"] .vs-mini-sweet {
   border: 1px solid rgba(0,0,0,0.3) !important;
   border-radius: 2px !important;
   background: linear-gradient(115deg, color-mix(in srgb, var(--cc) 30%, #eee) 0%, var(--cc) 28%, color-mix(in srgb, var(--cc) 40%, #fff) 42%, var(--cc) 58%, color-mix(in srgb, var(--cc) 35%, #222) 100%) !important;
@@ -414,7 +414,7 @@ html[data-brick-skin="metal"] .sc.gem.glow-5 {
 html[data-brick-skin="wood"] .cell.filled,
 html[data-brick-skin="wood"] .cell.preview-ok,
 html[data-brick-skin="wood"] .sc.gem,
-html[data-brick-skin="wood"] .vs-cell.vs-filled {
+.vs-half[data-brick-skin="wood"] .vs-cell.vs-filled {
   border: 1px solid rgba(40,20,5,0.35) !important;
   border-radius: 7px !important;
   background: repeating-linear-gradient(90deg, color-mix(in srgb, var(--cc) 75%, #5a3a1a) 0 3px, color-mix(in srgb, var(--cc) 90%, #3a2410) 3px 6px) !important;
@@ -424,13 +424,13 @@ html[data-brick-skin="wood"] .vs-cell.vs-filled {
 html[data-brick-skin="wood"] .cell.filled::before,
 html[data-brick-skin="wood"] .cell.preview-ok::before,
 html[data-brick-skin="wood"] .sc.gem::before,
-html[data-brick-skin="wood"] .vs-cell.vs-filled::before {
+.vs-half[data-brick-skin="wood"] .vs-cell.vs-filled::before {
   opacity: 0 !important;
   content: none !important;
 }
 html[data-brick-skin="wood"] .p-cell.sweet,
 html[data-brick-skin="wood"] #drag-ghost .g-cell.sweet,
-html[data-brick-skin="wood"] .vs-mini-sweet {
+.vs-half[data-brick-skin="wood"] .vs-mini-sweet {
   border: 1px solid rgba(40,20,5,0.35) !important;
   border-radius: 3px !important;
   background: repeating-linear-gradient(90deg, color-mix(in srgb, var(--cc) 75%, #5a3a1a) 0 3px, color-mix(in srgb, var(--cc) 90%, #3a2410) 3px 6px) !important;
@@ -455,7 +455,7 @@ html[data-brick-skin="wood"] .sc.gem.glow-5 {
 html[data-brick-skin="crystal"] .cell.filled,
 html[data-brick-skin="crystal"] .cell.preview-ok,
 html[data-brick-skin="crystal"] .sc.gem,
-html[data-brick-skin="crystal"] .vs-cell.vs-filled {
+.vs-half[data-brick-skin="crystal"] .vs-cell.vs-filled {
   border: none !important;
   border-radius: 10px !important;
   background: linear-gradient(135deg, color-mix(in srgb, var(--cc) 30%, #fff) 0%, var(--cc) 38%, color-mix(in srgb, var(--cc) 50%, #fff) 52%, var(--cc) 100%) !important;
@@ -465,13 +465,13 @@ html[data-brick-skin="crystal"] .vs-cell.vs-filled {
 html[data-brick-skin="crystal"] .cell.filled::before,
 html[data-brick-skin="crystal"] .cell.preview-ok::before,
 html[data-brick-skin="crystal"] .sc.gem::before,
-html[data-brick-skin="crystal"] .vs-cell.vs-filled::before {
+.vs-half[data-brick-skin="crystal"] .vs-cell.vs-filled::before {
   opacity: 0.15 !important;
   
 }
 html[data-brick-skin="crystal"] .p-cell.sweet,
 html[data-brick-skin="crystal"] #drag-ghost .g-cell.sweet,
-html[data-brick-skin="crystal"] .vs-mini-sweet {
+.vs-half[data-brick-skin="crystal"] .vs-mini-sweet {
   border: none !important;
   border-radius: 4px !important;
   background: linear-gradient(135deg, color-mix(in srgb, var(--cc) 30%, #fff) 0%, var(--cc) 38%, color-mix(in srgb, var(--cc) 50%, #fff) 52%, var(--cc) 100%) !important;
@@ -496,7 +496,7 @@ html[data-brick-skin="crystal"] .sc.gem.glow-5 {
 html[data-brick-skin="ice"] .cell.filled,
 html[data-brick-skin="ice"] .cell.preview-ok,
 html[data-brick-skin="ice"] .sc.gem,
-html[data-brick-skin="ice"] .vs-cell.vs-filled {
+.vs-half[data-brick-skin="ice"] .vs-cell.vs-filled {
   border: 1px solid rgba(200,240,255,0.55) !important;
   border-radius: 9px !important;
   background: linear-gradient(180deg, color-mix(in srgb, var(--cc) 40%, #e8f7ff) 0%, color-mix(in srgb, var(--cc) 70%, #b8e0ff) 55%, var(--cc) 100%) !important;
@@ -506,13 +506,13 @@ html[data-brick-skin="ice"] .vs-cell.vs-filled {
 html[data-brick-skin="ice"] .cell.filled::before,
 html[data-brick-skin="ice"] .cell.preview-ok::before,
 html[data-brick-skin="ice"] .sc.gem::before,
-html[data-brick-skin="ice"] .vs-cell.vs-filled::before {
+.vs-half[data-brick-skin="ice"] .vs-cell.vs-filled::before {
   opacity: 0.2 !important;
   
 }
 html[data-brick-skin="ice"] .p-cell.sweet,
 html[data-brick-skin="ice"] #drag-ghost .g-cell.sweet,
-html[data-brick-skin="ice"] .vs-mini-sweet {
+.vs-half[data-brick-skin="ice"] .vs-mini-sweet {
   border: 1px solid rgba(200,240,255,0.55) !important;
   border-radius: 4px !important;
   background: linear-gradient(180deg, color-mix(in srgb, var(--cc) 40%, #e8f7ff) 0%, color-mix(in srgb, var(--cc) 70%, #b8e0ff) 55%, var(--cc) 100%) !important;
@@ -537,7 +537,7 @@ html[data-brick-skin="ice"] .sc.gem.glow-5 {
 html[data-brick-skin="lava"] .cell.filled,
 html[data-brick-skin="lava"] .cell.preview-ok,
 html[data-brick-skin="lava"] .sc.gem,
-html[data-brick-skin="lava"] .vs-cell.vs-filled {
+.vs-half[data-brick-skin="lava"] .vs-cell.vs-filled {
   border: 1px solid #3a1000 !important;
   border-radius: 8px !important;
   background: radial-gradient(ellipse at 50% 80%, #ff6a00 0%, color-mix(in srgb, var(--cc) 60%, #1a0500) 45%, #120800 100%) !important;
@@ -547,13 +547,13 @@ html[data-brick-skin="lava"] .vs-cell.vs-filled {
 html[data-brick-skin="lava"] .cell.filled::before,
 html[data-brick-skin="lava"] .cell.preview-ok::before,
 html[data-brick-skin="lava"] .sc.gem::before,
-html[data-brick-skin="lava"] .vs-cell.vs-filled::before {
+.vs-half[data-brick-skin="lava"] .vs-cell.vs-filled::before {
   opacity: 0 !important;
   content: none !important;
 }
 html[data-brick-skin="lava"] .p-cell.sweet,
 html[data-brick-skin="lava"] #drag-ghost .g-cell.sweet,
-html[data-brick-skin="lava"] .vs-mini-sweet {
+.vs-half[data-brick-skin="lava"] .vs-mini-sweet {
   border: 1px solid #3a1000 !important;
   border-radius: 3px !important;
   background: radial-gradient(ellipse at 50% 80%, #ff6a00 0%, color-mix(in srgb, var(--cc) 60%, #1a0500) 45%, #120800 100%) !important;
@@ -578,7 +578,7 @@ html[data-brick-skin="lava"] .sc.gem.glow-5 {
 html[data-brick-skin="gold"] .cell.filled,
 html[data-brick-skin="gold"] .cell.preview-ok,
 html[data-brick-skin="gold"] .sc.gem,
-html[data-brick-skin="gold"] .vs-cell.vs-filled {
+.vs-half[data-brick-skin="gold"] .vs-cell.vs-filled {
   border: 1px solid #a8841a !important;
   border-radius: 7px !important;
   background: linear-gradient(160deg, #fff3c0 0%, color-mix(in srgb, var(--cc) 50%, #ffd700) 35%, #c9a227 55%, color-mix(in srgb, var(--cc) 40%, #8a6a10) 100%) !important;
@@ -588,13 +588,13 @@ html[data-brick-skin="gold"] .vs-cell.vs-filled {
 html[data-brick-skin="gold"] .cell.filled::before,
 html[data-brick-skin="gold"] .cell.preview-ok::before,
 html[data-brick-skin="gold"] .sc.gem::before,
-html[data-brick-skin="gold"] .vs-cell.vs-filled::before {
+.vs-half[data-brick-skin="gold"] .vs-cell.vs-filled::before {
   opacity: 0 !important;
   content: none !important;
 }
 html[data-brick-skin="gold"] .p-cell.sweet,
 html[data-brick-skin="gold"] #drag-ghost .g-cell.sweet,
-html[data-brick-skin="gold"] .vs-mini-sweet {
+.vs-half[data-brick-skin="gold"] .vs-mini-sweet {
   border: 1px solid #a8841a !important;
   border-radius: 3px !important;
   background: linear-gradient(160deg, #fff3c0 0%, color-mix(in srgb, var(--cc) 50%, #ffd700) 35%, #c9a227 55%, color-mix(in srgb, var(--cc) 40%, #8a6a10) 100%) !important;
@@ -619,7 +619,7 @@ html[data-brick-skin="gold"] .sc.gem.glow-5 {
 html[data-brick-skin="silver"] .cell.filled,
 html[data-brick-skin="silver"] .cell.preview-ok,
 html[data-brick-skin="silver"] .sc.gem,
-html[data-brick-skin="silver"] .vs-cell.vs-filled {
+.vs-half[data-brick-skin="silver"] .vs-cell.vs-filled {
   border: 1px solid #9aa0aa !important;
   border-radius: 6px !important;
   background: linear-gradient(145deg, #fff 0%, color-mix(in srgb, var(--cc) 35%, #d0d5dc) 40%, color-mix(in srgb, var(--cc) 25%, #8a909a) 70%, #c8cdd4 100%) !important;
@@ -629,13 +629,13 @@ html[data-brick-skin="silver"] .vs-cell.vs-filled {
 html[data-brick-skin="silver"] .cell.filled::before,
 html[data-brick-skin="silver"] .cell.preview-ok::before,
 html[data-brick-skin="silver"] .sc.gem::before,
-html[data-brick-skin="silver"] .vs-cell.vs-filled::before {
+.vs-half[data-brick-skin="silver"] .vs-cell.vs-filled::before {
   opacity: 0 !important;
   content: none !important;
 }
 html[data-brick-skin="silver"] .p-cell.sweet,
 html[data-brick-skin="silver"] #drag-ghost .g-cell.sweet,
-html[data-brick-skin="silver"] .vs-mini-sweet {
+.vs-half[data-brick-skin="silver"] .vs-mini-sweet {
   border: 1px solid #9aa0aa !important;
   border-radius: 3px !important;
   background: linear-gradient(145deg, #fff 0%, color-mix(in srgb, var(--cc) 35%, #d0d5dc) 40%, color-mix(in srgb, var(--cc) 25%, #8a909a) 70%, #c8cdd4 100%) !important;
@@ -660,7 +660,7 @@ html[data-brick-skin="silver"] .sc.gem.glow-5 {
 html[data-brick-skin="marble"] .cell.filled,
 html[data-brick-skin="marble"] .cell.preview-ok,
 html[data-brick-skin="marble"] .sc.gem,
-html[data-brick-skin="marble"] .vs-cell.vs-filled {
+.vs-half[data-brick-skin="marble"] .vs-cell.vs-filled {
   border: 1px solid rgba(255,255,255,0.3) !important;
   border-radius: 8px !important;
   background: linear-gradient(120deg, color-mix(in srgb, var(--cc) 40%, #f5f0ea) 0%, var(--cc) 30%, color-mix(in srgb, var(--cc) 55%, #fff) 48%, var(--cc) 70%, color-mix(in srgb, var(--cc) 45%, #ddd) 100%) !important;
@@ -670,13 +670,13 @@ html[data-brick-skin="marble"] .vs-cell.vs-filled {
 html[data-brick-skin="marble"] .cell.filled::before,
 html[data-brick-skin="marble"] .cell.preview-ok::before,
 html[data-brick-skin="marble"] .sc.gem::before,
-html[data-brick-skin="marble"] .vs-cell.vs-filled::before {
+.vs-half[data-brick-skin="marble"] .vs-cell.vs-filled::before {
   opacity: 0.12 !important;
   
 }
 html[data-brick-skin="marble"] .p-cell.sweet,
 html[data-brick-skin="marble"] #drag-ghost .g-cell.sweet,
-html[data-brick-skin="marble"] .vs-mini-sweet {
+.vs-half[data-brick-skin="marble"] .vs-mini-sweet {
   border: 1px solid rgba(255,255,255,0.3) !important;
   border-radius: 3px !important;
   background: linear-gradient(120deg, color-mix(in srgb, var(--cc) 40%, #f5f0ea) 0%, var(--cc) 30%, color-mix(in srgb, var(--cc) 55%, #fff) 48%, var(--cc) 70%, color-mix(in srgb, var(--cc) 45%, #ddd) 100%) !important;
@@ -701,7 +701,7 @@ html[data-brick-skin="marble"] .sc.gem.glow-5 {
 html[data-brick-skin="pixel"] .cell.filled,
 html[data-brick-skin="pixel"] .cell.preview-ok,
 html[data-brick-skin="pixel"] .sc.gem,
-html[data-brick-skin="pixel"] .vs-cell.vs-filled {
+.vs-half[data-brick-skin="pixel"] .vs-cell.vs-filled {
   border: 2px solid rgba(0,0,0,0.4) !important;
   border-radius: 0px !important;
   background: var(--cc) !important;
@@ -711,13 +711,13 @@ html[data-brick-skin="pixel"] .vs-cell.vs-filled {
 html[data-brick-skin="pixel"] .cell.filled::before,
 html[data-brick-skin="pixel"] .cell.preview-ok::before,
 html[data-brick-skin="pixel"] .sc.gem::before,
-html[data-brick-skin="pixel"] .vs-cell.vs-filled::before {
+.vs-half[data-brick-skin="pixel"] .vs-cell.vs-filled::before {
   opacity: 0 !important;
   content: none !important;
 }
 html[data-brick-skin="pixel"] .p-cell.sweet,
 html[data-brick-skin="pixel"] #drag-ghost .g-cell.sweet,
-html[data-brick-skin="pixel"] .vs-mini-sweet {
+.vs-half[data-brick-skin="pixel"] .vs-mini-sweet {
   border: 2px solid rgba(0,0,0,0.4) !important;
   border-radius: 0px !important;
   background: var(--cc) !important;
@@ -742,7 +742,7 @@ html[data-brick-skin="pixel"] .sc.gem.glow-5 {
 html[data-brick-skin="watercolor"] .cell.filled,
 html[data-brick-skin="watercolor"] .cell.preview-ok,
 html[data-brick-skin="watercolor"] .sc.gem,
-html[data-brick-skin="watercolor"] .vs-cell.vs-filled {
+.vs-half[data-brick-skin="watercolor"] .vs-cell.vs-filled {
   border: none !important;
   border-radius: 14px !important;
   background: radial-gradient(circle at 40% 35%, color-mix(in srgb, var(--cc) 55%, #fff) 0%, color-mix(in srgb, var(--cc) 85%, transparent) 70%, transparent 100%) !important;
@@ -752,13 +752,13 @@ html[data-brick-skin="watercolor"] .vs-cell.vs-filled {
 html[data-brick-skin="watercolor"] .cell.filled::before,
 html[data-brick-skin="watercolor"] .cell.preview-ok::before,
 html[data-brick-skin="watercolor"] .sc.gem::before,
-html[data-brick-skin="watercolor"] .vs-cell.vs-filled::before {
+.vs-half[data-brick-skin="watercolor"] .vs-cell.vs-filled::before {
   opacity: 0.35 !important;
   
 }
 html[data-brick-skin="watercolor"] .p-cell.sweet,
 html[data-brick-skin="watercolor"] #drag-ghost .g-cell.sweet,
-html[data-brick-skin="watercolor"] .vs-mini-sweet {
+.vs-half[data-brick-skin="watercolor"] .vs-mini-sweet {
   border: none !important;
   border-radius: 6px !important;
   background: radial-gradient(circle at 40% 35%, color-mix(in srgb, var(--cc) 55%, #fff) 0%, color-mix(in srgb, var(--cc) 85%, transparent) 70%, transparent 100%) !important;
@@ -783,7 +783,7 @@ html[data-brick-skin="watercolor"] .sc.gem.glow-5 {
 html[data-brick-skin="holo"] .cell.filled,
 html[data-brick-skin="holo"] .cell.preview-ok,
 html[data-brick-skin="holo"] .sc.gem,
-html[data-brick-skin="holo"] .vs-cell.vs-filled {
+.vs-half[data-brick-skin="holo"] .vs-cell.vs-filled {
   border: none !important;
   border-radius: 9px !important;
   background: linear-gradient(135deg, color-mix(in srgb, var(--cc) 50%, #ff9ad5) 0%, color-mix(in srgb, var(--cc) 50%, #9ad5ff) 35%, color-mix(in srgb, var(--cc) 50%, #d5ff9a) 65%, color-mix(in srgb, var(--cc) 50%, #ffd59a) 100%) !important;
@@ -793,13 +793,13 @@ html[data-brick-skin="holo"] .vs-cell.vs-filled {
 html[data-brick-skin="holo"] .cell.filled::before,
 html[data-brick-skin="holo"] .cell.preview-ok::before,
 html[data-brick-skin="holo"] .sc.gem::before,
-html[data-brick-skin="holo"] .vs-cell.vs-filled::before {
+.vs-half[data-brick-skin="holo"] .vs-cell.vs-filled::before {
   opacity: 0.2 !important;
   
 }
 html[data-brick-skin="holo"] .p-cell.sweet,
 html[data-brick-skin="holo"] #drag-ghost .g-cell.sweet,
-html[data-brick-skin="holo"] .vs-mini-sweet {
+.vs-half[data-brick-skin="holo"] .vs-mini-sweet {
   border: none !important;
   border-radius: 4px !important;
   background: linear-gradient(135deg, color-mix(in srgb, var(--cc) 50%, #ff9ad5) 0%, color-mix(in srgb, var(--cc) 50%, #9ad5ff) 35%, color-mix(in srgb, var(--cc) 50%, #d5ff9a) 65%, color-mix(in srgb, var(--cc) 50%, #ffd59a) 100%) !important;
@@ -824,7 +824,7 @@ html[data-brick-skin="holo"] .sc.gem.glow-5 {
 html[data-brick-skin="matte"] .cell.filled,
 html[data-brick-skin="matte"] .cell.preview-ok,
 html[data-brick-skin="matte"] .sc.gem,
-html[data-brick-skin="matte"] .vs-cell.vs-filled {
+.vs-half[data-brick-skin="matte"] .vs-cell.vs-filled {
   border: none !important;
   border-radius: 10px !important;
   background: color-mix(in srgb, var(--cc) 92%, #444) !important;
@@ -834,13 +834,13 @@ html[data-brick-skin="matte"] .vs-cell.vs-filled {
 html[data-brick-skin="matte"] .cell.filled::before,
 html[data-brick-skin="matte"] .cell.preview-ok::before,
 html[data-brick-skin="matte"] .sc.gem::before,
-html[data-brick-skin="matte"] .vs-cell.vs-filled::before {
+.vs-half[data-brick-skin="matte"] .vs-cell.vs-filled::before {
   opacity: 0 !important;
   content: none !important;
 }
 html[data-brick-skin="matte"] .p-cell.sweet,
 html[data-brick-skin="matte"] #drag-ghost .g-cell.sweet,
-html[data-brick-skin="matte"] .vs-mini-sweet {
+.vs-half[data-brick-skin="matte"] .vs-mini-sweet {
   border: none !important;
   border-radius: 4px !important;
   background: color-mix(in srgb, var(--cc) 92%, #444) !important;
@@ -865,7 +865,7 @@ html[data-brick-skin="matte"] .sc.gem.glow-5 {
 html[data-brick-skin="glossy"] .cell.filled,
 html[data-brick-skin="glossy"] .cell.preview-ok,
 html[data-brick-skin="glossy"] .sc.gem,
-html[data-brick-skin="glossy"] .vs-cell.vs-filled {
+.vs-half[data-brick-skin="glossy"] .vs-cell.vs-filled {
   border: none !important;
   border-radius: 11px !important;
   background: linear-gradient(180deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, var(--cc) 38%, color-mix(in srgb, var(--cc) 70%, #000) 100%) !important;
@@ -875,13 +875,13 @@ html[data-brick-skin="glossy"] .vs-cell.vs-filled {
 html[data-brick-skin="glossy"] .cell.filled::before,
 html[data-brick-skin="glossy"] .cell.preview-ok::before,
 html[data-brick-skin="glossy"] .sc.gem::before,
-html[data-brick-skin="glossy"] .vs-cell.vs-filled::before {
+.vs-half[data-brick-skin="glossy"] .vs-cell.vs-filled::before {
   opacity: 0 !important;
   content: none !important;
 }
 html[data-brick-skin="glossy"] .p-cell.sweet,
 html[data-brick-skin="glossy"] #drag-ghost .g-cell.sweet,
-html[data-brick-skin="glossy"] .vs-mini-sweet {
+.vs-half[data-brick-skin="glossy"] .vs-mini-sweet {
   border: none !important;
   border-radius: 5px !important;
   background: linear-gradient(180deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, var(--cc) 38%, color-mix(in srgb, var(--cc) 70%, #000) 100%) !important;
@@ -906,7 +906,7 @@ html[data-brick-skin="glossy"] .sc.gem.glow-5 {
 html[data-brick-skin="chalk"] .cell.filled,
 html[data-brick-skin="chalk"] .cell.preview-ok,
 html[data-brick-skin="chalk"] .sc.gem,
-html[data-brick-skin="chalk"] .vs-cell.vs-filled {
+.vs-half[data-brick-skin="chalk"] .vs-cell.vs-filled {
   border: 1px dashed rgba(255,255,255,0.25) !important;
   border-radius: 4px !important;
   background: color-mix(in srgb, var(--cc) 70%, #c8c4b8) !important;
@@ -916,13 +916,13 @@ html[data-brick-skin="chalk"] .vs-cell.vs-filled {
 html[data-brick-skin="chalk"] .cell.filled::before,
 html[data-brick-skin="chalk"] .cell.preview-ok::before,
 html[data-brick-skin="chalk"] .sc.gem::before,
-html[data-brick-skin="chalk"] .vs-cell.vs-filled::before {
+.vs-half[data-brick-skin="chalk"] .vs-cell.vs-filled::before {
   opacity: 0.45 !important;
   
 }
 html[data-brick-skin="chalk"] .p-cell.sweet,
 html[data-brick-skin="chalk"] #drag-ghost .g-cell.sweet,
-html[data-brick-skin="chalk"] .vs-mini-sweet {
+.vs-half[data-brick-skin="chalk"] .vs-mini-sweet {
   border: 1px dashed rgba(255,255,255,0.25) !important;
   border-radius: 2px !important;
   background: color-mix(in srgb, var(--cc) 70%, #c8c4b8) !important;
@@ -947,7 +947,7 @@ html[data-brick-skin="chalk"] .sc.gem.glow-5 {
 html[data-brick-skin="leather"] .cell.filled,
 html[data-brick-skin="leather"] .cell.preview-ok,
 html[data-brick-skin="leather"] .sc.gem,
-html[data-brick-skin="leather"] .vs-cell.vs-filled {
+.vs-half[data-brick-skin="leather"] .vs-cell.vs-filled {
   border: 1px solid rgba(0,0,0,0.35) !important;
   border-radius: 8px !important;
   background: radial-gradient(circle at 30% 25%, color-mix(in srgb, var(--cc) 70%, #fff) 0%, var(--cc) 50%, color-mix(in srgb, var(--cc) 60%, #000) 100%) !important;
@@ -957,13 +957,13 @@ html[data-brick-skin="leather"] .vs-cell.vs-filled {
 html[data-brick-skin="leather"] .cell.filled::before,
 html[data-brick-skin="leather"] .cell.preview-ok::before,
 html[data-brick-skin="leather"] .sc.gem::before,
-html[data-brick-skin="leather"] .vs-cell.vs-filled::before {
+.vs-half[data-brick-skin="leather"] .vs-cell.vs-filled::before {
   opacity: 0 !important;
   content: none !important;
 }
 html[data-brick-skin="leather"] .p-cell.sweet,
 html[data-brick-skin="leather"] #drag-ghost .g-cell.sweet,
-html[data-brick-skin="leather"] .vs-mini-sweet {
+.vs-half[data-brick-skin="leather"] .vs-mini-sweet {
   border: 1px solid rgba(0,0,0,0.35) !important;
   border-radius: 3px !important;
   background: radial-gradient(circle at 30% 25%, color-mix(in srgb, var(--cc) 70%, #fff) 0%, var(--cc) 50%, color-mix(in srgb, var(--cc) 60%, #000) 100%) !important;
@@ -988,7 +988,7 @@ html[data-brick-skin="leather"] .sc.gem.glow-5 {
 html[data-brick-skin="felt"] .cell.filled,
 html[data-brick-skin="felt"] .cell.preview-ok,
 html[data-brick-skin="felt"] .sc.gem,
-html[data-brick-skin="felt"] .vs-cell.vs-filled {
+.vs-half[data-brick-skin="felt"] .vs-cell.vs-filled {
   border: none !important;
   border-radius: 12px !important;
   background: radial-gradient(circle at 40% 35%, color-mix(in srgb, var(--cc) 75%, #fff) 0%, var(--cc) 100%) !important;
@@ -998,13 +998,13 @@ html[data-brick-skin="felt"] .vs-cell.vs-filled {
 html[data-brick-skin="felt"] .cell.filled::before,
 html[data-brick-skin="felt"] .cell.preview-ok::before,
 html[data-brick-skin="felt"] .sc.gem::before,
-html[data-brick-skin="felt"] .vs-cell.vs-filled::before {
+.vs-half[data-brick-skin="felt"] .vs-cell.vs-filled::before {
   opacity: 0.5 !important;
   
 }
 html[data-brick-skin="felt"] .p-cell.sweet,
 html[data-brick-skin="felt"] #drag-ghost .g-cell.sweet,
-html[data-brick-skin="felt"] .vs-mini-sweet {
+.vs-half[data-brick-skin="felt"] .vs-mini-sweet {
   border: none !important;
   border-radius: 5px !important;
   background: radial-gradient(circle at 40% 35%, color-mix(in srgb, var(--cc) 75%, #fff) 0%, var(--cc) 100%) !important;
@@ -1029,7 +1029,7 @@ html[data-brick-skin="felt"] .sc.gem.glow-5 {
 html[data-brick-skin="ceramic"] .cell.filled,
 html[data-brick-skin="ceramic"] .cell.preview-ok,
 html[data-brick-skin="ceramic"] .sc.gem,
-html[data-brick-skin="ceramic"] .vs-cell.vs-filled {
+.vs-half[data-brick-skin="ceramic"] .vs-cell.vs-filled {
   border: 2px solid rgba(255,255,255,0.35) !important;
   border-radius: 50% !important;
   background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--cc) 40%, #fff) 0%, var(--cc) 55%, color-mix(in srgb, var(--cc) 70%, #333) 100%) !important;
@@ -1039,13 +1039,13 @@ html[data-brick-skin="ceramic"] .vs-cell.vs-filled {
 html[data-brick-skin="ceramic"] .cell.filled::before,
 html[data-brick-skin="ceramic"] .cell.preview-ok::before,
 html[data-brick-skin="ceramic"] .sc.gem::before,
-html[data-brick-skin="ceramic"] .vs-cell.vs-filled::before {
+.vs-half[data-brick-skin="ceramic"] .vs-cell.vs-filled::before {
   opacity: 0 !important;
   content: none !important;
 }
 html[data-brick-skin="ceramic"] .p-cell.sweet,
 html[data-brick-skin="ceramic"] #drag-ghost .g-cell.sweet,
-html[data-brick-skin="ceramic"] .vs-mini-sweet {
+.vs-half[data-brick-skin="ceramic"] .vs-mini-sweet {
   border: 2px solid rgba(255,255,255,0.35) !important;
   border-radius: 50% !important;
   background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--cc) 40%, #fff) 0%, var(--cc) 55%, color-mix(in srgb, var(--cc) 70%, #333) 100%) !important;
@@ -1070,7 +1070,7 @@ html[data-brick-skin="ceramic"] .sc.gem.glow-5 {
 html[data-brick-skin="rubber"] .cell.filled,
 html[data-brick-skin="rubber"] .cell.preview-ok,
 html[data-brick-skin="rubber"] .sc.gem,
-html[data-brick-skin="rubber"] .vs-cell.vs-filled {
+.vs-half[data-brick-skin="rubber"] .vs-cell.vs-filled {
   border: none !important;
   border-radius: 14px !important;
   background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--cc) 80%, #222) 0%, color-mix(in srgb, var(--cc) 70%, #000) 100%) !important;
@@ -1080,13 +1080,13 @@ html[data-brick-skin="rubber"] .vs-cell.vs-filled {
 html[data-brick-skin="rubber"] .cell.filled::before,
 html[data-brick-skin="rubber"] .cell.preview-ok::before,
 html[data-brick-skin="rubber"] .sc.gem::before,
-html[data-brick-skin="rubber"] .vs-cell.vs-filled::before {
+.vs-half[data-brick-skin="rubber"] .vs-cell.vs-filled::before {
   opacity: 0 !important;
   content: none !important;
 }
 html[data-brick-skin="rubber"] .p-cell.sweet,
 html[data-brick-skin="rubber"] #drag-ghost .g-cell.sweet,
-html[data-brick-skin="rubber"] .vs-mini-sweet {
+.vs-half[data-brick-skin="rubber"] .vs-mini-sweet {
   border: none !important;
   border-radius: 6px !important;
   background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--cc) 80%, #222) 0%, color-mix(in srgb, var(--cc) 70%, #000) 100%) !important;
@@ -1111,7 +1111,7 @@ html[data-brick-skin="rubber"] .sc.gem.glow-5 {
 html[data-brick-skin="jelly"] .cell.filled,
 html[data-brick-skin="jelly"] .cell.preview-ok,
 html[data-brick-skin="jelly"] .sc.gem,
-html[data-brick-skin="jelly"] .vs-cell.vs-filled {
+.vs-half[data-brick-skin="jelly"] .vs-cell.vs-filled {
   border: none !important;
   border-radius: 16px !important;
   background: radial-gradient(circle at 35% 28%, color-mix(in srgb, var(--cc) 45%, #fff) 0%, color-mix(in srgb, var(--cc) 75%, transparent) 60%, var(--cc) 100%) !important;
@@ -1121,13 +1121,13 @@ html[data-brick-skin="jelly"] .vs-cell.vs-filled {
 html[data-brick-skin="jelly"] .cell.filled::before,
 html[data-brick-skin="jelly"] .cell.preview-ok::before,
 html[data-brick-skin="jelly"] .sc.gem::before,
-html[data-brick-skin="jelly"] .vs-cell.vs-filled::before {
+.vs-half[data-brick-skin="jelly"] .vs-cell.vs-filled::before {
   opacity: 0 !important;
   content: none !important;
 }
 html[data-brick-skin="jelly"] .p-cell.sweet,
 html[data-brick-skin="jelly"] #drag-ghost .g-cell.sweet,
-html[data-brick-skin="jelly"] .vs-mini-sweet {
+.vs-half[data-brick-skin="jelly"] .vs-mini-sweet {
   border: none !important;
   border-radius: 7px !important;
   background: radial-gradient(circle at 35% 28%, color-mix(in srgb, var(--cc) 45%, #fff) 0%, color-mix(in srgb, var(--cc) 75%, transparent) 60%, var(--cc) 100%) !important;
@@ -1152,7 +1152,7 @@ html[data-brick-skin="jelly"] .sc.gem.glow-5 {
 html[data-brick-skin="pastel"] .cell.filled,
 html[data-brick-skin="pastel"] .cell.preview-ok,
 html[data-brick-skin="pastel"] .sc.gem,
-html[data-brick-skin="pastel"] .vs-cell.vs-filled {
+.vs-half[data-brick-skin="pastel"] .vs-cell.vs-filled {
   border: 1px solid rgba(255,255,255,0.5) !important;
   border-radius: 12px !important;
   background: linear-gradient(180deg, color-mix(in srgb, var(--cc) 45%, #fff) 0%, color-mix(in srgb, var(--cc) 65%, #fff) 100%) !important;
@@ -1162,13 +1162,13 @@ html[data-brick-skin="pastel"] .vs-cell.vs-filled {
 html[data-brick-skin="pastel"] .cell.filled::before,
 html[data-brick-skin="pastel"] .cell.preview-ok::before,
 html[data-brick-skin="pastel"] .sc.gem::before,
-html[data-brick-skin="pastel"] .vs-cell.vs-filled::before {
+.vs-half[data-brick-skin="pastel"] .vs-cell.vs-filled::before {
   opacity: 0.15 !important;
   
 }
 html[data-brick-skin="pastel"] .p-cell.sweet,
 html[data-brick-skin="pastel"] #drag-ghost .g-cell.sweet,
-html[data-brick-skin="pastel"] .vs-mini-sweet {
+.vs-half[data-brick-skin="pastel"] .vs-mini-sweet {
   border: 1px solid rgba(255,255,255,0.5) !important;
   border-radius: 5px !important;
   background: linear-gradient(180deg, color-mix(in srgb, var(--cc) 45%, #fff) 0%, color-mix(in srgb, var(--cc) 65%, #fff) 100%) !important;
@@ -1193,7 +1193,7 @@ html[data-brick-skin="pastel"] .sc.gem.glow-5 {
 html[data-brick-skin="retro"] .cell.filled,
 html[data-brick-skin="retro"] .cell.preview-ok,
 html[data-brick-skin="retro"] .sc.gem,
-html[data-brick-skin="retro"] .vs-cell.vs-filled {
+.vs-half[data-brick-skin="retro"] .vs-cell.vs-filled {
   border: 3px solid rgba(0,0,0,0.35) !important;
   border-radius: 2px !important;
   background: var(--cc) !important;
@@ -1203,13 +1203,13 @@ html[data-brick-skin="retro"] .vs-cell.vs-filled {
 html[data-brick-skin="retro"] .cell.filled::before,
 html[data-brick-skin="retro"] .cell.preview-ok::before,
 html[data-brick-skin="retro"] .sc.gem::before,
-html[data-brick-skin="retro"] .vs-cell.vs-filled::before {
+.vs-half[data-brick-skin="retro"] .vs-cell.vs-filled::before {
   opacity: 0 !important;
   content: none !important;
 }
 html[data-brick-skin="retro"] .p-cell.sweet,
 html[data-brick-skin="retro"] #drag-ghost .g-cell.sweet,
-html[data-brick-skin="retro"] .vs-mini-sweet {
+.vs-half[data-brick-skin="retro"] .vs-mini-sweet {
   border: 3px solid rgba(0,0,0,0.35) !important;
   border-radius: 1px !important;
   background: var(--cc) !important;
@@ -1234,7 +1234,7 @@ html[data-brick-skin="retro"] .sc.gem.glow-5 {
 html[data-brick-skin="galaxy"] .cell.filled,
 html[data-brick-skin="galaxy"] .cell.preview-ok,
 html[data-brick-skin="galaxy"] .sc.gem,
-html[data-brick-skin="galaxy"] .vs-cell.vs-filled {
+.vs-half[data-brick-skin="galaxy"] .vs-cell.vs-filled {
   border: 1px solid rgba(180,140,255,0.35) !important;
   border-radius: 10px !important;
   background: radial-gradient(circle at 30% 30%, color-mix(in srgb, var(--cc) 55%, #fff) 0%, #1a1030 45%, #050510 100%) !important;
@@ -1244,13 +1244,13 @@ html[data-brick-skin="galaxy"] .vs-cell.vs-filled {
 html[data-brick-skin="galaxy"] .cell.filled::before,
 html[data-brick-skin="galaxy"] .cell.preview-ok::before,
 html[data-brick-skin="galaxy"] .sc.gem::before,
-html[data-brick-skin="galaxy"] .vs-cell.vs-filled::before {
+.vs-half[data-brick-skin="galaxy"] .vs-cell.vs-filled::before {
   opacity: 0.55 !important;
   
 }
 html[data-brick-skin="galaxy"] .p-cell.sweet,
 html[data-brick-skin="galaxy"] #drag-ghost .g-cell.sweet,
-html[data-brick-skin="galaxy"] .vs-mini-sweet {
+.vs-half[data-brick-skin="galaxy"] .vs-mini-sweet {
   border: 1px solid rgba(180,140,255,0.35) !important;
   border-radius: 4px !important;
   background: radial-gradient(circle at 30% 30%, color-mix(in srgb, var(--cc) 55%, #fff) 0%, #1a1030 45%, #050510 100%) !important;
@@ -1275,7 +1275,7 @@ html[data-brick-skin="galaxy"] .sc.gem.glow-5 {
 html[data-brick-skin="bubble"] .cell.filled,
 html[data-brick-skin="bubble"] .cell.preview-ok,
 html[data-brick-skin="bubble"] .sc.gem,
-html[data-brick-skin="bubble"] .vs-cell.vs-filled {
+.vs-half[data-brick-skin="bubble"] .vs-cell.vs-filled {
   border: none !important;
   border-radius: 50% !important;
   background: radial-gradient(circle at 30% 25%, rgba(255,255,255,0.85) 0%, color-mix(in srgb, var(--cc) 50%, transparent) 40%, color-mix(in srgb, var(--cc) 70%, #fff) 100%) !important;
@@ -1285,13 +1285,13 @@ html[data-brick-skin="bubble"] .vs-cell.vs-filled {
 html[data-brick-skin="bubble"] .cell.filled::before,
 html[data-brick-skin="bubble"] .cell.preview-ok::before,
 html[data-brick-skin="bubble"] .sc.gem::before,
-html[data-brick-skin="bubble"] .vs-cell.vs-filled::before {
+.vs-half[data-brick-skin="bubble"] .vs-cell.vs-filled::before {
   opacity: 0 !important;
   content: none !important;
 }
 html[data-brick-skin="bubble"] .p-cell.sweet,
 html[data-brick-skin="bubble"] #drag-ghost .g-cell.sweet,
-html[data-brick-skin="bubble"] .vs-mini-sweet {
+.vs-half[data-brick-skin="bubble"] .vs-mini-sweet {
   border: none !important;
   border-radius: 50% !important;
   background: radial-gradient(circle at 30% 25%, rgba(255,255,255,0.85) 0%, color-mix(in srgb, var(--cc) 50%, transparent) 40%, color-mix(in srgb, var(--cc) 70%, #fff) 100%) !important;
@@ -1316,7 +1316,7 @@ html[data-brick-skin="bubble"] .sc.gem.glow-5 {
 html[data-brick-skin="stone"] .cell.filled,
 html[data-brick-skin="stone"] .cell.preview-ok,
 html[data-brick-skin="stone"] .sc.gem,
-html[data-brick-skin="stone"] .vs-cell.vs-filled {
+.vs-half[data-brick-skin="stone"] .vs-cell.vs-filled {
   border: 1px solid rgba(0,0,0,0.3) !important;
   border-radius: 5px !important;
   background: linear-gradient(180deg, color-mix(in srgb, var(--cc) 60%, #888) 0%, color-mix(in srgb, var(--cc) 70%, #555) 100%) !important;
@@ -1326,13 +1326,13 @@ html[data-brick-skin="stone"] .vs-cell.vs-filled {
 html[data-brick-skin="stone"] .cell.filled::before,
 html[data-brick-skin="stone"] .cell.preview-ok::before,
 html[data-brick-skin="stone"] .sc.gem::before,
-html[data-brick-skin="stone"] .vs-cell.vs-filled::before {
+.vs-half[data-brick-skin="stone"] .vs-cell.vs-filled::before {
   opacity: 0.2 !important;
   
 }
 html[data-brick-skin="stone"] .p-cell.sweet,
 html[data-brick-skin="stone"] #drag-ghost .g-cell.sweet,
-html[data-brick-skin="stone"] .vs-mini-sweet {
+.vs-half[data-brick-skin="stone"] .vs-mini-sweet {
   border: 1px solid rgba(0,0,0,0.3) !important;
   border-radius: 2px !important;
   background: linear-gradient(180deg, color-mix(in srgb, var(--cc) 60%, #888) 0%, color-mix(in srgb, var(--cc) 70%, #555) 100%) !important;
@@ -1357,7 +1357,7 @@ html[data-brick-skin="stone"] .sc.gem.glow-5 {
 html[data-brick-skin="paper"] .cell.filled,
 html[data-brick-skin="paper"] .cell.preview-ok,
 html[data-brick-skin="paper"] .sc.gem,
-html[data-brick-skin="paper"] .vs-cell.vs-filled {
+.vs-half[data-brick-skin="paper"] .vs-cell.vs-filled {
   border: 1px solid rgba(0,0,0,0.1) !important;
   border-radius: 3px !important;
   background: linear-gradient(180deg, color-mix(in srgb, var(--cc) 50%, #fff) 0%, color-mix(in srgb, var(--cc) 70%, #f0e8d8) 100%) !important;
@@ -1367,13 +1367,13 @@ html[data-brick-skin="paper"] .vs-cell.vs-filled {
 html[data-brick-skin="paper"] .cell.filled::before,
 html[data-brick-skin="paper"] .cell.preview-ok::before,
 html[data-brick-skin="paper"] .sc.gem::before,
-html[data-brick-skin="paper"] .vs-cell.vs-filled::before {
+.vs-half[data-brick-skin="paper"] .vs-cell.vs-filled::before {
   opacity: 0 !important;
   content: none !important;
 }
 html[data-brick-skin="paper"] .p-cell.sweet,
 html[data-brick-skin="paper"] #drag-ghost .g-cell.sweet,
-html[data-brick-skin="paper"] .vs-mini-sweet {
+.vs-half[data-brick-skin="paper"] .vs-mini-sweet {
   border: 1px solid rgba(0,0,0,0.1) !important;
   border-radius: 2px !important;
   background: linear-gradient(180deg, color-mix(in srgb, var(--cc) 50%, #fff) 0%, color-mix(in srgb, var(--cc) 70%, #f0e8d8) 100%) !important;
@@ -1398,7 +1398,7 @@ html[data-brick-skin="paper"] .sc.gem.glow-5 {
 html[data-brick-skin="chrome"] .cell.filled,
 html[data-brick-skin="chrome"] .cell.preview-ok,
 html[data-brick-skin="chrome"] .sc.gem,
-html[data-brick-skin="chrome"] .vs-cell.vs-filled {
+.vs-half[data-brick-skin="chrome"] .vs-cell.vs-filled {
   border: 1px solid #aaa !important;
   border-radius: 6px !important;
   background: linear-gradient(115deg, #fff 0%, color-mix(in srgb, var(--cc) 40%, #ddd) 18%, #fff 32%, color-mix(in srgb, var(--cc) 50%, #999) 48%, #eee 62%, color-mix(in srgb, var(--cc) 35%, #666) 80%, #ccc 100%) !important;
@@ -1408,13 +1408,13 @@ html[data-brick-skin="chrome"] .vs-cell.vs-filled {
 html[data-brick-skin="chrome"] .cell.filled::before,
 html[data-brick-skin="chrome"] .cell.preview-ok::before,
 html[data-brick-skin="chrome"] .sc.gem::before,
-html[data-brick-skin="chrome"] .vs-cell.vs-filled::before {
+.vs-half[data-brick-skin="chrome"] .vs-cell.vs-filled::before {
   opacity: 0 !important;
   content: none !important;
 }
 html[data-brick-skin="chrome"] .p-cell.sweet,
 html[data-brick-skin="chrome"] #drag-ghost .g-cell.sweet,
-html[data-brick-skin="chrome"] .vs-mini-sweet {
+.vs-half[data-brick-skin="chrome"] .vs-mini-sweet {
   border: 1px solid #aaa !important;
   border-radius: 3px !important;
   background: linear-gradient(115deg, #fff 0%, color-mix(in srgb, var(--cc) 40%, #ddd) 18%, #fff 32%, color-mix(in srgb, var(--cc) 50%, #999) 48%, #eee 62%, color-mix(in srgb, var(--cc) 35%, #666) 80%, #ccc 100%) !important;
@@ -1458,7 +1458,7 @@ html[data-brick-skin="chroma"] #pieces-area .piece-slot > div{
 html[data-brick-skin="chroma"] .cell.filled,
 html[data-brick-skin="chroma"] .cell.preview-ok,
 html[data-brick-skin="chroma"] .sc.gem,
-html[data-brick-skin="chroma"] .vs-cell.vs-filled{
+.vs-half[data-brick-skin="chroma"] .vs-cell.vs-filled{
   border:none !important;
   border-radius:10px !important;
   overflow:hidden !important;
@@ -1474,62 +1474,62 @@ html[data-brick-skin="chroma"] .vs-cell.vs-filled{
 html[data-brick-skin="chroma"] .cell.filled:not(.bomb-cell):not(.cloud-cell):not(.squirrel-cell)::before,
 html[data-brick-skin="chroma"] .cell.preview-ok:not(.bomb-cell):not(.cloud-cell):not(.squirrel-cell)::before,
 html[data-brick-skin="chroma"] .sc.gem::before,
-html[data-brick-skin="chroma"] .vs-cell.vs-filled::before{
+.vs-half[data-brick-skin="chroma"] .vs-cell.vs-filled::before{
   opacity:0 !important;
   content:none !important;
 }
 html[data-brick-skin="chroma"] .cell.filled[data-ci="0"],
 html[data-brick-skin="chroma"] .cell.preview-ok[data-ci="0"],
 html[data-brick-skin="chroma"] .sc.gem[data-ci="0"],
-html[data-brick-skin="chroma"] .vs-cell.vs-filled[data-ci="0"]{
+.vs-half[data-brick-skin="chroma"] .vs-cell.vs-filled[data-ci="0"]{
   background-image:var(--chroma-icon-heart), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
 }
 html[data-brick-skin="chroma"] .cell.filled[data-ci="1"],
 html[data-brick-skin="chroma"] .cell.preview-ok[data-ci="1"],
 html[data-brick-skin="chroma"] .sc.gem[data-ci="1"],
-html[data-brick-skin="chroma"] .vs-cell.vs-filled[data-ci="1"]{
+.vs-half[data-brick-skin="chroma"] .vs-cell.vs-filled[data-ci="1"]{
   background-image:var(--chroma-icon-drop), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
 }
 html[data-brick-skin="chroma"] .cell.filled[data-ci="2"],
 html[data-brick-skin="chroma"] .cell.preview-ok[data-ci="2"],
 html[data-brick-skin="chroma"] .sc.gem[data-ci="2"],
-html[data-brick-skin="chroma"] .vs-cell.vs-filled[data-ci="2"]{
+.vs-half[data-brick-skin="chroma"] .vs-cell.vs-filled[data-ci="2"]{
   background-image:var(--chroma-icon-leaf), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
 }
 html[data-brick-skin="chroma"] .cell.filled[data-ci="3"],
 html[data-brick-skin="chroma"] .cell.preview-ok[data-ci="3"],
 html[data-brick-skin="chroma"] .sc.gem[data-ci="3"],
-html[data-brick-skin="chroma"] .vs-cell.vs-filled[data-ci="3"]{
+.vs-half[data-brick-skin="chroma"] .vs-cell.vs-filled[data-ci="3"]{
   background-image:var(--chroma-icon-star), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
 }
 html[data-brick-skin="chroma"] .cell.filled[data-ci="4"],
 html[data-brick-skin="chroma"] .cell.preview-ok[data-ci="4"],
 html[data-brick-skin="chroma"] .sc.gem[data-ci="4"],
-html[data-brick-skin="chroma"] .vs-cell.vs-filled[data-ci="4"]{
+.vs-half[data-brick-skin="chroma"] .vs-cell.vs-filled[data-ci="4"]{
   background-image:var(--chroma-icon-flower), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
 }
 html[data-brick-skin="chroma"] .cell.filled[data-ci="5"],
 html[data-brick-skin="chroma"] .cell.preview-ok[data-ci="5"],
 html[data-brick-skin="chroma"] .sc.gem[data-ci="5"],
-html[data-brick-skin="chroma"] .vs-cell.vs-filled[data-ci="5"]{
+.vs-half[data-brick-skin="chroma"] .vs-cell.vs-filled[data-ci="5"]{
   background-image:var(--chroma-icon-flower), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
 }
 html[data-brick-skin="chroma"] .cell.filled[data-ci="6"],
 html[data-brick-skin="chroma"] .cell.preview-ok[data-ci="6"],
 html[data-brick-skin="chroma"] .sc.gem[data-ci="6"],
-html[data-brick-skin="chroma"] .vs-cell.vs-filled[data-ci="6"]{
+.vs-half[data-brick-skin="chroma"] .vs-cell.vs-filled[data-ci="6"]{
   background-image:var(--chroma-icon-star), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
 }
 html[data-brick-skin="chroma"] .cell.filled[data-ci="7"],
 html[data-brick-skin="chroma"] .cell.preview-ok[data-ci="7"],
 html[data-brick-skin="chroma"] .sc.gem[data-ci="7"],
-html[data-brick-skin="chroma"] .vs-cell.vs-filled[data-ci="7"]{
+.vs-half[data-brick-skin="chroma"] .vs-cell.vs-filled[data-ci="7"]{
   background-image:var(--chroma-icon-leaf), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
 }
 html[data-brick-skin="chroma"] .p-cell.sweet,
 html[data-brick-skin="chroma"] #drag-ghost .g-cell.sweet,
-html[data-brick-skin="chroma"] .vs-mini-sweet,
-html[data-brick-skin="chroma"] .vs-g-cell.sweet{
+.vs-half[data-brick-skin="chroma"] .vs-mini-sweet,
+.vs-half[data-brick-skin="chroma"] .vs-g-cell.sweet{
   border:none !important;
   border-radius:6px !important;
   overflow:hidden !important;
@@ -1544,56 +1544,56 @@ html[data-brick-skin="chroma"] .vs-g-cell.sweet{
 }
 html[data-brick-skin="chroma"] .p-cell.sweet::after,
 html[data-brick-skin="chroma"] #drag-ghost .g-cell.sweet::before,
-html[data-brick-skin="chroma"] .vs-g-cell.sweet::before{
+.vs-half[data-brick-skin="chroma"] .vs-g-cell.sweet::before{
   opacity:0 !important;
   content:none !important;
 }
 html[data-brick-skin="chroma"] .p-cell.sweet[data-ci="0"],
 html[data-brick-skin="chroma"] #drag-ghost .g-cell.sweet[data-ci="0"],
-html[data-brick-skin="chroma"] .vs-g-cell.sweet[data-ci="0"],
-html[data-brick-skin="chroma"] .vs-mini-sweet[data-ci="0"]{
+.vs-half[data-brick-skin="chroma"] .vs-g-cell.sweet[data-ci="0"],
+.vs-half[data-brick-skin="chroma"] .vs-mini-sweet[data-ci="0"]{
   background-image:var(--chroma-icon-heart), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
 }
 html[data-brick-skin="chroma"] .p-cell.sweet[data-ci="1"],
 html[data-brick-skin="chroma"] #drag-ghost .g-cell.sweet[data-ci="1"],
-html[data-brick-skin="chroma"] .vs-g-cell.sweet[data-ci="1"],
-html[data-brick-skin="chroma"] .vs-mini-sweet[data-ci="1"]{
+.vs-half[data-brick-skin="chroma"] .vs-g-cell.sweet[data-ci="1"],
+.vs-half[data-brick-skin="chroma"] .vs-mini-sweet[data-ci="1"]{
   background-image:var(--chroma-icon-drop), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
 }
 html[data-brick-skin="chroma"] .p-cell.sweet[data-ci="2"],
 html[data-brick-skin="chroma"] #drag-ghost .g-cell.sweet[data-ci="2"],
-html[data-brick-skin="chroma"] .vs-g-cell.sweet[data-ci="2"],
-html[data-brick-skin="chroma"] .vs-mini-sweet[data-ci="2"]{
+.vs-half[data-brick-skin="chroma"] .vs-g-cell.sweet[data-ci="2"],
+.vs-half[data-brick-skin="chroma"] .vs-mini-sweet[data-ci="2"]{
   background-image:var(--chroma-icon-leaf), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
 }
 html[data-brick-skin="chroma"] .p-cell.sweet[data-ci="3"],
 html[data-brick-skin="chroma"] #drag-ghost .g-cell.sweet[data-ci="3"],
-html[data-brick-skin="chroma"] .vs-g-cell.sweet[data-ci="3"],
-html[data-brick-skin="chroma"] .vs-mini-sweet[data-ci="3"]{
+.vs-half[data-brick-skin="chroma"] .vs-g-cell.sweet[data-ci="3"],
+.vs-half[data-brick-skin="chroma"] .vs-mini-sweet[data-ci="3"]{
   background-image:var(--chroma-icon-star), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
 }
 html[data-brick-skin="chroma"] .p-cell.sweet[data-ci="4"],
 html[data-brick-skin="chroma"] #drag-ghost .g-cell.sweet[data-ci="4"],
-html[data-brick-skin="chroma"] .vs-g-cell.sweet[data-ci="4"],
-html[data-brick-skin="chroma"] .vs-mini-sweet[data-ci="4"]{
+.vs-half[data-brick-skin="chroma"] .vs-g-cell.sweet[data-ci="4"],
+.vs-half[data-brick-skin="chroma"] .vs-mini-sweet[data-ci="4"]{
   background-image:var(--chroma-icon-flower), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
 }
 html[data-brick-skin="chroma"] .p-cell.sweet[data-ci="5"],
 html[data-brick-skin="chroma"] #drag-ghost .g-cell.sweet[data-ci="5"],
-html[data-brick-skin="chroma"] .vs-g-cell.sweet[data-ci="5"],
-html[data-brick-skin="chroma"] .vs-mini-sweet[data-ci="5"]{
+.vs-half[data-brick-skin="chroma"] .vs-g-cell.sweet[data-ci="5"],
+.vs-half[data-brick-skin="chroma"] .vs-mini-sweet[data-ci="5"]{
   background-image:var(--chroma-icon-flower), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
 }
 html[data-brick-skin="chroma"] .p-cell.sweet[data-ci="6"],
 html[data-brick-skin="chroma"] #drag-ghost .g-cell.sweet[data-ci="6"],
-html[data-brick-skin="chroma"] .vs-g-cell.sweet[data-ci="6"],
-html[data-brick-skin="chroma"] .vs-mini-sweet[data-ci="6"]{
+.vs-half[data-brick-skin="chroma"] .vs-g-cell.sweet[data-ci="6"],
+.vs-half[data-brick-skin="chroma"] .vs-mini-sweet[data-ci="6"]{
   background-image:var(--chroma-icon-star), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
 }
 html[data-brick-skin="chroma"] .p-cell.sweet[data-ci="7"],
 html[data-brick-skin="chroma"] #drag-ghost .g-cell.sweet[data-ci="7"],
-html[data-brick-skin="chroma"] .vs-g-cell.sweet[data-ci="7"],
-html[data-brick-skin="chroma"] .vs-mini-sweet[data-ci="7"]{
+.vs-half[data-brick-skin="chroma"] .vs-g-cell.sweet[data-ci="7"],
+.vs-half[data-brick-skin="chroma"] .vs-mini-sweet[data-ci="7"]{
   background-image:var(--chroma-icon-leaf), linear-gradient(165deg, color-mix(in srgb, var(--cc) 35%, #fff) 0%, color-mix(in srgb, var(--cc) 78%, #fff) 28%, var(--cc) 62%, color-mix(in srgb, var(--cc) 72%, #1a1020) 100%) !important;
 }
 html[data-brick-skin="chroma"] .sc.gem.glow-1,
