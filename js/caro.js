@@ -143,7 +143,7 @@ function _caroMeasure(){
   if(!canvas) return null;
   const wrap = canvas.parentElement;
   const maxW = (wrap && wrap.clientWidth) || window.innerWidth || 400;
-  const maxH = Math.min(window.innerHeight - 110, maxW);
+  const maxH = (wrap && wrap.clientHeight) || (window.innerHeight - 110) || 400;
   const cssSize = Math.floor(Math.min(maxW, maxH));
   const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
   canvas.width = Math.floor(cssSize * dpr);
