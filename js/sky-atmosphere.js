@@ -120,8 +120,8 @@
     for(let i=0;i<count;i++){
       const p = document.createElement('div');
       p.className = 'sky-petal';
-      // Kích thước đa dạng (độ sâu)
-      const size = 8 + Math.random() * 12;
+      // Kích thước đa dạng (độ sâu) — cánh to hơn
+      const size = 16 + Math.random() * 22;
       p.style.width = size + 'px';
       p.style.height = (size * 0.86) + 'px';
       // Rải khắp khung hình, bay theo gió sang trái
@@ -139,7 +139,7 @@
       } else {
         p.style.background = 'linear-gradient(135deg, #ffe4ef 0%, #ff9ec0 42%, #f06a9a 100%)';
       }
-      if(size < 11){
+      if(size < 24){
         p.style.filter = 'brightness(0.92)';
       }
       box.appendChild(p);
