@@ -327,10 +327,8 @@ html.fx-low #sky-atmosphere .sky-moon {
 html.fx-low #sky-stars .sky-star {
   box-shadow: 0 0 3px 1px rgba(255, 255, 255, 0.55);
 }
-html.fx-low #sky-stars .sky-star.bright::before,
-html.fx-low #sky-stars .sky-star.bright::after,
-html.fx-low #sky-stars .sky-star.flare::before,
-html.fx-low #sky-stars .sky-star.flare::after {
+html.fx-low #sky-stars .sky-star::before,
+html.fx-low #sky-stars .sky-star::after {
   display: none;
 }
 html.fx-low #sky-meteors {
@@ -370,21 +368,35 @@ html.fx-low #sky-petals .sky-petal:nth-child(n + 9) {
     0 0 10px 3px rgba(180, 210, 255, 0.6);
   animation-name: skyTwinkleBright;
 }
-#sky-stars .sky-star.bright::before,
-#sky-stars .sky-star.bright::after {
+
+/* Tia sáng chữ thập — mọi sao đều có, giống sao lóe ngoài đời thật.
+   Không cần animation riêng: opacity/scale của .sky-star (skyTwinkle)
+   đã kéo theo cả tia vì tia chỉ là pseudo-element bên trong, nên
+   không tốn thêm keyframe/JS/dung lượng nào. */
+#sky-stars .sky-star::before,
+#sky-stars .sky-star::after {
   content: '';
   position: absolute;
   left: 50%; top: 50%;
   pointer-events: none;
 }
-#sky-stars .sky-star.bright::before {
-  width: 220%; height: 1px;
+#sky-stars .sky-star::before {
+  width: 160%; height: 1px;
   transform: translate(-50%, -50%);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.75), transparent);
+}
+#sky-stars .sky-star::after {
+  width: 1px; height: 160%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(180deg, transparent, rgba(255,255,255,0.75), transparent);
+}
+/* Sao sáng: tia dài & rõ hơn */
+#sky-stars .sky-star.bright::before {
+  width: 220%;
   background: linear-gradient(90deg, transparent, rgba(255,255,255,0.95), transparent);
 }
 #sky-stars .sky-star.bright::after {
-  width: 1px; height: 220%;
-  transform: translate(-50%, -50%);
+  height: 220%;
   background: linear-gradient(180deg, transparent, rgba(255,255,255,0.95), transparent);
 }
 #sky-stars .sky-star.warm {
