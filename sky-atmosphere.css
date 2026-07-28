@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════
    Nền mặc định: thiên hà sâu · tinh vân xanh–tím · trăng góc phải
-   · sao dày lấp lánh chậm · cánh đào hồng bay theo gió trái
+   · sao dày lóe chậm rồi tắt dần · cánh đào hồng bay theo gió trái
 ═══════════════════════════════════════════════════════════════ */
 
 html, body {
@@ -127,113 +127,6 @@ html, body {
 @keyframes skyMistDrift {
   from { transform: translate3d(0, 0, 0) scale(1); }
   to   { transform: translate3d(2.8vw, -1.4vh, 0) scale(1.06); }
-}
-
-/* Sao */
-#sky-stars {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-}
-#sky-stars .sky-star {
-  position: absolute;
-  border-radius: 50%;
-  background: #fff;
-  box-shadow:
-    0 0 2px 1px rgba(255, 255, 255, 0.85),
-    0 0 6px 2px rgba(200, 220, 255, 0.4);
-  animation-name: skyTwinkle;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: infinite;
-  will-change: opacity, transform;
-}
-#sky-stars .sky-star.bright {
-  background: radial-gradient(circle, #fff 0%, #e8f0ff 55%, rgba(180, 200, 255, 0.2) 100%);
-  box-shadow:
-    0 0 3px 1px rgba(255, 255, 255, 0.95),
-    0 0 10px 3px rgba(180, 210, 255, 0.6);
-  animation-name: skyTwinkleBright;
-}
-#sky-stars .sky-star.bright::before,
-#sky-stars .sky-star.bright::after {
-  content: '';
-  position: absolute;
-  left: 50%; top: 50%;
-  pointer-events: none;
-}
-#sky-stars .sky-star.bright::before {
-  width: 220%; height: 1px;
-  transform: translate(-50%, -50%);
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.95), transparent);
-}
-#sky-stars .sky-star.bright::after {
-  width: 1px; height: 220%;
-  transform: translate(-50%, -50%);
-  background: linear-gradient(180deg, transparent, rgba(255,255,255,0.95), transparent);
-}
-#sky-stars .sky-star.warm {
-  background: #fff6e8;
-  box-shadow: 0 0 2px 1px rgba(255,236,200,0.9), 0 0 8px 2px rgba(255,200,120,0.35);
-}
-#sky-stars .sky-star.cool {
-  background: #e8f2ff;
-  box-shadow: 0 0 2px 1px rgba(210,230,255,0.95), 0 0 8px 2px rgba(140,160,255,0.4);
-}
-
-/* Sao thỉnh thoảng lóe tia sáng (chậm) */
-#sky-stars .sky-star.flare {
-  z-index: 3;
-  animation-name: skyStarFlare;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: infinite;
-}
-#sky-stars .sky-star.flare::before,
-#sky-stars .sky-star.flare::after {
-  content: '';
-  position: absolute;
-  left: 50%; top: 50%;
-  opacity: 0;
-  pointer-events: none;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.95), transparent);
-}
-#sky-stars .sky-star.flare::before {
-  width: 900%; height: 1.5px;
-  transform: translate(-50%, -50%) rotate(25deg) scaleX(0.2);
-  box-shadow: 0 0 6px 1px rgba(255,255,255,0.7);
-  animation: skyFlareRay inherit;
-}
-#sky-stars .sky-star.flare::after {
-  width: 1.5px; height: 700%;
-  transform: translate(-50%, -50%) rotate(25deg) scaleY(0.2);
-  background: linear-gradient(180deg, transparent, rgba(255,255,255,0.95), transparent);
-  box-shadow: 0 0 6px 1px rgba(255,255,255,0.7);
-  animation: skyFlareRay inherit;
-}
-
-/* Chỉ animate opacity/scale — bỏ filter:brightness (rất tốn GPU trên mobile) */
-@keyframes skyTwinkle {
-  0%   { opacity: 0.25; transform: scale(0.8); }
-  40%  { opacity: 0.9; transform: scale(1.15); }
-  70%  { opacity: 0.35; transform: scale(0.85); }
-  100% { opacity: 0.7; transform: scale(1.05); }
-}
-@keyframes skyTwinkleBright {
-  0%   { opacity: 0.35; transform: scale(0.8); }
-  35%  { opacity: 1; transform: scale(1.25); }
-  60%  { opacity: 0.45; transform: scale(0.92); }
-  100% { opacity: 0.85; transform: scale(1.08); }
-}
-@keyframes skyStarFlare {
-  0%, 92%, 100% { opacity: 0.5; transform: scale(1); }
-  94% { opacity: 0.85; transform: scale(1.35); }
-  96% { opacity: 1; transform: scale(1.9); }
-  98% { opacity: 0.75; transform: scale(1.25); }
-}
-@keyframes skyFlareRay {
-  0%, 92%, 100% { opacity: 0; transform: translate(-50%, -50%) rotate(25deg) scale(0.12); }
-  94% { opacity: 0.55; transform: translate(-50%, -50%) rotate(25deg) scale(0.7); }
-  96% { opacity: 0.95; transform: translate(-50%, -50%) rotate(25deg) scale(1); }
-  98% { opacity: 0.35; transform: translate(-50%, -50%) rotate(25deg) scale(0.45); }
 }
 
 /* Sao chổi vụt qua */
@@ -410,4 +303,165 @@ body.mode-caro #caro-stage.active {
 }
 #game-root.theme-adventure::after {
   background: linear-gradient(180deg, transparent 0%, rgba(4, 2, 16, 0.4) 100%) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PHẦN 1 — PHÁT HIỆN MÁY YẾU (html.fx-low)
+   Class được gán/gỡ động bởi js/sky-atmosphere.js dựa trên
+   hardwareConcurrency / deviceMemory / prefers-reduced-motion /
+   đo frame-time thực tế. Khi bật: giảm blur, bớt lớp mist, bỏ
+   tia lóe (rất tốn fill-rate), tắt sao chổi, bớt cánh đào.
+═══════════════════════════════════════════════════════════════ */
+html.fx-low #sky-atmosphere .sky-mist {
+  filter: blur(10px);
+}
+html.fx-low #sky-atmosphere .sky-mist.m3,
+html.fx-low #sky-atmosphere .sky-mist.m4,
+html.fx-low #sky-atmosphere .sky-mist.m7,
+html.fx-low #sky-atmosphere .sky-mist.m8 {
+  display: none;
+}
+html.fx-low #sky-atmosphere .sky-moon {
+  box-shadow: 0 0 10px rgba(255, 245, 200, 0.5);
+}
+html.fx-low #sky-stars .sky-star {
+  box-shadow: 0 0 3px 1px rgba(255, 255, 255, 0.55);
+}
+html.fx-low #sky-stars .sky-star.bright::before,
+html.fx-low #sky-stars .sky-star.bright::after,
+html.fx-low #sky-stars .sky-star.flare::before,
+html.fx-low #sky-stars .sky-star.flare::after {
+  display: none;
+}
+html.fx-low #sky-meteors {
+  display: none;
+}
+html.fx-low #sky-petals .sky-petal:nth-child(n + 9) {
+  display: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PHẦN 2 — SAO: LÓE CHẬM RỒI TẮT DẦN (thay vì lấp lánh liên tục)
+   Phần lớn chu kỳ ở độ sáng thấp, chỉ lóe lên đúng 1 nhịp rồi mờ
+   dần qua nhiều bước — không nhấp nháy liên tục. Chỉ animate
+   opacity/scale, không dùng filter:brightness (tốn GPU mobile).
+═══════════════════════════════════════════════════════════════ */
+#sky-stars {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+}
+#sky-stars .sky-star {
+  position: absolute;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow:
+    0 0 2px 1px rgba(255, 255, 255, 0.85),
+    0 0 6px 2px rgba(200, 220, 255, 0.4);
+  animation-name: skyTwinkle;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  will-change: opacity, transform;
+}
+#sky-stars .sky-star.bright {
+  background: radial-gradient(circle, #fff 0%, #e8f0ff 55%, rgba(180, 200, 255, 0.2) 100%);
+  box-shadow:
+    0 0 3px 1px rgba(255, 255, 255, 0.95),
+    0 0 10px 3px rgba(180, 210, 255, 0.6);
+  animation-name: skyTwinkleBright;
+}
+#sky-stars .sky-star.bright::before,
+#sky-stars .sky-star.bright::after {
+  content: '';
+  position: absolute;
+  left: 50%; top: 50%;
+  pointer-events: none;
+}
+#sky-stars .sky-star.bright::before {
+  width: 220%; height: 1px;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.95), transparent);
+}
+#sky-stars .sky-star.bright::after {
+  width: 1px; height: 220%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(180deg, transparent, rgba(255,255,255,0.95), transparent);
+}
+#sky-stars .sky-star.warm {
+  background: #fff6e8;
+  box-shadow: 0 0 2px 1px rgba(255,236,200,0.9), 0 0 8px 2px rgba(255,200,120,0.35);
+}
+#sky-stars .sky-star.cool {
+  background: #e8f2ff;
+  box-shadow: 0 0 2px 1px rgba(210,230,255,0.95), 0 0 8px 2px rgba(140,160,255,0.4);
+}
+
+/* Nhóm sao lóe kèm tia sáng (chậm hơn, nổi bật hơn) */
+#sky-stars .sky-star.flare {
+  z-index: 3;
+  animation-name: skyStarFlare;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+#sky-stars .sky-star.flare::before,
+#sky-stars .sky-star.flare::after {
+  content: '';
+  position: absolute;
+  left: 50%; top: 50%;
+  opacity: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.95), transparent);
+}
+#sky-stars .sky-star.flare::before {
+  width: 900%; height: 1.5px;
+  transform: translate(-50%, -50%) rotate(25deg) scaleX(0.2);
+  box-shadow: 0 0 6px 1px rgba(255,255,255,0.7);
+  animation: skyFlareRay inherit;
+}
+#sky-stars .sky-star.flare::after {
+  width: 1.5px; height: 700%;
+  transform: translate(-50%, -50%) rotate(25deg) scaleY(0.2);
+  background: linear-gradient(180deg, transparent, rgba(255,255,255,0.95), transparent);
+  box-shadow: 0 0 6px 1px rgba(255,255,255,0.7);
+  animation: skyFlareRay inherit;
+}
+
+/* Sao thường/sáng: ~70% chu kỳ mờ, lóe 1 nhịp ở ~82%, rồi tắt dần
+   qua 2 bước (90% → 97%) thay vì nhấp nháy liên tục cả chu kỳ. */
+@keyframes skyTwinkle {
+  0%, 70%, 100% { opacity: 0.18; transform: scale(0.8); }
+  82%           { opacity: 0.9;  transform: scale(1.2); }
+  90%           { opacity: 0.5;  transform: scale(0.95); }
+  97%           { opacity: 0.24; transform: scale(0.85); }
+}
+@keyframes skyTwinkleBright {
+  0%, 66%, 100% { opacity: 0.24; transform: scale(0.8); }
+  80%           { opacity: 1;    transform: scale(1.3); }
+  89%           { opacity: 0.55; transform: scale(1); }
+  97%           { opacity: 0.28; transform: scale(0.85); }
+}
+/* Sao có tia: gần như cả chu kỳ mờ, lóe rất nhanh gần cuối rồi tắt dần */
+@keyframes skyStarFlare {
+  0%, 92%, 100% { opacity: 0.5; transform: scale(1); }
+  94% { opacity: 0.85; transform: scale(1.35); }
+  96% { opacity: 1;    transform: scale(1.9); }
+  98% { opacity: 0.75; transform: scale(1.25); }
+}
+@keyframes skyFlareRay {
+  0%, 92%, 100% { opacity: 0;    transform: translate(-50%, -50%) rotate(25deg) scale(0.12); }
+  94%           { opacity: 0.55; transform: translate(-50%, -50%) rotate(25deg) scale(0.7); }
+  96%           { opacity: 0.95; transform: translate(-50%, -50%) rotate(25deg) scale(1); }
+  98%           { opacity: 0.35; transform: translate(-50%, -50%) rotate(25deg) scale(0.45); }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PHẦN 3 — TỰ ẨN PHẦN TỬ BỊ CHE BỞI BÀN CỜ / UI
+   Class .sky-occluded được gán/gỡ động bởi js/sky-atmosphere.js:
+   so vị trí từng sao/cánh đào với vùng chiếm chỗ của #grid-wrap,
+   .skill-bar, #hint-bar, #pieces-area... để tắt hẳn phần tử nằm
+   sau các khối UI đó (đỡ tốn GPU vẽ thứ người chơi không thấy).
+═══════════════════════════════════════════════════════════════ */
+#sky-atmosphere .sky-occluded {
+  visibility: hidden !important;
+  animation-play-state: paused !important;
 }
