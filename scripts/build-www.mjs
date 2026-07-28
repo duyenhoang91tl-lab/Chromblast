@@ -16,7 +16,11 @@ import { rmSync, mkdirSync, cpSync, readdirSync, statSync, readFileSync, writeFi
 import path from 'node:path';
 import * as esbuild from 'esbuild';
 
-const items = ['index.html', 'main.css', 'sky-atmosphere.css', 'nick-fonts.css', 'brick-skins.css', 'map-boards.css', 'saga-map.css', 'js', 'maps', 'fonts', 'sounds'];
+const items = ['index.html', 'main.css', 'sky-atmosphere.css', 'nick-fonts.css', 'brick-skins.css', 'map-boards.css', 'saga-map.css', 'js', 'maps', 'fonts', 'sounds', 'terms-of-service.html', 'privacy-policy.html'];
+// terms-of-service.html + privacy-policy.html thêm 28/07/26: js/ui.js gọi
+// window.open('terms-of-service.html') / ('privacy-policy.html') ở cả web lẫn
+// app — thiếu 2 file này trong www/ thì 2 nút Điều khoản/Chính sách trong APK
+// sẽ mở ra trang trống (file không tồn tại trong bundle).
 rmSync('www', { recursive: true, force: true });
 mkdirSync('www', { recursive: true });
 for (const it of items) cpSync(it, 'www/' + it, { recursive: true });
