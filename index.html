@@ -1238,6 +1238,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="js/firebase-config.js"></script>
 <script src="js/i18n.js"></script>
+<script src="js/caro-loader.js"></script>
 <script src="js/sky-atmosphere.js"></script>
 <script src="js/i18n-content.js"></script>
 <script src="js/audio.js"></script>
@@ -1290,7 +1291,8 @@
 <script src="js/versus.js"></script>
 <script src="js/online-ui.js"></script>
 <script src="js/chat.js"></script>
-<script src="js/caro.js"></script>
-<script src="js/caro-social.js"></script>
+<!-- js/caro.js + js/caro-social.js: nạp trễ (lazy-load) qua js/caro-loader.js
+     khi người chơi bấm #caro-btn hoặc nhận lời mời Caro qua chat, để
+     giảm dung lượng tải ban đầu (~104KB) cho người chưa vào chế độ này. -->
 </body>
 </html>

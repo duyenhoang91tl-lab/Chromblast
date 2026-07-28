@@ -609,6 +609,9 @@
         openOnlineLobby(data.roomId, data.code || invite.code, 'guest', data);
       }
     } else {
+      if(typeof ensureCaroLoaded === 'function'){
+        try{ await ensureCaroLoaded(); }catch(e){ console.error('[chat]', e); }
+      }
       if(typeof openCaroHub === 'function') openCaroHub();
       if(typeof caroJoinRoomById === 'function') await caroJoinRoomById(invite.roomId);
     }
