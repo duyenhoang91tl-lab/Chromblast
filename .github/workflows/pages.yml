@@ -2,6 +2,12 @@
 # mỗi khi push lên main. URL sau khi chạy:
 #   https://duyenhoang91tl-lab.github.io/chromblast/                     ← chơi game trên web
 #   https://duyenhoang91tl-lab.github.io/chromblast/privacy-policy.html ← điền vào Play Console
+#
+# TỐI ƯU HIỆU SUẤT (thêm 28/07/26): trước đây bước deploy đăng thẳng path: .
+# (toàn bộ repo, JS/CSS bản gốc CHƯA minify) — chỉ bản Android mới được minify
+# qua `npm run build:www`. Giờ web cũng chạy build:www rồi đăng thư mục www/
+# (đã minify bằng esbuild, không đổi hành vi) → JS/CSS nhẹ hơn, web tải nhanh
+# hơn trên máy yếu / mạng chậm (Zalo webview...), giống hệt bản Android.
 name: Deploy GitHub Pages
 
 on:
@@ -26,11 +32,17 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - name: Cài dependency & build bản web đã minify (www/)
+        run: |
+          npm ci
+          npm run build:www
       - uses: actions/configure-pages@v5
         with:
           enablement: true   # tự bật Pages cho repo nếu chưa bật
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: ./www
       - id: deployment
         uses: actions/deploy-pages@v4
