@@ -350,9 +350,19 @@ const PRAISE_SOUND_FILES = [
 ];
 const PRAISE_AUDIO = PRAISE_SOUND_FILES.map(f=>{
   const a = new Audio('sounds/'+f);
-  a.preload = 'auto';
+  a.preload = 'none'; // KHÔNG tải ngay — ~400KB này từng tải song song với JS/CSS chính lúc mở trang, làm chậm thời gian vào game
   return a;
 });
+// Tải thật sự (preload='auto') sau khi trang đã load xong + nghỉ 2 giây, để nhường
+// băng thông cho JS/CSS chính trước. Lúc người chơi đạt combo cao (luôn sau đó vài giây
+// trở lên) thì các file này đã sẵn sàng phát ngay, không giật/trễ.
+if (typeof window !== 'undefined') {
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      PRAISE_AUDIO.forEach(a => { try{ a.preload='auto'; a.load(); }catch(e){} });
+    }, 2000);
+  });
+}
 
 function speakPraise(level) {
   if (typeof sfxMuted !== 'undefined' && sfxMuted) return;
