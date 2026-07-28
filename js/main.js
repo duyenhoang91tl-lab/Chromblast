@@ -440,7 +440,11 @@ function startGame(){
   hiddenMapEntryScore=0;
   secretStreak=0; secretMultiplier=1; secretUltra=false;
   secret1Gained=0; pendingUnlock='secret';
-  unlockGateStageIndex=0; unlockGateBaseline=0; unlockGateActive=true;
+  // KHÔNG ép unlockGateStageIndex/unlockGateActive về mặc định ở đây — 2 giá trị
+  // này đã được tính đúng từ save lúc nạp trang (xem syncUnlockGateFromSave() trong
+  // progression.js). Ép về 0 mỗi ván mới sẽ xoá tiến trình "đã mở bao nhiêu map ẩn",
+  // khiến ngưỡng sao bị tính sai và map ẩn mở/hiện sai quy tắc (2 map thường ★★★★ / 1 map ẩn).
+  unlockGateBaseline=0;
   try{ if(typeof resetNormalStarRun==='function') resetNormalStarRun(); }catch(e){}
   try{
     if(typeof syncMainHardTierFromNormalStage==='function') syncMainHardTierFromNormalStage(false);
