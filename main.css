@@ -96,10 +96,11 @@ body.auth-open #notif-gate {
   opacity: 0 !important;
   pointer-events: none !important;
 }
-/* Màn Bắt đầu: lớp phủ đục hơn + ép ẩn game (phòng khi thiếu class) */
+/* Màn Bắt đầu: chỉ phủ rất nhẹ (ép ẩn game phòng khi thiếu class) — giữ nền sao/cánh đào
+   rõ như màn chơi, không phủ đục làm tối cả bầu trời phía sau */
 body.start-open #start-screen,
 body.menu-open:not(.auth-open) #start-screen {
-  background: rgba(8, 10, 28, 0.5) !important;
+  background: rgba(8, 10, 28, 0.15) !important;
 }
 
 /* ═══ Exclusive play modes: Caro / Versus — không chồng nền Chromablast ═══ */
@@ -272,7 +273,8 @@ body.mode-exclusive #gchat-fab {
   display: flex; align-items: center; justify-content: center;
   overflow: hidden;
   font-family: inherit;
-  background: rgba(8, 10, 28, 0.5);
+  /* Phủ rất nhẹ — nền sao/tinh vân/cánh đào #sky-atmosphere hiện rõ như màn chơi */
+  background: rgba(8, 10, 28, 0.15);
 }
 .start-bg {
   position: absolute; inset: 0;
