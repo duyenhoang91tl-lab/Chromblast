@@ -38,13 +38,9 @@
     console.warn('[native] SocialLogin init', e);
   }
 
-  // ⚠️ ID đơn vị quảng cáo (AdMob console → Ad units):
-  //  - Interstitial dùng id riêng.
-  //  - Rewarded PHẢI là ad unit loại "Rewarded" — dùng id interstitial sẽ
-  //    luôn load fail → nút "Xem QC +1 tim" không bao giờ chạy được.
-  //    Tạo ad unit Rewarded trong AdMob console rồi thay id dưới đây.
+  // ID đơn vị quảng cáo (AdMob console → Ad units)
   const AD_UNIT_INTERSTITIAL = 'ca-app-pub-9093176034842025/6573161096';
-  const AD_UNIT_REWARDED = 'ca-app-pub-9093176034842025/6573161096'; // TODO: thay bằng id Rewarded thật
+  const AD_UNIT_REWARDED = 'ca-app-pub-9093176034842025/9504131099';
 
   // Hàm hiển thị quảng cáo interstitial
   window.showInterstitialAd = async function() {
