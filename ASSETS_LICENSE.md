@@ -9,7 +9,6 @@ Tài liệu này liệt kê font, âm thanh, thư viện và dịch vụ bên th
 
 | Nhóm | Số file |
 |---|---:|
-| AI-generated | **0** |
 | Tự thu âm (voice recording gốc) | **9** |
 | Nguồn chưa rõ / bên thứ ba | **0** |
 
@@ -38,7 +37,7 @@ OFL cho phép nhúng font vào app/game (kể cả thương mại), miễn là:
 
 ## 2. Âm thanh trong `sounds/`
 
-**`sounds/` — toàn bộ là giọng đọc tự thu âm bởi nhà phát triển, sở hữu gốc 100%, không dùng AI generate, không dính license bên thứ ba.**
+**`sounds/` — toàn bộ là giọng đọc tự thu âm bởi nhà phát triển, sở hữu gốc 100%, không dính license bên thứ ba.**
 
 Phân loại theo `sounds/ASSET_SOURCES.md` (xác nhận nhà phát triển, 2026-07-25).  
 Dùng làm lồng tiếng khen combo (`js/audio.js` → `PRAISE_SOUND_FILES`).
@@ -120,7 +119,7 @@ Không thấy `<link>` tới Google Fonts CDN trong `index.html` (font đã bund
 |---|---|---|
 | Icon app / splash | `resources/icon.png`, `resources/splash.png`, `resources/splash-dark.png`, `resources/play-store/` | Coi là asset nhà phát triển trừ khi có nguồn khác — cần xác nhận provenance |
 | Icon nút menu / UI | Emoji Unicode trong HTML/JS (🛒 🤝 ⚙️ …) | Emoji là ký tự Unicode do font hệ thống vẽ — không phải file icon bên thứ ba trong repo |
-| SVG trang trí vòng quay | Inline SVG trong `index.html` (`spin-vine-svg`, …) | Coi là mã/đồ họa trong repo — xác nhận sở hữu nhà phát triển nếu tự vẽ / AI-assisted |
+| SVG trang trí vòng quay | Inline SVG trong `index.html` (`spin-vine-svg`, …) | Coi là mã/đồ họa trong repo — xác nhận sở hữu nhà phát triển nếu tự vẽ |
 | Liên kết mạng xã hội | `index.html` (TikTok/Discord/X/Facebook/YouTube) | Chỉ là URL ngoài; logo hiển thị bằng ký tự/text CSS, không nhúng file trademark riêng |
 
 ---

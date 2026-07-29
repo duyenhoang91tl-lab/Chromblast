@@ -9,11 +9,10 @@ Phạm vi: toàn bộ file hiện có trong `sounds/`.
 | Nhóm | Số file | Kết luận |
 |---|---:|---|
 | 1. Giọng đọc tự thu âm (voice recording gốc) | **9** | Sở hữu của nhà phát triển |
-| 2. Âm thanh do AI tạo | **0** | Không dùng AI generate cho các file trong `sounds/` |
-| 3. Không rõ nguồn gốc | **0** | — |
+| 2. Không rõ nguồn gốc | **0** | — |
 
 ### Xác nhận sở hữu
-- **Nhà phát triển xác nhận (2026-07-25):** các file `.wav` trong `sounds/` là giọng đọc do nhà phát triển tự thu âm — sở hữu gốc 100%, không AI generate, không license bên thứ ba.
+- **Nhà phát triển xác nhận (2026-07-25):** các file `.wav` trong `sounds/` là giọng đọc do nhà phát triển tự thu âm — sở hữu gốc 100%, không license bên thứ ba.
 - Lịch sử git: lần đầu upload `4ecb5cb` (2026-07-04) → chuyển vào `sounds/` ở `633e95c` → bản trim hiện tại `f527171`.
 - Không có commit agent/bot tạo hoặc sửa các file `.wav` này (trừ khi xóa theo yêu cầu nhà phát triển).
 - Format kỹ thuật đồng nhất: PCM 16-bit, mono, 44100 Hz (không có metadata software tag).
@@ -41,11 +40,7 @@ Phạm vi: toàn bộ file hiện có trong `sounds/`.
 Toàn bộ 9 file ở bảng trên.  
 Sở hữu gốc 100% của nhà phát triển.
 
-## Nhóm 2 — AI generate
-
-*(trống — 0 file trong `sounds/`)*
-
-## Nhóm 3 — Không rõ nguồn gốc
+## Nhóm 2 — Không rõ nguồn gốc
 
 *(trống — 0 file)*
 
