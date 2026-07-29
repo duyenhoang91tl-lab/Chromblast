@@ -1023,8 +1023,10 @@ function friendlyOnlineAuthError(e){
 // ── Phòng ─────────────────────────────────────────────────────
 // Mỗi người chỉ host được 1 phòng đang sống (open/ready/playing) tại một thời điểm.
 const ROOM_STALE_MS = 45 * 60 * 1000; // lưới an toàn chậm — chỉ dùng khi quét lại phòng của mình (F5 vào hub)
-const ROOM_HEARTBEAT_MS = 4000;   // chủ phòng ghi "nhịp tim" mỗi 4s trong khi còn ở trong phòng
-const ROOM_LIVE_STALE_MS = 12000; // quá 12s không có nhịp tim → coi như chủ phòng đã mất kết nối/thoát
+const ROOM_HEARTBEAT_MS = 8000;   // chủ phòng ghi "nhịp tim" mỗi 8s trong khi còn ở trong phòng
+                                   // (trước là 4s — giảm còn 8s để giảm ~50% lượt ghi Firestore,
+                                   // vẫn giữ tỉ lệ an toàn 1:3 so với ROOM_LIVE_STALE_MS như cũ)
+const ROOM_LIVE_STALE_MS = 24000; // quá 24s không có nhịp tim → coi như chủ phòng đã mất kết nối/thoát
 
 // ── Nhịp tim của chủ phòng (presence) ───────────────────────────
 // Firestore không có onDisconnect() như Realtime Database, nên ta tự mô phỏng bằng
@@ -1784,7 +1786,10 @@ async function startMatchmaking(onMatched, opts){
 
   tryPair();
   _matchmakingUnsub = _onlineDb.collection('matchQueue').onSnapshot(() => { tryPair(); });
-  _matchmakingTimer = setInterval(tryPair, 2000);
+  // Lưới an toàn cho trường hợp lỡ sự kiện onSnapshot (race) — onSnapshot đã tự gọi
+  // lại tryPair() mỗi khi matchQueue đổi, nên không cần poll dày; 6s là đủ dự phòng
+  // mà giảm đáng kể số lượt đọc/ghi Firestore so với 2s trước đây.
+  _matchmakingTimer = setInterval(tryPair, 6000);
 }
 
 let _matchmakingTimer = null;
