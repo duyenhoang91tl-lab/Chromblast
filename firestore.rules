@@ -97,13 +97,39 @@ service cloud.firestore {
 
     match /rooms/{roomId} {
       allow read: if signedIn();
-      allow create: if signedIn();
+      // Người tạo phải là host hoặc guest của chính room đó (chặn ghép mạo danh),
+      // guestId không được trùng hostId (chặn tự đấu với chính mình để x2 điểm),
+      // và không được tạo phòng đã ở trạng thái 'finished' sẵn hoặc có winnerId
+      // (chặn bỏ qua trận đấu, tạo thẳng phòng "đã thắng" để applyMatchResult cộng điểm khống).
+      allow create: if signedIn()
+        && request.resource.data.hostId is string
+        && (
+          request.auth.uid == request.resource.data.hostId ||
+          (('guestId' in request.resource.data) && request.auth.uid == request.resource.data.guestId)
+        )
+        && (!('guestId' in request.resource.data)
+            || request.resource.data.guestId == null
+            || request.resource.data.guestId != request.resource.data.hostId)
+        && (!('status' in request.resource.data) || request.resource.data.status != 'finished')
+        && (!('winnerId' in request.resource.data) || request.resource.data.winnerId == null);
+      // hostId bất biến sau khi tạo; guestId không bao giờ được trùng hostId (chặn tự đấu
+      // với chính mình); winnerId khi báo thắng chỉ được là chính hostId/guestId của room đó
+      // (chặn gán thắng khống cho 1 uid bất kỳ) — applyMatchResult (functions/index.js) chỉ
+      // cộng điểm dựa trên các field này nên phải khoá chặt ở đây.
       allow update: if signedIn() && (
         resource.data.hostId == request.auth.uid ||
         resource.data.guestId == request.auth.uid ||
         !resource.data.keys().hasAny(['guestId']) ||
         request.resource.data.guestId == request.auth.uid
-      );
+      )
+        && request.resource.data.hostId == resource.data.hostId
+        && (!('guestId' in request.resource.data)
+            || request.resource.data.guestId == null
+            || request.resource.data.guestId != request.resource.data.hostId)
+        && (!('winnerId' in request.resource.data)
+            || request.resource.data.winnerId == null
+            || request.resource.data.winnerId == request.resource.data.hostId
+            || request.resource.data.winnerId == request.resource.data.guestId);
       // Chủ phòng luôn được tự xoá phòng của mình. Ngoài ra, BẤT KỲ ai đã đăng nhập cũng
       // được xoá một phòng nếu "nhịp tim" (lastSeen) của chủ phòng đã im quá 15 giây — đây
       // là cơ chế dọn phòng "chết" (chủ phòng mất mạng/tắt app/crash) khi Firestore không có
