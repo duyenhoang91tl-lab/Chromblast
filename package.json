@@ -9,13 +9,13 @@
   },
   "dependencies": {
     "@capacitor-community/admob": "^8.0.0",
-    "@capacitor/android": "^7.0.0",
-    "@capacitor/app": "^7.1.2",
-    "@capacitor/core": "^7.0.0",
-    "@capgo/capacitor-social-login": "^7.20.0"
+    "@capacitor/android": "^8.0.0",
+    "@capacitor/app": "^8.0.0",
+    "@capacitor/core": "^8.0.0",
+    "@capgo/capacitor-social-login": "^8.3.39"
   },
   "devDependencies": {
-    "@capacitor/cli": "^7.0.0",
+    "@capacitor/cli": "^8.0.0",
     "esbuild": "^0.28.1"
   }
 }

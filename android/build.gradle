@@ -7,7 +7,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.7.2'
+        classpath 'com.android.tools.build:gradle:8.13.0'
         classpath 'com.google.gms:google-services:4.5.0'
 
         // NOTE: Do not place your application dependencies here; they belong
@@ -25,8 +25,7 @@ allprojects {
 
     configurations.configureEach {
         resolutionStrategy {
-            // Force a version of androidx.browser:browser compatible with compileSdk 35 and AGP 8.7.2
-            // version 1.9.0 requires compileSdk 36 and AGP 8.9.1+
+            // compileSdk 36 + AGP 8.13.0 đã đáp ứng yêu cầu của androidx.browser:browser 1.9.0
             force "androidx.browser:browser:$rootProject.ext.androidxBrowserVersion"
         }
     }
