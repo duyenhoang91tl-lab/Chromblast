@@ -1,8 +1,13 @@
-const functions = require('firebase-functions');
+const { setGlobalOptions } = require('firebase-functions/v2');
+const { onDocumentCreated } = require('firebase-functions/v2/firestore');
 const admin = require('firebase-admin');
 const { filterText, containsProfanity } = require('./profanity-filter.js');
 
 admin.initializeApp();
+
+// Đặt vùng mặc định cho toàn bộ function trong file này — nên trùng với
+// vùng của Cloud Firestore trong dự án Firebase để giảm độ trễ.
+setGlobalOptions({ region: 'asia-southeast1' });
 
 /**
  * Kiểm duyệt 1 tin nhắn chat: nếu chứa từ thô tục, ghi đè lại nội dung đã
@@ -11,6 +16,7 @@ admin.initializeApp();
  * ở app (ví dụ do sửa code, gọi thẳng Firestore SDK).
  */
 async function moderateMessage(snap) {
+  if (!snap) return null;
   const data = snap.data();
   const text = data && typeof data.text === 'string' ? data.text : '';
   if (!text || !containsProfanity(text)) return null;
@@ -25,17 +31,17 @@ async function moderateMessage(snap) {
   });
 }
 
-// Mặc định deploy ở us-central1. Nếu muốn giảm độ trễ cho người chơi ở VN,
-// có thể thêm .region('asia-southeast1') vào từng function bên dưới —
-// miễn là trùng với vùng của Cloud Firestore trong dự án Firebase.
-exports.moderateWorldChat = functions
-  .firestore.document('worldChat/global/messages/{msgId}')
-  .onCreate((snap) => moderateMessage(snap));
+exports.moderateWorldChat = onDocumentCreated(
+  'worldChat/global/messages/{msgId}',
+  (event) => moderateMessage(event.data)
+);
 
-exports.moderateRoomChat = functions
-  .firestore.document('rooms/{roomId}/chat/{msgId}')
-  .onCreate((snap) => moderateMessage(snap));
+exports.moderateRoomChat = onDocumentCreated(
+  'rooms/{roomId}/chat/{msgId}',
+  (event) => moderateMessage(event.data)
+);
 
-exports.moderateDmChat = functions
-  .firestore.document('dms/{dmId}/messages/{msgId}')
-  .onCreate((snap) => moderateMessage(snap));
+exports.moderateDmChat = onDocumentCreated(
+  'dms/{dmId}/messages/{msgId}',
+  (event) => moderateMessage(event.data)
+);
