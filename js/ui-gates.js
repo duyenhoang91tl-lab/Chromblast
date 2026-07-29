@@ -110,6 +110,19 @@ function maybeShowPreGameGates(){
 
 async function requestBrowserNotifications(){
   try{
+    const cap = window.Capacitor;
+    if(cap && cap.isNativePlatform && cap.isNativePlatform()){
+      // Trên app Android thật — dùng plugin native (@capacitor/local-notifications),
+      // Web Notification API không hoạt động đáng tin cậy trong WebView.
+      if(typeof window.requestNativeNotificationPermission === 'function'){
+        const perm = await window.requestNativeNotificationPermission();
+        if(perm === 'granted' && typeof window.scheduleDailyRewardReminder === 'function'){
+          try{ window.scheduleDailyRewardReminder(); }catch(e){}
+        }
+        return perm;
+      }
+      return 'unsupported';
+    }
     if(typeof Notification === 'undefined') return 'unsupported';
     if(Notification.permission === 'granted') return 'granted';
     if(Notification.permission === 'denied') return 'denied';

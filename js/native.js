@@ -14,6 +14,99 @@
   const App = cap.Plugins && cap.Plugins.App;
   const AdMob = cap.Plugins && cap.Plugins.AdMob;
 
+  // ── Thông báo local thật (tim hồi + quà điểm danh) ──
+  // Đặt TRƯỚC các await AdMob/SocialLogin bên dưới để window.requestNativeNotificationPermission
+  // có sẵn ngay lập tức, tránh trường hợp người chơi bấm "Cho phép" trước khi các await kia xong.
+  const LocalNotifications = cap.Plugins && cap.Plugins.LocalNotifications;
+  const NOTIF_ID_HEART = 1001;
+  const NOTIF_ID_DAILY = 1002;
+
+  /** Gọi từ nút "Cho phép" trong màn hỏi thông báo (ui-gates.js) khi chạy trên native.
+   *  Trả về 'granted' | 'denied' | 'default' giống Web Notification API để code cũ dùng chung. */
+  window.requestNativeNotificationPermission = async function(){
+    if(!LocalNotifications) return 'unsupported';
+    try{
+      const cur = await LocalNotifications.checkPermissions();
+      if(cur && cur.display === 'granted') return 'granted';
+      const res = await LocalNotifications.requestPermissions();
+      return (res && res.display === 'granted') ? 'granted' : 'denied';
+    }catch(e){
+      console.warn('[native] requestNativeNotificationPermission', e);
+      return 'error';
+    }
+  };
+
+  async function nativeNotifAllowed(){
+    if(!LocalNotifications) return false;
+    try{
+      const cur = await LocalNotifications.checkPermissions();
+      return !!(cur && cur.display === 'granted');
+    }catch(e){ return false; }
+  }
+
+  /** Nhắc "tim đã hồi" đúng thời điểm tim tiếp theo về — chỉ hữu ích khi app ở nền. */
+  window.scheduleHeartReadyNotification = async function(){
+    if(!LocalNotifications) return;
+    try{
+      if(!(await nativeNotifAllowed())) return;
+      await LocalNotifications.cancel({ notifications: [{ id: NOTIF_ID_HEART }] });
+      const inv = window.Inventory;
+      if(!inv) return;
+      const ms = typeof inv.heartRegenRemainingMs === 'function' ? inv.heartRegenRemainingMs() : 0;
+      if(!(ms > 0)) return;
+      await LocalNotifications.schedule({
+        notifications: [{
+          id: NOTIF_ID_HEART,
+          title: 'ChromaBlast',
+          body: 'Bạn vừa hồi thêm 1 ❤️ tim — vào chơi tiếp thôi!',
+          schedule: { at: new Date(Date.now() + ms) },
+        }]
+      });
+    }catch(e){ console.warn('[native] scheduleHeartReadyNotification', e); }
+  };
+
+  window.cancelHeartReadyNotification = async function(){
+    if(!LocalNotifications) return;
+    try{ await LocalNotifications.cancel({ notifications: [{ id: NOTIF_ID_HEART }] }); }catch(e){}
+  };
+
+  /** Nhắc quà điểm danh mỗi ngày lúc 20:00 giờ máy — lặp lại (repeats: true, every: 'day'). */
+  window.scheduleDailyRewardReminder = async function(){
+    if(!LocalNotifications) return;
+    try{
+      if(!(await nativeNotifAllowed())) return;
+      await LocalNotifications.cancel({ notifications: [{ id: NOTIF_ID_DAILY }] });
+      const next = new Date();
+      next.setHours(20, 0, 0, 0);
+      if(next.getTime() <= Date.now()) next.setDate(next.getDate() + 1);
+      await LocalNotifications.schedule({
+        notifications: [{
+          id: NOTIF_ID_DAILY,
+          title: 'ChromaBlast',
+          body: '🎁 Quà điểm danh hôm nay đang chờ bạn!',
+          schedule: { at: next, repeats: true, every: 'day' },
+        }]
+      });
+    }catch(e){ console.warn('[native] scheduleDailyRewardReminder', e); }
+  };
+
+  window.cancelDailyRewardReminder = async function(){
+    if(!LocalNotifications) return;
+    try{ await LocalNotifications.cancel({ notifications: [{ id: NOTIF_ID_DAILY }] }); }catch(e){}
+  };
+
+  // App xuống nền → đặt lịch nhắc tim hồi (nếu còn thiếu tim); app quay lại → huỷ nhắc tim
+  // (đã ở trong app rồi thì không cần thông báo nữa), quà điểm danh vẫn giữ lịch lặp ngày.
+  if(App){
+    App.addListener('appStateChange', ({ isActive }) => {
+      if(isActive){
+        try{ window.cancelHeartReadyNotification(); }catch(e){}
+      } else {
+        try{ window.scheduleHeartReadyNotification(); }catch(e){}
+      }
+    });
+  }
+
   // Khởi tạo AdMob
   if(AdMob) {
     try {
