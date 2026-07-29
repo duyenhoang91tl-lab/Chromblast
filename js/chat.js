@@ -72,6 +72,161 @@
     }catch(e){ return false; }
   }
 
+  // ── Báo cáo & chặn người dùng (UGC safety) ──────────────────
+  const REPORT_REASONS = [
+    ['spam', 'gchatReportSpam', 'Spam / quảng cáo'],
+    ['harassment', 'gchatReportHarass', 'Quấy rối / bắt nạt'],
+    ['hate', 'gchatReportHate', 'Ngôn từ thù ghét'],
+    ['sexual', 'gchatReportSexual', 'Nội dung khiêu dâm'],
+    ['other', 'gchatReportOther', 'Khác']
+  ];
+
+  function _closeReportMenu(){
+    const el = document.getElementById('gchat-report-menu-lab');
+    if(el) el.remove();
+    document.removeEventListener('click', _onDocClickCloseReportMenu, true);
+  }
+  function _onDocClickCloseReportMenu(e){
+    const el = document.getElementById('gchat-report-menu-lab');
+    if(el && !el.contains(e.target)) _closeReportMenu();
+  }
+
+  function openReportMenu(anchorBtn, msg){
+    _closeReportMenu();
+    const menu = document.createElement('div');
+    menu.id = 'gchat-report-menu-lab';
+    menu.className = 'gchat-report-menu';
+    const title = document.createElement('div');
+    title.className = 'gchat-report-menu-title';
+    title.textContent = tt('gchatReportWhy', 'Báo cáo vì sao?');
+    menu.appendChild(title);
+    REPORT_REASONS.forEach(([key, i18nKey, fallback])=>{
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = tt(i18nKey, fallback);
+      b.addEventListener('click', async (ev)=>{
+        ev.stopPropagation();
+        _closeReportMenu();
+        try{ sfxClick(); }catch(e){}
+        if(typeof reportUser !== 'function') return;
+        const res = await reportUser({
+          reportedUid: msg.uid,
+          reportedName: msg.name || 'Player',
+          reason: key,
+          text: msg.text || '',
+          msgId: msg.id,
+          context: state.tab
+        });
+        setStatus(
+          (res && res.ok) ? tt('gchatReportSent', 'Đã gửi báo cáo — cảm ơn bạn') : tt('gchatReportFail', 'Không gửi được báo cáo'),
+          !(res && res.ok)
+        );
+      });
+      menu.appendChild(b);
+    });
+    document.body.appendChild(menu);
+    const r = anchorBtn.getBoundingClientRect();
+    const mw = menu.offsetWidth || 168;
+    let left = r.left;
+    if(left + mw > window.innerWidth - 8) left = window.innerWidth - mw - 8;
+    menu.style.left = Math.max(8, left) + 'px';
+    menu.style.top = (r.bottom + 4 + window.scrollY) + 'px';
+    setTimeout(()=> document.addEventListener('click', _onDocClickCloseReportMenu, true), 0);
+  }
+
+  function makeReportBtn(msg){
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'gchat-msg-flag';
+    b.title = tt('gchatReport', 'Báo cáo');
+    b.textContent = '🚩';
+    b.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      try{ sfxClick(); }catch(e2){}
+      openReportMenu(b, msg);
+    });
+    return b;
+  }
+
+  function makeBlockBtn(msg){
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'gchat-msg-flag danger';
+    b.title = tt('gchatBlock', 'Chặn');
+    b.textContent = '🔇';
+    b.addEventListener('click', async (e)=>{
+      e.stopPropagation();
+      if(!confirm(tt('gchatBlockConfirm', 'Chặn người này? Bạn sẽ không thấy tin nhắn hay lời mời của họ nữa.'))) return;
+      try{ sfxClick(); }catch(e2){}
+      await doBlockUser(msg.uid, msg.name, msg.avatar);
+    });
+    return b;
+  }
+
+  async function doBlockUser(uid, name, avatar){
+    if(typeof blockPlayer !== 'function') return { ok:false };
+    const res = await blockPlayer(uid, name, avatar);
+    if(res && res.ok){
+      setStatus(tt('gchatBlocked', 'Đã chặn'));
+      if(state.friendUid === uid){
+        state.friendUid = null;
+        const thread = $('gchat-friends-thread');
+        if(thread) thread.hidden = true;
+      }
+      renderFriendsList();
+      renderBlockedPanel();
+    } else {
+      setStatus(tt('gchatBlockFail', 'Không chặn được'), true);
+    }
+    return res;
+  }
+
+  let _blockedPanelOpen = false;
+
+  async function renderBlockedPanel(){
+    const panel = $('gchat-blocked-panel');
+    if(!panel || !_blockedPanelOpen) return;
+    if(typeof getBlockedList !== 'function'){ panel.hidden = true; return; }
+    let list = getBlockedList();
+    // getBlockedList trả về mảng uid nếu chưa load; ưu tiên loadBlockedList để có tên/avatar
+    if(typeof loadBlockedList === 'function'){
+      try{ list = await loadBlockedList(); }catch(e){}
+    }
+    panel.innerHTML = '';
+    if(!list || !list.length){
+      panel.innerHTML = '<div class="gchat-empty">'+tt('gchatNoBlocked','Chưa chặn ai')+'</div>';
+      return;
+    }
+    list.forEach(p=>{
+      const row = document.createElement('div');
+      row.className = 'gchat-blocked-row';
+      const name = document.createElement('span');
+      name.className = 'gchat-blocked-name';
+      name.textContent = (p.avatar||'🐶')+' '+(p.name||'Player');
+      row.appendChild(name);
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'gchat-blocked-unblock';
+      btn.textContent = tt('gchatUnblock','Bỏ chặn');
+      btn.addEventListener('click', async ()=>{
+        try{ sfxClick(); }catch(e){}
+        btn.disabled = true;
+        if(typeof unblockPlayer === 'function') await unblockPlayer(p.uid);
+        renderBlockedPanel();
+      });
+      row.appendChild(btn);
+      panel.appendChild(row);
+    });
+  }
+
+  function toggleBlockedPanel(){
+    const panel = $('gchat-blocked-panel');
+    if(!panel) return;
+    _blockedPanelOpen = !_blockedPanelOpen;
+    panel.hidden = !_blockedPanelOpen;
+    if(_blockedPanelOpen) renderBlockedPanel();
+  }
+
   async function translateText(text, tl){
     const raw = String(text || '').trim();
     if(!raw || !tl) return raw;
@@ -246,6 +401,14 @@
       };
       actions.appendChild(mk('caro', tt('gchatInviteCaroShort','Mời Caro')));
       actions.appendChild(mk('versus', tt('gchatInviteVersusShort','Mời Versus')));
+      actions.appendChild(makeReportBtn(msg));
+      actions.appendChild(makeBlockBtn(msg));
+      row.appendChild(actions);
+    } else if(!mine && msg.uid && bucket === 'game'){
+      const actions = document.createElement('div');
+      actions.className = 'gchat-msg-actions';
+      actions.appendChild(makeReportBtn(msg));
+      actions.appendChild(makeBlockBtn(msg));
       row.appendChild(actions);
     }
 
@@ -725,6 +888,13 @@
       if(list) list.hidden = false;
       renderFriendsList();
     });
+    $('gchat-friend-block')?.addEventListener('click', async ()=>{
+      if(!state.friendUid) return;
+      if(!confirm(tt('gchatBlockConfirm', 'Chặn người này? Bạn sẽ không thấy tin nhắn hay lời mời của họ nữa.'))) return;
+      try{ sfxClick(); }catch(e){}
+      await doBlockUser(state.friendUid, state.friendName, state.friendAvatar);
+    });
+    $('gchat-blocked-toggle')?.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} toggleBlockedPanel(); });
     $('gchat-invite-caro')?.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} inviteFriend('caro'); });
     $('gchat-invite-versus')?.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} inviteFriend('versus'); });
     $('gchat-send-heart')?.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} sendHeartToFriend(); });

@@ -48,6 +48,15 @@ service cloud.firestore {
         allow read, create, update: if isOwner(uid);
       }
 
+      /* Danh sách người dùng đã chặn — chỉ chủ tài khoản đọc/ghi được */
+      match /blocked/{blockedUid} {
+        allow read: if isOwner(uid);
+        allow create, update: if isOwner(uid)
+          && blockedUid != uid
+          && request.resource.data.keys().hasAll(['blockedAt']);
+        allow delete: if isOwner(uid);
+      }
+
       /* Lời mời kết bạn — người nhận sở hữu doc */
       match /friendRequests/{fromUid} {
         allow read, update, delete: if isOwner(uid);
@@ -103,6 +112,19 @@ service cloud.firestore {
         allow read: if signedIn();
         allow create: if signedIn() && chatPayloadOk();
       }
+    }
+
+    /* Báo cáo người dùng / nội dung vi phạm — client chỉ được tạo, không đọc/sửa/xoá */
+    match /reports/{reportId} {
+      allow create: if signedIn()
+        && request.resource.data.reporterUid == request.auth.uid
+        && request.resource.data.reportedUid is string
+        && request.resource.data.reportedUid != request.auth.uid
+        && request.resource.data.reason is string
+        && request.resource.data.text is string
+        && request.resource.data.text.size() <= 500
+        && request.resource.data.createdAt == request.time;
+      allow read, update, delete: if false;
     }
 
     /* Chat thế giới */

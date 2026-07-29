@@ -52,6 +52,7 @@ async function initOnlineServices(){
         try{ startPresenceHeartbeat(); }catch(e){}
         try{ startInviteListener(); }catch(e){}
         try{ startFriendRequestListener(typeof window.onFriendRequestIncoming==='function'?window.onFriendRequestIncoming:null); }catch(e){}
+        try{ loadBlockedList(); }catch(e){}
       } else {
         try{ stopPresenceHeartbeat(); }catch(e){}
         try{ stopInviteListener(); }catch(e){}
@@ -67,6 +68,7 @@ async function initOnlineServices(){
     try{ startPresenceHeartbeat(); }catch(e){}
     try{ startInviteListener(); }catch(e){}
     try{ startFriendRequestListener(typeof window.onFriendRequestIncoming==='function'?window.onFriendRequestIncoming:null); }catch(e){}
+    try{ loadBlockedList(); }catch(e){}
     return true;
   }catch(e){
     console.warn('[online] init failed', e);
@@ -455,6 +457,7 @@ function startFriendRequestListener(onIncoming){
         const d = chg.doc.data() || {};
         const id = chg.doc.id;
         if(d.status === 'pending' && d.fromUid && d.fromUid !== _onlineUid){
+          if(isBlocked(d.fromUid)) return;
           const key = 'p:'+id+':'+(d.createdAt && d.createdAt.seconds ? d.createdAt.seconds : '');
           if(_seenFriendReqIds.has('p:'+id)) return;
           _seenFriendReqIds.add('p:'+id);
@@ -487,6 +490,97 @@ function startFriendRequestListener(onIncoming){
         }
       });
     }, err => console.warn('[online] friendRequests', err));
+}
+
+// ── Chặn người dùng (block) ────────────────────────────────────
+const _blockedUids = new Set();
+
+function isBlocked(uid){
+  return !!(uid && _blockedUids.has(uid));
+}
+
+function getBlockedList(){
+  return Array.from(_blockedUids.values());
+}
+
+async function loadBlockedList(){
+  if(!_onlineDb || !_onlineUid) return [];
+  try{
+    const snap = await _onlineDb.collection('players').doc(_onlineUid).collection('blocked').get();
+    _blockedUids.clear();
+    const out = [];
+    snap.forEach(doc=>{
+      _blockedUids.add(doc.id);
+      const d = doc.data() || {};
+      out.push({ uid: doc.id, name: d.name || 'Player', avatar: d.avatar || '🐶' });
+    });
+    return out;
+  }catch(e){
+    console.warn('[online] loadBlockedList', e);
+    return [];
+  }
+}
+
+async function blockPlayer(uid, name, avatar){
+  if(!uid) return { ok:false, reason:'need_id' };
+  try{
+    await ensureOnlineAuth();
+    if(!_onlineDb || !_onlineUid) return { ok:false, reason:'offline' };
+    if(uid === _onlineUid) return { ok:false, reason:'self' };
+    await _onlineDb.collection('players').doc(_onlineUid)
+      .collection('blocked').doc(uid)
+      .set({
+        name: name || 'Player',
+        avatar: avatar || '🐶',
+        blockedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    _blockedUids.add(uid);
+    try{ if(typeof removeFriendLocal === 'function') removeFriendLocal(uid); }catch(e){}
+    return { ok:true };
+  }catch(e){
+    console.warn('[online] blockPlayer', e);
+    return { ok:false, reason:'error' };
+  }
+}
+
+async function unblockPlayer(uid){
+  if(!uid) return { ok:false, reason:'need_id' };
+  try{
+    if(!_onlineDb || !_onlineUid) return { ok:false, reason:'offline' };
+    await _onlineDb.collection('players').doc(_onlineUid).collection('blocked').doc(uid).delete();
+    _blockedUids.delete(uid);
+    return { ok:true };
+  }catch(e){
+    console.warn('[online] unblockPlayer', e);
+    return { ok:false, reason:'error' };
+  }
+}
+
+// ── Báo cáo người dùng / nội dung vi phạm ──────────────────────
+async function reportUser(opts){
+  opts = opts || {};
+  const reportedUid = opts.reportedUid;
+  if(!reportedUid) return { ok:false, reason:'need_id' };
+  try{
+    await ensureOnlineAuth();
+    if(!_onlineDb || !_onlineUid) return { ok:false, reason:'offline' };
+    if(reportedUid === _onlineUid) return { ok:false, reason:'self' };
+    await _onlineDb.collection('reports').add({
+      reporterUid: _onlineUid,
+      reporterName: getOnlineDisplayName(),
+      reportedUid: reportedUid,
+      reportedName: String(opts.reportedName || 'Player').slice(0, 60),
+      reason: String(opts.reason || 'other').slice(0, 40),
+      text: String(opts.text || '').slice(0, 500),
+      context: String(opts.context || 'world').slice(0, 20),
+      msgId: opts.msgId || null,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    return { ok:true };
+  }catch(e){
+    console.warn('[online] reportUser', e);
+    return { ok:false, reason:'error' };
+  }
 }
 
 async function sendFriendChat(friendUid, text, extra){
@@ -1405,6 +1499,7 @@ function listenRoomChat(roomId, cb){
       snap.docChanges().forEach(chg => {
         if(chg.type !== 'added') return;
         const msg = { id: chg.doc.id, ...chg.doc.data() };
+        if(isBlocked(msg.uid)) return;
         _roomChatCbs.forEach(fn => { try{ fn(msg); }catch(e){} });
       });
     }, err => console.warn('[online] room chat', err));
@@ -1434,7 +1529,9 @@ function listenWorldChat(cb){
     .onSnapshot(snap => {
       snap.docChanges().forEach(chg => {
         if(chg.type === 'added' && typeof cb === 'function'){
-          cb({ id: chg.doc.id, ...chg.doc.data() });
+          const msg = { id: chg.doc.id, ...chg.doc.data() };
+          if(isBlocked(msg.uid)) return;
+          cb(msg);
         }
       });
     }, err => console.warn('[online] world chat', err));
@@ -1474,7 +1571,9 @@ function listenFriendChat(friendUid, cb){
       .onSnapshot(snap => {
         snap.docChanges().forEach(chg => {
           if(chg.type === 'added' && typeof cb === 'function'){
-            cb({ id: chg.doc.id, ...chg.doc.data() });
+            const msg = { id: chg.doc.id, ...chg.doc.data() };
+            if(isBlocked(msg.uid)) return;
+            cb(msg);
           }
         });
       }, err => console.warn('[online] dm chat', err));
