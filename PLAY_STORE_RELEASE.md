@@ -17,6 +17,8 @@ npx cap open android
 
 Lệnh đồng bộ tự sao chép các tệp HTML, CSS, JavaScript và assets hiện có từ thư mục gốc vào `www/`, rồi Capacitor đóng gói chúng thành ứng dụng Android. Không sửa trực tiếp tệp trong `www/` vì nó sẽ được tạo lại mỗi lần đồng bộ.
 
+⚠️ **Luôn chạy lại `npx cap sync android` mỗi khi thêm/đổi plugin trong `package.json`** (ví dụ `@capacitor/screen-orientation`), rồi kiểm tra `android/capacitor.settings.gradle` và `android/app/capacitor.build.gradle` đã có dòng plugin tương ứng. Nếu quên bước này, plugin đó không được đăng ký ở tầng native — code JS gọi vào (ví dụ `js/orientation-lock.js` gọi `ScreenOrientation`) sẽ lặng lẽ không làm gì trên bản build thật, dù không báo lỗi.
+
 ## 3. Chỉnh trong Android Studio
 
 Mở `android/` rồi chỉnh các giá trị sau trong cấu hình module `app`:
