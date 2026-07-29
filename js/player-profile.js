@@ -8,7 +8,7 @@ const PLAYER_PROFILE_KEY = 'chromablast_player_profile';
 const NICK_MAX_LEN = 24;
 const NICK_MIN_LEN = 1;
 
-/** ~10 font đặc biệt cho nickname (local woff2 trong nick-fonts.css) */
+/** ~10 font đặc biệt cho nickname (local woff2 trong css/nick-fonts.css) */
 const NICK_FONTS = [
   { id: 'nunito',    family: "'Nunito', system-ui, sans-serif", label: 'Nunito' },
   { id: 'pacifico',  family: "'Pacifico', cursive",            label: 'Pacifico' },

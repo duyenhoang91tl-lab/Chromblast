@@ -17,7 +17,7 @@ import path from 'node:path';
 import { createHash } from 'node:crypto';
 import * as esbuild from 'esbuild';
 
-const items = ['index.html', 'main.css', 'sky-atmosphere.css', 'nick-fonts.css', 'brick-skins.css', 'map-boards.css', 'saga-map.css', 'js', 'maps', 'fonts', 'sounds', 'terms-of-service.html', 'privacy-policy.html'];
+const items = ['index.html', 'css', 'js', 'maps', 'fonts', 'sounds', 'terms-of-service.html', 'privacy-policy.html'];
 // terms-of-service.html + privacy-policy.html thêm 28/07/26: js/ui.js gọi
 // window.open('terms-of-service.html') / ('privacy-policy.html') ở cả web lẫn
 // app — thiếu 2 file này trong www/ thì 2 nút Điều khoản/Chính sách trong APK
