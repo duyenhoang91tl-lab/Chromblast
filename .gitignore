@@ -10,7 +10,9 @@ key.properties
 .claude/
 
 # Bản clone repo lồng trong workspace (không thuộc source game)
-Chromblast/
-chromblast/
-pulse/
-www/
+# Lưu ý: có dấu / ở đầu để chỉ khớp thư mục gốc, tránh trùng với
+# đường dẫn package Android android/app/src/main/java/.../chromblast/
+/Chromblast/
+/chromblast/
+/pulse/
+/www/
