@@ -14,6 +14,7 @@
 // - sounds/ (.wav) và fonts/ (.woff2) là binary/audio, không qua minify — chỉ copy nguyên.
 import { rmSync, mkdirSync, cpSync, readdirSync, statSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+import { createHash } from 'node:crypto';
 import * as esbuild from 'esbuild';
 
 const items = ['index.html', 'main.css', 'sky-atmosphere.css', 'nick-fonts.css', 'brick-skins.css', 'map-boards.css', 'saga-map.css', 'js', 'maps', 'fonts', 'sounds', 'terms-of-service.html', 'privacy-policy.html'];
@@ -74,3 +75,24 @@ for (const file of cssFiles) {
 const pct = (100 - (afterTotal / beforeTotal) * 100).toFixed(1);
 console.log('www/ built:', items.join(', '));
 console.log(`Minify JS+CSS: ${(beforeTotal/1024).toFixed(0)}KB → ${(afterTotal/1024).toFixed(0)}KB (giảm ${pct}%)`);
+
+// --- Cache-busting cho CSS (thêm 29/07/26) ---
+// Trước đây www/index.html trỏ <link href="main.css"> không có version, nên sau khi
+// deploy, trình duyệt/app có thể vẫn phục vụ bản CSS cache cũ (đặc biệt trên
+// GitHub Pages/CDN) — sửa CSS xong test không thấy đổi dù đã push đúng. Giờ mỗi lần
+// build sẽ gắn ?v=<hash nội dung file> vào các thẻ <link> CSS cục bộ trong
+// www/index.html, hash đổi khi nội dung đổi → trình duyệt luôn tải bản mới.
+const htmlPath = 'www/index.html';
+let html = readFileSync(htmlPath, 'utf8');
+const localCssHrefs = [...html.matchAll(/href="([^"?]+\.css)"/g)].map(m => m[1]);
+for (const href of new Set(localCssHrefs)) {
+  const filePath = path.join('www', href);
+  try {
+    const hash = createHash('sha1').update(readFileSync(filePath)).digest('hex').slice(0, 8);
+    html = html.split(`href="${href}"`).join(`href="${href}?v=${hash}"`);
+  } catch (err) {
+    console.warn(`⚠️  Bỏ qua cache-busting cho ${href}: ${err.message.split('\n')[0]}`);
+  }
+}
+writeFileSync(htmlPath, html);
+console.log('Cache-busting: đã gắn ?v=hash vào', [...new Set(localCssHrefs)].join(', '));
