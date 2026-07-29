@@ -176,15 +176,10 @@ async function _upsertPlayerProfile(){
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   };
   if(publicId) patch.publicId = publicId;
-  try{
-    if(typeof getLocalCaroStats === 'function'){
-      const s = getLocalCaroStats();
-      patch.caroWins = s.wins || 0;
-      patch.caroLosses = s.losses || 0;
-      patch.caroDraws = s.draws || 0;
-      patch.caroPoints = s.points || 0;
-    }
-  }catch(e){}
+  // Lưu ý: các field điểm số (caroWins/caroLosses/caroDraws/caroPoints/pvpPoints/
+  // wins/losses/draws/bestScore/bestPvpScore) KHÔNG còn được đồng bộ từ đây nữa.
+  // Firestore Rules chỉ cho phép các field này giữ nguyên hoặc do Cloud Function
+  // ghi (xem firestore.rules: scoreFieldsUnchanged(), functions/index.js: applyMatchResult).
   await _onlineDb.collection('players').doc(_onlineUid).set(patch, { merge: true });
   if(publicId){
     try{
@@ -1866,14 +1861,11 @@ function listenOpenRoomsByGameType(gameType, onUpdate, unsubKey){
 async function finalizeCaroMatch(roomId, winnerSlot){
   if(!_onlineDb || !roomId) return;
   const ref = _onlineDb.collection('rooms').doc(roomId);
-  let hostId, guestId;
   try{
     await _onlineDb.runTransaction(async tx => {
       const snap = await tx.get(ref);
       if(!snap.exists || snap.data().status === 'finished') return;
       const d = snap.data();
-      hostId = d.hostId;
-      guestId = d.guestId;
       const winnerId = winnerSlot === 'host' ? d.hostId : (winnerSlot === 'guest' ? d.guestId : null);
       tx.update(ref, {
         status: 'finished',
@@ -1883,32 +1875,8 @@ async function finalizeCaroMatch(roomId, winnerSlot){
       });
     });
   }catch(e){ return; }
-
-  const applyPlayer = async (uid, outcome) => {
-    if(!uid) return;
-    const patch = { updatedAt: firebase.firestore.FieldValue.serverTimestamp() };
-    if(outcome === 'win'){
-      patch.caroWins = firebase.firestore.FieldValue.increment(1);
-      patch.caroPoints = firebase.firestore.FieldValue.increment(25);
-    } else if(outcome === 'loss'){
-      patch.caroLosses = firebase.firestore.FieldValue.increment(1);
-    } else if(outcome === 'draw'){
-      patch.caroDraws = firebase.firestore.FieldValue.increment(1);
-      patch.caroPoints = firebase.firestore.FieldValue.increment(8);
-    }
-    await _onlineDb.collection('players').doc(uid).set(patch, { merge: true });
-  };
-
-  if(winnerSlot === 'draw'){
-    await applyPlayer(hostId, 'draw');
-    await applyPlayer(guestId, 'draw');
-  } else if(winnerSlot === 'host'){
-    await applyPlayer(hostId, 'win');
-    await applyPlayer(guestId, 'loss');
-  } else if(winnerSlot === 'guest'){
-    await applyPlayer(guestId, 'win');
-    await applyPlayer(hostId, 'loss');
-  }
+  // Cộng điểm thắng/thua giờ do Cloud Function applyMatchResult xử lý
+  // (kích hoạt tự động khi status của phòng chuyển sang 'finished').
 }
 
 async function finalizeOnlineMatch(roomId, hostScore, guestScore){
@@ -1931,23 +1899,8 @@ async function finalizeOnlineMatch(roomId, hostScore, guestScore){
     endedAt: firebase.firestore.FieldValue.serverTimestamp()
   });
 
-  const updates = [
-    { id: hostId, win: winnerId === hostId, draw: !winnerId, score: hostScore },
-    { id: guestId, win: winnerId === guestId, draw: !winnerId, score: guestScore }
-  ];
-  for(const u of updates){
-    if(!u.id) continue;
-    const pts = u.win ? 30 : (u.draw ? 5 : 0);
-    await _onlineDb.collection('players').doc(u.id).set({
-      pvpPoints: firebase.firestore.FieldValue.increment(pts),
-      wins: firebase.firestore.FieldValue.increment(u.win ? 1 : 0),
-      losses: firebase.firestore.FieldValue.increment(!u.win && !u.draw ? 1 : 0),
-      draws: firebase.firestore.FieldValue.increment(u.draw ? 1 : 0),
-      bestPvpScore: u.score,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    }, { merge: true });
-    // bestPvpScore: chỉ cập nhật nếu cao hơn — Firestore không hỗ trợ max trong increment; client merge đơn giản
-  }
+  // Cộng điểm thắng/thua giờ do Cloud Function applyMatchResult xử lý
+  // (kích hoạt tự động khi status của phòng chuyển sang 'finished').
 }
 
 async function fetchGlobalLeaderboard(limit, mode){
@@ -1977,50 +1930,42 @@ async function fetchMyGlobalRank(mode){
   return { rank: higher.size + 1, score: myScore, total: total.size };
 }
 
+// ── Ghi điểm — nay đi qua Cloud Function (Admin SDK), client không còn
+// quyền ghi trực tiếp vào players.bestScore / periodScores/*/entries/{uid}.
+// Xem functions/index.js: submitSoloScore; firestore.rules: scoreFieldsUnchanged(),
+// periodScores entries create/update: false.
+let _onlineFunctions = null;
+function _getOnlineFunctions(){
+  if(_onlineFunctions) return _onlineFunctions;
+  if(typeof firebase === 'undefined' || !firebase.functions) return null;
+  _onlineFunctions = firebase.app().functions('asia-southeast1');
+  return _onlineFunctions;
+}
+
 async function submitGlobalSoloScore(score){
   if(!score || score <= 0) return;
   if(!await initOnlineServices()) return;
-  const ref = _onlineDb.collection('players').doc(_onlineUid);
-  const snap = await ref.get();
-  const prev = snap.exists ? (snap.data().bestScore || 0) : 0;
   const region = (typeof getPlayerRegion === 'function') ? getPlayerRegion() : { country:'VN', continent:'AS' };
-  if(score > prev){
-    await ref.set({
-      displayName: getOnlineDisplayName(),
-      bestScore: score,
-      country: region.country,
-      continent: region.continent,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    }, { merge: true });
+  try{
+    const fns = _getOnlineFunctions();
+    if(!fns) return;
+    await fns.httpsCallable('submitSoloScore')({ score: Math.floor(score), region });
+  }catch(e){
+    console.warn('[online] submitGlobalSoloScore', e);
   }
-  try{ if(typeof submitPeriodScoreOnline === 'function') await submitPeriodScoreOnline(score, region); }catch(e){}
 }
 
 async function submitPeriodScoreOnline(score, region){
   if(!score || score <= 0) return;
   if(!await initOnlineServices() || !_onlineUid) return;
   region = region || (typeof getPlayerRegion === 'function' ? getPlayerRegion() : { country:'VN', continent:'AS' });
-  const kinds = ['day','week','month'];
-  const name = getOnlineDisplayName();
-  const avatar = (typeof getPlayerAvatar === 'function') ? getPlayerAvatar() : '🐶';
-  await Promise.all(kinds.map(async kind=>{
-    const pid = (typeof periodKey === 'function') ? periodKey(kind) : null;
-    if(!pid) return;
-    const ref = _onlineDb.collection('periodScores').doc(pid).collection('entries').doc(_onlineUid);
-    const snap = await ref.get();
-    const prev = snap.exists ? (snap.data().score || 0) : 0;
-    if(score > prev){
-      await ref.set({
-        uid: _onlineUid,
-        name,
-        avatar,
-        score,
-        country: region.country || 'VN',
-        continent: region.continent || 'AS',
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      }, { merge: true });
-    }
-  }));
+  try{
+    const fns = _getOnlineFunctions();
+    if(!fns) return;
+    await fns.httpsCallable('submitSoloScore')({ score: Math.floor(score), region });
+  }catch(e){
+    console.warn('[online] submitPeriodScoreOnline', e);
+  }
 }
 
 async function fetchPeriodLeaderboardOnline(periodId, limit){
