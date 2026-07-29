@@ -49,4 +49,4 @@ Tải tệp `.aab` lên kênh **Internal testing** trước. Chỉ phát hành P
 - Ứng dụng mới phải tải dưới dạng Android App Bundle (`.aab`).
 - Target API phải là API 35 trở lên tại thời điểm tài liệu này.
 - Cần chính sách quyền riêng tư công khai, email liên hệ, phân loại nội dung, ảnh biểu tượng và ảnh chụp màn hình.
-- Không được tuyên bố có bảng xếp hạng toàn cầu vì giao diện hiện ghi rõ tính năng đó chỉ lưu cục bộ.
+- BXH toàn cầu/theo kỳ (ngày/tuần/tháng, theo châu lục/quốc gia/bạn bè) là **thật**, đồng bộ qua Firestore (`periodScores`, `players` — xem `js/online-services.js`), không phải chỉ lưu local. Được phép mô tả tính năng này trong store listing, nhưng phải khai đúng trong **Data safety**: tên hiển thị, avatar, điểm số, quốc gia/châu lục của người chơi được lưu trên server và **mọi user đã đăng nhập (kể cả ẩn danh) đều đọc được** (`firestore.rules: allow read: if signedIn()` trên `periodScores` và `players`) — xem `PLAY_STORE_DATA_SAFETY.md`.
