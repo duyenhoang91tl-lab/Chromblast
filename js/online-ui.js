@@ -128,6 +128,7 @@ function openOnlineHub(){
     try{ showComboFlash(0,false,t('vsNeedLevel', VERSUS_MIN_LEVEL)); }catch(e){}
     return;
   }
+  try{ if(typeof unlockOrientation==='function') unlockOrientation(); }catch(e){}
   _onlineHide('versus-setup-panel');
   _onlineShow('online-hub-panel');
   const on = isOnlineServicesEnabled();
@@ -138,6 +139,7 @@ function openOnlineHub(){
 }
 
 function closeOnlineHub(){
+  try{ if(typeof lockPortraitOrientation==='function') lockPortraitOrientation(); }catch(e){}
   cancelMatchmaking();
   _onlineStopRoomListListen();
   if(_onlineLobby) leaveOnlineRoom(_onlineLobby.roomId).catch(()=>{});
@@ -292,6 +294,7 @@ async function onStartOnlineMatch(){
 // ── Vào trận online từ room ───────────────────────────────────
 function enterOnlineVersusMatch(roomId, roomData){
   if(versusMode) return;
+  try{ if(typeof unlockOrientation==='function') unlockOrientation(); }catch(e){}
   const uid=getOnlineUid();
   const isHost = roomData.hostId===uid;
   const myName = isHost ? roomData.hostName : roomData.guestName;

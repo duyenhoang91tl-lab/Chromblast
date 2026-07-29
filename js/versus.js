@@ -962,6 +962,7 @@ function _vsTick(){
 
 function _vsEndMatch(){
   if(!_vs) return;
+  try{ if(typeof lockPortraitOrientation==='function') lockPortraitOrientation(); }catch(e){}
   if(_vs.timer){ clearInterval(_vs.timer); _vs.timer=null; }
   if(_vs.online){
     try{ if(typeof stopListeningRoom === 'function') stopListeningRoom(); }catch(e){}
