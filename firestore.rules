@@ -147,14 +147,23 @@ service cloud.firestore {
          request.time > resource.data.lastSeen + duration.value(15, 's'))
       );
 
+      // Chỉ host/guest của CHÍNH room đó được gửi nước đi / chat trong trận — trước đây
+      // "if signedIn()" cho phép BẤT KỲ ai đã đăng nhập ghi vào nước đi/chat của người
+      // khác (chèn nước đi giả vào trận người lạ, spam chat phòng người khác).
       match /moves/{moveId} {
         allow read: if signedIn();
-        allow create: if signedIn();
+        allow create: if signedIn() && (
+          get(/databases/$(database)/documents/rooms/$(roomId)).data.hostId == request.auth.uid ||
+          get(/databases/$(database)/documents/rooms/$(roomId)).data.guestId == request.auth.uid
+        );
       }
 
       match /chat/{msgId} {
         allow read: if signedIn();
-        allow create: if signedIn() && chatPayloadOk();
+        allow create: if signedIn() && chatPayloadOk() && (
+          get(/databases/$(database)/documents/rooms/$(roomId)).data.hostId == request.auth.uid ||
+          get(/databases/$(database)/documents/rooms/$(roomId)).data.guestId == request.auth.uid
+        );
       }
     }
 
