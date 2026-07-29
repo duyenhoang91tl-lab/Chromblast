@@ -3635,32 +3635,45 @@ body:has(#secret-stage.active) .streak-dot.lit{
   .vs-mini{ transform:scale(0.75); }
 }
 
-/* ══ CỜ CARO — xoay ngang: trái (đối thủ) / giữa (bàn cờ) / phải (bạn), giữ nguyên theme hiện tại ══ */
+/* ══ CỜ CARO — xoay ngang: khối trái = nội dung đối thủ (topbar), khối phải = nội dung của bạn (bottombar),
+   2 khối rộng bằng nhau tuyệt đối (--caro-panel-w) để bố cục trái/phải cân xứng,
+   bàn cờ luôn nằm giữa và chạm sát mép trên/dưới màn hình. ══ */
 @media (orientation: landscape) {
   #caro-stage {
+    --caro-panel-w: clamp(112px, 25vw, 200px);
     flex-direction: row;
     align-items: stretch;
     justify-content: center;
     gap: clamp(8px, 2vw, 18px);
     padding: env(safe-area-inset-top,0px) max(10px, env(safe-area-inset-right,0px)) env(safe-area-inset-bottom,0px) max(10px, env(safe-area-inset-left,0px));
   }
+  /* Khối bên trái: toàn bộ nội dung vốn ở thanh trên cùng (đối thủ + tim/timer/nút) */
   #caro-stage .caro-topbar {
-    order: 1; flex: 0 0 auto; width: auto; max-width: min(30vw, 210px);
+    order: 1; flex: 0 0 var(--caro-panel-w); width: var(--caro-panel-w); max-width: var(--caro-panel-w);
     flex-direction: column; align-items: stretch; justify-content: flex-start;
     gap: 10px; margin-top: 0;
+  }
+  /* Khối bên phải: toàn bộ nội dung vốn ở thanh dưới cùng (bạn + quick-fx) */
+  #caro-stage .caro-bottombar {
+    order: 3; flex: 0 0 var(--caro-panel-w); width: var(--caro-panel-w); max-width: var(--caro-panel-w);
+    align-items: stretch; align-content: flex-start;
+    flex-direction: column; justify-content: flex-start; gap: 10px;
   }
   #caro-stage .caro-opp-chip,
   #caro-stage .caro-me-chip {
     flex-direction: column; align-items: center; text-align: center;
     gap: 6px; padding: 10px 8px; max-width: none; width: 100%;
+    box-sizing: border-box;
   }
   #caro-stage .caro-opp-meta,
-  #caro-stage .caro-me-meta { align-items: center; }
+  #caro-stage .caro-me-meta { align-items: center; width: 100%; }
   #caro-stage .caro-opp-name,
   #caro-stage .caro-me-name { max-width: 100%; white-space: normal; text-align: center; }
   #caro-stage .caro-top-right {
     flex-direction: column; align-items: center; justify-content: flex-start; gap: 8px;
   }
+  #caro-stage .caro-quick-fx { justify-content: center; max-width: none; width: 100%; }
+  /* Bàn cờ: chính giữa, chạm mép trên/dưới màn hình */
   #caro-stage .caro-board-wrap {
     order: 2; flex: 1 1 auto; width: auto; max-width: none; height: 100%;
     align-items: center; justify-content: center;
@@ -3670,16 +3683,11 @@ body:has(#secret-stage.active) .streak-dot.lit{
     max-width: 100%; width: auto;
     margin: 0;
   }
-  #caro-stage .caro-bottombar {
-    order: 3; flex: 0 0 auto; width: auto; max-width: min(30vw, 210px);
-    align-items: stretch; align-content: flex-start;
-    flex-direction: column; justify-content: flex-start; gap: 10px;
-  }
-  #caro-stage .caro-quick-fx { justify-content: center; max-width: none; }
 }
 @media (orientation: landscape) and (max-height: 420px) {
+  #caro-stage { --caro-panel-w: clamp(96px, 22vw, 168px); }
   #caro-stage .caro-topbar,
-  #caro-stage .caro-bottombar { max-width: min(26vw, 170px); gap: 6px; }
+  #caro-stage .caro-bottombar { gap: 6px; }
   #caro-stage .caro-opp-avatar,
   #caro-stage .caro-me-avatar { width: 32px; height: 32px; font-size: 18px; }
   #caro-stage .caro-timer { min-width: 34px; height: 30px; font-size: 15px; }
