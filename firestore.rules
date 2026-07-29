@@ -23,6 +23,12 @@ service cloud.firestore {
         && scoreField('losses') && scoreField('draws')
         && scoreField('bestPvpScore') && scoreField('bestScore');
     }
+    /* Field chỉ Cloud Function (Admin SDK) được ghi — client gửi lên field này coi như
+       không đổi gì (bị bỏ qua ở tầng rule), dùng cho mốc thời gian chống báo điểm khống. */
+    function fieldLocked(field) {
+      return !(field in request.resource.data)
+        || (resource != null && field in resource.data && request.resource.data[field] == resource.data[field]);
+    }
 
     /* BXH kỳ (ngày/tuần/tháng) — client chỉ đọc, ghi qua Cloud Function */
     match /periodScores/{periodId} {
@@ -48,7 +54,7 @@ service cloud.firestore {
 
     match /players/{uid} {
       allow read: if signedIn();
-      allow create, update: if isOwner(uid) && scoreFieldsUnchanged();
+      allow create, update: if isOwner(uid) && scoreFieldsUnchanged() && fieldLocked('currentRunStartedAt');
       allow delete: if isOwner(uid);
 
       match /friends/{fid} {

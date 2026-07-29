@@ -1942,6 +1942,20 @@ function _getOnlineFunctions(){
   return _onlineFunctions;
 }
 
+// Gọi lúc bắt đầu ván chơi đơn — server ghi mốc thời gian (currentRunStartedAt) để
+// submitSoloScore tính điểm/giây hợp lý, chặn báo điểm khống. Không chặn game bắt đầu
+// nếu lỗi mạng — chỉ đơn giản là lần nộp điểm sau đó sẽ bị Cloud Function từ chối.
+async function startSoloRunOnline(){
+  try{
+    if(!await initOnlineServices()) return;
+    const fns = _getOnlineFunctions();
+    if(!fns) return;
+    await fns.httpsCallable('startSoloRun')();
+  }catch(e){
+    console.warn('[online] startSoloRunOnline', e);
+  }
+}
+
 async function submitGlobalSoloScore(score){
   if(!score || score <= 0) return;
   if(!await initOnlineServices()) return;

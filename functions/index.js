@@ -66,6 +66,21 @@ function periodKey(kind, when) {
 }
 
 /**
+ * Đánh dấu bắt đầu 1 ván chơi đơn — ghi mốc thời gian server (client không sửa được,
+ * xem firestore.rules: fieldLocked('currentRunStartedAt')). submitSoloScore dùng mốc
+ * này để tính điểm/giây tối đa hợp lý, chặn kiểu gọi thẳng submitSoloScore với điểm
+ * khống mà không thực sự chơi.
+ */
+exports.startSoloRun = onCall({ region: 'asia-southeast1' }, async (request) => {
+  const uid = request.auth && request.auth.uid;
+  if (!uid) throw new HttpsError('unauthenticated', 'Cần đăng nhập.');
+  await admin.firestore().collection('players').doc(uid).set({
+    currentRunStartedAt: admin.firestore.FieldValue.serverTimestamp()
+  }, { merge: true });
+  return { ok: true };
+});
+
+/**
  * Ghi điểm chơi đơn (BXH toàn cầu + BXH kỳ ngày/tuần/tháng).
  * Chạy bằng Admin SDK nên không bị Firestore Rules chặn, kể cả khi
  * client đã bị khoá quyền ghi trực tiếp vào players/periodScores.
@@ -88,6 +103,21 @@ exports.submitSoloScore = onCall({ region: 'asia-southeast1' }, async (request) 
   const playerRef = db.collection('players').doc(uid);
   const playerSnap = await playerRef.get();
   const playerData = playerSnap.exists ? playerSnap.data() : {};
+
+  // Chống báo điểm khống: giới hạn điểm/giây theo thời gian chơi THỰC (tính từ mốc
+  // server ghi lúc startSoloRun, client không giả được). Mức 60 điểm/giây đã rất
+  // rộng rãi so với tốc độ ghi điểm thật của game (1 ô = 1 điểm, x2/x3 theo combo),
+  // chỉ để chặn kiểu gọi thẳng function nộp điểm khống tức thời — không phải verify
+  // toàn bộ gameplay (muốn chặn 100% phải chấm lại ván chơi phía server).
+  const MAX_POINTS_PER_SEC = 60;
+  const startedAt = playerData.currentRunStartedAt;
+  const elapsedSec = (startedAt && typeof startedAt.toMillis === 'function')
+    ? (Date.now() - startedAt.toMillis()) / 1000
+    : 0;
+  if (!(elapsedSec > 0) || score > Math.ceil(elapsedSec * MAX_POINTS_PER_SEC)) {
+    throw new HttpsError('failed-precondition', 'Điểm không hợp lệ so với thời gian chơi — hãy vào ván mới trước khi nộp điểm.');
+  }
+
   const prevBest = playerData.bestScore || 0;
   const displayName = playerData.displayName || 'Player';
   const avatar = playerData.avatar || '🐶';

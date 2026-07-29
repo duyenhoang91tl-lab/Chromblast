@@ -433,6 +433,10 @@ function updateComboUI(){
 ══════════════════════════════════════════ */
 function startGame(){
   startBgm('main');
+  // Đánh dấu bắt đầu ván mới với server (chống báo điểm khống khi nộp điểm lúc kết
+  // thúc ván — xem js/online-services.js: startSoloRunOnline, functions/index.js:
+  // startSoloRun/submitSoloScore). Không chờ (fire-and-forget), không chặn game bắt đầu.
+  try{ if(typeof startSoloRunOnline==='function') startSoloRunOnline(); }catch(e){}
   // Cup thử thách lưu bền — không reset mỗi ván
   fruitSlicedTotal=0;
   survive60Unlocked=false; survive180Unlocked=false; survive120Unlocked=false; survive300Unlocked=false;
