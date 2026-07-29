@@ -54,18 +54,58 @@ runtime, chỉ tổ chức lại code.
 
 ## Việc còn lại (chưa làm)
 
-Theo thứ tự file lớn tăng dần, áp dụng đúng quy trình ở trên:
-
-- [ ] `js/chat.js` (~1171 dòng trước khi tách các file khác — kiểm tra lại
-      dòng hiện tại trước khi bắt đầu)
-- [ ] `js/i18n-content.js` (~1499 dòng)
-- [ ] `js/online-services.js` (~2055 dòng) — **cẩn thận**: file này đụng
-      trực tiếp Firestore/network, rủi ro cao hơn các file UI thuần tuý,
-      nên rà kỹ phần nào là logic đồng bộ mạng (giữ nguyên 1 chỗ) trước
-      khi tách phần UI-only ra.
+- [ ] `js/online-services.js` (~2055 dòng) — dùng đúng pattern hàm global
+      rời rạc (an toàn để tách như các file trước), nhưng đụng trực tiếp
+      Firestore/network (đăng nhập, phòng, matchmaking, chống gian lận
+      điểm). **Đang tạm dừng ở đây theo yêu cầu — chờ test lại game trước
+      khi tách tiếp file này.**
 - [ ] `js/caro.js` (~2230 dòng) — file lớn nhất, đã có `js/caro-social.js`
       tách sẵn từ trước và cơ chế lazy-load qua `js/caro-loader.js`, cần
       xem kỹ trước khi tách thêm để không phá cơ chế lazy-load hiện có.
+
+## Đã rà nhưng QUYẾT ĐỊNH KHÔNG TÁCH (rủi ro cao hơn lợi ích)
+
+- **`js/chat.js`** (1171 dòng): toàn bộ code nằm trong 1 khối
+  `(function(){...})()` duy nhất, dùng chung 1 object `state` nội bộ +
+  các hàm helper private (`$`, `tt`,...), chỉ lộ ra ngoài ~10 hàm qua
+  `window.xxx` ở cuối file. Đây LÀ kiểu đóng gói khác hẳn các file đã
+  tách (không phải hàm global rời rạc) — nếu tách theo cách cũ, các hàm
+  ở 2 file sẽ nằm trong 2 closure khác nhau và KHÔNG gọi được nhau nữa
+  (phải tự dò từng chỗ gọi chéo + expose thủ công qua object dùng chung
+  → dễ gãy tính năng chat/bạn bè, không có cách test lại ngay). Nếu sau
+  này muốn tách, cần làm cẩn thận riêng, không dùng script cắt-khối-hàm
+  như các file khác.
+- **`js/i18n-content.js`** (1499 dòng): gần như 100% là dữ liệu dịch
+  thuật (6 ngôn ngữ: vi/en/ko/ja/zh/es), không phải logic. Cấu trúc lồng
+  khá phức tạp (1 object `I18N_CONTENT` chính + 2 khối IIFE bổ sung dữ
+  liệu theo từng ngôn ngữ, 1 khối còn đụng tới object `I18N` khác nữa).
+  Tách file gần như không giúp gì cho khả năng bảo trì (đã rõ ràng: mỗi
+  ngôn ngữ 1 key, dễ tìm), trong khi tách tay trên khối text tiếng
+  Việt/emoji khổng lồ dễ gõ nhầm/lệch dấu câu. Khuyến nghị: giữ nguyên,
+  không tách.
+
+## Trước khi tách tiếp — cần test lại game thật
+
+Đã tách khá nhiều: `versus.js`, `effects.js`, `ui.js`, `engine.js` (mỗi
+file ra 2-3 file con). Nên tự chơi thử trên app/web thật các phần sau
+trước khi tách thêm `online-services.js` hoặc `caro.js`:
+
+- [ ] Chơi map thường: đặt khối, xoay, kéo-thả, nổ hàng/cột (đụng
+      `engine.js` + `engine-input.js`)
+- [ ] Dùng skill đặc biệt fire/bubble/wind (đụng `engine-powers.js`)
+- [ ] Hiệu ứng nổ/combo/confetti + nền cảnh các map có scenery (đụng
+      `effects.js` + `effects-scenery.js`)
+- [ ] Màn hình mở app lần đầu: Điều khoản dịch vụ + xin quyền thông báo
+      (đụng `ui-gates.js`)
+- [ ] Menu Cài đặt: đổi ngôn ngữ, âm thanh, rung, xem Cup (đụng
+      `ui-settings.js`)
+- [ ] Đấu 1-1 (Versus) cùng máy VÀ online: dựng bàn, kéo-thả, chat, chọn
+      skin, thẻ chướng ngại, kết thúc trận (đụng `versus.js` +
+      `versus-ui.js`)
+- [ ] Build APK thật (`npm run cap:sync`) nếu có thể, không chỉ
+      `build:www`
+
+
 
 ## Chưa làm / cần quyết định thêm (mục 2, 4 trong 6 hạng mục gốc)
 
