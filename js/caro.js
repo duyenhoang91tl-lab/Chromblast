@@ -15,12 +15,14 @@ const CARO_PREFS_KEY = 'chromablast_caro_prefs';
 const CARO_TURN_NORMAL = 15;
 const CARO_TURN_FAST = 10;
 
-/** Cấu hình AI theo độ khó — depth càng cao càng “đọc” nước trước */
+/** Cấu hình AI theo độ khó — depth càng cao càng “đọc” nước trước.
+ *  pickBand: biên độ (theo % điểm cao nhất) cho phép random giữa các nước gần-tốt-nhất —
+ *  0 = luôn chọn đúng nước tốt nhất (chỉ random khi thật sự hòa điểm tuyệt đối). */
 const CARO_AI_LEVELS = {
-  easy:     { id:'easy',     thinkMs:320, mistakeRate:0.28, radius:2, depth:1, topN:8  },
-  medium:   { id:'medium',   thinkMs:500, mistakeRate:0.05, radius:3, depth:2, topN:10 },
-  hard:     { id:'hard',     thinkMs:700, mistakeRate:0,    radius:4, depth:3, topN:10 },
-  extreme:  { id:'extreme',  thinkMs:900, mistakeRate:0,    radius:5, depth:4, topN:12 },
+  easy:     { id:'easy',     thinkMs:320, mistakeRate:0.28, radius:2, depth:1, topN:8,  pickBand:0.15 },
+  medium:   { id:'medium',   thinkMs:500, mistakeRate:0.03, radius:3, depth:3, topN:10, pickBand:0.05 },
+  hard:     { id:'hard',     thinkMs:700, mistakeRate:0,    radius:4, depth:4, topN:12, pickBand:0.015 },
+  extreme:  { id:'extreme',  thinkMs:900, mistakeRate:0,    radius:5, depth:5, topN:8,  pickBand:0 },
 };
 
 /** Nền map xếp hình + màu X/O nổi bật theo từng nền */
@@ -1003,12 +1005,14 @@ function _caroImmediateWins(board, color, candidates){
   return hits;
 }
 
-/** Nước buộc phải chặn: đối thủ có open-four / half-four thắng ngay nước sau */
+/** Nước buộc phải chặn: đối thủ có open-four / half-four / song khai-tam thắng gần như chắc chắn nếu bỏ qua */
 function _caroForcedBlocks(board, oppColor, candidates){
   const blocks = [];
   for(const [r,c] of candidates){
     const a = _caroAnalyzePlace(board, r, c, oppColor);
-    if(a.win || a.openFour >= 1 || a.halfFour >= 1) blocks.push([r, c, a.win ? 3 : (a.openFour ? 2 : 1)]);
+    if(a.win) blocks.push([r, c, 4]);
+    else if(a.openFour >= 1) blocks.push([r, c, 3]);
+    else if(a.halfFour >= 1 || a.openThree >= 2) blocks.push([r, c, 2]);
   }
   blocks.sort((a,b)=> b[2]-a[2]);
   return blocks.map(([r,c])=>[r,c]);
@@ -1045,7 +1049,10 @@ function _caroNegamax(board, depth, alpha, beta, color, oppColor, profile){
   const blocks = _caroForcedBlocks(board, oppColor, candidates);
   if(blocks.length) candidates = blocks;
   else {
-    const ranked = _caroRankCandidates(board, color, oppColor, candidates, profile.topN || 10);
+    // Càng đi sâu càng thu hẹp bề rộng — giữ độ sâu cao mà vẫn nhanh
+    const ply = Math.max(0, (profile.depth||1) - depth);
+    const topNHere = Math.max(6, (profile.topN || 10) - ply*2);
+    const ranked = _caroRankCandidates(board, color, oppColor, candidates, topNHere);
     candidates = ranked.map(m => [m.r, m.c]);
   }
 
@@ -1131,7 +1138,8 @@ function _caroPickAIMove(profile){
       return pool[Math.floor(Math.random() * pool.length)];
     }
     const top = scored[0].score;
-    const band = Math.max(Math.abs(top) * 0.04, 50);
+    const bandFrac = profile.pickBand != null ? profile.pickBand : 0.04;
+    const band = bandFrac > 0 ? Math.max(Math.abs(top) * bandFrac, 50) : 0;
     const topMoves = scored.filter(m => m.score >= top - band);
     return topMoves[Math.floor(Math.random() * topMoves.length)];
   }catch(e){
