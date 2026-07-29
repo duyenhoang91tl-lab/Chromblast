@@ -78,6 +78,20 @@ body.menu-open #game-root {
   opacity: 0 !important;
   pointer-events: none !important;
 }
+/* Quan trọng: #caro-stage và #versus-arena nằm BÊN TRONG #game-root.
+   Nếu menu-open còn dính lúc đang chơi Caro/Versus (VD: đóng menu chưa kịp đồng bộ),
+   display:none ở #game-root phía trên sẽ nuốt mất bàn cờ dù #caro-stage có
+   display:flex !important riêng — vì display:none ở tổ tiên luôn thắng, không con nào
+   ghi đè được (khác với visibility, có thể bị con ghi đè lại). Đây là nguyên nhân gây
+   lỗi "mất bàn cờ" ngắt quãng trên một số thiết bị/trình duyệt. Selector dưới có độ đặc
+   thù cao hơn (2 class thay vì 1) nên luôn thắng rule display:none phía trên. */
+body.menu-open.mode-caro #game-root,
+body.menu-open.mode-versus #game-root {
+  display: block !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
 body.menu-open #drag-ghost,
 body.menu-open #gchat-fab,
 body.menu-open #help-btn,
@@ -1097,7 +1111,7 @@ body.notif-open #start-screen{
 }
 .caro-board-wrap {
   flex: 1; display: flex; align-items: center; justify-content: center;
-  width: 100%; max-width: min(96vw, 460px); min-height: 0;
+  width: 100%; max-width: 100%; min-height: 0;
   position: relative;
 }
 #caro-canvas {

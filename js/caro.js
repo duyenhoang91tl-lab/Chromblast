@@ -239,6 +239,12 @@ function _caroDrawBoard(){
   const ctx = canvas.getContext('2d');
   const m = _caroMeasure();
   if(!m) return;
+  // Bảo vệ cuối: nếu vì lý do gì đó vẫn đo ra kích thước bất thường (khung ẩn/0),
+  // không vẽ bàn cờ méo — thử đo lại ở frame kế tiếp thay vì để trống.
+  if(!m.px || m.px < 20){
+    requestAnimationFrame(()=>{ if(caroMode) _caroDrawBoard(); });
+    return;
+  }
   _caro.metrics = m;
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   const W = canvas.width, H = canvas.height;
@@ -482,6 +488,22 @@ function _caroBindCanvas(){
   };
   window.addEventListener('resize', _caroRedrawSafe);
   window.addEventListener('orientationchange', ()=>setTimeout(_caroRedrawSafe, 120));
+  // Trình duyệt tablet/desktop: khi đổi tab rồi quay lại, hoặc kéo giãn cửa sổ,
+  // layout có thể đo lệch một nhịp — theo dõi trực tiếp khung chứa để tự vẽ lại,
+  // đáng tin cậy hơn nhiều so với chỉ nghe sự kiện 'resize' của window.
+  const wrapEl = canvas.parentElement;
+  if(wrapEl && typeof ResizeObserver !== 'undefined'){
+    let _caroRoTimer = null;
+    const ro = new ResizeObserver(()=>{
+      if(!caroMode) return;
+      clearTimeout(_caroRoTimer);
+      _caroRoTimer = setTimeout(_caroRedrawSafe, 30);
+    });
+    ro.observe(wrapEl);
+  }
+  document.addEventListener('visibilitychange', ()=>{
+    if(!document.hidden && caroMode) _caroRedrawSafe();
+  });
   _caroBindPinchZoom();
 }
 
