@@ -11,15 +11,25 @@ service cloud.firestore {
         && request.resource.data.text.size() > 0
         && request.resource.data.text.size() <= 120;
     }
+    function scoreField(field) {
+      return !(field in request.resource.data)
+        || (resource == null && request.resource.data[field] == 0)
+        || (resource != null && !(field in resource.data) && request.resource.data[field] == 0)
+        || (resource != null && field in resource.data && request.resource.data[field] == resource.data[field]);
+    }
+    function scoreFieldsUnchanged() {
+      return scoreField('caroWins') && scoreField('caroLosses') && scoreField('caroDraws')
+        && scoreField('caroPoints') && scoreField('pvpPoints') && scoreField('wins')
+        && scoreField('losses') && scoreField('draws')
+        && scoreField('bestPvpScore') && scoreField('bestScore');
+    }
 
-    /* BXH kỳ (ngày/tuần/tháng) */
+    /* BXH kỳ (ngày/tuần/tháng) — client chỉ đọc, ghi qua Cloud Function */
     match /periodScores/{periodId} {
       allow read: if signedIn();
       match /entries/{uid} {
         allow read: if signedIn();
-        allow create, update: if isOwner(uid)
-          && request.resource.data.score is number
-          && request.resource.data.score >= 0;
+        allow create, update: if false;
         allow delete: if isOwner(uid);
       }
     }
@@ -38,7 +48,7 @@ service cloud.firestore {
 
     match /players/{uid} {
       allow read: if signedIn();
-      allow create, update: if isOwner(uid);
+      allow create, update: if isOwner(uid) && scoreFieldsUnchanged();
       allow delete: if isOwner(uid);
 
       match /friends/{fid} {
