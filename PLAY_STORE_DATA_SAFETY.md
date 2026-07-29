@@ -56,7 +56,7 @@ Location (vị trí chính xác/tương đối), Financial info, Health & fitnes
    → **Yes** (HTTPS tới Firebase, AdMob, và các API dịch nếu bật).
 
 3. **Do you provide a way for users to request that their data is deleted?**  
-   → Trả lời theo thực tế hiện có: xoá dữ liệu local qua cài đặt hệ thống Android (Clear app data); với dữ liệu tài khoản Firebase (nick, BXH, bạn bè, tin nhắn) hiện chưa có nút xoá tài khoản trong app → cần quy trình xoá qua email hỗ trợ (`duyenhoang91.tl@gmail.com`), hoặc thêm nút "Xoá tài khoản" in-app trước khi submit nếu muốn tick "Yes" ở mục yêu cầu này (từ 2024 Google khuyến khích/có thể yêu cầu deletion request trong app với app có tạo tài khoản).
+   → **Yes.** Trong app: `🌐 Online → 🗑️ Xoá tài khoản online & dữ liệu` (nút trong `online-hub-panel`) gọi `deleteMyAccountOnline()` (`online-services.js`) — xoá `players/{uid}` và các subcollection (`friends`, `blocked`, `friendRequests`, `invites`, `lbClaims`), xoá `playerIds/{publicId}`, xoá điểm BXH kỳ hiện tại + kỳ trước (`periodScores/*/entries/{uid}`), rồi xoá tài khoản Firebase Auth. Dữ liệu local (tiến trình, vật phẩm) xoá riêng qua Cài đặt Android như mục 1. **Giới hạn:** không xoá được điểm BXH của các kỳ cũ hơn kỳ trước liền kề (client không liệt kê được toàn bộ lịch sử periodId) — các bản ghi đó chỉ còn tên/avatar/điểm/quốc gia, không còn gắn với tài khoản đang hoạt động sau khi xoá. Nếu Google yêu cầu xoá triệt để 100%, cần thêm Cloud Function chạy định kỳ dọn các `periodScores` cũ.
 
 4. **Font / Google Fonts CDN**  
    → Font nhúng **offline** trong APK (`nick-fonts.css`) — không khai thu thập qua Google Fonts CDN.
@@ -72,4 +72,4 @@ Location (vị trí chính xác/tương đối), Financial info, Health & fitnes
 - [ ] Khai App activity (BXH) — Collected, không Shared bên thứ 3, nhưng hiển thị công khai trong app
 - [ ] Xác nhận lại: KHÔNG khai "Photos or videos" (avatar chỉ local) — tránh khai thừa
 - [ ] Nếu thêm Firebase Analytics/Crashlytics sau này → quay lại mục 5 và khai bổ sung
-- [ ] Quyết định có thêm nút "Xoá tài khoản" in-app hay không, rồi trả lời câu hỏi #3 cho khớp
+- [x] Nút xoá tài khoản in-app đã thêm (`🌐 Online → 🗑️ Xoá tài khoản online & dữ liệu`)

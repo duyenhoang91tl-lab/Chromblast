@@ -76,6 +76,75 @@ async function initOnlineServices(){
   }
 }
 
+// ── Xoá tài khoản online (Firebase Auth + toàn bộ dữ liệu thuộc quyền) ─
+async function _deleteOwnedSubcollection(uid, sub){
+  if(!_onlineDb) return;
+  try{
+    const snap = await _onlineDb.collection('players').doc(uid).collection(sub).get();
+    await Promise.all(snap.docs.map(d => d.ref.delete().catch(()=>{})));
+  }catch(e){ console.warn('[online] delete '+sub, e); }
+}
+
+async function deleteMyAccountOnline(){
+  await ensureOnlineAuth();
+  if(!_onlineDb || !_onlineUid || !_onlineAuth || !_onlineAuth.currentUser){
+    return { ok:false, reason:'offline' };
+  }
+  const uid = _onlineUid;
+  try{
+    try{ stopPresenceHeartbeat(); }catch(e){}
+    try{ stopInviteListener(); }catch(e){}
+    try{ stopFriendRequestListener(); }catch(e){}
+    try{ stopListeningRoom(); }catch(e){}
+    try{ stopListeningWorldChat(); }catch(e){}
+    try{ stopListeningDmChat(); }catch(e){}
+
+    await Promise.all([
+      _deleteOwnedSubcollection(uid, 'friends'),
+      _deleteOwnedSubcollection(uid, 'blocked'),
+      _deleteOwnedSubcollection(uid, 'friendRequests'),
+      _deleteOwnedSubcollection(uid, 'invites'),
+      _deleteOwnedSubcollection(uid, 'lbClaims')
+    ]);
+
+    // BXH: xoá điểm kỳ hiện tại + kỳ trước (day/week/month). Không thể liệt kê
+    // toàn bộ lịch sử kỳ cũ hơn từ client — xem ghi chú trong privacy-policy.html.
+    try{
+      const kinds = ['day','week','month'];
+      const pids = [];
+      kinds.forEach(k=>{
+        if(typeof periodKey === 'function') pids.push(periodKey(k));
+        if(typeof previousPeriodKey === 'function') pids.push(previousPeriodKey(k));
+      });
+      await Promise.all(pids.map(pid =>
+        _onlineDb.collection('periodScores').doc(pid).collection('entries').doc(uid).delete().catch(()=>{})
+      ));
+    }catch(e){}
+
+    try{
+      const prof = (typeof getPlayerProfile === 'function') ? getPlayerProfile() : null;
+      if(prof && prof.publicId){
+        await _onlineDb.collection('playerIds').doc(prof.publicId).delete().catch(()=>{});
+      }
+    }catch(e){}
+
+    try{ await _onlineDb.collection('matchQueue').doc(uid).delete(); }catch(e){}
+    try{ await _onlineDb.collection('players').doc(uid).delete(); }catch(e){}
+
+    await _onlineAuth.currentUser.delete();
+
+    _onlineUid = null;
+    _onlineReady = false;
+    _blockedUids.clear();
+    return { ok:true };
+  }catch(e){
+    console.warn('[online] deleteMyAccountOnline', e);
+    const code = String((e && e.code) || '');
+    if(code.includes('requires-recent-login')) return { ok:false, reason:'requires_recent_login' };
+    return { ok:false, reason:'error' };
+  }
+}
+
 async function ensureOnlineAuth(){
   const ok = await initOnlineServices();
   if(!ok) throw new Error('online_disabled');

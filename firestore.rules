@@ -20,6 +20,7 @@ service cloud.firestore {
         allow create, update: if isOwner(uid)
           && request.resource.data.score is number
           && request.resource.data.score >= 0;
+        allow delete: if isOwner(uid);
       }
     }
 
@@ -38,6 +39,7 @@ service cloud.firestore {
     match /players/{uid} {
       allow read: if signedIn();
       allow create, update: if isOwner(uid);
+      allow delete: if isOwner(uid);
 
       match /friends/{fid} {
         allow read: if signedIn();

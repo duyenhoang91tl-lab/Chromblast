@@ -470,6 +470,32 @@ function onLeaveLobbyToHub(){
     }
   });
 
+  document.getElementById('online-delete-account-btn')?.addEventListener('click', async ()=>{
+    const btn = document.getElementById('online-delete-account-btn');
+    const label = typeof t === 'function' ? t('onlineDeleteConfirm') : null;
+    const confirmMsg = label || 'Xoá vĩnh viễn tài khoản online: hồ sơ, bạn bè, chặn, điểm BXH gần đây, tin nhắn đã gửi vẫn còn ở phía người nhận. Không thể hoàn tác. Tiếp tục?';
+    if(!confirm(confirmMsg)) return;
+    try{ sfxClick(); }catch(e){}
+    if(btn) btn.disabled = true;
+    try{
+      const res = await deleteMyAccountOnline();
+      if(res && res.ok){
+        _onlineStatus((typeof t==='function'?t('onlineDeleteDone'):null) || 'Đã xoá tài khoản online.', false);
+        const badge = document.getElementById('online-status-badge');
+        if(badge) badge.textContent = '📴';
+      } else if(res && res.reason === 'requires_recent_login'){
+        _onlineStatus((typeof t==='function'?t('onlineDeleteRelogin'):null) || 'Cần đăng nhập lại gần đây để xoá tài khoản Google. Vui lòng đăng nhập lại rồi thử lại.', true);
+      } else {
+        _onlineStatus((typeof t==='function'?t('onlineDeleteFail'):null) || 'Không xoá được tài khoản, thử lại sau.', true);
+      }
+    }catch(e){
+      console.warn('[online] delete account', e);
+      _onlineStatus('Không xoá được tài khoản, thử lại sau.', true);
+    }finally{
+      if(btn) btn.disabled = false;
+    }
+  });
+
   initOnlineServices().then(ok => {
     const badge=document.getElementById('online-status-badge');
     if(badge) badge.textContent = ok ? '🌐 Online' : '📴 Offline';
