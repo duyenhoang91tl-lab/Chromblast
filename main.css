@@ -3654,26 +3654,27 @@ body:has(#secret-stage.active) .streak-dot.lit{
 .account-msg.err{ color: #ff8a80; }
 .player-nick{ text-shadow: 0 1px 2px rgba(0,0,0,0.45); }
 
+/* ══ ĐẤU 1-1 (versus.js) — xoay ngang: trái = đối thủ (thông tin + bàn cờ),
+   phải = của mình (bàn cờ + thông tin); 2 bàn cờ nằm giữa, cạnh nhau,
+   mép trên/dưới chạm màn hình. Áp dụng cho cả "Cùng máy" và đấu 1-1 online. ══ */
 @media (orientation: landscape){
   #versus-arena{
-    padding-top:max(64px, calc(env(safe-area-inset-top) + 56px));
-    padding-bottom:max(40px, calc(env(safe-area-inset-bottom) + 36px));
-    gap:4px;
+    --vs-panel-w: clamp(90px, 20vw, 170px);
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: center;
+    padding: env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px) 0;
+    gap: 0;
   }
-  .vs-player-chip{ max-width:min(38vw, 190px); padding:2px 6px 2px 2px; }
-  .vs-chip-avatar{ width:26px; height:26px; font-size:15px; border-radius:8px; }
-  .vs-chip-name{ font-size:10px; max-width:min(24vw, 110px); }
-  .vs-chip-score{ font-size:11px; }
-  .vs-chip-top{ top:max(36px, calc(env(safe-area-inset-top) + 32px)); }
-  .vs-chip-bottom{ bottom:max(6px, calc(env(safe-area-inset-bottom) + 4px)); }
-  .vs-chat-fab, .vs-quit-btn, #vs-quit-btn, .vs-mid-timer, #vs-mid-timer{ height:28px; }
-  .vs-chat-fab, .vs-mid-timer, #vs-mid-timer{ width:28px; min-width:28px; }
-  .vs-quit-btn, #vs-quit-btn{ min-width:48px; font-size:10px; padding:0 8px; }
-  .vs-timer-num{ font-size:10px; }
-  .vs-half{ gap:2px; padding:2px 4px; }
-  .vs-top{ border-bottom-width:1px; }
+  /* Bàn cờ: giữa màn hình, 2 bàn cạnh nhau, chạm mép trên/dưới */
+  .vs-half{
+    flex: 1 1 0; width:auto; max-width:50%; height:100%;
+    padding:2px 4px; margin:0; gap:2px; justify-content:center;
+  }
+  .vs-bottom{ order:2; border-left:none; border-right:1px solid rgba(255,213,74,0.3); padding-right:6px; margin:0; }
+  .vs-top{ order:3; border-bottom:none; border-left:1px solid rgba(255,213,74,0.3); padding-left:6px; margin:0; }
   .vs-grid{
-    --vs-size: min(30vh, 40vw, 180px, calc(50dvh - 88px));
+    --vs-size: min(94vh, 42vw, 380px);
     gap:1.5px; padding:4px; border-radius:10px; border-width:1.5px;
   }
   .vs-cell{ border-radius:5px; font-size:clamp(8px, 1.8vh, 11px); }
@@ -3685,10 +3686,32 @@ body:has(#secret-stage.active) .streak-dot.lit{
   .vs-card-emoji{ font-size:22px; }
   .vs-card-name{ font-size:10px; }
   #vs-countdown{ font-size:64px; }
+
+  /* Panel thông tin — cạnh ngoài cùng 2 bên, thẳng hàng với bàn cờ tương ứng */
+  .vs-player-chip{
+    position:static !important;
+    transform:none !important;
+    flex:0 0 var(--vs-panel-w); width:var(--vs-panel-w); max-width:var(--vs-panel-w);
+    flex-direction:column; align-items:center; text-align:center;
+    gap:6px; padding:max(40px, calc(env(safe-area-inset-top) + 34px)) 6px 8px;
+    align-self:center; box-sizing:border-box;
+  }
+  .vs-chip-bottom{ order:1; padding-left:max(8px, env(safe-area-inset-left)); } /* đối thủ — ngoài cùng bên trái */
+  .vs-chip-top{ order:4; padding-right:max(8px, env(safe-area-inset-right)); }  /* của mình — ngoài cùng bên phải */
+  .vs-chip-meta{ align-items:center; width:100%; }
+  .vs-chip-name{ max-width:100%; white-space:normal; text-align:center; }
+  .vs-chip-scoreline{ justify-content:center; }
+  .vs-chip-avatar{ width:36px; height:36px; font-size:19px; border-radius:10px; }
+
+  .vs-chat-fab, .vs-quit-btn, #vs-quit-btn, .vs-mid-timer, #vs-mid-timer{ height:28px; }
+  .vs-chat-fab, .vs-mid-timer, #vs-mid-timer{ width:28px; min-width:28px; }
+  .vs-quit-btn, #vs-quit-btn{ min-width:48px; font-size:10px; padding:0 8px; }
+  .vs-timer-num{ font-size:10px; }
 }
 @media (orientation: landscape) and (max-height: 420px){
+  #versus-arena{ --vs-panel-w: clamp(76px, 16vw, 140px); }
   .vs-grid{
-    --vs-size: min(28vh, 40vw, 160px, calc(50dvh - 52px));
+    --vs-size: min(90vh, 38vw, 300px);
   }
   .vs-tray{ min-height:22px; }
   .vs-piece{ width:30px; height:26px; }

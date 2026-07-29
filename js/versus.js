@@ -187,6 +187,7 @@ function openVersusSetup(){
 }
 
 function startVersusMatch(){
+  try{ if(typeof unlockOrientation==='function') unlockOrientation(); }catch(e){}
   const n1=(document.getElementById('vs-name1').value.trim()||t('vsP1'));
   const n2=(document.getElementById('vs-name2').value.trim()||t('vsP2'));
   _vsHide('versus-setup-panel');
