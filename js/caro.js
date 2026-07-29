@@ -1589,6 +1589,7 @@ async function _caroSendChat(e){
 }
 
 function _caroQuit(){
+  try{ if(typeof lockPortraitOrientation==='function') lockPortraitOrientation(); }catch(e){}
   // Bấm "Thoát" giữa trận online (hoặc đang bị dọn do phòng đã mất) → báo Firestore ngay:
   // chủ phòng thoát thì xoá phòng thật (đối thủ sẽ nhận sự kiện 'deleted' và được đưa về
   // danh sách phòng), khách thoát thì trả phòng lại trạng thái mở cho chủ phòng.
@@ -1660,6 +1661,7 @@ function _caroSetOnlineLocked(locked){
 
 function openCaroHub(){
   try{ sfxClick(); }catch(e){}
+  try{ if(typeof unlockOrientation==='function') unlockOrientation(); }catch(e){}
   _caroShow('caro-hub-panel');
   _caroSyncPrefUI(getCaroPrefs());
   const locked = !canPlayCaro();
@@ -1783,6 +1785,7 @@ async function _caroRefreshHubStats(){
 }
 
 function closeCaroHub(){
+  try{ if(typeof lockPortraitOrientation==='function') lockPortraitOrientation(); }catch(e){}
   cancelMatchmaking();
   _caroStopRoomListListen();
   const leaving = _caroLobby && _caroLobby.roomId ? leaveOnlineRoom(_caroLobby.roomId) : Promise.resolve();
