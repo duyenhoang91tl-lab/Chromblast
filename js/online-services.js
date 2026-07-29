@@ -1528,8 +1528,11 @@ function stopListeningRoom(){
 }
 
 function _chatMsgPayload(text){
-  const raw = String(text || '').trim().slice(0, 120);
+  let raw = String(text || '').trim().slice(0, 120);
   if(!raw) return null;
+  if(typeof ProfanityFilter !== 'undefined'){
+    raw = ProfanityFilter.filterText(raw);
+  }
   return {
     uid: _onlineUid,
     name: getOnlineDisplayName(),
