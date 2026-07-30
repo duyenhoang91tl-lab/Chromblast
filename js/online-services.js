@@ -1730,6 +1730,23 @@ async function updateOnlineScores(roomId, hostScore, guestScore){
 }
 
 // ── Matchmaking ───────────────────────────────────────────────
+// Ghép trận Caro theo hạng liền kề (chỉ cho phép chênh lệch tối đa 1 bậc danh hiệu) —
+// ĐANG TẮT vì mới ra mắt, cần ghép rộng cho đủ người chơi. Đổi thành true khi đã đông
+// người chơi hơn và muốn ghép trận công bằng hơn theo trình độ.
+const CARO_RANK_MATCH_RESTRICT = false;
+
+/** Chỉ số bậc danh hiệu (0 = Tân thủ, ...) ứng với 1 mức điểm — dùng cho lọc ghép trận
+ * theo hạng liền kề. Đọc trực tiếp mảng CARO_RANKS (js/caro-ranks.js) một cách an toàn. */
+function _caroRankIndexSafe(points){
+  try{
+    if(typeof CARO_RANKS === 'undefined') return null;
+    const pts = Math.max(0, points || 0);
+    let idx = 0;
+    for(let i=0;i<CARO_RANKS.length;i++){ if(pts >= CARO_RANKS[i].min) idx = i; }
+    return idx;
+  }catch(e){ return null; }
+}
+
 async function startMatchmaking(onMatched, opts){
   opts = opts || {};
   const gameType = opts.gameType || 'versus';
@@ -1746,6 +1763,7 @@ async function startMatchmaking(onMatched, opts){
     uid,
     displayName: name,
     level: (typeof playerLevel !== 'undefined' ? playerLevel : 1),
+    caroPoints: gameType === 'caro' ? _myCaroPointsSafe() : null,
     mode: 'casual',
     gameType,
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -1755,7 +1773,19 @@ async function startMatchmaking(onMatched, opts){
     const mine = await qRef.get();
     if(!mine.exists) return;
     const all = await _onlineDb.collection('matchQueue').orderBy('createdAt', 'asc').limit(20).get();
-    const other = all.docs.find(d => d.id !== uid && (d.data().gameType || 'versus') === gameType);
+    const candidates = all.docs.filter(d => d.id !== uid && (d.data().gameType || 'versus') === gameType);
+    let other;
+    if(gameType === 'caro' && CARO_RANK_MATCH_RESTRICT){
+      const myIdx = _caroRankIndexSafe(mine.data().caroPoints);
+      other = candidates.find(d => {
+        const theirIdx = _caroRankIndexSafe(d.data().caroPoints);
+        // Nếu thiếu dữ liệu hạng của 1 trong 2 bên (tài khoản cũ chưa có field này) thì vẫn
+        // cho ghép, tránh việc không bao giờ tìm được đối thủ chỉ vì thiếu dữ liệu.
+        return myIdx == null || theirIdx == null || Math.abs(myIdx - theirIdx) <= 1;
+      });
+    } else {
+      other = candidates[0];
+    }
     if(!other) return;
     const roomRef = _onlineDb.collection('rooms').doc();
     try{

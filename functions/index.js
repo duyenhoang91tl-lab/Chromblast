@@ -176,6 +176,12 @@ exports.applyMatchResult = onDocumentUpdated(
           patch.caroPoints = admin.firestore.FieldValue.increment(25);
         } else if (outcome === 'loss') {
           patch.caroLosses = admin.firestore.FieldValue.increment(1);
+          // Thua trừ điểm đối xứng với thắng (-25), nhưng không cho xuống âm — Firestore
+          // increment() không tự chặn được ở 0 nên phải đọc điểm hiện tại rồi tính bằng tay.
+          const playerRef = db.collection('players').doc(uid);
+          const playerSnap = await playerRef.get();
+          const currentPts = (playerSnap.exists && Number(playerSnap.data().caroPoints)) || 0;
+          patch.caroPoints = Math.max(0, currentPts - 25);
         } else if (outcome === 'draw') {
           patch.caroDraws = admin.firestore.FieldValue.increment(1);
           patch.caroPoints = admin.firestore.FieldValue.increment(8);

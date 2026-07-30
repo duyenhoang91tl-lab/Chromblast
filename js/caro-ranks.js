@@ -6,7 +6,7 @@
 const CARO_STATS_KEY = 'chromablast_caro_stats';
 const CARO_WIN_PTS = 25;
 const CARO_DRAW_PTS = 8;
-const CARO_LOSS_PTS = 0;
+const CARO_LOSS_PTS = -25; // đối xứng với thắng — điểm không xuống dưới 0 (xem applyLocalCaroResult)
 
 /** Bậc danh hiệu theo tổng điểm Caro */
 const CARO_RANKS = [
@@ -73,7 +73,7 @@ function saveLocalCaroStats(stats){
 function applyLocalCaroResult(outcome){
   const s = getLocalCaroStats();
   if(outcome === 'win'){ s.wins++; s.points += CARO_WIN_PTS; }
-  else if(outcome === 'loss'){ s.losses++; s.points += CARO_LOSS_PTS; }
+  else if(outcome === 'loss'){ s.losses++; s.points = Math.max(0, s.points + CARO_LOSS_PTS); }
   else if(outcome === 'draw'){ s.draws++; s.points += CARO_DRAW_PTS; }
   s.total = s.wins + s.losses + s.draws;
   s.winRate = s.total > 0 ? Math.round((s.wins / s.total) * 1000) / 10 : 0;
