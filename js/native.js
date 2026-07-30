@@ -131,7 +131,9 @@
     console.warn('[native] SocialLogin init', e);
   }
 
-  // ID đơn vị quảng cáo (AdMob console → Ad units)
+  // ID đơn vị quảng cáo (AdMob console → Ad units):
+  //  - Interstitial và Rewarded dùng 2 ad unit riêng biệt (bắt buộc, dùng
+  //    chung id sẽ khiến prepareRewardVideoAd luôn load fail).
   const AD_UNIT_INTERSTITIAL = 'ca-app-pub-9093176034842025/6573161096';
   const AD_UNIT_REWARDED = 'ca-app-pub-9093176034842025/9504131099';
 
