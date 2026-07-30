@@ -143,7 +143,10 @@
     try {
       await AdMob.prepareInterstitial({
         adId: AD_UNIT_INTERSTITIAL,
-        isTesting: false, // ĐANG TEST — đổi false khi publish thật
+        isTesting: false, // false = ID quảng cáo thật, đang ở chế độ phát hành.
+                          // Nếu cần test tay trên máy thật, tạm đổi thành true
+                          // (hoặc set testDeviceIds) để tránh tự bấm quảng cáo thật
+                          // nhiều lần — AdMob có thể khoá tài khoản vì "invalid traffic".
       });
       await AdMob.showInterstitial();
     } catch (e) {
