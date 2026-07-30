@@ -288,6 +288,15 @@ function formatPlayerNameHtml(name, style){
   return '<span class="player-nick-wrap"><span class="player-avatar" aria-hidden="true">'+av+'</span><span class="player-nick" style="'+css+'">'+n+'</span></span>';
 }
 
+/** Bọc tên bằng hiệu ứng theo bậc rank Caro/Versus (0-11, xem CARO_RANKS/VERSUS_RANKS) —
+ * rank càng cao tên càng nổi bật: màu rực rỡ hơn, có glow nhẹ, top rank thì lấp lánh động.
+ * Dùng ở bảng xếp hạng, phòng chờ, thẻ người chơi, màn kết quả Caro/Versus. */
+function rankNameFxHtml(name, tier){
+  const n = (typeof escapeHtml === 'function' ? escapeHtml(name) : String(name||''));
+  const tr = Math.max(0, Math.min(11, Number(tier)||0));
+  return '<span class="rank-fx rank-fx-'+tr+'">'+n+'</span>';
+}
+
 function getPlayerNameStyle(){
   const p = getPlayerProfile();
   return {

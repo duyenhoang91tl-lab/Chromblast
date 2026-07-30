@@ -35,6 +35,7 @@ function getCaroRank(points){
   return {
     ...rank,
     points: pts,
+    tier: idx,
     name: t('caroRank_' + rank.id),
     nextMin: next ? next.min : null,
     nextName: next ? t('caroRank_' + next.id) : null,

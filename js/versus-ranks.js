@@ -55,6 +55,7 @@ function getVersusRank(points){
   return {
     ...rank,
     points: pts,
+    tier: idx,
     name: _vsRankLangName(rank),
     nextMin: next ? next.min : null,
     nextName: next ? _vsRankLangName(next) : null,
