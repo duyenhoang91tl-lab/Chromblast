@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════
-// js/versus.js — ĐẤU 1-1 SONG SONG (mở khoá từ Level 10)
+// js/versus.js — ĐẤU 1-1 SONG SONG (Cùng máy = đấu AI, luôn mở; Online từ Level 3)
 // Hai bàn cờ 7×7 trên cùng màn hình (bàn trên xoay 180° — 2 người ngồi đối
 // diện). Cùng chuỗi khối từ CÙNG hạt giống (PRNG riêng mỗi người → công bằng
 // tuyệt đối dù tốc độ đặt khác nhau).
@@ -13,7 +13,7 @@
 
 const VERSUS_TIME = 90;        // giây mỗi trận
 
-const VERSUS_MIN_LEVEL = 10;   // cấp (XP) tối thiểu để mở phòng
+const VERSUS_MIN_LEVEL = 3;    // cấp (XP) tối thiểu để mở phòng online
 
 const VERSUS_WIN_XP = 30;
 
@@ -54,7 +54,7 @@ function _vsShow(id){ const el=document.getElementById(id); if(el) el.classList.
 
 function _vsHide(id){ const el=document.getElementById(id); if(el) el.classList.remove('show'); }
 
-/** Nút ⚔️ luôn mở — "Cùng máy" không giới hạn cấp. Chỉ "Online" cần Lv.10 (xem canHostVersus). */
+/** Nút ⚔️ luôn mở — "Cùng máy" (đấu với AI) không giới hạn cấp. Chỉ "Online" cần Lv.3 (xem canHostVersus). */
 
 function refreshVersusButton(){
   const btn=document.getElementById('versus-btn');
