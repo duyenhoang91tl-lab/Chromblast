@@ -51,6 +51,14 @@ runtime, chỉ tổ chức lại code.
    - `js/engine.js`: board/piece/render/xử lý nổ/game-over
    - `js/engine-input.js`: kéo-thả, ghost, preview, chạm chọn
    - `js/engine-powers.js`: hệ thống skill fire/bubble/wind
+6. **Code lặp**: gộp `js/profanity-filter.js` + `functions/profanity-filter.js`
+   thành 1 nguồn duy nhất — `js/profanity-filter.js` giờ dùng wrapper UMD
+   (chạy được cả khi nạp qua `<script>` trong browser lẫn khi `require()`
+   trong Node). `functions/profanity-filter.js` không còn sửa tay: được
+   sinh tự động bởi `scripts/sync-profanity-filter.mjs`, chạy tự động qua
+   hook `predeploy` trong `firebase.json` mỗi lần deploy Cloud Functions.
+   Nếu cần sửa luật lọc từ cấm, chỉ sửa `js/profanity-filter.js`, KHÔNG
+   sửa trực tiếp file trong `functions/` (sẽ bị ghi đè ở lần deploy sau).
 
 ## Việc còn lại (chưa làm)
 
@@ -107,12 +115,8 @@ trước khi tách thêm `online-services.js` hoặc `caro.js`:
 
 
 
-## Chưa làm / cần quyết định thêm (mục 2, 4 trong 6 hạng mục gốc)
+## Chưa làm / cần quyết định thêm (mục 4 trong 6 hạng mục gốc)
 
-- **Code lặp**: `js/profanity-filter.js` và `functions/profanity-filter.js`
-  gần như giống hệt nhau (chỉ khác dòng export). Muốn gộp thành 1 nguồn
-  và tự động copy lúc deploy Cloud Functions — CHƯA làm vì đụng pipeline
-  deploy Functions (rủi ro cao hơn, cần xác nhận trước khi sửa).
 - **Naming**: tên file khá nhất quán (kebab-case); naming bên trong code
   (biến/hàm) chưa rà kỹ do khối lượng lớn — có thể làm riêng theo từng
   file khi tách, nếu cần.
