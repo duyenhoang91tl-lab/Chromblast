@@ -136,6 +136,36 @@
   //    chung id sẽ khiến prepareRewardVideoAd luôn load fail).
   const AD_UNIT_INTERSTITIAL = 'ca-app-pub-9093176034842025/6573161096';
   const AD_UNIT_REWARDED = 'ca-app-pub-9093176034842025/9504131099';
+  const AD_UNIT_BANNER = 'ca-app-pub-9093176034842025/4940350921';
+
+  // Hiển thị banner cố định (dải nhỏ dưới màn hình)
+  window.showBannerAd = async function() {
+    if (!AdMob) return;
+    try {
+      await AdMob.showBanner({
+        adId: AD_UNIT_BANNER,
+        adSize: 'ADAPTIVE_BANNER',
+        position: 'BOTTOM_CENTER',
+        margin: 0,
+        isTesting: false,
+      });
+    } catch (e) {
+      console.error('AdMob Banner Error:', e);
+    }
+  };
+
+  // Ẩn banner (dùng khi cần màn hình full, ví dụ trước khi hiện quảng cáo khác)
+  window.hideBannerAd = async function() {
+    if (!AdMob) return;
+    try {
+      await AdMob.hideBanner();
+    } catch (e) {
+      console.error('AdMob Hide Banner Error:', e);
+    }
+  };
+
+  // Tự hiện banner ngay khi app khởi động
+  window.showBannerAd();
 
   // Hàm hiển thị quảng cáo interstitial
   window.showInterstitialAd = async function() {
