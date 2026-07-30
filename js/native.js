@@ -12,7 +12,9 @@
   const cap = window.Capacitor;
   if(!cap || !cap.isNativePlatform || !cap.isNativePlatform()) return;
   const App = cap.Plugins && cap.Plugins.App;
-  const AdMob = cap.Plugins && cap.Plugins.AdMob;
+  // CÔNG TẮC TẠM TẮT QUẢNG CÁO: đổi thành true khi app đã lên CH Play và sẵn sàng chạy quảng cáo thật.
+  const ADS_ENABLED = false;
+  const AdMob = ADS_ENABLED ? (cap.Plugins && cap.Plugins.AdMob) : null;
 
   // ── Thông báo local thật (tim hồi + quà điểm danh) ──
   // Đặt TRƯỚC các await AdMob/SocialLogin bên dưới để window.requestNativeNotificationPermission
