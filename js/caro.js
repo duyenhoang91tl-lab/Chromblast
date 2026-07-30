@@ -627,7 +627,6 @@ async function openPlayerCard(opts){
     const prof = await fetchPlayerPublicProfile(uid);
     if(!prof) return;
     document.getElementById('pc-avatar').textContent = prof.avatar || fallbackAv;
-    document.getElementById('pc-name').textContent = prof.displayName || fallbackName;
     const s = prof.stats || {};
     const rate = s.winRate != null ? s.winRate : 0;
     const caroLine = (typeof t==='function'
@@ -639,6 +638,13 @@ async function openPlayerCard(opts){
     const caroRank = s.rank || null;
     const caroTitle = caroRank ? (caroRank.icon+' '+caroRank.name) : '';
     const vsTitle = vsRank ? (vsRank.icon+' '+vsRank.name) : '';
+    const bestTier = Math.max(caroRank ? (caroRank.tier||0) : 0, vsRank ? (vsRank.tier||0) : 0);
+    const pcNameEl = document.getElementById('pc-name');
+    if(pcNameEl){
+      pcNameEl.innerHTML = (typeof rankNameFxHtml==='function')
+        ? rankNameFxHtml(prof.displayName || fallbackName, bestTier)
+        : escapeHtml(prof.displayName || fallbackName);
+    }
     const hasCaro = (s.total > 0 || s.points > 0);
     const hasVs = (vs.total > 0 || vs.points > 0);
     let statsHtml = '';
