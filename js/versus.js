@@ -125,6 +125,7 @@ function startVersusMatch(){
     if(cd>0){ cdEl.textContent=cd; try{ sfxClick(); }catch(e){} return; }
     clearInterval(ci); cdEl.style.display='none';
     _vs.timer=setInterval(_vsTick,1000); _vsTick();
+    try{ if(typeof _vsAiStart==='function') _vsAiStart(); }catch(e){}
     try{ startBgm('action'); }catch(e){}
   },800);
 }
@@ -140,6 +141,7 @@ function _vsNewPlayer(idx,seed){
 
 function _vsAbort(){
   if(_vs && _vs.timer) clearInterval(_vs.timer);
+  try{ if(typeof _vsAiStop==='function') _vsAiStop(); }catch(e){}
   try{
     if(_vs && _vs.online && typeof stopListeningRoom === 'function') stopListeningRoom();
     else if(typeof stopListeningChat === 'function') stopListeningChat();
@@ -311,6 +313,7 @@ function _vsTick(){
 
 function _vsEndMatch(){
   if(!_vs) return;
+  try{ if(typeof _vsAiStop==='function') _vsAiStop(); }catch(e){}
   try{ if(typeof lockPortraitOrientation==='function') lockPortraitOrientation(); }catch(e){}
   if(_vs.timer){ clearInterval(_vs.timer); _vs.timer=null; }
   if(_vs.online){

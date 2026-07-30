@@ -224,6 +224,7 @@ function _vsBuildArena(){
         const d=document.createElement('div'); d.className='vs-cell';
         d.addEventListener('pointerdown',ev=>{
           if(!versusMode||P.done||P.selected<0) return;
+          if(typeof _vsAiControls==='function' && _vsAiControls(P)) return;
           if(P.el.cards.classList.contains('show')) return;
           ev.preventDefault();
           _vsBeginDrag(P, ev);
@@ -403,6 +404,7 @@ function _vsRenderTray(P){
 function _vsPieceTap(P,i,ev){
   if(!versusMode||P.done||P.pieces[i].used) return;
   if(_vs && _vs.online && P.idx!==0) return;
+  if(typeof _vsAiControls==='function' && _vsAiControls(P)) return;
   if(P.el.cards.classList.contains('show')) return;
   if(ev){ ev.preventDefault(); ev.stopPropagation(); }
 
@@ -549,6 +551,7 @@ function _vsUpdatePreview(P,x,y,ptype){
 function _vsBeginDrag(P,ev){
   if(!versusMode||P.done||P.selected<0) return;
   if(_vs && _vs.online && P.idx!==0) return;
+  if(typeof _vsAiControls==='function' && _vsAiControls(P)) return;
   if(P.el.cards.classList.contains('show')) return;
   const id=ev.pointerId!==undefined?ev.pointerId:-1;
   _vsDrags.set(id,{
