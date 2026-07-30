@@ -1499,8 +1499,15 @@ function _caroEndGame(winnerSlot, fromRemote){
     const heartsLeft = (window.Inventory && typeof Inventory.formatHearts === 'function')
       ? Inventory.formatHearts(Inventory.hearts)
       : String(typeof formatHearts==='function' ? formatHearts(typeof inv!=='undefined'?inv.hearts:0) : 0);
+    const myIdx = _caro.mySlot === 'host' ? 0 : 1;
+    const nameHtml0 = myIdx===0
+      ? (typeof rankNameFxHtml==='function' ? rankNameFxHtml(_caro.names[0], rank.tier) : escapeHtml(_caro.names[0]))
+      : escapeHtml(_caro.names[0]);
+    const nameHtml1 = myIdx===1
+      ? (typeof rankNameFxHtml==='function' ? rankNameFxHtml(_caro.names[1], rank.tier) : escapeHtml(_caro.names[1]))
+      : escapeHtml(_caro.names[1]);
     document.getElementById('caro-result-body').innerHTML =
-      '<div style="font-size:13px;color:#ccc;margin-bottom:8px;">'+escapeHtml(_caro.names[0])+' (<b class="caro-x">X</b>) vs '+escapeHtml(_caro.names[1])+' (<b class="caro-o">O</b>)</div>'+
+      '<div style="font-size:13px;color:#ccc;margin-bottom:8px;">'+nameHtml0+' (<b class="caro-x">X</b>) vs '+nameHtml1+' (<b class="caro-o">O</b>)</div>'+
       '<div class="caro-result-rank">'+rank.icon+' <b>'+escapeHtml(rank.name)+'</b> · '+ptsDelta+' '+t('caroPts')+'</div>'+
       '<div class="caro-result-wld">'+t('caroWins')+': '+statsAfter.wins+' · '+t('caroLosses')+': '+statsAfter.losses+' · '+t('caroDraws')+': '+statsAfter.draws+' · '+t('caroWinRate', statsAfter.winRate)+'</div>'+
       heartNote+
