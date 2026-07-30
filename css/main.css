@@ -5185,3 +5185,73 @@ body:has(#secret-stage.active) .streak-dot.lit{
 .quests-cal-day.today{ border-color:#ffd54a; box-shadow:0 0 0 1px rgba(255,213,74,0.35); }
 .quests-cal-day.future{ opacity:0.4; }
 .quests-checkin-btn{ width:100%; margin-top:12px !important; }
+
+/* ══════════════════════════════════════════════════════════════
+   Hiệu ứng tên theo bậc rank (Caro/Versus) — .rank-fx-0 (thấp nhất)
+   đến .rank-fx-11 (Chiến thần/Warlord). Rank càng cao: màu càng rực
+   rỡ, thêm glow nhẹ, top rank có lấp lánh + nhấp nháy động.
+   ══════════════════════════════════════════════════════════════ */
+.rank-fx{ display:inline; }
+.rank-fx-0, .rank-fx-1{ color:inherit; }
+.rank-fx-2{ color:#bfe3ff; font-weight:600; }
+.rank-fx-3{ color:#7fe3d0; font-weight:700; }
+.rank-fx-4{ color:#b18cff; font-weight:700; text-shadow:0 0 4px rgba(177,140,255,0.45); }
+.rank-fx-5{
+  font-weight:800;
+  background:linear-gradient(90deg,#8f7bff,#c68bff);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  text-shadow:0 0 6px rgba(160,120,255,0.35);
+}
+.rank-fx-6{
+  font-weight:800;
+  background:linear-gradient(90deg,#e6ecf5,#ffffff,#c9d6e8);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  text-shadow:0 0 6px rgba(255,255,255,0.4);
+}
+.rank-fx-7{
+  font-weight:800; letter-spacing:.2px;
+  background:linear-gradient(90deg,#7fd7ff,#4fa8ff,#9fe7ff);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  text-shadow:0 0 7px rgba(79,168,255,0.5);
+}
+.rank-fx-8{
+  font-weight:800; letter-spacing:.2px;
+  background:linear-gradient(90deg,#ffe08a,#ffd24a,#fff3c4);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  text-shadow:0 0 8px rgba(255,210,74,0.55);
+}
+.rank-fx-9{
+  font-weight:900; letter-spacing:.3px;
+  background:linear-gradient(90deg,#ff8a65,#ff5f9e,#ffb37a);
+  background-size:200% 100%;
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  text-shadow:0 0 9px rgba(255,95,158,0.55);
+  animation:rankFxShift 3.2s linear infinite;
+}
+.rank-fx-10{
+  font-weight:900; letter-spacing:.3px;
+  background:linear-gradient(90deg,#a06bff,#5fc8ff,#ff6bd6,#a06bff);
+  background-size:300% 100%;
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  text-shadow:0 0 10px rgba(160,107,255,0.6);
+  animation:rankFxShift 2.6s linear infinite;
+}
+.rank-fx-11{
+  font-weight:900; letter-spacing:.4px;
+  background:linear-gradient(90deg,#ff3b30,#ff9500,#ffd60a,#ff3b30);
+  background-size:300% 100%;
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  text-shadow:0 0 12px rgba(255,149,0,0.7), 0 0 4px rgba(255,59,48,0.5);
+  animation:rankFxShift 2s linear infinite, rankFxPulse 1.6s ease-in-out infinite;
+}
+@keyframes rankFxShift{
+  0%{ background-position:0% 50%; }
+  100%{ background-position:200% 50%; }
+}
+@keyframes rankFxPulse{
+  0%,100%{ filter:brightness(1); }
+  50%{ filter:brightness(1.25); }
+}
+@media (prefers-reduced-motion: reduce){
+  .rank-fx-9, .rank-fx-10, .rank-fx-11{ animation:none; }
+}
