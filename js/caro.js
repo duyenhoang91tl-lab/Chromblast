@@ -1655,10 +1655,8 @@ async function _caroRequireOnline(){
 function _caroSetOnlineLocked(locked){
   const section = document.getElementById('caro-online-section');
   const note = document.getElementById('caro-online-locked-note');
-  const aiHint = document.getElementById('caro-ai-online-hint');
   if(section) section.style.display = locked ? 'none' : '';
   if(note) note.style.display = locked ? '' : 'none';
-  if(aiHint) aiHint.style.display = locked ? '' : 'none';
 }
 
 function openCaroHub(){
