@@ -1079,8 +1079,24 @@ body.notif-open #start-screen{
 }
 .player-nick-wrap { display: inline-flex; align-items: center; gap: 6px; }
 .player-avatar { font-size: 1.15em; line-height: 1; }
-.player-card-modal { text-align: center; }
+.player-card-modal { text-align: center; max-width: 340px; }
 .pc-head { margin: 8px 0 12px; }
+.pc-progress {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 10px;
+  margin: 0 0 10px;
+}
+.pc-prog-item {
+  font-size: 12px; font-weight: 800; color: #fff;
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 10px; padding: 4px 9px; white-space: nowrap;
+}
+.pc-couple {
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+  margin: 0 0 10px; padding: 6px 10px; border-radius: 10px;
+  background: rgba(236,64,122,0.14); border: 1px solid rgba(244,143,177,0.3);
+}
+.pc-couple-ring { font-size: 14px; flex-shrink: 0; }
+.pc-couple-text { font-size: 12px; font-weight: 800; color: #f8bbd0; }
 .pc-avatar {
   width: 72px; height: 72px; border-radius: 20px; margin: 0 auto 10px;
   background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.16);

@@ -605,6 +605,10 @@ async function openPlayerCard(opts){
   document.getElementById('pc-avatar').textContent = fallbackAv;
   document.getElementById('pc-name').textContent = fallbackName;
   document.getElementById('pc-stats').textContent = (typeof t==='function'?t('caroNoStats'):'…');
+  const progEl = document.getElementById('pc-progress');
+  if(progEl) progEl.innerHTML = '';
+  const coupleEl = document.getElementById('pc-couple');
+  if(coupleEl){ coupleEl.hidden = true; coupleEl.innerHTML = ''; }
   const friendBtn = document.getElementById('pc-friend-btn');
   const msg = document.getElementById('pc-msg');
   if(msg) msg.textContent = '';
@@ -658,6 +662,25 @@ async function openPlayerCard(opts){
       statsHtml += '<div class="pc-mode-stats"><b>Versus</b> — '+vsTitle+'<br>'+vsLine+'</div>';
     }
     document.getElementById('pc-stats').innerHTML = statsHtml || (typeof t==='function'?t('caroNoStats'):'Chưa có thống kê');
+    if(progEl){
+      const lvl = prof.level || 1;
+      const mapNormal = prof.mapNormal || 0;
+      const mapSecret = prof.mapSecret || 0;
+      progEl.innerHTML =
+        '<span class="pc-prog-item">⭐ Cấp '+lvl+'</span>'+
+        '<span class="pc-prog-item">🗺️ Map thường: '+mapNormal+'</span>'+
+        '<span class="pc-prog-item">🌌 Map ẩn: '+mapSecret+'</span>';
+    }
+    if(coupleEl && prof.couplePartnerName){
+      const pairedAt = prof.couplePairedAt || null;
+      const days = pairedAt ? Math.floor((Date.now() - pairedAt) / 86400000) : 0;
+      const married = days >= 7;
+      const ring = married ? '💍👰' : '💍';
+      const label = married ? 'Đã kết hôn' : 'Đã kết đôi';
+      coupleEl.hidden = false;
+      coupleEl.innerHTML = '<span class="pc-couple-ring">'+ring+'</span><span class="pc-couple-text">'+
+        label+' — '+escapeHtml(prof.couplePartnerName)+'</span>';
+    }
     if(friendBtn){
       friendBtn.dataset.name = prof.displayName || fallbackName;
       friendBtn.dataset.avatar = prof.avatar || fallbackAv;
