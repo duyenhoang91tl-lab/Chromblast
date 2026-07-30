@@ -3540,9 +3540,9 @@ body:has(#secret-stage.active) .streak-dot.lit{
 .vs-cards.show{ display:flex; }
 .vs-cards-title{ color:#ffd54a; font-weight:800; font-size:14px; text-align:center; padding:0 12px; }
 .vs-cards-row{ display:flex; gap:10px; }
-/* Thẻ lật 3D — ÚP mặc định (❓), chạm để lật riêng, chạm lần nữa để dùng.
-   perspective trên .vs-card để mặt thật không bị đối thủ (ngồi đối diện,
-   nửa bàn của họ xoay 180°) đọc lén qua vs-top. */
+/* Thẻ hiện mặt thật ngay, chạm 1 lần là dùng luôn (ném vào đối thủ).
+   Panel chỉ phủ đúng nửa bàn của người rút thẻ (position:absolute; inset:0
+   trong .vs-half), không tràn sang nửa bàn đối thủ. */
 .vs-card{ width:86px; height:96px; padding:0; border-radius:12px; border:none; background:transparent; color:#fff; cursor:pointer; perspective:600px; }
 .vs-card-inner{ position:relative; width:100%; height:100%; transform-style:preserve-3d; transition:transform 0.45s cubic-bezier(0.4,0.2,0.2,1); }
 .vs-card.face-down .vs-card-inner{ transform:rotateY(180deg); }

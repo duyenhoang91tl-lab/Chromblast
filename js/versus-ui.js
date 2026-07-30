@@ -664,30 +664,19 @@ function _vsOfferCards(P){
   P.el.cards.innerHTML='<div class="vs-cards-title">'+t('vsPickCard')+'</div>'+
     '<div class="vs-cards-row"></div>';
   const row=P.el.cards.querySelector('.vs-cards-row');
-  let openIdx=-1;
-  picks.forEach((ob,i)=>{
+  picks.forEach((ob)=>{
     const b=document.createElement('button');
-    b.className='vs-card face-down';
+    b.className='vs-card';
     b.innerHTML='<div class="vs-card-inner">'+
-      '<div class="vs-card-back">❓</div>'+
       '<div class="vs-card-front"><div class="vs-card-emoji">'+ob.emoji+'</div><div class="vs-card-name">'+MECH_NAME(ob.nameIdx).replace(/^\S+\s/,'')+'</div></div>'+
       '</div>';
     b.addEventListener('pointerdown',ev=>{
       ev.preventDefault();
-      if(openIdx===i){
-        // lá đã lật, chạm lần nữa → dùng luôn
-        P.el.cards.classList.remove('show');
-        const foe=_vs.players[1-P.idx];
-        _vsApplyObstacle(foe,ob);
-        if(_vs.online && P.idx===0) _vsBroadcastMove('card', { cardId: ob.id });
-        try{ sfxThorn(); }catch(e){ try{ sfxPenalty(); }catch(e2){} }
-        return;
-      }
-      // úp lá đang mở (nếu có), lật lá vừa chạm
-      row.querySelectorAll('.vs-card').forEach(el=>el.classList.add('face-down'));
-      b.classList.remove('face-down');
-      openIdx=i;
-      try{ sfxClick(); }catch(e){}
+      P.el.cards.classList.remove('show');
+      const foe=_vs.players[1-P.idx];
+      _vsApplyObstacle(foe,ob);
+      if(_vs.online && P.idx===0) _vsBroadcastMove('card', { cardId: ob.id });
+      try{ sfxThorn(); }catch(e){ try{ sfxPenalty(); }catch(e2){} }
     });
     row.appendChild(b);
   });
