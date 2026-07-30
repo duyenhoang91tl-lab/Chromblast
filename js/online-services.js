@@ -1194,6 +1194,16 @@ async function findMyLiveHostedRoom(gameType){
   return cleaned[0] || null;
 }
 
+/** Lấy điểm Caro hiện tại từ cache local (js/caro-ranks.js) một cách an toàn — dùng để
+ * lưu kèm vào room doc lúc tạo/vào phòng, tránh phải đọc thêm players/{uid} chỉ để hiển thị
+ * danh hiệu trong phòng chờ. */
+function _myCaroPointsSafe(){
+  try{
+    if(typeof getLocalCaroStats === 'function') return getLocalCaroStats().points || 0;
+  }catch(e){}
+  return null;
+}
+
 async function createOnlineRoom(opts){
   opts = opts || {};
   const gameType = opts.gameType || 'versus';
@@ -1247,7 +1257,8 @@ async function createOnlineRoom(opts){
     try{
       await _onlineDb.collection('rooms').doc(keep.roomId).update({
         hostName: name,
-        hostAvatar: avatar
+        hostAvatar: avatar,
+        hostCaroPoints: _myCaroPointsSafe()
       });
     }catch(e){}
     return { roomId: keep.roomId, code: keep.code, reused: true, room: keep };
@@ -1289,6 +1300,8 @@ async function createOnlineRoom(opts){
     boardSkin: opts.boardSkin || null,
     hostBrickSkin: (typeof getActiveBrickSkin === 'function') ? getActiveBrickSkin() : null,
     hostBoardSkin: (typeof getActiveBoardSkin === 'function') ? getActiveBoardSkin() : null,
+    hostCaroPoints: _myCaroPointsSafe(),
+    guestCaroPoints: null,
     guestBrickSkin: null,
     guestBoardSkin: null,
     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -1332,6 +1345,7 @@ async function joinOnlineRoomByCode(code, opts){
     guestId: uid,
     guestName: name,
     guestAvatar: avatar,
+    guestCaroPoints: _myCaroPointsSafe(),
     guestBrickSkin: (typeof getActiveBrickSkin === 'function') ? getActiveBrickSkin() : null,
     guestBoardSkin: (typeof getActiveBoardSkin === 'function') ? getActiveBoardSkin() : null,
     guestReady: true,
@@ -1360,6 +1374,7 @@ async function joinOnlineRoomById(roomId, opts){
       guestId: uid,
       guestName: name,
       guestAvatar: avatar,
+      guestCaroPoints: _myCaroPointsSafe(),
       guestBrickSkin: (typeof getActiveBrickSkin === 'function') ? getActiveBrickSkin() : null,
       guestBoardSkin: (typeof getActiveBoardSkin === 'function') ? getActiveBoardSkin() : null,
       guestReady: true,
@@ -1371,6 +1386,7 @@ async function joinOnlineRoomById(roomId, opts){
       guestId: uid,
       guestName: name,
       guestAvatar: avatar,
+      guestCaroPoints: _myCaroPointsSafe(),
       guestBrickSkin: (typeof getActiveBrickSkin === 'function') ? getActiveBrickSkin() : null,
       guestBoardSkin: (typeof getActiveBoardSkin === 'function') ? getActiveBoardSkin() : null,
       guestReady: true,

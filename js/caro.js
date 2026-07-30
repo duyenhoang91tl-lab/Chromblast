@@ -1859,15 +1859,28 @@ function _caroRenderLobby(d){
     ? (guestIsMe ? (escapeHtml(guest)+' <small class="online-you-here">'+you+'</small>') : escapeHtml(guest))
     : '<span class="online-wait">'+escapeHtml(guest)+'</span>';
 
+  // Danh hiệu Caro hiển thị ngay trên tên — lấy từ điểm đã lưu kèm room doc lúc
+  // tạo/vào phòng (không đọc thêm Firestore chỉ để hiển thị badge này).
+  const hostRankHtml = (typeof getCaroRank === 'function' && d.hostCaroPoints != null)
+    ? '<span class="caro-seat-rank">'+escapeHtml(getCaroRank(d.hostCaroPoints).icon+' '+getCaroRank(d.hostCaroPoints).name)+'</span>'
+    : '';
+  const guestRankHtml = (typeof getCaroRank === 'function' && guestName && d.guestCaroPoints != null)
+    ? '<span class="caro-seat-rank">'+escapeHtml(getCaroRank(d.guestCaroPoints).icon+' '+getCaroRank(d.guestCaroPoints).name)+'</span>'
+    : '';
+
   const hostUid = d.hostId || '';
   const guestUid = d.guestId || '';
   document.getElementById('caro-lobby-players').innerHTML =
     '<div class="online-player caro-lobby-seat" data-uid="'+escapeHtml(hostUid)+'" data-name="'+escapeHtml(host)+'" data-avatar="'+hostAv+'">'+
       '<button type="button" class="caro-seat-av" data-uid="'+escapeHtml(hostUid)+'" data-name="'+escapeHtml(host)+'" data-avatar="'+hostAv+'">'+hostAv+'</button>'+
-      '<span class="caro-x">X</span> <span class="caro-seat-name">'+hostLabel+'</span></div>'+
+      '<span class="caro-seat-info">'+hostRankHtml+
+        '<span class="caro-seat-name-row"><span class="caro-x">X</span> <span class="caro-seat-name">'+hostLabel+'</span></span>'+
+      '</span></div>'+
     '<div class="online-player caro-lobby-seat" data-uid="'+escapeHtml(guestUid)+'" data-name="'+escapeHtml(guestName||'')+'" data-avatar="'+guestAv+'">'+
       '<button type="button" class="caro-seat-av" data-uid="'+escapeHtml(guestUid)+'" data-name="'+escapeHtml(guestName||'')+'" data-avatar="'+guestAv+'" '+(guestName?'':'disabled')+'>'+(guestName?guestAv:'❔')+'</button>'+
-      '<span class="caro-o">O</span> <span class="caro-seat-name">'+guestLabel+'</span></div>';
+      '<span class="caro-seat-info">'+guestRankHtml+
+        '<span class="caro-seat-name-row"><span class="caro-o">O</span> <span class="caro-seat-name">'+guestLabel+'</span></span>'+
+      '</span></div>';
 
   document.querySelectorAll('#caro-lobby-players .caro-seat-av').forEach(btn=>{
     btn.addEventListener('click', (e)=>{

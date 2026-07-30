@@ -137,14 +137,16 @@ service cloud.firestore {
             || request.resource.data.winnerId == request.resource.data.hostId
             || request.resource.data.winnerId == request.resource.data.guestId);
       // Chủ phòng luôn được tự xoá phòng của mình. Ngoài ra, BẤT KỲ ai đã đăng nhập cũng
-      // được xoá một phòng nếu "nhịp tim" (lastSeen) của chủ phòng đã im quá 15 giây — đây
+      // được xoá một phòng nếu "nhịp tim" (lastSeen) của chủ phòng đã im quá 30 giây — đây
       // là cơ chế dọn phòng "chết" (chủ phòng mất mạng/tắt app/crash) khi Firestore không có
-      // onDisconnect() như Realtime Database. Ngưỡng 15s > ROOM_LIVE_STALE_MS (12s) phía
+      // onDisconnect() như Realtime Database. Ngưỡng 30s > ROOM_LIVE_STALE_MS (24s) phía
       // client để client luôn là người phát hiện + xoá trước trong điều kiện bình thường.
+      // (Trước là 15s/12s khi nhịp tim còn ghi mỗi 4s — đã nới theo cùng tỉ lệ khi nhịp tim
+      // giảm xuống 8s để không xoá nhầm phòng đang hoạt động chỉ vì lỡ 1 nhịp.)
       allow delete: if signedIn() && (
         resource.data.hostId == request.auth.uid ||
         (resource.data.lastSeen is timestamp &&
-         request.time > resource.data.lastSeen + duration.value(15, 's'))
+         request.time > resource.data.lastSeen + duration.value(30, 's'))
       );
 
       // Chỉ host/guest của CHÍNH room đó được gửi nước đi / chat trong trận — trước đây

@@ -1060,6 +1060,9 @@ body.notif-open #start-screen{
 }
 .caro-seat-av:disabled { opacity: 0.55; cursor: default; }
 .caro-lobby-seat { display: flex; align-items: center; }
+.caro-seat-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.caro-seat-rank { font-size: 10px; font-weight: 700; color: #ffd700; }
+.caro-seat-name-row { display: flex; align-items: center; gap: 6px; min-width: 0; }
 .caro-seat-name { flex: 1; min-width: 0; }
 .pp-avatar-list {
   display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px;
