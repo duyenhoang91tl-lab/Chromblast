@@ -7,5 +7,10 @@
     "predeploy": [
       "node scripts/sync-profanity-filter.mjs"
     ]
+  },
+  "hosting": {
+    "public": "legal",
+    "ignore": ["firebase.json", "**/.*"],
+    "cleanUrls": true
   }
 }
