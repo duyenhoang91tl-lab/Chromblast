@@ -1872,18 +1872,22 @@ function _caroRenderLobby(d){
   const you = (typeof t==='function'?t('caroYouLabel'):'Bạn');
   const hostIsMe = uid && d.hostId === uid;
   const guestIsMe = uid && d.guestId === uid;
-  const hostLabel = hostIsMe ? (escapeHtml(host)+' <small class="online-you-here">'+you+'</small>') : escapeHtml(host);
+  const hostRank = (typeof getCaroRank === 'function' && d.hostCaroPoints != null) ? getCaroRank(d.hostCaroPoints) : null;
+  const guestRank = (typeof getCaroRank === 'function' && guestName && d.guestCaroPoints != null) ? getCaroRank(d.guestCaroPoints) : null;
+  const hostNameHtml = (hostRank && typeof rankNameFxHtml==='function') ? rankNameFxHtml(host, hostRank.tier) : escapeHtml(host);
+  const guestNameHtml = (guestRank && typeof rankNameFxHtml==='function') ? rankNameFxHtml(guest, guestRank.tier) : escapeHtml(guest);
+  const hostLabel = hostIsMe ? (hostNameHtml+' <small class="online-you-here">'+you+'</small>') : hostNameHtml;
   const guestLabel = guestName
-    ? (guestIsMe ? (escapeHtml(guest)+' <small class="online-you-here">'+you+'</small>') : escapeHtml(guest))
+    ? (guestIsMe ? (guestNameHtml+' <small class="online-you-here">'+you+'</small>') : guestNameHtml)
     : '<span class="online-wait">'+escapeHtml(guest)+'</span>';
 
   // Danh hiệu Caro hiển thị ngay trên tên — lấy từ điểm đã lưu kèm room doc lúc
   // tạo/vào phòng (không đọc thêm Firestore chỉ để hiển thị badge này).
-  const hostRankHtml = (typeof getCaroRank === 'function' && d.hostCaroPoints != null)
-    ? '<span class="caro-seat-rank">'+escapeHtml(getCaroRank(d.hostCaroPoints).icon+' '+getCaroRank(d.hostCaroPoints).name)+'</span>'
+  const hostRankHtml = hostRank
+    ? '<span class="caro-seat-rank">'+escapeHtml(hostRank.icon+' '+hostRank.name)+'</span>'
     : '';
-  const guestRankHtml = (typeof getCaroRank === 'function' && guestName && d.guestCaroPoints != null)
-    ? '<span class="caro-seat-rank">'+escapeHtml(getCaroRank(d.guestCaroPoints).icon+' '+getCaroRank(d.guestCaroPoints).name)+'</span>'
+  const guestRankHtml = guestRank
+    ? '<span class="caro-seat-rank">'+escapeHtml(guestRank.icon+' '+guestRank.name)+'</span>'
     : '';
 
   const hostUid = d.hostId || '';
