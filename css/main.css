@@ -4309,6 +4309,14 @@ body:has(#secret-stage.active) .streak-dot.lit{
   font-size:22px;
   letter-spacing:0.6px;
   flex-shrink:0;
+  padding-top: max(40px, calc(env(safe-area-inset-top, 0px) + 28px));
+}
+/* Nút tắt (✕) menu: to hơn + kéo xuống theo chữ "Menu" (tránh đè thanh
+   trạng thái/tai thỏ), đồng bộ vị trí với padding-top ở trên. */
+.settings-overlay.menu-fullscreen .menu-head .settings-x{
+  top: max(34px, calc(env(safe-area-inset-top, 0px) + 22px));
+  width: 42px; height: 42px;
+  font-size: 20px;
 }
 .settings-x, .settings-back{
   position:absolute; top:8px; width:34px; height:34px; border:none; border-radius:50%;
