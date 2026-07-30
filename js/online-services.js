@@ -169,6 +169,8 @@ async function _upsertPlayerProfile(){
     displayNameLower: String(name || '').toLowerCase(),
     avatar,
     level: (typeof playerLevel !== 'undefined' ? playerLevel : 1),
+    mapNormal: (typeof normalMapStage !== 'undefined' ? Math.max(0, (normalMapStage|0) - 1) : 0),
+    mapSecret: (typeof unlockGateStageIndex !== 'undefined' ? (unlockGateStageIndex|0) : 0),
     country: region.country || 'VN',
     continent: region.continent || 'AS',
     online: true,
@@ -176,6 +178,11 @@ async function _upsertPlayerProfile(){
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   };
   if(publicId) patch.publicId = publicId;
+  try{
+    const couple = (window.CaroSocial && typeof CaroSocial.getCouple === 'function') ? CaroSocial.getCouple() : null;
+    patch.couplePartnerName = (couple && couple.partnerUid) ? (couple.partnerName || '') : '';
+    patch.couplePairedAt = (couple && couple.partnerUid) ? (couple.pairedAt || null) : null;
+  }catch(e){}
   // Lưu ý: các field điểm số (caroWins/caroLosses/caroDraws/caroPoints/pvpPoints/
   // wins/losses/draws/bestScore/bestPvpScore) KHÔNG còn được đồng bộ từ đây nữa.
   // Firestore Rules chỉ cho phép các field này giữ nguyên hoặc do Cloud Function
@@ -397,6 +404,11 @@ async function fetchPlayerPublicProfile(uid){
       avatar: d.avatar || '🐶',
       online: !!d.online,
       lastSeen: d.lastSeen || null,
+      level: d.level || 1,
+      mapNormal: d.mapNormal || 0,
+      mapSecret: d.mapSecret || 0,
+      couplePartnerName: d.couplePartnerName || '',
+      couplePairedAt: d.couplePairedAt || null,
       stats,
       versusStats
     };
