@@ -1,16 +1,13 @@
 // ═══════════════════════════════════════════════════════════════
-// js/versus-ranks.js — Danh hiệu Đấu 1-1 (Versus), điểm, thống kê W/L/D
-// Nạp SAU online-services.js, TRƯỚC versus.js
+// js/versus-ranks.js — Danh hiệu Đấu 1-1 (Versus online), 10 bậc × 5 cấp độ mỗi bậc
+// Nạp SAU online-services.js, TRƯỚC online-ui.js
 //
-// CHỈ tính trận Online (roomId thật, xem _vsEndMatch trong js/versus.js) —
-// trận "Cùng máy" (2 người ngồi đối diện cùng thiết bị) KHÔNG cộng điểm/rank.
+// CHỈ tính trận Online (roomId thật) — trận "Cùng máy" (2 người ngồi chung thiết bị)
+// KHÔNG cộng điểm/rank.
 //
-// Field Firestore dùng chung với players/{uid}: pvpWins, pvpLosses, pvpDraws,
-// pvpPoints (xem functions/index.js — applyMatchResult, nhánh gameType !=='caro').
-// Đặt tên có tiền tố "pvp" để không đụng field wins/losses/draws chung mà
-// normalizeCaroStats() cũng đọc fallback — tránh 2 hệ điểm lẫn vào nhau.
-//
-// TÊN BẬC DANH HIỆU BÊN DƯỚI LÀ TẠM — sẽ đổi tên thật sau.
+// Field Firestore dùng chung với players/{uid}: pvpWins, pvpLosses, pvpDraws, pvpPoints
+// (xem functions/index.js — applyMatchResult, nhánh gameType !== 'caro').
+// Thắng +25, thua -25 (sàn 0), hoà +0 — khớp đúng công thức server thật.
 // ═══════════════════════════════════════════════════════════════
 
 const VERSUS_STATS_KEY = 'chromablast_versus_stats';
@@ -18,48 +15,49 @@ const VS_RANK_WIN_PTS = 25;
 const VS_RANK_DRAW_PTS = 0;
 const VS_RANK_LOSS_PTS = -25; // đối xứng với thắng — điểm không xuống dưới 0 (xem applyLocalVersusResult)
 
-/** Bậc danh hiệu Versus theo tổng điểm — TÊN TẠM, sẽ đổi sau. */
+/** 10 bậc danh hiệu Versus. Mỗi bậc chia làm 5 cấp độ con (5 = mới vào bậc, 1 = sắp
+ * lên bậc kế) — ví dụ "Tân thủ 5" → ... → "Tân thủ 1" → "Nhập môn 5" → ...
+ * `step` = số điểm cho mỗi cấp độ con trong bậc đó. */
 const VERSUS_RANKS = [
-  { id:'vs_novice',   min:0,    icon:'🌱', vi:'Tân binh (tạm)',     en:'Recruit (temp)' },
-  { id:'vs_beginner', min:50,   icon:'📘', vi:'Nhập môn (tạm)',     en:'Beginner (temp)' },
-  { id:'vs_skilled',  min:150,  icon:'⚔️', vi:'Thạo trận (tạm)',    en:'Skilled (temp)' },
-  { id:'vs_expert',   min:350,  icon:'🗡️', vi:'Cao thủ (tạm)',      en:'Expert (temp)' },
-  { id:'vs_master',   min:700,  icon:'🏆', vi:'Đấu sĩ (tạm)',       en:'Duelist (temp)' },
-  { id:'vs_grand',    min:1200, icon:'👑', vi:'Đại tướng (tạm)',    en:'Grandmaster (temp)' },
-  { id:'vs_platinum', min:1800, icon:'🤍', vi:'Bạch kim (tạm)',     en:'Platinum (temp)' },
-  { id:'vs_diamond',  min:2500, icon:'💎', vi:'Kim cương (tạm)',    en:'Diamond (temp)' },
-  { id:'vs_elite',    min:3300, icon:'⭐', vi:'Tinh anh (tạm)',     en:'Elite (temp)' },
-  { id:'vs_legend',   min:4200, icon:'🌟', vi:'Huyền thoại (tạm)',  en:'Legend (temp)' },
-  { id:'vs_mythic',   min:5200, icon:'✨', vi:'Thần thoại (tạm)',   en:'Mythic (temp)' },
-  { id:'vs_warlord',  min:6500, icon:'🔥', vi:'Chiến thần (tạm)',   en:'Warlord (temp)' },
+  { id:'v_novice',     min:0,     step:20,  icon:'🌱', vi:'Tân thủ',    en:'Rookie' },
+  { id:'v_beginner',   min:100,   step:40,  icon:'🔰', vi:'Nhập môn',   en:'Beginner' },
+  { id:'v_fighter',    min:300,   step:60,  icon:'🛡️', vi:'Chiến binh', en:'Fighter' },
+  { id:'v_veteran',    min:600,   step:100, icon:'🗡️', vi:'Tinh nhuệ',  en:'Veteran' },
+  { id:'v_expert',     min:1100,  step:160, icon:'⚔️', vi:'Cao thủ',    en:'Expert' },
+  { id:'v_elite',      min:1900,  step:240, icon:'⭐', vi:'Tinh anh',   en:'Elite' },
+  { id:'v_master',     min:3100,  step:360, icon:'🏅', vi:'Bậc thầy',   en:'Master' },
+  { id:'v_legend',     min:4900,  step:540, icon:'🌟', vi:'Huyền thoại', en:'Legend' },
+  { id:'v_unrival',    min:7600,  step:780, icon:'👑', vi:'Vô song',    en:'Unrivaled' },
+  { id:'v_invincible', min:11500, step:780, icon:'🔱', vi:'Bất Bại',    en:'Invincible' },
 ];
 
-/** Tên hiển thị theo ngôn ngữ hiện tại, KHÔNG qua i18n-content.js (tên còn tạm,
- * sẽ đổi sau) — chỉ dùng inline vi/en ngay trong VERSUS_RANKS ở trên. */
-function _vsRankLangName(rank){
-  try{
-    const lang = (typeof currentLang !== 'undefined' && currentLang) ? currentLang : 'vi';
-    if(lang !== 'vi' && rank.en) return rank.en;
-  }catch(e){}
-  return rank.vi;
-}
-
+/** Trả về {icon, tierName, subLevel, name (vd "Tân thủ 5"), points, ...} cho 1 mức điểm. */
 function getVersusRank(points){
   const pts = Math.max(0, points || 0);
-  let rank = VERSUS_RANKS[0];
-  for(const r of VERSUS_RANKS){
-    if(pts >= r.min) rank = r;
-  }
-  const idx = VERSUS_RANKS.indexOf(rank);
+  let idx = 0;
+  for(let i=0;i<VERSUS_RANKS.length;i++){ if(pts >= VERSUS_RANKS[i].min) idx = i; }
+  const tier = VERSUS_RANKS[idx];
   const next = VERSUS_RANKS[idx + 1] || null;
+  const offset = pts - tier.min;
+  let subIndex = Math.floor(offset / tier.step);
+  if(subIndex > 4) subIndex = 4;
+  const subLevel = 5 - subIndex;
+  const tierName = t('versusRank_' + tier.id);
+  const nextSubMin = tier.min + (subIndex + 1) * tier.step;
+  const progress = next || subIndex < 4
+    ? Math.min(100, Math.round((offset - subIndex*tier.step) / tier.step * 100))
+    : 100;
   return {
-    ...rank,
+    ...tier,
     points: pts,
     tier: idx,
-    name: _vsRankLangName(rank),
+    tierName,
+    subLevel,
+    name: tierName + ' ' + subLevel,
     nextMin: next ? next.min : null,
-    nextName: next ? _vsRankLangName(next) : null,
-    progress: next ? Math.min(100, Math.round((pts - rank.min) / (next.min - rank.min) * 100)) : 100
+    nextTierName: next ? t('versusRank_' + next.id) : null,
+    nextSubMin,
+    progress
   };
 }
 
@@ -104,6 +102,8 @@ function applyLocalVersusResult(outcome){
   return s;
 }
 
+/** Đồng bộ cache local từ players/{uid} (nguồn thật, do Cloud Function ghi) — gọi khi
+ * mở hub Đấu 1-1 online để cache sẵn sàng trước lúc tạo/vào phòng. */
 async function fetchMyVersusStats(){
   if(typeof initOnlineServices === 'function' && await initOnlineServices() && typeof getOnlineUid === 'function' && getOnlineUid()){
     try{

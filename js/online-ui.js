@@ -135,6 +135,7 @@ function openOnlineHub(){
   document.getElementById('online-disabled-note').style.display = on ? 'none' : 'block';
   if(on){
     _onlineRequireEnabled().then(ok => { if(ok) _onlineStartRoomListListen(); });
+    if(typeof fetchMyVersusStats === 'function') fetchMyVersusStats().catch(()=>{});
   }
 }
 
@@ -184,9 +185,17 @@ function _renderLobby(d){
   const guest = d.guestName
     ? escapeHtml(d.guestName)
     : '<span class="online-wait">'+escapeHtml(waiting)+'</span>';
+  // Danh hiệu Đấu 1-1 hiển thị ngay trên tên — lấy từ điểm đã lưu kèm room doc lúc
+  // tạo/vào phòng (không đọc thêm Firestore chỉ để hiển thị badge này).
+  const hostRankHtml = (typeof getVersusRank === 'function' && d.hostVersusPoints != null)
+    ? '<div class="versus-seat-rank">'+escapeHtml(getVersusRank(d.hostVersusPoints).icon+' '+getVersusRank(d.hostVersusPoints).name)+'</div>'
+    : '';
+  const guestRankHtml = (typeof getVersusRank === 'function' && d.guestName && d.guestVersusPoints != null)
+    ? '<div class="versus-seat-rank">'+escapeHtml(getVersusRank(d.guestVersusPoints).icon+' '+getVersusRank(d.guestVersusPoints).name)+'</div>'
+    : '';
   document.getElementById('online-lobby-players').innerHTML=
-    '<div class="online-player"><span>👑</span> '+escapeHtml(host)+'</div>'+
-    '<div class="online-player"><span>⚔️</span> '+guest+'</div>';
+    '<div class="online-player">'+hostRankHtml+'<span>👑</span> '+escapeHtml(host)+'</div>'+
+    '<div class="online-player">'+guestRankHtml+'<span>⚔️</span> '+guest+'</div>';
   const startBtn=document.getElementById('online-start-btn');
   const isHost=_onlineLobby && _onlineLobby.role==='host';
   if(startBtn){
