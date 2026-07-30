@@ -217,7 +217,7 @@
       <button id="board-skin-btn" title="Kho nền bàn" data-i18n-title="ttBoards" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">🗺️</button>
       <button id="spin-btn-hdr" title="Vòng quay may mắn" data-i18n-title="ttSpin" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">🎡</button>
       <button id="caro-btn" title="Cờ Caro online" data-i18n-title="ttCaro" aria-label="Caro online"><span class="caro-btn-ico" aria-hidden="true"><span class="caro-btn-xo"><b class="caro-x">X</b><b class="caro-o">O</b></span><span class="caro-btn-online">online</span></span></button>
-      <button id="versus-btn" title="Đấu 1-1 (mở từ Lv.10)" data-i18n-title="ttVersus">⚔️</button>
+      <button id="versus-btn" title="Đấu 1-1" data-i18n-title="ttVersus">⚔️</button>
       <button id="leaderboard-btn" title="Bảng xếp hạng" data-i18n-title="ttLeaderboard">🏆</button>
       <button id="roundguide-btn" title="Hướng dẫn cơ chế vòng hiện tại" data-i18n-title="ttRoundGuide" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">📖</button>
       <button id="adventure-toggle-btn" title="Chế độ Adventure" data-i18n-title="ttAdventure">🚀 ADV</button>
@@ -774,6 +774,7 @@
     <div class="admin-card">
       <div class="admin-title"><span data-i18n="vsTitle">⚔️ Đấu 1-1</span><button class="admin-close" id="vs-cancel-btn">✕</button></div>
       <button type="button" class="auth-submit-btn btn-on-color vs-online-entry" id="vs-online-btn" data-i18n="vsModeOnline">🌐 Online <span id="online-status-badge">📴</span></button>
+      <div id="vs-online-locked-note" class="online-status" style="display:none;" data-i18n="vsOnlineLocked">🔒 Online cần Cấp 10. Đấu Cùng máy vẫn chơi được.</div>
       <div class="vs-local-block">
         <div class="vs-local-label" data-i18n="vsModeLocal">📱 Cùng máy</div>
         <div class="admin-sub" data-i18n="vsSub">Hai người chơi thi đấu trên máy này — cùng bộ khối, 90 giây mỗi lượt, điểm cao hơn thắng.</div>

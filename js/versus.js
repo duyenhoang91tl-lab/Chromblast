@@ -54,20 +54,17 @@ function _vsShow(id){ const el=document.getElementById(id); if(el) el.classList.
 
 function _vsHide(id){ const el=document.getElementById(id); if(el) el.classList.remove('show'); }
 
-/** Hiện/ẩn nút ⚔️ theo Lv.10 — gọi khi vào game và mỗi lần lên cấp */
+/** Nút ⚔️ luôn mở — "Cùng máy" không giới hạn cấp. Chỉ "Online" cần Lv.10 (xem canHostVersus). */
 
 function refreshVersusButton(){
-  const ok=canHostVersus();
   const btn=document.getElementById('versus-btn');
   if(btn){
-    btn.classList.toggle('vs-unlocked', ok);
-    btn.setAttribute('aria-hidden', ok ? 'false' : 'true');
-    btn.title = ok
-      ? (typeof t==='function' ? t('ttVersus') : 'Đấu 1-1')
-      : (typeof t==='function' ? t('vsNeedLevel', VERSUS_MIN_LEVEL) : ('Đạt Lv.'+VERSUS_MIN_LEVEL+' để mở'));
+    btn.classList.add('vs-unlocked');
+    btn.setAttribute('aria-hidden', 'false');
+    btn.title = (typeof t==='function' ? t('ttVersus') : 'Đấu 1-1');
   }
   const setBtn=document.getElementById('set-btn-versus');
-  if(setBtn) setBtn.style.display = ok ? '' : 'none';
+  if(setBtn) setBtn.style.display = '';
 }
 
 // ── Sinh khối: mỗi người 1 PRNG cùng seed → cùng chuỗi khối ──

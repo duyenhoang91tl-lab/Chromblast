@@ -101,16 +101,13 @@ function _vsFillLocalSkinPicker(slot){
 
 function openVersusSetup(){
   try{ sfxClick(); }catch(e){}
-  if(!canHostVersus()){
-    try{ showComboFlash(0,false,t('vsNeedLevel', VERSUS_MIN_LEVEL)); }catch(e){}
-    try{ showHint(t('vsNeedLevel', VERSUS_MIN_LEVEL)); }catch(e){}
-    return;
-  }
   const p1=document.getElementById('vs-name1');
   if(p1 && typeof currentUser!=='undefined' && currentUser && currentUser.username) p1.value=currentUser.username;
   try{ _vsFillLocalSkinPicker(1); _vsFillLocalSkinPicker(2); }catch(e){}
   _vsShow('versus-setup-panel');
   _vsHide('online-hub-panel');
+  const hint=document.getElementById('vs-online-locked-note');
+  if(hint) hint.style.display = canHostVersus() ? 'none' : '';
 }
 
 function _vsToggleGlobalUI(hide){
