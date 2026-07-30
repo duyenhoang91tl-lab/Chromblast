@@ -21,6 +21,7 @@ service cloud.firestore {
       return scoreField('caroWins') && scoreField('caroLosses') && scoreField('caroDraws')
         && scoreField('caroPoints') && scoreField('pvpPoints') && scoreField('wins')
         && scoreField('losses') && scoreField('draws')
+        && scoreField('pvpWins') && scoreField('pvpLosses') && scoreField('pvpDraws')
         && scoreField('bestPvpScore') && scoreField('bestScore');
     }
     /* Field chỉ Cloud Function (Admin SDK) được ghi — client gửi lên field này coi như

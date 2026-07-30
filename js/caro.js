@@ -630,10 +630,28 @@ async function openPlayerCard(opts){
     document.getElementById('pc-name').textContent = prof.displayName || fallbackName;
     const s = prof.stats || {};
     const rate = s.winRate != null ? s.winRate : 0;
-    const line = (typeof t==='function'
+    const caroLine = (typeof t==='function'
       ? (t('caroWinRateLabel')+': '+rate+'% · '+t('ppCaroWLD', s.wins||0, s.losses||0, s.draws||0, rate))
       : (rate+'%'));
-    document.getElementById('pc-stats').textContent = (s.total > 0 || s.points > 0) ? line : (typeof t==='function'?t('caroNoStats'):'Chưa có thống kê');
+    const vs = prof.versusStats || {};
+    const vsRate = vs.winRate != null ? vs.winRate : 0;
+    const vsRank = (typeof getVersusRank === 'function') ? getVersusRank(vs.points||0) : null;
+    const caroRank = s.rank || null;
+    const caroTitle = caroRank ? (caroRank.icon+' '+caroRank.name) : '';
+    const vsTitle = vsRank ? (vsRank.icon+' '+vsRank.name) : '';
+    const hasCaro = (s.total > 0 || s.points > 0);
+    const hasVs = (vs.total > 0 || vs.points > 0);
+    let statsHtml = '';
+    if(hasCaro){
+      statsHtml += '<div class="pc-mode-stats"><b>Caro</b> — '+caroTitle+'<br>'+caroLine+'</div>';
+    }
+    if(hasVs){
+      const vsLine = (typeof t==='function'
+        ? (t('caroWinRateLabel')+': '+vsRate+'% · '+t('ppCaroWLD', vs.wins||0, vs.losses||0, vs.draws||0, vsRate))
+        : (vsRate+'%'));
+      statsHtml += '<div class="pc-mode-stats"><b>Versus</b> — '+vsTitle+'<br>'+vsLine+'</div>';
+    }
+    document.getElementById('pc-stats').innerHTML = statsHtml || (typeof t==='function'?t('caroNoStats'):'Chưa có thống kê');
     if(friendBtn){
       friendBtn.dataset.name = prof.displayName || fallbackName;
       friendBtn.dataset.avatar = prof.avatar || fallbackAv;

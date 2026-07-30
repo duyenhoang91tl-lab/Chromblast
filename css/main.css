@@ -1088,6 +1088,8 @@ body.notif-open #start-screen{
 }
 .pc-name { font-size: 18px; font-weight: 900; color: #fff; }
 .pc-stats { font-size: 13px; color: rgba(255,255,255,0.8); font-weight: 700; line-height: 1.4; }
+.pc-mode-stats { margin: 6px 0; }
+.pc-mode-stats + .pc-mode-stats { border-top: 1px solid rgba(255,255,255,0.12); padding-top: 6px; }
 .caro-x { color: #FF5A7A; font-weight: 900; }
 .caro-o { color: #4DE1FF; font-weight: 900; }
 .caro-timer {
@@ -1643,6 +1645,7 @@ body.gchat-open .gchat-fab { display: none !important; }
 .caro-lb-wld small { color: #6ee08e; }
 .caro-lb-pts { font-size: 12px; font-weight: 800; color: #ffd700; min-width: 36px; text-align: right; }
 .caro-result-rank { font-size: 14px; color: #ffd700; margin: 8px 0; }
+.vs-result-rank { font-size: 14px; color: #ffd700; margin: 8px 0; }
 .caro-result-wld { font-size: 11px; color: #c0c0c8; }
 .caro-hub-divider { text-align: center; font-size: 11px; color: rgba(255,255,255,0.55); margin: 14px 0 10px; letter-spacing: 1px; }
 .caro-ai-block { margin: 8px 0 16px; }

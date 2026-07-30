@@ -331,9 +331,31 @@ function _vsEndMatch(){
   if(s1===s2) msg=t('vsDraw');
   else { msg=t('vsWin', s1>s2?n1:n2); try{ addPlayerXP(VERSUS_WIN_XP); }catch(e){} }
   document.getElementById('vs-result-title').textContent=msg;
+
+  // Rank Versus: CHỈ tính trận online (P0 luôn là "mình" — xem enterOnlineVersusMatch).
+  let rankHtml = '';
+  if(_vs.online && _vs.online.roomId){
+    const isHost = !!_vs.online.isHost;
+    const hostScore = isHost ? s1 : s2;
+    const guestScore = isHost ? s2 : s1;
+    try{ if(typeof finalizeOnlineMatch === 'function') finalizeOnlineMatch(_vs.online.roomId, hostScore, guestScore); }catch(e){}
+    try{
+      if(typeof applyLocalVersusResult === 'function'){
+        const outcome = s1===s2 ? 'draw' : (s1>s2 ? 'win' : 'loss');
+        const statsAfter = applyLocalVersusResult(outcome);
+        const rank = statsAfter.rank;
+        const ptsDelta = outcome==='win' ? '+'+VS_RANK_WIN_PTS : (outcome==='draw' ? '+'+VS_RANK_DRAW_PTS : VS_RANK_LOSS_PTS);
+        const lang = (typeof currentLang !== 'undefined' && currentLang) ? currentLang : 'vi';
+        const ptsLabel = lang !== 'vi' ? 'pts' : 'đ';
+        rankHtml = '<div class="vs-result-rank">'+rank.icon+' <b>'+escapeHtml(rank.name)+'</b> · '+ptsDelta+' '+ptsLabel+'</div>';
+      }
+    }catch(e){}
+  }
+
   document.getElementById('vs-result-body').innerHTML=
     '<div class="lb-row'+(s1>=s2?' me':'')+'"><span class="lb-rank">'+(s1>=s2?'🥇':'🥈')+'</span><span class="lb-name">'+escapeHtml(n1)+'</span><span class="lb-score">'+s1.toLocaleString()+'</span></div>'+
     '<div class="lb-row'+(s2>s1?' me':'')+'"><span class="lb-rank">'+(s2>s1?'🥇':'🥈')+'</span><span class="lb-name">'+escapeHtml(n2)+'</span><span class="lb-score">'+s2.toLocaleString()+'</span></div>'+
+    rankHtml+
     '<div style="font-size:11px;color:#9aa7bd;margin-top:8px;">'+t('vsXpNote', VERSUS_WIN_XP)+'</div>';
   try{ submitScoreToLeaderboard(Math.max(s1,s2)); }catch(e){}
   _vsShow('versus-result-panel');

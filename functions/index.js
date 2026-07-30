@@ -208,17 +208,24 @@ exports.applyMatchResult = onDocumentUpdated(
       ];
       await Promise.all(updates.map(async (u) => {
         if (!u.id) return;
-        const pts = u.win ? 30 : (u.draw ? 5 : 0);
         const ref = db.collection('players').doc(u.id);
         const snap = await ref.get();
         const prevBest = snap.exists ? (snap.data().bestPvpScore || 0) : 0;
         const patch = {
-          pvpPoints: admin.firestore.FieldValue.increment(pts),
-          wins: admin.firestore.FieldValue.increment(u.win ? 1 : 0),
-          losses: admin.firestore.FieldValue.increment(!u.win && !u.draw ? 1 : 0),
-          draws: admin.firestore.FieldValue.increment(u.draw ? 1 : 0),
+          pvpWins: admin.firestore.FieldValue.increment(u.win ? 1 : 0),
+          pvpLosses: admin.firestore.FieldValue.increment(!u.win && !u.draw ? 1 : 0),
+          pvpDraws: admin.firestore.FieldValue.increment(u.draw ? 1 : 0),
           updatedAt: admin.firestore.FieldValue.serverTimestamp()
         };
+        if (u.win) {
+          patch.pvpPoints = admin.firestore.FieldValue.increment(25);
+        } else if (!u.draw) {
+          // Thua trừ điểm đối xứng với thắng (-25), sàn 0 — giống công thức Caro,
+          // phải đọc điểm hiện tại rồi tính bằng tay vì increment() không tự chặn ở 0.
+          const currentPts = (snap.exists && Number(snap.data().pvpPoints)) || 0;
+          patch.pvpPoints = Math.max(0, currentPts - 25);
+        }
+        // Hoà: +0 điểm, không cần patch.pvpPoints.
         if (u.score > prevBest) patch.bestPvpScore = u.score;
         await ref.set(patch, { merge: true });
       }));

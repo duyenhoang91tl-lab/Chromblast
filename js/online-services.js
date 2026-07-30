@@ -387,13 +387,18 @@ async function fetchPlayerPublicProfile(uid){
       wins: d.caroWins||0, losses: d.caroLosses||0, draws: d.caroDraws||0,
       points: d.caroPoints||0, winRate: 0, total: 0
     };
+    const versusStats = (typeof normalizeVersusStats === 'function') ? normalizeVersusStats(d) : {
+      wins: d.pvpWins||0, losses: d.pvpLosses||0, draws: d.pvpDraws||0,
+      points: d.pvpPoints||0, winRate: 0, total: 0
+    };
     return {
       uid,
       displayName: d.displayName || 'Player',
       avatar: d.avatar || '🐶',
       online: !!d.online,
       lastSeen: d.lastSeen || null,
-      stats
+      stats,
+      versusStats
     };
   }catch(e){
     console.warn('[online] fetchPlayerPublicProfile', e);

@@ -380,7 +380,11 @@ function getPlayerInfoStats(){
   try{
     if(typeof getLocalCaroStats === 'function') caro = getLocalCaroStats();
   }catch(e){}
-  return { level, maps, caro, nick: getPlayerNickname(), style: getPlayerNameStyle() };
+  let versus = { wins:0, losses:0, draws:0, points:0, total:0, winRate:0, rank:null };
+  try{
+    if(typeof getLocalVersusStats === 'function') versus = getLocalVersusStats();
+  }catch(e){}
+  return { level, maps, caro, versus, nick: getPlayerNickname(), style: getPlayerNameStyle() };
 }
 
 function _ppSelectedFontId(){
@@ -463,6 +467,10 @@ function renderSettingsPlayerInfo(){
   const caro = info.caro || {};
   const rankName = (caro.rank && caro.rank.name) ? caro.rank.name : '';
   const rankIcon = (caro.rank && caro.rank.icon) ? caro.rank.icon + ' ' : '';
+  const versus = info.versus || {};
+  const vsRankName = (versus.rank && versus.rank.name) ? versus.rank.name : '';
+  const vsRankIcon = (versus.rank && versus.rank.icon) ? versus.rank.icon + ' ' : '';
+  const hasVersus = (versus.total > 0 || versus.points > 0);
   box.innerHTML =
     '<div class="pp-info-row">'+formatPlayerNameHtml(info.nick, info.style)+'</div>'+
     '<div class="pp-info-grid">'+
@@ -470,7 +478,12 @@ function renderSettingsPlayerInfo(){
       '<div class="pp-stat"><small>'+(typeof t==='function'?t('ppMaps'):'Map đã qua')+'</small><b>'+info.maps+'</b></div>'+
       '<div class="pp-stat"><small>'+(typeof t==='function'?t('ppCaro'):'Caro')+'</small><b>'+rankIcon+(caro.points||0)+'đ</b></div>'+
     '</div>'+
-    '<div class="pp-caro-line">'+(typeof t==='function'?t('ppCaroWLD', caro.wins||0, caro.losses||0, caro.draws||0, caro.winRate||0):((caro.wins||0)+'T/'+(caro.losses||0)+'H/'+(caro.draws||0)+'Hòa · '+(caro.winRate||0)+'%'))+(rankName?' · '+rankName:'')+'</div>';
+    '<div class="pp-caro-line">'+(typeof t==='function'?t('ppCaroWLD', caro.wins||0, caro.losses||0, caro.draws||0, caro.winRate||0):((caro.wins||0)+'T/'+(caro.losses||0)+'H/'+(caro.draws||0)+'Hòa · '+(caro.winRate||0)+'%'))+(rankName?' · '+rankName:'')+'</div>'+
+    (hasVersus
+      ? '<div class="pp-caro-line">Versus: '+vsRankIcon+(versus.points||0)+'đ · '+
+        (typeof t==='function'?t('ppCaroWLD', versus.wins||0, versus.losses||0, versus.draws||0, versus.winRate||0):((versus.wins||0)+'T/'+(versus.losses||0)+'H/'+(versus.draws||0)+'Hòa · '+(versus.winRate||0)+'%'))+
+        (vsRankName?' · '+vsRankName:'')+'</div>'
+      : '');
 }
 
 function openPlayerProfilePanel(){
