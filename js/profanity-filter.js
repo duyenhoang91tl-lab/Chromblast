@@ -121,9 +121,14 @@
     return flagged ? chars.join('') : original;
   }
 
-  global.ProfanityFilter = {
+  var ProfanityFilter = {
     filterText: filterText,
     containsProfanity: containsProfanity,
     _normalizeToken: normalizeToken
   };
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = ProfanityFilter;
+  } else {
+    global.ProfanityFilter = ProfanityFilter;
+  }
 })(typeof window !== 'undefined' ? window : this);

@@ -1,3 +1,6 @@
+// File này được sinh tự động từ js/profanity-filter.js
+// (chạy scripts/sync-profanity-filter.mjs). Không sửa tay ở đây.
+
 (function (global) {
   'use strict';
 
@@ -121,9 +124,14 @@
     return flagged ? chars.join('') : original;
   }
 
-  module.exports = {
+  var ProfanityFilter = {
     filterText: filterText,
     containsProfanity: containsProfanity,
     _normalizeToken: normalizeToken
   };
-})(typeof module !== 'undefined' ? module : {});
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = ProfanityFilter;
+  } else {
+    global.ProfanityFilter = ProfanityFilter;
+  }
+})(typeof window !== 'undefined' ? window : this);
