@@ -455,8 +455,6 @@ function _ppRefreshUI(){
   if(box) box.innerHTML = formatPlayerNameHtml(nick, style);
   const preview = document.getElementById('pp-nick-preview');
   if(preview) preview.innerHTML = formatPlayerNameHtml(nick, style);
-  const hubNick = document.getElementById('settings-player-nick');
-  if(hubNick) hubNick.innerHTML = formatPlayerNameHtml(nick, style);
   renderSettingsPlayerInfo();
 }
 
