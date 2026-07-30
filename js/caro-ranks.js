@@ -156,7 +156,8 @@ function renderCaroLeaderboardList(listEl, rows, myName){
     const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':String(i+1);
     row.innerHTML =
       '<span class="lb-rank">'+medal+'</span>'+
-      '<span class="lb-name">'+escapeHtml(e.rank.icon+' '+e.name)+
+      '<span class="lb-name">'+escapeHtml(e.rank.icon)+' '+
+        (typeof rankNameFxHtml==='function' ? rankNameFxHtml(e.name, e.rank.tier) : escapeHtml(e.name))+
         '<span class="caro-lb-title">'+escapeHtml(e.rank.name)+'</span></span>'+
       '<span class="lb-score caro-lb-wld">'+e.wins+'/'+e.losses+'/'+e.draws+
         ' <small>'+e.winRate+'%</small></span>'+
