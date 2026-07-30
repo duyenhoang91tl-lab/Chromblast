@@ -4,7 +4,7 @@
 // Host = X, Guest = O. Online dùng Firebase rooms/moves (gameType:'caro').
 // ═══════════════════════════════════════════════════════════════
 
-const CARO_MIN_LEVEL = 10;
+const CARO_MIN_LEVEL = 1;
 const CARO_SIZE = 15;
 const CARO_EMPTY = 0;
 const CARO_X = 1; // host
@@ -1650,7 +1650,7 @@ async function _caroRequireOnline(){
   }
 }
 
-/** Khoá/mở phần online (tạo phòng / vào phòng / tìm đối thủ / BXH) theo Lv.10.
+/** Khoá/mở phần online (tạo phòng / vào phòng / tìm đối thủ / BXH) theo Lv.
  *  "Đấu với máy" KHÔNG bị ảnh hưởng — luôn chơi được, kể cả offline. */
 function _caroSetOnlineLocked(locked){
   const section = document.getElementById('caro-online-section');
