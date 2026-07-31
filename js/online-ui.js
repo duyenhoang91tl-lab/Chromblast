@@ -182,8 +182,13 @@ function openOnlineLobby(roomId, code, role, roomData){
 function _renderLobby(d){
   const host=d.hostName||'?';
   const waiting = typeof t==='function'?t('onlineWaiting'):'Đang chờ...';
+  const totalVsTiers = (typeof VERSUS_RANKS!=='undefined') ? VERSUS_RANKS.length : 10;
+  const hostVsTier = (typeof getVersusRank==='function' && d.hostVersusPoints!=null) ? getVersusRank(d.hostVersusPoints).tier : null;
+  const guestVsTier = (typeof getVersusRank==='function' && d.guestName && d.guestVersusPoints!=null) ? getVersusRank(d.guestVersusPoints).tier : null;
+  const hostNameHtml = (hostVsTier!=null && hostVsTier>0 && typeof rankNameFxHtml==='function') ? rankNameFxHtml(host, hostVsTier, totalVsTiers) : escapeHtml(host);
+  const guestNameHtml = (guestVsTier!=null && guestVsTier>0 && typeof rankNameFxHtml==='function') ? rankNameFxHtml(d.guestName, guestVsTier, totalVsTiers) : escapeHtml(d.guestName||'');
   const guest = d.guestName
-    ? escapeHtml(d.guestName)
+    ? guestNameHtml
     : '<span class="online-wait">'+escapeHtml(waiting)+'</span>';
   // Danh hiệu Đấu 1-1 hiển thị ngay trên tên — lấy từ điểm đã lưu kèm room doc lúc
   // tạo/vào phòng (không đọc thêm Firestore chỉ để hiển thị badge này).
@@ -194,7 +199,7 @@ function _renderLobby(d){
     ? '<div class="versus-seat-rank">'+escapeHtml(getVersusRank(d.guestVersusPoints).icon+' '+getVersusRank(d.guestVersusPoints).name)+'</div>'
     : '';
   document.getElementById('online-lobby-players').innerHTML=
-    '<div class="online-player">'+hostRankHtml+'<span>👑</span> '+escapeHtml(host)+'</div>'+
+    '<div class="online-player">'+hostRankHtml+'<span>👑</span> '+hostNameHtml+'</div>'+
     '<div class="online-player">'+guestRankHtml+'<span>⚔️</span> '+guest+'</div>';
   const startBtn=document.getElementById('online-start-btn');
   const isHost=_onlineLobby && _onlineLobby.role==='host';

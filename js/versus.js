@@ -356,7 +356,7 @@ function _vsEndMatch(){
       }
     }catch(e){}
   }
-  const n1Html = (myVsTier > 0 && typeof rankNameFxHtml==='function') ? rankNameFxHtml(n1, myVsTier) : escapeHtml(n1);
+  const n1Html = (myVsTier > 0 && typeof rankNameFxHtml==='function') ? rankNameFxHtml(n1, myVsTier, (typeof VERSUS_RANKS!=='undefined'?VERSUS_RANKS.length:10)) : escapeHtml(n1);
 
   document.getElementById('vs-result-body').innerHTML=
     '<div class="lb-row'+(s1>=s2?' me':'')+'"><span class="lb-rank">'+(s1>=s2?'🥇':'🥈')+'</span><span class="lb-name">'+n1Html+'</span><span class="lb-score">'+s1.toLocaleString()+'</span></div>'+

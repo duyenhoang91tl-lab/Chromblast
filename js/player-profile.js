@@ -288,12 +288,22 @@ function formatPlayerNameHtml(name, style){
   return '<span class="player-nick-wrap"><span class="player-avatar" aria-hidden="true">'+av+'</span><span class="player-nick" style="'+css+'">'+n+'</span></span>';
 }
 
-/** Bọc tên bằng hiệu ứng theo bậc rank Caro/Versus (0-11, xem CARO_RANKS/VERSUS_RANKS) —
- * rank càng cao tên càng nổi bật: màu rực rỡ hơn, có glow nhẹ, top rank thì lấp lánh động.
+/** Bọc tên bằng hiệu ứng theo bậc rank Caro/Versus — rank càng cao tên càng nổi bật:
+ * màu rực rỡ hơn, có glow nhẹ, top rank thì lấp lánh động + chữ chạy kiểu bảng ga tàu
+ * điện ngầm + nhấp nháy mờ dần chậm.
+ * `totalTiers` = tổng số bậc của hệ đang dùng (Caro 12, Versus 10) — dùng để chuẩn hoá
+ * về cùng 1 thang hiệu ứng 0-11 (CSS .rank-fx-0..11), để hệ 10 bậc cũng chạm được mức
+ * hiệu ứng cao nhất khi người chơi lên tới bậc chót của chính hệ đó (mặc định 12 nếu
+ * không truyền, giữ nguyên hành vi cũ cho các chỗ gọi sẵn có của Caro).
  * Dùng ở bảng xếp hạng, phòng chờ, thẻ người chơi, màn kết quả Caro/Versus. */
-function rankNameFxHtml(name, tier){
+function rankNameFxHtml(name, tier, totalTiers){
   const n = (typeof escapeHtml === 'function' ? escapeHtml(name) : String(name||''));
-  const tr = Math.max(0, Math.min(11, Number(tier)||0));
+  const total = Math.max(1, Number(totalTiers) || 12);
+  const raw = Math.max(0, Math.min(total - 1, Number(tier) || 0));
+  const tr = total > 1 ? Math.round((raw / (total - 1)) * 11) : 11;
+  if(tr >= 11){
+    return '<span class="rank-fx-marquee-box"><span class="rank-fx rank-fx-'+tr+' rank-fx-marquee-text">'+n+'</span></span>';
+  }
   return '<span class="rank-fx rank-fx-'+tr+'">'+n+'</span>';
 }
 

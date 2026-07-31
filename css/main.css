@@ -5338,6 +5338,21 @@ body:has(#secret-stage.active) .streak-dot.lit{
   0%,100%{ filter:brightness(1); }
   50%{ filter:brightness(1.25); }
 }
+/* Bậc cao nhất (rank-fx-11): thêm khung chữ chạy kiểu bảng ga tàu điện ngầm (trái←phải,
+   lặp lại) + nhấp nháy mờ dần chậm, ngoài màu/glow/lấp lánh đã có ở trên. */
+.rank-fx-marquee-box{
+  display:inline-block; overflow:hidden; white-space:nowrap;
+  max-width:110px; height:1.3em; position:relative; vertical-align:bottom;
+}
+.rank-fx-marquee-text{
+  display:inline-block; position:absolute; left:100%; top:0; white-space:nowrap;
+  animation:rankFxShift 2s linear infinite, rankFxPulse 1.6s ease-in-out infinite,
+            rankFxMarquee 7s linear infinite, rankFxFade 3.4s ease-in-out infinite;
+}
+@keyframes rankFxMarquee{ 0%{ left:100%; } 100%{ left:-100%; } }
+@keyframes rankFxFade{ 0%,100%{ opacity:1; } 50%{ opacity:0.45; } }
 @media (prefers-reduced-motion: reduce){
   .rank-fx-9, .rank-fx-10, .rank-fx-11{ animation:none; }
+  .rank-fx-marquee-text{ animation:none; position:static; }
+  .rank-fx-marquee-box{ overflow:visible; max-width:none; white-space:normal; }
 }
