@@ -4486,6 +4486,15 @@ body:has(#secret-stage.active) .streak-dot.lit{
 }
 .set-action:active{ transform:translateY(1px); box-shadow:0 1px 0 rgba(0,0,0,0.22); }
 .set-act-ico{ font-size:18px; width:28px; text-align:center; }
+.set-act-ico-wood{
+  display:inline-block; width:20px; height:20px; border-radius:5px;
+  background:
+    repeating-linear-gradient(100deg, rgba(255,255,255,0.12) 0 2px, transparent 2px 6px),
+    linear-gradient(160deg, #C9956A 0%, #8B5E3C 100%);
+  border:1px solid rgba(0,0,0,0.28);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
+  vertical-align:middle;
+}
 .set-c-purple{ background:linear-gradient(180deg,#9B6BFF,#6A3FD4); }
 .set-c-teal{ background:linear-gradient(180deg,#3ECFC9,#1FA8A3); }
 .set-c-blue{ background:linear-gradient(180deg,#5B9BFF,#2F6FD6); }
