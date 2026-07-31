@@ -676,8 +676,17 @@ const HIDDEN_MAP_LIST = [
 let clearedHiddenMaps = new Set(getSavedClearedMaps());
 
 let activeHiddenMapKey = null; // map ẩn đang chơi hiện tại (null = không ở trong map ẩn nào)
+// Lưu lại map ẩn đang chơi dở — nếu Android tắt ngầm app rồi mở lại (WebView load lại
+// index.html từ đầu), boot sẽ đọc key này để tự vào lại đúng map ẩn thay vì luôn về
+// màn hình bắt đầu. Chỉ áp dụng cho map ẩn (saga node) — bàn chính đã tự khôi phục đúng
+// stage sẵn qua syncUnlockGateFromSave(), không cần thêm gì.
+const HIDDEN_MAP_RESUME_KEY = 'chromablast_hidden_map_resume';
 function setActiveHiddenMap(key){
   activeHiddenMapKey = key;
+  try{
+    if(key) safeSet(HIDDEN_MAP_RESUME_KEY, JSON.stringify({ key, ts: Date.now() }));
+    else safeSet(HIDDEN_MAP_RESUME_KEY, '');
+  }catch(e){}
   const btn = document.getElementById('hiddenmap-help-btn');
   if(btn) btn.style.display = key ? 'flex' : 'none';
   if(typeof refreshArcadeHud==='function') refreshArcadeHud();
@@ -811,6 +820,26 @@ document.getElementById('resume-btn').addEventListener('click', togglePause);
 startGame();
 // Show persisted best score immediately after startGame (which resets score but not best)
 document.getElementById('best-box').textContent=t('bestLabel', best.toLocaleString());
+
+// Nếu Android vừa tắt ngầm app trong lúc đang chơi 1 map ẩn (rồi mở lại → trang load lại
+// từ đầu), tự vào lại đúng map ẩn đó thay vì luôn văng về màn hình bắt đầu. Chỉ áp dụng
+// khi còn "mới" (trong 1 giờ) và đã qua cổng Điều khoản/Thông báo từ trước (người chơi cũ).
+try{
+  const rawResume = safeGet(HIDDEN_MAP_RESUME_KEY);
+  if(rawResume){
+    const saved = JSON.parse(rawResume);
+    const freshEnough = saved && saved.key && (Date.now() - (saved.ts||0)) < 60*60*1000;
+    if(freshEnough && typeof preGameGatesReady==='function' && preGameGatesReady()){
+      activeHiddenMapKey = saved.key;
+      const startScreen = document.getElementById('start-screen');
+      if(startScreen){ startScreen.classList.add('hide'); startScreen.style.display='none'; }
+      if(typeof syncMenuOpenState==='function') syncMenuOpenState();
+      if(typeof replayActiveHiddenMap==='function') replayActiveHiddenMap();
+    } else {
+      safeSet(HIDDEN_MAP_RESUME_KEY, '');
+    }
+  }
+}catch(e){}
 
 /* ══ MAP ẨN 14 — SNAKE ══ */
 
