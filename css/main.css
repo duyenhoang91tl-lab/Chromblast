@@ -973,6 +973,40 @@ body.notif-open #start-screen{
 #game-root.hud-arcade #caro-btn .caro-btn-ico .caro-btn-online{
   font-size: 6px;
 }
+#versus-btn .vs-btn-ico{
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  pointer-events: none;
+  user-select: none;
+}
+#versus-btn .vs-btn-ico .vs-btn-emoji{
+  font-size: 15px;
+  line-height: 1;
+}
+#versus-btn .vs-btn-ico .vs-btn-online{
+  display: block;
+  font-size: 6px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: #4ade80;
+  text-transform: lowercase;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.45);
+  margin-top: 1px;
+  white-space: nowrap;
+}
+#game-root.hud-arcade #versus-btn.vs-unlocked .vs-btn-ico .vs-btn-emoji{
+  font-size: 14px;
+}
+#game-root.hud-arcade #versus-btn.vs-unlocked .vs-btn-ico .vs-btn-online{
+  font-size: 7px;
+}
 #caro-stage {
   display: none; position: fixed; inset: 0; z-index: 10060;
   background: transparent;
