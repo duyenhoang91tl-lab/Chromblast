@@ -725,16 +725,14 @@ async function openPlayerCard(opts){
       const vsRank = (typeof getVersusRank === 'function') ? getVersusRank(vs.points||0) : null;
       const caroTitle = caroRank ? (caroRank.icon+' '+caroRank.name) : '';
       const vsTitle = vsRank ? (vsRank.icon+' '+vsRank.name) : '';
-      const hasCaro = (s.total > 0 || s.points > 0);
-      const hasVs = (vs.total > 0 || vs.points > 0);
       let statsHtml = '';
-      if(hasCaro){
+      {
         const caroLine = (typeof t==='function'
           ? (t('caroWinRateLabel')+': '+rate+'% · '+t('ppCaroWLD', s.wins||0, s.losses||0, s.draws||0, rate))
           : (rate+'%'));
         statsHtml += '<div class="pc-mode-stats"><b>Caro</b> — '+caroTitle+'<br>'+caroLine+'</div>';
       }
-      if(hasVs){
+      {
         const vsLine = (typeof t==='function'
           ? (t('caroWinRateLabel')+': '+vsRate+'% · '+t('ppCaroWLD', vs.wins||0, vs.losses||0, vs.draws||0, vsRate))
           : (vsRate+'%'));
