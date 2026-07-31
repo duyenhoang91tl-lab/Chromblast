@@ -988,7 +988,7 @@ body.notif-open #start-screen{
   max-width: 100%;
 }
 #versus-btn .vs-btn-ico .vs-btn-emoji{
-  font-size: 7px;
+  font-size: 12px;
   line-height: 1;
 }
 #versus-btn .vs-btn-ico .vs-btn-online{
@@ -1004,10 +1004,10 @@ body.notif-open #start-screen{
   white-space: nowrap;
 }
 #game-root.hud-arcade #versus-btn.vs-unlocked .vs-btn-ico .vs-btn-emoji{
-  font-size: 6px;
+  font-size: 14px;
 }
 #game-root.hud-arcade #versus-btn.vs-unlocked .vs-btn-ico .vs-btn-online{
-  font-size: 6px;
+  font-size: 7px;
   letter-spacing: -0.03em;
 }
 #caro-stage {
