@@ -8,6 +8,33 @@ const PLAYER_PROFILE_KEY = 'chromablast_player_profile';
 const NICK_MAX_LEN = 24;
 const NICK_MIN_LEN = 1;
 
+/** Quyền riêng tư hồ sơ: mục nào được phép ẩn với đối thủ khi họ bấm xem hồ sơ.
+ *  Tên, Level và Tình trạng kết đôi KHÔNG có ở đây vì luôn bắt buộc hiển thị. */
+const PROFILE_VIS_KEY = 'chromablast_profile_visibility';
+function _profileVisDefault(){
+  return { maps: true, caroRank: true, versusRank: true };
+}
+function getProfileVisibility(){
+  try{
+    const raw = safeGet(PROFILE_VIS_KEY);
+    if(!raw) return _profileVisDefault();
+    return Object.assign(_profileVisDefault(), JSON.parse(raw) || {});
+  }catch(e){ return _profileVisDefault(); }
+}
+function setProfileVisibility(patch){
+  const next = Object.assign(getProfileVisibility(), patch || {});
+  try{ safeSet(PROFILE_VIS_KEY, JSON.stringify(next)); }catch(e){}
+  return next;
+}
+function _ppSetVisToggle(id, on){
+  const btn = document.getElementById(id);
+  if(!btn) return;
+  btn.classList.toggle('active', !!on);
+  btn.textContent = on
+    ? (typeof t==='function'?t('ppVisOn'):'Bật')
+    : (typeof t==='function'?t('ppVisOff'):'Tắt');
+}
+
 /** ~10 font đặc biệt cho nickname (local woff2 trong css/nick-fonts.css) */
 const NICK_FONTS = [
   { id: 'nunito',    family: "'Nunito', system-ui, sans-serif", label: 'Nunito' },
@@ -514,6 +541,10 @@ function openPlayerProfilePanel(){
   document.getElementById('pp-italic')?.classList.toggle('active', !!p.italic);
   renderAvatarPicker(p.avatar || getPlayerAvatar());
   renderNickFontList(p.fontId || 'nunito');
+  const vis = getProfileVisibility();
+  _ppSetVisToggle('pp-vis-maps', vis.maps);
+  _ppSetVisToggle('pp-vis-caro', vis.caroRank);
+  _ppSetVisToggle('pp-vis-versus', vis.versusRank);
   const idEl = document.getElementById('pp-player-id');
   if(idEl) idEl.textContent = ensurePublicPlayerId();
   const hint = document.getElementById('pp-rename-hint');
@@ -614,6 +645,16 @@ function initPlayerProfileUI(){
 
   document.getElementById('settings-player-edit')?.addEventListener('click', openPlayerProfilePanel);
   document.getElementById('account-edit-profile')?.addEventListener('click', openPlayerProfilePanel);
+
+  [['pp-vis-maps','maps'], ['pp-vis-caro','caroRank'], ['pp-vis-versus','versusRank']].forEach(([id, field])=>{
+    document.getElementById(id)?.addEventListener('click', async ()=>{
+      try{sfxClick();}catch(e){}
+      const cur = getProfileVisibility();
+      const next = setProfileVisibility({ [field]: !cur[field] });
+      _ppSetVisToggle(id, next[field]);
+      try{ if(typeof syncProfileVisibilityOnline === 'function') await syncProfileVisibilityOnline(); }catch(e){}
+    });
+  });
 
   const p = getPlayerProfile();
   if(!p.nick){

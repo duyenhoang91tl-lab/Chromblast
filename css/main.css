@@ -3710,6 +3710,13 @@ body:has(#secret-stage.active) .streak-dot.lit{
   border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.06); color: #fff; font-weight: 700;
 }
 .pp-style-btn.active{ border-color: #ffd54a; background: rgba(255,213,74,0.18); color: #ffd54a; }
+.pp-vis-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin: 8px 0; }
+.pp-vis-label{ font-size: 13px; color: #f2f2f7; font-weight: 700; }
+.pp-vis-toggle{
+  min-width: 56px; padding: 6px 12px; border-radius: 999px; cursor: pointer; text-align:center;
+  border: 1px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.6); font-weight: 800; font-size: 12px;
+}
+.pp-vis-toggle.active{ border-color: #66bb6a; background: rgba(102,187,106,0.22); color: #a5d6a7; }
 .pp-font-label{
   margin: 12px 0 6px; font-size: 12px; font-weight: 800; color: rgba(255,255,255,0.85);
 }
