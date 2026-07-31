@@ -130,7 +130,8 @@ function _vsBuildArena(){
   try{ if(typeof setExclusivePlayMode === 'function') setExclusivePlayMode('versus'); }catch(e){}
   arena=document.createElement('div'); arena.id='versus-arena';
   const online = !!( _vs && _vs.online && _vs.online.roomId );
-  if(!online && _vs && _vs.layoutBoost) arena.classList.add('vs-boost');
+  if(_vs && typeof _vs.layoutBoost !== 'boolean') _vs.layoutBoost = _vsGetLayoutBoost();
+  if(_vs && _vs.layoutBoost) arena.classList.add('vs-boost');
   const nTop = escapeHtml(_vs.names[0] || 'P1');
   const nBot = escapeHtml(_vs.names[1] || 'P2');
   const avTop = escapeHtml((_vs.avatars && _vs.avatars[0]) || '🐶');
@@ -142,6 +143,7 @@ function _vsBuildArena(){
   arena.innerHTML =
     '<div id="vs-topbar" class="vs-topbar">'+
       '<button type="button" id="vs-chat-fab" class="vs-chat-fab" title="Chat" aria-label="Chat">💬</button>'+
+      '<button type="button" id="vs-layout-toggle-btn" class="vs-layout-toggle-btn" title="'+((typeof t==='function'?t('vsLayoutBoost'):null)||'Đổi cỡ bàn')+'" aria-pressed="'+(arena.classList.contains('vs-boost')?'true':'false')+'">📐</button>'+
       '<div class="vs-topbar-right">'+
         '<div id="vs-mid-timer" class="vs-mid-timer" title="Thời gian" aria-label="Đồng hồ">'+
           '<span class="vs-timer-crown" aria-hidden="true"></span>'+
@@ -254,6 +256,16 @@ function _vsBuildArena(){
   document.getElementById('vs-chat-fab')?.addEventListener('click', ()=>{
     try{ sfxClick(); }catch(e){}
     _vsToggleChat();
+  });
+  document.getElementById('vs-layout-toggle-btn')?.addEventListener('click', ()=>{
+    try{ sfxClick(); }catch(e){}
+    document.getElementById('versus-arena').classList.toggle('vs-boost');
+    const nowBoost = document.getElementById('versus-arena').classList.contains('vs-boost');
+    if(_vs) _vs.layoutBoost = nowBoost;
+    _vsSetLayoutBoost(nowBoost);
+    const btn = document.getElementById('vs-layout-toggle-btn');
+    if(btn) btn.setAttribute('aria-pressed', nowBoost ? 'true' : 'false');
+    requestAnimationFrame(()=>{ _vsReflowGrids(); });
   });
   document.getElementById('vs-chat-close')?.addEventListener('click', ()=> _vsToggleChat(false));
   if(online){

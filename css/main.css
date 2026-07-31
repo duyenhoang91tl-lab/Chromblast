@@ -3360,6 +3360,7 @@ body:has(#secret-stage.active) .streak-dot.lit{
   display:flex; align-items:center; gap:6px;
 }
 .vs-chat-fab,
+.vs-layout-toggle-btn,
 .vs-quit-btn,
 #vs-quit-btn,
 .vs-mid-timer,
@@ -3382,6 +3383,24 @@ body:has(#secret-stage.active) .streak-dot.lit{
   padding:0; margin:0;
 }
 .vs-chat-fab:active{ transform:scale(0.94) !important; }
+.vs-layout-toggle-btn{
+  position:static !important;
+  width:30px; min-width:30px;
+  border-radius:50%;
+  border:1.5px solid rgba(120,190,255,0.5);
+  background:rgba(255,255,255,0.08);
+  color:#f2f2f7; font-size:14px; line-height:1;
+  box-shadow:0 2px 8px rgba(0,0,0,0.35);
+  cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  padding:0; margin:0;
+}
+.vs-layout-toggle-btn:active{ transform:scale(0.94); }
+.vs-layout-toggle-btn[aria-pressed="true"]{
+  border-color:rgba(255,213,74,0.8);
+  background:linear-gradient(145deg, rgba(255,152,0,0.35), rgba(255,213,74,0.28));
+  color:#ffd54a;
+}
 /* Đồng hồ bấm giờ — cùng chiều cao nốt Thoát */
 .vs-mid-timer,
 #vs-mid-timer{
@@ -3791,8 +3810,8 @@ body:has(#secret-stage.active) .streak-dot.lit{
   .vs-chip-scoreline{ justify-content:center; }
   .vs-chip-avatar{ width:36px; height:36px; font-size:19px; border-radius:10px; }
 
-  .vs-chat-fab, .vs-quit-btn, #vs-quit-btn, .vs-mid-timer, #vs-mid-timer{ height:28px; }
-  .vs-chat-fab, .vs-mid-timer, #vs-mid-timer{ width:28px; min-width:28px; }
+  .vs-chat-fab, .vs-layout-toggle-btn, .vs-quit-btn, #vs-quit-btn, .vs-mid-timer, #vs-mid-timer{ height:28px; }
+  .vs-chat-fab, .vs-layout-toggle-btn, .vs-mid-timer, #vs-mid-timer{ width:28px; min-width:28px; }
   .vs-quit-btn, #vs-quit-btn{ min-width:48px; font-size:10px; padding:0 8px; }
   .vs-timer-num{ font-size:10px; }
 }
