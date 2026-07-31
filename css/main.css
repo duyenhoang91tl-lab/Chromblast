@@ -1079,6 +1079,7 @@ body.notif-open #start-screen{
 }
 .player-nick-wrap { display: inline-flex; align-items: center; gap: 6px; }
 .player-avatar { font-size: 1.15em; line-height: 1; }
+#header-avatar { cursor: pointer; }
 .player-card-modal { text-align: center; max-width: 340px; }
 .pc-head { margin: 8px 0 12px; }
 .pc-progress {

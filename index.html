@@ -165,7 +165,7 @@
 <div id="game-root">
   <div id="header">
     <div id="header-player" aria-label="Player">
-      <div id="header-avatar" class="header-avatar" aria-hidden="true">🐶</div>
+      <div id="header-avatar" class="header-avatar" role="button" tabindex="0">🐶</div>
       <div class="header-player-meta">
         <div id="header-player-name">Player</div>
         <div id="header-map-label">Map chính</div>
@@ -1001,7 +1001,7 @@
     </div>
     <div class="caro-bottombar">
       <div class="caro-me-chip" id="caro-me-chip">
-        <button type="button" id="caro-me-avatar" class="caro-me-avatar" title="Bạn" disabled>🐶</button>
+        <button type="button" id="caro-me-avatar" class="caro-me-avatar" title="Bạn">🐶</button>
         <div class="caro-me-meta">
           <span id="caro-me-name" class="caro-me-name">Bạn</span>
           <span id="caro-marks" class="caro-marks">Bạn <b class="caro-x">X</b> · Đối thủ <b class="caro-o">O</b></span>
@@ -1014,7 +1014,7 @@
 
   <div id="player-card-panel" class="admin-panel-like">
     <div class="admin-card player-card-modal">
-      <div class="admin-title"><span data-i18n="caroOppCardTitle">Hồ sơ đối thủ</span><button class="admin-close" id="pc-close-btn">✕</button></div>
+      <div class="admin-title"><span id="pc-title" data-i18n="caroOppCardTitle">Hồ sơ đối thủ</span><button class="admin-close" id="pc-close-btn">✕</button></div>
       <div class="pc-head">
         <div id="pc-avatar" class="pc-avatar">🐶</div>
         <div id="pc-name" class="pc-name">—</div>
