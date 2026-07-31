@@ -1,9 +1,14 @@
 const { setGlobalOptions } = require('firebase-functions/v2');
 const { onDocumentCreated, onDocumentUpdated } = require('firebase-functions/v2/firestore');
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
-const admin = require('firebase-admin');
+const { initializeApp } = require('firebase-admin/app');
+const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 const { filterText, containsProfanity } = require('./profanity-filter.js');
-admin.initializeApp();
+initializeApp();
+// Dùng API modular (getFirestore/FieldValue) thay vì admin.firestore() namespace cũ —
+// trên firebase-admin@14 kiểu namespace cũ báo lỗi "admin.firestore is not a function"
+// (namespace không còn tự đăng ký khi chỉ require('firebase-admin') trơn).
+const db = getFirestore();
 // Đặt vùng mặc định cho toàn bộ function trong file này — nên trùng với
 // vùng của Cloud Firestore trong dự án Firebase để giảm độ trễ.
 setGlobalOptions({ region: 'asia-southeast1' });
@@ -23,7 +28,7 @@ async function moderateMessage(snap) {
   return snap.ref.update({
     text: cleaned,
     moderated: true,
-    moderatedAt: admin.firestore.FieldValue.serverTimestamp()
+    moderatedAt: FieldValue.serverTimestamp()
   });
 }
 exports.moderateWorldChat = onDocumentCreated(
@@ -74,8 +79,8 @@ function periodKey(kind, when) {
 exports.startSoloRun = onCall({ region: 'asia-southeast1' }, async (request) => {
   const uid = request.auth && request.auth.uid;
   if (!uid) throw new HttpsError('unauthenticated', 'Cần đăng nhập.');
-  await admin.firestore().collection('players').doc(uid).set({
-    currentRunStartedAt: admin.firestore.FieldValue.serverTimestamp()
+  await db.collection('players').doc(uid).set({
+    currentRunStartedAt: FieldValue.serverTimestamp()
   }, { merge: true });
   return { ok: true };
 });
@@ -99,7 +104,6 @@ exports.submitSoloScore = onCall({ region: 'asia-southeast1' }, async (request) 
   const country = typeof region.country === 'string' ? region.country.slice(0, 3) : 'VN';
   const continent = typeof region.continent === 'string' ? region.continent.slice(0, 3) : 'AS';
 
-  const db = admin.firestore();
   const playerRef = db.collection('players').doc(uid);
   const playerSnap = await playerRef.get();
   const playerData = playerSnap.exists ? playerSnap.data() : {};
@@ -126,7 +130,7 @@ exports.submitSoloScore = onCall({ region: 'asia-southeast1' }, async (request) 
     await playerRef.set({
       bestScore: score,
       country, continent,
-      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      updatedAt: FieldValue.serverTimestamp()
     }, { merge: true });
   }
 
@@ -139,7 +143,7 @@ exports.submitSoloScore = onCall({ region: 'asia-southeast1' }, async (request) 
     if (score > prev) {
       await entryRef.set({
         uid, name: displayName, avatar, score, country, continent,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        updatedAt: FieldValue.serverTimestamp()
       }, { merge: true });
     }
   }));
@@ -161,7 +165,6 @@ exports.applyMatchResult = onDocumentUpdated(
     if (before.status === 'finished' || after.status !== 'finished') return null;
     if (after.statsApplied) return null;
 
-    const db = admin.firestore();
     const hostId = after.hostId, guestId = after.guestId;
     if (!hostId || !guestId) return null;
 
@@ -170,12 +173,12 @@ exports.applyMatchResult = onDocumentUpdated(
       const isDraw = !!after.isDraw;
       const applyPlayer = async (uid, outcome) => {
         if (!uid) return;
-        const patch = { updatedAt: admin.firestore.FieldValue.serverTimestamp() };
+        const patch = { updatedAt: FieldValue.serverTimestamp() };
         if (outcome === 'win') {
-          patch.caroWins = admin.firestore.FieldValue.increment(1);
-          patch.caroPoints = admin.firestore.FieldValue.increment(25);
+          patch.caroWins = FieldValue.increment(1);
+          patch.caroPoints = FieldValue.increment(25);
         } else if (outcome === 'loss') {
-          patch.caroLosses = admin.firestore.FieldValue.increment(1);
+          patch.caroLosses = FieldValue.increment(1);
           // Thua trừ điểm đối xứng với thắng (-25), nhưng không cho xuống âm — Firestore
           // increment() không tự chặn được ở 0 nên phải đọc điểm hiện tại rồi tính bằng tay.
           const playerRef = db.collection('players').doc(uid);
@@ -183,8 +186,8 @@ exports.applyMatchResult = onDocumentUpdated(
           const currentPts = (playerSnap.exists && Number(playerSnap.data().caroPoints)) || 0;
           patch.caroPoints = Math.max(0, currentPts - 25);
         } else if (outcome === 'draw') {
-          patch.caroDraws = admin.firestore.FieldValue.increment(1);
-          patch.caroPoints = admin.firestore.FieldValue.increment(8);
+          patch.caroDraws = FieldValue.increment(1);
+          patch.caroPoints = FieldValue.increment(8);
         } else return;
         await db.collection('players').doc(uid).set(patch, { merge: true });
       };
@@ -212,13 +215,13 @@ exports.applyMatchResult = onDocumentUpdated(
         const snap = await ref.get();
         const prevBest = snap.exists ? (snap.data().bestPvpScore || 0) : 0;
         const patch = {
-          pvpWins: admin.firestore.FieldValue.increment(u.win ? 1 : 0),
-          pvpLosses: admin.firestore.FieldValue.increment(!u.win && !u.draw ? 1 : 0),
-          pvpDraws: admin.firestore.FieldValue.increment(u.draw ? 1 : 0),
-          updatedAt: admin.firestore.FieldValue.serverTimestamp()
+          pvpWins: FieldValue.increment(u.win ? 1 : 0),
+          pvpLosses: FieldValue.increment(!u.win && !u.draw ? 1 : 0),
+          pvpDraws: FieldValue.increment(u.draw ? 1 : 0),
+          updatedAt: FieldValue.serverTimestamp()
         };
         if (u.win) {
-          patch.pvpPoints = admin.firestore.FieldValue.increment(25);
+          patch.pvpPoints = FieldValue.increment(25);
         } else if (!u.draw) {
           // Thua trừ điểm đối xứng với thắng (-25), sàn 0 — giống công thức Caro,
           // phải đọc điểm hiện tại rồi tính bằng tay vì increment() không tự chặn ở 0.
