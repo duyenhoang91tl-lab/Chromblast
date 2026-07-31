@@ -1009,10 +1009,10 @@ body.notif-open #start-screen{
   margin-top: 1px;
   white-space: nowrap;
 }
-#game-root.hud-arcade #versus-btn.vs-unlocked .vs-btn-ico .vs-btn-emoji{
+#game-root.hud-arcade #versus-btn .vs-btn-ico .vs-btn-emoji{
   font-size: 14px;
 }
-#game-root.hud-arcade #versus-btn.vs-unlocked .vs-btn-ico .vs-btn-online{
+#game-root.hud-arcade #versus-btn .vs-btn-ico .vs-btn-online{
   font-size: 7px;
   letter-spacing: -0.03em;
 }
@@ -4327,10 +4327,13 @@ body:has(#secret-stage.active) .streak-dot.lit{
 #game-root.hud-arcade #game-controls > button:not(#pause-btn):not(#account-btn):not(#mute-btn):not(#versus-btn):not(#caro-btn):not(#chat-btn):not(#admin-btn) {
   display: none !important;
 }
-#versus-btn { display: none; }
-#versus-btn.vs-unlocked { display: flex !important; align-items: center; justify-content: center; }
+#versus-btn {
+  display: flex !important; align-items: center; justify-content: center;
+  opacity: 0.7;
+}
+#versus-btn.vs-unlocked { opacity: 1; }
 #game-root.hud-arcade #admin-btn.admin-on,
-#game-root.hud-arcade #versus-btn.vs-unlocked,
+#game-root.hud-arcade #versus-btn,
 #game-root.hud-arcade #caro-btn,
 #game-root.hud-arcade #caro-btn.caro-unlocked,
 #game-root.hud-arcade #chat-btn,
@@ -4351,7 +4354,7 @@ body:has(#secret-stage.active) .streak-dot.lit{
   color: #1a0a00 !important;
   box-shadow: 0 0 10px rgba(255,160,40,0.7), inset 0 1px 0 rgba(255,255,255,0.5);
 }
-#game-root.hud-arcade #versus-btn.vs-unlocked {
+#game-root.hud-arcade #versus-btn {
   background: radial-gradient(circle at 35% 30%, #ffe08a 0%, #f0a820 55%, #c87800 100%) !important;
   border: 2px solid #fff0c0 !important;
   box-shadow: 0 0 10px rgba(255,180,40,0.7), inset 0 1px 0 rgba(255,255,255,0.5);
@@ -5002,7 +5005,7 @@ body:has(#secret-stage.active) .streak-dot.lit{
 #game-root.hud-arcade #game-controls #account-btn,
 #game-root.hud-arcade #game-controls #mute-btn,
 #game-root.hud-arcade #game-controls #chat-btn,
-#game-root.hud-arcade #game-controls #versus-btn.vs-unlocked,
+#game-root.hud-arcade #game-controls #versus-btn,
 #game-root.hud-arcade #game-controls #caro-btn,
 #game-root.hud-arcade #game-controls #caro-btn.caro-unlocked {
   width: 40px !important;
