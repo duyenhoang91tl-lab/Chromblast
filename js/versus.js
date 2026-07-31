@@ -1,8 +1,8 @@
 // ═══════════════════════════════════════════════════════════════
 // js/versus.js — ĐẤU 1-1 SONG SONG (Cùng máy = đấu AI, luôn mở; Online từ Level 3)
-// Hai bàn cờ 7×7 trên cùng màn hình (bàn trên xoay 180° — 2 người ngồi đối
-// diện). Cùng chuỗi khối từ CÙNG hạt giống (PRNG riêng mỗi người → công bằng
-// tuyệt đối dù tốc độ đặt khác nhau).
+// Hai bàn cờ 7×7 trên cùng màn hình, cùng chiều (bàn của máy/đối thủ bên trái,
+// bàn của mình bên phải). Cùng chuỗi khối từ CÙNG hạt giống (PRNG riêng mỗi
+// người → công bằng tuyệt đối dù tốc độ đặt khác nhau).
 // Xoay/đặt giống map thường: chạm chọn · chạm lại xoay · kéo ghost + ô mờ · thả đặt.
 // Nổ khi lấp đầy 1 hàng/cột, hoặc cụm cùng màu >= VS_GROUP_MIN (8) ô nối liền.
 // Cứ 3 lần ăn (không cần liên tiếp) → rút thẻ chướng ngại lên bàn ĐỐI THỦ.
@@ -18,6 +18,16 @@ const VERSUS_MIN_LEVEL = 3;    // cấp (XP) tối thiểu để mở phòng onl
 const VERSUS_WIN_XP = 30;
 
 const VS_N = 7;                // bàn 7×7
+
+// Chế độ hiển thị khi xoay ngang, chỉ áp dụng cho "Cùng máy" (đấu AI):
+// mặc định 2 bàn bằng nhau; nếu bật thì bàn của mình chiếm 3/4, bàn máy 1/4.
+const VS_LAYOUT_KEY = 'vs_layout_boost';
+function _vsGetLayoutBoost(){
+  try{ return localStorage.getItem(VS_LAYOUT_KEY) === '1'; }catch(e){ return false; }
+}
+function _vsSetLayoutBoost(v){
+  try{ localStorage.setItem(VS_LAYOUT_KEY, v ? '1' : '0'); }catch(e){}
+}
 
 const VS_COLORS = COLORS.slice(0, 5);
 
@@ -99,6 +109,9 @@ function startVersusMatch(){
   try{ if(typeof unlockOrientation==='function') unlockOrientation(); }catch(e){}
   const n1=(document.getElementById('vs-name1').value.trim()||t('vsP1'));
   const n2=t('vsP2');
+  const boostChk = document.getElementById('vs-layout-boost');
+  const layoutBoost = !!(boostChk && boostChk.checked);
+  _vsSetLayoutBoost(layoutBoost);
   _vsHide('versus-setup-panel');
   if(typeof hardResetAllModes==='function') hardResetAllModes();
   try{
@@ -111,7 +124,7 @@ function startVersusMatch(){
   const seed=(Date.now() ^ (Math.random()*0xFFFFFFF))>>>0;
   const avMe = (typeof getPlayerAvatar === 'function') ? getPlayerAvatar() : '🐶';
   _vs={ seed, names:[n1,n2], avatars:[avMe, '🤖'], timeLeft:VERSUS_TIME, timer:null,
-        localSkins:_vsGetLocalSkinPrefs(1),
+        localSkins:_vsGetLocalSkinPrefs(1), layoutBoost,
         players:[_vsNewPlayer(0,seed), _vsNewPlayer(1,seed)] };
   versusMode=true;
   _vsBuildArena();

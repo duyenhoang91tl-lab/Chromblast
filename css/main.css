@@ -869,6 +869,12 @@ body.notif-open #start-screen{
 .vs-local-block-hub{ margin-top:16px; }
 .vs-setup-player{ margin-top:10px; padding:8px 10px; border-radius:12px; background:rgba(255,255,255,0.06); }
 .vs-setup-player-label{ font-weight:900; font-size:11px; opacity:0.85; margin-bottom:6px; }
+.vs-layout-toggle{
+  display:flex; align-items:center; gap:8px; margin-top:12px; padding:8px 10px;
+  border-radius:12px; background:rgba(255,255,255,0.06); cursor:pointer;
+  font-size:12px; font-weight:800; color:#f2f2f7; text-align:left;
+}
+.vs-layout-toggle input{ flex-shrink:0; width:18px; height:18px; accent-color:#ffd54a; }
 .vs-skin-row{ display:flex; align-items:center; gap:6px; margin-top:5px; }
 .vs-skin-row-label{ font-size:10px; font-weight:800; opacity:0.7; min-width:34px; flex:0 0 auto; }
 .vs-skin-scroll{ display:flex; gap:6px; overflow-x:auto; padding:2px 2px 4px; flex:1 1 auto; scrollbar-width:thin; }
@@ -3798,6 +3804,21 @@ body:has(#secret-stage.active) .streak-dot.lit{
   .vs-tray{ min-height:22px; }
   .vs-piece{ width:30px; height:26px; }
   .vs-mini{ transform:scale(0.75); }
+}
+
+/* ══ ĐẤU 1-1 — chế độ "Ưu tiên bàn của tôi": chỉ áp dụng cho Cùng máy (không phải
+   online), khi người chơi bật ô tích trong màn thiết lập. Bàn của mình chiếm 3/4
+   bề ngang, bàn của máy còn lại 1/4 — bàn cờ vẫn luôn vuông (JS ép width=height),
+   chỉ đổi bề rộng khung chứa nên bàn máy sẽ nhỏ lại tương ứng. ══ */
+@media (orientation: landscape){
+  #versus-arena.vs-boost .vs-top{ flex:3 1 0; max-width:75%; }
+  #versus-arena.vs-boost .vs-bottom{ flex:1 1 0; max-width:25%; }
+  #versus-arena.vs-boost .vs-top .vs-grid{ --vs-size: min(96vh, 66vw, 560px); }
+  #versus-arena.vs-boost .vs-bottom .vs-grid{ --vs-size: min(96vh, 19vw, 200px); }
+}
+@media (orientation: landscape) and (max-height: 420px){
+  #versus-arena.vs-boost .vs-top .vs-grid{ --vs-size: min(90vh, 58vw, 400px); }
+  #versus-arena.vs-boost .vs-bottom .vs-grid{ --vs-size: min(90vh, 16vw, 140px); }
 }
 
 /* ══ CỜ CARO — xoay ngang: khối trái = nội dung đối thủ (topbar), khối phải = nội dung của bạn (bottombar),

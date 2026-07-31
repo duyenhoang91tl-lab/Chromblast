@@ -104,6 +104,8 @@ function openVersusSetup(){
   const p1=document.getElementById('vs-name1');
   if(p1 && typeof currentUser!=='undefined' && currentUser && currentUser.username) p1.value=currentUser.username;
   try{ _vsFillLocalSkinPicker(1); }catch(e){}
+  const boostChk = document.getElementById('vs-layout-boost');
+  if(boostChk) boostChk.checked = _vsGetLayoutBoost();
   _vsShow('versus-setup-panel');
   _vsHide('online-hub-panel');
   const hint=document.getElementById('vs-online-locked-note');
@@ -128,6 +130,7 @@ function _vsBuildArena(){
   try{ if(typeof setExclusivePlayMode === 'function') setExclusivePlayMode('versus'); }catch(e){}
   arena=document.createElement('div'); arena.id='versus-arena';
   const online = !!( _vs && _vs.online && _vs.online.roomId );
+  if(!online && _vs && _vs.layoutBoost) arena.classList.add('vs-boost');
   const nTop = escapeHtml(_vs.names[0] || 'P1');
   const nBot = escapeHtml(_vs.names[1] || 'P2');
   const avTop = escapeHtml((_vs.avatars && _vs.avatars[0]) || '🐶');
