@@ -535,82 +535,56 @@ function resetMechanicState(){
   updateMirrorBreakUI();
 }
 // Mỗi vòng (v1→v20) chỉ có ĐÚNG MỘT cơ chế ẩn mới, không trùng/cộng dồn với vòng trước.
-// vòng 1: dây gai · vòng 2: núi · vòng 3: sóc trộm ô · ... · vòng 20: Vua Rồng
+// vòng 1: tắc kè hoa · vòng 2: núi · vòng 3: sóc trộm ô · ... · vòng 11: dây gai · ... · vòng 20: Vua Rồng
 function applyRoundMechanics(){
-  if(tierActive(1) && !thornMode){
+  if(tierActive(11) && !thornMode){
     thornMode=true; thornPlacementCount=0; thornWave=0; thornThreshold=6;
     thornCells=new Set(); cellBurstCount={};
-    setTimeout(()=>showComboFlash(0,false,MECH_ALERT(1)), 900);
   }
   if(tierActive(2) && mountainCells.size===0 && mountainRespawn<=0){
     spawnMountain();
-    setTimeout(()=>showComboFlash(0,false,MECH_ALERT(2)), 1600);
   }
   if(tierActive(3) && !squirrel){
     spawnSquirrel();
-    setTimeout(()=>showComboFlash(0,false,MECH_ALERT(3)), 2300);
   }
-  if(tierActive(4)) announceMech('ice',MECH_ALERT(4), 3000);
   if(tierActive(5)){
     if(!fogCenter && fogCooldown<=0) spawnFog();
-    announceMech('fog',MECH_ALERT(5), 3700);
   }
   if(tierActive(6)){
     if(!bombCell && bombRespawn<=0) spawnBomb();
-    announceMech('bomb',MECH_ALERT(6), 4400);
   }
-  if(tierActive(7)) announceMech('tornado',MECH_ALERT(7), 5100);
   if(tierActive(8)){
     if(!dragonEgg && eggRespawn<=0) spawnEgg();
-    announceMech('egg',MECH_ALERT(8), 5800);
   }
   if(tierActive(9)){
     if(!spider && spiderRespawn<=0) spawnSpider();
-    announceMech('spider',MECH_ALERT(9), 6500);
   }
   if(tierActive(10)){
     if(cloudCol<0) cloudCol=rnd(COLS);
-    announceMech('cloud',MECH_ALERT(10), 7200);
   }
-  if(tierActive(11)) announceMech('cham',MECH_ALERT(11), 7900);
   if(tierActive(12)){
     if(!blackHole && bhRespawn<=0) spawnBlackHole();
-    announceMech('bh',MECH_ALERT(12), 8600);
   }
   if(tierActive(13)){
     if(!ghostCell && ghostRespawn<=0) spawnGhost();
-    announceMech('ghost',MECH_ALERT(13), 9300);
   }
   if(tierActive(14)){
     if(!snail && snailRespawn<=0) spawnSnail();
-    announceMech('snail',MECH_ALERT(14), 10000);
   }
-  if(tierActive(15)) announceMech('wall',MECH_ALERT(15), 10700);
-  if(tierActive(16)) announceMech('lightning',MECH_ALERT(16), 11400);
   if(tierActive(17)){
     if(!snakeSpirit && snakeSpiritRespawn<=0) spawnSnakeSpirit();
-    announceMech('snakespirit',MECH_ALERT(17), 12100);
   }
   if(tierActive(18)){
     if(mountainCells.size===0 && mountainRespawn<=0) spawnMountain(); // đỉnh núi lửa riêng của vòng 18
-    announceMech('volcano',MECH_ALERT(18), 12800);
   }
   if(tierActive(19)){
     if(!portalA && portalRespawn<=0) spawnPortals();
-    announceMech('portal',MECH_ALERT(19), 13500);
   }
   if(tierActive(20)){
     if(!dragonKing && dkRespawn<=0) spawnDragonKing();
-    announceMech('dk',MECH_ALERT(20), 14200);
   }
   if(tierActive(21)){
     updateMirrorBreakUI();
-    announceMech('mirror',MECH_ALERT(21), 14900);
-  }
-  if(isComboTier(mainHardTier)){
-    const [a,b]=comboPairForTier(mainHardTier);
-    announceMech('combo'+mainHardTier,
-      '🌗 '+t('roundN', mainHardTier)+' — '+MECH_NAME(a)+' + '+MECH_NAME(b)+'!', 700);
   }
 }
 function spawnMountain(){
@@ -833,8 +807,8 @@ function stepRoundMechanics(_mirrorPlacedCells,_mirrorPlacedColor){
     cloudStepCount++;
     if(cloudStepCount>=MCFG('cloud','nhip')){ cloudStepCount=0; cloudWash(); }
   }
-  // 🦎 tắc kè đổi màu lén (CHỈ vòng 11)
-  if(tierActive(11)){
+  // 🦎 tắc kè đổi màu lén (CHỈ vòng 1)
+  if(tierActive(1)){
     chamStepCount++;
     if(chamStepCount>=MCFG('cham','nhip')){ chamStepCount=0; chameleonRepaint(); }
   }

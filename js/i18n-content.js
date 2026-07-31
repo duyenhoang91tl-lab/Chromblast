@@ -9,9 +9,9 @@
 const I18N_CONTENT = {
 
 vi: {
-  mechNames:['','🌿 Dây gai','⛰️ Núi đá','🐿️ Sóc trộm ô','🧊 Băng giá','🌫️ Sương mù','💣 Bom hẹn giờ','🌪️ Lốc xoáy','🥚 Trứng rồng','🕷️ Nhện giăng tơ','🌧️ Mây mưa','🦎 Tắc kè hoa','🕳️ Hố đen','👻 Bóng ma','🐌 Ốc sên','🧱 Tường gạch','⚡ Sét đánh','🐍 Rắn thần','🌋 Núi lửa','🌀 Cổng dịch chuyển','🐲 Vua Rồng','🪞 Thế giới gương'],
+  mechNames:['','🦎 Tắc kè hoa','⛰️ Núi đá','🐿️ Sóc trộm ô','🧊 Băng giá','🌫️ Sương mù','💣 Bom hẹn giờ','🌪️ Lốc xoáy','🥚 Trứng rồng','🕷️ Nhện giăng tơ','🌧️ Mây mưa','🌿 Dây gai','🕳️ Hố đen','👻 Bóng ma','🐌 Ốc sên','🧱 Tường gạch','⚡ Sét đánh','🐍 Rắn thần','🌋 Núi lửa','🌀 Cổng dịch chuyển','🐲 Vua Rồng','🪞 Thế giới gương'],
   mechDesc:['',
-    'Ô nằm quá 5 lượt chưa nổ sẽ bị dây gai quấn, không nổ được nữa. Phá ô bên cạnh để gỡ gai.',
+    'Cứ 8 bước tắc kè lén đổi màu 2 ô. Nhìn kỹ màu trước khi đặt gạch.',
     'Cứ 10 bước núi lan rộng thêm 1 ô, ô có núi không dùng được. Phá ô cạnh núi để bào mòn núi.',
     'Sau 3 bước sóc sẽ ăn 1 ô, ô bị ăn không đặt được gạch. Loại bỏ sóc bằng cách phá ô bên cạnh nó — ô bị ăn sẽ hồi lại.',
     'Thỉnh thoảng 1 ô bị đóng băng. Nổ 2 lần mới vỡ: lần 1 nứt, lần 2 vỡ hẳn.',
@@ -21,7 +21,7 @@ vi: {
     'Trứng nở sau 12 bước và thiêu cả hàng. Phá ô cạnh trứng 2 lần để đập vỡ trước khi nở.',
     'Nhện khoá 1 khối trong khay 3 lượt không dùng được. Phá ô nhện đứng 5 lần để diệt nhện.',
     'Mây mưa biến 1 ô trong cột nó đứng thành ô xám. Xoá ô xám bằng cách nổ trọn hàng chứa nó.',
-    'Cứ 8 bước tắc kè lén đổi màu 2 ô. Nhìn kỹ màu trước khi đặt gạch.',
+    'Ô nằm quá 5 lượt chưa nổ sẽ bị dây gai quấn, không nổ được nữa. Phá ô bên cạnh để gỡ gai.',
     'Cứ 10 bước hố đen nuốt 1 ô màu gần nhất. Phá ô cạnh hố 3 lần để phong ấn hố.',
     'Bóng ma nhập vào 1 ô và hiện màu giả. Nổ trúng ô đó để trừ tà.',
     'Ốc sên bò 1 ô mỗi bước, để lại vệt nhớt chặn đặt gạch 4 bước. Phá ô cạnh ốc 2 lần để diệt.',
@@ -58,9 +58,9 @@ vi: {
 },
 
 en: {
-  mechNames:['','🌿 Thorn Vines','⛰️ Mountain','🐿️ Squirrel Thief','🧊 Ice','🌫️ Fog','💣 Time Bomb','🌪️ Tornado','🥚 Dragon Egg','🕷️ Spider Web','🌧️ Rain Cloud','🦎 Chameleon','🕳️ Black Hole','👻 Ghost','🐌 Snail','🧱 Brick Wall','⚡ Lightning','🐍 Snake Spirit','🌋 Volcano','🌀 Portal','🐲 Dragon King','🪞 Mirror World'],
+  mechNames:['','🦎 Chameleon','⛰️ Mountain','🐿️ Squirrel Thief','🧊 Ice','🌫️ Fog','💣 Time Bomb','🌪️ Tornado','🥚 Dragon Egg','🕷️ Spider Web','🌧️ Rain Cloud','🌿 Thorn Vines','🕳️ Black Hole','👻 Ghost','🐌 Snail','🧱 Brick Wall','⚡ Lightning','🐍 Snake Spirit','🌋 Volcano','🌀 Portal','🐲 Dragon King','🪞 Mirror World'],
   mechDesc:['',
-    'A cell left unpopped for 5 turns gets wrapped in thorns and can\'t pop. Blast a neighboring cell to remove the thorns.',
+    'Every 8 moves the chameleon secretly recolors 2 cells. Check colors before placing.',
     'Every 10 moves the mountain grows by 1 cell; mountain cells are unusable. Blast next to the mountain to erode it.',
     'Every 3 moves the squirrel eats 1 cell; eaten cells can\'t hold pieces. Blast a cell next to it to drive it away — eaten cells recover.',
     'Cells occasionally freeze. It takes 2 blasts to break: first cracks, second shatters.',
@@ -70,7 +70,7 @@ en: {
     'The egg hatches after 12 moves and burns the whole row. Blast next to it twice to break it first.',
     'The spider locks 1 tray piece for 3 turns. Blast its cell 5 times to kill it.',
     'The rain cloud turns 1 cell in its column gray. Clear the full row to remove the gray cell.',
-    'Every 8 moves the chameleon secretly recolors 2 cells. Check colors before placing.',
+    'A cell left unpopped for 5 turns gets wrapped in thorns and can\'t pop. Blast a neighboring cell to remove the thorns.',
     'Every 10 moves the black hole swallows the nearest colored cell. Blast next to it 3 times to seal it.',
     'The ghost possesses a cell and shows a fake color. Blast that cell to banish it.',
     'The snail crawls 1 cell per move, leaving slime that blocks placement for 4 moves. Blast next to it twice to kill it.',
@@ -107,9 +107,9 @@ en: {
 },
 
 ko: {
-  mechNames:['','🌿 가시덩굴','⛰️ 바위산','🐿️ 도둑 다람쥐','🧊 얼음','🌫️ 안개','💣 시한폭탄','🌪️ 회오리','🥚 용의 알','🕷️ 거미줄','🌧️ 비구름','🦎 카멜레온','🕳️ 블랙홀','👻 유령','🐌 달팽이','🧱 벽돌 벽','⚡ 번개','🐍 뱀 정령','🌋 화산','🌀 포털','🐲 드래곤 킹','🪞 거울 세계'],
+  mechNames:['','🦎 카멜레온','⛰️ 바위산','🐿️ 도둑 다람쥐','🧊 얼음','🌫️ 안개','💣 시한폭탄','🌪️ 회오리','🥚 용의 알','🕷️ 거미줄','🌧️ 비구름','🌿 가시덩굴','🕳️ 블랙홀','👻 유령','🐌 달팽이','🧱 벽돌 벽','⚡ 번개','🐍 뱀 정령','🌋 화산','🌀 포털','🐲 드래곤 킹','🪞 거울 세계'],
   mechDesc:['',
-    '5턴 동안 터뜨리지 않은 칸은 가시덩굴에 감겨 터뜨릴 수 없게 됩니다. 옆 칸을 터뜨려 가시를 제거하세요.',
+    '8턴마다 카멜레온이 몰래 2칸의 색을 바꿉니다. 놓기 전에 색을 잘 확인하세요.',
     '10턴마다 산이 1칸씩 넓어지며 산이 있는 칸은 사용할 수 없습니다. 산 옆 칸을 터뜨려 깎아내세요.',
     '3턴마다 다람쥐가 칸을 1개 먹으며 먹힌 칸에는 블록을 놓을 수 없습니다. 다람쥐 옆 칸을 터뜨려 쫓아내면 먹힌 칸이 복구됩니다.',
     '가끔 칸이 얼어붙습니다. 2번 터뜨려야 깨집니다: 1번째는 금, 2번째에 완전히 깨짐.',
@@ -119,7 +119,7 @@ ko: {
     '알은 12턴 후 부화해 한 줄을 태워버립니다. 부화 전에 옆 칸을 2번 터뜨려 깨세요.',
     '거미가 트레이 블록 1개를 3턴 동안 잠급니다. 거미 칸을 5번 터뜨려 처치하세요.',
     '비구름이 자기 열의 칸 1개를 회색으로 만듭니다. 그 행 전체를 없애야 회색 칸이 지워집니다.',
-    '8턴마다 카멜레온이 몰래 2칸의 색을 바꿉니다. 놓기 전에 색을 잘 확인하세요.',
+    '5턴 동안 터뜨리지 않은 칸은 가시덩굴에 감겨 터뜨릴 수 없게 됩니다. 옆 칸을 터뜨려 가시를 제거하세요.',
     '10턴마다 블랙홀이 가장 가까운 색 칸을 삼킵니다. 옆 칸을 3번 터뜨려 봉인하세요.',
     '유령이 칸에 빙의해 가짜 색을 보여줍니다. 그 칸을 터뜨려 쫓아내세요.',
     '달팽이가 매턴 1칸씩 기며 4턴 동안 블록을 놓을 수 없는 점액을 남깁니다. 옆 칸을 2번 터뜨려 처치하세요.',
@@ -156,9 +156,9 @@ ko: {
 },
 
 ja: {
-  mechNames:['','🌿 いばらのツタ','⛰️ 岩山','🐿️ どろぼうリス','🧊 氷','🌫️ 霧','💣 時限爆弾','🌪️ 竜巻','🥚 ドラゴンの卵','🕷️ クモの巣','🌧️ 雨雲','🦎 カメレオン','🕳️ ブラックホール','👻 おばけ','🐌 カタツムリ','🧱 レンガの壁','⚡ 落雷','🐍 蛇の精霊','🌋 火山','🌀 ポータル','🐲 ドラゴンキング','🪞 鏡の世界'],
+  mechNames:['','🦎 カメレオン','⛰️ 岩山','🐿️ どろぼうリス','🧊 氷','🌫️ 霧','💣 時限爆弾','🌪️ 竜巻','🥚 ドラゴンの卵','🕷️ クモの巣','🌧️ 雨雲','🌿 いばらのツタ','🕳️ ブラックホール','👻 おばけ','🐌 カタツムリ','🧱 レンガの壁','⚡ 落雷','🐍 蛇の精霊','🌋 火山','🌀 ポータル','🐲 ドラゴンキング','🪞 鏡の世界'],
   mechDesc:['',
-    '5ターン消せなかったマスはツタに巻かれ消せなくなります。隣のマスを消してツタを外しましょう。',
+    '8手ごとにカメレオンがこっそり2マスの色を変えます。置く前に色をよく確認！',
     '10手ごとに山が1マス広がり、山のマスは使えません。山の隣を消して削りましょう。',
     '3手ごとにリスがマスを1つ食べ、食べられたマスにはブロックを置けません。隣のマスを消して追い払うと、食べられたマスは元に戻ります。',
     'ときどきマスが凍ります。2回消すと割れます：1回目でヒビ、2回目で粉砕。',
@@ -168,7 +168,7 @@ ja: {
     '卵は12手で孵化し、行全体を焼き払います。孵化前に隣を2回消して割りましょう。',
     'クモがトレイのブロック1つを3ターン封じます。クモのマスを5回消して退治しましょう。',
     '雨雲は自分の列のマス1つを灰色にします。その行を丸ごと消すと灰色マスが消えます。',
-    '8手ごとにカメレオンがこっそり2マスの色を変えます。置く前に色をよく確認！',
+    '5ターン消せなかったマスはツタに巻かれ消せなくなります。隣のマスを消してツタを外しましょう。',
     '10手ごとにブラックホールが最も近い色マスを飲み込みます。隣を3回消して封印しましょう。',
     'おばけがマスに取り憑き、偽の色を見せます。そのマスを消して退治しましょう。',
     'カタツムリは1手に1マス進み、4手の間ブロックを置けない粘液を残します。隣を2回消して退治。',
@@ -205,9 +205,9 @@ ja: {
 },
 
 zh: {
-  mechNames:['','🌿 荆棘藤蔓','⛰️ 石山','🐿️ 偷格松鼠','🧊 冰冻','🌫️ 迷雾','💣 定时炸弹','🌪️ 龙卷风','🥚 龙蛋','🕷️ 蜘蛛网','🌧️ 雨云','🦎 变色龙','🕳️ 黑洞','👻 幽灵','🐌 蜗牛','🧱 砖墙','⚡ 闪电','🐍 蛇灵','🌋 火山','🌀 传送门','🐲 龙王','🪞 镜像世界'],
+  mechNames:['','🦎 变色龙','⛰️ 石山','🐿️ 偷格松鼠','🧊 冰冻','🌫️ 迷雾','💣 定时炸弹','🌪️ 龙卷风','🥚 龙蛋','🕷️ 蜘蛛网','🌧️ 雨云','🌿 荆棘藤蔓','🕳️ 黑洞','👻 幽灵','🐌 蜗牛','🧱 砖墙','⚡ 闪电','🐍 蛇灵','🌋 火山','🌀 传送门','🐲 龙王','🪞 镜像世界'],
   mechDesc:['',
-    '5回合未消除的格子会被荆棘缠绕、无法消除。炸掉旁边的格子即可清除荆棘。',
+    '每8步变色龙偷偷改变2个格子的颜色。放置前看清颜色。',
     '每10步山体扩大1格，有山的格子无法使用。炸山旁边的格子来削减它。',
     '每3步松鼠吃掉1格，被吃的格子不能放砖块。炸它旁边的格子赶走它——被吃的格子会恢复。',
     '格子偶尔会被冰冻。需要炸2次才碎：第1次裂开，第2次碎裂。',
@@ -217,7 +217,7 @@ zh: {
     '龙蛋12步后孵化并烧毁整行。孵化前炸它旁边2次将其打碎。',
     '蜘蛛把托盘里的1个方块锁住3回合。炸蜘蛛所在格5次消灭它。',
     '雨云把它所在列的1个格子变灰。消除整行才能清掉灰格。',
-    '每8步变色龙偷偷改变2个格子的颜色。放置前看清颜色。',
+    '5回合未消除的格子会被荆棘缠绕、无法消除。炸掉旁边的格子即可清除荆棘。',
     '每10步黑洞吞掉最近的彩色格。炸它旁边3次将其封印。',
     '幽灵附身在格子上显示假颜色。炸中那个格子驱除它。',
     '蜗牛每步爬1格，留下4步内不能放砖的黏液。炸它旁边2次消灭它。',
@@ -254,9 +254,9 @@ zh: {
 },
 
 es: {
-  mechNames:['','🌿 Espinas','⛰️ Montaña','🐿️ Ardilla ladrona','🧊 Hielo','🌫️ Niebla','💣 Bomba de tiempo','🌪️ Tornado','🥚 Huevo de dragón','🕷️ Telaraña','🌧️ Nube de lluvia','🦎 Camaleón','🕳️ Agujero negro','👻 Fantasma','🐌 Caracol','🧱 Muro de ladrillos','⚡ Rayo','🐍 Espíritu serpiente','🌋 Volcán','🌀 Portal','🐲 Rey Dragón','🪞 Mundo espejo'],
+  mechNames:['','🦎 Camaleón','⛰️ Montaña','🐿️ Ardilla ladrona','🧊 Hielo','🌫️ Niebla','💣 Bomba de tiempo','🌪️ Tornado','🥚 Huevo de dragón','🕷️ Telaraña','🌧️ Nube de lluvia','🌿 Espinas','🕳️ Agujero negro','👻 Fantasma','🐌 Caracol','🧱 Muro de ladrillos','⚡ Rayo','🐍 Espíritu serpiente','🌋 Volcán','🌀 Portal','🐲 Rey Dragón','🪞 Mundo espejo'],
   mechDesc:['',
-    'Una celda sin explotar durante 5 turnos queda envuelta en espinas y no se puede explotar. Revienta una celda vecina para quitarlas.',
+    'Cada 8 movimientos el camaleón cambia en secreto el color de 2 celdas. Mira bien antes de colocar.',
     'Cada 10 movimientos la montaña crece 1 celda; sus celdas no se pueden usar. Explota junto a ella para desgastarla.',
     'Cada 3 movimientos la ardilla se come 1 celda; en las celdas comidas no se pueden poner piezas. Explota una celda vecina para ahuyentarla — las celdas comidas se recuperan.',
     'A veces una celda se congela. Se rompe con 2 explosiones: la 1ª agrieta, la 2ª destroza.',
@@ -266,7 +266,7 @@ es: {
     'El huevo eclosiona a los 12 movimientos y quema toda la fila. Explota a su lado 2 veces para romperlo antes.',
     'La araña bloquea 1 pieza de la bandeja durante 3 turnos. Explota su celda 5 veces para eliminarla.',
     'La nube vuelve gris 1 celda de su columna. Limpia la fila completa para borrar la celda gris.',
-    'Cada 8 movimientos el camaleón cambia en secreto el color de 2 celdas. Mira bien antes de colocar.',
+    'Una celda sin explotar durante 5 turnos queda envuelta en espinas y no se puede explotar. Revienta una celda vecina para quitarlas.',
     'Cada 10 movimientos el agujero negro traga la celda de color más cercana. Explota a su lado 3 veces para sellarlo.',
     'El fantasma posee una celda y muestra un color falso. Explota esa celda para expulsarlo.',
     'El caracol avanza 1 celda por movimiento y deja baba que bloquea 4 movimientos. Explota a su lado 2 veces para eliminarlo.',
@@ -384,17 +384,17 @@ function MAP_HELP_FOR(key){
 // ── BỔ SUNG: thông báo cơ chế trong game (mechAlert), cột mốc điểm (milestones) ──
 (function(){
   const add = {
-    vi:{ mechAlert:['','🌿 Dây gai xuất hiện trên bàn cờ!','⛰️ Ngọn núi nhỏ xuất hiện — đừng để nó lớn!','🐿️ Sóc trộm ô xuất hiện — nổ ô kề bên để đuổi!','🧊 Băng giá: ô đóng băng phải nổ 2 lần mới vỡ!','🌫️ Sương mù che khuất màu — hãy ghi nhớ!','💣 Bom hẹn giờ! Nổ ô kề bên để gỡ trước khi nổ!','🌪️ Coi chừng lốc xoáy xáo trộn bàn cờ!','🥚 Trứng rồng xuất hiện — đập vỡ trước khi nó nở!','🕷️ Nhện giăng tơ khóa khối gạch của bạn!','🌧️ Mây mưa rửa trôi màu ô thành ô xám!','🦎 Tắc kè lén đổi màu ô — cẩn thận!','🕳️ Hố đen nuốt ô — nổ kề bên 3 lần để phong ấn!','👻 Bóng ma giả dạng màu ô — đừng tin vào mắt mình!','🐌 Ốc sên để lại vệt nhớt chặn ô trống!','🧱 Tường gạch sẽ rơi xuống bàn cờ!','⚡ Sét đánh — tránh xa vùng cảnh báo!','🐍 Rắn thần trườn qua nuốt ô màu!','🌋 Núi lửa xuất hiện — sẽ phun đá quanh bàn cờ!','🌀 Cổng dịch chuyển tráo đổi ô màu!','🐲 VUA RỒNG GIÁNG THẾ — thử thách tối thượng!','🪞 THẾ GIỚI GƯƠNG — mỗi khối đặt sinh 1 khối đối xứng. Đối xứng hết chỗ là thua!'],
+    vi:{ mechAlert:['','🦎 Tắc kè lén đổi màu ô — cẩn thận!','⛰️ Ngọn núi nhỏ xuất hiện — đừng để nó lớn!','🐿️ Sóc trộm ô xuất hiện — nổ ô kề bên để đuổi!','🧊 Băng giá: ô đóng băng phải nổ 2 lần mới vỡ!','🌫️ Sương mù che khuất màu — hãy ghi nhớ!','💣 Bom hẹn giờ! Nổ ô kề bên để gỡ trước khi nổ!','🌪️ Coi chừng lốc xoáy xáo trộn bàn cờ!','🥚 Trứng rồng xuất hiện — đập vỡ trước khi nó nở!','🕷️ Nhện giăng tơ khóa khối gạch của bạn!','🌧️ Mây mưa rửa trôi màu ô thành ô xám!','🌿 Dây gai xuất hiện trên bàn cờ!','🕳️ Hố đen nuốt ô — nổ kề bên 3 lần để phong ấn!','👻 Bóng ma giả dạng màu ô — đừng tin vào mắt mình!','🐌 Ốc sên để lại vệt nhớt chặn ô trống!','🧱 Tường gạch sẽ rơi xuống bàn cờ!','⚡ Sét đánh — tránh xa vùng cảnh báo!','🐍 Rắn thần trườn qua nuốt ô màu!','🌋 Núi lửa xuất hiện — sẽ phun đá quanh bàn cờ!','🌀 Cổng dịch chuyển tráo đổi ô màu!','🐲 VUA RỒNG GIÁNG THẾ — thử thách tối thượng!','🪞 THẾ GIỚI GƯƠNG — mỗi khối đặt sinh 1 khối đối xứng. Đối xứng hết chỗ là thua!'],
          milestones:['Khởi đầu tốt!','Đà tiến ấn tượng!','Không thể ngăn cản!','Phong độ đỉnh cao!','Cực kỳ xuất sắc!','Siêu phàm!','Thần sầu!','Huyền thoại sống!','Vô đối thiên hạ!','Thần thoại sống!'] },
-    en:{ mechAlert:['','🌿 Thorn vines appear on the board!','⛰️ A small mountain appears — don\'t let it grow!','🐿️ A thieving squirrel appears — blast next to it!','🧊 Ice: frozen cells need 2 blasts to break!','🌫️ Fog hides the colors — memorize them!','💣 Time bomb! Blast next to it to defuse!','🌪️ Beware — a tornado will shuffle the board!','🥚 A dragon egg appears — break it before it hatches!','🕷️ A spider webs one of your pieces!','🌧️ The rain cloud washes cells gray!','🦎 The chameleon secretly recolors cells — watch out!','🕳️ A black hole eats cells — blast beside it 3× to seal!','👻 A ghost fakes cell colors — don\'t trust your eyes!','🐌 The snail leaves slime that blocks cells!','🧱 Brick walls will fall onto the board!','⚡ Lightning — stay clear of the warning zone!','🐍 A snake spirit slithers in, eating cells!','🌋 A volcano appears — it will spit rocks!','🌀 Portals swap colored cells around!','🐲 THE DRAGON KING DESCENDS — the ultimate test!','🪞 MIRROR WORLD — every piece spawns a mirrored copy. No room for it = you lose!'],
+    en:{ mechAlert:['','🦎 The chameleon secretly recolors cells — watch out!','⛰️ A small mountain appears — don\'t let it grow!','🐿️ A thieving squirrel appears — blast next to it!','🧊 Ice: frozen cells need 2 blasts to break!','🌫️ Fog hides the colors — memorize them!','💣 Time bomb! Blast next to it to defuse!','🌪️ Beware — a tornado will shuffle the board!','🥚 A dragon egg appears — break it before it hatches!','🕷️ A spider webs one of your pieces!','🌧️ The rain cloud washes cells gray!','🌿 Thorn vines appear on the board!','🕳️ A black hole eats cells — blast beside it 3× to seal!','👻 A ghost fakes cell colors — don\'t trust your eyes!','🐌 The snail leaves slime that blocks cells!','🧱 Brick walls will fall onto the board!','⚡ Lightning — stay clear of the warning zone!','🐍 A snake spirit slithers in, eating cells!','🌋 A volcano appears — it will spit rocks!','🌀 Portals swap colored cells around!','🐲 THE DRAGON KING DESCENDS — the ultimate test!','🪞 MIRROR WORLD — every piece spawns a mirrored copy. No room for it = you lose!'],
          milestones:['Great start!','Impressive pace!','Unstoppable!','Peak form!','Outstanding!','Superhuman!','Phenomenal!','Living legend!','Unrivaled!','Mythical!'] },
-    ko:{ mechAlert:['','🌿 가시덩굴이 나타났어요!','⛰️ 작은 산이 생겼어요 — 커지기 전에 깎으세요!','🐿️ 도둑 다람쥐 등장 — 옆 칸을 터뜨려 쫓아내세요!','🧊 얼음: 언 칸은 2번 터뜨려야 깨져요!','🌫️ 안개가 색을 가려요 — 기억해 두세요!','💣 시한폭탄! 옆 칸을 터뜨려 해체하세요!','🌪️ 회오리가 보드를 뒤섞으니 조심!','🥚 용의 알 등장 — 부화 전에 깨세요!','🕷️ 거미가 블록 하나를 거미줄로 묶었어요!','🌧️ 비구름이 칸을 회색으로 씻어내요!','🦎 카멜레온이 몰래 색을 바꿔요 — 주의!','🕳️ 블랙홀이 칸을 삼켜요 — 옆을 3번 터뜨려 봉인!','👻 유령이 가짜 색을 보여줘요 — 눈을 믿지 마세요!','🐌 달팽이가 점액으로 칸을 막아요!','🧱 벽돌 벽이 떨어져요!','⚡ 번개 — 경고 구역을 피하세요!','🐍 뱀 정령이 칸을 삼키며 기어다녀요!','🌋 화산 등장 — 바위를 뿜을 거예요!','🌀 포털이 색 칸을 뒤바꿔요!','🐲 드래곤 킹 강림 — 최후의 시련!','🪞 거울 세계 — 놓는 블록마다 대칭 복사본 생성. 자리가 없으면 패배!'],
+    ko:{ mechAlert:['','🦎 카멜레온이 몰래 색을 바꿔요 — 주의!','⛰️ 작은 산이 생겼어요 — 커지기 전에 깎으세요!','🐿️ 도둑 다람쥐 등장 — 옆 칸을 터뜨려 쫓아내세요!','🧊 얼음: 언 칸은 2번 터뜨려야 깨져요!','🌫️ 안개가 색을 가려요 — 기억해 두세요!','💣 시한폭탄! 옆 칸을 터뜨려 해체하세요!','🌪️ 회오리가 보드를 뒤섞으니 조심!','🥚 용의 알 등장 — 부화 전에 깨세요!','🕷️ 거미가 블록 하나를 거미줄로 묶었어요!','🌧️ 비구름이 칸을 회색으로 씻어내요!','🌿 가시덩굴이 나타났어요!','🕳️ 블랙홀이 칸을 삼켜요 — 옆을 3번 터뜨려 봉인!','👻 유령이 가짜 색을 보여줘요 — 눈을 믿지 마세요!','🐌 달팽이가 점액으로 칸을 막아요!','🧱 벽돌 벽이 떨어져요!','⚡ 번개 — 경고 구역을 피하세요!','🐍 뱀 정령이 칸을 삼키며 기어다녀요!','🌋 화산 등장 — 바위를 뿜을 거예요!','🌀 포털이 색 칸을 뒤바꿔요!','🐲 드래곤 킹 강림 — 최후의 시련!','🪞 거울 세계 — 놓는 블록마다 대칭 복사본 생성. 자리가 없으면 패배!'],
          milestones:['좋은 출발!','인상적인 페이스!','막을 수 없어!','최고의 폼!','매우 훌륭해요!','초인적!','경이로워요!','살아있는 전설!','천하무적!','신화 그 자체!'] },
-    ja:{ mechAlert:['','🌿 いばらのツタが出現！','⛰️ 小さな山が出現 — 育つ前に削って！','🐿️ どろぼうリス出現 — 隣を消して追い払え！','🧊 氷：凍ったマスは2回消して割る！','🌫️ 霧が色を隠す — 覚えておいて！','💣 時限爆弾！隣を消して解除！','🌪️ 竜巻が盤面をかき混ぜるぞ！','🥚 ドラゴンの卵出現 — 孵化前に割って！','🕷️ クモがブロックを巣で封じた！','🌧️ 雨雲がマスを灰色に洗い流す！','🦎 カメレオンがこっそり色を変える — 注意！','🕳️ ブラックホールがマスを飲む — 隣を3回消して封印！','👻 おばけが偽の色を見せる — 目を信じるな！','🐌 カタツムリの粘液がマスを塞ぐ！','🧱 レンガの壁が落ちてくる！','⚡ 落雷 — 警告ゾーンに近づくな！','🐍 蛇の精霊がマスを食べながら這う！','🌋 火山出現 — 岩を吹き出すぞ！','🌀 ポータルが色マスを入れ替える！','🐲 ドラゴンキング降臨 — 究極の試練！','🪞 鏡の世界 — 置くたび鏡写しが出現。置けなければ敗北！'],
+    ja:{ mechAlert:['','🦎 カメレオンがこっそり色を変える — 注意！','⛰️ 小さな山が出現 — 育つ前に削って！','🐿️ どろぼうリス出現 — 隣を消して追い払え！','🧊 氷：凍ったマスは2回消して割る！','🌫️ 霧が色を隠す — 覚えておいて！','💣 時限爆弾！隣を消して解除！','🌪️ 竜巻が盤面をかき混ぜるぞ！','🥚 ドラゴンの卵出現 — 孵化前に割って！','🕷️ クモがブロックを巣で封じた！','🌧️ 雨雲がマスを灰色に洗い流す！','🌿 いばらのツタが出現！','🕳️ ブラックホールがマスを飲む — 隣を3回消して封印！','👻 おばけが偽の色を見せる — 目を信じるな！','🐌 カタツムリの粘液がマスを塞ぐ！','🧱 レンガの壁が落ちてくる！','⚡ 落雷 — 警告ゾーンに近づくな！','🐍 蛇の精霊がマスを食べながら這う！','🌋 火山出現 — 岩を吹き出すぞ！','🌀 ポータルが色マスを入れ替える！','🐲 ドラゴンキング降臨 — 究極の試練！','🪞 鏡の世界 — 置くたび鏡写しが出現。置けなければ敗北！'],
          milestones:['いいスタート！','見事なペース！','止まらない！','絶好調！','素晴らしい！','超人的！','驚異的！','生ける伝説！','無敵！','神話級！'] },
-    zh:{ mechAlert:['','🌿 荆棘藤蔓出现在棋盘上！','⛰️ 小山出现了 — 别让它长大！','🐿️ 偷格松鼠出现 — 炸它旁边赶走它！','🧊 冰冻：冻住的格子要炸2次才碎！','🌫️ 迷雾遮住了颜色 — 记住它们！','💣 定时炸弹！炸旁边格子拆除它！','🌪️ 小心龙卷风打乱棋盘！','🥚 龙蛋出现 — 孵化前打碎它！','🕷️ 蜘蛛用网锁住了你的方块！','🌧️ 雨云把格子洗成灰色！','🦎 变色龙偷偷换色 — 小心！','🕳️ 黑洞吞格子 — 炸旁边3次封印它！','👻 幽灵伪装颜色 — 别相信眼睛！','🐌 蜗牛的黏液挡住了格子！','🧱 砖墙要掉下来了！','⚡ 闪电 — 远离警告区！','🐍 蛇灵爬行吞噬格子！','🌋 火山出现 — 会喷岩石！','🌀 传送门交换彩色格！','🐲 龙王降临 — 终极考验！','🪞 镜像世界 — 每块砖都生成镜像。镜像放不下就输！'],
+    zh:{ mechAlert:['','🦎 变色龙偷偷换色 — 小心！','⛰️ 小山出现了 — 别让它长大！','🐿️ 偷格松鼠出现 — 炸它旁边赶走它！','🧊 冰冻：冻住的格子要炸2次才碎！','🌫️ 迷雾遮住了颜色 — 记住它们！','💣 定时炸弹！炸旁边格子拆除它！','🌪️ 小心龙卷风打乱棋盘！','🥚 龙蛋出现 — 孵化前打碎它！','🕷️ 蜘蛛用网锁住了你的方块！','🌧️ 雨云把格子洗成灰色！','🌿 荆棘藤蔓出现在棋盘上！','🕳️ 黑洞吞格子 — 炸旁边3次封印它！','👻 幽灵伪装颜色 — 别相信眼睛！','🐌 蜗牛的黏液挡住了格子！','🧱 砖墙要掉下来了！','⚡ 闪电 — 远离警告区！','🐍 蛇灵爬行吞噬格子！','🌋 火山出现 — 会喷岩石！','🌀 传送门交换彩色格！','🐲 龙王降临 — 终极考验！','🪞 镜像世界 — 每块砖都生成镜像。镜像放不下就输！'],
          milestones:['好的开始！','势头惊人！','势不可挡！','巅峰状态！','极其出色！','超凡！','神了！','活传奇！','天下无敌！','神话本话！'] },
-    es:{ mechAlert:['','🌿 ¡Aparecen espinas en el tablero!','⛰️ Aparece una montaña — ¡no dejes que crezca!','🐿️ ¡Ardilla ladrona! Explota a su lado para ahuyentarla','🧊 Hielo: ¡las celdas congeladas necesitan 2 explosiones!','🌫️ La niebla oculta los colores — ¡memorízalos!','💣 ¡Bomba de tiempo! Explota a su lado para desactivarla','🌪️ ¡Cuidado, un tornado revolverá el tablero!','🥚 ¡Huevo de dragón! Rómpelo antes de que eclosione','🕷️ ¡Una araña bloquea una de tus piezas!','🌧️ ¡La nube vuelve grises las celdas!','🦎 El camaleón cambia colores a escondidas — ¡ojo!','🕳️ Agujero negro — explota a su lado 3 veces para sellarlo','👻 Un fantasma falsea colores — ¡no te fíes!','🐌 ¡La baba del caracol bloquea celdas!','🧱 ¡Caerán muros de ladrillo!','⚡ Rayo — ¡aléjate de la zona de aviso!','🐍 ¡Un espíritu serpiente devora celdas!','🌋 Volcán — ¡escupirá rocas!','🌀 ¡Los portales intercambian celdas!','🐲 EL REY DRAGÓN DESCIENDE — ¡la prueba definitiva!','🪞 MUNDO ESPEJO — cada pieza genera una copia. ¡Sin sitio = derrota!'],
+    es:{ mechAlert:['','🦎 El camaleón cambia colores a escondidas — ¡ojo!','⛰️ Aparece una montaña — ¡no dejes que crezca!','🐿️ ¡Ardilla ladrona! Explota a su lado para ahuyentarla','🧊 Hielo: ¡las celdas congeladas necesitan 2 explosiones!','🌫️ La niebla oculta los colores — ¡memorízalos!','💣 ¡Bomba de tiempo! Explota a su lado para desactivarla','🌪️ ¡Cuidado, un tornado revolverá el tablero!','🥚 ¡Huevo de dragón! Rómpelo antes de que eclosione','🕷️ ¡Una araña bloquea una de tus piezas!','🌧️ ¡La nube vuelve grises las celdas!','🌿 ¡Aparecen espinas en el tablero!','🕳️ Agujero negro — explota a su lado 3 veces para sellarlo','👻 Un fantasma falsea colores — ¡no te fíes!','🐌 ¡La baba del caracol bloquea celdas!','🧱 ¡Caerán muros de ladrillo!','⚡ Rayo — ¡aléjate de la zona de aviso!','🐍 ¡Un espíritu serpiente devora celdas!','🌋 Volcán — ¡escupirá rocas!','🌀 ¡Los portales intercambian celdas!','🐲 EL REY DRAGÓN DESCIENDE — ¡la prueba definitiva!','🪞 MUNDO ESPEJO — cada pieza genera una copia. ¡Sin sitio = derrota!'],
          milestones:['¡Buen comienzo!','¡Ritmo impresionante!','¡Imparable!','¡En plena forma!','¡Sobresaliente!','¡Sobrehumano!','¡Fenomenal!','¡Leyenda viva!','¡Sin rival!','¡Mítico!'] },
   };
   Object.keys(add).forEach(l=>{ if(I18N_CONTENT[l]) Object.assign(I18N_CONTENT[l], add[l]); });
