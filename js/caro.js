@@ -647,10 +647,12 @@ function _caroUpdateMeChip(){
 function _pcRenderProgress(progEl, level, mapNormal, mapSecret){
   if(!progEl) return;
   const lvlLabel = (typeof t==='function'?t('caroLevelLine', level):('Cấp độ: '+level));
-  const mapLabel = (typeof t==='function'?t('caroMapProgressLine', mapNormal, mapSecret):('Map thường: '+mapNormal+' · Map ẩn: '+mapSecret));
-  progEl.innerHTML =
-    '<span class="pc-prog-item">⭐ '+escapeHtml(lvlLabel)+'</span>'+
-    '<span class="pc-prog-item">🗺️ '+escapeHtml(mapLabel)+'</span>';
+  let html = '<span class="pc-prog-item">⭐ '+escapeHtml(lvlLabel)+'</span>';
+  if(mapNormal != null && mapSecret != null){
+    const mapLabel = (typeof t==='function'?t('caroMapProgressLine', mapNormal, mapSecret):('Map thường: '+mapNormal+' · Map ẩn: '+mapSecret));
+    html += '<span class="pc-prog-item">🗺️ '+escapeHtml(mapLabel)+'</span>';
+  }
+  progEl.innerHTML = html;
 }
 
 function _pcRenderCouple(coupleEl, partnerName, pairedAt){
@@ -767,18 +769,25 @@ async function openPlayerCard(opts){
     }
     const hasCaro = (s.total > 0 || s.points > 0);
     const hasVs = (vs.total > 0 || vs.points > 0);
+    const visMaps = prof.visMaps !== false;
+    const visCaro = prof.visCaro !== false;
+    const visVersus = prof.visVersus !== false;
     let statsHtml = '';
-    if(hasCaro){
+    if(hasCaro && visCaro){
       statsHtml += '<div class="pc-mode-stats"><b>Caro</b> — '+caroTitle+'<br>'+caroLine+'</div>';
     }
-    if(hasVs){
+    if(hasVs && visVersus){
       const vsLine = (typeof t==='function'
         ? (t('caroWinRateLabel')+': '+vsRate+'%')
         : (vsRate+'%'));
       statsHtml += '<div class="pc-mode-stats"><b>Versus</b> — '+vsTitle+'<br>'+vsLine+'</div>';
     }
     document.getElementById('pc-stats').innerHTML = statsHtml || (typeof t==='function'?t('caroNoStats'):'Chưa có thống kê');
-    _pcRenderProgress(progEl, prof.level || 1, prof.mapNormal || 0, prof.mapSecret || 0);
+    if(visMaps){
+      _pcRenderProgress(progEl, prof.level || 1, prof.mapNormal || 0, prof.mapSecret || 0);
+    } else if(progEl){
+      _pcRenderProgress(progEl, prof.level || 1, null, null);
+    }
     _pcRenderCouple(coupleEl, prof.couplePartnerName || '', prof.couplePairedAt || null);
     if(friendBtn){
       friendBtn.dataset.name = prof.displayName || fallbackName;
