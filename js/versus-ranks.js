@@ -19,11 +19,11 @@ const VS_RANK_LOSS_PTS = -25; // đối xứng với thắng — điểm không 
  * lên bậc kế) — ví dụ "Tân thủ 5" → ... → "Tân thủ 1" → "Nhập môn 5" → ...
  * `step` = số điểm cho mỗi cấp độ con trong bậc đó. */
 const VERSUS_RANKS = [
-  { id:'v_novice',     min:0,     step:20,  icon:'🌱', vi:'Tân thủ',    en:'Rookie' },
+  { id:'v_novice',     min:0,     step:20,  icon:'⚔️', vi:'Tân thủ',    en:'Rookie' },
   { id:'v_beginner',   min:100,   step:40,  icon:'🔰', vi:'Nhập môn',   en:'Beginner' },
   { id:'v_fighter',    min:300,   step:60,  icon:'🛡️', vi:'Chiến binh', en:'Fighter' },
   { id:'v_veteran',    min:600,   step:100, icon:'🗡️', vi:'Tinh nhuệ',  en:'Veteran' },
-  { id:'v_expert',     min:1100,  step:160, icon:'⚔️', vi:'Cao thủ',    en:'Expert' },
+  { id:'v_expert',     min:1100,  step:160, icon:'🎯', vi:'Cao thủ',    en:'Expert' },
   { id:'v_elite',      min:1900,  step:240, icon:'⭐', vi:'Tinh anh',   en:'Elite' },
   { id:'v_master',     min:3100,  step:360, icon:'🏅', vi:'Bậc thầy',   en:'Master' },
   { id:'v_legend',     min:4900,  step:540, icon:'🌟', vi:'Huyền thoại', en:'Legend' },
