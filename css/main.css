@@ -3736,21 +3736,22 @@ body:has(#secret-stage.active) .streak-dot.lit{
     padding: env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px) 0;
     gap: 0;
   }
-  /* Bàn cờ: giữa màn hình, 2 bàn cạnh nhau, chạm mép trên/dưới */
+  /* Bàn cờ: giữa màn hình, 2 bàn cạnh nhau, kích thước bằng nhau, chạm mép trên/dưới */
   .vs-half{
     flex: 1 1 0; width:auto; max-width:50%; height:100%;
-    padding:2px 4px; margin:0; gap:2px; justify-content:center;
+    padding:2px 4px; margin:0; gap:4px; justify-content:center;
   }
   .vs-bottom{ order:2; border-left:none; border-right:1px solid rgba(255,213,74,0.3); padding-right:6px; margin:0; }
   .vs-top{ order:3; border-bottom:none; border-left:1px solid rgba(255,213,74,0.3); padding-left:6px; margin:0; }
   .vs-grid{
-    --vs-size: min(94vh, 42vw, 380px);
+    --vs-size: min(96vh, 43vw, 420px);
     gap:1.5px; padding:4px; border-radius:10px; border-width:1.5px;
   }
   .vs-cell{ border-radius:5px; font-size:clamp(8px, 1.8vh, 11px); }
-  .vs-tray{ min-height:24px; gap:6px; flex-shrink:0; }
-  .vs-piece{ width:34px; height:28px; border-radius:8px; }
-  .vs-mini{ gap:1px; transform:scale(0.85); transform-origin:center; }
+  /* Khay nước đi — nằm dưới cùng của mỗi bàn, to hơn để bấm/kéo dễ hơn */
+  .vs-tray{ min-height:34px; gap:8px; flex-shrink:0; }
+  .vs-piece{ width:46px; height:38px; border-radius:9px; }
+  .vs-mini{ gap:1.5px; transform:scale(1); transform-origin:center; }
   .vs-cards{ gap:6px; }
   .vs-card{ width:64px; height:72px; }
   .vs-card-emoji{ font-size:22px; }
