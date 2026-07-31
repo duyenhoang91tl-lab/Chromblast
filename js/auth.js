@@ -33,19 +33,72 @@ function doLogin(username, password){
   hideAuthScreen();
 }
 
-function doRegister(username, password, password2){
+function doRegister(username, password, password2, secQ, secA){
   const errBox = document.getElementById('register-error');
   errBox.textContent = '';
-  if(!username || !password || !password2){ errBox.textContent = t('errFillAll'); return; }
+  if(!username || !password || !password2 || !secA){ errBox.textContent = t('errFillAll'); return; }
   if(username.length < 3){ errBox.textContent = t('errUserShort'); return; }
   if(password.length < 4){ errBox.textContent = t('errPassShort'); return; }
   if(password !== password2){ errBox.textContent = t('errPassMismatch'); return; }
   const users = loadUsers();
   if(users[username]){ errBox.textContent = t('errUserExists'); return; }
-  users[username] = { password, role: 'user' };
+  users[username] = { password, role: 'user', secQ, secA: secA.trim().toLowerCase() };
   saveUsers(users);
   applyLoggedInUser(username);
   hideAuthScreen();
+}
+
+/** Bước 1 khôi phục mật khẩu: tìm tài khoản, trả về câu hỏi bảo mật nếu có. */
+function doForgotFind(username){
+  const errBox = document.getElementById('forgot-step1-error');
+  errBox.textContent = '';
+  if(!username){ errBox.textContent = t('errFillAll'); return; }
+  const users = loadUsers();
+  const u = users[username];
+  if(!u){ errBox.textContent = t('errUserNotFound'); return; }
+  if(!u.secQ || !u.secA){ errBox.textContent = t('errNoSecurityQ'); return; }
+  document.getElementById('forgot-question-label').textContent = t(u.secQ) || t('lblSecurityA');
+  document.getElementById('forgot-step1').style.display = 'none';
+  document.getElementById('forgot-step2').style.display = '';
+  document.getElementById('forgot-step2').dataset.username = username;
+}
+
+/** Bước 2 khôi phục mật khẩu: xác minh câu trả lời rồi đặt mật khẩu mới. */
+function doForgotReset(answer, newPassword, newPassword2){
+  const errBox = document.getElementById('forgot-step2-error');
+  errBox.textContent = '';
+  const username = document.getElementById('forgot-step2').dataset.username;
+  const users = loadUsers();
+  const u = users[username];
+  if(!u){ errBox.textContent = t('errUserNotFound'); return; }
+  if(!answer || (answer.trim().toLowerCase() !== u.secA)){ errBox.textContent = t('errWrongAnswer'); return; }
+  if(!newPassword || newPassword.length < 4){ errBox.textContent = t('errPassShort'); return; }
+  if(newPassword !== newPassword2){ errBox.textContent = t('errPassMismatch'); return; }
+  u.password = newPassword;
+  saveUsers(users);
+  const loginErr = document.getElementById('login-error');
+  if(loginErr) loginErr.textContent = '';
+  document.getElementById('login-username').value = username;
+  alert(t('forgotResetSuccess'));
+  showAuthForm('login');
+}
+
+/** Chuyển giữa 3 form của màn auth: login / register / forgot. */
+function showAuthForm(which){
+  const forms = { login: document.getElementById('login-form'), register: document.getElementById('register-form'), forgot: document.getElementById('forgot-form') };
+  Object.keys(forms).forEach(k=>{ if(forms[k]) forms[k].classList.toggle('active', k===which); });
+  if(which !== 'forgot'){
+    // Reset về bước 1 mỗi lần rời form quên mật khẩu
+    const s1 = document.getElementById('forgot-step1'), s2 = document.getElementById('forgot-step2');
+    if(s1) s1.style.display = '';
+    if(s2){ s2.style.display = 'none'; delete s2.dataset.username; }
+    const fu = document.getElementById('forgot-username'); if(fu) fu.value='';
+    const fa = document.getElementById('forgot-answer'); if(fa) fa.value='';
+    const fp1 = document.getElementById('forgot-new-password'); if(fp1) fp1.value='';
+    const fp2 = document.getElementById('forgot-new-password2'); if(fp2) fp2.value='';
+    const e1 = document.getElementById('forgot-step1-error'); if(e1) e1.textContent='';
+    const e2 = document.getElementById('forgot-step2-error'); if(e2) e2.textContent='';
+  }
 }
 
 function isOverlayScreenOpen(el){
@@ -102,8 +155,11 @@ function initAuthScreen(){
 
   const loginForm = document.getElementById('login-form');
   const registerForm = document.getElementById('register-form');
+  const forgotForm = document.getElementById('forgot-form');
   const showRegister = document.getElementById('show-register');
   const showLogin = document.getElementById('show-login');
+  const showForgot = document.getElementById('show-forgot');
+  const showLoginFromForgot = document.getElementById('show-login-from-forgot');
   const guestBtn = document.getElementById('guest-play-btn');
 
   guestBtn.addEventListener('click', ()=>{
@@ -113,14 +169,10 @@ function initAuthScreen(){
     hideAuthScreen();
   });
 
-  showRegister.addEventListener('click', ()=>{
-    loginForm.classList.remove('active');
-    registerForm.classList.add('active');
-  });
-  showLogin.addEventListener('click', ()=>{
-    registerForm.classList.remove('active');
-    loginForm.classList.add('active');
-  });
+  showRegister.addEventListener('click', ()=> showAuthForm('register'));
+  showLogin.addEventListener('click', ()=> showAuthForm('login'));
+  if(showForgot) showForgot.addEventListener('click', ()=> showAuthForm('forgot'));
+  if(showLoginFromForgot) showLoginFromForgot.addEventListener('click', ()=> showAuthForm('login'));
 
   loginForm.addEventListener('submit', (e)=>{
     e.preventDefault();
@@ -134,7 +186,20 @@ function initAuthScreen(){
     doRegister(
       document.getElementById('register-username').value.trim(),
       document.getElementById('register-password').value,
-      document.getElementById('register-password2').value
+      document.getElementById('register-password2').value,
+      document.getElementById('register-secq').value,
+      document.getElementById('register-seca').value
+    );
+  });
+  document.getElementById('forgot-find-btn')?.addEventListener('click', ()=>{
+    doForgotFind(document.getElementById('forgot-username').value.trim());
+  });
+  if(forgotForm) forgotForm.addEventListener('submit', (e)=>{
+    e.preventDefault();
+    doForgotReset(
+      document.getElementById('forgot-answer').value,
+      document.getElementById('forgot-new-password').value,
+      document.getElementById('forgot-new-password2').value
     );
   });
 

@@ -73,6 +73,7 @@
       </div>
       <div class="auth-error" id="login-error"></div>
       <button type="submit" class="auth-submit-btn" data-i18n="btnLogin">ĐĂNG NHẬP</button>
+      <div class="auth-switch"><a id="show-forgot" data-i18n="linkForgotPassword">Quên mật khẩu?</a></div>
       <div class="auth-switch"><span data-i18n="noAccount">Chưa có tài khoản?</span> <a id="show-register" data-i18n="linkRegister">Đăng ký ngay</a></div>
     </form>
 
@@ -89,9 +90,52 @@
         <label data-i18n="lblPassword2">Nhập lại mật khẩu</label>
         <input type="password" id="register-password2" autocomplete="new-password" required>
       </div>
+      <div class="auth-field">
+        <label data-i18n="lblSecurityQ">Câu hỏi bảo mật</label>
+        <select id="register-secq">
+          <option value="secQ1" data-i18n="secQ1">Tên thú cưng đầu tiên của bạn?</option>
+          <option value="secQ2" data-i18n="secQ2">Món ăn bạn thích nhất?</option>
+          <option value="secQ3" data-i18n="secQ3">Thành phố bạn sinh ra?</option>
+          <option value="secQ4" data-i18n="secQ4">Tên giáo viên bạn yêu thích nhất?</option>
+        </select>
+      </div>
+      <div class="auth-field">
+        <label data-i18n="lblSecurityA">Câu trả lời</label>
+        <input type="text" id="register-seca" required>
+      </div>
       <div class="auth-error" id="register-error"></div>
       <button type="submit" class="auth-submit-btn" data-i18n="btnRegister">ĐĂNG KÝ</button>
       <div class="auth-switch"><span data-i18n="hasAccount">Đã có tài khoản?</span> <a id="show-login" data-i18n="linkLogin">Đăng nhập</a></div>
+    </form>
+
+    <form id="forgot-form" class="auth-form">
+      <div class="auth-sub" data-i18n="forgotTitle" style="font-size:14px;margin-bottom:14px;">🔑 Khôi phục mật khẩu</div>
+      <div id="forgot-step1">
+        <div class="auth-field">
+          <label data-i18n="lblUsername">Tên đăng nhập</label>
+          <input type="text" id="forgot-username" autocomplete="username">
+        </div>
+        <div class="auth-switch" style="margin:0 0 14px;" data-i18n="forgotStep1Hint">Nhập tên đăng nhập để tìm câu hỏi bảo mật.</div>
+        <div class="auth-error" id="forgot-step1-error"></div>
+        <button type="button" id="forgot-find-btn" class="auth-submit-btn" data-i18n="forgotFindBtn">Tìm tài khoản</button>
+      </div>
+      <div id="forgot-step2" style="display:none;">
+        <div class="auth-field">
+          <label id="forgot-question-label"></label>
+          <input type="text" id="forgot-answer" required>
+        </div>
+        <div class="auth-field">
+          <label data-i18n="lblNewPassword">Mật khẩu mới</label>
+          <input type="password" id="forgot-new-password" autocomplete="new-password" required>
+        </div>
+        <div class="auth-field">
+          <label data-i18n="lblNewPassword2">Nhập lại mật khẩu mới</label>
+          <input type="password" id="forgot-new-password2" autocomplete="new-password" required>
+        </div>
+        <div class="auth-error" id="forgot-step2-error"></div>
+        <button type="submit" class="auth-submit-btn" data-i18n="forgotResetBtn">Đặt lại mật khẩu</button>
+      </div>
+      <div class="auth-switch"><a id="show-login-from-forgot" data-i18n="backToLogin">← Quay lại đăng nhập</a></div>
     </form>
   </div>
 </div>
