@@ -11,24 +11,42 @@
 
 /* ──────────────────────────────────────────
    LỚP BỌC AN TOÀN CHO localStorage
-   Một số trình duyệt/khung xem trước (vd: xem trực tiếp trong khung chat)
-   chặn localStorage và ném lỗi. Khi đó ta tự chuyển sang lưu tạm trong bộ
-   nhớ để các chức năng vẫn hoạt động được trong phiên hiện tại (chỉ mất
-   khi tải lại trang).
+   Một số trình duyệt/khung xem trước (vd: xem trực tiếp trong khung chat,
+   hoặc chế độ ẩn danh chặn lưu trữ) khiến localStorage ném lỗi. Khi đó ta
+   tự chuyển sang sessionStorage (vẫn sống sau khi F5 tải lại trang, chỉ mất
+   khi đóng hẳn tab/cửa sổ) — nếu sessionStorage cũng bị chặn nốt thì mới
+   rơi về lưu tạm trong bộ nhớ JS (mất khi tải lại trang).
 ────────────────────────────────────────── */
 const memoryStore = {};
 let storageBlocked = false;
+let sessionStorageOk = true;
 function safeGet(key){
   try { return localStorage.getItem(key); }
-  catch(e){ storageBlocked = true; return (key in memoryStore) ? memoryStore[key] : null; }
+  catch(e){
+    storageBlocked = true;
+    try {
+      if(sessionStorageOk){ const v = sessionStorage.getItem(key); if(v !== null) return v; }
+    } catch(e2){ sessionStorageOk = false; }
+    return (key in memoryStore) ? memoryStore[key] : null;
+  }
 }
 function safeSet(key, value){
   try { localStorage.setItem(key, value); }
-  catch(e){ storageBlocked = true; memoryStore[key] = value; }
+  catch(e){
+    storageBlocked = true;
+    try { if(sessionStorageOk) sessionStorage.setItem(key, value); }
+    catch(e2){ sessionStorageOk = false; }
+    memoryStore[key] = value;
+  }
 }
 function safeRemove(key){
   try { localStorage.removeItem(key); }
-  catch(e){ storageBlocked = true; delete memoryStore[key]; }
+  catch(e){
+    storageBlocked = true;
+    try { if(sessionStorageOk) sessionStorage.removeItem(key); }
+    catch(e2){ sessionStorageOk = false; }
+    delete memoryStore[key];
+  }
 }
 
 /* ──────────────────────────────────────────

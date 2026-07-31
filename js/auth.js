@@ -150,7 +150,7 @@ function initAuthScreen(){
     const sub = document.querySelector('.auth-sub');
     if(sub) sub.insertAdjacentHTML('afterend',
       '<div style="text-align:center;color:#ffcc55;font-size:11px;margin:-14px 0 18px;">'
-      +'⚠️ Trình duyệt đang chặn lưu trữ — tài khoản chỉ tồn tại trong phiên này.<br>Tải file về và mở trực tiếp để lưu vĩnh viễn.</div>');
+      +'⚠️ Trình duyệt đang chặn lưu trữ lâu dài — tài khoản vẫn giữ khi tải lại trang (F5) nhưng sẽ mất nếu đóng tab/cửa sổ này.</div>');
   }
 
   const loginForm = document.getElementById('login-form');
