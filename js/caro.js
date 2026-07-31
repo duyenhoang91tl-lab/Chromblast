@@ -551,6 +551,52 @@ function _caroOppSlot(){
   return _caro.mySlot === 'host' ? 'guest' : 'host';
 }
 
+let _caroOppExtraCache = { uid: null, loaded: false };
+
+/** Nạp hạng XO (Caro) + hạng Versus của đối thủ MỘT LẦN theo uid (cache),
+ * tránh gọi Firestore mỗi lần _caroUpdateOppChip chạy (chạy mỗi lượt render). */
+async function _caroLoadOppExtras(uid){
+  if(!uid || typeof fetchPlayerPublicProfile !== 'function') return;
+  if(_caroOppExtraCache.uid === uid && _caroOppExtraCache.loaded) { _caroRenderOppRankLine(); return; }
+  _caroOppExtraCache = { uid, loaded: false };
+  try{
+    const prof = await fetchPlayerPublicProfile(uid);
+    if(!prof || !_caro) return;
+    const curIdx = _caroOppSlot() === 'host' ? 0 : 1;
+    const curUid = (_caro.ids && _caro.ids[curIdx]) || null;
+    if(curUid !== uid) return; // đổi đối thủ trong lúc đang tải — bỏ kết quả cũ
+    const s = prof.stats || {};
+    const vs = prof.versusStats || {};
+    _caroOppExtraCache = {
+      uid, loaded: true,
+      caroRank: s.rank || null,
+      vsRank: (typeof getVersusRank === 'function') ? getVersusRank(vs.points || 0) : null
+    };
+  }catch(e){
+    _caroOppExtraCache = { uid: null, loaded: false };
+    return;
+  }
+  _caroRenderOppRankLine();
+}
+
+function _caroRenderOppRankLine(){
+  const el = document.getElementById('caro-rank-line');
+  if(!el) return;
+  const c = _caroOppExtraCache;
+  if(!c || !c.loaded || (!c.caroRank && !c.vsRank)){ el.hidden = true; el.innerHTML = ''; return; }
+  const parts = [];
+  if(c.caroRank){
+    parts.push('<span class="caro-rank-mini">XO: '+c.caroRank.icon+' '+
+      (typeof escapeHtml==='function'?escapeHtml(c.caroRank.name):c.caroRank.name)+'</span>');
+  }
+  if(c.vsRank){
+    parts.push('<span class="caro-rank-mini">'+(typeof t==='function'?t('vsShort'):'Versus')+': '+c.vsRank.icon+' '+
+      (typeof escapeHtml==='function'?escapeHtml(c.vsRank.name):c.vsRank.name)+'</span>');
+  }
+  el.hidden = false;
+  el.innerHTML = parts.join('');
+}
+
 function _caroUpdateOppChip(){
   if(!_caro) return;
   const opp = _caroOppSlot();
@@ -571,6 +617,9 @@ function _caroUpdateOppChip(){
   }
   if(nameEl) nameEl.textContent = name;
   if(chip) chip.classList.toggle('tappable', !_caro.ai && !!uid);
+  const rankLineEl = document.getElementById('caro-rank-line');
+  if(uid && !_caro.ai) _caroLoadOppExtras(uid);
+  else if(rankLineEl){ rankLineEl.hidden = true; rankLineEl.innerHTML = ''; _caroOppExtraCache = { uid: null, loaded: false }; }
   _caroUpdateMeChip();
   try{ if(window.CaroSocial && CaroSocial.renderCoupleHud) CaroSocial.renderCoupleHud(); }catch(e){}
 }

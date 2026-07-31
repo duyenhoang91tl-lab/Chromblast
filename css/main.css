@@ -1256,6 +1256,16 @@ body.notif-open #start-screen{
   font-size: 10px; opacity: 0.92;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
+.caro-rank-line {
+  margin: 1px 0 0; padding: 0;
+  display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px;
+  max-width: 46vw;
+}
+.caro-rank-mini {
+  font-size: 10px; font-weight: 800; color: #ffd54a;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  max-width: 100%;
+}
 #caro-bubble-host {
   position: absolute; inset: 0; pointer-events: none; z-index: 40;
 }
