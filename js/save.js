@@ -141,24 +141,15 @@ function markMapCleared(key){
 }
 
 /* ──────────────────────────────────────────
-   AUTH — Tài khoản đăng nhập / đăng ký / phiên đăng nhập
+   AUTH — Phiên đăng nhập trên máy này
+   Tài khoản thật (username/mật khẩu/câu hỏi bảo mật) nay nằm trên Firestore,
+   xác thực qua Cloud Functions (xem js/auth.js + functions/index.js) — không
+   còn lưu ở đây. AUTH_SESSION_KEY chỉ cache "ai vừa đăng nhập trên máy này"
+   (username + role, KHÔNG có mật khẩu) để khỏi bắt gõ lại mật khẩu mỗi lần
+   mở app; mất cache này chỉ có nghĩa là phải đăng nhập lại, KHÔNG mất tài khoản.
 ────────────────────────────────────────── */
-const AUTH_USERS_KEY = 'chromablast_users';
 const AUTH_SESSION_KEY = 'chromablast_session';
 
-function loadUsers(){
-  let users;
-  try { users = JSON.parse(safeGet(AUTH_USERS_KEY) || 'null'); } catch(e){ users = null; }
-  if(!users || typeof users !== 'object'){ users = {}; }
-  // Gỡ tài khoản admin test (nếu còn từ bản cũ) trước khi lên CH Play
-  if(users['admin']){
-    delete users['admin'];
-    saveUsers(users);
-  }
-  return users;
-}
-function saveUsers(users){ safeSet(AUTH_USERS_KEY, JSON.stringify(users)); }
-
-function setSession(username){ safeSet(AUTH_SESSION_KEY, username); }
+function setSession(sessionJson){ safeSet(AUTH_SESSION_KEY, sessionJson); }
 function getSession(){ return safeGet(AUTH_SESSION_KEY); }
 function clearSession(){ safeRemove(AUTH_SESSION_KEY); }

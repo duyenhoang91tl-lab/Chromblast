@@ -4,6 +4,7 @@ const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const { initializeApp } = require('firebase-admin/app');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 const { filterText, containsProfanity } = require('./profanity-filter.js');
+const crypto = require('crypto');
 initializeApp();
 // Dùng API modular (getFirestore/FieldValue) thay vì admin.firestore() namespace cũ —
 // trên firebase-admin@14 kiểu namespace cũ báo lỗi "admin.firestore is not a function"
@@ -238,3 +239,126 @@ exports.applyMatchResult = onDocumentUpdated(
     return null;
   }
 );
+
+// ═══════════════════════════════════════════════════════════════
+// TÀI KHOẢN ĐĂNG NHẬP CỤC BỘ (js/auth.js) — nay lưu ở Firestore (localAccounts)
+// thay vì chỉ localStorage, để không mất khi xoá cache/dùng ẩn danh.
+// Mật khẩu & câu trả lời bảo mật KHÔNG bao giờ lưu ở dạng chữ thường/đọc được —
+// chỉ lưu hash (scrypt + salt riêng từng tài khoản). Toàn bộ đọc/ghi collection
+// này chỉ chạy qua Admin SDK ở đây; client không có quyền đọc/ghi trực tiếp
+// (xem firestore.rules: match /localAccounts/{doc} { allow read, write: if false }).
+// ═══════════════════════════════════════════════════════════════
+const ACCOUNTS_COLLECTION = 'localAccounts';
+
+function _hashSecret(raw) {
+  const salt = crypto.randomBytes(16).toString('hex');
+  const hash = crypto.scryptSync(String(raw), salt, 64).toString('hex');
+  return { hash, salt };
+}
+function _verifySecret(raw, hash, salt) {
+  if (!hash || !salt) return false;
+  try {
+    const check = crypto.scryptSync(String(raw), salt, 64);
+    const stored = Buffer.from(hash, 'hex');
+    return stored.length === check.length && crypto.timingSafeEqual(stored, check);
+  } catch (e) { return false; }
+}
+
+/** Đăng ký tài khoản mới. Trả về {ok, username, role}. */
+exports.registerAccount = onCall({ region: 'asia-southeast1' }, async (request) => {
+  const data = request.data || {};
+  const username = typeof data.username === 'string' ? data.username.trim() : '';
+  const password = typeof data.password === 'string' ? data.password : '';
+  const secQ = typeof data.secQ === 'string' ? data.secQ : '';
+  const secA = typeof data.secA === 'string' ? data.secA.trim().toLowerCase() : '';
+
+  if (username.length < 3) throw new HttpsError('invalid-argument', 'errUserShort');
+  if (password.length < 4) throw new HttpsError('invalid-argument', 'errPassShort');
+  if (!secA) throw new HttpsError('invalid-argument', 'errFillAll');
+
+  const key = username.toLowerCase();
+  const ref = db.collection(ACCOUNTS_COLLECTION).doc(key);
+  const snap = await ref.get();
+  if (snap.exists) throw new HttpsError('already-exists', 'errUserExists');
+
+  const pw = _hashSecret(password);
+  const sa = _hashSecret(secA);
+  await ref.set({
+    username, role: 'user', secQ,
+    passwordHash: pw.hash, passwordSalt: pw.salt,
+    secAHash: sa.hash, secASalt: sa.salt,
+    createdAt: FieldValue.serverTimestamp()
+  });
+  return { ok: true, username, role: 'user' };
+});
+
+/** Đăng nhập. Trả về {ok, username, role}. */
+exports.loginAccount = onCall({ region: 'asia-southeast1' }, async (request) => {
+  const data = request.data || {};
+  const username = typeof data.username === 'string' ? data.username.trim() : '';
+  const password = typeof data.password === 'string' ? data.password : '';
+  if (!username || !password) throw new HttpsError('invalid-argument', 'errFillAll');
+
+  const ref = db.collection(ACCOUNTS_COLLECTION).doc(username.toLowerCase());
+  const snap = await ref.get();
+  if (!snap.exists) throw new HttpsError('not-found', 'errWrongLogin');
+  const u = snap.data();
+  if (!_verifySecret(password, u.passwordHash, u.passwordSalt)) {
+    throw new HttpsError('permission-denied', 'errWrongLogin');
+  }
+  return { ok: true, username: u.username, role: u.role || 'user' };
+});
+
+/** Đổi mật khẩu khi đã đăng nhập (biết mật khẩu cũ). */
+exports.changeAccountPassword = onCall({ region: 'asia-southeast1' }, async (request) => {
+  const data = request.data || {};
+  const username = typeof data.username === 'string' ? data.username.trim() : '';
+  const oldPassword = typeof data.oldPassword === 'string' ? data.oldPassword : '';
+  const newPassword = typeof data.newPassword === 'string' ? data.newPassword : '';
+  if (!username || !oldPassword) throw new HttpsError('invalid-argument', 'errFillAll');
+  if (newPassword.length < 4) throw new HttpsError('invalid-argument', 'errPassShort');
+
+  const ref = db.collection(ACCOUNTS_COLLECTION).doc(username.toLowerCase());
+  const snap = await ref.get();
+  if (!snap.exists) throw new HttpsError('not-found', 'errWrongLogin');
+  const u = snap.data();
+  if (!_verifySecret(oldPassword, u.passwordHash, u.passwordSalt)) {
+    throw new HttpsError('permission-denied', 'errWrongLogin');
+  }
+  const pw = _hashSecret(newPassword);
+  await ref.update({ passwordHash: pw.hash, passwordSalt: pw.salt });
+  return { ok: true };
+});
+
+/** Bước 1 quên mật khẩu: trả về câu hỏi bảo mật nếu tài khoản tồn tại. */
+exports.findAccountSecurityQuestion = onCall({ region: 'asia-southeast1' }, async (request) => {
+  const username = typeof (request.data && request.data.username) === 'string' ? request.data.username.trim() : '';
+  if (!username) throw new HttpsError('invalid-argument', 'errFillAll');
+  const ref = db.collection(ACCOUNTS_COLLECTION).doc(username.toLowerCase());
+  const snap = await ref.get();
+  if (!snap.exists) throw new HttpsError('not-found', 'errUserNotFound');
+  const u = snap.data();
+  if (!u.secQ) throw new HttpsError('failed-precondition', 'errNoSecurityQ');
+  return { ok: true, secQ: u.secQ };
+});
+
+/** Bước 2 quên mật khẩu: xác minh câu trả lời rồi đặt mật khẩu mới. */
+exports.resetAccountPassword = onCall({ region: 'asia-southeast1' }, async (request) => {
+  const data = request.data || {};
+  const username = typeof data.username === 'string' ? data.username.trim() : '';
+  const answer = typeof data.answer === 'string' ? data.answer.trim().toLowerCase() : '';
+  const newPassword = typeof data.newPassword === 'string' ? data.newPassword : '';
+  if (!username) throw new HttpsError('invalid-argument', 'errFillAll');
+  if (newPassword.length < 4) throw new HttpsError('invalid-argument', 'errPassShort');
+
+  const ref = db.collection(ACCOUNTS_COLLECTION).doc(username.toLowerCase());
+  const snap = await ref.get();
+  if (!snap.exists) throw new HttpsError('not-found', 'errUserNotFound');
+  const u = snap.data();
+  if (!_verifySecret(answer, u.secAHash, u.secASalt)) {
+    throw new HttpsError('permission-denied', 'errWrongAnswer');
+  }
+  const pw = _hashSecret(newPassword);
+  await ref.update({ passwordHash: pw.hash, passwordSalt: pw.salt });
+  return { ok: true };
+});

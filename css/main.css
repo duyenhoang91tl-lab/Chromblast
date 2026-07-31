@@ -3805,12 +3805,15 @@ body:has(#secret-stage.active) .streak-dot.lit{
    bàn cờ luôn nằm giữa và chạm sát mép trên/dưới màn hình. ══ */
 @media (orientation: landscape) {
   #caro-stage {
-    --caro-panel-w: clamp(112px, 25vw, 200px);
+    /* Panel càng hẹp thì bàn cờ càng có nhiều bề rộng để "được" giới hạn bởi
+       chiều cao màn hình (chứ không phải bởi bề rộng còn lại) — đó là điều
+       kiện để mép trên/dưới bàn cờ luôn chạm mép màn hình trên mọi tỉ lệ máy. */
+    --caro-panel-w: clamp(88px, 16vw, 160px);
     flex-direction: row;
     align-items: stretch;
     justify-content: center;
-    gap: clamp(8px, 2vw, 18px);
-    padding: env(safe-area-inset-top,0px) max(10px, env(safe-area-inset-right,0px)) env(safe-area-inset-bottom,0px) max(10px, env(safe-area-inset-left,0px));
+    gap: clamp(4px, 1vw, 10px);
+    padding: env(safe-area-inset-top,0px) max(4px, env(safe-area-inset-right,0px)) env(safe-area-inset-bottom,0px) max(4px, env(safe-area-inset-left,0px));
   }
   /* Khối bên trái: toàn bộ nội dung vốn ở thanh trên cùng (đối thủ + tim/timer/nút) */
   #caro-stage .caro-topbar {
@@ -3850,7 +3853,7 @@ body:has(#secret-stage.active) .streak-dot.lit{
   }
 }
 @media (orientation: landscape) and (max-height: 420px) {
-  #caro-stage { --caro-panel-w: clamp(96px, 22vw, 168px); }
+  #caro-stage { --caro-panel-w: clamp(76px, 14vw, 132px); }
   #caro-stage .caro-topbar,
   #caro-stage .caro-bottombar { gap: 6px; }
   #caro-stage .caro-opp-avatar,

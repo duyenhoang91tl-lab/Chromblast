@@ -371,22 +371,28 @@ function initGamePanels(){
   }
 }
 
-function doChangePassword(oldPass, newPass, newPass2){
+async function doChangePassword(oldPass, newPass, newPass2){
   const msg = document.getElementById('cp-msg');
   msg.className = 'account-msg';
   msg.textContent = '';
   if(!currentUser){ msg.classList.add('err'); msg.textContent = 'Bạn chưa đăng nhập.'; return; }
   if(!oldPass || !newPass || !newPass2){ msg.classList.add('err'); msg.textContent = 'Vui lòng nhập đầy đủ thông tin.'; return; }
-  const users = loadUsers();
-  const u = users[currentUser.username];
-  if(!u || u.password !== oldPass){ msg.classList.add('err'); msg.textContent = 'Mật khẩu hiện tại không đúng.'; return; }
   if(newPass.length < 4){ msg.classList.add('err'); msg.textContent = 'Mật khẩu mới cần tối thiểu 4 ký tự.'; return; }
   if(newPass !== newPass2){ msg.classList.add('err'); msg.textContent = 'Mật khẩu mới nhập lại không khớp.'; return; }
-  u.password = newPass;
-  saveUsers(users);
-  msg.classList.add('ok');
-  msg.textContent = 'Đổi mật khẩu thành công!';
-  document.getElementById('change-password-form').reset();
+  const fns = (typeof _authFns === 'function') ? _authFns() : null;
+  if(!fns){ msg.classList.add('err'); msg.textContent = 'Lỗi kết nối mạng — vui lòng thử lại.'; return; }
+  try{
+    await fns.httpsCallable('changeAccountPassword')({
+      username: currentUser.username, oldPassword: oldPass, newPassword: newPass
+    });
+    msg.classList.add('ok');
+    msg.textContent = 'Đổi mật khẩu thành công!';
+    document.getElementById('change-password-form').reset();
+  }catch(e){
+    msg.classList.add('err');
+    msg.textContent = (e && e.message === 'errPassShort') ? 'Mật khẩu mới cần tối thiểu 4 ký tự.'
+      : 'Mật khẩu hiện tại không đúng.';
+  }
 }
 
 function initAccountPanel(){

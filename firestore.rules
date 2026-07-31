@@ -31,6 +31,14 @@ service cloud.firestore {
         || (resource != null && field in resource.data && request.resource.data[field] == resource.data[field]);
     }
 
+    /* Tài khoản đăng nhập cục bộ (username/mật khẩu) — CHỈ Cloud Function (Admin SDK,
+       bỏ qua rules) được đọc/ghi. Chứa hash mật khẩu + câu trả lời bảo mật, tuyệt đối
+       không cho client đọc/ghi trực tiếp dù đã đăng nhập hay chưa.
+       Xem functions/index.js: registerAccount/loginAccount/... */
+    match /localAccounts/{doc} {
+      allow read, write: if false;
+    }
+
     /* BXH kỳ (ngày/tuần/tháng) — client chỉ đọc, ghi qua Cloud Function */
     match /periodScores/{periodId} {
       allow read: if signedIn();

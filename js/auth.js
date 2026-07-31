@@ -1,15 +1,42 @@
 // ═══════════════════════════════════════════════════════════════
 // js/auth.js — ĐĂNG NHẬP / ĐĂNG KÝ / ĐĂNG XUẤT / MÀN HÌNH AUTH
-// Tách verbatim khỏi main.js. Nạp TRƯỚC main.js. Dùng chung biến currentUser
-// (khai báo trong main.js) + loadUsers/saveUsers/setSession/clearSession (save.js).
+//
+// Tài khoản (username/mật khẩu/câu hỏi bảo mật) nay được lưu trên Firestore
+// qua Cloud Functions (functions/index.js: registerAccount/loginAccount/...),
+// KHÔNG còn chỉ nằm trong localStorage — nên không mất khi xoá cache trình
+// duyệt, dùng chế độ ẩn danh, hoặc đổi thiết bị (đăng nhập lại đúng
+// username/mật khẩu là khôi phục được).
+//
+// localStorage chỉ còn dùng để nhớ "ai vừa đăng nhập trên máy này" (để khỏi
+// phải nhập lại mật khẩu mỗi lần mở app) — xem save.js: setSession/getSession.
+// Mật khẩu KHÔNG được lưu ở localStorage nữa; toàn bộ xác thực đi qua server.
+//
+// Dùng chung biến currentUser (khai báo trong main.js).
 // ═══════════════════════════════════════════════════════════════
 
-function applyLoggedInUser(username){
-  const users = loadUsers();
-  const u = users[username];
-  if(!u) return false;
-  currentUser = { username, role: u.role || 'user' };
-  setSession(username);
+/** Lấy instance firebase.functions() (asia-southeast1), khởi tạo app nếu cần. */
+function _authFns(){
+  if(typeof firebase === 'undefined' || !window.FIREBASE_CONFIG) return null;
+  try{
+    if(!firebase.apps.length) firebase.initializeApp(window.FIREBASE_CONFIG);
+    return firebase.app().functions('asia-southeast1');
+  }catch(e){ console.warn('[auth] firebase init failed', e); return null; }
+}
+
+/** Chuyển mã lỗi HttpsError (message = khoá i18n do server trả về) sang chuỗi hiển thị. */
+function _authErrMsg(err){
+  const code = err && err.message;
+  if(code && typeof t === 'function'){
+    const known = ['errFillAll','errUserShort','errPassShort','errPassMismatch','errUserExists',
+      'errWrongLogin','errUserNotFound','errNoSecurityQ','errWrongAnswer'];
+    if(known.includes(code)) return t(code);
+  }
+  return (typeof t === 'function') ? t('errNetwork') : 'Lỗi kết nối mạng — vui lòng thử lại.';
+}
+
+function applyLoggedInUser(username, role){
+  currentUser = { username, role: role || 'user' };
+  setSession(JSON.stringify({ username, role: currentUser.role }));
   const nameBox = document.getElementById('account-username-box');
   if(nameBox){
     if(typeof formatPlayerNameHtml === 'function') nameBox.innerHTML = formatPlayerNameHtml(typeof getPlayerNickname==='function'?getPlayerNickname():username);
@@ -19,68 +46,88 @@ function applyLoggedInUser(username){
   return true;
 }
 
-function doLogin(username, password){
+async function doLogin(username, password){
   const errBox = document.getElementById('login-error');
   errBox.textContent = '';
   if(!username || !password){ errBox.textContent = t('errFillAll'); return; }
-  const users = loadUsers();
-  const u = users[username];
-  if(!u || u.password !== password){
-    errBox.textContent = t('errWrongLogin');
-    return;
+  const fns = _authFns();
+  if(!fns){ errBox.textContent = t('errNetwork'); return; }
+  const btn = document.querySelector('#login-form button[type="submit"]');
+  if(btn) btn.disabled = true;
+  try{
+    const res = await fns.httpsCallable('loginAccount')({ username, password });
+    const data = res.data || {};
+    applyLoggedInUser(data.username || username, data.role);
+    hideAuthScreen();
+  }catch(e){
+    errBox.textContent = _authErrMsg(e);
+  }finally{
+    if(btn) btn.disabled = false;
   }
-  applyLoggedInUser(username);
-  hideAuthScreen();
 }
 
-function doRegister(username, password, password2, secQ, secA){
+async function doRegister(username, password, password2, secQ, secA){
   const errBox = document.getElementById('register-error');
   errBox.textContent = '';
   if(!username || !password || !password2 || !secA){ errBox.textContent = t('errFillAll'); return; }
   if(username.length < 3){ errBox.textContent = t('errUserShort'); return; }
   if(password.length < 4){ errBox.textContent = t('errPassShort'); return; }
   if(password !== password2){ errBox.textContent = t('errPassMismatch'); return; }
-  const users = loadUsers();
-  if(users[username]){ errBox.textContent = t('errUserExists'); return; }
-  users[username] = { password, role: 'user', secQ, secA: secA.trim().toLowerCase() };
-  saveUsers(users);
-  applyLoggedInUser(username);
-  hideAuthScreen();
+  const fns = _authFns();
+  if(!fns){ errBox.textContent = t('errNetwork'); return; }
+  const btn = document.querySelector('#register-form button[type="submit"]');
+  if(btn) btn.disabled = true;
+  try{
+    const res = await fns.httpsCallable('registerAccount')({ username, password, secQ, secA });
+    const data = res.data || {};
+    applyLoggedInUser(data.username || username, data.role);
+    hideAuthScreen();
+  }catch(e){
+    errBox.textContent = _authErrMsg(e);
+  }finally{
+    if(btn) btn.disabled = false;
+  }
 }
 
 /** Bước 1 khôi phục mật khẩu: tìm tài khoản, trả về câu hỏi bảo mật nếu có. */
-function doForgotFind(username){
+async function doForgotFind(username){
   const errBox = document.getElementById('forgot-step1-error');
   errBox.textContent = '';
   if(!username){ errBox.textContent = t('errFillAll'); return; }
-  const users = loadUsers();
-  const u = users[username];
-  if(!u){ errBox.textContent = t('errUserNotFound'); return; }
-  if(!u.secQ || !u.secA){ errBox.textContent = t('errNoSecurityQ'); return; }
-  document.getElementById('forgot-question-label').textContent = t(u.secQ) || t('lblSecurityA');
-  document.getElementById('forgot-step1').style.display = 'none';
-  document.getElementById('forgot-step2').style.display = '';
-  document.getElementById('forgot-step2').dataset.username = username;
+  const fns = _authFns();
+  if(!fns){ errBox.textContent = t('errNetwork'); return; }
+  try{
+    const res = await fns.httpsCallable('findAccountSecurityQuestion')({ username });
+    const data = res.data || {};
+    document.getElementById('forgot-question-label').textContent = t(data.secQ) || t('lblSecurityA');
+    document.getElementById('forgot-step1').style.display = 'none';
+    document.getElementById('forgot-step2').style.display = '';
+    document.getElementById('forgot-step2').dataset.username = username;
+  }catch(e){
+    errBox.textContent = _authErrMsg(e);
+  }
 }
 
 /** Bước 2 khôi phục mật khẩu: xác minh câu trả lời rồi đặt mật khẩu mới. */
-function doForgotReset(answer, newPassword, newPassword2){
+async function doForgotReset(answer, newPassword, newPassword2){
   const errBox = document.getElementById('forgot-step2-error');
   errBox.textContent = '';
   const username = document.getElementById('forgot-step2').dataset.username;
-  const users = loadUsers();
-  const u = users[username];
-  if(!u){ errBox.textContent = t('errUserNotFound'); return; }
-  if(!answer || (answer.trim().toLowerCase() !== u.secA)){ errBox.textContent = t('errWrongAnswer'); return; }
+  if(!answer){ errBox.textContent = t('errWrongAnswer'); return; }
   if(!newPassword || newPassword.length < 4){ errBox.textContent = t('errPassShort'); return; }
   if(newPassword !== newPassword2){ errBox.textContent = t('errPassMismatch'); return; }
-  u.password = newPassword;
-  saveUsers(users);
-  const loginErr = document.getElementById('login-error');
-  if(loginErr) loginErr.textContent = '';
-  document.getElementById('login-username').value = username;
-  alert(t('forgotResetSuccess'));
-  showAuthForm('login');
+  const fns = _authFns();
+  if(!fns){ errBox.textContent = t('errNetwork'); return; }
+  try{
+    await fns.httpsCallable('resetAccountPassword')({ username, answer, newPassword });
+    const loginErr = document.getElementById('login-error');
+    if(loginErr) loginErr.textContent = '';
+    document.getElementById('login-username').value = username;
+    alert(t('forgotResetSuccess'));
+    showAuthForm('login');
+  }catch(e){
+    errBox.textContent = _authErrMsg(e);
+  }
 }
 
 /** Chuyển giữa 3 form của màn auth: login / register / forgot. */
@@ -144,15 +191,6 @@ function hideAuthScreen(){
 }
 
 function initAuthScreen(){
-  loadUsers();
-
-  if(storageBlocked){
-    const sub = document.querySelector('.auth-sub');
-    if(sub) sub.insertAdjacentHTML('afterend',
-      '<div style="text-align:center;color:#ffcc55;font-size:11px;margin:-14px 0 18px;">'
-      +'⚠️ Trình duyệt đang chặn lưu trữ lâu dài — tài khoản vẫn giữ khi tải lại trang (F5) nhưng sẽ mất nếu đóng tab/cửa sổ này.</div>');
-  }
-
   const loginForm = document.getElementById('login-form');
   const registerForm = document.getElementById('register-form');
   const forgotForm = document.getElementById('forgot-form');
@@ -204,10 +242,15 @@ function initAuthScreen(){
   });
 
   // Luồng chuẩn: Đăng nhập → Điều khoản → Thông báo → Menu Bắt đầu
+  // Phiên đăng nhập trên MÁY NÀY chỉ là cache hiển thị (username + role, KHÔNG có
+  // mật khẩu) để khỏi bắt gõ lại mật khẩu mỗi lần mở app — không tự xác minh lại
+  // với server ở bước này. Nếu tài khoản đã bị đổi mật khẩu/xoá ở nơi khác, các
+  // API cần đăng nhập (đổi mật khẩu, v.v.) sẽ tự báo lỗi khi gọi tới.
   const authScreen = document.getElementById('auth-screen');
-  const savedSession = getSession();
-  if(savedSession && loadUsers()[savedSession]){
-    applyLoggedInUser(savedSession);
+  let savedSession = null;
+  try{ savedSession = JSON.parse(getSession() || 'null'); }catch(e){ savedSession = null; }
+  if(savedSession && savedSession.username){
+    applyLoggedInUser(savedSession.username, savedSession.role);
     if(authScreen){
       authScreen.style.display = 'none';
       authScreen.classList.add('hide');
