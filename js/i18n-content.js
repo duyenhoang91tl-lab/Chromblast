@@ -639,12 +639,12 @@ function MILESTONE_MSG(tier){
 // ── BỔ SUNG: chọn nền/gạch riêng cho từng người (Đấu 1-1 Cùng máy) ──
 (function(){
   const vs3 = {
-  vi:{ vsSkinPickFor1:'🎨 Nền & gạch của bạn', vsSkinPickFor2:'🎨 Nền & gạch của Người chơi 2', vsSkinNen:'Nền', vsSkinGach:'Gạch', vsLayoutBoost:'📐 Bàn của tôi to hơn (ngang 3/4, dọc 2/3 màn hình)' },
-  en:{ vsSkinPickFor1:'🎨 Your board & bricks', vsSkinPickFor2:'🎨 Player 2\'s board & bricks', vsSkinNen:'Board', vsSkinGach:'Bricks', vsLayoutBoost:'📐 Make my board bigger (3/4 landscape, 2/3 portrait)' },
-  ko:{ vsSkinPickFor1:'🎨 플레이어 1의 보드 & 블록', vsSkinPickFor2:'🎨 플레이어 2의 보드 & 블록', vsSkinNen:'보드', vsSkinGach:'블록', vsLayoutBoost:'📐 내 보드를 더 크게 (가로 3/4, 세로 2/3)' },
-  ja:{ vsSkinPickFor1:'🎨 プレイヤー1のボード＆ブロック', vsSkinPickFor2:'🎨 プレイヤー2のボード＆ブロック', vsSkinNen:'ボード', vsSkinGach:'ブロック', vsLayoutBoost:'📐 自分のボードを大きく（横3/4・縦2/3）' },
-  zh:{ vsSkinPickFor1:'🎨 玩家1的棋盘与方块', vsSkinPickFor2:'🎨 玩家2的棋盘与方块', vsSkinNen:'棋盘', vsSkinGach:'方块', vsLayoutBoost:'📐 我的棋盘更大（横屏3/4，竖屏2/3）' },
-  es:{ vsSkinPickFor1:'🎨 Tablero y ladrillos del Jugador 1', vsSkinPickFor2:'🎨 Tablero y ladrillos del Jugador 2', vsSkinNen:'Tablero', vsSkinGach:'Ladrillos', vsLayoutBoost:'📐 Agrandar mi tablero (3/4 horizontal, 2/3 vertical)' },
+  vi:{ vsSkinPickFor1:'🎨 Nền & gạch của bạn', vsSkinPickFor2:'🎨 Nền & gạch của Người chơi 2', vsSkinNen:'Nền', vsSkinGach:'Gạch', vsLayoutBoost:'📐 Thay đổi chế độ xem' },
+  en:{ vsSkinPickFor1:'🎨 Your board & bricks', vsSkinPickFor2:'🎨 Player 2\'s board & bricks', vsSkinNen:'Board', vsSkinGach:'Bricks', vsLayoutBoost:'📐 Change view mode' },
+  ko:{ vsSkinPickFor1:'🎨 플레이어 1의 보드 & 블록', vsSkinPickFor2:'🎨 플레이어 2의 보드 & 블록', vsSkinNen:'보드', vsSkinGach:'블록', vsLayoutBoost:'📐 화면 모드 변경' },
+  ja:{ vsSkinPickFor1:'🎨 プレイヤー1のボード＆ブロック', vsSkinPickFor2:'🎨 プレイヤー2のボード＆ブロック', vsSkinNen:'ボード', vsSkinGach:'ブロック', vsLayoutBoost:'📐 表示モードを切り替え' },
+  zh:{ vsSkinPickFor1:'🎨 玩家1的棋盘与方块', vsSkinPickFor2:'🎨 玩家2的棋盘与方块', vsSkinNen:'棋盘', vsSkinGach:'方块', vsLayoutBoost:'📐 切换显示模式' },
+  es:{ vsSkinPickFor1:'🎨 Tablero y ladrillos del Jugador 1', vsSkinPickFor2:'🎨 Tablero y ladrillos del Jugador 2', vsSkinNen:'Tablero', vsSkinGach:'Ladrillos', vsLayoutBoost:'📐 Cambiar modo de vista' },
   };
   Object.keys(vs3).forEach(l=>{ if(I18N[l]) Object.assign(I18N[l], vs3[l]); });
 })();
