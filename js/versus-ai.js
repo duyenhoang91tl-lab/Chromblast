@@ -8,8 +8,8 @@
 // Nạp SAU versus.js và versus-ui.js.
 // ═══════════════════════════════════════════════════════════════
 
-const VS_AI_MOVE_DELAY = [650, 1400];   // ms giữa các lần máy đặt khối
-const VS_AI_CARD_DELAY = [500, 1100];   // ms trước khi máy chọn thẻ
+const VS_AI_MOVE_DELAY = [1300, 2600];   // ms giữa các lần máy đặt khối (đã tăng độ trễ)
+const VS_AI_CARD_DELAY = [900, 1800];    // ms trước khi máy chọn thẻ (đã tăng độ trễ)
 
 let _vsAiTimer = null;
 
