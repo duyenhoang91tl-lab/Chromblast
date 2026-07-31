@@ -3804,6 +3804,8 @@ body:has(#secret-stage.active) .streak-dot.lit{
   .vs-cell{ border-radius:5px; font-size:clamp(8px, 1.8vh, 11px); }
   /* Khay nước đi — nằm dưới cùng của mỗi bàn, to hơn để bấm/kéo dễ hơn */
   .vs-tray{ min-height:34px; gap:8px; flex-shrink:0; }
+  /* Ẩn khay gạch của đối thủ (AI lẫn online) — không lộ trước các viên sắp có của họ. */
+  .vs-bottom .vs-tray{ visibility:hidden; }
   .vs-piece{ width:46px; height:38px; border-radius:9px; }
   .vs-mini{ gap:1.5px; transform:scale(1); transform-origin:center; }
   .vs-cards{ gap:6px; }
