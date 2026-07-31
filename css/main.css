@@ -3837,6 +3837,19 @@ body:has(#secret-stage.active) .streak-dot.lit{
   .vs-chip-scoreline{ justify-content:center; }
   .vs-chip-avatar{ width:34px; height:34px; font-size:18px; border-radius:9px; }
 
+  /* Khay gạch của mình — nổi ngay dưới thẻ tên/điểm của mình (góc trên phải),
+     xếp dọc cho vừa bề ngang hẹp của panel. Khay của đối thủ đã ẩn ở trên. */
+  .vs-top .vs-tray{
+    position:absolute !important;
+    top:max(96px, calc(env(safe-area-inset-top) + 94px));
+    right:max(6px, env(safe-area-inset-right));
+    left:auto;
+    flex-direction:column; align-items:center;
+    width:var(--vs-panel-w); min-height:0; gap:6px;
+    z-index:15;
+  }
+  .vs-top .vs-piece{ width:38px; height:32px; }
+
   .vs-chat-fab, .vs-layout-toggle-btn, .vs-quit-btn, #vs-quit-btn, .vs-mid-timer, #vs-mid-timer{ height:28px; }
   .vs-chat-fab, .vs-layout-toggle-btn, .vs-mid-timer, #vs-mid-timer{ width:28px; min-width:28px; }
   .vs-quit-btn, #vs-quit-btn{ min-width:48px; font-size:10px; padding:0 8px; }
