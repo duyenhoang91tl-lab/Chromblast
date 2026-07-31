@@ -109,6 +109,11 @@ vi: {
   caroFriendAdded:'Đã thêm bạn', caroAlreadyFriend:'Đã là bạn',
   caroFriendNeedId:'Không lấy được ID đối thủ',
   caroWinRateLabel:'Tỷ lệ thắng', caroNoStats:'Chưa có thống kê',
+  caroMyCardTitle:'Hồ sơ của bạn',
+  caroLevelLine:'Cấp độ: {0}',
+  caroMapProgressLine:'Map thường: {0} · Map ẩn: {1}',
+  caroCoupleLine:'💍 Đã kết đôi với {0}',
+  caroMarriedLine:'💍 Đã kết hôn với {0}',
 },
 
 en: {
@@ -202,6 +207,11 @@ en: {
   caroFriendAdded:'Friend added', caroAlreadyFriend:'Already friends',
   caroFriendNeedId:'Cannot get opponent id',
   caroWinRateLabel:'Win rate', caroNoStats:'No stats yet',
+  caroMyCardTitle:'Your profile',
+  caroLevelLine:'Level: {0}',
+  caroMapProgressLine:'Normal maps: {0} · Hidden maps: {1}',
+  caroCoupleLine:'💍 Paired with {0}',
+  caroMarriedLine:'💍 Married to {0}',
 },
 
 ko: {
@@ -282,6 +292,11 @@ ko: {
   caroFriendAdded:'친구 추가됨', caroAlreadyFriend:'이미 친구',
   caroFriendNeedId:'상대 ID를 가져올 수 없음',
   caroWinRateLabel:'승률', caroNoStats:'통계 없음',
+  caroMyCardTitle:'내 프로필',
+  caroLevelLine:'레벨: {0}',
+  caroMapProgressLine:'일반 맵: {0} · 히든 맵: {1}',
+  caroCoupleLine:'💍 {0}님과 커플',
+  caroMarriedLine:'💍 {0}님과 결혼',
 },
 
 ja: {
@@ -362,6 +377,11 @@ ja: {
   caroFriendAdded:'友達に追加しました', caroAlreadyFriend:'すでに友達',
   caroFriendNeedId:'相手IDを取得できません',
   caroWinRateLabel:'勝率', caroNoStats:'統計なし',
+  caroMyCardTitle:'自分のプロフィール',
+  caroLevelLine:'レベル: {0}',
+  caroMapProgressLine:'通常マップ: {0} · 隠しマップ: {1}',
+  caroCoupleLine:'💍 {0}とカップル',
+  caroMarriedLine:'💍 {0}と結婚',
 },
 
 zh: {
@@ -442,6 +462,11 @@ zh: {
   caroFriendAdded:'已添加好友', caroAlreadyFriend:'已是好友',
   caroFriendNeedId:'无法获取对手ID',
   caroWinRateLabel:'胜率', caroNoStats:'暂无统计',
+  caroMyCardTitle:'我的资料',
+  caroLevelLine:'等级: {0}',
+  caroMapProgressLine:'普通地图: {0} · 隐藏地图: {1}',
+  caroCoupleLine:'💍 与{0}结为情侣',
+  caroMarriedLine:'💍 与{0}结婚',
 },
 
 es: {
@@ -522,6 +547,11 @@ es: {
   caroFriendAdded:'Amigo agregado', caroAlreadyFriend:'Ya son amigos',
   caroFriendNeedId:'No se pudo obtener el ID',
   caroWinRateLabel:'Porcentaje de victorias', caroNoStats:'Sin estadísticas',
+  caroMyCardTitle:'Tu perfil',
+  caroLevelLine:'Nivel: {0}',
+  caroMapProgressLine:'Mapas normales: {0} · Mapas ocultos: {1}',
+  caroCoupleLine:'💍 En pareja con {0}',
+  caroMarriedLine:'💍 Casado/a con {0}',
 },
 
 };
