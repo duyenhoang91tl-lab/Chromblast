@@ -595,16 +595,49 @@ function _caroUpdateMeChip(){
   }catch(e){}
 }
 
+function _pcRenderProgress(progEl, level, mapNormal, mapSecret){
+  if(!progEl) return;
+  const lvlLabel = (typeof t==='function'?t('caroLevelLine', level):('Cấp độ: '+level));
+  const mapLabel = (typeof t==='function'?t('caroMapProgressLine', mapNormal, mapSecret):('Map thường: '+mapNormal+' · Map ẩn: '+mapSecret));
+  progEl.innerHTML =
+    '<span class="pc-prog-item">⭐ '+escapeHtml(lvlLabel)+'</span>'+
+    '<span class="pc-prog-item">🗺️ '+escapeHtml(mapLabel)+'</span>';
+}
+
+function _pcRenderCouple(coupleEl, partnerName, pairedAt){
+  if(!coupleEl) return;
+  if(!partnerName){ coupleEl.hidden = true; coupleEl.innerHTML = ''; return; }
+  const days = pairedAt ? Math.floor((Date.now() - pairedAt) / 86400000) : 0;
+  const married = days >= 7;
+  const ring = married ? '💍👰' : '💍';
+  const label = married
+    ? (typeof t==='function'?t('caroMarriedLine', partnerName):('Đã kết hôn với '+partnerName))
+    : (typeof t==='function'?t('caroCoupleLine', partnerName):('Đã kết đôi với '+partnerName));
+  coupleEl.hidden = false;
+  coupleEl.innerHTML = '<span class="pc-couple-ring">'+ring+'</span><span class="pc-couple-text">'+escapeHtml(label)+'</span>';
+}
+
+function openOwnPlayerCard(){
+  const nick = (typeof getPlayerNickname === 'function' ? getPlayerNickname() : null) || 'Bạn';
+  const av = (typeof getPlayerAvatarDisplay === 'function'
+    ? getPlayerAvatarDisplay()
+    : (typeof getPlayerAvatar === 'function' ? getPlayerAvatar() : '🐶'));
+  openPlayerCard({ name: nick, avatar: av, self: true });
+}
+
 async function openPlayerCard(opts){
   opts = opts || {};
   const panel = document.getElementById('player-card-panel');
   if(!panel) return;
+  const isSelf = !!opts.self;
   const uid = opts.uid || null;
   const fallbackName = opts.name || 'Player';
   const fallbackAv = opts.avatar || '🐶';
   document.getElementById('pc-avatar').textContent = fallbackAv;
   document.getElementById('pc-name').textContent = fallbackName;
   document.getElementById('pc-stats').textContent = (typeof t==='function'?t('caroNoStats'):'…');
+  const titleEl = document.getElementById('pc-title');
+  if(titleEl) titleEl.textContent = (typeof t==='function'?t(isSelf?'caroMyCardTitle':'caroOppCardTitle'):(isSelf?'Hồ sơ của bạn':'Hồ sơ đối thủ'));
   const progEl = document.getElementById('pc-progress');
   if(progEl) progEl.innerHTML = '';
   const coupleEl = document.getElementById('pc-couple');
@@ -613,6 +646,7 @@ async function openPlayerCard(opts){
   const msg = document.getElementById('pc-msg');
   if(msg) msg.textContent = '';
   if(friendBtn){
+    friendBtn.hidden = isSelf;
     friendBtn.dataset.uid = uid || '';
     friendBtn.dataset.name = fallbackName;
     friendBtn.dataset.avatar = fallbackAv;
@@ -626,6 +660,41 @@ async function openPlayerCard(opts){
         : (typeof t==='function'?t('caroAddFriend'):'🤝 Kết bạn');
   }
   panel.classList.add('show');
+  if(isSelf){
+    try{
+      const lvl = (typeof playerLevel !== 'undefined') ? playerLevel : 1;
+      const mapNormal = (typeof normalMapStage !== 'undefined') ? Math.max(0, (normalMapStage|0) - 1) : 0;
+      const mapSecret = (typeof unlockGateStageIndex !== 'undefined') ? (unlockGateStageIndex|0) : 0;
+      _pcRenderProgress(progEl, lvl, mapNormal, mapSecret);
+      const couple = (window.CaroSocial && typeof CaroSocial.getCouple === 'function') ? CaroSocial.getCouple() : null;
+      _pcRenderCouple(coupleEl, couple && couple.partnerUid ? (couple.partnerName||'') : '', couple ? couple.pairedAt : null);
+      const s = (typeof getLocalCaroStats === 'function') ? (getLocalCaroStats() || {}) : {};
+      const vs = (typeof getLocalVersusStats === 'function') ? (getLocalVersusStats() || {}) : {};
+      const rate = s.winRate != null ? s.winRate : 0;
+      const vsRate = vs.winRate != null ? vs.winRate : 0;
+      const caroRank = s.rank || null;
+      const vsRank = (typeof getVersusRank === 'function') ? getVersusRank(vs.points||0) : null;
+      const caroTitle = caroRank ? (caroRank.icon+' '+caroRank.name) : '';
+      const vsTitle = vsRank ? (vsRank.icon+' '+vsRank.name) : '';
+      const hasCaro = (s.total > 0 || s.points > 0);
+      const hasVs = (vs.total > 0 || vs.points > 0);
+      let statsHtml = '';
+      if(hasCaro){
+        const caroLine = (typeof t==='function'
+          ? (t('caroWinRateLabel')+': '+rate+'% · '+t('ppCaroWLD', s.wins||0, s.losses||0, s.draws||0, rate))
+          : (rate+'%'));
+        statsHtml += '<div class="pc-mode-stats"><b>Caro</b> — '+caroTitle+'<br>'+caroLine+'</div>';
+      }
+      if(hasVs){
+        const vsLine = (typeof t==='function'
+          ? (t('caroWinRateLabel')+': '+vsRate+'% · '+t('ppCaroWLD', vs.wins||0, vs.losses||0, vs.draws||0, vsRate))
+          : (vsRate+'%'));
+        statsHtml += '<div class="pc-mode-stats"><b>Versus</b> — '+vsTitle+'<br>'+vsLine+'</div>';
+      }
+      document.getElementById('pc-stats').innerHTML = statsHtml || (typeof t==='function'?t('caroNoStats'):'Chưa có thống kê');
+    }catch(e){}
+    return;
+  }
   if(!uid || typeof fetchPlayerPublicProfile !== 'function') return;
   try{
     const prof = await fetchPlayerPublicProfile(uid);
@@ -662,25 +731,8 @@ async function openPlayerCard(opts){
       statsHtml += '<div class="pc-mode-stats"><b>Versus</b> — '+vsTitle+'<br>'+vsLine+'</div>';
     }
     document.getElementById('pc-stats').innerHTML = statsHtml || (typeof t==='function'?t('caroNoStats'):'Chưa có thống kê');
-    if(progEl){
-      const lvl = prof.level || 1;
-      const mapNormal = prof.mapNormal || 0;
-      const mapSecret = prof.mapSecret || 0;
-      progEl.innerHTML =
-        '<span class="pc-prog-item">⭐ Cấp '+lvl+'</span>'+
-        '<span class="pc-prog-item">🗺️ Map thường: '+mapNormal+'</span>'+
-        '<span class="pc-prog-item">🌌 Map ẩn: '+mapSecret+'</span>';
-    }
-    if(coupleEl && prof.couplePartnerName){
-      const pairedAt = prof.couplePairedAt || null;
-      const days = pairedAt ? Math.floor((Date.now() - pairedAt) / 86400000) : 0;
-      const married = days >= 7;
-      const ring = married ? '💍👰' : '💍';
-      const label = married ? 'Đã kết hôn' : 'Đã kết đôi';
-      coupleEl.hidden = false;
-      coupleEl.innerHTML = '<span class="pc-couple-ring">'+ring+'</span><span class="pc-couple-text">'+
-        label+' — '+escapeHtml(prof.couplePartnerName)+'</span>';
-    }
+    _pcRenderProgress(progEl, prof.level || 1, prof.mapNormal || 0, prof.mapSecret || 0);
+    _pcRenderCouple(coupleEl, prof.couplePartnerName || '', prof.couplePairedAt || null);
     if(friendBtn){
       friendBtn.dataset.name = prof.displayName || fallbackName;
       friendBtn.dataset.avatar = prof.avatar || fallbackAv;
@@ -2259,6 +2311,10 @@ function applyCaroSettings(){
       const btn = document.getElementById('caro-opp-avatar');
       if(!btn || btn.disabled) return;
       openPlayerCard({ uid: btn.dataset.uid, name: btn.dataset.name, avatar: btn.dataset.avatar });
+    });
+    document.getElementById('caro-me-avatar')?.addEventListener('click', ()=>{
+      try{ sfxClick(); }catch(e){}
+      openOwnPlayerCard();
     });
     document.getElementById('pc-close-btn')?.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} closePlayerCard(); });
     document.getElementById('pc-friend-btn')?.addEventListener('click', async ()=>{
