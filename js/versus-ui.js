@@ -139,13 +139,13 @@ function _vsBuildArena(){
   const avBot = escapeHtml((_vs.avatars && _vs.avatars[1]) || '🐱');
   const quitLbl = (typeof t === 'function' ? t('vsQuit') : null) || 'Thoát';
 
-  // Topbar: chat trái | đồng hồ bấm giờ + Thoát phải
+  // Topbar: chat trái | đổi cỡ bàn + đồng hồ bấm giờ + Thoát phải (nốt đổi cỡ đứng cạnh đồng hồ)
   // Chip kiểu Caro: avatar + tên + điểm
   arena.innerHTML =
     '<div id="vs-topbar" class="vs-topbar">'+
       '<button type="button" id="vs-chat-fab" class="vs-chat-fab" title="Chat" aria-label="Chat">💬</button>'+
-      '<button type="button" id="vs-layout-toggle-btn" class="vs-layout-toggle-btn" title="'+((typeof t==='function'?t('vsLayoutBoost'):null)||'Đổi cỡ bàn')+'" aria-pressed="'+(arena.classList.contains('vs-boost')?'true':'false')+'">📐</button>'+
       '<div class="vs-topbar-right">'+
+        '<button type="button" id="vs-layout-toggle-btn" class="vs-layout-toggle-btn" title="'+((typeof t==='function'?t('vsLayoutBoost'):null)||'Đổi cỡ bàn')+'" aria-pressed="'+(arena.classList.contains('vs-boost')?'true':'false')+'">📐</button>'+
         '<div id="vs-mid-timer" class="vs-mid-timer" title="Thời gian" aria-label="Đồng hồ">'+
           '<span class="vs-timer-crown" aria-hidden="true"></span>'+
           '<span class="vs-timer-knob" aria-hidden="true"></span>'+
