@@ -415,6 +415,19 @@
     logEl.appendChild(row);
     if(bucket === 'world') applyTranslateToRow(row);
     logEl.scrollTop = logEl.scrollHeight;
+
+    // Giới hạn số dòng giữ trong DOM (đặc biệt world chat: chạy suốt
+    // phiên chơi, không bao giờ bị clearLog). Không giới hạn thì mỗi
+    // tin nhắn mới (kèm nút mời/report/block) cứ cộng dồn DOM node +
+    // listener mãi mãi trong 1 phiên chơi dài → càng chơi lâu càng giật.
+    const MAX_LOG_ROWS = 80;
+    while(logEl.children.length > MAX_LOG_ROWS){
+      const old = logEl.firstElementChild;
+      if(!old) break;
+      const oldId = old.dataset.msgId;
+      if(oldId && set) set.delete(oldId);
+      old.remove();
+    }
   }
 
   function clearLog(id, bucket){
