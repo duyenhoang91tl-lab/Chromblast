@@ -165,19 +165,19 @@ function _vsBuildArena(){
       '</div>'+
     '</div>'+
     '<div id="vs-countdown"></div>'+
-    (online
-      ? '<div id="vs-chat" class="vs-chat" hidden>'+
-          '<div class="vs-chat-head"><span>'+(typeof t==='function'?t('caroChatTitle'):'💬 Chat')+'</span>'+
-          '<button type="button" id="vs-chat-close" class="vs-chat-close" aria-label="Close">✕</button></div>'+
-          '<div id="vs-fx-bar" class="caro-fx-bar" aria-label="Tương tác"></div>'+
-          '<div id="vs-bubble-picker" class="caro-bubble-picker" aria-label="Mẫu bong bóng"></div>'+
-          '<div id="vs-chat-log" class="vs-chat-log" aria-live="polite"></div>'+
+    '<div id="vs-chat" class="vs-chat" hidden>'+
+      '<div class="vs-chat-head"><span>'+(typeof t==='function'?t('caroChatTitle'):'💬 Chat')+'</span>'+
+      '<button type="button" id="vs-chat-close" class="vs-chat-close" aria-label="Close">✕</button></div>'+
+      '<div id="vs-fx-bar" class="caro-fx-bar" aria-label="Tương tác"></div>'+
+      '<div id="vs-bubble-picker" class="caro-bubble-picker" aria-label="Mẫu bong bóng"></div>'+
+      (online
+        ? '<div id="vs-chat-log" class="vs-chat-log" aria-live="polite"></div>'+
           '<form id="vs-chat-form" class="vs-chat-form" autocomplete="off">'+
             '<input id="vs-chat-input" type="text" maxlength="120" placeholder="'+(typeof t==='function'?t('caroChatPlaceholder'):'Nhắn đối thủ...')+'" />'+
             '<button type="submit">'+(typeof t==='function'?t('caroChatSend'):'Gửi')+'</button>'+
-          '</form>'+
-        '</div>'
-      : '');
+          '</form>'
+        : '')+
+    '</div>';
 
   document.body.appendChild(arena);
   const myBrickSkin = (typeof getActiveBrickSkin === 'function') ? getActiveBrickSkin() : 'plush';
@@ -246,19 +246,18 @@ function _vsBuildArena(){
   });
   document.getElementById('vs-chat-fab')?.addEventListener('click', ()=>{
     try{ sfxClick(); }catch(e){}
-    if(online) _vsToggleChat();
-    else if(typeof openChatPanel === 'function') openChatPanel();
+    _vsToggleChat();
   });
+  document.getElementById('vs-chat-close')?.addEventListener('click', ()=> _vsToggleChat(false));
   if(online){
-    document.getElementById('vs-chat-close')?.addEventListener('click', ()=> _vsToggleChat(false));
     document.getElementById('vs-chat-form')?.addEventListener('submit', _vsSendChat);
-    try{
-      if(window.VersusSocial){
-        VersusSocial.renderFxBar();
-        VersusSocial.renderBubblePicker();
-      }
-    }catch(e){}
   }
+  try{
+    if(window.VersusSocial){
+      VersusSocial.renderFxBar();
+      VersusSocial.renderBubblePicker();
+    }
+  }catch(e){}
   requestAnimationFrame(()=>{ _vsReflowGrids(); });
 }
 
