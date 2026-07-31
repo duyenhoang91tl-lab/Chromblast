@@ -370,7 +370,7 @@ function _vsEndMatch(){
 // ── wiring ──
 (function initVersus(){
   const btn=document.getElementById('versus-btn');
-  if(btn) btn.addEventListener('click', openVersusSetup);
+  if(btn) btn.addEventListener('click', ()=>openVersusSetup());
   const start=document.getElementById('vs-start-btn');
   if(start) start.addEventListener('click', startVersusMatch);
   const cancel=document.getElementById('vs-cancel-btn');
