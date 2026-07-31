@@ -728,13 +728,13 @@ async function openPlayerCard(opts){
       let statsHtml = '';
       {
         const caroLine = (typeof t==='function'
-          ? (t('caroWinRateLabel')+': '+rate+'% · '+t('ppCaroWLD', s.wins||0, s.losses||0, s.draws||0, rate))
+          ? (t('caroWinRateLabel')+': '+rate+'%')
           : (rate+'%'));
         statsHtml += '<div class="pc-mode-stats"><b>Caro</b> — '+caroTitle+'<br>'+caroLine+'</div>';
       }
       {
         const vsLine = (typeof t==='function'
-          ? (t('caroWinRateLabel')+': '+vsRate+'% · '+t('ppCaroWLD', vs.wins||0, vs.losses||0, vs.draws||0, vsRate))
+          ? (t('caroWinRateLabel')+': '+vsRate+'%')
           : (vsRate+'%'));
         statsHtml += '<div class="pc-mode-stats"><b>Versus</b> — '+vsTitle+'<br>'+vsLine+'</div>';
       }
@@ -750,7 +750,7 @@ async function openPlayerCard(opts){
     const s = prof.stats || {};
     const rate = s.winRate != null ? s.winRate : 0;
     const caroLine = (typeof t==='function'
-      ? (t('caroWinRateLabel')+': '+rate+'% · '+t('ppCaroWLD', s.wins||0, s.losses||0, s.draws||0, rate))
+      ? (t('caroWinRateLabel')+': '+rate+'%')
       : (rate+'%'));
     const vs = prof.versusStats || {};
     const vsRate = vs.winRate != null ? vs.winRate : 0;
@@ -773,7 +773,7 @@ async function openPlayerCard(opts){
     }
     if(hasVs){
       const vsLine = (typeof t==='function'
-        ? (t('caroWinRateLabel')+': '+vsRate+'% · '+t('ppCaroWLD', vs.wins||0, vs.losses||0, vs.draws||0, vsRate))
+        ? (t('caroWinRateLabel')+': '+vsRate+'%')
         : (vsRate+'%'));
       statsHtml += '<div class="pc-mode-stats"><b>Versus</b> — '+vsTitle+'<br>'+vsLine+'</div>';
     }
