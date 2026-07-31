@@ -661,6 +661,22 @@ function refreshArcadeHud(){
   try{ if(typeof refreshVersusButton==='function') refreshVersusButton(); }catch(e){}
 }
 
+(function bindHeaderAvatarClick(){
+  function openMyCard(){
+    function go(){ if(typeof openOwnPlayerCard==='function') openOwnPlayerCard(); }
+    if(typeof openOwnPlayerCard==='function'){ go(); return; }
+    if(typeof window.ensureCaroLoaded==='function'){ window.ensureCaroLoaded().then(go).catch(()=>{}); }
+  }
+  function bind(){
+    const avEl=document.getElementById('header-avatar');
+    if(!avEl) return;
+    avEl.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} openMyCard(); });
+    avEl.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); try{sfxClick();}catch(e2){} openMyCard(); } });
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', bind);
+  else bind();
+})();
+
 /* ════════════════════════════════════════════════════════
    SETTINGS MENU — hub + More Settings + Cup + Language
 ════════════════════════════════════════════════════════ */
