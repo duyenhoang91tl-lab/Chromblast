@@ -183,6 +183,12 @@ async function _upsertPlayerProfile(){
     patch.couplePartnerName = (couple && couple.partnerUid) ? (couple.partnerName || '') : '';
     patch.couplePairedAt = (couple && couple.partnerUid) ? (couple.pairedAt || null) : null;
   }catch(e){}
+  try{
+    const vis = (typeof getProfileVisibility === 'function') ? getProfileVisibility() : null;
+    patch.visMaps = vis ? !!vis.maps : true;
+    patch.visCaro = vis ? !!vis.caroRank : true;
+    patch.visVersus = vis ? !!vis.versusRank : true;
+  }catch(e){}
   // Lưu ý: các field điểm số (caroWins/caroLosses/caroDraws/caroPoints/pvpPoints/
   // wins/losses/draws/bestScore/bestPvpScore) KHÔNG còn được đồng bộ từ đây nữa.
   // Firestore Rules chỉ cho phép các field này giữ nguyên hoặc do Cloud Function
@@ -198,6 +204,21 @@ async function _upsertPlayerProfile(){
       }, { merge: true });
     }catch(e){}
   }
+}
+
+/** Gọi khi người chơi bấm bật/tắt 1 mục trong "Quyền riêng tư hồ sơ" (player-profile.js) */
+async function syncProfileVisibilityOnline(){
+  if(!_onlineDb || !_onlineUid) return;
+  try{
+    const vis = (typeof getProfileVisibility === 'function') ? getProfileVisibility() : null;
+    if(!vis) return;
+    await _onlineDb.collection('players').doc(_onlineUid).set({
+      visMaps: !!vis.maps,
+      visCaro: !!vis.caroRank,
+      visVersus: !!vis.versusRank,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+  }catch(e){}
 }
 
 function _genPublicPlayerId(){
@@ -409,6 +430,9 @@ async function fetchPlayerPublicProfile(uid){
       mapSecret: d.mapSecret || 0,
       couplePartnerName: d.couplePartnerName || '',
       couplePairedAt: d.couplePairedAt || null,
+      visMaps: d.visMaps !== false,
+      visCaro: d.visCaro !== false,
+      visVersus: d.visVersus !== false,
       stats,
       versusStats
     };
