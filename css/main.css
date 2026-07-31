@@ -3849,10 +3849,11 @@ body:has(#secret-stage.active) .streak-dot.lit{
    tự bật/tắt riêng trên máy mình qua nút 📐 trong trận hoặc ô tích lúc thiết lập
    (chỉ là hiển thị cục bộ, không cần đồng bộ với đối thủ). ══ */
 @media (orientation: portrait){
-  #versus-arena.vs-boost .vs-top{ flex:2 1 0; order:2; }
+  #versus-arena.vs-boost .vs-top{ flex:2 1 0; order:2; padding-left:0; padding-right:0; }
   #versus-arena.vs-boost .vs-bottom{ flex:1 1 0; order:1; }
-  #versus-arena.vs-boost .vs-top .vs-grid{ --vs-size: min(46vh, 88vw, 320px, calc(67dvh - 147px)); }
+  #versus-arena.vs-boost .vs-top .vs-grid{ --vs-size: min(56vh, 100vw, 460px, calc(76dvh - 120px)); }
   #versus-arena.vs-boost .vs-bottom .vs-grid{ --vs-size: min(24vh, 60vw, 180px, calc(33dvh - 73px)); }
+  #versus-arena.vs-ai-mode.vs-boost{ padding-bottom:max(76px, calc(env(safe-area-inset-bottom) + 70px)); }
 }
 
 /* ══ ĐẤU 1-1 — chế độ "Ưu tiên bàn của tôi": áp dụng cho cả Cùng máy lẫn Online.
