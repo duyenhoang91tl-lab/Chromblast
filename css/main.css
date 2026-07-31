@@ -3485,6 +3485,24 @@ body:has(#secret-stage.active) .streak-dot.lit{
   border-color:rgba(120, 190, 255, 0.35);
   background:rgba(40, 70, 110, 0.55);
 }
+/* ══ Đấu với máy, xoay DỌC: đổi vị trí — máy ở trên, mình ở dưới ══
+   (vs-top luôn là "mình", vs-bottom luôn là "máy" trong JS — chỉ đổi
+   thứ tự hiển thị + vị trí ô thông tin bằng CSS, không đổi index). */
+@media (orientation: portrait){
+  #versus-arena.vs-ai-mode .vs-top{ order:2; }
+  #versus-arena.vs-ai-mode .vs-bottom{ order:1; }
+  #versus-arena.vs-ai-mode .vs-chip-top{
+    top:auto;
+    bottom:max(8px, calc(env(safe-area-inset-bottom) + 6px));
+  }
+  #versus-arena.vs-ai-mode .vs-chip-bottom{
+    bottom:auto;
+    top:max(42px, calc(env(safe-area-inset-top) + 38px));
+  }
+  /* Không cần lộ trước khay gạch sắp tới của máy — máy tự chọn, người chơi
+     không thao tác trên bàn này nên khay chỉ gây rối mắt. */
+  #versus-arena.vs-ai-mode .vs-bottom .vs-tray{ visibility:hidden; }
+}
 .vs-chip-avatar{
   width:32px; height:32px; border-radius:10px; flex-shrink:0;
   display:flex; align-items:center; justify-content:center;

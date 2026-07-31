@@ -130,6 +130,7 @@ function _vsBuildArena(){
   try{ if(typeof setExclusivePlayMode === 'function') setExclusivePlayMode('versus'); }catch(e){}
   arena=document.createElement('div'); arena.id='versus-arena';
   const online = !!( _vs && _vs.online && _vs.online.roomId );
+  if(!online) arena.classList.add('vs-ai-mode');
   if(_vs && typeof _vs.layoutBoost !== 'boolean') _vs.layoutBoost = _vsGetLayoutBoost();
   if(_vs && _vs.layoutBoost) arena.classList.add('vs-boost');
   const nTop = escapeHtml(_vs.names[0] || 'P1');
