@@ -3827,8 +3827,9 @@ body:has(#secret-stage.active) .streak-dot.lit{
 
 /* ══ ĐẤU 1-1 dọc (portrait) — "Ưu tiên bàn của tôi": bàn mình (.vs-top, xem
    _vsBuildArena) chiếm 2/3 chiều cao và chuyển xuống DƯỚI; bàn máy (.vs-bottom)
-   còn 1/3, chuyển lên TRÊN. Chỉ áp dụng Cùng máy (đấu AI), dùng chung checkbox/
-   class .vs-boost với bản landscape bên dưới. ══ */
+   còn 1/3, chuyển lên TRÊN. Áp dụng cho cả Cùng máy (AI) lẫn Online — mỗi người
+   tự bật/tắt riêng trên máy mình qua nút 📐 trong trận hoặc ô tích lúc thiết lập
+   (chỉ là hiển thị cục bộ, không cần đồng bộ với đối thủ). ══ */
 @media (orientation: portrait){
   #versus-arena.vs-boost .vs-top{ flex:2 1 0; order:2; }
   #versus-arena.vs-boost .vs-bottom{ flex:1 1 0; order:1; }
@@ -3836,10 +3837,10 @@ body:has(#secret-stage.active) .streak-dot.lit{
   #versus-arena.vs-boost .vs-bottom .vs-grid{ --vs-size: min(24vh, 60vw, 180px, calc(33dvh - 73px)); }
 }
 
-/* ══ ĐẤU 1-1 — chế độ "Ưu tiên bàn của tôi": chỉ áp dụng cho Cùng máy (không phải
-   online), khi người chơi bật ô tích trong màn thiết lập. Bàn của mình chiếm 3/4
-   bề ngang, bàn của máy còn lại 1/4 — bàn cờ vẫn luôn vuông (JS ép width=height),
-   chỉ đổi bề rộng khung chứa nên bàn máy sẽ nhỏ lại tương ứng. ══ */
+/* ══ ĐẤU 1-1 — chế độ "Ưu tiên bàn của tôi": áp dụng cho cả Cùng máy lẫn Online.
+   Bàn của mình chiếm 3/4 bề ngang, bàn của máy/đối thủ còn lại 1/4 — bàn cờ vẫn
+   luôn vuông (JS ép width=height), chỉ đổi bề rộng khung chứa nên bàn kia sẽ nhỏ
+   lại tương ứng. ══ */
 @media (orientation: landscape){
   #versus-arena.vs-boost .vs-top{ flex:3 1 0; max-width:75%; }
   #versus-arena.vs-boost .vs-bottom{ flex:1 1 0; max-width:25%; }

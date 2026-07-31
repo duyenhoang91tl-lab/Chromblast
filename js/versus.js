@@ -19,8 +19,10 @@ const VERSUS_WIN_XP = 30;
 
 const VS_N = 7;                // bàn 7×7
 
-// Chế độ hiển thị khi xoay ngang, chỉ áp dụng cho "Cùng máy" (đấu AI):
-// mặc định 2 bàn bằng nhau; nếu bật thì bàn của mình chiếm 3/4, bàn máy 1/4.
+// Chế độ hiển thị "ưu tiên bàn của tôi" — áp dụng cho cả Cùng máy lẫn Online, cả
+// dọc lẫn ngang màn hình. Mặc định 2 bàn bằng nhau; nếu bật thì bàn của mình to
+// hơn (ngang: 3/4, dọc: 2/3), bàn kia nhỏ lại tương ứng. Bật/tắt riêng từng máy
+// qua nút 📐 trong trận (versus-ui.js), không cần đồng bộ với đối thủ.
 const VS_LAYOUT_KEY = 'vs_layout_boost';
 function _vsGetLayoutBoost(){
   try{ return localStorage.getItem(VS_LAYOUT_KEY) === '1'; }catch(e){ return false; }
