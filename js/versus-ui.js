@@ -103,7 +103,7 @@ function openVersusSetup(){
   try{ sfxClick(); }catch(e){}
   const p1=document.getElementById('vs-name1');
   if(p1 && typeof currentUser!=='undefined' && currentUser && currentUser.username) p1.value=currentUser.username;
-  try{ _vsFillLocalSkinPicker(1); _vsFillLocalSkinPicker(2); }catch(e){}
+  try{ _vsFillLocalSkinPicker(1); }catch(e){}
   _vsShow('versus-setup-panel');
   _vsHide('online-hub-panel');
   const hint=document.getElementById('vs-online-locked-note');
@@ -189,11 +189,15 @@ function _vsBuildArena(){
     half.className='vs-half'+(i===0?' vs-top':' vs-bottom');
     // P.idx===0 luôn là "mình" (xem enterOnlineVersusMatch: names=[myName,oppName]).
     // Online: đối thủ dùng skin họ tự chọn (đồng bộ qua room) — nếu không có dữ liệu thì dùng skin của mình.
-    // Cùng máy (2 người ngồi đối diện): mỗi người tự chọn riêng ở màn thiết lập (vs-nen-p1/p2, vs-gach-p1/p2).
+    // Cùng máy (đấu với máy): chỉ người chơi tự chọn nền/gạch riêng ở màn thiết lập (vs-nen-p1, vs-gach-p1);
+    // bàn của máy dùng skin đã mở khoá mặc định.
     let brickSkin, boardSkin;
-    if(localSkins){
-      brickSkin = (localSkins[i] && localSkins[i].brick) || myBrickSkin;
-      boardSkin = (localSkins[i] && localSkins[i].board) || myBoardSkin;
+    if(localSkins && i===0){
+      brickSkin = localSkins.brick || myBrickSkin;
+      boardSkin = localSkins.board || myBoardSkin;
+    } else if(localSkins){
+      brickSkin = (typeof _vsLocalFallbackBrickSkin === 'function') ? _vsLocalFallbackBrickSkin() : myBrickSkin;
+      boardSkin = (typeof _vsLocalFallbackBoardSkin === 'function') ? _vsLocalFallbackBoardSkin() : myBoardSkin;
     } else {
       brickSkin = (i===0) ? myBrickSkin : (oppSkins ? oppSkins.brickSkin : myBrickSkin);
       boardSkin  = (i===0) ? myBoardSkin  : (oppSkins ? oppSkins.boardSkin  : myBoardSkin);
@@ -711,7 +715,6 @@ function _vsCloseResult(rematch){
   if(rematch){
     const names=_vs.names;
     document.getElementById('vs-name1').value=names[0];
-    document.getElementById('vs-name2').value=names[1];
     _vs=null;
     startVersusMatch();
     return;

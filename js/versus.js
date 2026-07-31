@@ -98,7 +98,7 @@ function _rotShape(s){
 function startVersusMatch(){
   try{ if(typeof unlockOrientation==='function') unlockOrientation(); }catch(e){}
   const n1=(document.getElementById('vs-name1').value.trim()||t('vsP1'));
-  const n2=(document.getElementById('vs-name2').value.trim()||t('vsP2'));
+  const n2=t('vsP2');
   _vsHide('versus-setup-panel');
   if(typeof hardResetAllModes==='function') hardResetAllModes();
   try{
@@ -110,8 +110,8 @@ function startVersusMatch(){
   }catch(e){}
   const seed=(Date.now() ^ (Math.random()*0xFFFFFFF))>>>0;
   const avMe = (typeof getPlayerAvatar === 'function') ? getPlayerAvatar() : '🐶';
-  _vs={ seed, names:[n1,n2], avatars:[avMe, '🐱'], timeLeft:VERSUS_TIME, timer:null,
-        localSkins:[_vsGetLocalSkinPrefs(1), _vsGetLocalSkinPrefs(2)],
+  _vs={ seed, names:[n1,n2], avatars:[avMe, '🤖'], timeLeft:VERSUS_TIME, timer:null,
+        localSkins:_vsGetLocalSkinPrefs(1),
         players:[_vsNewPlayer(0,seed), _vsNewPlayer(1,seed)] };
   versusMode=true;
   _vsBuildArena();

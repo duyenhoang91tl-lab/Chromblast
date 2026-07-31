@@ -3492,7 +3492,6 @@ body:has(#secret-stage.active) .streak-dot.lit{
   overflow:hidden;
 }
 .vs-top{
-  transform:rotate(180deg);
   border-bottom:2px solid rgba(255,213,74,0.45);
   justify-content:flex-end;
   padding-bottom:2px;

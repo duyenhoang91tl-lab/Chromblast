@@ -578,13 +578,13 @@ function MILESTONE_MSG(tier){
 (function(){
   const vs = {
   vi:{ ttVersus:'Đấu 1-1', vsTitle:'⚔️ Đấu 1-1', vsSub:'Hai người chơi thi đấu trên máy này — cùng bộ khối, 90 giây mỗi lượt, điểm cao hơn thắng.',
-       vsP1:'Người chơi 1', vsP2:'Người chơi 2', vsStart:'⚔️ BẮT ĐẦU TRẬN ĐẤU', vsReady:'▶ SẴN SÀNG!', vsAgain:'🔁 Đấu lại', vsClose:'✕ Đóng', vsQuit:'Thoát',
+       vsP1:'Tên của bạn', vsP2:'Máy', vsStart:'⚔️ BẮT ĐẦU TRẬN ĐẤU', vsReady:'▶ SẴN SÀNG!', vsAgain:'🔁 Đấu lại', vsClose:'✕ Đóng', vsQuit:'Thoát',
        vsNeedLevel:'⚔️ Đạt Cấp {0} để mở phòng đấu 1-1!', vsOnlineLocked:'🔒 Online cần Cấp 3. Đấu Cùng máy vẫn chơi được.', vsHandoffTitle:'⚔️ Đến lượt {0}',
        vsHandoffFirst:'Bạn có {0} giây — ghi điểm cao nhất có thể! Bấm khi đã cầm máy.',
        vsHandoffSecond:'{0} đạt {1} điểm. Đưa máy cho đối thủ — cùng bộ khối, vượt qua đi!',
        vsWin:'🏆 {0} THẮNG!', vsDraw:'🤝 HÒA!', vsXpNote:'Người thắng +{0} XP · điểm thắng được ghi vào bảng xếp hạng' },
   en:{ ttVersus:'1v1 Duel', vsTitle:'⚔️ 1v1 Duel', vsSub:'Two players compete on this device — same pieces, 90 seconds each, higher score wins.',
-       vsP1:'Player 1', vsP2:'Player 2', vsStart:'⚔️ START MATCH', vsReady:'▶ READY!', vsAgain:'🔁 Rematch', vsClose:'✕ Close', vsQuit:'Exit',
+       vsP1:'Your name', vsP2:'AI', vsStart:'⚔️ START MATCH', vsReady:'▶ READY!', vsAgain:'🔁 Rematch', vsClose:'✕ Close', vsQuit:'Exit',
        vsNeedLevel:'⚔️ Reach Level {0} to host a 1v1 duel!', vsOnlineLocked:'🔒 Online needs Level 3. Same-device play still works.', vsHandoffTitle:'⚔️ {0}\'s turn',
        vsHandoffFirst:'You have {0} seconds — score as high as you can! Tap when you have the device.',
        vsHandoffSecond:'{0} scored {1} points. Hand the device over — same pieces, beat it!',
@@ -620,9 +620,9 @@ function MILESTONE_MSG(tier){
 // ── BỔ SUNG: đấu song song + thẻ chướng ngại ──
 (function(){
   const vs2 = {
-  vi:{ vsSub:'Hai người chơi CÙNG LÚC trên 2 bàn cờ (2 nửa màn hình, ngồi đối diện) — cùng bộ khối, 90 giây. Cứ ăn được 3 lần (không cần liên tiếp) thì rút thẻ chướng ngại ném sang bàn đối thủ!',
+  vi:{ vsSub:'Đấu với máy trên bàn cờ song song — cùng bộ khối, 90 giây. Cứ ăn được 3 lần (không cần liên tiếp) thì rút thẻ chướng ngại ném sang bàn của máy!',
        vsPickCard:'⚔️ Chọn 1 thẻ chướng ngại tặng đối thủ!', vsNoSpace:'🚫 Hết chỗ đặt!', vsHit:'💥 Trúng {0}!' },
-  en:{ vsSub:'Two players play AT THE SAME TIME on 2 boards (split screen, sit facing each other) — same pieces, 90 seconds. Every 3 clears (not necessarily in a row) draws an obstacle card to throw at your opponent!',
+  en:{ vsSub:'Play against the AI on parallel boards — same pieces, 90 seconds. Every 3 clears (not necessarily in a row) draws an obstacle card to throw at the AI!',
        vsPickCard:'⚔️ Pick 1 obstacle card for your opponent!', vsNoSpace:'🚫 No space left!', vsHit:'💥 Hit by {0}!' },
   ko:{ vsSub:'두 명이 동시에 2개의 보드에서 대결 (화면 분할, 마주 앉기) — 같은 블록, 90초. 3번 클리어할 때마다(연속 아니어도 됨) 방해 카드를 뽑아 상대에게 던지세요!',
        vsPickCard:'⚔️ 상대에게 줄 방해 카드 1장을 고르세요!', vsNoSpace:'🚫 놓을 곳이 없어요!', vsHit:'💥 {0} 피격!' },
@@ -639,8 +639,8 @@ function MILESTONE_MSG(tier){
 // ── BỔ SUNG: chọn nền/gạch riêng cho từng người (Đấu 1-1 Cùng máy) ──
 (function(){
   const vs3 = {
-  vi:{ vsSkinPickFor1:'🎨 Nền & gạch của Người chơi 1', vsSkinPickFor2:'🎨 Nền & gạch của Người chơi 2', vsSkinNen:'Nền', vsSkinGach:'Gạch' },
-  en:{ vsSkinPickFor1:'🎨 Player 1\'s board & bricks', vsSkinPickFor2:'🎨 Player 2\'s board & bricks', vsSkinNen:'Board', vsSkinGach:'Bricks' },
+  vi:{ vsSkinPickFor1:'🎨 Nền & gạch của bạn', vsSkinPickFor2:'🎨 Nền & gạch của Người chơi 2', vsSkinNen:'Nền', vsSkinGach:'Gạch' },
+  en:{ vsSkinPickFor1:'🎨 Your board & bricks', vsSkinPickFor2:'🎨 Player 2\'s board & bricks', vsSkinNen:'Board', vsSkinGach:'Bricks' },
   ko:{ vsSkinPickFor1:'🎨 플레이어 1의 보드 & 블록', vsSkinPickFor2:'🎨 플레이어 2의 보드 & 블록', vsSkinNen:'보드', vsSkinGach:'블록' },
   ja:{ vsSkinPickFor1:'🎨 プレイヤー1のボード＆ブロック', vsSkinPickFor2:'🎨 プレイヤー2のボード＆ブロック', vsSkinNen:'ボード', vsSkinGach:'ブロック' },
   zh:{ vsSkinPickFor1:'🎨 玩家1的棋盘与方块', vsSkinPickFor2:'🎨 玩家2的棋盘与方块', vsSkinNen:'棋盘', vsSkinGach:'方块' },
