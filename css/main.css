@@ -1438,6 +1438,7 @@ body.gchat-open .gchat-fab { display: none !important; }
 .gchat-row { display:flex; flex-direction:column; gap:2px; align-items:flex-start; }
 .gchat-row.mine { align-items:flex-end; }
 .gchat-who { font-size:10px; color:rgba(255,255,255,0.55); font-weight:700; }
+.gchat-rank-badge { color:#ffd700; font-weight:700; margin-left:2px; }
 .gchat-time {
   margin-left: 6px; font-size: 9px; font-weight: 700;
   color: rgba(255,255,255,0.38); white-space: nowrap;

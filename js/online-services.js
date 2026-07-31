@@ -1583,6 +1583,8 @@ function _chatMsgPayload(text){
     name: getOnlineDisplayName(),
     avatar: (typeof getPlayerAvatar === 'function') ? getPlayerAvatar() : '🐶',
     text: raw,
+    caroPoints: _myCaroPointsSafe(),
+    versusPoints: _myVersusPointsSafe(),
     ts: firebase.firestore.FieldValue.serverTimestamp()
   };
 }

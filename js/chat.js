@@ -329,7 +329,24 @@
     const head = document.createElement('div');
     head.className = 'gchat-who';
     const name = document.createElement('span');
-    name.textContent = (msg.avatar || '🐶')+' '+(msg.name || 'Player');
+    const caroRank = (typeof getCaroRank === 'function' && msg.caroPoints != null) ? getCaroRank(msg.caroPoints) : null;
+    const vsRank = (typeof getVersusRank === 'function' && msg.versusPoints != null) ? getVersusRank(msg.versusPoints) : null;
+    // Tên áp hiệu ứng theo bậc CAO HƠN giữa Caro (0-11) và Versus (0-9) — so sánh theo
+    // tỉ lệ % vì 2 hệ có tổng số bậc khác nhau, không so trực tiếp số bậc thô được.
+    let nameHtml = escapeHtml(msg.name || 'Player');
+    if(typeof rankNameFxHtml === 'function' && (caroRank || vsRank)){
+      const caroFrac = caroRank ? caroRank.tier / 11 : -1;
+      const vsFrac = vsRank ? vsRank.tier / 9 : -1;
+      if(caroFrac >= vsFrac && caroRank && caroRank.tier > 0){
+        nameHtml = rankNameFxHtml(msg.name || 'Player', caroRank.tier, 12);
+      } else if(vsRank && vsRank.tier > 0){
+        nameHtml = rankNameFxHtml(msg.name || 'Player', vsRank.tier, 10);
+      }
+    }
+    let badgesHtml = '';
+    if(caroRank) badgesHtml += ' <span class="gchat-rank-badge" title="Caro">'+escapeHtml(caroRank.icon+' '+caroRank.name)+'</span>';
+    if(vsRank) badgesHtml += ' <span class="gchat-rank-badge" title="Đấu 1-1">'+escapeHtml(vsRank.icon+' '+vsRank.name)+'</span>';
+    name.innerHTML = escapeHtml(msg.avatar || '🐶')+' '+nameHtml+badgesHtml;
     head.appendChild(name);
     const when = formatMsgTime(msg.ts);
     if(when){
