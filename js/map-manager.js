@@ -60,6 +60,7 @@ const PGCV = () => document.getElementById('plugin-canvas');
 function registerMapModule(mod){
   if(!mod || mod.id==null) return mod;
   const desc = MAP_REGISTRY[mod.id] || { id: mod.id, key: mod.key || ('map'+mod.id) };
+  mod.key = desc.key; // để enterMapModule() gọi setActiveHiddenMap() bằng đúng key đăng ký
   desc.module = mod;
   desc.name = mod.name || desc.name;
   desc.enter = () => enterMapModule(mod);   // startMap(id) → chạy qua runtime
@@ -85,6 +86,7 @@ function enterMapModule(mod){
   if(typeof endDrag==='function') endDrag();
   if(_pluginRAF){ cancelAnimationFrame(_pluginRAF); _pluginRAF=null; }
   if(typeof hardResetAllModes==='function') hardResetAllModes(); // dừng map builtin đang chạy
+  if(typeof setActiveHiddenMap==='function') setActiveHiddenMap(mod.key || ('map'+mod.id)); // để resume được sau khi app bị tắt ngầm
   document.getElementById('grid').style.display='none';
   document.getElementById('pieces-area').style.display='none';
   const badge=document.getElementById('mode-badge'); if(badge){ badge.textContent='🧩 '+(mod.name||('MAP '+mod.id)); badge.classList.add('secret'); }
