@@ -3603,6 +3603,10 @@ body:has(#secret-stage.active) .streak-dot.lit{
     0 0 2px color-mix(in srgb, var(--cc) 55%, transparent),
     inset 0 1px 1px rgba(255,255,255,0.4);
 }
+/* Icon tương tác + bong bóng chat trong Versus — tái dùng style .caro-fx-*/.caro-bubble-* */
+#vs-fx-layer{ position:fixed; inset:0; pointer-events:none; z-index:10065; }
+#vs-bubble-host{ position:absolute; inset:0; pointer-events:none; z-index:40; }
+#versus-arena .caro-float-bubble{ position:absolute; }
 .vs-cards{ display:none; position:absolute; inset:0; z-index:5; background:rgba(10,10,26,0.88); flex-direction:column; align-items:center; justify-content:center; gap:10px; }
 .vs-cards.show{ display:flex; }
 .vs-cards-title{ color:#ffd54a; font-weight:800; font-size:14px; text-align:center; padding:0 12px; }

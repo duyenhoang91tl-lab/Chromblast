@@ -149,7 +149,7 @@ function _vsBuildArena(){
       '</div>'+
     '</div>'+
     '<div id="vs-top-chip" class="vs-player-chip vs-chip-top" aria-label="'+nTop+'">'+
-      '<span class="vs-chip-avatar" id="vs-chip-avatar0">'+avTop+'</span>'+
+      '<span class="vs-chip-avatar caro-me-avatar" id="vs-chip-avatar0">'+avTop+'</span>'+
       '<div class="vs-chip-meta">'+
         '<span class="vs-chip-name" id="vs-chip-name0">'+nTop+'</span>'+
         '<span class="vs-chip-scoreline"><span class="vs-chip-score" id="vs-global-score0">0</span>'+
@@ -157,7 +157,7 @@ function _vsBuildArena(){
       '</div>'+
     '</div>'+
     '<div id="vs-bottom-chip" class="vs-player-chip vs-chip-bottom" aria-label="'+nBot+'">'+
-      '<span class="vs-chip-avatar" id="vs-chip-avatar1">'+avBot+'</span>'+
+      '<span class="vs-chip-avatar caro-opp-avatar" id="vs-chip-avatar1">'+avBot+'</span>'+
       '<div class="vs-chip-meta">'+
         '<span class="vs-chip-name" id="vs-chip-name1">'+nBot+'</span>'+
         '<span class="vs-chip-scoreline"><span class="vs-chip-score" id="vs-global-score1">0</span>'+
@@ -169,6 +169,8 @@ function _vsBuildArena(){
       ? '<div id="vs-chat" class="vs-chat" hidden>'+
           '<div class="vs-chat-head"><span>'+(typeof t==='function'?t('caroChatTitle'):'💬 Chat')+'</span>'+
           '<button type="button" id="vs-chat-close" class="vs-chat-close" aria-label="Close">✕</button></div>'+
+          '<div id="vs-fx-bar" class="caro-fx-bar" aria-label="Tương tác"></div>'+
+          '<div id="vs-bubble-picker" class="caro-bubble-picker" aria-label="Mẫu bong bóng"></div>'+
           '<div id="vs-chat-log" class="vs-chat-log" aria-live="polite"></div>'+
           '<form id="vs-chat-form" class="vs-chat-form" autocomplete="off">'+
             '<input id="vs-chat-input" type="text" maxlength="120" placeholder="'+(typeof t==='function'?t('caroChatPlaceholder'):'Nhắn đối thủ...')+'" />'+
@@ -250,6 +252,12 @@ function _vsBuildArena(){
   if(online){
     document.getElementById('vs-chat-close')?.addEventListener('click', ()=> _vsToggleChat(false));
     document.getElementById('vs-chat-form')?.addEventListener('submit', _vsSendChat);
+    try{
+      if(window.VersusSocial){
+        VersusSocial.renderFxBar();
+        VersusSocial.renderBubblePicker();
+      }
+    }catch(e){}
   }
   requestAnimationFrame(()=>{ _vsReflowGrids(); });
 }
@@ -285,12 +293,15 @@ function _vsAppendChat(msg){
   who.className = 'vs-chat-who';
   who.textContent = (msg.avatar || '')+' '+(msg.name || 'Player');
   const body = document.createElement('span');
-  body.className = 'vs-chat-text';
+  body.className = 'vs-chat-text'+(msg.kind==='fx'?' caro-chat-fx':'');
   body.textContent = msg.text || '';
   row.appendChild(who);
   row.appendChild(body);
   log.appendChild(row);
   log.scrollTop = log.scrollHeight;
+  try{
+    if(window.VersusSocial && typeof VersusSocial.onChatMessage === 'function') VersusSocial.onChatMessage(msg);
+  }catch(e){}
 }
 
 function _vsToggleChat(forceOpen){
@@ -302,6 +313,12 @@ function _vsToggleChat(forceOpen){
   if(open){
     const input = document.getElementById('vs-chat-input');
     if(input) setTimeout(()=> input.focus(), 50);
+    try{
+      if(window.VersusSocial){
+        VersusSocial.renderFxBar();
+        VersusSocial.renderBubblePicker();
+      }
+    }catch(e){}
   }
 }
 
@@ -313,7 +330,11 @@ async function _vsSendChat(e){
   const text = input.value;
   input.value = '';
   try{
-    if(typeof sendRoomChat === 'function') await sendRoomChat(_vs.online.roomId, text);
+    const extra = {};
+    try{
+      if(window.VersusSocial && VersusSocial.currentBubbleStyle) extra.bubbleStyle = VersusSocial.currentBubbleStyle();
+    }catch(e2){}
+    if(typeof sendRoomChat === 'function') await sendRoomChat(_vs.online.roomId, text, extra);
   }catch(err){
     console.warn('[vs-chat]', err);
     try{ showComboFlash(0,false, typeof t==='function'?t('caroChatFail'):'Không gửi được chat'); }catch(e2){}
