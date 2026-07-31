@@ -636,4 +636,3 @@ function buildLangPicker(containerId){
 // Tự áp dụng ngay khi tải (script nằm cuối body nên DOM đã sẵn sàng).
 applyI18nDom();
 buildLangPicker('lang-picker-auth');
-buildLangPicker('lang-picker-account');
