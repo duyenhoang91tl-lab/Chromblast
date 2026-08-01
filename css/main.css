@@ -3887,7 +3887,7 @@ body:has(#secret-stage.active) .streak-dot.lit{
 
   /* Cột trái + bàn giữa-trái: đối thủ (.vs-bottom, xem _vsBuildArena) */
   .vs-bottom .vs-player-chip{
-    grid-column:1; grid-row:2; align-self:start; justify-self:start;
+    grid-column:1; grid-row:2; align-self:center; justify-self:start;
     flex-direction:column !important; align-items:flex-start !important; gap:2px;
     max-width:30vw;
   }
@@ -3898,7 +3898,7 @@ body:has(#secret-stage.active) .streak-dot.lit{
 
   /* Cột phải + bàn giữa-phải: mình (.vs-top) */
   .vs-top .vs-player-chip{
-    grid-column:4; grid-row:2; align-self:start; justify-self:end;
+    grid-column:4; grid-row:2; align-self:center; justify-self:end;
     flex-direction:column !important; align-items:flex-end !important; gap:2px;
     max-width:30vw;
   }
