@@ -3893,7 +3893,6 @@ body:has(#secret-stage.active) .streak-dot.lit{
   }
   .vs-bottom .vs-grid-wrap{ grid-column:2; grid-row:1/-1; align-self:stretch; justify-self:stretch; justify-content:flex-start; }
   .vs-bottom .vs-tray,
-  .vs-bottom .vs-cards,
   .vs-bottom .vs-note{ grid-column:1; grid-row:3; align-self:end; justify-self:start; }
 
   /* Cột phải + bàn giữa-phải: mình (.vs-top) */
@@ -3904,8 +3903,14 @@ body:has(#secret-stage.active) .streak-dot.lit{
   }
   .vs-top .vs-grid-wrap{ grid-column:3; grid-row:1/-1; align-self:stretch; justify-self:stretch; justify-content:flex-end; }
   .vs-top .vs-tray,
-  .vs-top .vs-cards,
   .vs-top .vs-note{ grid-column:4; grid-row:3; align-self:end; justify-self:end; }
+
+  /* Bảng chọn thẻ chướng ngại (.vs-cards) — full-screen overlay (position:absolute;
+     inset:0 sẵn có ở rule gốc), phải chiếm HẾT lưới (mọi cột/hàng) chứ không bó
+     trong 1 ô góc như tray/note, nếu không "inset:0" chỉ phủ đúng ô góc đó →
+     bảng bị kẹt/cắt chữ ở góc thay vì hiện giữa màn hình. */
+  .vs-bottom .vs-cards,
+  .vs-top .vs-cards{ grid-column:1/-1; grid-row:1/-1; align-self:stretch; justify-self:stretch; }
 
   /* Bàn 1:1 (mặc định): 2 cột giữa bằng nhau (1fr/1fr) + cùng span hết chiều
      cao (row 1/-1) → 2 bàn tự động bằng nhau, vuông, cân xứng 2 bên. */
