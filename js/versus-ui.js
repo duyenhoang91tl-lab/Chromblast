@@ -528,13 +528,17 @@ function _vsBuildGhost(P){
     gEl.appendChild(d);
   });
   gEl.classList.add('active');
-  // Nửa trên xoay 180° — ghost cố định viewport nên xoay lại cho khớp
-  gEl.classList.toggle('vs-ghost-flip', P.idx===0);
+  // (Đã bỏ vs-ghost-flip: trước đây bàn trên bị xoay 180° bằng CSS nên ghost
+  // phải xoay bù lại cho khớp — nay chỉ đổi THỨ TỰ hiển thị bằng `order`
+  // (xem .vs-ai-mode ở css/main.css), không còn xoay bàn nào cả. Giữ flip lại
+  // sẽ khiến ghost của NGƯỜI CHƠI THẬT (luôn là P.idx===0) hiển thị ngược
+  // 180° so với hướng khối thực sự sẽ đặt xuống — đúng lỗi "xoay rồi đặt
+  // ngược hướng".
 }
 
 function _vsHideGhost(P){
   const gEl=P.el.ghost; if(!gEl) return;
-  gEl.classList.remove('active','vs-ghost-flip');
+  gEl.classList.remove('active');
   gEl.innerHTML='';
   gEl.style.transform='';
   P._prevKey='';
@@ -545,9 +549,7 @@ function _vsMoveGhost(P,x,y,ptype){
   const pc=P.pieces[P.selected]; if(!pc) return;
   const {bbH}=_vsPieceBox(P,pc);
   const [ax,ay]=_vsGhostAnchor(x,y,bbH,ptype);
-  // flip (P0 nửa trên) gộp vào cùng transform để vẫn dùng compositor
-  const flip=gEl.classList.contains('vs-ghost-flip') ? ' rotate(180deg)' : '';
-  gEl.style.transform='translate3d('+ax+'px,'+ay+'px,0) translate(-50%,-50%)'+flip;
+  gEl.style.transform='translate3d('+ax+'px,'+ay+'px,0) translate(-50%,-50%)';
 }
 
 function _vsClearPreview(P){
