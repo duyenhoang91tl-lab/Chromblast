@@ -3518,6 +3518,11 @@ body:has(#secret-stage.active) .streak-dot.lit{
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
   max-width:min(36vw, 140px);
 }
+.vs-chip-rank{
+  font-size:9px; font-weight:800; color:#ffd54a;
+  line-height:1.15; overflow:hidden; text-overflow:ellipsis;
+  white-space:nowrap; max-width:min(36vw, 140px);
+}
 .vs-chip-scoreline{
   display:flex; align-items:center; gap:4px;
 }
@@ -3841,7 +3846,7 @@ body:has(#secret-stage.active) .streak-dot.lit{
      xếp dọc cho vừa bề ngang hẹp của panel. Khay của đối thủ đã ẩn ở trên. */
   .vs-top .vs-tray{
     position:absolute !important;
-    top:max(96px, calc(env(safe-area-inset-top) + 94px));
+    top:max(108px, calc(env(safe-area-inset-top) + 106px));
     right:max(6px, env(safe-area-inset-right));
     left:auto;
     flex-direction:column; align-items:center;

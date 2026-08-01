@@ -344,6 +344,7 @@ function enterOnlineVersusMatch(roomId, roomData){
         timeLeft:VERSUS_TIME, timer:null,
         players:[_vsNewPlayer(0,roomData.seed), _vsNewPlayer(1,roomData.seed)],
         online:{ roomId, mySlot, appliedSeq:0, isHost, startedAtMs,
+          oppVersusPoints: isHost ? roomData.guestVersusPoints : roomData.hostVersusPoints,
           oppSkins: {
             brickSkin: isHost ? roomData.guestBrickSkin : roomData.hostBrickSkin,
             boardSkin:  isHost ? roomData.guestBoardSkin  : roomData.hostBoardSkin

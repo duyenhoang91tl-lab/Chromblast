@@ -142,6 +142,14 @@ function _vsBuildArena(){
   const avBot = escapeHtml((_vs.avatars && _vs.avatars[1]) || '🐱');
   const quitLbl = (typeof t === 'function' ? t('vsQuit') : null) || 'Thoát';
 
+  // Rank Versus của mình (luôn có) và của đối thủ (chỉ khi đấu online — máy AI không có rank).
+  const myVsPoints = (typeof getLocalVersusStats==='function') ? (getLocalVersusStats().points||0) : 0;
+  const myVsRank = (typeof getVersusRank==='function') ? getVersusRank(myVsPoints) : null;
+  const oppVsPoints = (_vs.online && _vs.online.oppVersusPoints!=null) ? _vs.online.oppVersusPoints : null;
+  const oppVsRank = (online && oppVsPoints!=null && typeof getVersusRank==='function') ? getVersusRank(oppVsPoints) : null;
+  const rankTopHtml = myVsRank ? ('<span class="vs-chip-rank" id="vs-chip-rank0">'+escapeHtml(myVsRank.icon+' '+myVsRank.name)+'</span>') : '';
+  const rankBotHtml = oppVsRank ? ('<span class="vs-chip-rank" id="vs-chip-rank1">'+escapeHtml(oppVsRank.icon+' '+oppVsRank.name)+'</span>') : '';
+
   // Topbar: chat trái | đổi cỡ bàn + đồng hồ bấm giờ + Thoát phải (nốt đổi cỡ đứng cạnh đồng hồ)
   // Chip kiểu Caro: avatar + tên + điểm
   arena.innerHTML =
@@ -161,6 +169,7 @@ function _vsBuildArena(){
       '<span class="vs-chip-avatar caro-me-avatar" id="vs-chip-avatar0">'+avTop+'</span>'+
       '<div class="vs-chip-meta">'+
         '<span class="vs-chip-name" id="vs-chip-name0">'+nTop+'</span>'+
+        rankTopHtml+
         '<span class="vs-chip-scoreline"><span class="vs-chip-score" id="vs-global-score0">0</span>'+
         '<span id="vs-global-combo0" class="vs-chip-combo"></span></span>'+
       '</div>'+
@@ -169,6 +178,7 @@ function _vsBuildArena(){
       '<span class="vs-chip-avatar caro-opp-avatar" id="vs-chip-avatar1">'+avBot+'</span>'+
       '<div class="vs-chip-meta">'+
         '<span class="vs-chip-name" id="vs-chip-name1">'+nBot+'</span>'+
+        rankBotHtml+
         '<span class="vs-chip-scoreline"><span class="vs-chip-score" id="vs-global-score1">0</span>'+
         '<span id="vs-global-combo1" class="vs-chip-combo"></span></span>'+
       '</div>'+
