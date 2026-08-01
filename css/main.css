@@ -3458,7 +3458,8 @@ body:has(#secret-stage.active) .streak-dot.lit{
 .vs-quit-btn:active{ transform:translateY(1px) !important; box-shadow:0 1px 0 rgba(0,0,0,0.25); }
 /* Chip kiểu Caro: avatar + tên + điểm */
 .vs-player-chip{
-  position:absolute;
+  position:fixed; /* neo theo màn hình (khớp #versus-arena, fixed+inset:0) dù nằm lồng
+                      trong .vs-half (position:relative) ở bất kỳ độ sâu DOM nào */
   z-index:12;
   display:flex; align-items:center; gap:7px;
   max-width:min(56vw, 240px);
@@ -3788,51 +3789,56 @@ body:has(#secret-stage.active) .streak-dot.lit{
 .account-msg.err{ color: #ff8a80; }
 .player-nick{ text-shadow: 0 1px 2px rgba(0,0,0,0.45); }
 
-/* ══ ĐẤU 1-1 (versus.js) — xoay ngang: trái = đối thủ (thông tin + bàn cờ),
-   phải = của mình (bàn cờ + thông tin); 2 bàn cờ nằm giữa, cạnh nhau,
-   mép trên/dưới chạm màn hình. Áp dụng cho cả "Cùng máy" và đấu 1-1 online. ══ */
+/* ══ ĐẤU 1-1 (versus.js) — xoay ngang: trái = đối thủ, phải = của mình; 2 bàn cờ
+   nằm SÁT GIỮA màn hình, cạnh nhau. Thẻ tên + khay gạch nằm NGAY TRONG mỗi bàn
+   (con của .vs-half — xem _vsBuildArena) thay vì nổi riêng theo cả màn hình,
+   nên không bao giờ đè/che gì. Bàn cờ là hình vuông lớn nhất vừa khít khoảng
+   trống dọc còn lại (aspect-ratio, trình duyệt tự tính — không đoán số vh/px
+   nào), nên 2 bàn luôn bằng nhau ở chế độ 1:1 và không thể bị lệch/tràn. ══ */
 @media (orientation: landscape){
   #versus-arena{
-    --vs-panel-w: clamp(66px, 15vw, 118px);
     flex-direction: row;
     align-items: stretch;
     justify-content: center;
-    padding: env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px) 0;
-    gap: 0;
+    padding: env(safe-area-inset-top,0px) 10px env(safe-area-inset-bottom,0px) 10px;
+    gap: clamp(10px, 3vw, 28px);
   }
-  /* Bàn cờ: giữa màn hình, 2 bàn cạnh nhau, kích thước bằng nhau, mép ngoài luôn
-     chạm sát 2 mép màn hình (panel thông tin không còn chiếm bề rộng riêng —
-     xem .vs-player-chip bên dưới, giờ nổi đè lên góc bàn thay vì choán chỗ).
-     Chừa đệm cố định ở trên (thay vì trừ vào công thức --vs-size) để bàn không
-     bao giờ bị tính ra kích thước âm/quá nhỏ trên bất kỳ tỉ lệ màn hình nào. */
   .vs-half{
-    flex: 1 1 0; width:auto; max-width:50%; height:100%;
-    padding:2px 2px; margin:0; gap:4px;
+    flex: 0 1 auto; width:auto; max-width:47%; height:100%;
+    padding:2px 4px; margin:0; gap:6px;
     display:flex !important; flex-direction:column !important;
     justify-content:center !important; align-items:center !important;
     box-sizing:border-box;
   }
-  /* Chừa khoảng trống phía trên = chiều cao topbar + thẻ tên (tên/kết đôi/rank/điểm) —
-     bàn của mình còn chừa thêm khay gạch dọc bên dưới thẻ tên. */
-  .vs-bottom{ order:1; border-bottom:none; border-right:1px solid rgba(255,213,74,0.3); padding-top:158px; }
-  .vs-top{ order:2; border-bottom:none; padding-top:272px; }
+  .vs-bottom{ order:1; border-bottom:none; padding-top:2px; margin-top:0; }
+  .vs-top{ order:2; border-bottom:none; padding-bottom:2px; margin-bottom:0; }
+
+  /* Thẻ tên — trong luồng bình thường, ngay trên bàn của chính nó. */
+  .vs-player-chip{
+    position:static !important; flex:0 0 auto; transform:none !important;
+    flex-direction:row; align-items:center; text-align:left;
+    width:auto; max-width:100%;
+    padding:3px 10px 3px 3px; border-radius:14px;
+  }
+  .vs-chip-avatar{ width:28px; height:28px; font-size:16px; border-radius:8px; }
+  .vs-chip-name, .vs-chip-rank, .vs-chip-couple{ max-width:34vw; }
+
+  /* Khung bọc bàn cờ: chiếm hết khoảng trống dọc còn lại sau thẻ tên + khay —
+     bàn cờ bên trong tự co thành hình vuông lớn nhất vừa khít (aspect-ratio). */
+  .vs-grid-wrap{
+    flex:1 1 auto; min-height:0; min-width:0; width:100%;
+    display:flex; align-items:center; justify-content:center;
+  }
   .vs-grid{
-    /* Bề ngang gần full nửa màn (48vw) vì panel giờ nổi đè, không choán bề rộng.
-       Có sàn tối thiểu 120px (clamp) nên không thể "biến mất" dù công thức trừ
-       vh có lệch trên tỉ lệ màn hình nào đó. */
-    --vs-size: clamp(120px, min(96vh, 48vw), 420px);
+    height:100%; width:auto; aspect-ratio:1/1; max-width:100%;
     gap:1.5px; padding:4px; border-radius:10px; border-width:1.5px;
   }
-  /* Trừ đúng phần padding-top vừa chừa ở trên — bàn không còn bị panel thông tin
-     che, đồng thời được kéo lại gần giữa màn hình hơn theo chiều dọc. */
-  .vs-bottom .vs-grid{ --vs-size: clamp(120px, min(calc(96vh - 166px), 48vw), 420px); }
-  .vs-top .vs-grid{ --vs-size: clamp(120px, min(calc(96vh - 280px), 48vw), 420px); }
   .vs-cell{ border-radius:5px; font-size:clamp(8px, 1.8vh, 11px); }
-  /* Khay nước đi — nằm dưới cùng của mỗi bàn, to hơn để bấm/kéo dễ hơn */
+  /* Khay nước đi — ngay dưới bàn của chính nó. */
   .vs-tray{ min-height:34px; gap:8px; flex-shrink:0; }
   /* Ẩn khay gạch của đối thủ (AI lẫn online) — không lộ trước các viên sắp có của họ. */
   .vs-bottom .vs-tray{ visibility:hidden; }
-  .vs-piece{ width:46px; height:38px; border-radius:9px; }
+  .vs-piece{ width:40px; height:34px; border-radius:9px; }
   .vs-mini{ gap:1.5px; transform:scale(1); transform-origin:center; }
   .vs-cards{ gap:6px; }
   .vs-card{ width:64px; height:72px; }
@@ -3840,64 +3846,19 @@ body:has(#secret-stage.active) .streak-dot.lit{
   .vs-card-name{ font-size:10px; }
   #vs-countdown{ font-size:64px; }
 
-  /* Panel thông tin — nổi ở góc trên 2 bên nhưng nằm NGAY DƯỚI hàng topbar
-     (xoay/đồng hồ/thoát), không còn đè lên topbar hay lấn vào bàn cờ. */
-  .vs-player-chip{
-    position:absolute !important;
-    top:max(42px, calc(env(safe-area-inset-top) + 40px));
-    transform:none !important;
-    z-index:15;
-    flex-direction:column; align-items:center; text-align:center;
-    gap:4px; width:var(--vs-panel-w); max-width:var(--vs-panel-w);
-    padding:5px 4px 6px; border-radius:12px;
-    align-self:auto; box-sizing:border-box;
-  }
-  .vs-chip-bottom{ left:max(6px, env(safe-area-inset-left)); right:auto; } /* đối thủ — góc trên trái */
-  .vs-chip-top{ right:max(6px, env(safe-area-inset-right)); left:auto; }   /* của mình — góc trên phải */
-  .vs-chip-meta{ align-items:center; width:100%; }
-  .vs-chip-name{ max-width:100%; white-space:normal; text-align:center; }
-  .vs-chip-scoreline{ justify-content:center; }
-  .vs-chip-avatar{ width:34px; height:34px; font-size:18px; border-radius:9px; }
-
-  /* Khay gạch của mình — nổi ngay dưới thẻ tên/điểm của mình (góc trên phải),
-     xếp dọc cho vừa bề ngang hẹp của panel. Khay của đối thủ đã ẩn ở trên. */
-  .vs-top .vs-tray{
-    position:absolute !important;
-    top:max(152px, calc(env(safe-area-inset-top) + 150px));
-    right:max(6px, env(safe-area-inset-right));
-    left:auto;
-    flex-direction:column; align-items:center;
-    width:var(--vs-panel-w); min-height:0; gap:6px;
-    z-index:15;
-  }
-  .vs-top .vs-piece{ width:38px; height:32px; }
-
   .vs-chat-fab, .vs-layout-toggle-btn, .vs-quit-btn, #vs-quit-btn, .vs-mid-timer, #vs-mid-timer{ height:28px; }
   .vs-chat-fab, .vs-layout-toggle-btn, .vs-mid-timer, #vs-mid-timer{ width:28px; min-width:28px; }
   .vs-quit-btn, #vs-quit-btn{ min-width:48px; font-size:10px; padding:0 8px; }
   .vs-timer-num{ font-size:10px; }
 }
 @media (orientation: landscape) and (max-height: 420px){
-  #versus-arena{ --vs-panel-w: clamp(58px, 13vw, 100px); }
-  /* Màn hình ngang thấp không đủ chỗ dọc cho thẻ tên + khay quân xếp dọc + bàn cờ cùng lúc —
-     chuyển khay quân của MÌNH (.vs-top) sang nằm NGANG cạnh thẻ tên (không xếp dọc bên dưới
-     nữa), nhường lại phần lớn khoảng trống dọc còn lại cho bàn cờ. */
-  .vs-bottom{ padding-top:96px; }
-  .vs-top{ padding-top:96px; }
-  .vs-bottom .vs-grid{ --vs-size: clamp(80px, min(calc(90vh - 128px), 44vw), 280px); }
-  .vs-top .vs-grid{ --vs-size: clamp(90px, min(calc(90vh - 106px), 44vw), 300px); }
-  .vs-player-chip{ top:max(24px, calc(env(safe-area-inset-top) + 22px)) !important; padding:4px 3px; gap:2px; }
-  .vs-chip-avatar{ width:24px; height:24px; font-size:13px; }
-  .vs-top .vs-tray{
-    top:max(24px, calc(env(safe-area-inset-top) + 22px)) !important;
-    right:calc(var(--vs-panel-w) + 8px) !important;
-    left:auto; flex-direction:row !important; align-items:center;
-    width:auto; gap:3px;
-  }
-  .vs-tray{ min-height:22px; }
-  .vs-piece{ width:22px; height:18px; border-radius:5px; }
-  .vs-top .vs-piece{ width:22px; height:18px; border-radius:5px; }
-  .vs-mini{ transform:scale(0.6); }
+  /* Màn thấp: chỉ cần thu gọn thẻ tên/khay — bàn cờ tự co theo (flex:1 +
+     aspect-ratio ở trên đã lo phần đó), không cần đoán/chỉnh số px nào thêm. */
+  .vs-player-chip{ padding:2px 6px 2px 2px; gap:4px; }
+  .vs-chip-avatar{ width:22px; height:22px; font-size:12px; }
+  .vs-tray{ min-height:24px; gap:5px; }
+  .vs-piece{ width:26px; height:22px; }
+  .vs-mini{ transform:scale(0.7); }
 }
 
 /* ══ ĐẤU 1-1 dọc (portrait) — "Ưu tiên bàn của tôi": bàn mình (.vs-top, xem
@@ -3917,19 +3878,13 @@ body:has(#secret-stage.active) .streak-dot.lit{
   #versus-arena.vs-ai-mode.vs-boost{ padding-bottom:max(76px, calc(env(safe-area-inset-bottom) + 70px)); }
 }
 
-/* ══ ĐẤU 1-1 — chế độ "Ưu tiên bàn của tôi": áp dụng cho cả Cùng máy lẫn Online.
-   Bàn của mình chiếm 3/4 bề ngang, bàn của máy/đối thủ còn lại 1/4 — bàn cờ vẫn
-   luôn vuông (JS ép width=height), chỉ đổi bề rộng khung chứa nên bàn kia sẽ nhỏ
-   lại tương ứng. ══ */
+/* ══ ĐẤU 1-1 — chế độ "Ưu tiên bàn của tôi": bàn của mình cao gần hết màn hình
+   (cũng là bàn to nhất có thể), bàn máy/đối thủ chỉ còn ~1/3 chiều cao (gần
+   đúng tỉ lệ cạnh 1/4-3/4). Bàn cờ vẫn tự co vuông theo quy tắc chung ở trên —
+   chỉ đổi CHIỀU CAO khung chứa mỗi bên, không cần công thức --vs-size riêng. ══ */
 @media (orientation: landscape){
-  #versus-arena.vs-boost .vs-top{ flex:3 1 0; max-width:75%; }
-  #versus-arena.vs-boost .vs-bottom{ flex:1 1 0; max-width:25%; }
-  #versus-arena.vs-boost .vs-top .vs-grid{ --vs-size: clamp(160px, min(calc(96vh - 280px), 66vw), 560px); }
-  #versus-arena.vs-boost .vs-bottom .vs-grid{ --vs-size: clamp(90px, min(calc(96vh - 166px), 16vw), 170px); }
-}
-@media (orientation: landscape) and (max-height: 420px){
-  #versus-arena.vs-boost .vs-top .vs-grid{ --vs-size: clamp(120px, min(calc(90vh - 106px), 58vw), 400px); }
-  #versus-arena.vs-boost .vs-bottom .vs-grid{ --vs-size: clamp(70px, min(calc(90vh - 128px), 13vw), 120px); }
+  #versus-arena.vs-boost .vs-top{ height:100%; }
+  #versus-arena.vs-boost .vs-bottom{ height:36%; align-self:center; }
 }
 
 /* ══ CỜ CARO — xoay ngang: khối trái = nội dung đối thủ (topbar), khối phải = nội dung của bạn (bottombar),

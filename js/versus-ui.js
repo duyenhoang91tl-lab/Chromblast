@@ -162,8 +162,32 @@ function _vsBuildArena(){
     ? ('<span class="vs-chip-couple" id="vs-chip-couple1">💍 '+escapeHtml(myCouple.partnerName||'…')+'</span>')
     : '';
 
+  // Chip kiểu Caro: avatar + tên + điểm — giờ được chèn NGAY TRONG mỗi bàn (.vs-half)
+  // thay vì nổi riêng theo cả màn hình, xem vòng lặp half bên dưới.
+  const chipHtml0 =
+    '<div id="vs-top-chip" class="vs-player-chip vs-chip-top" aria-label="'+nTop+'">'+
+      '<span class="vs-chip-avatar caro-me-avatar" id="vs-chip-avatar0">'+avTop+'</span>'+
+      '<div class="vs-chip-meta">'+
+        '<span class="vs-chip-name" id="vs-chip-name0">'+nTop+'</span>'+
+        coupleTopHtml+
+        rankTopHtml+
+        '<span class="vs-chip-scoreline"><span class="vs-chip-score" id="vs-global-score0">0</span>'+
+        '<span id="vs-global-combo0" class="vs-chip-combo"></span></span>'+
+      '</div>'+
+    '</div>';
+  const chipHtml1 =
+    '<div id="vs-bottom-chip" class="vs-player-chip vs-chip-bottom" aria-label="'+nBot+'">'+
+      '<span class="vs-chip-avatar caro-opp-avatar" id="vs-chip-avatar1">'+avBot+'</span>'+
+      '<div class="vs-chip-meta">'+
+        '<span class="vs-chip-name" id="vs-chip-name1">'+nBot+'</span>'+
+        coupleBotHtml+
+        rankBotHtml+
+        '<span class="vs-chip-scoreline"><span class="vs-chip-score" id="vs-global-score1">0</span>'+
+        '<span id="vs-global-combo1" class="vs-chip-combo"></span></span>'+
+      '</div>'+
+    '</div>';
+
   // Topbar: chat trái | đổi cỡ bàn + đồng hồ bấm giờ + Thoát phải (nốt đổi cỡ đứng cạnh đồng hồ)
-  // Chip kiểu Caro: avatar + tên + điểm
   arena.innerHTML =
     '<div id="vs-topbar" class="vs-topbar">'+
       '<button type="button" id="vs-chat-fab" class="vs-chat-fab" title="Chat" aria-label="Chat">💬</button>'+
@@ -175,26 +199,6 @@ function _vsBuildArena(){
           '<span class="vs-timer-num">'+VERSUS_TIME+'</span>'+
         '</div>'+
         '<button type="button" id="vs-quit-btn" class="vs-quit-btn" title="'+quitLbl+'">'+escapeHtml(quitLbl)+'</button>'+
-      '</div>'+
-    '</div>'+
-    '<div id="vs-top-chip" class="vs-player-chip vs-chip-top" aria-label="'+nTop+'">'+
-      '<span class="vs-chip-avatar caro-me-avatar" id="vs-chip-avatar0">'+avTop+'</span>'+
-      '<div class="vs-chip-meta">'+
-        '<span class="vs-chip-name" id="vs-chip-name0">'+nTop+'</span>'+
-        coupleTopHtml+
-        rankTopHtml+
-        '<span class="vs-chip-scoreline"><span class="vs-chip-score" id="vs-global-score0">0</span>'+
-        '<span id="vs-global-combo0" class="vs-chip-combo"></span></span>'+
-      '</div>'+
-    '</div>'+
-    '<div id="vs-bottom-chip" class="vs-player-chip vs-chip-bottom" aria-label="'+nBot+'">'+
-      '<span class="vs-chip-avatar caro-opp-avatar" id="vs-chip-avatar1">'+avBot+'</span>'+
-      '<div class="vs-chip-meta">'+
-        '<span class="vs-chip-name" id="vs-chip-name1">'+nBot+'</span>'+
-        coupleBotHtml+
-        rankBotHtml+
-        '<span class="vs-chip-scoreline"><span class="vs-chip-score" id="vs-global-score1">0</span>'+
-        '<span id="vs-global-combo1" class="vs-chip-combo"></span></span>'+
       '</div>'+
     '</div>'+
     '<div id="vs-countdown"></div>'+
@@ -238,11 +242,14 @@ function _vsBuildArena(){
     half.setAttribute('data-brick-skin', brickSkin || 'plush');
     half.setAttribute('data-board-skin', boardSkin || 'classic');
 
-    // Không gắn chữ tên trong nửa xoay — chỉ bàn + khay (+ HUD ẩn dự phòng)
+    // Thẻ tên của đúng bàn này (chip0 cho vs-top="mình", chip1 cho vs-bottom="máy/đối thủ")
+    // + bàn (bọc trong .vs-grid-wrap để tự co vừa khoảng trống còn lại, không tràn/không lệch)
+    // + khay gạch NGAY DƯỚI bàn của chính nó (+ HUD ẩn dự phòng)
     half.innerHTML=
+      (i===0 ? chipHtml0 : chipHtml1)+
       '<div class="vs-hud" hidden aria-hidden="true"><span class="vs-name">'+escapeHtml(_vs.names[i])+'</span>'+
       '<span class="vs-score">0</span><span class="vs-combo"></span></div>'+
-      '<div class="vs-grid"></div>'+
+      '<div class="vs-grid-wrap"><div class="vs-grid"></div></div>'+
       '<div class="vs-tray"></div>'+
       '<div class="vs-cards"></div>'+
       '<div class="vs-note"></div>';
