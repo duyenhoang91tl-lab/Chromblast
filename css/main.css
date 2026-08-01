@@ -5520,3 +5520,4 @@ body:has(#secret-stage.active) .streak-dot.lit{
   .rank-fx-marquee-text{ animation:none; position:static; }
   .rank-fx-marquee-box{ overflow:visible; max-width:none; white-space:normal; }
 }
+/* deploy-trigger: kich hoat lai GitHub Pages deploy sau khi doi Source sang GitHub Actions */
