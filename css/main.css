@@ -3879,10 +3879,19 @@ body:has(#secret-stage.active) .streak-dot.lit{
 }
 @media (orientation: landscape) and (max-height: 420px){
   #versus-arena{ --vs-panel-w: clamp(58px, 13vw, 100px); }
-  .vs-bottom .vs-grid{ --vs-size: clamp(100px, min(calc(90vh - 166px), 44vw), 300px); }
-  .vs-top .vs-grid{ --vs-size: clamp(100px, min(calc(90vh - 280px), 44vw), 300px); }
+  /* Thu nhỏ luôn phần chừa trên (chip + khay) cho khớp với --vs-size đã bị ép nhỏ ở dưới —
+     trước đây chỉ thu nhỏ bàn cờ mà vẫn chừa chỗ như màn cao (158/272px), nên trên màn thấp
+     bàn+khay không đủ chỗ, bị overflow:hidden cắt gần hết (rõ nhất ở bàn của mình, .vs-top). */
+  .vs-bottom{ padding-top:112px; }
+  .vs-top{ padding-top:200px; }
+  .vs-bottom .vs-grid{ --vs-size: clamp(90px, min(calc(90vh - 122px), 44vw), 300px); }
+  .vs-top .vs-grid{ --vs-size: clamp(90px, min(calc(90vh - 210px), 44vw), 300px); }
+  .vs-player-chip{ top:max(26px, calc(env(safe-area-inset-top) + 24px)) !important; padding:4px 3px 4px; gap:2px; }
+  .vs-chip-avatar{ width:26px; height:26px; font-size:14px; }
+  .vs-top .vs-tray{ top:max(96px, calc(env(safe-area-inset-top) + 94px)) !important; gap:4px; }
   .vs-tray{ min-height:22px; }
   .vs-piece{ width:30px; height:26px; }
+  .vs-top .vs-piece{ width:30px; height:26px; }
   .vs-mini{ transform:scale(0.75); }
 }
 
