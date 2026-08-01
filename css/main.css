@@ -3830,6 +3830,10 @@ body:has(#secret-stage.active) .streak-dot.lit{
   /* Ẩn khay gạch của đối thủ (AI lẫn online) — không lộ trước các viên sắp có của họ. */
   .vs-bottom .vs-tray{ visibility:hidden; }
   .vs-piece{ width:40px; height:34px; border-radius:9px; }
+  /* Khay của MÌNH: to hơn hẳn, dễ chạm/kéo hơn — khay đối thủ đang ẩn nên
+     không lo choán chỗ khi phóng to riêng bên này. */
+  .vs-top .vs-tray{ min-height:52px; gap:10px; }
+  .vs-top .vs-piece{ width:58px; height:48px; border-radius:11px; }
   .vs-mini{ gap:1.5px; transform:scale(1); transform-origin:center; }
   .vs-cards{ gap:6px; }
   .vs-card{ width:64px; height:72px; }
@@ -3921,6 +3925,8 @@ body:has(#secret-stage.active) .streak-dot.lit{
   .vs-chip-avatar{ width:22px; height:22px; font-size:12px; }
   .vs-tray{ min-height:24px; gap:5px; }
   .vs-piece{ width:26px; height:22px; }
+  .vs-top .vs-tray{ min-height:38px; gap:7px; }
+  .vs-top .vs-piece{ width:40px; height:34px; }
   .vs-mini{ transform:scale(0.7); }
 }
 
