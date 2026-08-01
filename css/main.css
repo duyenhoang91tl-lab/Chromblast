@@ -3851,6 +3851,79 @@ body:has(#secret-stage.active) .streak-dot.lit{
   .vs-quit-btn, #vs-quit-btn{ min-width:48px; font-size:10px; padding:0 8px; }
   .vs-timer-num{ font-size:10px; }
 }
+
+/* ══ ĐẤU 1-1 xoay ngang — bố cục 2 CỘT thông tin 2 bên mép màn hình, 2 bàn cờ
+   ở giữa: cột TRÁI = chat (trên) + tên/rank/điểm ĐỐI THỦ (dọc, dưới chat);
+   cột PHẢI = 3 nút tiện ích — đổi cỡ bàn/đồng hồ/thoát (trên) + tên/rank/điểm
+   CỦA MÌNH (dọc) + khay quân của mình (dưới cùng). Bàn cờ luôn ở 2 cột giữa,
+   tự co vuông (aspect-ratio 1/1) và cao bằng hết chiều cao khả dụng.
+   Kỹ thuật: #vs-topbar và mỗi .vs-half dùng display:contents để các phần tử
+   con (nút, thẻ tên, khung bàn, khay) trở thành item TRỰC TIẾP của lưới
+   #versus-arena, đặt đúng cột/hàng bằng grid-column/grid-row — không cần
+   đổi cấu trúc DOM trong versus-ui.js. ══ */
+@media (orientation: landscape){
+  #versus-arena{
+    display:grid;
+    grid-template-columns: auto minmax(0,1fr) minmax(0,1fr) auto;
+    grid-template-rows: auto 1fr auto;
+    align-items:stretch;
+    justify-items:stretch;
+    column-gap: clamp(6px, 2vw, 18px);
+    row-gap:4px;
+  }
+  #vs-topbar, .vs-bottom, .vs-top{ display:contents; }
+
+  #vs-chat-fab{ grid-column:1; grid-row:1; align-self:start; justify-self:start; }
+  .vs-topbar-right{
+    grid-column:4; grid-row:1; align-self:start; justify-self:end;
+    flex-direction:column; gap:4px;
+  }
+
+  /* Cột trái + bàn giữa-trái: đối thủ (.vs-bottom, xem _vsBuildArena) */
+  .vs-bottom .vs-player-chip{
+    grid-column:1; grid-row:2; align-self:start; justify-self:start;
+    flex-direction:column !important; align-items:flex-start !important; gap:2px;
+    max-width:30vw;
+  }
+  .vs-bottom .vs-grid-wrap{ grid-column:2; grid-row:1/-1; align-self:stretch; justify-self:stretch; }
+  .vs-bottom .vs-tray,
+  .vs-bottom .vs-cards,
+  .vs-bottom .vs-note{ grid-column:1; grid-row:3; align-self:end; justify-self:start; }
+
+  /* Cột phải + bàn giữa-phải: mình (.vs-top) */
+  .vs-top .vs-player-chip{
+    grid-column:4; grid-row:2; align-self:start; justify-self:end;
+    flex-direction:column !important; align-items:flex-end !important; gap:2px;
+    max-width:30vw;
+  }
+  .vs-top .vs-grid-wrap{ grid-column:3; grid-row:1/-1; align-self:stretch; justify-self:stretch; }
+  .vs-top .vs-tray,
+  .vs-top .vs-cards,
+  .vs-top .vs-note{ grid-column:4; grid-row:3; align-self:end; justify-self:end; }
+
+  /* Bàn 1:1 (mặc định): 2 cột giữa bằng nhau (1fr/1fr) + cùng span hết chiều
+     cao (row 1/-1) → 2 bàn tự động bằng nhau, vuông, cân xứng 2 bên. */
+
+  /* .vs-half dùng display:contents nên không còn box để chạy animation rung
+     khi ăn/mất điểm — chuyển hiệu ứng sang khung bàn của chính half đó. */
+  .vs-half.vs-shake .vs-grid-wrap{ animation:vsShake 0.5s; }
+}
+
+/* ══ ĐẤU 1-1 xoay ngang — chế độ "Ưu tiên bàn của tôi" (nút 📐, tỉ lệ ~3:1):
+   không thể chỉ đổi bề rộng cột (2 bàn luôn span chung 1 chiều cao lưới nên
+   sẽ tự bị ép về CÙNG kích thước vuông dù cột rộng khác nhau) — phải đặt
+   thẳng height cho .vs-grid của từng bàn (thay vì dùng height:100% chung),
+   bàn nhỏ hơn vẫn tự canh giữa trong cột của nó (căn giữa 2 bên, không lệch). ══ */
+@media (orientation: landscape){
+  #versus-arena.vs-boost .vs-top .vs-grid{
+    height:min(72vh, 82vw, 480px, calc(100dvh - 176px));
+    width:auto; aspect-ratio:1/1;
+  }
+  #versus-arena.vs-boost .vs-bottom .vs-grid{
+    height:min(26vh, 30vw, 170px, calc(100dvh - 176px));
+    width:auto; aspect-ratio:1/1;
+  }
+}
 @media (orientation: landscape) and (max-height: 420px){
   /* Màn thấp: chỉ cần thu gọn thẻ tên/khay — bàn cờ tự co theo (flex:1 +
      aspect-ratio ở trên đã lo phần đó), không cần đoán/chỉnh số px nào thêm. */
@@ -3876,15 +3949,6 @@ body:has(#secret-stage.active) .streak-dot.lit{
   #versus-arena.vs-boost .vs-top .vs-grid{ --vs-size: clamp(160px, min(58vh, 100vw, 480px, calc(75dvh - 193px)), 480px); }
   #versus-arena.vs-boost .vs-bottom .vs-grid{ --vs-size: clamp(90px, min(18vh, 42vw, 130px, calc(25dvh - 103px)), 130px); }
   #versus-arena.vs-ai-mode.vs-boost{ padding-bottom:max(76px, calc(env(safe-area-inset-bottom) + 70px)); }
-}
-
-/* ══ ĐẤU 1-1 — chế độ "Ưu tiên bàn của tôi": bàn của mình cao gần hết màn hình
-   (cũng là bàn to nhất có thể), bàn máy/đối thủ chỉ còn ~1/3 chiều cao (gần
-   đúng tỉ lệ cạnh 1/4-3/4). Bàn cờ vẫn tự co vuông theo quy tắc chung ở trên —
-   chỉ đổi CHIỀU CAO khung chứa mỗi bên, không cần công thức --vs-size riêng. ══ */
-@media (orientation: landscape){
-  #versus-arena.vs-boost .vs-top{ height:100%; }
-  #versus-arena.vs-boost .vs-bottom{ height:36%; align-self:center; }
 }
 
 /* ══ CỜ CARO — xoay ngang: khối trái = nội dung đối thủ (topbar), khối phải = nội dung của bạn (bottombar),
