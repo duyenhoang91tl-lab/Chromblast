@@ -109,7 +109,7 @@ function _rotShape(s){
 
 function startVersusMatch(){
   try{ if(typeof unlockOrientation==='function') unlockOrientation(); }catch(e){}
-  const n1=(document.getElementById('vs-name1').value.trim()||t('vsP1'));
+  const n1=(document.getElementById('vs-name1').value.trim()||(typeof getPlayerNickname==='function'?getPlayerNickname():'')||t('vsP1'));
   const n2=t('vsP2');
   const boostChk = document.getElementById('vs-layout-boost');
   const layoutBoost = !!(boostChk && boostChk.checked);

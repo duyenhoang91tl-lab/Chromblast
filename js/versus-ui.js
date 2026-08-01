@@ -102,7 +102,10 @@ function _vsFillLocalSkinPicker(slot){
 function openVersusSetup(){
   try{ sfxClick(); }catch(e){}
   const p1=document.getElementById('vs-name1');
-  if(p1 && typeof currentUser!=='undefined' && currentUser && currentUser.username) p1.value=currentUser.username;
+  if(p1){
+    const nick = (typeof getPlayerNickname==='function') ? getPlayerNickname() : '';
+    p1.value = nick || (typeof currentUser!=='undefined' && currentUser && currentUser.username) || '';
+  }
   try{ _vsFillLocalSkinPicker(1); }catch(e){}
   const boostChk = document.getElementById('vs-layout-boost');
   if(boostChk) boostChk.checked = _vsGetLayoutBoost();
