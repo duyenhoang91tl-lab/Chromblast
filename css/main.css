@@ -3879,20 +3879,25 @@ body:has(#secret-stage.active) .streak-dot.lit{
 }
 @media (orientation: landscape) and (max-height: 420px){
   #versus-arena{ --vs-panel-w: clamp(58px, 13vw, 100px); }
-  /* Thu nhỏ luôn phần chừa trên (chip + khay) cho khớp với --vs-size đã bị ép nhỏ ở dưới —
-     trước đây chỉ thu nhỏ bàn cờ mà vẫn chừa chỗ như màn cao (158/272px), nên trên màn thấp
-     bàn+khay không đủ chỗ, bị overflow:hidden cắt gần hết (rõ nhất ở bàn của mình, .vs-top). */
-  .vs-bottom{ padding-top:112px; }
-  .vs-top{ padding-top:200px; }
-  .vs-bottom .vs-grid{ --vs-size: clamp(90px, min(calc(90vh - 122px), 44vw), 300px); }
-  .vs-top .vs-grid{ --vs-size: clamp(90px, min(calc(90vh - 210px), 44vw), 300px); }
-  .vs-player-chip{ top:max(26px, calc(env(safe-area-inset-top) + 24px)) !important; padding:4px 3px 4px; gap:2px; }
-  .vs-chip-avatar{ width:26px; height:26px; font-size:14px; }
-  .vs-top .vs-tray{ top:max(96px, calc(env(safe-area-inset-top) + 94px)) !important; gap:4px; }
+  /* Màn hình ngang thấp không đủ chỗ dọc cho thẻ tên + khay quân xếp dọc + bàn cờ cùng lúc —
+     chuyển khay quân của MÌNH (.vs-top) sang nằm NGANG cạnh thẻ tên (không xếp dọc bên dưới
+     nữa), nhường lại phần lớn khoảng trống dọc còn lại cho bàn cờ. */
+  .vs-bottom{ padding-top:96px; }
+  .vs-top{ padding-top:96px; }
+  .vs-bottom .vs-grid{ --vs-size: clamp(80px, min(calc(90vh - 128px), 44vw), 280px); }
+  .vs-top .vs-grid{ --vs-size: clamp(90px, min(calc(90vh - 106px), 44vw), 300px); }
+  .vs-player-chip{ top:max(24px, calc(env(safe-area-inset-top) + 22px)) !important; padding:4px 3px; gap:2px; }
+  .vs-chip-avatar{ width:24px; height:24px; font-size:13px; }
+  .vs-top .vs-tray{
+    top:max(24px, calc(env(safe-area-inset-top) + 22px)) !important;
+    right:calc(var(--vs-panel-w) + 8px) !important;
+    left:auto; flex-direction:row !important; align-items:center;
+    width:auto; gap:3px;
+  }
   .vs-tray{ min-height:22px; }
-  .vs-piece{ width:30px; height:26px; }
-  .vs-top .vs-piece{ width:30px; height:26px; }
-  .vs-mini{ transform:scale(0.75); }
+  .vs-piece{ width:22px; height:18px; border-radius:5px; }
+  .vs-top .vs-piece{ width:22px; height:18px; border-radius:5px; }
+  .vs-mini{ transform:scale(0.6); }
 }
 
 /* ══ ĐẤU 1-1 dọc (portrait) — "Ưu tiên bàn của tôi": bàn mình (.vs-top, xem
@@ -3923,8 +3928,8 @@ body:has(#secret-stage.active) .streak-dot.lit{
   #versus-arena.vs-boost .vs-bottom .vs-grid{ --vs-size: clamp(90px, min(calc(96vh - 166px), 16vw), 170px); }
 }
 @media (orientation: landscape) and (max-height: 420px){
-  #versus-arena.vs-boost .vs-top .vs-grid{ --vs-size: clamp(120px, min(calc(90vh - 280px), 58vw), 400px); }
-  #versus-arena.vs-boost .vs-bottom .vs-grid{ --vs-size: clamp(70px, min(calc(90vh - 166px), 13vw), 120px); }
+  #versus-arena.vs-boost .vs-top .vs-grid{ --vs-size: clamp(120px, min(calc(90vh - 106px), 58vw), 400px); }
+  #versus-arena.vs-boost .vs-bottom .vs-grid{ --vs-size: clamp(70px, min(calc(90vh - 128px), 13vw), 120px); }
 }
 
 /* ══ CỜ CARO — xoay ngang: khối trái = nội dung đối thủ (topbar), khối phải = nội dung của bạn (bottombar),
