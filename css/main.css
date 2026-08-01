@@ -3802,24 +3802,31 @@ body:has(#secret-stage.active) .streak-dot.lit{
   }
   /* Bàn cờ: giữa màn hình, 2 bàn cạnh nhau, kích thước bằng nhau, mép ngoài luôn
      chạm sát 2 mép màn hình (panel thông tin không còn chiếm bề rộng riêng —
-     xem .vs-player-chip bên dưới, giờ nổi đè lên góc bàn thay vì choán chỗ). */
+     xem .vs-player-chip bên dưới, giờ nổi đè lên góc bàn thay vì choán chỗ).
+     Chừa đệm cố định ở trên (thay vì trừ vào công thức --vs-size) để bàn không
+     bao giờ bị tính ra kích thước âm/quá nhỏ trên bất kỳ tỉ lệ màn hình nào. */
   .vs-half{
     flex: 1 1 0; width:auto; max-width:50%; height:100%;
-    padding:2px 2px; margin:0; gap:4px; justify-content:center;
+    padding:2px 2px; margin:0; gap:4px;
+    display:flex !important; flex-direction:column !important;
+    justify-content:center !important; align-items:center !important;
+    box-sizing:border-box;
   }
   /* Chừa khoảng trống phía trên = chiều cao topbar + thẻ tên (tên/kết đôi/rank/điểm) —
      bàn của mình còn chừa thêm khay gạch dọc bên dưới thẻ tên. */
   .vs-bottom{ order:1; border-bottom:none; border-right:1px solid rgba(255,213,74,0.3); padding-top:158px; }
   .vs-top{ order:2; border-bottom:none; padding-top:272px; }
   .vs-grid{
-    /* Bề ngang gần full nửa màn (48vw) vì panel giờ nổi đè, không choán bề rộng. */
-    --vs-size: min(96vh, 48vw, 420px);
+    /* Bề ngang gần full nửa màn (48vw) vì panel giờ nổi đè, không choán bề rộng.
+       Có sàn tối thiểu 120px (clamp) nên không thể "biến mất" dù công thức trừ
+       vh có lệch trên tỉ lệ màn hình nào đó. */
+    --vs-size: clamp(120px, min(96vh, 48vw), 420px);
     gap:1.5px; padding:4px; border-radius:10px; border-width:1.5px;
   }
   /* Trừ đúng phần padding-top vừa chừa ở trên — bàn không còn bị panel thông tin
      che, đồng thời được kéo lại gần giữa màn hình hơn theo chiều dọc. */
-  .vs-bottom .vs-grid{ --vs-size: min(calc(96vh - 166px), 48vw, 420px); }
-  .vs-top .vs-grid{ --vs-size: min(calc(96vh - 280px), 48vw, 420px); }
+  .vs-bottom .vs-grid{ --vs-size: clamp(120px, min(calc(96vh - 166px), 48vw), 420px); }
+  .vs-top .vs-grid{ --vs-size: clamp(120px, min(calc(96vh - 280px), 48vw), 420px); }
   .vs-cell{ border-radius:5px; font-size:clamp(8px, 1.8vh, 11px); }
   /* Khay nước đi — nằm dưới cùng của mỗi bàn, to hơn để bấm/kéo dễ hơn */
   .vs-tray{ min-height:34px; gap:8px; flex-shrink:0; }
@@ -3872,8 +3879,8 @@ body:has(#secret-stage.active) .streak-dot.lit{
 }
 @media (orientation: landscape) and (max-height: 420px){
   #versus-arena{ --vs-panel-w: clamp(58px, 13vw, 100px); }
-  .vs-bottom .vs-grid{ --vs-size: min(calc(90vh - 166px), 44vw, 300px); }
-  .vs-top .vs-grid{ --vs-size: min(calc(90vh - 280px), 44vw, 300px); }
+  .vs-bottom .vs-grid{ --vs-size: clamp(100px, min(calc(90vh - 166px), 44vw), 300px); }
+  .vs-top .vs-grid{ --vs-size: clamp(100px, min(calc(90vh - 280px), 44vw), 300px); }
   .vs-tray{ min-height:22px; }
   .vs-piece{ width:30px; height:26px; }
   .vs-mini{ transform:scale(0.75); }
