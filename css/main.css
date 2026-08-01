@@ -3911,18 +3911,17 @@ body:has(#secret-stage.active) .streak-dot.lit{
 }
 
 /* ══ ĐẤU 1-1 xoay ngang — chế độ "Ưu tiên bàn của tôi" (nút 📐, tỉ lệ ~3:1):
-   không thể chỉ đổi bề rộng cột (2 bàn luôn span chung 1 chiều cao lưới nên
-   sẽ tự bị ép về CÙNG kích thước vuông dù cột rộng khác nhau) — phải đặt
-   thẳng height cho .vs-grid của từng bàn (thay vì dùng height:100% chung),
-   bàn nhỏ hơn vẫn tự canh giữa trong cột của nó (căn giữa 2 bên, không lệch). ══ */
+   dùng ĐÚNG kỹ thuật container-query (cqw/cqh) như bàn 1:1 ở trên — .vs-grid-wrap
+   đã có container-type:size nên cqw/cqh phản ánh CHÍNH XÁC khoảng trống thật còn
+   lại của mỗi bàn (không đoán/trừ số px cố định như trước → mới bị lệch không vuông).
+   Bàn của mình lấy full chiều cao khả dụng (như bàn 1:1); bàn của máy chỉ lấy ~1/3
+   chiều cao đó — cả 2 luôn tự vuông (min của cqh/cqw) và cân giữa trong cột của nó. ══ */
 @media (orientation: landscape){
   #versus-arena.vs-boost .vs-top .vs-grid{
-    height:min(72vh, 82vw, 480px, calc(100dvh - 176px));
-    width:auto; aspect-ratio:1/1;
+    width:min(100cqh, 100cqw); height:min(100cqh, 100cqw);
   }
   #versus-arena.vs-boost .vs-bottom .vs-grid{
-    height:min(26vh, 30vw, 170px, calc(100dvh - 176px));
-    width:auto; aspect-ratio:1/1;
+    width:min(34cqh, 100cqw); height:min(34cqh, 100cqw);
   }
 }
 @media (orientation: landscape) and (max-height: 420px){
