@@ -3910,12 +3910,12 @@ body:has(#secret-stage.active) .streak-dot.lit{
 @media (orientation: landscape){
   #versus-arena.vs-boost .vs-top{ flex:3 1 0; max-width:75%; }
   #versus-arena.vs-boost .vs-bottom{ flex:1 1 0; max-width:25%; }
-  #versus-arena.vs-boost .vs-top .vs-grid{ --vs-size: min(calc(96vh - 280px), 66vw, 560px); }
-  #versus-arena.vs-boost .vs-bottom .vs-grid{ --vs-size: min(calc(96vh - 166px), 16vw, 170px); }
+  #versus-arena.vs-boost .vs-top .vs-grid{ --vs-size: clamp(160px, min(calc(96vh - 280px), 66vw), 560px); }
+  #versus-arena.vs-boost .vs-bottom .vs-grid{ --vs-size: clamp(90px, min(calc(96vh - 166px), 16vw), 170px); }
 }
 @media (orientation: landscape) and (max-height: 420px){
-  #versus-arena.vs-boost .vs-top .vs-grid{ --vs-size: min(calc(90vh - 280px), 58vw, 400px); }
-  #versus-arena.vs-boost .vs-bottom .vs-grid{ --vs-size: min(calc(90vh - 166px), 13vw, 120px); }
+  #versus-arena.vs-boost .vs-top .vs-grid{ --vs-size: clamp(120px, min(calc(90vh - 280px), 58vw), 400px); }
+  #versus-arena.vs-boost .vs-bottom .vs-grid{ --vs-size: clamp(70px, min(calc(90vh - 166px), 13vw), 120px); }
 }
 
 /* ══ CỜ CARO — xoay ngang: khối trái = nội dung đối thủ (topbar), khối phải = nội dung của bạn (bottombar),
