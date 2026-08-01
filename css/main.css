@@ -3789,12 +3789,12 @@ body:has(#secret-stage.active) .streak-dot.lit{
 .account-msg.err{ color: #ff8a80; }
 .player-nick{ text-shadow: 0 1px 2px rgba(0,0,0,0.45); }
 
-/* ══ ĐẤU 1-1 (versus.js) — xoay ngang: trái = đối thủ, phải = của mình; 2 bàn cờ
-   nằm SÁT GIỮA màn hình, cạnh nhau. Thẻ tên + khay gạch nằm NGAY TRONG mỗi bàn
-   (con của .vs-half — xem _vsBuildArena) thay vì nổi riêng theo cả màn hình,
-   nên không bao giờ đè/che gì. Bàn cờ là hình vuông lớn nhất vừa khít khoảng
-   trống dọc còn lại (aspect-ratio, trình duyệt tự tính — không đoán số vh/px
-   nào), nên 2 bàn luôn bằng nhau ở chế độ 1:1 và không thể bị lệch/tràn. ══ */
+/* ══ ĐẤU 1-1 (versus.js) — xoay ngang, style CHUNG cho bàn cờ/khay/thẻ (kích
+   thước, bo góc, ẩn khay đối thủ...). Vị trí/bố cục cột trái-phải do block
+   Grid bên dưới (".vs-half dùng display:contents") quyết định — 2 block PHẢI
+   khớp nhau, không đặt display/position/order cho .vs-half|.vs-bottom|.vs-top
+   ở đây nữa (từng có !important đè display:contents của block Grid, làm vỡ
+   toàn bộ layout ngang — đã gỡ). ══ */
 @media (orientation: landscape){
   #versus-arena{
     flex-direction: row;
@@ -3803,16 +3803,6 @@ body:has(#secret-stage.active) .streak-dot.lit{
     padding: env(safe-area-inset-top,0px) 10px env(safe-area-inset-bottom,0px) 10px;
     gap: clamp(10px, 3vw, 28px);
   }
-  .vs-half{
-    flex: 0 1 auto; width:auto; max-width:47%; height:100%;
-    padding:2px 4px; margin:0; gap:6px;
-    display:flex !important; flex-direction:column !important;
-    justify-content:center !important; align-items:center !important;
-    box-sizing:border-box;
-  }
-  .vs-bottom{ order:1; border-bottom:none; padding-top:2px; margin-top:0; }
-  .vs-top{ order:2; border-bottom:none; padding-bottom:2px; margin-bottom:0; }
-
   /* Thẻ tên — trong luồng bình thường, ngay trên bàn của chính nó. */
   .vs-player-chip{
     position:static !important; flex:0 0 auto; transform:none !important;
