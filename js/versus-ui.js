@@ -150,6 +150,18 @@ function _vsBuildArena(){
   const rankTopHtml = myVsRank ? ('<span class="vs-chip-rank" id="vs-chip-rank0">'+escapeHtml(myVsRank.icon+' '+myVsRank.name)+'</span>') : '';
   const rankBotHtml = oppVsRank ? ('<span class="vs-chip-rank" id="vs-chip-rank1">'+escapeHtml(oppVsRank.icon+' '+oppVsRank.name)+'</span>') : '';
 
+  // Bạn đời (nếu có kết đôi) — của mình luôn hiện; của đối thủ CHỈ hiện khi đúng
+  // là người mình đã kết đôi đang đấu (không thể biết trạng thái kết đôi của
+  // người khác nói chung, xem renderCoupleHud trong caro-social.js).
+  const myCouple = (typeof getMyCoupleInfo === 'function') ? getMyCoupleInfo() : null;
+  const coupleTopHtml = myCouple
+    ? ('<span class="vs-chip-couple" id="vs-chip-couple0">💍 '+escapeHtml(myCouple.partnerName||'…')+'</span>')
+    : '';
+  const oppIsMyPartner = !!(myCouple && online && _vs.online && _vs.online.oppUid && _vs.online.oppUid === myCouple.partnerUid);
+  const coupleBotHtml = oppIsMyPartner
+    ? ('<span class="vs-chip-couple" id="vs-chip-couple1">💍 '+escapeHtml(myCouple.partnerName||'…')+'</span>')
+    : '';
+
   // Topbar: chat trái | đổi cỡ bàn + đồng hồ bấm giờ + Thoát phải (nốt đổi cỡ đứng cạnh đồng hồ)
   // Chip kiểu Caro: avatar + tên + điểm
   arena.innerHTML =
@@ -169,6 +181,7 @@ function _vsBuildArena(){
       '<span class="vs-chip-avatar caro-me-avatar" id="vs-chip-avatar0">'+avTop+'</span>'+
       '<div class="vs-chip-meta">'+
         '<span class="vs-chip-name" id="vs-chip-name0">'+nTop+'</span>'+
+        coupleTopHtml+
         rankTopHtml+
         '<span class="vs-chip-scoreline"><span class="vs-chip-score" id="vs-global-score0">0</span>'+
         '<span id="vs-global-combo0" class="vs-chip-combo"></span></span>'+
@@ -178,6 +191,7 @@ function _vsBuildArena(){
       '<span class="vs-chip-avatar caro-opp-avatar" id="vs-chip-avatar1">'+avBot+'</span>'+
       '<div class="vs-chip-meta">'+
         '<span class="vs-chip-name" id="vs-chip-name1">'+nBot+'</span>'+
+        coupleBotHtml+
         rankBotHtml+
         '<span class="vs-chip-scoreline"><span class="vs-chip-score" id="vs-global-score1">0</span>'+
         '<span id="vs-global-combo1" class="vs-chip-combo"></span></span>'+

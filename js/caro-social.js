@@ -66,6 +66,7 @@
       return (j && j.partnerUid) ? j : null;
     }catch(e){ return null; }
   }
+  window.getMyCoupleInfo = getCouple;
   function setCouple(data){
     try{
       if(!data) localStorage.removeItem(COUPLE_KEY);
