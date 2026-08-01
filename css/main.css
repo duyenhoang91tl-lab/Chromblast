@@ -3832,8 +3832,8 @@ body:has(#secret-stage.active) .streak-dot.lit{
   .vs-piece{ width:40px; height:34px; border-radius:9px; }
   /* Khay của MÌNH: to hơn hẳn, dễ chạm/kéo hơn — khay đối thủ đang ẩn nên
      không lo choán chỗ khi phóng to riêng bên này. */
-  .vs-top .vs-tray{ min-height:78px; gap:14px; }
-  .vs-top .vs-piece{ width:88px; height:74px; border-radius:15px; }
+  .vs-top .vs-tray{ min-height:96px; gap:16px; margin-bottom:44px; }
+  .vs-top .vs-piece{ width:100px; height:84px; border-radius:16px; }
   .vs-mini{ gap:1.5px; transform:scale(1); transform-origin:center; }
   .vs-cards{ gap:6px; }
   .vs-card{ width:64px; height:72px; }
@@ -3891,7 +3891,7 @@ body:has(#secret-stage.active) .streak-dot.lit{
     flex-direction:column !important; align-items:flex-start !important; gap:2px;
     max-width:30vw;
   }
-  .vs-bottom .vs-grid-wrap{ grid-column:2; grid-row:1/-1; align-self:stretch; justify-self:stretch; }
+  .vs-bottom .vs-grid-wrap{ grid-column:2; grid-row:1/-1; align-self:stretch; justify-self:stretch; justify-content:flex-start; }
   .vs-bottom .vs-tray,
   .vs-bottom .vs-cards,
   .vs-bottom .vs-note{ grid-column:1; grid-row:3; align-self:end; justify-self:start; }
@@ -3902,7 +3902,7 @@ body:has(#secret-stage.active) .streak-dot.lit{
     flex-direction:column !important; align-items:flex-end !important; gap:2px;
     max-width:30vw;
   }
-  .vs-top .vs-grid-wrap{ grid-column:3; grid-row:1/-1; align-self:stretch; justify-self:stretch; }
+  .vs-top .vs-grid-wrap{ grid-column:3; grid-row:1/-1; align-self:stretch; justify-self:stretch; justify-content:flex-end; }
   .vs-top .vs-tray,
   .vs-top .vs-cards,
   .vs-top .vs-note{ grid-column:4; grid-row:3; align-self:end; justify-self:end; }
