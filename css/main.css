@@ -3832,8 +3832,8 @@ body:has(#secret-stage.active) .streak-dot.lit{
   .vs-piece{ width:40px; height:34px; border-radius:9px; }
   /* Khay của MÌNH: to hơn hẳn, dễ chạm/kéo hơn — khay đối thủ đang ẩn nên
      không lo choán chỗ khi phóng to riêng bên này. */
-  .vs-top .vs-tray{ min-height:52px; gap:10px; }
-  .vs-top .vs-piece{ width:58px; height:48px; border-radius:11px; }
+  .vs-top .vs-tray{ min-height:64px; gap:12px; }
+  .vs-top .vs-piece{ width:72px; height:60px; border-radius:13px; }
   .vs-mini{ gap:1.5px; transform:scale(1); transform-origin:center; }
   .vs-cards{ gap:6px; }
   .vs-card{ width:64px; height:72px; }
@@ -3867,12 +3867,18 @@ body:has(#secret-stage.active) .streak-dot.lit{
     column-gap: clamp(6px, 2vw, 18px);
     row-gap:4px;
   }
-  #vs-topbar, .vs-bottom, .vs-top{ display:contents; }
+  .vs-bottom, .vs-top{ display:contents; }
 
-  #vs-chat-fab{ grid-column:1; grid-row:1; align-self:start; justify-self:start; }
+  /* 3 nút tiện ích (đổi cỡ bàn/đồng hồ/thoát) + nút chat — gộp chung 1 hàng
+     ngang ở góc trên bên TRÁI (không còn ở góc phải, không còn xếp dọc). */
+  #vs-topbar{
+    grid-column:1; grid-row:1; align-self:start; justify-self:start;
+    display:flex !important; flex-direction:row; align-items:center;
+    gap:6px; justify-content:flex-start;
+  }
   .vs-topbar-right{
-    grid-column:4; grid-row:1; align-self:start; justify-self:end;
-    flex-direction:column; gap:4px;
+    grid-column:auto; grid-row:auto; align-self:auto; justify-self:auto;
+    flex-direction:row; gap:6px;
   }
 
   /* Cột trái + bàn giữa-trái: đối thủ (.vs-bottom, xem _vsBuildArena) */
