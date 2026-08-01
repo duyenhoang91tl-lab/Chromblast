@@ -210,9 +210,27 @@ function _vsPlaceAt(P,R,C,fromNetwork){
   if(!fromNetwork && _vs && _vs.online && P.idx===0){
     _vsBroadcastMove('place', { pieceIndex, R, C, shape: shapeSnap });
   }
-  if(!_vsAnyMove(P)){ P.done=true; P.el.note.textContent=t('vsNoSpace'); P.el.note.classList.add('show');
-    if(_vs.players.every(q=>q.done)) _vsEndMatch();
+  if(_vsMarkDoneIfStuck(P)) return;
+}
+
+// Kiểm tra P còn nước đi không, đồng bộ P.done + note theo đúng trạng thái
+// HIỆN TẠI (thay vì chỉ set done=true 1 lần rồi bỏ quên) — sửa lỗi: trước đó
+// hết chỗ (done=true) rồi trúng lốc xoáy/chướng ngại dọn trống bàn ra, có ô
+// đặt được rồi nhưng vẫn không đặt được vì done chưa bao giờ được reset lại.
+// Đồng thời: nếu P hết chỗ mà đối thủ đã vượt điểm (không còn cửa gỡ vì P
+// không thể ăn thêm điểm nữa) → xử thua, kết thúc trận luôn thay vì chờ hết giờ.
+function _vsMarkDoneIfStuck(P){
+  if(!_vs) return false;
+  if(_vsAnyMove(P)){
+    if(P.done){ P.done=false; if(P.el&&P.el.note) P.el.note.classList.remove('show'); }
+    return false;
   }
+  if(P.done) return false;
+  P.done=true;
+  if(P.el&&P.el.note){ P.el.note.textContent=t('vsNoSpace'); P.el.note.classList.add('show'); }
+  const foe=_vs.players[1-P.idx];
+  if(_vs.players.every(q=>q.done) || (foe&&foe.score>P.score)){ _vsEndMatch(); return true; }
+  return false;
 }
 
 function _vsAnyMove(P){
@@ -302,13 +320,12 @@ function _vsApplyObstacle(F,ob){
   // báo cho nạn nhân
   F.el.note.textContent=t('vsHit', ob.emoji+' '+MECH_NAME(ob.nameIdx).replace(/^\S+\s/,''));
   F.el.note.classList.add('show');
-  setTimeout(()=>{ if(F.el.note) F.el.note.classList.remove('show'); },2200);
+  setTimeout(()=>{ if(F.el.note&&!F.done) F.el.note.classList.remove('show'); },2200);
   F.el.half.classList.add('vs-shake');
   setTimeout(()=>F.el.half.classList.remove('vs-shake'),500);
   _vsRenderGrid(F);
-  // nạn nhân hết chỗ vì chướng ngại?
-  if(!F.done&&!_vsAnyMove(F)){ F.done=true; F.el.note.textContent=t('vsNoSpace'); F.el.note.classList.add('show');
-    if(_vs.players.every(q=>q.done)) _vsEndMatch(); }
+  // nạn nhân hết chỗ (hoặc vừa có chỗ trở lại) vì chướng ngại?
+  _vsMarkDoneIfStuck(F);
 }
 
 // ── Đồng hồ & kết thúc ──
