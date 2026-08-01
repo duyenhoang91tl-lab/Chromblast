@@ -3828,9 +3828,10 @@ body:has(#secret-stage.active) .streak-dot.lit{
   .vs-grid-wrap{
     flex:1 1 auto; min-height:0; min-width:0; width:100%;
     display:flex; align-items:center; justify-content:center;
+    container-type:size;
   }
   .vs-grid{
-    height:100%; width:auto; aspect-ratio:1/1; max-width:100%;
+    width:min(100cqw, 100cqh); height:min(100cqw, 100cqh);
     gap:1.5px; padding:4px; border-radius:10px; border-width:1.5px;
   }
   .vs-cell{ border-radius:5px; font-size:clamp(8px, 1.8vh, 11px); }
