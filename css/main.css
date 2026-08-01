@@ -3898,8 +3898,8 @@ body:has(#secret-stage.active) .streak-dot.lit{
      trừ thêm phần khay quân + padding/gap của .vs-half — tránh ô vuông tính to hơn khung
      chứa thật (trước đây dùng số vh cố định nên bàn to hơn khung, bị overflow:hidden cắt mất
      mấy hàng trên do .vs-top căn nội dung theo flex-end). */
-  #versus-arena.vs-boost .vs-top .vs-grid{ --vs-size: min(58vh, 100vw, 480px, calc(75dvh - 193px)); }
-  #versus-arena.vs-boost .vs-bottom .vs-grid{ --vs-size: min(18vh, 42vw, 130px, calc(25dvh - 103px)); }
+  #versus-arena.vs-boost .vs-top .vs-grid{ --vs-size: clamp(160px, min(58vh, 100vw, 480px, calc(75dvh - 193px)), 480px); }
+  #versus-arena.vs-boost .vs-bottom .vs-grid{ --vs-size: clamp(90px, min(18vh, 42vw, 130px, calc(25dvh - 103px)), 130px); }
   #versus-arena.vs-ai-mode.vs-boost{ padding-bottom:max(76px, calc(env(safe-area-inset-bottom) + 70px)); }
 }
 
