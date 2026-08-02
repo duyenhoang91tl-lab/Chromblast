@@ -41,6 +41,7 @@ function stopBgm() {
 let _sfxCtx = null;
 let sfxMuted = false;
 let bgmMuted = false;
+let _lastSfxPlayedAt = 0; // mốc thời gian sfx gần nhất — dùng để nút nào đã tự phát âm riêng thì không phát trùng âm bấm nút chung (cuối file)
 /** Rung khi nổ combo — lưu localStorage */
 let vibrateEnabled = true;
 (function loadVibratePref(){
@@ -71,6 +72,7 @@ function getSfxCtx(){
 }
 function playTone(freq, type, duration, vol=0.3, startDelay=0){
   if(sfxMuted) return;
+  _lastSfxPlayedAt = Date.now();
   try{
     const ctx=getSfxCtx();
     const osc=ctx.createOscillator();
@@ -85,6 +87,7 @@ function playTone(freq, type, duration, vol=0.3, startDelay=0){
 }
 function playNoise(duration, vol=0.15){
   if(sfxMuted) return;
+  _lastSfxPlayedAt = Date.now();
   try{
     const ctx=getSfxCtx();
     const buf=ctx.createBuffer(1,ctx.sampleRate*duration,ctx.sampleRate);
@@ -383,4 +386,24 @@ function speakPraise(level) {
       }, 300);
     }
   } catch(e) {}
+}
+
+/* ══════════════════════════════════════════════
+   ÂM BẤM NÚT CHUNG — đảm bảo MỌI nút trong game đều
+   phát tiếng khi bấm, kể cả những nút chưa được gắn sfx
+   riêng theo tay (dễ sót khi thêm nút mới). Nghe ở pha
+   bubble trên document nên luôn chạy SAU handler riêng
+   của nút (nếu có) — nếu nút đó vừa tự phát 1 âm riêng
+   (sfxSelect, sfxRotate...) trong chính lượt bấm này rồi
+   thì bỏ qua, tránh 2 tiếng chồng nhau. 100% tổng hợp bằng
+   Web Audio (playTone) — không dùng file/mẫu âm ngoài nên
+   an toàn dùng thương mại, không vướng bản quyền.
+══════════════════════════════════════════════ */
+if (typeof document !== 'undefined') {
+  document.addEventListener('click', function(e){
+    const btn = e.target && e.target.closest ? e.target.closest('button, [role="button"]') : null;
+    if (!btn || btn.disabled) return;
+    if (Date.now() - _lastSfxPlayedAt < 80) return; // nút này vừa tự phát âm riêng
+    sfxClick();
+  });
 }
