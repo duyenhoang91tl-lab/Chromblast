@@ -764,6 +764,7 @@ function _vsOfferCards(P){
     b.addEventListener('pointerdown',ev=>{
       ev.preventDefault();
       P.el.cards.classList.remove('show');
+      P.cardsPending = false;
       const foe=_vs.players[1-P.idx];
       _vsApplyObstacle(foe,ob);
       if(_vs.online && P.idx===0) _vsBroadcastMove('card', { cardId: ob.id });
@@ -771,7 +772,16 @@ function _vsOfferCards(P){
     });
     row.appendChild(b);
   });
-  P.el.cards.classList.add('show');
+  P.cardsPending = true;
+  // Máy (AI) tự chọn thẻ ở hậu trường — KHÔNG hiện bảng chọn thẻ lên màn hình:
+  // đây là thẻ "úp", đối thủ không được thấy trước tên/emoji thẻ máy đang có.
+  // DOM vẫn dựng đủ nút để _vsAiUseCard "bấm" được bình thường, chỉ là không
+  // thêm class 'show' nên không hiển thị — người chơi chỉ thấy hiệu ứng dính
+  // (đá/băng/sương mù...) + rung màn khi máy ném trúng, không thấy bảng thẻ.
+  // Cờ cardsPending (tách riêng khỏi việc hiển thị) để _vsAiStep vẫn biết máy
+  // đang có thẻ cần dùng dù bảng không hiện lên.
+  const aiOwnsThis = (typeof _vsAiActive === 'function') && _vsAiActive() && P.idx === 1;
+  if(!aiOwnsThis) P.el.cards.classList.add('show');
 }
 
 function _vsCloseResult(rematch){

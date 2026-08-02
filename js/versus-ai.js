@@ -36,7 +36,7 @@ function _vsAiScheduleNext(){
   if(!_vsAiActive()) return;
   const P = _vs.players[1];
   if(!P || P.done) return;
-  const showingCards = !!(P.el && P.el.cards && P.el.cards.classList.contains('show'));
+  const showingCards = !!P.cardsPending;
   const range = showingCards ? VS_AI_CARD_DELAY : VS_AI_MOVE_DELAY;
   const wait = range[0] + Math.random() * (range[1] - range[0]);
   _vsAiTimer = setTimeout(_vsAiStep, wait);
@@ -46,7 +46,7 @@ function _vsAiStep(){
   if(!_vsAiActive()){ _vsAiStop(); return; }
   const P = _vs.players[1];
   if(!P || P.done) return;
-  if(P.el && P.el.cards && P.el.cards.classList.contains('show')){
+  if(P.cardsPending){
     _vsAiUseCard(P);
   } else {
     _vsAiPlaceBest(P);
