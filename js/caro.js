@@ -740,7 +740,7 @@ async function openPlayerCard(opts){
           : (vsRate+'%'));
         statsHtml += '<div class="pc-mode-stats"><b>Versus</b> — '+vsTitle+'<br>'+vsLine+'</div>';
       }
-      document.getElementById('pc-stats').innerHTML = statsHtml || (typeof t==='function'?t('caroNoStats'):'Chưa có thống kê');
+      document.getElementById('pc-stats').innerHTML = statsHtml;
     }catch(e){}
     return;
   }
