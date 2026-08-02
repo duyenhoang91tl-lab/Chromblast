@@ -3612,6 +3612,20 @@ body:has(#secret-stage.active) .streak-dot.lit{
 }
 .vs-cell.vs-rock{ background:#4a4a55 !important; filter:none; }
 .vs-cell.vs-ice{ outline:2px solid #9adcff; outline-offset:-2px; }
+/* 💣 Bom hẹn giờ (Versus) — luôn hiện rõ + đếm ngược, giống map thường */
+.vs-cell.vs-bomb::after{
+  content:'💣'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-size:70%; pointer-events:none; z-index:3;
+  animation: vsBombPulse 0.8s ease-in-out infinite alternate;
+}
+.vs-cell.vs-bomb::before{
+  content: attr(data-bomb); position:absolute; top:1px; right:2px;
+  font-size:60%; font-weight:800; color:#ff5555; text-shadow:0 0 4px #000; z-index:4;
+}
+@keyframes vsBombPulse{
+  from { transform: scale(1);    filter: drop-shadow(0 0 2px rgba(255,60,60,0.5)); }
+  to   { transform: scale(1.1);  filter: drop-shadow(0 0 6px rgba(255,60,60,0.95)); }
+}
 .vs-cell.vs-prev{ opacity:0.55; transform:scale(0.92); } /* ô mờ xem trước chỗ đáp — giống map thường */
 .vs-tray{ display:flex; gap:10px; align-items:center; justify-content:center; min-height:44px; }
 .vs-piece{

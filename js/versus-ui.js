@@ -429,6 +429,7 @@ function _vsRenderGrid(P){
     d.style.background='';
     d.style.removeProperty('--cc');
     delete d.dataset.ci;
+    delete d.dataset.bomb;
     if(P.rocks.has(k)){ d.classList.add('vs-rock'); d.textContent='⛰️'; }
     else if(v){
       d.classList.add('vs-filled');
@@ -438,6 +439,11 @@ function _vsRenderGrid(P){
         if(ci>=0) d.dataset.ci=String(ci);
       }
       if(P.ice.has(k)){ d.classList.add('vs-ice'); d.textContent='🧊'; }
+    }
+    // 💣 Bom hẹn giờ vẽ ĐÈ lên trên (dù ô đang trống hay có màu) — luôn phải thấy rõ
+    if(P.bomb && P.bomb.r===r && P.bomb.c===c){
+      d.classList.add('vs-bomb');
+      d.dataset.bomb=String(P.bomb.left);
     }
   }
 }

@@ -148,7 +148,7 @@ function startVersusMatch(){
 function _vsNewPlayer(idx,seed){
   return { idx, prng:_mulberry32(seed), board:Array.from({length:VS_N},()=>Array(VS_N).fill(null)),
     pieces:[], selected:-1, score:0, combo:0, clears:0, nextCardAt:VS_CARD_EVERY,
-    rocks:new Set(), ice:new Set(), fogUntil:0, done:false, el:{} };
+    rocks:new Set(), ice:new Set(), bomb:null, fogUntil:0, done:false, el:{} };
 }
 
 // Nút trợ giúp ❓ nổi (z-index cao hơn đấu trường) đè lên điểm người chơi trên
@@ -275,7 +275,12 @@ function _vsResolveClears(P){
   }
   kill.forEach(k=>{
     const [r,c]=k.split(',').map(Number);
-    P.board[r][c]=null; P.ice.delete(k); P.rocks.delete(k);
+    // 🧊 Lớp băng bảo vệ: lần dọn đầu tiên chỉ gỡ băng, GIỮ nguyên ô màu bên dưới —
+    // đúng quy luật "phá lớp bảo vệ trước rồi mới phá được ô" (như dây gai ở map
+    // thường: 1 lần nổ chỉ gỡ gai, phải nổ thêm lần nữa mới mất ô). Trước đây băng
+    // và ô màu bị xoá cùng lúc trong 1 lần đầy hàng/cột — không đúng luật bảo vệ.
+    if(P.ice.has(k)){ P.ice.delete(k); return; }
+    P.board[r][c]=null; P.rocks.delete(k);
   });
   return kill.size;
 }
@@ -314,17 +319,44 @@ function _vsApplyObstacle(F,ob){
   } else if(ob.id==='squirrel'){
     take(filledCells,3).forEach(k=>{ const [r,c]=k.split(',').map(Number); F.board[r][c]=null; F.ice.delete(k); });
   } else if(ob.id==='bomb'){
+    // 💣 "Bom HẸN GIỜ": phải THẤY được quả bom + có thời gian đếm ngược trước khi
+    // nổ (giống map thường), không phải nổ câm ngay lập tức không dấu hiệu gì.
     const cr=1+Math.floor(Math.random()*(VS_N-2)), cc=1+Math.floor(Math.random()*(VS_N-2));
-    for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){ const k=(cr+dr)+','+(cc+dc); F.board[cr+dr][cc+dc]=null; F.ice.delete(k); F.rocks.delete(k); }
+    F.bomb={r:cr,c:cc,left:3};
+    const tick=()=>{
+      if(!F.bomb||!_vs||!versusMode) return;
+      F.bomb.left--;
+      if(F.bomb.left<=0){ _vsBombExplode(F); return; }
+      _vsRenderGrid(F);
+      setTimeout(tick,1000);
+    };
+    setTimeout(tick,1000);
   }
-  // báo cho nạn nhân
-  F.el.note.textContent=t('vsHit', ob.emoji+' '+MECH_NAME(ob.nameIdx).replace(/^\S+\s/,''));
-  F.el.note.classList.add('show');
-  setTimeout(()=>{ if(F.el.note&&!F.done) F.el.note.classList.remove('show'); },2200);
+  // báo cho nạn nhân — chỉ rung màn, KHÔNG hiện chữ thông báo (gây rối/che bàn cờ
+  // lúc đang thao tác); rung là đủ để người chơi biết vừa bị đối thủ đánh úp.
   F.el.half.classList.add('vs-shake');
   setTimeout(()=>F.el.half.classList.remove('vs-shake'),500);
   _vsRenderGrid(F);
   // nạn nhân hết chỗ (hoặc vừa có chỗ trở lại) vì chướng ngại?
+  _vsMarkDoneIfStuck(F);
+}
+
+// 💣 Bom hẹn giờ nổ thật sau khi đếm ngược xong — phá vùng 3×3 quanh tâm bom.
+function _vsBombExplode(F){
+  if(!F.bomb) return;
+  const {r,c}=F.bomb;
+  F.bomb=null;
+  for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){
+    const nr=r+dr, nc=c+dc;
+    if(nr<0||nr>=VS_N||nc<0||nc>=VS_N) continue;
+    const k=nr+','+nc;
+    F.board[nr][nc]=null; F.ice.delete(k); F.rocks.delete(k);
+  }
+  if(F.el&&F.el.half){
+    F.el.half.classList.add('vs-shake');
+    setTimeout(()=>F.el.half.classList.remove('vs-shake'),500);
+  }
+  _vsRenderGrid(F);
   _vsMarkDoneIfStuck(F);
 }
 
