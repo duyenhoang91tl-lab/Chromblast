@@ -1,6 +1,6 @@
 # ASSETS_LICENSE — ChromaBlast / Chromblast
 
-Ngày cập nhật: 2026-07-25  
+Ngày cập nhật: 2026-08-02 (rà lại lần 2 — xác minh license qua `npm view`, kiểm tra icon/nội dung game, đối chiếu font thực tế)  
 Nguồn đối chiếu: `sounds/ASSET_SOURCES.md`, `package.json`, `index.html`, CSS/JS trong repo.
 
 Tài liệu này liệt kê font, âm thanh, thư viện và dịch vụ bên thứ ba đang dùng.
@@ -104,7 +104,14 @@ Không thấy `<link>` tới Google Fonts CDN trong `index.html` (font đã bund
 | `@capacitor/app` | Vòng đời app | MIT |
 | `@capacitor/cli` (dev) | CLI | MIT |
 | `@capacitor-community/admob` | Quảng cáo AdMob | MIT (plugin); nội dung QC theo **Google AdMob** |
-| `@capgo/capacitor-social-login` | Google Sign-In native | Xem license gói Capgo; Google Sign-In theo điều khoản Google |
+| `@capgo/capacitor-social-login` | Google Sign-In native | **MPL-2.0** (xác minh qua `npm view`, 2026-08-02) — dùng nguyên gói qua npm (không sửa source của thư viện) thì an toàn cho app đóng gói/thương mại: chỉ cần giữ notice license, không bắt buộc mở nguồn code riêng của app. Google Sign-In (dịch vụ) theo điều khoản Google. |
+
+### 4.2b. Cloud Functions (`functions/package.json`)
+
+| Gói | Vai trò | License (xác minh qua `npm view`, 2026-08-02) |
+|---|---|---|
+| `firebase-admin` | SDK server-side (kiểm duyệt chat) | Apache-2.0 |
+| `firebase-functions` | Runtime Cloud Functions | MIT |
 
 ### 4.3. API runtime trong JS (không phải asset đóng gói)
 
@@ -134,8 +141,11 @@ Praise bằng file WAV ở mục 2.
 ## 6. Checklist trước phát hành
 
 - [x] Xác nhận `sounds/` — 9 file tự thu âm, sở hữu gốc nhà phát triển (2026-07-25; đã bỏ `godlike.wav`)
-- [x] OFL credit: `fonts/OFL.txt` + `fonts/FONT_CREDITS.md`
+- [x] OFL credit: `fonts/OFL.txt` + `fonts/FONT_CREDITS.md` — đối chiếu file thực tế trong `fonts/nick/` khớp 100% với bảng credit (2026-08-02)
 - [x] Đồng bộ `privacy-policy.html` (Firebase / AdMob / Sign-In / dịch chat / font offline)
 - [x] Data safety guide: `PLAY_STORE_DATA_SAFETY.md`
 - [x] Dịch chat: bỏ gtx — MyMemory + LibreTranslate
+- [x] Rà tên nhân vật/boss/map/skin trong game — không trùng IP có sẵn (Pokémon, Disney, v.v.), toàn bộ là tên chung chung (2026-08-02)
+- [x] Rà icon app/splash — phong cách nhất quán, không trùng nhân vật/mascot có sẵn nào mà mình nhận ra được; **vẫn cần nhà phát triển tự xác nhận nguồn gốc vẽ/tạo** (ảnh không có metadata phần mềm) (2026-08-02)
+- [x] Link mạng xã hội (`index.html`) — chỉ là URL + ký tự Unicode/CSS, không nhúng file logo thương hiệu nào (2026-08-02)
 - [ ] Rà lại form Data safety trên Play Console trước khi submit
