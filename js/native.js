@@ -114,7 +114,7 @@
     try {
       await AdMob.initialize({
         testingDevices: [], // để trống khi đã publish thật
-        initializeForTesting: false, // ĐANG TEST — đổi thành false khi publish thật
+        initializeForTesting: false, // false = chạy quảng cáo THẬT (bản publish chính thức)
       });
     } catch (e) {
       console.error('AdMob Initialization Error:', e);
