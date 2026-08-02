@@ -424,27 +424,33 @@ function _vsRenderGrid(P){
   const fog = Date.now()<P.fogUntil;
   for(let r=0;r<VS_N;r++)for(let c=0;c<VS_N;c++){
     const d=P.el.cells[r][c], k=r+','+c, v=P.board[r][c];
-    d.className='vs-cell';
-    d.textContent='';
-    d.style.background='';
-    d.style.removeProperty('--cc');
-    delete d.dataset.ci;
-    delete d.dataset.bomb;
-    if(P.rocks.has(k)){ d.classList.add('vs-rock'); d.textContent='⛰️'; }
+    let cls='vs-cell', txt='', cc='';
+    if(P.rocks.has(k)){ cls+=' vs-rock'; txt='⛰️'; }
     else if(v){
-      d.classList.add('vs-filled');
-      d.style.setProperty('--cc', fog ? '#5a5f6e' : v);
-      if(!fog){
-        const ci=COLORS.indexOf(v);
-        if(ci>=0) d.dataset.ci=String(ci);
-      }
-      if(P.ice.has(k)){ d.classList.add('vs-ice'); d.textContent='🧊'; }
+      cls+=' vs-filled';
+      cc = fog ? '#5a5f6e' : v;
+      if(P.ice.has(k)){ cls+=' vs-ice'; txt='🧊'; }
     }
-    // 💣 Bom hẹn giờ vẽ ĐÈ lên trên (dù ô đang trống hay có màu) — luôn phải thấy rõ
-    if(P.bomb && P.bomb.r===r && P.bomb.c===c){
-      d.classList.add('vs-bomb');
-      d.dataset.bomb=String(P.bomb.left);
-    }
+    const isBomb = !!(P.bomb && P.bomb.r===r && P.bomb.c===c);
+    if(isBomb) cls+=' vs-bomb';
+
+    // So sánh trước khi ghi — trước đây ghi lại cả 49 ô mỗi lần dù phần lớn
+    // không đổi (className/style/dataset), gây recalc style thừa mỗi lượt đặt khối.
+    if(d.className!==cls) d.className=cls;
+    if(d.textContent!==txt) d.textContent=txt;
+    if(d.style.background) d.style.background='';
+    const prevCc=d.style.getPropertyValue('--cc');
+    if(cc){ if(prevCc!==cc) d.style.setProperty('--cc',cc); }
+    else if(prevCc) d.style.removeProperty('--cc');
+
+    const civ = (v && !fog) ? (()=>{ const ci=COLORS.indexOf(v); return ci>=0?String(ci):''; })() : '';
+    if(civ){ if(d.dataset.ci!==civ) d.dataset.ci=civ; }
+    else if(d.dataset.ci) delete d.dataset.ci;
+
+    if(isBomb){
+      const bv=String(P.bomb.left);
+      if(d.dataset.bomb!==bv) d.dataset.bomb=bv;
+    } else if(d.dataset.bomb) delete d.dataset.bomb;
   }
 }
 
