@@ -244,7 +244,10 @@ function _vsAnyMove(P){
   return false;
 }
 // Nổ hàng/cột đầy + cụm cùng màu >=VS_GROUP_MIN. Ô băng không tính vào cụm,
-// chỉ vỡ khi nằm trong hàng/cột nổ. Đá chặn hàng/cột (hàng có đá không đầy được... đá chiếm ô nên hàng chứa đá KHÔNG thể đầy màu → dọn đá bằng cụm màu kề (3 lần)? đơn giản: đá tự biến mất sau 12 giây).
+// chỉ vỡ khi nằm trong hàng/cột nổ — và ngay cả khi đó, lần đầu chỉ GỠ BĂNG
+// (giữ nguyên ô màu), phải đầy hàng/cột thêm 1 lần nữa (lúc đó hết băng) mới
+// thật sự mất ô — xem chi tiết trong kill.forEach bên dưới.
+// Đá chặn hàng/cột (hàng có đá không đầy được màu) → đá tự biến mất sau 12 giây.
 
 function _vsResolveClears(P){
   const kill=new Set();

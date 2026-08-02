@@ -124,7 +124,14 @@ function _vsAiSimulate(P, shape, color, R, C){
     }
     if(group.length >= VS_GROUP_MIN) group.forEach(kk => kill.add(kk));
   }
-  kill.forEach(k => { const [r,c] = k.split(',').map(Number); board[r][c] = null; });
+  kill.forEach(k => {
+    const [r,c] = k.split(',').map(Number);
+    // Đồng bộ với luật thật ở _vsResolveClears: băng bảo vệ ô màu ở lần dọn đầu
+    // tiên (chỉ gỡ băng), nên máy không được coi ô đó là "đã dọn sạch" khi ước
+    // lượng số ô còn lại — tránh máy đánh giá sai độ đầy bàn của chính nó.
+    if(P.ice.has(k)) return;
+    board[r][c] = null;
+  });
   let filled = 0;
   for(let r=0;r<N;r++)for(let c=0;c<N;c++) if(board[r][c]) filled++;
   return { clearedCount: kill.size, filled };
