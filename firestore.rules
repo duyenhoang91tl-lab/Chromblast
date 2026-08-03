@@ -109,14 +109,15 @@ service cloud.firestore {
         allow create, update, delete: if isOwner(uid);
       }
 
-      /* Thông báo "bị vượt hạng BXH" (ghi bởi submitSoloScore, Admin SDK) —
-         chủ tài khoản chỉ được đọc + tự đánh dấu đã đọc (read:true), không được tạo
-         (chặn tự chèn thông báo khống) hay sửa các field nội dung khác. */
+      /* Thông báo hệ thống (vd: "bị vượt hạng BXH ngày/tuần/tháng" — ghi bởi
+         submitSoloScore, Admin SDK). Chủ tài khoản: đọc, tự xoá thông báo của mình,
+         và chỉ được SỬA đúng field read (đánh dấu đã đọc) — không được tự chèn
+         thông báo khống (create:false) hay sửa nội dung (byScore/byName/...). */
       match /notifications/{notifId} {
-        allow read: if isOwner(uid);
+        allow read, delete: if isOwner(uid);
         allow update: if isOwner(uid)
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
-        allow create, delete: if false;
+        allow create: if false;
       }
 
       match /lbClaims/{claimId} {
@@ -152,12 +153,6 @@ service cloud.firestore {
           && request.resource.data.gameType in ['caro', 'versus'];
       }
 
-      /* Thông báo hệ thống (vd: bị vượt hạng trong BXH ngày/tuần/tháng) — chỉ Cloud
-         Function (Admin SDK) tạo được, chủ tài khoản chỉ đọc/đánh dấu đã đọc/xoá của mình. */
-      match /notifications/{notifId} {
-        allow read, update, delete: if isOwner(uid);
-        allow create: if false;
-      }
     }
 
     match /matchQueue/{uid} {
