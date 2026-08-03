@@ -91,9 +91,17 @@ service cloud.firestore {
       allow delete: if signedIn() && resource.data.uid == request.auth.uid;
     }
 
+    /* Bộ đếm giới hạn thưởng referral/ngày cho 1 người mời — chỉ Cloud Function
+       (Admin SDK) đọc/ghi, xem functions/index.js: submitSoloScore. */
+    match /referralCaps/{doc} {
+      allow read, write: if false;
+    }
+
     match /players/{uid} {
       allow read: if signedIn();
-      allow create, update: if isOwner(uid) && scoreFieldsUnchanged() && fieldLocked('currentRunStartedAt');
+      allow create, update: if isOwner(uid) && scoreFieldsUnchanged() && fieldLocked('currentRunStartedAt')
+        && fieldLocked('referredBy') && fieldLocked('referralRewardPending')
+        && fieldLocked('referralRewardGold') && fieldLocked('referralRewardDiamond');
       allow delete: if isOwner(uid);
 
       match /friends/{fid} {
