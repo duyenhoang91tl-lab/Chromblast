@@ -69,6 +69,7 @@ async function initOnlineServices(){
     try{ startInviteListener(); }catch(e){}
     try{ startFriendRequestListener(typeof window.onFriendRequestIncoming==='function'?window.onFriendRequestIncoming:null); }catch(e){}
     try{ loadBlockedList(); }catch(e){}
+    try{ claimPendingReferralRewards(); }catch(e){}
     return true;
   }catch(e){
     console.warn('[online] init failed', e);
@@ -2088,6 +2089,49 @@ async function submitPeriodScoreOnline(score, region){
     await fns.httpsCallable('submitSoloScore')({ score: Math.floor(score), region });
   }catch(e){
     console.warn('[online] submitPeriodScoreOnline', e);
+  }
+}
+
+// ── Mời bạn (referral) — xem functions/index.js: claimReferral/claimPendingRewards.
+// Thưởng không cấp ngay lúc nhập mã: server chỉ đánh dấu "chờ", tiền thật được
+// cộng vào hộp thư chờ (referralRewardGold/Diamond) khi người được mời chơi xong
+// 1 ván (submitSoloScore) — claimPendingReferralRewards() rút hộp thư đó về ví.
+async function submitReferralCode(code){
+  if(!code) return { ok:false, reason:'empty' };
+  if(!await initOnlineServices()) return { ok:false, reason:'offline' };
+  try{
+    const fns = _getOnlineFunctions();
+    if(!fns) return { ok:false, reason:'no_functions' };
+    await fns.httpsCallable('claimReferral')({ code: String(code).trim().toUpperCase() });
+    return { ok:true };
+  }catch(e){
+    return { ok:false, reason: (e && e.code) || 'error' };
+  }
+}
+
+async function claimPendingReferralRewards(){
+  if(!await initOnlineServices()) return;
+  try{
+    const fns = _getOnlineFunctions();
+    if(!fns) return;
+    const res = await fns.httpsCallable('claimPendingRewards')({});
+    const { gold, diamond } = res.data || {};
+    if(gold > 0 && typeof grantGold === 'function') grantGold(gold, '🎁 Thưởng mời bạn');
+    if(diamond > 0 && typeof grantDiamonds === 'function') grantDiamonds(diamond, '🎁 Thưởng mời bạn');
+  }catch(e){
+    console.warn('[online] claimPendingReferralRewards', e);
+  }
+}
+
+/** Dùng Web Share API — Android tự liệt kê Zalo/Messenger/SMS... trong share sheet, không cần SDK riêng. */
+function shareInviteLink(){
+  const prof = (typeof getPlayerProfile === 'function') ? getPlayerProfile() : null;
+  const code = prof && prof.publicId ? prof.publicId : '';
+  const text = '🎮 Chơi ChromaBlast cùng mình! Nhập mã mời ' + code + ' để cả 2 nhận thưởng 💎';
+  if(navigator.share){
+    navigator.share({ text }).catch(()=>{});
+  } else if(navigator.clipboard){
+    navigator.clipboard.writeText(text).catch(()=>{});
   }
 }
 
