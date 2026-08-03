@@ -377,7 +377,7 @@ async function doChangePassword(oldPass, newPass, newPass2){
   msg.textContent = '';
   if(!currentUser){ msg.classList.add('err'); msg.textContent = 'Bạn chưa đăng nhập.'; return; }
   if(!oldPass || !newPass || !newPass2){ msg.classList.add('err'); msg.textContent = 'Vui lòng nhập đầy đủ thông tin.'; return; }
-  if(newPass.length < 4){ msg.classList.add('err'); msg.textContent = 'Mật khẩu mới cần tối thiểu 4 ký tự.'; return; }
+  if(newPass.length < 6){ msg.classList.add('err'); msg.textContent = 'Mật khẩu mới cần tối thiểu 6 ký tự.'; return; }
   if(newPass !== newPass2){ msg.classList.add('err'); msg.textContent = 'Mật khẩu mới nhập lại không khớp.'; return; }
   const fns = (typeof _authFns === 'function') ? _authFns() : null;
   if(!fns){ msg.classList.add('err'); msg.textContent = 'Lỗi kết nối mạng — vui lòng thử lại.'; return; }
@@ -390,7 +390,8 @@ async function doChangePassword(oldPass, newPass, newPass2){
     document.getElementById('change-password-form').reset();
   }catch(e){
     msg.classList.add('err');
-    msg.textContent = (e && e.message === 'errPassShort') ? 'Mật khẩu mới cần tối thiểu 4 ký tự.'
+    msg.textContent = (e && e.message === 'errPassShort') ? 'Mật khẩu mới cần tối thiểu 6 ký tự.'
+      : (e && e.message === 'errAccountLocked') ? (typeof t==='function' ? t('errAccountLocked') : 'Tài khoản tạm khoá do sai quá nhiều lần — thử lại sau 15 phút.')
       : 'Mật khẩu hiện tại không đúng.';
   }
 }

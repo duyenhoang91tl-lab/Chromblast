@@ -249,6 +249,25 @@ exports.applyMatchResult = onDocumentUpdated(
 // (xem firestore.rules: match /localAccounts/{doc} { allow read, write: if false }).
 // ═══════════════════════════════════════════════════════════════
 const ACCOUNTS_COLLECTION = 'localAccounts';
+const MAX_FAILED_ATTEMPTS = 5;
+const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // khoá tạm 15 phút sau khi sai quá 5 lần
+
+function _isLocked(u) {
+  return !!(u.lockedUntil && typeof u.lockedUntil.toMillis === 'function' && u.lockedUntil.toMillis() > Date.now());
+}
+/** Ghi nhận 1 lần nhập sai (mật khẩu hoặc câu trả lời bảo mật) — khoá tạm nếu chạm mốc 5 lần. */
+async function _recordFailedAttempt(ref, u) {
+  const attempts = (u.failedAttempts || 0) + 1;
+  const patch = { failedAttempts: attempts };
+  if (attempts >= MAX_FAILED_ATTEMPTS) {
+    patch.lockedUntil = new Date(Date.now() + LOCKOUT_DURATION_MS);
+  }
+  await ref.update(patch).catch(() => {});
+}
+/** Xoá đếm sai sau khi xác thực đúng (đăng nhập / đổi mật khẩu / quên mật khẩu thành công). */
+async function _clearFailedAttempts(ref) {
+  await ref.update({ failedAttempts: 0, lockedUntil: FieldValue.delete() }).catch(() => {});
+}
 
 function _hashSecret(raw) {
   const salt = crypto.randomBytes(16).toString('hex');
@@ -273,7 +292,7 @@ exports.registerAccount = onCall({ region: 'asia-southeast1' }, async (request) 
   const secA = typeof data.secA === 'string' ? data.secA.trim().toLowerCase() : '';
 
   if (username.length < 3) throw new HttpsError('invalid-argument', 'errUserShort');
-  if (password.length < 4) throw new HttpsError('invalid-argument', 'errPassShort');
+  if (password.length < 6) throw new HttpsError('invalid-argument', 'errPassShort');
   if (!secA) throw new HttpsError('invalid-argument', 'errFillAll');
 
   const key = username.toLowerCase();
@@ -303,9 +322,12 @@ exports.loginAccount = onCall({ region: 'asia-southeast1' }, async (request) => 
   const snap = await ref.get();
   if (!snap.exists) throw new HttpsError('not-found', 'errWrongLogin');
   const u = snap.data();
+  if (_isLocked(u)) throw new HttpsError('resource-exhausted', 'errAccountLocked');
   if (!_verifySecret(password, u.passwordHash, u.passwordSalt)) {
+    await _recordFailedAttempt(ref, u);
     throw new HttpsError('permission-denied', 'errWrongLogin');
   }
+  await _clearFailedAttempts(ref);
   return { ok: true, username: u.username, role: u.role || 'user' };
 });
 
@@ -316,15 +338,18 @@ exports.changeAccountPassword = onCall({ region: 'asia-southeast1' }, async (req
   const oldPassword = typeof data.oldPassword === 'string' ? data.oldPassword : '';
   const newPassword = typeof data.newPassword === 'string' ? data.newPassword : '';
   if (!username || !oldPassword) throw new HttpsError('invalid-argument', 'errFillAll');
-  if (newPassword.length < 4) throw new HttpsError('invalid-argument', 'errPassShort');
+  if (newPassword.length < 6) throw new HttpsError('invalid-argument', 'errPassShort');
 
   const ref = db.collection(ACCOUNTS_COLLECTION).doc(username.toLowerCase());
   const snap = await ref.get();
   if (!snap.exists) throw new HttpsError('not-found', 'errWrongLogin');
   const u = snap.data();
+  if (_isLocked(u)) throw new HttpsError('resource-exhausted', 'errAccountLocked');
   if (!_verifySecret(oldPassword, u.passwordHash, u.passwordSalt)) {
+    await _recordFailedAttempt(ref, u);
     throw new HttpsError('permission-denied', 'errWrongLogin');
   }
+  await _clearFailedAttempts(ref);
   const pw = _hashSecret(newPassword);
   await ref.update({ passwordHash: pw.hash, passwordSalt: pw.salt });
   return { ok: true };
@@ -338,6 +363,7 @@ exports.findAccountSecurityQuestion = onCall({ region: 'asia-southeast1' }, asyn
   const snap = await ref.get();
   if (!snap.exists) throw new HttpsError('not-found', 'errUserNotFound');
   const u = snap.data();
+  if (_isLocked(u)) throw new HttpsError('resource-exhausted', 'errAccountLocked');
   if (!u.secQ) throw new HttpsError('failed-precondition', 'errNoSecurityQ');
   return { ok: true, secQ: u.secQ };
 });
@@ -349,15 +375,18 @@ exports.resetAccountPassword = onCall({ region: 'asia-southeast1' }, async (requ
   const answer = typeof data.answer === 'string' ? data.answer.trim().toLowerCase() : '';
   const newPassword = typeof data.newPassword === 'string' ? data.newPassword : '';
   if (!username) throw new HttpsError('invalid-argument', 'errFillAll');
-  if (newPassword.length < 4) throw new HttpsError('invalid-argument', 'errPassShort');
+  if (newPassword.length < 6) throw new HttpsError('invalid-argument', 'errPassShort');
 
   const ref = db.collection(ACCOUNTS_COLLECTION).doc(username.toLowerCase());
   const snap = await ref.get();
   if (!snap.exists) throw new HttpsError('not-found', 'errUserNotFound');
   const u = snap.data();
+  if (_isLocked(u)) throw new HttpsError('resource-exhausted', 'errAccountLocked');
   if (!_verifySecret(answer, u.secAHash, u.secASalt)) {
+    await _recordFailedAttempt(ref, u);
     throw new HttpsError('permission-denied', 'errWrongAnswer');
   }
+  await _clearFailedAttempts(ref);
   const pw = _hashSecret(newPassword);
   await ref.update({ passwordHash: pw.hash, passwordSalt: pw.salt });
   return { ok: true };

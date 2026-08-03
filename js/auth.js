@@ -28,7 +28,7 @@ function _authErrMsg(err){
   const code = err && err.message;
   if(code && typeof t === 'function'){
     const known = ['errFillAll','errUserShort','errPassShort','errPassMismatch','errUserExists',
-      'errWrongLogin','errUserNotFound','errNoSecurityQ','errWrongAnswer'];
+      'errWrongLogin','errUserNotFound','errNoSecurityQ','errWrongAnswer','errAccountLocked'];
     if(known.includes(code)) return t(code);
   }
   return (typeof t === 'function') ? t('errNetwork') : 'Lỗi kết nối mạng — vui lòng thử lại.';
@@ -71,7 +71,7 @@ async function doRegister(username, password, password2, secQ, secA){
   errBox.textContent = '';
   if(!username || !password || !password2 || !secA){ errBox.textContent = t('errFillAll'); return; }
   if(username.length < 3){ errBox.textContent = t('errUserShort'); return; }
-  if(password.length < 4){ errBox.textContent = t('errPassShort'); return; }
+  if(password.length < 6){ errBox.textContent = t('errPassShort'); return; }
   if(password !== password2){ errBox.textContent = t('errPassMismatch'); return; }
   const fns = _authFns();
   if(!fns){ errBox.textContent = t('errNetwork'); return; }
@@ -114,7 +114,7 @@ async function doForgotReset(answer, newPassword, newPassword2){
   errBox.textContent = '';
   const username = document.getElementById('forgot-step2').dataset.username;
   if(!answer){ errBox.textContent = t('errWrongAnswer'); return; }
-  if(!newPassword || newPassword.length < 4){ errBox.textContent = t('errPassShort'); return; }
+  if(!newPassword || newPassword.length < 6){ errBox.textContent = t('errPassShort'); return; }
   if(newPassword !== newPassword2){ errBox.textContent = t('errPassMismatch'); return; }
   const fns = _authFns();
   if(!fns){ errBox.textContent = t('errNetwork'); return; }
