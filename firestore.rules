@@ -160,6 +160,20 @@ service cloud.firestore {
       allow create, update, delete: if isOwner(uid);
     }
 
+    /* Nhịp tim "còn sống" của chủ phòng — TÁCH RIÊNG khỏi rooms/{roomId} có chủ đích.
+       Trước đây lastSeen nằm ngay trong document rooms/{roomId}: mỗi lần chủ phòng ghi
+       nhịp tim (8s/lần) khiến document đó "đổi" trong mắt Firestore, nên MỌI client đang
+       đứng ở sảnh chờ (onSnapshot danh sách phòng mở) đều bị tính 1 lượt đọc lại dù chẳng
+       có gì đáng xem thay đổi cả — chi phí đọc nhân theo (số người ở sảnh) × (số phòng đang
+       mở). Đưa nhịp tim ra đây để nó không còn "đánh thức" listener danh sách phòng mở nữa;
+       phía client giờ tự dò theo lô (xem listenOpenRoomsByGameType trong online-services.js)
+       thay vì nhận lastSeen kèm theo mỗi snapshot. */
+    match /roomPresence/{roomId} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && request.auth.uid == request.resource.data.hostId;
+      allow delete: if signedIn();
+    }
+
     match /rooms/{roomId} {
       allow read: if signedIn();
       // Người tạo phải là host hoặc guest của chính room đó (chặn ghép mạo danh),
@@ -200,16 +214,18 @@ service cloud.firestore {
             || request.resource.data.winnerId == request.resource.data.guestId)
         && roomFinishOk();
       // Chủ phòng luôn được tự xoá phòng của mình. Ngoài ra, BẤT KỲ ai đã đăng nhập cũng
-      // được xoá một phòng nếu "nhịp tim" (lastSeen) của chủ phòng đã im quá 30 giây — đây
-      // là cơ chế dọn phòng "chết" (chủ phòng mất mạng/tắt app/crash) khi Firestore không có
-      // onDisconnect() như Realtime Database. Ngưỡng 30s > ROOM_LIVE_STALE_MS (24s) phía
-      // client để client luôn là người phát hiện + xoá trước trong điều kiện bình thường.
-      // (Trước là 15s/12s khi nhịp tim còn ghi mỗi 4s — đã nới theo cùng tỉ lệ khi nhịp tim
-      // giảm xuống 8s để không xoá nhầm phòng đang hoạt động chỉ vì lỡ 1 nhịp.)
+      // được xoá một phòng nếu "nhịp tim" (lastSeen, nay ở collection roomPresence riêng —
+      // xem match /roomPresence ở trên) của chủ phòng đã im quá 30 giây — đây là cơ chế dọn
+      // phòng "chết" (chủ phòng mất mạng/tắt app/crash) khi Firestore không có onDisconnect()
+      // như Realtime Database. Ngưỡng 30s > ROOM_LIVE_STALE_MS (24s) phía client để client
+      // luôn là người phát hiện + xoá trước trong điều kiện bình thường.
       allow delete: if signedIn() && (
         resource.data.hostId == request.auth.uid ||
-        (resource.data.lastSeen is timestamp &&
-         request.time > resource.data.lastSeen + duration.value(30, 's'))
+        (
+          exists(/databases/$(database)/documents/roomPresence/$(roomId)) &&
+          get(/databases/$(database)/documents/roomPresence/$(roomId)).data.lastSeen is timestamp &&
+          request.time > get(/databases/$(database)/documents/roomPresence/$(roomId)).data.lastSeen + duration.value(30, 's')
+        )
       );
 
       // Chỉ host/guest của CHÍNH room đó được gửi nước đi / chat trong trận — trước đây
