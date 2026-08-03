@@ -350,6 +350,9 @@
       gold: reward.gold,
       diamond: reward.diamond,
     });
+    if (typeof logGameEvent === "function") {
+      logGameEvent("claim_reward", { kind: kind, rank: mine.rank, gold: reward.gold, diamond: reward.diamond });
+    }
     if (typeof claimPeriodRewardOnline === "function") {
       claimPeriodRewardOnline(board.periodId, scope, mine.rank, reward).catch(function () {});
     }

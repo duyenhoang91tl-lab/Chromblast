@@ -273,6 +273,7 @@ function grantGold(n, reason){
   inv.gold = (inv.gold|0) + n;
   saveInventory();
   renderInventoryHud();
+  if(typeof logGameEvent === 'function') logGameEvent('earn_virtual_currency', { virtual_currency_name:'gold', value:n, reason: reason||'' });
   try{
     if(reason) showComboFlash(0, false, '🪙 +'+n+(reason?(' · '+reason):''));
   }catch(e){}
@@ -285,6 +286,7 @@ function spendGold(n){
   inv.gold = (inv.gold|0) - n;
   saveInventory();
   renderInventoryHud();
+  if(typeof logGameEvent === 'function') logGameEvent('spend_virtual_currency', { virtual_currency_name:'gold', value:n });
   return true;
 }
 
@@ -296,6 +298,7 @@ function grantDiamonds(n, reason){
   inv.diamonds = (inv.diamonds|0) + n;
   saveInventory();
   renderInventoryHud();
+  if(typeof logGameEvent === 'function') logGameEvent('earn_virtual_currency', { virtual_currency_name:'diamond', value:n, reason: reason||'' });
   try{ if(reason) showComboFlash(0, false, '💎 +'+n+(reason?(' · '+reason):'')); }catch(e){}
 }
 function spendDiamonds(n){
@@ -305,6 +308,7 @@ function spendDiamonds(n){
   inv.diamonds = (inv.diamonds|0) - n;
   saveInventory();
   renderInventoryHud();
+  if(typeof logGameEvent === 'function') logGameEvent('spend_virtual_currency', { virtual_currency_name:'diamond', value:n });
   return true;
 }
 /** Đổi vàng → kim cương: 100 vàng = 1 kim cương */

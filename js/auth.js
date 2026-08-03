@@ -58,6 +58,7 @@ async function doLogin(username, password){
     const res = await fns.httpsCallable('loginAccount')({ username, password });
     const data = res.data || {};
     applyLoggedInUser(data.username || username, data.role);
+    if(typeof logGameEvent === 'function') logGameEvent('login', { method: 'username_password' });
     hideAuthScreen();
   }catch(e){
     errBox.textContent = _authErrMsg(e);
@@ -81,6 +82,7 @@ async function doRegister(username, password, password2, secQ, secA){
     const res = await fns.httpsCallable('registerAccount')({ username, password, secQ, secA });
     const data = res.data || {};
     applyLoggedInUser(data.username || username, data.role);
+    if(typeof logGameEvent === 'function') logGameEvent('sign_up', { method: 'username_password' });
     hideAuthScreen();
   }catch(e){
     errBox.textContent = _authErrMsg(e);

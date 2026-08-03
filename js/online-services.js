@@ -14,6 +14,9 @@ let _movesUnsub = null;
 
 const ONLINE_ROOM_CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
+// logGameEvent(name, params) — định nghĩa trong js/ganalytics.js (nạp trước
+// file này), dùng chung cho toàn bộ code. KHÔNG khai báo lại ở đây.
+
 function isOnlineServicesEnabled(){
   const c = window.FIREBASE_CONFIG;
   return !!(c && c.projectId && c.apiKey && typeof firebase !== 'undefined');
@@ -982,6 +985,7 @@ async function signInWithGoogle(){
   }catch(e){}
   _onlineReady = true;
   await _upsertPlayerProfile();
+  logGameEvent('login', { method: 'google' });
   return _onlineUid;
 }
 

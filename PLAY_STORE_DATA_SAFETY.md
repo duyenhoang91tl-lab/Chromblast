@@ -35,7 +35,8 @@ Nguồn đối chiếu: `privacy-policy.html`, `package.json`, `index.html` (scr
 
 | Loại dữ liệu | Thu thập? | Ghi chú |
 |---|---|---|
-| Crash log / diagnostics | **Không** | `index.html` chỉ nạp `firebase-app-compat`, `firebase-auth-compat`, `firebase-firestore-compat` — không có Analytics/Crashlytics/Performance SDK. Bản Android trước đây có khai `com.google.firebase:firebase-analytics` trong `build.gradle` nhưng không hề gọi (không có `logEvent` nào trong code) — đã gỡ dependency này (29/07/2026) để khớp đúng với khai báo "không thu thập analytics". Nếu sau này thêm Firebase Analytics/Crashlytics thì phải khai lại mục này |
+| Crash log / diagnostics | **Không** | Không có Crashlytics/Performance SDK trong app. |
+| Analytics (sự kiện sử dụng app) | **Có**, từ (ngày thêm) | `index.html` nạp `firebase-analytics-compat.js`; `js/ganalytics.js` là nơi DUY NHẤT gọi `firebase.analytics()`, expose `window.logGameEvent()` dùng chung toàn bộ code (chạy ở luồng **Web/JS trong WebView** Capacitor — KHÔNG dùng SDK Analytics native Android, nên `android/app/build.gradle` không cần thêm lại dependency `com.google.firebase:firebase-analytics` đã gỡ trước đó). Sự kiện đang bắn: `sign_up`, `login` (username_password/google), `caro_match_start`/`caro_match_end`, `versus_match_start`/`versus_match_end`, `level_start`/`level_end`/`map_unlocked` (map thường), `claim_reward` (thưởng BXH kỳ), `earn_virtual_currency`/`spend_virtual_currency` (vàng/kim cương), `daily_reward_claim`, `quest_complete`, `ad_shown`/`ad_reward_earned`, `share_click` — cộng sự kiện GA4 tự động (`session_start`, `first_visit`...). Không log PII (không gửi username/email/nội dung chat vào params sự kiện) |
 
 ## 6. Device or other IDs
 
@@ -71,5 +72,6 @@ Location (vị trí chính xác/tương đối), Financial info, Health & fitnes
 - [ ] Khai Messages — Shared nếu tính năng dịch tự động vẫn còn bật cho người dùng
 - [ ] Khai App activity (BXH) — Collected, không Shared bên thứ 3, nhưng hiển thị công khai trong app
 - [ ] Xác nhận lại: KHÔNG khai "Photos or videos" (avatar chỉ local) — tránh khai thừa
-- [x] Đã gỡ dependency `firebase-analytics` không dùng khỏi `android/app/build.gradle` (29/07/2026) — nếu sau này thêm lại Firebase Analytics/Crashlytics thì quay lại mục 5 và khai bổ sung
+- [x] Đã gỡ dependency `firebase-analytics` không dùng khỏi `android/app/build.gradle` (29/07/2026) — **CẬP NHẬT: đã thêm lại Firebase Analytics ở luồng Web/compat SDK (không phải native Android)** — xem mục 5, cần khai "Có" thu thập Analytics trước khi submit bản cập nhật kế tiếp
+- [ ] Khai mục 5 (App info and performance) trên Play Console: bật "Analytics" — mục đích "App functionality"/"Analytics", không Shared bên thứ 3 (chỉ tới Firebase — hạ tầng của bạn)
 - [x] Nút xoá tài khoản in-app đã thêm (`🌐 Online → 🗑️ Xoá tài khoản online & dữ liệu`)
