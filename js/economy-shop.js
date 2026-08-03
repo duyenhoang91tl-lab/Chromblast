@@ -330,7 +330,9 @@
         const r = buyHeartWithGold(HEART_PACK, HEART_GOLD_PRICE);
         if (!r || !r.ok) {
           try {
-            showComboFlash(0, false, tt("shopNotEnoughGold", "Không đủ vàng"));
+            showComboFlash(0, false, r && r.reason === 'max'
+              ? tt("shopHeartFull", "Đầy")
+              : tt("shopNotEnoughGold", "Không đủ vàng"));
           } catch (e) {}
         }
         renderShop("hearts");

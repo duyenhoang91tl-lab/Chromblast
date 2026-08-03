@@ -333,7 +333,10 @@ function grantHearts(n, reason){
   n = roundHalf(n);
   if(!(n>0)) return;
   applyHeartRegen();
-  inv.hearts = roundHalf(roundHalf(inv.hearts) + n);
+  // Giới hạn cứng tại đây (thay vì ở từng nơi gọi) để MỌI nguồn cộng tim — quà tặng bạn
+  // bè, điểm danh, lên cấp, nhiệm vụ, xem quảng cáo, mua bằng vàng — đều không thể vượt
+  // quá MAX_HEARTS. Trước đây không giới hạn, tim có thể vượt 5/5 (VD mua tim lúc đã đầy).
+  inv.hearts = roundHalf(Math.min(MAX_HEARTS, roundHalf(inv.hearts) + n));
   syncHeartRegenAfterChange();
   saveInventory();
   renderInventoryHud();
@@ -423,6 +426,10 @@ function nextAdGoldReward(){
 
 function buyHeartWithGold(n, priceEach){
   n = Math.max(1, n|0);
+  // Chặn mua khi tim đã đầy — trước đây không kiểm tra, khiến người chơi mất vàng
+  // oan mà tim vẫn vượt quá MAX_HEARTS (VD 5/5 mua vẫn lên 6, sai luật giới hạn tim).
+  applyHeartRegen();
+  if(!heartsBelowMax()) return { ok:false, reason:'max' };
   const price = Math.max(1, (priceEach|0) || (typeof HEART_GOLD_PRICE==='number'?HEART_GOLD_PRICE:8));
   const total = price * n;
   if(!spendGold(total)) return { ok:false, reason:'gold' };
