@@ -103,6 +103,13 @@ service cloud.firestore {
           && request.resource.data.code is string
           && request.resource.data.gameType in ['caro', 'versus'];
       }
+
+      /* Thông báo hệ thống (vd: bị vượt hạng trong BXH ngày/tuần/tháng) — chỉ Cloud
+         Function (Admin SDK) tạo được, chủ tài khoản chỉ đọc/đánh dấu đã đọc/xoá của mình. */
+      match /notifications/{notifId} {
+        allow read, update, delete: if isOwner(uid);
+        allow create: if false;
+      }
     }
 
     match /matchQueue/{uid} {
