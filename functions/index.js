@@ -136,6 +136,7 @@ exports.submitSoloScore = onCall({ region: 'asia-southeast1' }, async (request) 
   }
 
   const kinds = ['day', 'week', 'month'];
+  const overtakeNotifs = [];
   await Promise.all(kinds.map(async (kind) => {
     const pid = periodKey(kind);
     const entryRef = db.collection('periodScores').doc(pid).collection('entries').doc(uid);
@@ -146,8 +147,46 @@ exports.submitSoloScore = onCall({ region: 'asia-southeast1' }, async (request) 
         uid, name: displayName, avatar, score, country, continent,
         updatedAt: FieldValue.serverTimestamp()
       }, { merge: true });
+
+      // Chỉ xét "vượt hạng" khi đã từng có điểm trong kỳ này trước đó (prev > 0) —
+      // tránh spam thông báo cho cả trăm người khi kỳ mới bắt đầu và ai đó nộp
+      // điểm đầu tiên (lúc đó "khoảng cách" 0→score sẽ trùng gần hết bảng xếp hạng).
+      if (prev > 0) {
+        try {
+          const passedSnap = await db.collection('periodScores').doc(pid).collection('entries')
+            .where('score', '>', prev)
+            .where('score', '<=', score)
+            .limit(6)
+            .get();
+          passedSnap.forEach((doc) => {
+            if (doc.id === uid) return;
+            overtakeNotifs.push({ overtakenUid: doc.id, kind, pid });
+          });
+        } catch (e) {
+          // Không chặn việc nộp điểm nếu bước thông báo lỗi (vd: index chưa sẵn sàng).
+        }
+      }
     }
   }));
+
+  if (overtakeNotifs.length) {
+    const batch = db.batch();
+    overtakeNotifs.forEach((n) => {
+      const ref = db.collection('players').doc(n.overtakenUid).collection('notifications').doc();
+      batch.set(ref, {
+        type: 'lb_overtaken',
+        kind: n.kind,
+        periodId: n.pid,
+        byUid: uid,
+        byName: displayName,
+        byAvatar: avatar,
+        byScore: score,
+        read: false,
+        createdAt: FieldValue.serverTimestamp()
+      });
+    });
+    await batch.commit().catch(() => {});
+  }
 
   return { ok: true, bestScore: Math.max(score, prevBest) };
 });
