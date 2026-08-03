@@ -668,6 +668,18 @@ function _pcRenderCouple(coupleEl, partnerName, pairedAt){
   coupleEl.innerHTML = '<span class="pc-couple-ring">'+ring+'</span><span class="pc-couple-text">'+escapeHtml(label)+'</span>';
 }
 
+/* Hang rank rieng cho tung che do: nhan "XO" (Caro) hoac kiem cheo (Versus) + ten hang + ti le thang */
+function _pcRankRowHtml(mode, rankName, ratePct){
+  if(!rankName) return '';
+  const modeBadge = mode === 'caro'
+    ? '<b class="caro-x">X</b><b class="caro-o">O</b>'
+    : '<span class="pc-rank-mode-vs">⚔️</span>';
+  const rateLabel = (typeof t==='function'?t('caroWinRateLabel'):'Tỉ lệ thắng');
+  return '<div class="pc-rank-row"><span class="pc-rank-mode">'+modeBadge+'</span>'
+    +'<span class="pc-rank-name">'+escapeHtml(rankName)+'</span>'
+    +'<span class="pc-rank-rate">'+escapeHtml(rateLabel)+' '+ratePct+'%</span></div>';
+}
+
 function openOwnPlayerCard(){
   const nick = (typeof getPlayerNickname === 'function' ? getPlayerNickname() : null) || 'Bạn';
   const av = (typeof getPlayerAvatarDisplay === 'function'
@@ -725,21 +737,10 @@ async function openPlayerCard(opts){
       const vsRate = vs.winRate != null ? vs.winRate : 0;
       const caroRank = s.rank || null;
       const vsRank = (typeof getVersusRank === 'function') ? getVersusRank(vs.points||0) : null;
-      const caroTitle = caroRank ? (caroRank.icon+' '+caroRank.name) : '';
-      const vsTitle = vsRank ? (vsRank.icon+' '+vsRank.name) : '';
-      let statsHtml = '';
-      {
-        const caroLine = (typeof t==='function'
-          ? (t('caroWinRateLabel')+': '+rate+'%')
-          : (rate+'%'));
-        statsHtml += '<div class="pc-mode-stats"><b>Caro</b> — '+caroTitle+'<br>'+caroLine+'</div>';
-      }
-      {
-        const vsLine = (typeof t==='function'
-          ? (t('caroWinRateLabel')+': '+vsRate+'%')
-          : (vsRate+'%'));
-        statsHtml += '<div class="pc-mode-stats"><b>Versus</b> — '+vsTitle+'<br>'+vsLine+'</div>';
-      }
+      let statsHtml = '<div class="pc-ranks">';
+      statsHtml += _pcRankRowHtml('caro', caroRank ? caroRank.name : '', rate);
+      statsHtml += _pcRankRowHtml('vs', vsRank ? vsRank.name : '', vsRate);
+      statsHtml += '</div>';
       document.getElementById('pc-stats').innerHTML = statsHtml;
     }catch(e){}
     return;
@@ -751,15 +752,10 @@ async function openPlayerCard(opts){
     document.getElementById('pc-avatar').textContent = prof.avatar || fallbackAv;
     const s = prof.stats || {};
     const rate = s.winRate != null ? s.winRate : 0;
-    const caroLine = (typeof t==='function'
-      ? (t('caroWinRateLabel')+': '+rate+'%')
-      : (rate+'%'));
     const vs = prof.versusStats || {};
     const vsRate = vs.winRate != null ? vs.winRate : 0;
     const vsRank = (typeof getVersusRank === 'function') ? getVersusRank(vs.points||0) : null;
     const caroRank = s.rank || null;
-    const caroTitle = caroRank ? (caroRank.icon+' '+caroRank.name) : '';
-    const vsTitle = vsRank ? (vsRank.icon+' '+vsRank.name) : '';
     const bestTier = Math.max(caroRank ? (caroRank.tier||0) : 0, vsRank ? (vsRank.tier||0) : 0);
     const pcNameEl = document.getElementById('pc-name');
     if(pcNameEl){
@@ -772,17 +768,17 @@ async function openPlayerCard(opts){
     const visMaps = prof.visMaps !== false;
     const visCaro = prof.visCaro !== false;
     const visVersus = prof.visVersus !== false;
-    let statsHtml = '';
+    let statsHtml = '<div class="pc-ranks">';
     if(hasCaro && visCaro){
-      statsHtml += '<div class="pc-mode-stats"><b>Caro</b> — '+caroTitle+'<br>'+caroLine+'</div>';
+      statsHtml += _pcRankRowHtml('caro', caroRank ? caroRank.name : '', rate);
     }
     if(hasVs && visVersus){
-      const vsLine = (typeof t==='function'
-        ? (t('caroWinRateLabel')+': '+vsRate+'%')
-        : (vsRate+'%'));
-      statsHtml += '<div class="pc-mode-stats"><b>Versus</b> — '+vsTitle+'<br>'+vsLine+'</div>';
+      statsHtml += _pcRankRowHtml('vs', vsRank ? vsRank.name : '', vsRate);
     }
-    document.getElementById('pc-stats').innerHTML = statsHtml || (typeof t==='function'?t('caroNoStats'):'Chưa có thống kê');
+    statsHtml += '</div>';
+    document.getElementById('pc-stats').innerHTML = (statsHtml === '<div class="pc-ranks"></div>')
+      ? (typeof t==='function'?t('caroNoStats'):'Chưa có thống kê')
+      : statsHtml;
     if(visMaps){
       _pcRenderProgress(progEl, prof.level || 1, prof.mapNormal || 0, prof.mapSecret || 0);
     } else if(progEl){
