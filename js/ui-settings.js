@@ -244,8 +244,7 @@ function initSettingsMenu(){
   document.getElementById('set-btn-home')?.addEventListener('click', ()=>{ sfxClick(); settingsGoHome(); });
   document.getElementById('set-btn-replay')?.addEventListener('click', settingsReplay);
   document.getElementById('pause-replay-btn')?.addEventListener('click', ()=>{
-    if(!isPlayingHiddenMap()) return;
-    replayActiveHiddenMap();
+    if(typeof replayFromPause==='function') replayFromPause();
   });
 
   document.getElementById('set-contact-btn')?.addEventListener('click', ()=>{

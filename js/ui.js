@@ -182,6 +182,23 @@ function replayActiveHiddenMap(){
   return true;
 }
 
+/** Chơi lại từ nút tạm dừng — map ẩn: đúng map ẩn đó; map thường: khởi động lại
+    bàn hiện tại từ đầu (điểm/độ khó của ván đang chơi, không phải tiến trình đã lưu). */
+function replayFromPause(){
+  if(isPlayingHiddenMap()) return replayActiveHiddenMap();
+  try{ sfxClick(); }catch(e){}
+  gamePaused = false;
+  const overlay = document.getElementById('pause-overlay');
+  const btn = document.getElementById('pause-btn');
+  if(overlay) overlay.style.display = 'none';
+  if(btn) btn.textContent = '⏸';
+  const replayBtn = document.getElementById('pause-replay-btn');
+  if(replayBtn) replayBtn.style.display = 'none';
+  try{ hardResetAllModes(); }catch(e){}
+  try{ if(typeof startGame==='function') startGame(); }catch(e){}
+  return true;
+}
+
 function togglePause(){
   // Cho phép tạm dừng ở CẢ bàn chính lẫn map ẩn (bàn chính không có vòng lặp
   // RAF nào cần dừng — chỉ hiện overlay + dừng nhạc).
@@ -193,7 +210,7 @@ function togglePause(){
   if(gamePaused){
     overlay.style.display = 'flex';
     btn.textContent = '▶';
-    if(replayBtn) replayBtn.style.display = isPlayingHiddenMap() ? '' : 'none';
+    if(replayBtn) replayBtn.style.display = '';
     stopRhythmBgm();
     stopBgm();
     if(dodgeRAF){ cancelAnimationFrame(dodgeRAF); dodgeRAF=null; }
