@@ -1009,6 +1009,19 @@ body.notif-open #start-screen{
   margin-top: 1px;
   white-space: nowrap;
 }
+/* Cham xanh kieu trang thai online cua Zalo, dung truoc chu "online" */
+#caro-btn .caro-btn-ico .caro-btn-online,
+#versus-btn .vs-btn-ico .vs-btn-online{
+  display: inline-flex; align-items: center; justify-content: center; gap: 2px;
+}
+#caro-btn .caro-btn-ico .caro-btn-online::before,
+#versus-btn .vs-btn-ico .vs-btn-online::before{
+  content: "";
+  width: 4px; height: 4px; border-radius: 50%;
+  background: #31d158;
+  box-shadow: 0 0 2px rgba(49,209,88,0.9);
+  flex-shrink: 0;
+}
 #game-root.hud-arcade #versus-btn .vs-btn-ico .vs-btn-emoji{
   font-size: 14px;
 }
