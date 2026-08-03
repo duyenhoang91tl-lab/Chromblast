@@ -31,6 +31,36 @@ service cloud.firestore {
         || (resource != null && field in resource.data && request.resource.data[field] == resource.data[field]);
     }
 
+    /* Chặn "báo thắng khống tức thời": trước đây bất kỳ host/guest nào cũng tự chuyển
+       status phòng của mình sang 'finished' kèm winnerId/hostScore/guestScore tuỳ ý —
+       applyMatchResult (Admin SDK) tin thẳng các field này nên chỉ chuyển việc CỘNG điểm
+       sang server là chưa đủ, còn phải khoá luôn ĐẦU VÀO của nó ở đây:
+       1) Phòng phải tồn tại tối thiểu 8 giây thực kể từ createdAt (mốc server thật, xem
+          allow create: createdAt == request.time nên không giả được) mới được phép
+          finished — chặn kiểu bot tạo+báo thắng liên tục trong khi không hề chơi.
+       2) Với Đấu 1-1 (versus): hostScore/guestScore phải là số không âm và không vượt
+          trần hợp lý — trần đặt rất rộng so với điểm thật tối đa 1 trận ~90 giây, chỉ để
+          chặn báo số kiểu 999999.
+       Không áp dụng cho các lần update khác (đồng bộ hostScore/guestScore giữa chừng
+       trận, cập nhật lastSeen, ... vẫn diễn ra bình thường vì status vẫn khác 'finished'). */
+    function roomFinishOk() {
+      return resource.data.status == 'finished'
+        || request.resource.data.status != 'finished'
+        || (
+          resource.data.createdAt is timestamp
+          && request.time > resource.data.createdAt + duration.value(8, 's')
+          && (
+            request.resource.data.gameType != 'versus'
+            || (
+              request.resource.data.hostScore is number && request.resource.data.hostScore >= 0
+              && request.resource.data.hostScore <= 5000
+              && request.resource.data.guestScore is number && request.resource.data.guestScore >= 0
+              && request.resource.data.guestScore <= 5000
+            )
+          )
+        );
+    }
+
     /* Tài khoản đăng nhập cục bộ (username/mật khẩu) — CHỈ Cloud Function (Admin SDK,
        bỏ qua rules) được đọc/ghi. Chứa hash mật khẩu + câu trả lời bảo mật, tuyệt đối
        không cho client đọc/ghi trực tiếp dù đã đăng nhập hay chưa.
@@ -133,7 +163,10 @@ service cloud.firestore {
             || request.resource.data.guestId == null
             || request.resource.data.guestId != request.resource.data.hostId)
         && (!('status' in request.resource.data) || request.resource.data.status != 'finished')
-        && (!('winnerId' in request.resource.data) || request.resource.data.winnerId == null);
+        && (!('winnerId' in request.resource.data) || request.resource.data.winnerId == null)
+        // createdAt phải là mốc server thật (không tự đặt lùi về quá khứ được) — đây là
+        // "đồng hồ" mà roomFinishOk() dựa vào để chặn báo thắng khống tức thời.
+        && request.resource.data.createdAt == request.time;
       // hostId bất biến sau khi tạo; guestId không bao giờ được trùng hostId (chặn tự đấu
       // với chính mình); winnerId khi báo thắng chỉ được là chính hostId/guestId của room đó
       // (chặn gán thắng khống cho 1 uid bất kỳ) — applyMatchResult (functions/index.js) chỉ
@@ -151,7 +184,8 @@ service cloud.firestore {
         && (!('winnerId' in request.resource.data)
             || request.resource.data.winnerId == null
             || request.resource.data.winnerId == request.resource.data.hostId
-            || request.resource.data.winnerId == request.resource.data.guestId);
+            || request.resource.data.winnerId == request.resource.data.guestId)
+        && roomFinishOk();
       // Chủ phòng luôn được tự xoá phòng của mình. Ngoài ra, BẤT KỲ ai đã đăng nhập cũng
       // được xoá một phòng nếu "nhịp tim" (lastSeen) của chủ phòng đã im quá 30 giây — đây
       // là cơ chế dọn phòng "chết" (chủ phòng mất mạng/tắt app/crash) khi Firestore không có
