@@ -2129,13 +2129,16 @@ async function claimPendingReferralRewards(){
 
 /** Dùng Web Share API — Android tự liệt kê Zalo/Messenger/SMS... trong share sheet, không cần SDK riêng. */
 function shareInviteLink(){
-  const prof = (typeof getPlayerProfile === 'function') ? getPlayerProfile() : null;
-  const code = prof && prof.publicId ? prof.publicId : '';
+  // ensurePublicPlayerId luôn trả về mã hợp lệ (tự sinh nếu chưa có) — đọc thẳng
+  // prof.publicId có thể rỗng nếu người chơi chưa từng mở màn hình ID riêng.
+  const code = (typeof ensurePublicPlayerId === 'function') ? ensurePublicPlayerId() : '';
   const text = '🎮 Chơi ChromaBlast cùng mình! Nhập mã mời ' + code + ' để cả 2 nhận thưởng 💎';
   if(navigator.share){
     navigator.share({ text }).catch(()=>{});
   } else if(navigator.clipboard){
-    navigator.clipboard.writeText(text).catch(()=>{});
+    navigator.clipboard.writeText(text)
+      .then(()=>{ if(typeof openSettingsText==='function') openSettingsText(t('setShare')||'Share', text); })
+      .catch(()=>{});
   }
 }
 

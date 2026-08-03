@@ -254,6 +254,10 @@ function initSettingsMenu(){
   document.getElementById('set-share-btn')?.addEventListener('click', ()=>{
     sfxClick();
     try{ if(typeof logGameEvent==='function') logGameEvent('share_click', { method: navigator.share?'native_share':'clipboard' }); }catch(e){}
+    // Dùng đúng bản có mã mời (CBxxxxxx) + nhắc thưởng — trước đây nút này share
+    // text tĩnh "Play ChromaBlast with me!", không có mã, không gắn được vào hệ
+    // thống thưởng mời bạn (claimPendingReferralRewards) dù backend đã có sẵn.
+    if(typeof shareInviteLink==='function'){ shareInviteLink(); return; }
     const text='Play ChromaBlast with me!';
     if(navigator.share){ navigator.share({ title:'ChromaBlast', text }).catch(()=>{}); }
     else { try{ navigator.clipboard.writeText(text); }catch(e){} openSettingsText(t('setShare')||'Share', text); }
