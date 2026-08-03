@@ -281,6 +281,83 @@ exports.claimPendingRewards = onCall({ region: 'asia-southeast1' }, async (reque
  * Kích hoạt khi doc rooms chuyển trạng thái sang 'finished'; chạy bằng
  * Admin SDK để không phụ thuộc quyền ghi của client trên players/{uid}.
  */
+
+// ═══════════════════════════════════════════════════════════════
+// CHẤM LẠI VÁN CARO TỪ LỊCH SỬ NƯỚC ĐI (không tin thẳng winnerId/isDraw
+// client tự báo trong doc rooms — firestore.rules chỉ mới khoá được "tốc độ
+// + trần điểm", còn AI THẮNG THẬT vẫn phải suy ra từ chính các nước đi đã
+// ghi ở rooms/{roomId}/moves). Toàn bộ hàm dưới đây là bản port 1:1 từ luật
+// trong js/caro.js (CARO_SIZE, _caroCheckWin) — cùng 1 bàn 15×15, cùng luật
+// chặn 2 đầu, để kết quả chấm lại khớp tuyệt đối với luật client đang chơi.
+// ═══════════════════════════════════════════════════════════════
+const CARO_SIZE = 15;
+const CARO_EMPTY = 0, CARO_X = 1, CARO_O = 2; // X = host, O = guest (xem js/caro.js: _caroStone)
+
+/** Bản port 1:1 của _caroCheckWin trong js/caro.js — luật chặn 2 đầu: 5 quân
+ * thắng chỉ khi KHÔNG bị chặn cả 2 đầu bởi đối phương hoặc biên bàn cờ. */
+function caroCheckWin(board, r, c, color) {
+  const opp = color === CARO_X ? CARO_O : CARO_X;
+  const dirs = [[0, 1], [1, 0], [1, 1], [1, -1]];
+  for (const [dr, dc] of dirs) {
+    const cells = [[r, c]];
+    let nr = r - dr, nc = c - dc;
+    while (nr >= 0 && nr < CARO_SIZE && nc >= 0 && nc < CARO_SIZE && board[nr][nc] === color) {
+      cells.unshift([nr, nc]); nr -= dr; nc -= dc;
+    }
+    nr = r + dr; nc = c + dc;
+    while (nr >= 0 && nr < CARO_SIZE && nc >= 0 && nc < CARO_SIZE && board[nr][nc] === color) {
+      cells.push([nr, nc]); nr += dr; nc += dc;
+    }
+    if (cells.length < 5) continue;
+    for (let i = 0; i <= cells.length - 5; i++) {
+      const five = cells.slice(i, i + 5);
+      if (!five.some(([fr, fc]) => fr === r && fc === c)) continue;
+      const [r0, c0] = five[0], [r4, c4] = five[4];
+      const br = r0 - dr, bc = c0 - dc, ar = r4 + dr, ac = c4 + dc;
+      const blockedBefore = br < 0 || bc < 0 || br >= CARO_SIZE || bc >= CARO_SIZE || board[br][bc] === opp;
+      const blockedAfter = ar < 0 || ac < 0 || ar >= CARO_SIZE || ac >= CARO_SIZE || board[ar][ac] === opp;
+      if (!(blockedBefore && blockedAfter)) return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Chấm lại toàn bộ ván từ rooms/{roomId}/moves (chỉ đọc, Admin SDK nên luôn
+ * thấy đủ — client không thể xoá bớt nước đi vì firestore.rules chỉ cho
+ * phép "create" trên moves, không cho update/delete).
+ * Trả về {winnerId, isDraw} THẬT suy từ replay, hoặc null nếu lịch sử nước
+ * đi không hợp lệ / chưa đủ để kết luận — khi đó KHÔNG cộng/trừ điểm cho
+ * ai (coi như ván không xác thực được, an toàn hơn là tin nhầm).
+ * Kiểm tra từng nước: đúng lượt (host đi trước, xen kẽ), toạ độ hợp lệ,
+ * ô đang trống, và không còn nước nào sau khi đã có người thắng.
+ */
+async function replayCaroMatch(roomId, hostId, guestId) {
+  const movesSnap = await db.collection('rooms').doc(roomId).collection('moves')
+    .orderBy('seq', 'asc').get();
+  const board = Array.from({ length: CARO_SIZE }, () => Array(CARO_SIZE).fill(CARO_EMPTY));
+  let expectedSlot = 'host'; // host luôn đi trước — xem js/caro.js: turn:'host' lúc khởi tạo
+  let winnerSlot = null;
+  let placed = 0;
+  for (const doc of movesSnap.docs) {
+    const m = doc.data();
+    if (m.type !== 'caro_place') continue;
+    if (winnerSlot) return null; // đã thắng mà vẫn còn nước đi tiếp theo → lịch sử bất thường
+    const { slot, r, c } = m;
+    if (slot !== expectedSlot) return null;
+    if (!(Number.isInteger(r) && Number.isInteger(c) && r >= 0 && r < CARO_SIZE && c >= 0 && c < CARO_SIZE)) return null;
+    if (board[r][c] !== CARO_EMPTY) return null;
+    const color = slot === 'host' ? CARO_X : CARO_O;
+    board[r][c] = color;
+    placed++;
+    if (caroCheckWin(board, r, c, color)) winnerSlot = slot;
+    expectedSlot = slot === 'host' ? 'guest' : 'host';
+  }
+  if (winnerSlot) return { winnerId: winnerSlot === 'host' ? hostId : guestId, isDraw: false };
+  if (placed === CARO_SIZE * CARO_SIZE) return { winnerId: null, isDraw: true };
+  return null; // chưa đủ nước đi để phân thắng bại/hoà thật — không tính điểm
+}
+
 exports.applyMatchResult = onDocumentUpdated(
   { document: 'rooms/{roomId}', region: 'asia-southeast1' },
   async (event) => {
@@ -294,8 +371,18 @@ exports.applyMatchResult = onDocumentUpdated(
     if (!hostId || !guestId) return null;
 
     if (after.gameType === 'caro') {
-      const winnerId = after.winnerId || null;
-      const isDraw = !!after.isDraw;
+      // Không tin thẳng after.winnerId/after.isDraw (client tự ghi được) — chấm lại từ
+      // lịch sử nước đi thật (rooms/{roomId}/moves, chỉ Admin SDK mới đọc ở đây, và
+      // client chỉ có quyền "create" trên đó nên không tài nào xoá/sửa được).
+      const real = await replayCaroMatch(event.params.roomId, hostId, guestId);
+      if (!real) {
+        // Lịch sử nước đi không đủ để xác nhận thắng/thua/hoà thật (ví dụ báo finished
+        // khống mà không hề chơi) → không cộng/trừ điểm cho ai, chỉ đánh dấu đã xử lý.
+        await event.data.after.ref.set({ statsApplied: true }, { merge: true }).catch(() => {});
+        return null;
+      }
+      const winnerId = real.winnerId;
+      const isDraw = real.isDraw;
       const applyPlayer = async (uid, outcome) => {
         if (!uid) return;
         const patch = { updatedAt: FieldValue.serverTimestamp() };

@@ -109,6 +109,16 @@ service cloud.firestore {
         allow create, update, delete: if isOwner(uid);
       }
 
+      /* Thông báo "bị vượt hạng BXH" (ghi bởi submitSoloScore, Admin SDK) —
+         chủ tài khoản chỉ được đọc + tự đánh dấu đã đọc (read:true), không được tạo
+         (chặn tự chèn thông báo khống) hay sửa các field nội dung khác. */
+      match /notifications/{notifId} {
+        allow read: if isOwner(uid);
+        allow update: if isOwner(uid)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
+        allow create, delete: if false;
+      }
+
       match /lbClaims/{claimId} {
         allow read, create, update: if isOwner(uid);
       }
