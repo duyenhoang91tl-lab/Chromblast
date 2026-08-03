@@ -246,6 +246,9 @@
     st[cat].claimed[id] = 1;
     saveState(st);
     grantReward(def.reward);
+    try {
+      if (typeof logGameEvent === "function") logGameEvent("quest_complete", { category: cat, quest_id: id });
+    } catch (e) {}
     return { ok: true, reward: def.reward };
   }
 

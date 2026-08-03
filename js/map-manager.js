@@ -163,6 +163,7 @@ function loadMapModule(d, cb){
 function startMap(idOrKey){
   const d = MAP_REGISTRY[idOrKey];
   if(!d){ console.warn('[MapManager] Không tìm thấy map:', idOrKey); return false; }
+  try{ if(typeof logGameEvent==='function') logGameEvent('level_start', { map_id:String(idOrKey), map_name:d.name||'' }); }catch(e){}
   if(typeof d.enter === 'function'){ d.enter(); return true; }
   if(d.file){ loadMapModule(d, ()=>{ if(typeof d.enter==='function') d.enter(); }); return true; }
   console.warn('[MapManager] Map chưa có hàm enter:', idOrKey); return false;
@@ -171,7 +172,10 @@ function startMap(idOrKey){
 // Hiện overlay mở khoá của 1 map (thay cho switch(stageKey)).
 function triggerMapUnlock(idOrKey){
   const d = MAP_REGISTRY[idOrKey];
-  if(d && typeof d.trigger === 'function'){ d.trigger(); return true; }
+  if(d && typeof d.trigger === 'function'){
+    try{ if(typeof logGameEvent==='function') logGameEvent('map_unlocked', { map_id:String(idOrKey), map_name:d.name||'' }); }catch(e){}
+    d.trigger(); return true;
+  }
   return false;
 }
 

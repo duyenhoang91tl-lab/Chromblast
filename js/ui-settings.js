@@ -254,6 +254,7 @@ function initSettingsMenu(){
   });
   document.getElementById('set-share-btn')?.addEventListener('click', ()=>{
     sfxClick();
+    try{ if(typeof logGameEvent==='function') logGameEvent('share_click', { method: navigator.share?'native_share':'clipboard' }); }catch(e){}
     const text='Play ChromaBlast with me!';
     if(navigator.share){ navigator.share({ title:'ChromaBlast', text }).catch(()=>{}); }
     else { try{ navigator.clipboard.writeText(text); }catch(e){} openSettingsText(t('setShare')||'Share', text); }

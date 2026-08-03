@@ -181,6 +181,7 @@
                           // nhiều lần — AdMob có thể khoá tài khoản vì "invalid traffic".
       });
       await AdMob.showInterstitial();
+      try{ if(typeof logGameEvent==='function') logGameEvent('ad_shown', { ad_format:'interstitial' }); }catch(e2){}
     } catch (e) {
       console.error('AdMob Interstitial Error:', e);
     }
@@ -198,7 +199,9 @@
         isTesting: false,
       });
       const result = await AdMob.showRewardVideoAd();
+      try{ if(typeof logGameEvent==='function') logGameEvent('ad_shown', { ad_format:'rewarded' }); }catch(e2){}
       if (result && (result.rewarded || result.type)) {
+        try{ if(typeof logGameEvent==='function') logGameEvent('ad_reward_earned', { ad_format:'rewarded' }); }catch(e2){}
         if (typeof onReward === 'function') onReward(result);
       } else if (typeof onReward === 'function') {
         onReward(result);

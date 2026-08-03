@@ -11,11 +11,15 @@
 
 (function(){
   var _caroLoadPromise = null;
+  // Version cache-busting cho 2 file nạp trễ này — bump khi sửa caro.js/caro-social.js
+  // (2 file <script> nạp sẵn khác đã có ?v=... ngay trong index.html, riêng 2 file
+  // lazy-load này trước đây KHÔNG có version gì cả nên dễ bị cache cũ dai dẳng).
+  var CARO_LAZY_V = '20260804a';
 
   function loadScriptOnce(src){
     return new Promise(function(resolve, reject){
       var s = document.createElement('script');
-      s.src = src;
+      s.src = src + '?v=' + CARO_LAZY_V;
       s.onload = function(){ resolve(); };
       s.onerror = function(){ reject(new Error('Không tải được ' + src)); };
       document.head.appendChild(s);

@@ -367,6 +367,7 @@ function enterOnlineVersusMatch(roomId, roomData){
           }
         } };
   versusMode=true;
+  try{ if(typeof logGameEvent==='function') logGameEvent('versus_match_start', { mode:'online' }); }catch(e){}
   _vsBuildArena();
   _vs.players.forEach(P=>{ _vsRefill(P); _vsRenderAll(P); });
 

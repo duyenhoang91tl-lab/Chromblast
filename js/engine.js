@@ -564,6 +564,7 @@ function checkGameOverA(){
     document.getElementById('go-score').textContent=t('finalScore', score.toLocaleString());
     if(goEl) goEl.classList.add('show');
     if(typeof submitScoreToLeaderboard==='function') submitScoreToLeaderboard(score);
+    try{ if(typeof logGameEvent==='function') logGameEvent('level_end', { map_id:'classic', result:'no_moves', score:score, level_reached:level }); }catch(e){}
     // Hết nước đi + hết skill → mất 1 tim
     try{
       if(typeof spendHearts==='function') spendHearts(1, { allowPartial:true });

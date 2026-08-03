@@ -65,6 +65,7 @@ function claimDailyReward(){
   }catch(e){}
   try{ if(typeof noteCupLoginClaim==='function') noteCupLoginClaim(); }catch(e){}
   try{ if(typeof noteQuestEvent==='function') noteQuestEvent('checkin', 1); }catch(e){}
+  try{ if(typeof logGameEvent==='function') logGameEvent('daily_reward_claim', { streak_day: status.streakDay, xp, gold }); }catch(e){}
   return { day: status.streakDay, xp, gold, hearts };
 }
 

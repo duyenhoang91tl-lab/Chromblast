@@ -1374,6 +1374,7 @@ function _caroEnterAIGame(levelId){
     turnLeft: prefs.turnSec
   };
   caroMode = true;
+  try{ if(typeof logGameEvent==='function') logGameEvent('caro_match_start', { mode:'ai', ai_level:profile.id||levelId }); }catch(e){}
   // FIX: reset pinch-zoom còn sót từ ván trước khi vào ván AI mới
   _caroResetZoom();
   _caroToggleChrome(true);
@@ -1484,6 +1485,7 @@ function _caroEnterGame(roomData){
     turnLeft: turnSec
   };
   caroMode = true;
+  try{ if(typeof logGameEvent==='function') logGameEvent('caro_match_start', { mode:'online' }); }catch(e){}
   // FIX: reset pinch-zoom còn sót từ ván trước khi vào ván online mới
   _caroResetZoom();
   _caroHide('caro-lobby-panel');
@@ -1583,6 +1585,10 @@ function _caroEndGame(winnerSlot, fromRemote){
   _caroRender();
 
   const isAI = !!_caro.ai;
+  try{
+    const result = !winnerSlot ? 'draw' : (winnerSlot===_caro.mySlot ? 'win' : 'lose');
+    if(typeof logGameEvent==='function') logGameEvent('caro_match_end', { mode:isAI?'ai':'online', result, ai_level:isAI?(_caro.ai.id||''):undefined });
+  }catch(e){}
   try{
     if(isAI && _caro.ai.id === 'extreme' && winnerSlot === _caro.mySlot){
       window.dispatchEvent(new CustomEvent('caro-ai-win', { detail:{ level:'extreme' } }));

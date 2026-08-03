@@ -129,6 +129,7 @@ function startVersusMatch(){
         localSkins:_vsGetLocalSkinPrefs(1), layoutBoost,
         players:[_vsNewPlayer(0,seed), _vsNewPlayer(1,seed)] };
   versusMode=true;
+  try{ if(typeof logGameEvent==='function') logGameEvent('versus_match_start', { mode:'ai', board_boost:layoutBoost }); }catch(e){}
   _vsBuildArena();
   _vs.players.forEach(P=>{ _vsRefill(P); _vsRenderAll(P); });
   // đếm ngược 3-2-1 rồi bắt đầu
@@ -397,6 +398,10 @@ function _vsEndMatch(){
   try{ startBgm('main'); }catch(e){}
   const [P0,P1]=_vs.players, [n1,n2]=_vs.names;
   const s1=P0.score, s2=P1.score;
+  try{
+    const result = s1===s2 ? 'draw' : (s1>s2 ? 'win' : 'lose');
+    if(typeof logGameEvent==='function') logGameEvent('versus_match_end', { mode:_vs.online?'online':'ai', result, board_boost:!!_vs.layoutBoost, my_score:s1, opp_score:s2 });
+  }catch(e){}
   let msg;
   if(s1===s2) msg=t('vsDraw');
   else { msg=t('vsWin', s1>s2?n1:n2); try{ addPlayerXP(VERSUS_WIN_XP); }catch(e){} }
