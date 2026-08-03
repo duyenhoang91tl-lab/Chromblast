@@ -32,13 +32,28 @@ async function _onlineRequireEnabled(){
   }
 }
 
+let _onlineRoomListenWanted = false;
+
 function _onlineStartRoomListListen(){
+  _onlineRoomListenWanted = true;
+  // Tab/app đang ở nền: khoan nghe, đợi quay lại mới bật (đỡ tốn đọc Firestore
+  // trong lúc người chơi khoá máy/chuyển app mà vẫn còn đứng ở sảnh/lobby).
+  if(document.hidden) return;
   if(typeof listenOpenVersusRooms !== 'function') return;
   listenOpenVersusRooms(_onlineRenderOpenRoomLists);
 }
 function _onlineStopRoomListListen(){
+  _onlineRoomListenWanted = false;
   if(typeof stopListeningOpenVersusRooms === 'function') stopListeningOpenVersusRooms();
 }
+document.addEventListener('visibilitychange', ()=>{
+  if(!_onlineRoomListenWanted) return;
+  if(document.hidden){
+    if(typeof stopListeningOpenVersusRooms === 'function') stopListeningOpenVersusRooms();
+  }else{
+    _onlineStartRoomListListen();
+  }
+});
 
 function _onlineRenderOpenRoomLists(rooms){
   _onlineLastOpenRooms = rooms || [];

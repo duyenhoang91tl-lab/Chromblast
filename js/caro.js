@@ -1853,7 +1853,13 @@ function _caroMergeMyRoom(rooms, mine){
   return list;
 }
 
+let _caroRoomListenWanted = false;
+
 function _caroStartRoomListListen(){
+  _caroRoomListenWanted = true;
+  // Tab/app đang ở nền: khoan nghe, đợi quay lại mới bật (đỡ tốn đọc Firestore
+  // trong lúc người chơi khoá máy/chuyển app mà vẫn còn đứng ở sảnh/lobby).
+  if(document.hidden) return;
   if(typeof listenOpenCaroRooms !== 'function') return;
   listenOpenCaroRooms((rooms)=>{
     // Gộp phòng mình đang host (không sanitize lại mỗi snapshot — tránh ghi Firestore liên tục)
@@ -1876,8 +1882,17 @@ function _caroStartRoomListListen(){
 }
 
 function _caroStopRoomListListen(){
+  _caroRoomListenWanted = false;
   if(typeof stopListeningOpenCaroRooms === 'function') stopListeningOpenCaroRooms();
 }
+document.addEventListener('visibilitychange', ()=>{
+  if(!_caroRoomListenWanted) return;
+  if(document.hidden){
+    if(typeof stopListeningOpenCaroRooms === 'function') stopListeningOpenCaroRooms();
+  }else{
+    _caroStartRoomListListen();
+  }
+});
 
 function _caroRenderOpenRoomLists(rooms){
   _caroLastOpenRooms = rooms || [];
@@ -1964,7 +1979,7 @@ function _caroOpenLobby(roomId, code, role, roomData){
   _caroShow('caro-lobby-panel');
   document.getElementById('caro-room-code').textContent = code;
   _caroRenderLobby(roomData);
-  if(typeof listenOpenCaroRooms === 'function') listenOpenCaroRooms(_caroRenderOpenRoomLists);
+  _caroStartRoomListListen();
 
   // Chỉ chủ phòng ghi nhịp tim — dùng để mọi người phát hiện phòng "chết" gần như tức thời
   // (xem startRoomHeartbeat/isRoomHostStale trong online-services.js).
