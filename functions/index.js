@@ -188,7 +188,92 @@ exports.submitSoloScore = onCall({ region: 'asia-southeast1' }, async (request) 
     await batch.commit().catch(() => {});
   }
 
+  // Mốc "đã chơi 1 ván" — kích hoạt thưởng referral nếu người này được ai đó mời.
+  // Đặt tại đây (không phải lúc nhập mã) để tránh tạo tài khoản ảo nhập mã rồi
+  // thoát ngay farm thưởng — phải chơi xong 1 ván nộp điểm thật mới được cộng.
+  if (playerData.referredBy && playerData.referralRewardPending) {
+    const referrerUid = playerData.referredBy;
+    const today = new Date().toISOString().slice(0, 10);
+    const capRef = db.collection('referralCaps').doc(referrerUid + '_' + today);
+    await db.runTransaction(async (tx) => {
+      const capSnap = await tx.get(capRef);
+      const count = capSnap.exists ? (capSnap.data().count || 0) : 0;
+      tx.set(playerRef, { referralRewardPending: false }, { merge: true });
+      if (count >= 20) return; // vượt giới hạn 20 lượt thưởng/ngày cho 1 người mời — chặn farm
+      tx.set(db.collection('players').doc(referrerUid), {
+        referralRewardGold: FieldValue.increment(20)
+      }, { merge: true });
+      tx.set(playerRef, {
+        referralRewardGold: FieldValue.increment(30)
+      }, { merge: true });
+      tx.set(capRef, { count: count + 1 }, { merge: true });
+    });
+  }
+
   return { ok: true, bestScore: Math.max(score, prevBest) };
+});
+
+// ═══════════════════════════════════════════════════════════════
+// MỜI BẠN (referral) — thưởng 2 chiều, gate theo mốc "đã chơi xong 1 ván"
+// (xem khối referral trong submitSoloScore ở trên), không thưởng ngay lúc
+// nhập mã để tránh tạo tài khoản ảo farm thưởng. Mô hình "hộp thư chờ":
+// server chỉ ghi số tiền sẽ cộng (referralRewardGold/Diamond), client tự
+// rút về ví local qua grantGold/grantDiamonds sẵn có (claimPendingRewards).
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Người chơi mới nhập mã mời (CBxxxxxx) của người giới thiệu.
+ * Chỉ đánh dấu "chờ thưởng" — tiền thật được cấp khi đạt mốc (xem submitSoloScore).
+ */
+exports.claimReferral = onCall({ region: 'asia-southeast1' }, async (request) => {
+  const uid = request.auth && request.auth.uid;
+  if (!uid) throw new HttpsError('unauthenticated', 'Cần đăng nhập.');
+
+  const code = String((request.data && request.data.code) || '').trim().toUpperCase();
+  if (!/^CB[A-Z0-9]{6}$/.test(code)) {
+    throw new HttpsError('invalid-argument', 'Mã mời không hợp lệ.');
+  }
+
+  const meRef = db.collection('players').doc(uid);
+  const meSnap = await meRef.get();
+  if (meSnap.exists && meSnap.data().referredBy) {
+    throw new HttpsError('already-exists', 'Bạn đã nhập mã mời rồi.');
+  }
+
+  const idSnap = await db.collection('playerIds').doc(code).get();
+  if (!idSnap.exists) throw new HttpsError('not-found', 'Mã mời không tồn tại.');
+  const referrerUid = idSnap.data().uid;
+  if (!referrerUid || referrerUid === uid) {
+    throw new HttpsError('invalid-argument', 'Không thể tự mời chính mình.');
+  }
+
+  await meRef.set({
+    referredBy: referrerUid,
+    referralRewardPending: true
+  }, { merge: true });
+
+  return { ok: true };
+});
+
+/**
+ * Client gọi khi mở app / vào màn hình có thể nhận thưởng — rút "hộp thư
+ * chờ" referral về ví local qua grantGold/grantDiamonds phía client.
+ */
+exports.claimPendingRewards = onCall({ region: 'asia-southeast1' }, async (request) => {
+  const uid = request.auth && request.auth.uid;
+  if (!uid) throw new HttpsError('unauthenticated', 'Cần đăng nhập.');
+  const ref = db.collection('players').doc(uid);
+  const snap = await ref.get();
+  const data = snap.exists ? snap.data() : {};
+  const gold = data.referralRewardGold || 0;
+  const diamond = data.referralRewardDiamond || 0;
+  if (gold > 0 || diamond > 0) {
+    await ref.set({
+      referralRewardGold: FieldValue.increment(-gold),
+      referralRewardDiamond: FieldValue.increment(-diamond)
+    }, { merge: true });
+  }
+  return { gold, diamond };
 });
 
 /**
