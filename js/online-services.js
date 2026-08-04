@@ -2169,9 +2169,13 @@ function shareInviteLink(){
   // ensurePublicPlayerId luôn trả về mã hợp lệ (tự sinh nếu chưa có) — đọc thẳng
   // prof.publicId có thể rỗng nếu người chơi chưa từng mở màn hình ID riêng.
   const code = (typeof ensurePublicPlayerId === 'function') ? ensurePublicPlayerId() : '';
-  const text = '🎮 Chơi ChromaBlast cùng mình! Nhập mã mời ' + code + ' để cả 2 nhận thưởng 💎';
+  // Link Play Store cố định theo applicationId — hoạt động ngay khi app lên kho,
+  // kể cả trước khi được index tìm kiếm. Thiếu dòng này thì người CHƯA cài app
+  // nhận được mã mời cũng không biết tải ở đâu để nhập.
+  const storeUrl = 'https://play.google.com/store/apps/details?id=com.duyenhoang91tl.chromblast';
+  const text = '🎮 Chơi ChromaBlast cùng mình! Nhập mã mời ' + code + ' để cả 2 nhận thưởng 💎\n' + storeUrl;
   if(navigator.share){
-    navigator.share({ text }).catch(()=>{});
+    navigator.share({ text, url: storeUrl }).catch(()=>{});
   } else if(navigator.clipboard){
     navigator.clipboard.writeText(text)
       .then(()=>{ if(typeof openSettingsText==='function') openSettingsText(t('setShare')||'Share', text); })
