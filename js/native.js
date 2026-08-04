@@ -143,6 +143,7 @@
   // Hiển thị banner cố định (dải nhỏ dưới màn hình)
   window.showBannerAd = async function() {
     if (!AdMob) return;
+    if (typeof hasRemoveAds==='function' && hasRemoveAds()) return;
     try {
       await AdMob.showBanner({
         adId: AD_UNIT_BANNER,
@@ -172,6 +173,7 @@
   // Hàm hiển thị quảng cáo interstitial
   window.showInterstitialAd = async function() {
     if (!AdMob) return;
+    if (typeof hasRemoveAds==='function' && hasRemoveAds()) return;
     try {
       await AdMob.prepareInterstitial({
         adId: AD_UNIT_INTERSTITIAL,

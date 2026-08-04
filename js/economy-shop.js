@@ -58,6 +58,7 @@
       '<button type="button" class="shop-tab" data-shop-tab="bricks">🧱 Gạch</button>' +
       '<button type="button" class="shop-tab" data-shop-tab="hearts">❤️ Tim</button>' +
       '<button type="button" class="shop-tab" data-shop-tab="diamond">💎 KC</button>' +
+      '<button type="button" class="shop-tab" data-shop-tab="topup">💳 Nạp</button>' +
       "</div>" +
       '<div id="shop-body" class="shop-body"></div>' +
       "</div>";
@@ -245,6 +246,98 @@
     });
   }
 
+  function renderTopUp() {
+    const body = document.getElementById("shop-body");
+    if (!body) return;
+    const box = document.createElement("div");
+    box.className = "shop-topup-box";
+
+    if (typeof getShopOfferings !== "function") {
+      box.innerHTML =
+        '<div class="shop-topup-empty">' +
+        tt("shopIapUnavailable", "Nạp thêm chỉ khả dụng trên app Android.") +
+        "</div>";
+      body.appendChild(box);
+      return;
+    }
+
+    box.innerHTML = '<div class="shop-topup-loading">' + tt("shopLoading", "Đang tải...") + "</div>";
+    body.appendChild(box);
+
+    getShopOfferings().then(function (pkgs) {
+      box.innerHTML = "";
+      if (!pkgs || !pkgs.length) {
+        box.innerHTML =
+          '<div class="shop-topup-empty">' +
+          tt("shopIapEmpty", "Chưa có gói nào — thử lại sau nhé.") +
+          "</div>";
+        return;
+      }
+      const byId = {};
+      pkgs.forEach(function (p) {
+        byId[p.identifier] = p;
+      });
+
+      const cards = [];
+      const showStarter = typeof shouldShowStarterPack === "function" && shouldShowStarterPack();
+      if (showStarter && byId["starter_pack"]) {
+        cards.push({
+          id: "starter_pack", icon: "🎁", featured: true,
+          title: tt("shopStarterPack", "Gói khởi đầu"),
+          desc: tt("shopStarterDesc", "200 💎 + Bỏ quảng cáo vĩnh viễn — chỉ 1 lần"),
+        });
+      }
+      [
+        { id: "diamonds_small", icon: "💎", title: tt("shopDiaSmall", "60 kim cương") },
+        { id: "diamonds_medium", icon: "💎", best: true, title: tt("shopDiaMedium", "330 kim cương") },
+        { id: "diamonds_large", icon: "💎", title: tt("shopDiaLarge", "700 kim cương") },
+        { id: "remove_ads", icon: "🚫📺", title: tt("shopRemoveAds", "Bỏ quảng cáo vĩnh viễn") },
+      ].forEach(function (c) {
+        if (byId[c.id]) cards.push(c);
+      });
+
+      cards.forEach(function (c) {
+        const pkg = byId[c.id];
+        const price = (pkg.product && pkg.product.priceString) || "—";
+        const card = document.createElement("div");
+        card.className = "shop-topup-card" + (c.featured ? " shop-topup-featured" : "");
+        card.innerHTML =
+          (c.best ? '<div class="shop-topup-badge">' + tt("shopBestValue", "Hời nhất") + "</div>" : "") +
+          '<div class="shop-topup-ico">' + c.icon + "</div>" +
+          '<div class="shop-topup-title">' + c.title + "</div>" +
+          (c.desc ? '<div class="shop-topup-desc">' + c.desc + "</div>" : "") +
+          '<button type="button" class="auth-submit-btn shop-topup-buy">' + price + "</button>";
+        card.querySelector(".shop-topup-buy").addEventListener("click", function () {
+          try { sfxClick(); } catch (e) {}
+          if (c.id === "starter_pack" && typeof markStarterPackSeen === "function") markStarterPackSeen();
+          purchaseIAP(c.id, function () {
+            try { showComboFlash(0, true, tt("shopPurchaseOk", "Cảm ơn bạn đã ủng hộ! 🎉")); } catch (e) {}
+            renderShop("topup");
+          }).then(function (r) {
+            if (!r.ok && r.reason === "error") {
+              try { showComboFlash(0, false, tt("shopPurchaseFail", "Giao dịch không thành công")); } catch (e) {}
+            }
+          });
+        });
+        box.appendChild(card);
+      });
+
+      const restoreBtn = document.createElement("button");
+      restoreBtn.type = "button";
+      restoreBtn.className = "shop-topup-restore";
+      restoreBtn.textContent = tt("shopRestore", "Khôi phục giao dịch đã mua");
+      restoreBtn.addEventListener("click", function () {
+        try { sfxClick(); } catch (e) {}
+        restoreIAP().then(function (r) {
+          showComboFlash(0, !!(r && r.ok), r && r.ok
+            ? tt("shopRestoreOk", "Đã khôi phục")
+            : tt("shopRestoreFail", "Không tìm thấy giao dịch nào"));
+        });
+      });
+      box.appendChild(restoreBtn);
+    });
+  }
+
   function renderShop(tab) {
     tab = tab || "boards";
     const body = document.getElementById("shop-body");
@@ -255,6 +348,11 @@
 
     if (tab === "diamond") {
       renderDiamondExchange();
+      return;
+    }
+
+    if (tab === "topup") {
+      renderTopUp();
       return;
     }
 

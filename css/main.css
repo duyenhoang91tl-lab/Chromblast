@@ -5252,6 +5252,29 @@ body:has(#secret-stage.active) .streak-dot.lit{
 .shop-qty-input::-webkit-outer-spin-button,
 .shop-qty-input::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
 .shop-ex-go{ width:100%; margin:4px 0 0 !important; padding:10px 8px !important; font-size:13px !important; }
+.shop-topup-box{ display:flex; flex-direction:column; gap:10px; }
+.shop-topup-empty,.shop-topup-loading{ text-align:center; font-size:13px; font-weight:700; color:rgba(255,255,255,0.7); padding:24px 8px; }
+.shop-topup-card{
+  display:flex; flex-direction:column; align-items:center; gap:4px; position:relative;
+  border:1px solid rgba(255,255,255,0.14); background:rgba(255,255,255,0.06);
+  border-radius:14px; padding:14px 10px 10px; text-align:center; color:#fff;
+}
+.shop-topup-featured{
+  border-color:#ffd54a; background:linear-gradient(180deg, rgba(255,213,74,0.22), rgba(255,213,74,0.06));
+}
+.shop-topup-badge{
+  position:absolute; top:-9px; left:50%; transform:translateX(-50%);
+  background:#ff5a7a; color:#fff; font-size:10px; font-weight:900; padding:3px 10px; border-radius:999px;
+  box-shadow:0 2px 6px rgba(0,0,0,0.3);
+}
+.shop-topup-ico{ font-size:30px; line-height:1; }
+.shop-topup-title{ font-size:14px; font-weight:900; }
+.shop-topup-desc{ font-size:11px; font-weight:700; color:rgba(255,255,255,0.72); }
+.shop-topup-buy{ width:100%; margin:6px 0 0 !important; padding:10px 8px !important; font-size:14px !important; }
+.shop-topup-restore{
+  background:transparent; border:none; color:rgba(255,255,255,0.55); font-size:11px; font-weight:700;
+  text-decoration:underline; cursor:pointer; padding:6px; align-self:center;
+}
 .shop-hearts-box{ display:flex; flex-direction:column; gap:8px; }
 .shop-hint{ font-size:12px; color:rgba(255,255,255,0.7); font-weight:700; margin:0 0 4px; }
 .shop-heart-status{

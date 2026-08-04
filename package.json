@@ -14,7 +14,8 @@
     "@capacitor/core": "^8.0.0",
     "@capacitor/local-notifications": "^8.2.1",
     "@capacitor/screen-orientation": "^8.0.1",
-    "@capgo/capacitor-social-login": "^8.3.39"
+    "@capgo/capacitor-social-login": "^8.3.39",
+    "@revenuecat/purchases-capacitor": "^13.3.0"
   },
   "devDependencies": {
     "@capacitor/cli": "^8.0.0",
