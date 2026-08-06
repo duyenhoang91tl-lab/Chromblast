@@ -415,7 +415,13 @@ function _vsTickOnline(){
   if(tm){ tm.textContent=_vs.timeLeft; tm.classList.toggle('danger',_vs.timeLeft<=10); }
   if(_vs.timeLeft<=0){ _vsEndMatchOnline(); return; }
   const [P0,P1]=_vs.players;
-  if(_vs.online.isHost){
+  if(_vs.online.isHost && (P0.score!==_vs.online._lastSentHostScore || P1.score!==_vs.online._lastSentGuestScore)){
+    // Chỉ ghi lên server khi điểm THỰC SỰ đổi (thay vì mỗi giây bất kể có gì
+    // mới hay không). Ghi ít lần hơn nghĩa là ít va chạm với transaction gửi
+    // nước đi (sendOnlineMove) vào CÙNG tài liệu phòng — bớt rủi ro nước đi
+    // bị Firestore từ chối do tranh chấp ghi đồng thời.
+    _vs.online._lastSentHostScore=P0.score;
+    _vs.online._lastSentGuestScore=P1.score;
     updateOnlineScores(_vs.online.roomId, P0.score, P1.score).catch(()=>{});
   }
   document.getElementById('burst-count').textContent='⚔️ '+P0.score+' vs '+P1.score+'  ⏱'+_vs.timeLeft+'s';
