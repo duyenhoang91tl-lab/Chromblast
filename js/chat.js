@@ -1052,39 +1052,51 @@
         '<span class="gchat-friend-name">'+escapeHtml(name)+'</span>'+
         '<span class="gchat-friend-status">'+(p.online?tt('gchatOnline','Online'):tt('gchatOffline','Offline'))+'</span>'+
       '</span>'+
-      '<button type="button" class="friends-panel-add">'+tt('friendsAdd','Kết bạn')+'</button>';
-    row.querySelector('.friends-panel-add')?.addEventListener('click', async ()=>{
+      '<button type="button" class="friends-panel-add" data-uid="'+escapeHtml(p.uid)+'">'+tt('friendsAdd','Kết bạn')+'</button>';
+    const addBtn = row.querySelector('.friends-panel-add');
+    addBtn?.addEventListener('click', async ()=>{
+      if(addBtn.disabled) return;
       try{ sfxClick(); }catch(e){}
-      await sendOneFriendInvite({ uid: p.uid, name, avatar: av });
+      const sent = await sendOneFriendInvite({ uid: p.uid, name, avatar: av });
+      if(sent){
+        addBtn.textContent = tt('friendsAddSent','Đã gửi');
+        addBtn.disabled = true;
+        addBtn.classList.add('sent');
+      }
     });
     return row;
   }
 
   async function sendOneFriendInvite(friend){
-    if(!friend || !friend.uid) return;
+    if(!friend || !friend.uid) return false;
     try{
       if(typeof isFriend === 'function' && isFriend(friend.uid)){
         setStatus(tt('gchatFriendAccepted','Đã là bạn'));
-        return;
+        return true;
       }
       if(!(await ensureOnline())){
         setStatus(tt('gchatNeedOnline','Cần đăng nhập online'));
-        return;
+        return false;
       }
       const res = typeof sendFriendRequest === 'function'
         ? await sendFriendRequest(friend)
         : { ok:false };
       if(res && res.ok){
         setStatus(tt('gchatFriendReq','Đã gửi lời mời kết bạn'));
+        return true;
       } else if(res && res.reason === 'cap'){
         setStatus(tt('gchatFriendCapFull','Đã đủ số bạn tối đa'));
+        return false;
       } else if(res && res.reason === 'already'){
         setStatus(tt('gchatFriendAlready','Đã gửi / đã là bạn'));
+        return true;
       } else {
         setStatus(tt('gchatFriendFail','Không gửi được lời mời'));
+        return false;
       }
     }catch(e){
       setStatus(tt('gchatFriendFail','Không gửi được lời mời'));
+      return false;
     }
   }
 
@@ -1184,7 +1196,11 @@
         const res = typeof sendFriendRequest === 'function'
           ? await sendFriendRequest({ uid, name: row.displayName || row.name || 'Player', avatar: row.avatar || '🐶' })
           : { ok:false };
-        if(res && res.ok) sent++;
+        if(res && res.ok){
+          sent++;
+          const btn = list.querySelector('.friends-panel-add[data-uid="'+uid+'"]');
+          if(btn){ btn.textContent = tt('friendsAddSent','Đã gửi'); btn.disabled = true; btn.classList.add('sent'); }
+        }
         else fail++;
       }catch(e){ fail++; }
     }

@@ -5458,6 +5458,9 @@ body:has(#secret-stage.active) .streak-dot.lit{
 .friends-panel-add{
   padding:8px 10px; background:rgba(102,187,106,0.28); color:#E8F5E9; font-size:12px;
 }
+.friends-panel-add.sent, .friends-panel-add:disabled{
+  background:rgba(255,255,255,0.08); color:rgba(255,255,255,0.5); cursor:default;
+}
 .friends-suggest-check{
   display:flex; align-items:center; gap:6px; cursor:pointer;
 }
