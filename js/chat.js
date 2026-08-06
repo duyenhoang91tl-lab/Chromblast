@@ -308,20 +308,13 @@
     if(set && set.has(msg.id)) return;
     if(set) set.add(msg.id);
     const mine = isMine(msg);
-    if(msg.kind === 'heart_gift' && !mine && bucket === 'friends'){
-      try{
-        const key = 'chromablast_heart_recv';
-        let claimed = [];
-        try{ claimed = JSON.parse(localStorage.getItem(key)||'[]'); }catch(e){ claimed=[]; }
-        if(!Array.isArray(claimed)) claimed = [];
-        if(claimed.indexOf(msg.id) < 0){
-          claimed.push(msg.id);
-          if(claimed.length > 80) claimed = claimed.slice(-80);
-          try{ localStorage.setItem(key, JSON.stringify(claimed)); }catch(e){}
-          if(typeof grantHearts === 'function') grantHearts(1, tt('gchatHeartReceived','Tim từ bạn'));
-        }
-      }catch(e){}
-    }
+    // Bước 2 (ví server-side, xem docs/SERVER_WALLET_PROGRESS.md): KHÔNG còn
+    // cộng tim ở đây nữa dù thấy tin nhắn kind:'heart_gift' — nội dung tin
+    // nhắn tự dựng được (không phải nguồn xác thực). Tim thật đã được
+    // giftHeart (Cloud Function, xem sendHeartToFriend) cộng thẳng vào ví
+    // server của người NHẬN; startWalletGiftWatcher() (online-services.js)
+    // lắng nghe đúng field đó và tự cộng vào inv.hearts cục bộ khi tăng.
+    // Tin nhắn ở đây giờ chỉ còn là hiệu ứng hiển thị (❤️ trong khung chat).
     const row = document.createElement('div');
     row.className = 'gchat-row'+(mine?' mine':'');
     row.dataset.msgId = msg.id;
@@ -884,15 +877,37 @@
       return;
     }
     if(!(await ensureOnline())) return;
+    // Bước 2 (ví server-side, xem docs/SERVER_WALLET_PROGRESS.md): thật sự
+    // cộng tim cho bạn qua Cloud Function giftHeart — xác thực đúng bạn bè +
+    // tối đa 1 lần/người/ngày ở SERVER (không dựa localStorage nữa).
+    // canSendHeartGift() ở trên giờ chỉ còn là gợi ý UX nhanh (đỡ phải gọi
+    // mạng để biết chắc chắn sẽ bị chặn), KHÔNG còn là nơi chặn thật.
+    try{
+      const fns = (typeof _getOnlineFunctions === 'function') ? _getOnlineFunctions() : null;
+      if(!fns) throw new Error('no-functions');
+      await fns.httpsCallable('giftHeart')({ toUid: state.friendUid });
+    }catch(err){
+      console.warn('[heart gift] giftHeart', err);
+      const code = err && err.code;
+      const msg = code === 'already-exists'
+        ? tt('gchatHeartAlready','Đã gửi tim người này hôm nay')
+        : code === 'failed-precondition'
+          ? tt('gchatHeartFail','Không gửi được')
+          : tt('gchatHeartFail','Không gửi được');
+      setStatus(msg, true);
+      return;
+    }
+    // giftHeart đã thành công thật (bạn đã nhận tim) — tin nhắn dưới đây chỉ
+    // còn là hiệu ứng thông báo, lỗi gửi tin nhắn không có nghĩa là chưa
+    // tặng được nên vẫn báo thành công.
     try{
       await sendFriendChat(state.friendUid, '❤️ '+tt('gchatHeartGiftText','Gửi bạn một trái tim'), { kind: 'heart_gift' });
-      if(typeof markHeartGiftSent === 'function') markHeartGiftSent(state.friendUid);
-      setStatus(tt('gchatHeartSent','Đã gửi tim'));
-      renderFriendsList();
     }catch(err){
-      console.warn('[heart gift]', err);
-      setStatus(tt('gchatHeartFail','Không gửi được'), true);
+      console.warn('[heart gift] send message', err);
     }
+    if(typeof markHeartGiftSent === 'function') markHeartGiftSent(state.friendUid);
+    setStatus(tt('gchatHeartSent','Đã gửi tim'));
+    renderFriendsList();
   }
 
   function initGlobalChat(){

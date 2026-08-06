@@ -74,56 +74,84 @@ nhờ xem lại toàn bộ hàm sau khi sửa. **Luôn `view` lại NGUYÊN VẸ
 vừa sửa sau mỗi lần `str_replace`, đối chiếu số dòng/nội dung với bản trước
 khi sửa**, đừng chỉ tin `old_str` mình nhớ là đúng 100%.
 
-## Bước tiếp theo (chưa làm — làm sau, kiểm tra tay xong Bước 1 trước)
+## Đã làm — Bước 2 (đã push lên main)
 
-**Bước 2 đề xuất — nối `giftHeart` (tặng tim bạn bè), vì đây là lỗ hổng rõ
-và dễ khoanh vùng nhất còn lại:**
+**Nối `giftHeart` (tặng tim bạn bè) — bỏ hoàn toàn niềm tin vào nội dung tin
+nhắn chat, chuyển sang server xác thực + client tự phát hiện qua ví:**
 
-Hiện `js/chat.js` xử lý tặng/nhận tim **hoàn toàn cục bộ, không xác thực**:
-- Gửi (`chat.js` ~dòng 866-881): `canSendHeartGift`/`markHeartGiftSent`
-  (`inventory.js`) chỉ chặn dựa trên 1 mảng UID lưu trong `localStorage`
-  (`chromablast_heart_gifts`) — xoá key này là gửi lại vô hạn được ngay.
-- Nhận (`chat.js` ~dòng 305-324): thấy 1 tin nhắn chat `kind:'heart_gift'`
-  không phải của mình trong tab bạn bè là gọi thẳng `grantHearts(1,...)`,
-  chặn nhận trùng bằng mảng ID tin nhắn trong `localStorage`
-  (`chromablast_heart_recv`) — cũng xoá key là nhận lại được, hoặc tệ hơn,
-  tự dựng 1 object tin nhắn giả có `kind:'heart_gift'` là có tim free.
+- `js/chat.js: sendHeartToFriend()` — vẫn giữ `canSendHeartGift()` làm bước
+  chặn nhanh phía UX (đỡ gọi mạng vô ích), nhưng **thêm** gọi thật Cloud
+  Function `giftHeart({toUid})` NGAY SAU đó — đây mới là nơi chặn THẬT (bạn
+  bè thật + 1 lần/người/ngày, server-side). Chỉ gửi tin nhắn thông báo
+  (`kind:'heart_gift'`, hiệu ứng UI) và `markHeartGiftSent()` (giờ chỉ còn
+  ý nghĩa UX) NẾU `giftHeart` thành công thật; lỗi có `err.code` cụ thể
+  (`already-exists` = đã tặng hôm nay, `failed-precondition` = không phải
+  bạn bè/người nhận đầy tim) để báo đúng lý do.
+- `js/chat.js: appendMsg()` — **bỏ hẳn** `grantHearts(1,...)` khi thấy tin
+  nhắn `heart_gift` (nội dung tin nhắn tự dựng được, không phải nguồn xác
+  thực — đây chính là lỗ hổng cũ). Tin nhắn giờ chỉ còn là hiệu ứng hiển thị.
+- `js/online-services.js` — thêm `startWalletGiftWatcher()`/
+  `stopWalletGiftWatcher()`: lắng nghe (`onSnapshot`) field `hearts` trên
+  đúng `players/{uid}` của **chính mình**, so với mốc lần trước đã thấy (lưu
+  `localStorage`, theo uid) → server TĂNG thì gọi `grantHearts(delta,...)`
+  cục bộ với ĐÚNG phần chênh lệch (không ghi đè cả ví — đúng nguyên tắc #1);
+  server GIẢM (dành cho bước sau, VD `spendCurrency`) chỉ cập nhật mốc,
+  không tự trừ ở đây. Lần đầu thấy dữ liệu chỉ ghi mốc, không cộng gì (tránh
+  hiểu nhầm "hearts hiện có" thành "vừa được tặng"). Gọi hàm start này ở
+  đúng 2 chỗ tồn tại sẵn `_upsertPlayerProfile()` (init chính +
+  `onAuthStateChanged`), có bảo vệ chống đăng ký `onSnapshot` trùng lặp.
+- Đã kiểm tra tĩnh: `node --check` cả 2 file, `npm run build:www` thành
+  công, soi file minify xác nhận đúng logic (không còn `grantHearts(1` cứng
+  trong chat.js, có `giftHeart`/`startWalletGiftWatcher` trong bản build).
+- **Chưa kiểm tra bằng tay**: 2 tài khoản bạn bè thật tặng tim qua lại — HUD
+  bên nhận có tự cập nhật đúng +1 không, tặng lần 2 trong ngày có báo đúng
+  lỗi "đã tặng hôm nay" không, tặng khi đối phương đầy tim có báo đúng
+  không.
 
-`giftHeart` Cloud Function đã có sẵn, xác thực đúng 2 điều chỗ hổng trên bỏ
-sót: (1) 2 người phải là bạn bè thật (đọc `players/{uid}/friends/{toUid}`),
-(2) tối đa 1 tim/người tặng/ngày qua doc `claims` (không dựa `localStorage`
-nên không xoá cache để tặng lại được), và tăng tim thẳng trên ví server —
-KHÔNG cộng vào `inv.hearts` cục bộ (đây chính là việc "bắt máy tiêu/nhận
-qua két sắt thay vì tự khai" mà Bước 1 mới chỉ chuẩn bị nền, chưa làm).
+## Bước tiếp theo (chưa làm)
 
-Việc cần làm ở Bước 2 (thứ tự gợi ý, mỗi ý nên là 1 commit riêng):
-1. Tìm chỗ chat.js hiện GỬI tin nhắn `kind:'heart_gift'` (chưa đọc — cần đọc
-   trước khi sửa) — sau khi gửi tin nhắn thành công, GỌI THÊM
-   `giftHeart({toUid})` (không thay thế tin nhắn chat, tin nhắn vẫn là
-   thông báo UI bình thường; `giftHeart` mới là thứ THẬT SỰ cộng tim).
-2. Sửa nhánh NHẬN ở `appendMsg()` (dòng ~311-323): **bỏ hẳn**
-   `grantHearts(1,...)` cục bộ khi thấy tin nhắn `heart_gift` — tin nhắn chỉ
-   nên là hiệu ứng hiển thị (hiện toast/animation), KHÔNG tự cộng tim nữa,
-   vì `giftHeart` (do người GỬI gọi ở bước 1) đã cộng thẳng vào ví server
-   của người NHẬN rồi — cộng thêm ở đây là nhân đôi.
-3. Vấn đề cần giải trước khi làm bước 2: **tim vẫn đang hiển thị từ
-   `inv.hearts` cục bộ** (chưa đọc server) — nếu chỉ đổi bước 1+2 ở trên,
-   người nhận tim sẽ KHÔNG THẤY tim mới trên HUD (vì HUD vẫn đọc
-   `inv.hearts`, còn tim thật giờ nằm ở server). Cần đồng thời: sau khi
-   `giftHeart` (người gửi) hoặc khi phát hiện có tim mới (người nhận, có
-   thể qua Firestore `onSnapshot` lắng nghe field `hearts` trên
-   `players/{uid}` của chính mình) → gọi `grantHearts()` cục bộ với ĐÚNG
-   phần chênh lệch (không phải ghi đè toàn bộ ví, theo đúng nguyên tắc #1 ở
-   trên) để đồng bộ hiển thị. Đây là điểm phức tạp nhất của Bước 2, cần
-   thiết kế kỹ trước khi sửa code — CHƯA có câu trả lời sẵn, để lại đúng
-   như vậy cho lượt làm tiếp theo.
+**Bước 3 đề xuất — tổng quát hoá watcher sang gold/diamonds rồi nối
+`claimPeriodReward` (thưởng BXH kỳ):**
 
-**Sau Bước 2** (chưa cần nghĩ kỹ bây giờ, chỉ ghi hướng): `exchangeCurrency`
-(đổi vàng/kim cương ở `js/economy-shop.js` hoặc tương tự) và `spendCurrency`
-(mua vật phẩm) là 2 bước rủi ro cao hơn hẳn — chúng cần server biết ĐÚNG số
-dư hiện tại để chặn mua vượt quá, mà ví server (Bước 1) chỉ có số ĐÚNG cho
-tài khoản MỚI (số dư cũ trong `localStorage` không được mang sang — xem
-nguyên tắc #1). Cần quyết định trước: chấp nhận ví server bắt đầu lại từ đầu
-cho MỌI người chơi hiện có (kể cả người đã tích luỹ nhiều), hay cần thêm 1
-cơ chế khác (ngoài phạm vi ghi chú này) trước khi khoá luôn các đường TIÊU
-theo ví server.
+Lý do chọn bước này tiếp theo (không phải `spendCurrency`/`exchangeCurrency`):
+cùng nhóm rủi ro thấp với `giftHeart` — **chỉ CỘNG, không cần server biết số
+dư hiện tại của người chơi** (không giống mua/đổi tiền, cần biết đúng số dư
+để chặn mua vượt quá — mà ví server sau Bước 1 chỉ đúng cho tài khoản MỚI,
+xem phần "Sau Bước 3" bên dưới, vẫn còn treo, chưa giải).
+
+`js/lb-period.js: claimPeriodReward(kind, scope)` hiện tính `reward` HOÀN
+TOÀN ở client (dựa `mine.rank` do client tự tính từ dữ liệu BXH đọc được) rồi
+gọi thẳng `grantGold`/`grantDiamonds` cục bộ — client có thể tự sửa biến
+`mine.rank` trước khi gọi hàm để nhận thưởng hạng cao hơn thật. Cloud
+Function `claimPeriodReward` mới (đã có, xem `functions/index.js`) tự đếm
+lại rank THẬT từ `periodScores` phía server, không tin client báo.
+
+Việc cần làm, gợi ý thứ tự (mỗi ý 1 commit riêng):
+1. Đổi `WALLET_HEARTS_SEEN_KEY`/`startWalletGiftWatcher()` (online-services.js)
+   thành tổng quát cho cả `gold`/`diamonds`/`hearts` (đổi tên hàm/key cho
+   khớp, VD `startWalletWatcher()`/`chromablast_server_wallet_seen`) — mỗi
+   field so mốc riêng, tăng thì gọi đúng `grantGold`/`grantDiamonds`/
+   `grantHearts` tương ứng với đúng phần chênh lệch.
+2. Đọc kỹ chữ ký thật của Cloud Function `claimPeriodReward` trong
+   `functions/index.js` (tham số `kind`/`scope` có khớp đúng client đang
+   gọi không, throw lỗi gì khi chưa đủ điều kiện nhận) — CHƯA đối chiếu ở
+   ghi chú này, cần đọc trước khi sửa.
+3. Sửa `js/lb-period.js: claimPeriodReward()` gọi Cloud Function thật thay
+   vì tự tính `reward` + `grantGold`/`grantDiamonds` cục bộ trực tiếp — vẫn
+   giữ `markClaimed()` cục bộ (chặn UI hiện lại nút nhận), nhưng số tiền
+   thật giờ đến từ watcher ở bước 1 (không gọi `grantGold` trực tiếp trong
+   `claimPeriodReward()` nữa, tránh cộng 2 lần).
+
+## Sau Bước 3 (chưa nghĩ kỹ, chỉ ghi hướng — vẫn còn treo 1 quyết định)
+
+`exchangeCurrency` (đổi vàng/kim cương) và `spendCurrency` (mua vật phẩm)
+rủi ro cao hơn hẳn 2 bước trên — chúng cần server biết ĐÚNG số dư hiện tại
+để chặn tiêu vượt quá, mà ví server (Bước 1) chỉ đúng cho tài khoản MỚI (số
+dư cũ trong `localStorage` không được mang sang, xem nguyên tắc #1). Với
+tài khoản đã chơi lâu, số dư server (VD 20 gold gốc + vài lần cộng từ Bước 2
++ 3) sẽ THẤP HƠN NHIỀU số họ thấy trên HUD (`inv.gold`, tích luỹ từ trước) —
+nếu khoá luôn đường TIÊU theo ví server lúc này, người chơi cũ sẽ bị từ chối
+mua dù HUD báo đủ tiền, trải nghiệm rất tệ. Cần quyết định trước (việc của
+người, không phải kỹ thuật thuần): chấp nhận ví server "bắt đầu lại" cho mọi
+người chơi hiện có, hay cần 1 cơ chế khác (ngoài phạm vi ghi chú này) trước
+khi làm bước này.

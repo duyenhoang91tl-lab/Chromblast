@@ -11,6 +11,7 @@ let _onlineReady = false;
 let _matchmakingUnsub = null;
 let _roomUnsub = null;
 let _movesUnsub = null;
+let _walletGiftUnsub = null;
 
 const ONLINE_ROOM_CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
@@ -56,10 +57,12 @@ async function initOnlineServices(){
         try{ startInviteListener(); }catch(e){}
         try{ startFriendRequestListener(typeof window.onFriendRequestIncoming==='function'?window.onFriendRequestIncoming:null); }catch(e){}
         try{ loadBlockedList(); }catch(e){}
+        try{ startWalletGiftWatcher(); }catch(e){}
       } else {
         try{ stopPresenceHeartbeat(); }catch(e){}
         try{ stopInviteListener(); }catch(e){}
         try{ stopFriendRequestListener(); }catch(e){}
+        try{ stopWalletGiftWatcher(); }catch(e){}
       }
     });
     if(!_onlineAuth.currentUser) await _onlineAuth.signInAnonymously();
@@ -70,6 +73,7 @@ async function initOnlineServices(){
     try{ bindOnlineRoomUnloadCleanup(); }catch(e){}
     try{ startPresenceHeartbeat(); }catch(e){}
     try{ startInviteListener(); }catch(e){}
+    try{ startWalletGiftWatcher(); }catch(e){}
     try{ startFriendRequestListener(typeof window.onFriendRequestIncoming==='function'?window.onFriendRequestIncoming:null); }catch(e){}
     try{ loadBlockedList(); }catch(e){}
     try{ claimPendingReferralRewards(); }catch(e){}
@@ -233,7 +237,49 @@ async function _upsertPlayerProfile(){
   }
 }
 
-/** Gọi khi người chơi bấm bật/tắt 1 mục trong "Quyền riêng tư hồ sơ" (player-profile.js) */
+/** Ví server-side Bước 2 (docs/SERVER_WALLET_PROGRESS.md): lắng nghe field
+ *  `hearts` trên chính players/{uid} của mình — đây là cách DUY NHẤT client
+ *  nên biết "vừa được tặng tim", KHÔNG tin nội dung tin nhắn chat kind:
+ *  'heart_gift' nữa (giả mạo được, xem chat.js: appendMsg — đã bỏ
+ *  grantHearts() ở đó). So với mốc `hearts` server lần trước đã thấy
+ *  (lưu localStorage, theo uid) — server TĂNG thì cộng đúng phần chênh lệch
+ *  vào `inv.hearts` cục bộ qua grantHearts() (không ghi đè cả ví, đúng
+ *  nguyên tắc #1 trong docs/SERVER_WALLET_PROGRESS.md); server GIẢM (từ các
+ *  bước sau, VD spendCurrency) thì chỉ cập nhật lại mốc, không trừ cục bộ ở
+ *  đây. Lần đầu tiên thấy dữ liệu (chưa có mốc cũ) chỉ ghi mốc, không cộng
+ *  gì — tránh cộng nhầm "hearts hiện có" thành "vừa được tặng". */
+const WALLET_HEARTS_SEEN_KEY = 'chromablast_server_hearts_seen';
+function startWalletGiftWatcher(){
+  if(_walletGiftUnsub || !_onlineDb || !_onlineUid) return;
+  let baseline = null;
+  try{
+    const raw = JSON.parse(localStorage.getItem(WALLET_HEARTS_SEEN_KEY) || 'null');
+    if(raw && raw.uid === _onlineUid && typeof raw.hearts === 'number') baseline = raw.hearts;
+  }catch(e){}
+  const uidAtStart = _onlineUid;
+  _walletGiftUnsub = _onlineDb.collection('players').doc(uidAtStart).onSnapshot(snap => {
+    if(!snap.exists) return;
+    const d = snap.data() || {};
+    if(typeof d.hearts !== 'number') return;
+    const serverHearts = d.hearts;
+    if(baseline === null){
+      baseline = serverHearts;
+    } else if(serverHearts > baseline){
+      const delta = serverHearts - baseline;
+      baseline = serverHearts;
+      if(typeof grantHearts === 'function'){
+        const label = (typeof t === 'function' ? t('gchatHeartReceived') : '') || 'Tim từ bạn';
+        grantHearts(delta, label);
+      }
+    } else if(serverHearts < baseline){
+      baseline = serverHearts;
+    }
+    try{ localStorage.setItem(WALLET_HEARTS_SEEN_KEY, JSON.stringify({ uid: uidAtStart, hearts: baseline })); }catch(e){}
+  }, err => { console.warn('[wallet gift watch]', err); });
+}
+function stopWalletGiftWatcher(){
+  if(_walletGiftUnsub){ try{ _walletGiftUnsub(); }catch(e){} _walletGiftUnsub = null; }
+}
 async function syncProfileVisibilityOnline(){
   if(!_onlineDb || !_onlineUid) return;
   try{
