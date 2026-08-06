@@ -251,36 +251,6 @@ function initSettingsMenu(){
     sfxClick();
     openSettingsText(t('setContact')||'Contact Us', 'Email: duyenhoang91.tl@gmail.com\nChromaBlast support');
   });
-  document.getElementById('set-share-btn')?.addEventListener('click', ()=>{
-    sfxClick();
-    try{ if(typeof logGameEvent==='function') logGameEvent('share_click', { method: navigator.share?'native_share':'clipboard' }); }catch(e){}
-    // Dùng đúng bản có mã mời (CBxxxxxx) + nhắc thưởng — trước đây nút này share
-    // text tĩnh "Play ChromaBlast with me!", không có mã, không gắn được vào hệ
-    // thống thưởng mời bạn (claimPendingReferralRewards) dù backend đã có sẵn.
-    if(typeof shareInviteLink==='function'){ shareInviteLink(); return; }
-    const text='Play ChromaBlast with me!';
-    if(navigator.share){ navigator.share({ title:'ChromaBlast', text }).catch(()=>{}); }
-    else { try{ navigator.clipboard.writeText(text); }catch(e){} openSettingsText(t('setShare')||'Share', text); }
-  });
-  // Ô nhập mã mời (submitReferralCode đã có sẵn ở online-services.js từ trước
-  // nhưng chưa từng được gọi ở đâu — thiếu hẳn UI để người chơi mới nhập mã,
-  // khiến cả vòng lặp mời bạn không hoạt động được dù backend đã xong).
-  document.getElementById('set-referral-submit-btn')?.addEventListener('click', async ()=>{
-    sfxClick();
-    const input = document.getElementById('set-referral-code-input');
-    const code = (input && input.value || '').trim().toUpperCase();
-    if(!code || typeof submitReferralCode !== 'function') return;
-    const res = await submitReferralCode(code);
-    if(res && res.ok){
-      if(input) input.value = '';
-      showComboFlash(0, false, (typeof t==='function'?t('referralOk'):null) || '🎁 Đã nhập mã! Chơi xong 1 ván để nhận thưởng nhé.');
-    } else {
-      const key = res && res.reason === 'already-exists' ? 'referralAlreadyUsed'
-        : res && res.reason === 'not-found' ? 'referralNotFound'
-        : 'referralInvalid';
-      showComboFlash(0, false, (typeof t==='function'?t(key):null) || 'Mã mời không hợp lệ.');
-    }
-  });
   document.getElementById('set-terms-btn')?.addEventListener('click', ()=>{
     sfxClick();
     window.open('terms-of-service.html', '_blank', 'noopener');

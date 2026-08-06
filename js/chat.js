@@ -963,6 +963,56 @@
     });
     $('friends-suggest-refresh')?.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} loadFriendsSuggestions(true); });
     $('friends-suggest-invite')?.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} inviteSelectedSuggestions(); });
+    $('friends-invite-share-btn')?.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} shareFriendInviteCode(); });
+    $('friends-invite-claim-btn')?.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} submitFriendInviteClaim(); });
+    $('friends-invite-claim-input')?.addEventListener('keydown', (e)=>{
+      if(e.key === 'Enter'){ e.preventDefault(); try{sfxClick();}catch(err){} submitFriendInviteClaim(); }
+    });
+  }
+
+  function renderFriendsInviteCode(){
+    const el = $('friends-invite-code');
+    if(!el) return;
+    try{
+      el.textContent = (typeof getPublicPlayerId === 'function') ? getPublicPlayerId() : 'CB------';
+    }catch(e){ el.textContent = 'CB------'; }
+  }
+
+  function setFriendsInviteStatus(msg, isErr){
+    const el = $('friends-invite-status');
+    if(!el) return;
+    el.textContent = msg || '';
+    el.classList.toggle('err', !!isErr);
+  }
+
+  // Dùng đúng shareInviteLink()/submitReferralCode() có sẵn ở online-services.js
+  // (đã gắn với claimReferral/claimPendingRewards bên functions/index.js) — không
+  // viết lại logic riêng ở đây để tránh 2 đường mời bạn chạy song song, lệch nhau.
+  function shareFriendInviteCode(){
+    if(typeof shareInviteLink === 'function'){ shareInviteLink(); return; }
+    const code = (typeof getPublicPlayerId === 'function') ? getPublicPlayerId() : '';
+    const text = 'Chơi ChromaBlast cùng mình! Nhập mã ' + code + ' để cả hai cùng nhận thưởng 💎';
+    if(navigator.share){ navigator.share({ title:'ChromaBlast', text }).catch(()=>{}); }
+    else{ try{ navigator.clipboard.writeText(text); }catch(e){} }
+  }
+
+  async function submitFriendInviteClaim(){
+    const input = $('friends-invite-claim-input');
+    const code = (input && input.value || '').trim().toUpperCase();
+    if(!code || typeof submitReferralCode !== 'function') return;
+    setFriendsInviteStatus('…', false);
+    const res = await submitReferralCode(code);
+    if(res && res.ok){
+      if(input) input.value = '';
+      setFriendsInviteStatus(tt('referralOk','🎁 Đã nhập mã! Chơi xong 1 ván để nhận thưởng nhé.'), false);
+    } else {
+      const reason = res && res.reason;
+      const key = reason === 'already-exists' ? 'referralAlreadyUsed'
+        : reason === 'not-found' ? 'referralNotFound'
+        : (reason === 'offline' || reason === 'no_functions') ? 'errNetwork'
+        : 'referralInvalid';
+      setFriendsInviteStatus(tt(key, 'Mã mời không hợp lệ.'), true);
+    }
   }
 
   // friends panel helpers declared before init uses them
@@ -987,6 +1037,8 @@
     const sr = $('friends-search-result');
     if(sr) sr.innerHTML = '';
     setFriendsStatus('');
+    setFriendsInviteStatus('');
+    renderFriendsInviteCode();
     renderFriendsPanelList();
     loadFriendsSuggestions(false);
     try{ if(typeof applyI18nDom==='function') applyI18nDom(); }catch(e){}
