@@ -34,6 +34,7 @@
   const HEART_GOLD_PRICE = 8;
   const HEART_PACK = 1;
   const BRICK_PREVIEW_COLORS = ["#E24B4A", "#378ADD", "#1D9E75", "#EF9F27"];
+  let shopCurrencyFilter = "all"; // "all" | "gold" | "diamond" — loc mua theo vang/kim cuong o tab Nen/Gach
 
   function gold() {
     return typeof getGold === "function" ? getGold() : 0;
@@ -476,6 +477,26 @@
             return true;
           };
 
+    const filterBar = document.createElement("div");
+    filterBar.className = "shop-currency-filter";
+    [
+      { key: "all", label: tt("shopFilterAll", "Tất cả") },
+      { key: "gold", label: "🪙 " + tt("shopFilterGold", "Vàng") },
+      { key: "diamond", label: "💎 " + tt("shopFilterDia", "Kim cương") },
+    ].forEach(function (f) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "shop-currency-btn" + (shopCurrencyFilter === f.key ? " active" : "");
+      b.textContent = f.label;
+      b.addEventListener("click", function () {
+        try { sfxClick(); } catch (e) {}
+        shopCurrencyFilter = f.key;
+        renderShop(tab);
+      });
+      filterBar.appendChild(b);
+    });
+    body.appendChild(filterBar);
+
     const grid = document.createElement("div");
     grid.className = "shop-grid";
     list.forEach(function (skin) {
@@ -489,6 +510,10 @@
           : (goldPrice || 20) >= 100
             ? Math.ceil((goldPrice || 20) / 100)
             : 0;
+      if (!owned) {
+        if (shopCurrencyFilter === "gold" && goldPrice <= 0) return;
+        if (shopCurrencyFilter === "diamond" && diaCost <= 0) return;
+      }
       const card = document.createElement("div");
       card.className = "shop-item" + (owned ? " owned" : "");
 
@@ -503,15 +528,19 @@
       priceEl.className = "shop-item-price";
       priceEl.textContent = owned
         ? tt("shopOwned", "Đã sở hữu")
-        : goldPrice
-          ? "🪙 " + goldPrice + (diaCost ? " / 💎 " + diaCost : "")
-          : "💎 " + diaCost;
+        : shopCurrencyFilter === "gold"
+          ? "🪙 " + goldPrice
+          : shopCurrencyFilter === "diamond"
+            ? "💎 " + diaCost
+            : goldPrice
+              ? "🪙 " + goldPrice + (diaCost ? " / 💎 " + diaCost : "")
+              : "💎 " + diaCost;
       card.appendChild(priceEl);
 
       if (!owned) {
         const row = document.createElement("div");
         row.className = "shop-item-actions";
-        if (goldPrice > 0) {
+        if (goldPrice > 0 && shopCurrencyFilter !== "diamond") {
           const bGold = document.createElement("button");
           bGold.type = "button";
           bGold.className = "shop-buy-btn";
@@ -529,7 +558,7 @@
           });
           row.appendChild(bGold);
         }
-        if (diaCost > 0) {
+        if (diaCost > 0 && shopCurrencyFilter !== "gold") {
           const bDia = document.createElement("button");
           bDia.type = "button";
           bDia.className = "shop-buy-btn shop-buy-dia";

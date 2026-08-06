@@ -5267,6 +5267,9 @@ body:has(#secret-stage.active) .streak-dot.lit{
 .shop-tabs{ display:flex; gap:6px; margin-bottom:10px; }
 .shop-tab{ flex:1; border:1px solid rgba(255,255,255,0.16); background:rgba(255,255,255,0.06); color:#fff; border-radius:10px; padding:8px 6px; font-weight:800; font-size:12px; cursor:pointer; }
 .shop-tab.active{ border-color:#ffd54a; background:rgba(255,213,74,0.16); color:#ffd54a; }
+.shop-currency-filter{ display:flex; gap:6px; margin-bottom:8px; }
+.shop-currency-btn{ flex:1; border:1px solid rgba(255,255,255,0.14); background:rgba(255,255,255,0.05); color:rgba(255,255,255,0.75); border-radius:20px; padding:6px 6px; font-weight:800; font-size:11px; cursor:pointer; }
+.shop-currency-btn.active{ border-color:#7dd3fc; background:rgba(125,211,252,0.16); color:#7dd3fc; }
 .shop-grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; max-height:55vh; overflow:auto; }
 .shop-item{ border:1px solid rgba(255,255,255,0.14); background:rgba(255,255,255,0.06); border-radius:12px; padding:10px 8px; color:#fff; text-align:center; }
 .shop-item.owned{ opacity:0.55; cursor:default; }
