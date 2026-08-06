@@ -2095,11 +2095,39 @@ async function finalizeOnlineMatch(roomId, hostScore, guestScore){
     hostScore,
     guestScore,
     winnerId,
+    endReason: 'normal',
     endedAt: firebase.firestore.FieldValue.serverTimestamp()
   });
 
   // Cộng điểm thắng/thua giờ do Cloud Function applyMatchResult xử lý
   // (kích hoạt tự động khi status của phòng chuyển sang 'finished').
+}
+
+/** Xử thua trực tiếp cho 1 bên (không so điểm) khi họ rời trận Versus online giữa
+ * chừng — bấm Thoát hoặc bị phát hiện mất kết nối. loserIsHost=true nghĩa là chủ
+ * phòng thua, khách thắng, và ngược lại. Dùng transaction để an toàn nếu cả 2 phía
+ * (người thoát tự báo + người còn lại phát hiện) cùng gọi gần như đồng thời — ai ghi
+ * trước thắng, lần gọi sau sẽ thấy status đã 'finished' và bỏ qua. */
+async function forfeitOnlineMatch(roomId, loserIsHost){
+  if(!_onlineDb || !roomId) return;
+  const ref = _onlineDb.collection('rooms').doc(roomId);
+  try{
+    await _onlineDb.runTransaction(async tx => {
+      const snap = await tx.get(ref);
+      if(!snap.exists) return;
+      const d = snap.data();
+      if(d.status === 'finished') return;
+      const winnerId = loserIsHost ? (d.guestId || null) : (d.hostId || null);
+      tx.update(ref, {
+        status: 'finished',
+        hostScore: typeof d.hostScore === 'number' ? d.hostScore : 0,
+        guestScore: typeof d.guestScore === 'number' ? d.guestScore : 0,
+        winnerId,
+        endReason: 'forfeit',
+        endedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    });
+  }catch(e){ console.warn('[online] forfeitOnlineMatch', e); }
 }
 
 async function fetchGlobalLeaderboard(limit, mode){
