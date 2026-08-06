@@ -1505,7 +1505,11 @@ function _caroApplyMove(r, c, slot, fromNet){
     sendOnlineMove(_caro.roomId, { type:'caro_place', slot, r, c, nextTurn }).then(seq=>{
       if(seq != null && _caro) _caro.moveSeq = Math.max(_caro.moveSeq || 0, seq);
     }).catch(err=> console.warn('[caro] send move', err));
-    updateOnlineRoomTurn(_caro.roomId, nextTurn).catch(err=> console.warn('[caro] turn', err));
+    // Đã BỎ lệnh updateOnlineRoomTurn() ghi thường song song ở đây — transaction
+    // sendOnlineMove() bên trên đã tự ghi currentTurn qua field nextTurn rồi.
+    // Hai lệnh ghi cùng lúc vào CÙNG 1 tài liệu phòng khiến transaction bị
+    // Firestore từ chối (failed-precondition, thấy rõ trong console), làm mất
+    // nước đi — vừa gửi vừa rớt ngẫu nhiên tuỳ độ trễ mạng.
   }
   if(!fromNet && _caro.ai && !_caro.winner) _caroScheduleAI();
   return true;
