@@ -841,8 +841,14 @@ function _caroStartTurnTimer(){
   _caroTimerId = setInterval(()=>{
     if(!_caro || _caro.winner){ _caroStopTimer(); return; }
     const left = Math.max(0, Math.ceil((_caro.turnEndsAt - Date.now()) / 1000));
+    const prevLeft = _caro.turnLeft;
     _caro.turnLeft = left;
     _caroUpdateTimerUI();
+    // Tiếng đếm ngược — đúng 1 tiếng mỗi khi số giây hiển thị lùi thêm 1 nấc (không phải mỗi
+    // 200ms của interval), chỉ trong 5 giây cuối để không ồn suốt cả lượt.
+    if(left !== prevLeft && left > 0 && left <= 5){
+      try{ if(typeof sfxCaroTick === 'function') sfxCaroTick(left); }catch(e){}
+    }
     if(left <= 0){
       _caroStopTimer();
       // AI không bị xử thua vì hết giờ suy nghĩ
@@ -2345,6 +2351,7 @@ function openCaroSettings(fromGame){
   if(_caro && _caro.turnSec) _caroPrefsDraft.turnSec = _caro.turnSec;
   _caroFillSkinGrid(document.getElementById('caro-skin-grid'));
   _caroSyncPrefUI(_caroPrefsDraft);
+  try{ if(typeof syncSettingsToggles==='function') syncSettingsToggles(); }catch(e){}
   _caroShow('caro-settings-panel');
 }
 

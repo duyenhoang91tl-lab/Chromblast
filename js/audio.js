@@ -185,6 +185,12 @@ function sfxBeeBuzz(){
 function sfxSelect(){
   playTone(440,'sine',0.04,0.12);
 }
+function sfxCaroTick(secLeft){
+  // Tiếng đếm ngược khi sắp hết giờ lượt Caro (≤5s) — cao dần khi càng gần 0 cho cảm giác gấp gáp.
+  const s = Math.max(0, Math.min(5, secLeft));
+  const f = 520 + (5 - s) * 60;
+  playTone(f, 'square', 0.08, 0.22);
+}
 function sfxRotate(){
   playTone(500,'sine',0.05,0.15,0);
   playTone(700,'sine',0.05,0.15,0.04);

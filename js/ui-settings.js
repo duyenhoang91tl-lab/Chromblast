@@ -27,6 +27,12 @@ function syncSettingsToggles(){
   const sfxIco=document.getElementById('set-sfx-ico');
   const bgmIco=document.getElementById('set-bgm-ico');
   const vibIco=document.getElementById('set-vibrate-ico');
+  // Nút riêng trong Cài đặt Caro — điều khiển ĐÚNG state toàn cục ở trên (không tách riêng
+  // 1 công tắc khác cho Caro), chỉ là thêm chỗ bấm tiện hơn cho người đang ở màn Caro.
+  const caroSfxBtn=document.getElementById('caro-sfx-toggle');
+  const caroBgmBtn=document.getElementById('caro-bgm-toggle');
+  const caroSfxIco=document.getElementById('caro-sfx-ico');
+  const caroBgmIco=document.getElementById('caro-bgm-ico');
   const muted=!!(typeof sfxMuted!=='undefined' && sfxMuted);
   const bgmOff=!!(typeof bgmMuted!=='undefined' && bgmMuted);
   const vibOff=!(typeof vibrateEnabled==='undefined' ? true : vibrateEnabled);
@@ -36,6 +42,10 @@ function syncSettingsToggles(){
   if(sfxIco) sfxIco.textContent = muted ? '🔇' : '🔊';
   if(bgmIco) bgmIco.textContent = bgmOff ? '🎵' : '🎵';
   if(vibIco) vibIco.textContent = vibOff ? '📴' : '📳';
+  if(caroSfxBtn) caroSfxBtn.classList.toggle('is-off', muted);
+  if(caroBgmBtn) caroBgmBtn.classList.toggle('is-off', bgmOff);
+  if(caroSfxIco) caroSfxIco.textContent = muted ? '🔇' : '🔊';
+  if(caroBgmIco) caroBgmIco.textContent = bgmOff ? '🎵' : '🎵';
   const muteBtn=document.getElementById('mute-btn');
   if(muteBtn) muteBtn.textContent = muted ? '🔇' : '🔊';
 }
@@ -222,6 +232,8 @@ function initSettingsMenu(){
   document.getElementById('set-sfx-toggle')?.addEventListener('click', toggleSfxSetting);
   document.getElementById('set-bgm-toggle')?.addEventListener('click', toggleBgmSetting);
   document.getElementById('set-vibrate-toggle')?.addEventListener('click', toggleVibrateSetting);
+  document.getElementById('caro-sfx-toggle')?.addEventListener('click', toggleSfxSetting);
+  document.getElementById('caro-bgm-toggle')?.addEventListener('click', toggleBgmSetting);
   document.getElementById('set-btn-account')?.addEventListener('click', ()=>{ sfxClick(); openSettingsAccount(); });
   document.getElementById('set-btn-help')?.addEventListener('click', ()=>{
     sfxClick();
