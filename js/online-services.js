@@ -193,11 +193,34 @@ async function _upsertPlayerProfile(){
     patch.visCaro = vis ? !!vis.caroRank : true;
     patch.visVersus = vis ? !!vis.versusRank : true;
   }catch(e){}
+  // VÍ SERVER-SIDE (Bước 1 của việc nối inventory.js vào server — xem
+  // docs/SERVER_WALLET_PROGRESS.md): chỉ set gold/diamonds/hearts ở đây khi
+  // doc CHƯA từng có 3 field này — đúng giá trị cố định firestore.rules cho
+  // phép ghi lần đầu (walletField(): 20/0/5, PHẢI khớp START_GOLD/MAX_HEARTS
+  // bên inventory.js). Nếu đã có rồi thì TUYỆT ĐỐI không đưa vào patch nữa —
+  // ghi lại giá trị cũ vẫn bị rule chặn nếu số đã đổi (spendCurrency...),
+  // làm hỏng luôn cả patch này (1 lệnh set là 1 atomic write, sai 1 field là
+  // rớt hết, kể cả displayName/avatar). Không set heartsAt ở đây (fieldLocked,
+  // chỉ Cloud Function ghi được) — gọi regenHearts() ngay sau để nó tự khởi
+  // tạo mốc hồi tim (an toàn kể cả gọi lại nhiều lần).
+  try{
+    const existing = await _onlineDb.collection('players').doc(_onlineUid).get();
+    const d = existing.exists ? (existing.data()||{}) : {};
+    if(!('gold' in d) && !('diamonds' in d) && !('hearts' in d)){
+      patch.gold = (typeof START_GOLD !== 'undefined') ? START_GOLD : 20;
+      patch.diamonds = 0;
+      patch.hearts = (typeof MAX_HEARTS !== 'undefined') ? MAX_HEARTS : 5;
+    }
+  }catch(e){}
   // Lưu ý: các field điểm số (caroWins/caroLosses/caroDraws/caroPoints/pvpPoints/
   // wins/losses/draws/bestScore/bestPvpScore) KHÔNG còn được đồng bộ từ đây nữa.
   // Firestore Rules chỉ cho phép các field này giữ nguyên hoặc do Cloud Function
   // ghi (xem firestore.rules: scoreFieldsUnchanged(), functions/index.js: applyMatchResult).
   await _onlineDb.collection('players').doc(_onlineUid).set(patch, { merge: true });
+  try{
+    const fns = _getOnlineFunctions();
+    if(fns) await fns.httpsCallable('regenHearts')();
+  }catch(e){ /* không chặn đăng nhập nếu lỗi — heartsAt sẽ tự set ở lần gọi kế */ }
   if(publicId){
     try{
       await _onlineDb.collection('playerIds').doc(publicId).set({
