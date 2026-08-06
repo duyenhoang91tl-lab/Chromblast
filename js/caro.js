@@ -647,7 +647,11 @@ function _caroUpdateMeChip(){
   const av = (typeof getPlayerAvatarDisplay === 'function'
     ? getPlayerAvatarDisplay()
     : (typeof getPlayerAvatar === 'function' ? getPlayerAvatar() : '🐶'));
-  if(nameEl) nameEl.textContent = nick;
+  if(nameEl){
+    try{
+      nameEl.innerHTML = (typeof formatPlayerNameStyledHtml==='function') ? formatPlayerNameStyledHtml(nick) : nick;
+    }catch(e){ nameEl.textContent = nick; }
+  }
   if(avBtn){
     if(typeof applyAvatarElement === 'function') applyAvatarElement(avBtn, av);
     else avBtn.textContent = (typeof getPlayerAvatar === 'function' ? getPlayerAvatar() : '🐶');

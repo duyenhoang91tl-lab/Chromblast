@@ -301,6 +301,21 @@ function getPlayerNickname(){
   return (typeof _localPlayerName === 'function' ? _localPlayerName() : 'Player');
 }
 
+/** Chỉ trả về span tên đã áp màu/đậm/nghiêng/font (không kèm avatar) — dùng ở
+ * những nơi tên đứng riêng (HUD, chat...), khác với formatPlayerNameHtml (có avatar). */
+function formatPlayerNameStyledHtml(name, style){
+  const st = style || getPlayerNameStyle();
+  const n = (typeof escapeHtml === 'function' ? escapeHtml(name) : String(name||''));
+  const fam = _ppFontById(st.fontId).family;
+  const css = [
+    'color:'+(st.color||'#ffffff'),
+    'font-weight:'+(st.bold ? '900' : '700'),
+    st.italic ? 'font-style:italic' : 'font-style:normal',
+    'font-family:'+fam
+  ].join(';');
+  return '<span class="player-nick" style="'+css+'">'+n+'</span>';
+}
+
 function formatPlayerNameHtml(name, style){
   const st = style || getPlayerNameStyle();
   const n = (typeof escapeHtml === 'function' ? escapeHtml(name) : String(name||''));

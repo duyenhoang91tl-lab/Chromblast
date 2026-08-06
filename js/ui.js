@@ -671,7 +671,14 @@ function refreshArcadeHud(){
       else if(typeof _localPlayerName==='function') nick=_localPlayerName();
       else if(typeof currentUser!=='undefined' && currentUser && currentUser.username) nick=currentUser.username;
     }catch(e){}
-    nameEl.textContent=String(nick||'Player').trim() || 'Player';
+    nick=String(nick||'Player').trim() || 'Player';
+    try{
+      if(typeof formatPlayerNameStyledHtml==='function'){
+        nameEl.innerHTML=formatPlayerNameStyledHtml(nick);
+      } else {
+        nameEl.textContent=nick;
+      }
+    }catch(e){ nameEl.textContent=nick; }
   }
   const mapEl=document.getElementById('header-map-label');
   if(mapEl) mapEl.textContent=arcadeMapLabel();
