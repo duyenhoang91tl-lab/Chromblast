@@ -1714,6 +1714,19 @@ function _caroEndGame(winnerSlot, fromRemote){
       heartNote+
       '<div class="caro-result-hearts-left">❤️ '+heartsLeft+'</div>';
     _caroRefreshHubStats();
+    // Đối chiếu lại dòng Thắng/Thua/Hoà/Tỷ lệ vừa hiển thị (ước tính local) với server
+    // sau khi Cloud Function applyMatchResult xử lý xong, tránh lệch với BXH thật.
+    if(typeof fetchMyCaroStats === 'function'){
+      setTimeout(async ()=>{
+        try{
+          const real = await fetchMyCaroStats();
+          const wldEl = document.querySelector('#caro-result-body .caro-result-wld');
+          if(wldEl){
+            wldEl.textContent = t('caroWins')+': '+real.wins+' · '+t('caroLosses')+': '+real.losses+' · '+t('caroDraws')+': '+real.draws+' · '+t('caroWinRate', real.winRate);
+          }
+        }catch(e){}
+      }, 1800);
+    }
   }
 
   setTimeout(()=>{
