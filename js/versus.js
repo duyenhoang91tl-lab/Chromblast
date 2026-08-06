@@ -72,6 +72,7 @@ function refreshVersusButton(){
   const btn=document.getElementById('versus-btn');
   if(btn){
     btn.classList.add('vs-unlocked');
+    btn.style.display = 'flex';
     btn.setAttribute('aria-hidden', 'false');
     btn.title = (typeof t==='function' ? t('ttVersus') : 'Đấu 1-1');
   }
@@ -440,24 +441,28 @@ function _vsEndMatch(){
 }
 
 // ── wiring ──
-(function initVersus(){
-  const btn=document.getElementById('versus-btn');
-  if(btn) btn.addEventListener('click', ()=>openVersusSetup());
-  const start=document.getElementById('vs-start-btn');
-  if(start) start.addEventListener('click', startVersusMatch);
-  const cancel=document.getElementById('vs-cancel-btn');
-  if(cancel) cancel.addEventListener('click', ()=>_vsHide('versus-setup-panel'));
-  const again=document.getElementById('vs-again-btn');
-  if(again) again.addEventListener('click', ()=>_vsCloseResult(true));
-  const close=document.getElementById('vs-close-btn');
-  if(close) close.addEventListener('click', ()=>_vsCloseResult(false));
-  let _vsReflowT=0;
-  const scheduleReflow=()=>{
-    clearTimeout(_vsReflowT);
-    _vsReflowT=setTimeout(_vsReflowGrids, 80);
-  };
-  window.addEventListener('resize', scheduleReflow);
-  window.addEventListener('orientationchange', ()=>setTimeout(_vsReflowGrids, 120));
-  refreshVersusButton();
+(function(){
+  function bind(){
+    const btn=document.getElementById('versus-btn');
+    if(btn) btn.addEventListener('click', ()=>openVersusSetup());
+    const start=document.getElementById('vs-start-btn');
+    if(start) start.addEventListener('click', startVersusMatch);
+    const cancel=document.getElementById('vs-cancel-btn');
+    if(cancel) cancel.addEventListener('click', ()=>_vsHide('versus-setup-panel'));
+    const again=document.getElementById('vs-again-btn');
+    if(again) again.addEventListener('click', ()=>_vsCloseResult(true));
+    const close=document.getElementById('vs-close-btn');
+    if(close) close.addEventListener('click', ()=>_vsCloseResult(false));
+    let _vsReflowT=0;
+    const scheduleReflow=()=>{
+      clearTimeout(_vsReflowT);
+      _vsReflowT=setTimeout(_vsReflowGrids, 80);
+    };
+    window.addEventListener('resize', scheduleReflow);
+    window.addEventListener('orientationchange', ()=>setTimeout(_vsReflowGrids, 120));
+    refreshVersusButton();
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
+  else bind();
 })();
 
