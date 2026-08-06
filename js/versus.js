@@ -159,7 +159,15 @@ function _vsNewPlayer(idx,seed){
 function _vsAbort(){
   if(_vs && _vs.timer) clearInterval(_vs.timer);
   try{ if(typeof _vsAiStop==='function') _vsAiStop(); }catch(e){}
+  // Thoát trận online giữa chừng → dọn phòng Firestore NGAY (giống Caro): chủ phòng
+  // xoá phòng thật, khách trả phòng lại trạng thái mở. Quan trọng: KHÔNG gọi
+  // finalizeOnlineMatch ở đây — thoát ngang chừng không được tính thắng/thua cho ai,
+  // tránh người bấm Thoát bị xử thua oan (trước đây phòng bị bỏ hoang, đối thủ chơi
+  // tới hết giờ rồi so điểm với điểm đã đông cứng của người đã thoát → luôn thua oan).
   try{
+    if(_vs && _vs.online && _vs.online.roomId && typeof leaveOnlineRoom === 'function'){
+      leaveOnlineRoom(_vs.online.roomId).catch(()=>{});
+    }
     if(_vs && _vs.online && typeof stopListeningRoom === 'function') stopListeningRoom();
     else if(typeof stopListeningChat === 'function') stopListeningChat();
   }catch(e){}
@@ -169,6 +177,16 @@ function _vsAbort(){
   versusMode=false; _vs=null;
   try{ if(typeof setExclusivePlayMode === 'function') setExclusivePlayMode(null); }catch(e){}
   try{ startBgm('main'); }catch(e){}
+}
+
+/** Đối thủ rời trận online giữa chừng (bấm Thoát/đóng tab/mất kết nối) — huỷ trận NGAY
+ * cho người còn lại thay vì bắt họ chơi tới hết giờ, và KHÔNG tính thắng/thua cho ai
+ * (đối xứng với việc người thoát cũng không bị xử thua — xem _vsAbort). */
+function _vsHandleOpponentLeft(){
+  if(!_vs || !_vs.online) return;
+  try{ showHint((typeof t==='function'?t('vsOpponentLeft'):null) || 'Đối thủ đã rời trận', { hold: 2600 }); }catch(e){}
+  _vsAbort();
+  try{ if(typeof openVersusSetup === 'function') openVersusSetup(); }catch(e){}
 }
 
 // ── Render ──
