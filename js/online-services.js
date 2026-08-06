@@ -1815,22 +1815,37 @@ async function updateOnlineRoomMeta(roomId, meta){
 async function sendOnlineMove(roomId, payload){
   if(!_onlineDb || !roomId) return null;
   const ref = _onlineDb.collection('rooms').doc(roomId);
-  let seqOut = null;
-  await _onlineDb.runTransaction(async tx => {
-    const snap = await tx.get(ref);
-    if(!snap.exists) return;
-    const seq = (snap.data().moveSeq || 0) + 1;
-    seqOut = seq;
-    tx.update(ref, { moveSeq: seq, currentTurn: payload && payload.nextTurn != null ? payload.nextTurn : (snap.data().currentTurn || null) });
-    const moveRef = ref.collection('moves').doc();
-    tx.set(moveRef, {
-      ...payload,
-      seq,
-      playerId: _onlineUid,
-      ts: firebase.firestore.FieldValue.serverTimestamp()
+  const attempt = async () => {
+    let seqOut = null;
+    await _onlineDb.runTransaction(async tx => {
+      const snap = await tx.get(ref);
+      if(!snap.exists) return;
+      const seq = (snap.data().moveSeq || 0) + 1;
+      seqOut = seq;
+      tx.update(ref, { moveSeq: seq, currentTurn: payload && payload.nextTurn != null ? payload.nextTurn : (snap.data().currentTurn || null) });
+      const moveRef = ref.collection('moves').doc();
+      tx.set(moveRef, {
+        ...payload,
+        seq,
+        playerId: _onlineUid,
+        ts: firebase.firestore.FieldValue.serverTimestamp()
+      });
     });
-  });
-  return seqOut;
+    return seqOut;
+  };
+  // Nếu tài liệu phòng vừa bị 1 lượt ghi khác (vd. cập nhật điểm) đụng đúng
+  // lúc transaction đang chạy, Firestore từ chối với failed-precondition và
+  // nước đi bị mất hẳn nếu chỉ thử 1 lần. Thử lại thêm vài lần cách nhau một
+  // chút để tránh mất nước đi do tranh chấp thoáng qua kiểu này.
+  for(let i=0; i<3; i++){
+    try{
+      return await attempt();
+    }catch(e){
+      if(i===2) throw e;
+      await new Promise(r=>setTimeout(r, 120*(i+1)));
+    }
+  }
+  return null;
 }
 
 async function updateOnlineScores(roomId, hostScore, guestScore){
