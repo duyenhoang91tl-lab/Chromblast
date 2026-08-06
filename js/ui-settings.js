@@ -262,6 +262,25 @@ function initSettingsMenu(){
     if(navigator.share){ navigator.share({ title:'ChromaBlast', text }).catch(()=>{}); }
     else { try{ navigator.clipboard.writeText(text); }catch(e){} openSettingsText(t('setShare')||'Share', text); }
   });
+  // Ô nhập mã mời (submitReferralCode đã có sẵn ở online-services.js từ trước
+  // nhưng chưa từng được gọi ở đâu — thiếu hẳn UI để người chơi mới nhập mã,
+  // khiến cả vòng lặp mời bạn không hoạt động được dù backend đã xong).
+  document.getElementById('set-referral-submit-btn')?.addEventListener('click', async ()=>{
+    sfxClick();
+    const input = document.getElementById('set-referral-code-input');
+    const code = (input && input.value || '').trim().toUpperCase();
+    if(!code || typeof submitReferralCode !== 'function') return;
+    const res = await submitReferralCode(code);
+    if(res && res.ok){
+      if(input) input.value = '';
+      showComboFlash(0, false, (typeof t==='function'?t('referralOk'):null) || '🎁 Đã nhập mã! Chơi xong 1 ván để nhận thưởng nhé.');
+    } else {
+      const key = res && res.reason === 'already-exists' ? 'referralAlreadyUsed'
+        : res && res.reason === 'not-found' ? 'referralNotFound'
+        : 'referralInvalid';
+      showComboFlash(0, false, (typeof t==='function'?t(key):null) || 'Mã mời không hợp lệ.');
+    }
+  });
   document.getElementById('set-terms-btn')?.addEventListener('click', ()=>{
     sfxClick();
     window.open('terms-of-service.html', '_blank', 'noopener');
