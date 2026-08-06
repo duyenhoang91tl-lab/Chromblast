@@ -322,47 +322,57 @@
     };
   }
 
+  /**
+   * TRƯỚC ĐÂY: hàm này tự đọc leaderboard đã fetch (fetchPeriodLeaderboard —
+   * có thể lẫn dữ liệu localStorage tự chế trên máy), tự tính hạng, rồi gọi
+   * thẳng grantGold/grantDiamonds ở CLIENT — không có bước nào ở SERVER xác
+   * nhận lại hạng trước khi cấp thưởng (functions/index.js đã xây sẵn Cloud
+   * Function claimPeriodReward tự query periodScores để xác thực, nhưng
+   * hàm này trước đó chưa hề gọi tới — xem docs/SERVER_WALLET_PROGRESS.md).
+   * Giờ gọi qua claimPeriodRewardOnline (Cloud Function) trước — CHỈ khi
+   * server xác nhận đủ điều kiện mới cộng gold/diamond cục bộ theo đúng số
+   * server trả về, không tự tính nữa. scope giữ tham số cho tương thích chỗ
+   * gọi cũ nhưng không còn dùng — server chỉ xét hạng THẾ GIỚI (periodScores
+   * không có khái niệm scope theo bạn bè/khu vực).
+   */
   async function claimPeriodReward(kind, scope) {
-    scope = scope || "world";
-    const board = await fetchPeriodLeaderboard(kind, scope, { previous: true });
-    if (hasClaimed(board.periodId + ":" + scope)) {
+    const periodId = previousPeriodKey(kind);
+    const claimKey = periodId + ":world";
+    if (hasClaimed(claimKey)) {
       return { ok: false, reason: "claimed" };
     }
-    const uid = localPlayerId();
-    const name =
-      typeof currentPlayerName === "function" ? currentPlayerName() : "";
-    const mine = board.entries.find(function (e) {
-      return e.playerId === uid || e.name === name;
-    });
-    if (!mine || !mine.rank || mine.rank > 100) {
+    if (typeof claimPeriodRewardOnline !== "function") {
+      return { ok: false, reason: "offline" };
+    }
+    let res;
+    try {
+      res = await claimPeriodRewardOnline(kind);
+    } catch (e) {
+      const code = (e && e.code) || "";
+      if (code.indexOf("already-exists") !== -1) {
+        markClaimed(claimKey, {}); // đồng bộ lại cache cục bộ cho khớp server
+        return { ok: false, reason: "claimed" };
+      }
+      if (code.indexOf("failed-precondition") !== -1) {
+        return { ok: false, reason: "rank" };
+      }
+      // unauthenticated / unavailable / network-request-failed / mất mạng...
+      return { ok: false, reason: "offline" };
+    }
+    if (!res || !(res.gold > 0 || res.diamond > 0)) {
       return { ok: false, reason: "rank" };
     }
-    const reward = rewardForRank(kind, mine.rank);
-    if (!reward) return { ok: false, reason: "rank" };
-    if (reward.gold > 0 && typeof grantGold === "function") {
-      grantGold(reward.gold, "🏆 Top " + mine.rank);
+    if (res.gold > 0 && typeof grantGold === "function") {
+      grantGold(res.gold, "🏆 Top " + res.rank);
     }
-    if (reward.diamond > 0 && typeof grantDiamonds === "function") {
-      grantDiamonds(reward.diamond, "🏆 Top " + mine.rank);
+    if (res.diamond > 0 && typeof grantDiamonds === "function") {
+      grantDiamonds(res.diamond, "🏆 Top " + res.rank);
     }
-    markClaimed(board.periodId + ":" + scope, {
-      rank: mine.rank,
-      gold: reward.gold,
-      diamond: reward.diamond,
-    });
+    markClaimed(claimKey, { rank: res.rank, gold: res.gold, diamond: res.diamond });
     if (typeof logGameEvent === "function") {
-      logGameEvent("claim_reward", { kind: kind, rank: mine.rank, gold: reward.gold, diamond: reward.diamond });
+      logGameEvent("claim_reward", { kind: kind, rank: res.rank, gold: res.gold, diamond: res.diamond });
     }
-    if (typeof claimPeriodRewardOnline === "function") {
-      claimPeriodRewardOnline(board.periodId, scope, mine.rank, reward).catch(function () {});
-    }
-    return {
-      ok: true,
-      periodId: board.periodId,
-      rank: mine.rank,
-      gold: reward.gold,
-      diamond: reward.diamond,
-    };
+    return { ok: true, periodId: periodId, rank: res.rank, gold: res.gold, diamond: res.diamond };
   }
 
   function rewardPreviewRows(kind) {

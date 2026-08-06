@@ -146,25 +146,34 @@ async function _updateClaimButton(){
     btn.disabled = true;
     return;
   }
+  // Hiển thị hạng theo đúng tab đang xem (bạn bè/khu vực/thế giới) — chỉ để
+  // tham khảo, không quyết định điều kiện nhận thưởng.
   const mine = await findMyPeriodRank(_lbPeriod, _lbScope, { previous: true });
-  const claimed = typeof hasClaimedPeriod === 'function' && hasClaimedPeriod(mine.periodId, _lbScope);
   if(note){
     note.textContent = mine.rank
       ? ((typeof t==='function'?t('lbPrevRank'):'Hạng kỳ trước')+': #'+mine.rank+' · '+(mine.score||0).toLocaleString())
       : (typeof t==='function'?t('lbPrevNoRank'):'Kỳ trước chưa vào top');
   }
-  if(!mine.rank || mine.rank > 100 || claimed){
+  // Điều kiện + trạng thái "đã nhận" luôn xét theo hạng THẾ GIỚI — Cloud
+  // Function claimPeriodReward (functions/index.js) chỉ tính hạng từ
+  // periodScores toàn server (không có khái niệm scope bạn bè/khu vực), nên
+  // phải dùng đúng world ở đây, bất kể đang xem tab nào, để không hiện sai
+  // trạng thái nút (VD đang xem tab bạn bè, hạng bạn bè #500 nhưng hạng thế
+  // giới thực tế #50 vẫn đủ điều kiện nhận thưởng).
+  const world = _lbScope === 'world' ? mine : await findMyPeriodRank(_lbPeriod, 'world', { previous: true });
+  const claimed = typeof hasClaimedPeriod === 'function' && hasClaimedPeriod(world.periodId, 'world');
+  if(!world.rank || world.rank > 100 || claimed){
     btn.disabled = true;
     btn.textContent = claimed
       ? (typeof t==='function'?t('lbClaimed'):'✅ Đã nhận thưởng kỳ trước')
       : (typeof t==='function'?t('lbClaimUnavailable'):'Chưa đủ điều kiện nhận thưởng');
     return;
   }
-  const reward = typeof rewardForRank === 'function' ? rewardForRank(_lbPeriod, mine.rank) : null;
+  const reward = typeof rewardForRank === 'function' ? rewardForRank(_lbPeriod, world.rank) : null;
   btn.disabled = false;
   const dia = reward && reward.diamond ? (' + 💎'+reward.diamond) : '';
   btn.textContent = (typeof t==='function'?t('lbClaimBtn'):'🎁 Nhận thưởng')+
-    ' · #'+mine.rank+' · 🪙'+(reward?reward.gold:0)+dia;
+    ' · #'+world.rank+' · 🪙'+(reward?reward.gold:0)+dia;
 }
 
 async function renderLeaderboardPanel(){

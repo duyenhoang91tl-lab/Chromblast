@@ -2541,20 +2541,23 @@ async function fetchPeriodLeaderboardOnline(periodId, limit){
   }
 }
 
-async function claimPeriodRewardOnline(periodId, scope, rank, reward){
-  if(!periodId || !await initOnlineServices() || !_onlineUid) return;
-  try{
-    await _onlineDb.collection('players').doc(_onlineUid)
-      .collection('lbClaims').doc(periodId + '_' + (scope||'world'))
-      .set({
-        periodId,
-        scope: scope || 'world',
-        rank: rank|0,
-        gold: (reward && reward.gold)|0,
-        diamond: (reward && reward.diamond)|0,
-        claimedAt: firebase.firestore.FieldValue.serverTimestamp()
-      }, { merge: true });
-  }catch(e){}
+/**
+ * Gọi Cloud Function claimPeriodReward (functions/index.js) — server tự
+ * query periodScores/{periodId}/entries để tính hạng THẬT (đếm bằng
+ * Firestore count() aggregation, không tin bất kỳ hạng nào client tự báo),
+ * rồi mới cộng gold/diamond bằng Admin SDK vào players/{uid} và ghi nhận
+ * players/{uid}/claims/period_{periodId} (chặn nhận 2 lần qua transaction).
+ * Trả về { rank, gold, diamond } nếu thành công; ném lỗi (HttpsError code:
+ * 'already-exists' đã nhận rồi, 'failed-precondition' chưa đủ hạng/chưa có
+ * điểm kỳ này) nếu không đủ điều kiện — để nguyên cho hàm gọi ở
+ * js/lb-period.js tự bắt và xử lý theo từng trường hợp.
+ */
+async function claimPeriodRewardOnline(kind){
+  if(!await initOnlineServices()) throw new Error('offline');
+  const fns = _getOnlineFunctions();
+  if(!fns) throw new Error('offline');
+  const res = await fns.httpsCallable('claimPeriodReward')({ kind });
+  return res && res.data;
 }
 
 async function fetchFriendsLeaderboard(limit){

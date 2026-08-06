@@ -44,6 +44,30 @@ chưa bắt máy tiêu qua nó — lỗ hổng gốc vẫn còn nguyên trên th
 
 ## Đã làm (đã push lên main)
 
+**claimPeriodReward đã nối vào Cloud Function thật** (`js/lb-period.js` +
+`js/online-services.js`): đây là phần RIÊNG, không nằm trong 3 bước
+"Bước 2 — giftHeart" phía dưới — phát hiện khi đối chiếu hệ thống với tính
+năng đã công bố ở `PLAY_STORE_LISTING.md` ("thưởng vàng/kim cương top
+1-100 mỗi kỳ"). `functions/index.js#claimPeriodReward` đã xây và tự test
+xong từ trước (theo commit gốc), nhưng client (`js/lb-period.js`) trước đó
+**chưa hề gọi tới** — vẫn tự đọc leaderboard đã fetch (có thể lẫn dữ liệu
+localStorage tự chế), tự tính hạng, tự gọi thẳng `grantGold`/`grantDiamonds`
+cục bộ. Đã sửa: `claimPeriodRewardOnline` giờ gọi đúng Cloud Function
+(`fns.httpsCallable('claimPeriodReward')`), `claimPeriodReward` (client)
+chỉ cộng gold/diamond theo đúng số SERVER trả về sau khi xác thực hạng từ
+`periodScores` (Cloud Function tự đếm bằng `count()` aggregation, không tin
+client báo). Sửa thêm `_updateClaimButton` (`js/leaderboard.js`): điều kiện
+nhận thưởng luôn xét hạng THẾ GIỚI (khớp server, không có khái niệm scope
+bạn bè/khu vực), tránh hiện sai trạng thái nút khi đang xem tab khác.
+Rủi ro thấp — không đụng ~10 chỗ đọc `inv.hearts`/`inv.gold` đồng bộ nhạy
+cảm nói ở trên, chỉ 1 luồng riêng (bấm nút "Nhận thưởng" trong BXH).
+Đã kiểm tra tĩnh: `node --check` cả 3 file, `npm run build:www` thành
+công, jsdom smoke-test boot toàn app 0 lỗi, gọi thử `claimPeriodReward()`
+qua jsdom (mạng bị chặn trong sandbox nên chỉ xác nhận không throw, trả về
+đúng dạng `{ok:false, reason:...}` khi lỗi mạng — **chưa gọi được Cloud
+Function thật**, cần tự bấm thử nút "Nhận thưởng" sau khi có điểm vào top
+100 thật.
+
 **Bước 1 — khởi tạo ví server đúng lần đầu + mốc hồi tim** (`js/online-services.js:
 _upsertPlayerProfile()`):
 - Trước khi `.set(patch, {merge:true})`, đọc thử doc hiện tại; nếu CHƯA có cả
