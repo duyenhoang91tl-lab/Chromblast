@@ -481,12 +481,13 @@
     list.forEach(function (skin) {
       if (!skin || skin.starter) return;
       const owned = unlockedFn(skin.id);
-      const price = skin.price | 0 || 20;
-      const diaCost =
-        typeof diamondPriceForGold === "function"
-          ? diamondPriceForGold(price)
-          : price >= 100
-            ? Math.ceil(price / 100)
+      const goldPrice = skin.price | 0;
+      const diaCost = skin.diaPrice
+        ? skin.diaPrice | 0
+        : typeof diamondPriceForGold === "function"
+          ? diamondPriceForGold(goldPrice || 20)
+          : (goldPrice || 20) >= 100
+            ? Math.ceil((goldPrice || 20) / 100)
             : 0;
       const card = document.createElement("div");
       card.className = "shop-item" + (owned ? " owned" : "");
@@ -502,28 +503,32 @@
       priceEl.className = "shop-item-price";
       priceEl.textContent = owned
         ? tt("shopOwned", "Đã sở hữu")
-        : "🪙 " + price + (diaCost ? " / 💎 " + diaCost : "");
+        : goldPrice
+          ? "🪙 " + goldPrice + (diaCost ? " / 💎 " + diaCost : "")
+          : "💎 " + diaCost;
       card.appendChild(priceEl);
 
       if (!owned) {
         const row = document.createElement("div");
         row.className = "shop-item-actions";
-        const bGold = document.createElement("button");
-        bGold.type = "button";
-        bGold.className = "shop-buy-btn";
-        bGold.textContent = tt("shopBuy", "Mua");
-        bGold.title = tt("shopBuyGold", "Mua bằng vàng");
-        bGold.addEventListener("click", function () {
-          try {
-            sfxClick();
-          } catch (e) {}
-          const r = isBoard
-            ? buyBoardWithGold(skin.id, price)
-            : buyBrickWithGold(skin.id, price);
-          flashBuy(r, skin, price, false);
-          renderShop(tab);
-        });
-        row.appendChild(bGold);
+        if (goldPrice > 0) {
+          const bGold = document.createElement("button");
+          bGold.type = "button";
+          bGold.className = "shop-buy-btn";
+          bGold.textContent = tt("shopBuy", "Mua");
+          bGold.title = tt("shopBuyGold", "Mua bằng vàng");
+          bGold.addEventListener("click", function () {
+            try {
+              sfxClick();
+            } catch (e) {}
+            const r = isBoard
+              ? buyBoardWithGold(skin.id, goldPrice)
+              : buyBrickWithGold(skin.id, goldPrice);
+            flashBuy(r, skin, goldPrice, false);
+            renderShop(tab);
+          });
+          row.appendChild(bGold);
+        }
         if (diaCost > 0) {
           const bDia = document.createElement("button");
           bDia.type = "button";

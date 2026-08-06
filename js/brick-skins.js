@@ -55,6 +55,11 @@
     { id: "galaxy", name: "Galaxy", desc: { vi: 'Thiên hà', en: 'Galaxy space' }, price: 80 },
     { id: "gold", name: "Gold", desc: { vi: 'Vàng bóng', en: 'Shiny gold' }, price: 90 },
     { id: "chrome", name: "Chrome", desc: { vi: 'Chrome gương', en: 'Mirror chrome' }, price: 100 },
+    { id: "mysticAurora", name: "Cực Quang Huyền Ảo", desc: { vi: 'Ánh cực quang lung linh', en: 'Shimmering aurora glow' }, diaPrice: 1 },
+    { id: "mysticStardust", name: "Bụi Sao Lung Linh", desc: { vi: 'Bụi sao lấp lánh huyền ảo', en: 'Glittering mystic stardust' }, diaPrice: 1 },
+    { id: "mysticMoonveil", name: "Màn Trăng Huyền Ảo", desc: { vi: 'Sương trăng huyền bí', en: 'Mystic moonlit veil' }, diaPrice: 1 },
+    { id: "mysticEmber", name: "Lửa Ma Huyền Ảo", desc: { vi: 'Đốm lửa ma lung linh', en: 'Flickering phantom embers' }, diaPrice: 1 },
+    { id: "mysticOpal", name: "Ngọc Mộng Huyền Ảo", desc: { vi: 'Ngọc mộng ảo lung linh', en: 'Dreamy opal shimmer' }, diaPrice: 1 },
   ];
 
   const STARTER_IDS = BRICK_SKINS.filter(function (s) {
@@ -200,7 +205,8 @@
     const card = document.createElement("button");
     card.type = "button";
     const price = skin.price | 0;
-    const shopLocked = !!(opts.locked && price > 0);
+    const diaPrice = skin.diaPrice | 0;
+    const shopLocked = !!(opts.locked && (price > 0 || diaPrice > 0));
     card.className =
       "brick-skin-card" +
       (opts.locked ? " locked" : "") +
@@ -222,8 +228,11 @@
 
     const desc = document.createElement("div");
     desc.className = "brick-skin-desc";
-    if (opts.locked && price > 0) {
-      desc.textContent = "🪙 " + price + " · " + tt("brickSkinBuyShop", "Mua trong Shop");
+    if (opts.locked && (price > 0 || diaPrice > 0)) {
+      const bits = [];
+      if (price > 0) bits.push("🪙 " + price);
+      if (diaPrice > 0) bits.push("💎 " + diaPrice);
+      desc.textContent = bits.join(" · ") + " · " + tt("brickSkinBuyShop", "Mua trong Shop");
     } else if (opts.locked) {
       desc.textContent = tt("brickSkinLocked");
     } else {
