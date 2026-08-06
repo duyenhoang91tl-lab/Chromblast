@@ -745,8 +745,7 @@
         <button type="button" class="pp-vis-toggle active" id="pp-vis-versus"></button>
       </div>
 
-      <div class="account-section-title" style="margin-top:14px;" data-i18n="ppDangerTitle">⚠️ Vùng nguy hiểm</div>
-      <button class="logout-btn" id="logout-btn" data-i18n="logoutBtn">🚪 Đăng xuất</button>
+      <button class="logout-btn" id="logout-btn" data-i18n="logoutBtn" style="margin-top:14px;">🚪 Đăng xuất</button>
       <button type="button" id="online-delete-account-btn" class="online-delete-account-btn" data-i18n="onlineDeleteAccount">Xóa tài khoản</button>
 
       <div class="account-msg" id="pp-msg"></div>
@@ -1147,6 +1146,19 @@
       <div class="auth-field" style="margin-top:12px;">
         <label data-i18n="caroBgLabel">Nền bàn (map xếp hình)</label>
         <div id="caro-skin-grid" class="caro-skin-grid"></div>
+      </div>
+      <div class="auth-field" style="margin-top:12px;">
+        <label data-i18n="caroSoundLabel">Âm thanh</label>
+        <div class="settings-toggles settings-toggles-prefs">
+          <button type="button" class="set-toggle" id="caro-sfx-toggle">
+            <span class="set-toggle-ico" id="caro-sfx-ico">🔊</span>
+            <span class="set-toggle-lab" data-i18n="setSound">Âm thanh</span>
+          </button>
+          <button type="button" class="set-toggle" id="caro-bgm-toggle">
+            <span class="set-toggle-ico" id="caro-bgm-ico">🎵</span>
+            <span class="set-toggle-lab" data-i18n="setBgm">Nhạc nền</span>
+          </button>
+        </div>
       </div>
       <button type="button" id="caro-settings-apply" class="auth-submit-btn" style="margin-top:14px;" data-i18n="caroSettingsApply">✓ Áp dụng</button>
     </div>
