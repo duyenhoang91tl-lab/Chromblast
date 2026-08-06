@@ -333,14 +333,22 @@
     const vsRank = (typeof getVersusRank === 'function' && msg.versusPoints != null) ? getVersusRank(msg.versusPoints) : null;
     // Tên áp hiệu ứng theo bậc CAO HƠN giữa Caro (0-11) và Versus (0-9) — so sánh theo
     // tỉ lệ % vì 2 hệ có tổng số bậc khác nhau, không so trực tiếp số bậc thô được.
-    let nameHtml = escapeHtml(msg.name || 'Player');
+    const senderStyle = {
+      color: msg.nameColor || '#ffffff',
+      bold: !!msg.nameBold,
+      italic: !!msg.nameItalic,
+      fontId: msg.nameFontId || 'nunito'
+    };
+    let nameHtml = (typeof formatPlayerNameStyledHtml === 'function')
+      ? formatPlayerNameStyledHtml(msg.name || 'Player', senderStyle)
+      : escapeHtml(msg.name || 'Player');
     if(typeof rankNameFxHtml === 'function' && (caroRank || vsRank)){
       const caroFrac = caroRank ? caroRank.tier / 11 : -1;
       const vsFrac = vsRank ? vsRank.tier / 9 : -1;
       if(caroFrac >= vsFrac && caroRank && caroRank.tier > 0){
-        nameHtml = rankNameFxHtml(msg.name || 'Player', caroRank.tier, 12);
+        nameHtml = rankNameFxHtml(msg.name || 'Player', caroRank.tier, 12, senderStyle);
       } else if(vsRank && vsRank.tier > 0){
-        nameHtml = rankNameFxHtml(msg.name || 'Player', vsRank.tier, 10);
+        nameHtml = rankNameFxHtml(msg.name || 'Player', vsRank.tier, 10, senderStyle);
       }
     }
     let badgesHtml = '';

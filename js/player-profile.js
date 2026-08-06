@@ -338,15 +338,26 @@ function formatPlayerNameHtml(name, style){
  * hiệu ứng cao nhất khi người chơi lên tới bậc chót của chính hệ đó (mặc định 12 nếu
  * không truyền, giữ nguyên hành vi cũ cho các chỗ gọi sẵn có của Caro).
  * Dùng ở bảng xếp hạng, phòng chờ, thẻ người chơi, màn kết quả Caro/Versus. */
-function rankNameFxHtml(name, tier, totalTiers){
+function rankNameFxHtml(name, tier, totalTiers, style){
   const n = (typeof escapeHtml === 'function' ? escapeHtml(name) : String(name||''));
   const total = Math.max(1, Number(totalTiers) || 12);
   const raw = Math.max(0, Math.min(total - 1, Number(tier) || 0));
   const tr = total > 1 ? Math.round((raw / (total - 1)) * 11) : 11;
-  if(tr >= 11){
-    return '<span class="rank-fx-marquee-box"><span class="rank-fx rank-fx-'+tr+' rank-fx-marquee-text">'+n+'</span></span>';
+  let styleAttr = '';
+  if(style){
+    const fam = _ppFontById(style.fontId).family;
+    const parts = ['font-family:'+fam];
+    if(style.italic) parts.push('font-style:italic');
+    if(style.bold) parts.push('font-weight:900');
+    // Bậc 0-1 (.rank-fx-0/1) chưa có hiệu ứng màu riêng (color:inherit) → áp màu tự chọn.
+    // Từ bậc 2 trở lên, màu/gradient là hiệu ứng theo rank nên giữ nguyên, không đè màu.
+    if(tr < 2 && style.color) parts.push('color:'+style.color);
+    styleAttr = ' style="'+parts.join(';')+'"';
   }
-  return '<span class="rank-fx rank-fx-'+tr+'">'+n+'</span>';
+  if(tr >= 11){
+    return '<span class="rank-fx-marquee-box"><span class="rank-fx rank-fx-'+tr+' rank-fx-marquee-text"'+styleAttr+'>'+n+'</span></span>';
+  }
+  return '<span class="rank-fx rank-fx-'+tr+'"'+styleAttr+'>'+n+'</span>';
 }
 
 function getPlayerNameStyle(){
