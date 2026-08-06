@@ -1,11 +1,22 @@
 // ═══════════════════════════════════════════════════════════════
-// js/caro.js — CỜ CARO 15×15 (X vs O · ô vuông)
+// js/caro.js — CỜ CARO (X vs O · ô vuông)
 // Luật: 5 quân liên tiếp thắng — CHẶN HAI ĐẦU thì không tính thắng.
 // Host = X, Guest = O. Online dùng Firebase rooms/moves (gameType:'caro').
+//
+// KÍCH THƯỚC BÀN: mặc định hiển thị CARO_MIN_SIZE (15×15), nhưng mảng dữ
+// liệu bàn cờ LUÔN cấp phát sẵn đủ CARO_MAX_SIZE (30×30) ngay từ đầu ván,
+// căn giữa vùng 15×15 ban đầu bên trong khoảng 30×30 đó (xem _caroNewBoard).
+// Khi có quân đặt cách rìa vùng đang hiển thị <= CARO_EXPAND_MARGIN ô, bàn
+// "mở khoá" hiện toàn bộ 30×30 (_caroMaybeExpand). Nhờ toạ độ (r,c) không
+// bao giờ đổi ý nghĩa (không dồn/lệch lại), việc mở rộng an toàn cho cả ván
+// online — 2 máy áp cùng một hàm xác định (deterministic) mỗi khi có nước đi
+// mới (dù là đi tại chỗ, AI, hay nhận qua mạng) nên luôn đồng bộ kích thước.
 // ═══════════════════════════════════════════════════════════════
 
 const CARO_MIN_LEVEL = 1;
-const CARO_SIZE = 15;
+const CARO_MIN_SIZE = 15;   // Kích thước hiển thị mặc định lúc bắt đầu ván
+const CARO_MAX_SIZE = 30;   // Kích thước tối đa sau khi mở rộng hết cỡ
+const CARO_EXPAND_MARGIN = 2; // Đặt quân cách rìa vùng hiển thị <= N ô → mở rộng
 const CARO_EMPTY = 0;
 const CARO_X = 1; // host
 const CARO_O = 2; // guest
@@ -139,10 +150,10 @@ function _caroGetCanvas(){
   return document.getElementById('caro-canvas');
 }
 
-/** Layout ô vuông 15×15 (không còn kiểu giao điểm Go) */
+/** Layout ô vuông (kích thước hiển thị động: 15×15 → tối đa 30×30, xem _caroMaybeExpand) */
 function _caroMeasure(){
   const canvas = _caroGetCanvas();
-  if(!canvas) return null;
+  if(!canvas || !_caro) return null;
   const wrap = canvas.parentElement;
   const rect = wrap ? wrap.getBoundingClientRect() : null;
   const maxW = (rect && rect.width) || (wrap && wrap.clientWidth) || window.innerWidth || 400;
@@ -156,9 +167,10 @@ function _caroMeasure(){
   canvas.style.height = cssSize + 'px';
   const pad = Math.max(8, cssSize * 0.035) * dpr;
   const inner = cssSize * dpr - pad * 2;
-  const cell = inner / CARO_SIZE;
+  const size = _caro.size || CARO_MIN_SIZE;
+  const cell = inner / size;
   const gap = 0; // Các ô chạm nhau, chỉ ngăn cách bằng kẻ vạch — không còn khe hở giữa ô
-  return { dpr, pad, cell, gap, px: cssSize * dpr };
+  return { dpr, pad, cell, gap, size, px: cssSize * dpr };
 }
 
 function _caroCellRect(r, c, m){
@@ -170,7 +182,7 @@ function _caroCellRect(r, c, m){
 function _caroCellAt(px, py, m){
   const c = Math.floor((px - m.pad) / m.cell);
   const r = Math.floor((py - m.pad) / m.cell);
-  if(r < 0 || r >= CARO_SIZE || c < 0 || c >= CARO_SIZE) return null;
+  if(r < 0 || r >= m.size || c < 0 || c >= m.size) return null;
   return { r, c };
 }
 
@@ -268,38 +280,39 @@ function _caroDrawBoard(){
 
  // 1. Tô nền chung cho toàn bộ bàn cờ Caro
   ctx.fillStyle = theme.cell;
-  ctx.fillRect(m.pad, m.pad, m.cell * CARO_SIZE, m.cell * CARO_SIZE);
+  ctx.fillRect(m.pad, m.pad, m.cell * m.size, m.cell * m.size);
 
   // 2. Kẻ các vạch ngang và dọc phân ô
   ctx.strokeStyle = theme.line;
   ctx.lineWidth = Math.max(1, m.dpr * 0.8);
   ctx.beginPath();
 
-  for (let i = 0; i <= CARO_SIZE; i++) {
+  for (let i = 0; i <= m.size; i++) {
     // Vạch dọc
     const x = m.pad + i * m.cell;
     ctx.moveTo(x, m.pad);
-    ctx.lineTo(x, m.pad + CARO_SIZE * m.cell);
+    ctx.lineTo(x, m.pad + m.size * m.cell);
 
     // Vạch ngang
     const y = m.pad + i * m.cell;
     ctx.moveTo(m.pad, y);
-    ctx.lineTo(m.pad + CARO_SIZE * m.cell, y);
+    ctx.lineTo(m.pad + m.size * m.cell, y);
   }
   ctx.stroke();
 
-  // Quân X / O
-  for(let r = 0; r < CARO_SIZE; r++){
-    for(let c = 0; c < CARO_SIZE; c++){
-      const v = _caro.board[r][c];
+  // Quân X / O — (vr,vc) là toạ độ trong vùng ĐANG HIỂN THỊ, cộng offset mới
+  // ra toạ độ thật trong mảng 30×30 cố định (xem _caroMaybeExpand).
+  for(let vr = 0; vr < m.size; vr++){
+    for(let vc = 0; vc < m.size; vc++){
+      const v = _caro.board[vr + _caro.offR][vc + _caro.offC];
       if(!v) continue;
-      const { x, y, s } = _caroCellRect(r, c, m);
+      const { x, y, s } = _caroCellRect(vr, vc, m);
       _caroDrawMark(ctx, x, y, s, v, theme, 1);
     }
   }
 
   // Preview
-  if(_caro.hover && !_caro.winner && !_caro.aiThinking && _caro.turn === _caro.mySlot && !_caro.board[_caro.hover.r][_caro.hover.c]){
+  if(_caro.hover && !_caro.winner && !_caro.aiThinking && _caro.turn === _caro.mySlot && !_caro.board[_caro.hover.r + _caro.offR][_caro.hover.c + _caro.offC]){
     const { x, y, s } = _caroCellRect(_caro.hover.r, _caro.hover.c, m);
     _caroDrawMark(ctx, x, y, s, _caroStone(_caro.mySlot), theme, 0.4);
   }
@@ -348,7 +361,7 @@ function _caroOnPointerDown(ev){
     _caroPlaceTimer = null;
     if(_caroActivePointers.size > 1) return;
     if(_caro.turn !== _caro.mySlot) return;
-    _caroApplyMove(cell.r, cell.c, _caro.mySlot, false);
+    _caroApplyMove(cell.r + _caro.offR, cell.c + _caro.offC, _caro.mySlot, false);
   }, 60);
 }
 
@@ -668,18 +681,6 @@ function _pcRenderCouple(coupleEl, partnerName, pairedAt){
   coupleEl.innerHTML = '<span class="pc-couple-ring">'+ring+'</span><span class="pc-couple-text">'+escapeHtml(label)+'</span>';
 }
 
-/* Hang rank rieng cho tung che do: nhan "XO" (Caro) hoac kiem cheo (Versus) + ten hang + ti le thang */
-function _pcRankRowHtml(mode, rankName, ratePct){
-  if(!rankName) return '';
-  const modeBadge = mode === 'caro'
-    ? '<b class="caro-x">X</b><b class="caro-o">O</b>'
-    : '<span class="pc-rank-mode-vs">⚔️</span>';
-  const rateLabel = (typeof t==='function'?t('caroWinRateLabel'):'Tỉ lệ thắng');
-  return '<div class="pc-rank-row"><span class="pc-rank-mode">'+modeBadge+'</span>'
-    +'<span class="pc-rank-name">'+escapeHtml(rankName)+'</span>'
-    +'<span class="pc-rank-rate">'+escapeHtml(rateLabel)+' '+ratePct+'%</span></div>';
-}
-
 function openOwnPlayerCard(){
   const nick = (typeof getPlayerNickname === 'function' ? getPlayerNickname() : null) || 'Bạn';
   const av = (typeof getPlayerAvatarDisplay === 'function'
@@ -737,11 +738,22 @@ async function openPlayerCard(opts){
       const vsRate = vs.winRate != null ? vs.winRate : 0;
       const caroRank = s.rank || null;
       const vsRank = (typeof getVersusRank === 'function') ? getVersusRank(vs.points||0) : null;
-      let statsHtml = '<div class="pc-ranks">';
-      statsHtml += _pcRankRowHtml('caro', caroRank ? caroRank.name : '', rate);
-      statsHtml += _pcRankRowHtml('vs', vsRank ? vsRank.name : '', vsRate);
-      statsHtml += '</div>';
-      document.getElementById('pc-stats').innerHTML = statsHtml;
+      const caroTitle = caroRank ? (caroRank.icon+' '+caroRank.name) : '';
+      const vsTitle = vsRank ? (vsRank.icon+' '+vsRank.name) : '';
+      let statsHtml = '';
+      {
+        const caroLine = (typeof t==='function'
+          ? (t('caroWinRateLabel')+': '+rate+'%')
+          : (rate+'%'));
+        statsHtml += '<div class="pc-mode-stats"><b>Caro</b> — '+caroTitle+'<br>'+caroLine+'</div>';
+      }
+      {
+        const vsLine = (typeof t==='function'
+          ? (t('caroWinRateLabel')+': '+vsRate+'%')
+          : (vsRate+'%'));
+        statsHtml += '<div class="pc-mode-stats"><b>Versus</b> — '+vsTitle+'<br>'+vsLine+'</div>';
+      }
+      document.getElementById('pc-stats').innerHTML = statsHtml || (typeof t==='function'?t('caroNoStats'):'Chưa có thống kê');
     }catch(e){}
     return;
   }
@@ -752,10 +764,15 @@ async function openPlayerCard(opts){
     document.getElementById('pc-avatar').textContent = prof.avatar || fallbackAv;
     const s = prof.stats || {};
     const rate = s.winRate != null ? s.winRate : 0;
+    const caroLine = (typeof t==='function'
+      ? (t('caroWinRateLabel')+': '+rate+'%')
+      : (rate+'%'));
     const vs = prof.versusStats || {};
     const vsRate = vs.winRate != null ? vs.winRate : 0;
     const vsRank = (typeof getVersusRank === 'function') ? getVersusRank(vs.points||0) : null;
     const caroRank = s.rank || null;
+    const caroTitle = caroRank ? (caroRank.icon+' '+caroRank.name) : '';
+    const vsTitle = vsRank ? (vsRank.icon+' '+vsRank.name) : '';
     const bestTier = Math.max(caroRank ? (caroRank.tier||0) : 0, vsRank ? (vsRank.tier||0) : 0);
     const pcNameEl = document.getElementById('pc-name');
     if(pcNameEl){
@@ -768,17 +785,17 @@ async function openPlayerCard(opts){
     const visMaps = prof.visMaps !== false;
     const visCaro = prof.visCaro !== false;
     const visVersus = prof.visVersus !== false;
-    let statsHtml = '<div class="pc-ranks">';
+    let statsHtml = '';
     if(hasCaro && visCaro){
-      statsHtml += _pcRankRowHtml('caro', caroRank ? caroRank.name : '', rate);
+      statsHtml += '<div class="pc-mode-stats"><b>Caro</b> — '+caroTitle+'<br>'+caroLine+'</div>';
     }
     if(hasVs && visVersus){
-      statsHtml += _pcRankRowHtml('vs', vsRank ? vsRank.name : '', vsRate);
+      const vsLine = (typeof t==='function'
+        ? (t('caroWinRateLabel')+': '+vsRate+'%')
+        : (vsRate+'%'));
+      statsHtml += '<div class="pc-mode-stats"><b>Versus</b> — '+vsTitle+'<br>'+vsLine+'</div>';
     }
-    statsHtml += '</div>';
-    document.getElementById('pc-stats').innerHTML = (statsHtml === '<div class="pc-ranks"></div>')
-      ? (typeof t==='function'?t('caroNoStats'):'Chưa có thống kê')
-      : statsHtml;
+    document.getElementById('pc-stats').innerHTML = statsHtml || (typeof t==='function'?t('caroNoStats'):'Chưa có thống kê');
     if(visMaps){
       _pcRenderProgress(progEl, prof.level || 1, prof.mapNormal || 0, prof.mapSecret || 0);
     } else if(progEl){
@@ -997,7 +1014,29 @@ function _caroStatus(msg, err){
 }
 
 function _caroNewBoard(){
-  return Array.from({length:CARO_SIZE}, ()=>Array(CARO_SIZE).fill(CARO_EMPTY));
+  return Array.from({length:CARO_MAX_SIZE}, ()=>Array(CARO_MAX_SIZE).fill(CARO_EMPTY));
+}
+
+/** Vùng 15×15 mặc định căn giữa bên trong mảng 30×30 cố định. */
+function _caroInitWindow(){
+  const off = (CARO_MAX_SIZE - CARO_MIN_SIZE) >> 1; // 7 — lệch 1 ô so với phía đối diện, không đáng kể
+  return { size: CARO_MIN_SIZE, offR: off, offC: off };
+}
+
+/** Gọi mỗi khi có 1 quân MỚI vừa được ghi vào _caro.board (bất kể tại chỗ/AI/mạng) —
+ *  nếu quân đó cách rìa vùng đang hiển thị <= CARO_EXPAND_MARGIN ô thì mở hết cỡ lên
+ *  CARO_MAX_SIZE. Hàm thuần theo toạ độ (r,c) tuyệt đối trong mảng nên host/khách luôn
+ *  tính ra cùng kết quả — không cần gửi thêm gì qua mạng để đồng bộ việc mở rộng. */
+function _caroMaybeExpand(r, c){
+  if(!_caro || _caro.size >= CARO_MAX_SIZE) return;
+  const minR = _caro.offR, maxR = _caro.offR + _caro.size - 1;
+  const minC = _caro.offC, maxC = _caro.offC + _caro.size - 1;
+  const nearEdge = (r - minR) < CARO_EXPAND_MARGIN || (maxR - r) < CARO_EXPAND_MARGIN ||
+                    (c - minC) < CARO_EXPAND_MARGIN || (maxC - c) < CARO_EXPAND_MARGIN;
+  if(!nearEdge) return;
+  _caro.size = CARO_MAX_SIZE;
+  _caro.offR = 0;
+  _caro.offC = 0;
 }
 
 function _caroStone(slot){ return slot === 'host' ? CARO_X : CARO_O; }
@@ -1010,11 +1049,11 @@ function _caroCheckWin(board, r, c, color){
   for(const [dr,dc] of dirs){
     const cells = [[r,c]];
     let nr = r-dr, nc = c-dc;
-    while(nr>=0 && nr<CARO_SIZE && nc>=0 && nc<CARO_SIZE && board[nr][nc]===color){
+    while(nr>=0 && nr<CARO_MAX_SIZE && nc>=0 && nc<CARO_MAX_SIZE && board[nr][nc]===color){
       cells.unshift([nr,nc]); nr-=dr; nc-=dc;
     }
     nr = r+dr; nc = c+dc;
-    while(nr>=0 && nr<CARO_SIZE && nc>=0 && nc<CARO_SIZE && board[nr][nc]===color){
+    while(nr>=0 && nr<CARO_MAX_SIZE && nc>=0 && nc<CARO_MAX_SIZE && board[nr][nc]===color){
       cells.push([nr,nc]); nr+=dr; nc+=dc;
     }
     if(cells.length < 5) continue;
@@ -1023,8 +1062,8 @@ function _caroCheckWin(board, r, c, color){
       if(!five.some(([fr,fc])=>fr===r && fc===c)) continue;
       const [r0,c0]=five[0], [r4,c4]=five[4];
       const br=r0-dr, bc=c0-dc, ar=r4+dr, ac=c4+dc;
-      const blockedBefore = br<0||bc<0||br>=CARO_SIZE||bc>=CARO_SIZE||board[br][bc]===opp;
-      const blockedAfter = ar<0||ac<0||ar>=CARO_SIZE||ac>=CARO_SIZE||board[ar][ac]===opp;
+      const blockedBefore = br<0||bc<0||br>=CARO_MAX_SIZE||bc>=CARO_MAX_SIZE||board[br][bc]===opp;
+      const blockedAfter = ar<0||ac<0||ar>=CARO_MAX_SIZE||ac>=CARO_MAX_SIZE||board[ar][ac]===opp;
       if(!(blockedBefore && blockedAfter)) return true;
     }
   }
@@ -1032,7 +1071,11 @@ function _caroCheckWin(board, r, c, color){
 }
 
 function _caroBoardFull(board){
-  for(let r=0;r<CARO_SIZE;r++) for(let c=0;c<CARO_SIZE;c++) if(!board[r][c]) return false;
+  // Chỉ tính "đầy" trong vùng ĐANG HIỂN THỊ của ván hiện tại (bên ngoài vùng đó
+  // luôn còn trống cho tới khi mở rộng — xem _caroMaybeExpand).
+  const offR = _caro ? _caro.offR : 0, offC = _caro ? _caro.offC : 0;
+  const size = _caro ? _caro.size : CARO_MIN_SIZE;
+  for(let r=offR; r<offR+size; r++) for(let c=offC; c<offC+size; c++) if(!board[r][c]) return false;
   return true;
 }
 
@@ -1041,8 +1084,10 @@ function _caroCloneBoard(board){
 }
 
 function _caroCountStones(board){
+  const offR = _caro ? _caro.offR : 0, offC = _caro ? _caro.offC : 0;
+  const size = _caro ? _caro.size : CARO_MIN_SIZE;
   let n = 0;
-  for(let r=0;r<CARO_SIZE;r++) for(let c=0;c<CARO_SIZE;c++) if(board[r][c]) n++;
+  for(let r=offR; r<offR+size; r++) for(let c=offC; c<offC+size; c++) if(board[r][c]) n++;
   return n;
 }
 
@@ -1051,18 +1096,20 @@ function _caroGetCandidates(board, radius){
   const seen = new Set();
   const hasStone = _caroCountStones(board) > 0;
   if(!hasStone){
-    const mid = (CARO_SIZE - 1) >> 1;
+    const mid = (CARO_MAX_SIZE - 1) >> 1;
     return [[mid, mid]];
   }
-  for(let r=0;r<CARO_SIZE;r++){
-    for(let c=0;c<CARO_SIZE;c++){
+  const offR = _caro ? _caro.offR : 0, offC = _caro ? _caro.offC : 0;
+  const size = _caro ? _caro.size : CARO_MIN_SIZE;
+  for(let r=offR; r<offR+size; r++){
+    for(let c=offC; c<offC+size; c++){
       if(board[r][c]) continue;
       let near = false;
       for(let dr=-radius; dr<=radius && !near; dr++){
         for(let dc=-radius; dc<=radius && !near; dc++){
           if(!dr && !dc) continue;
           const nr=r+dr, nc=c+dc;
-          if(nr>=0 && nr<CARO_SIZE && nc>=0 && nc<CARO_SIZE && board[nr][nc]) near = true;
+          if(nr>=0 && nr<CARO_MAX_SIZE && nc>=0 && nc<CARO_MAX_SIZE && board[nr][nc]) near = true;
         }
       }
       if(near){
@@ -1077,11 +1124,11 @@ function _caroGetCandidates(board, radius){
 function _caroExtendLine(board, r, c, dr, dc, color){
   const cells = [[r,c]];
   let nr = r-dr, nc = c-dc;
-  while(nr>=0 && nr<CARO_SIZE && nc>=0 && nc<CARO_SIZE && board[nr][nc]===color){
+  while(nr>=0 && nr<CARO_MAX_SIZE && nc>=0 && nc<CARO_MAX_SIZE && board[nr][nc]===color){
     cells.unshift([nr,nc]); nr-=dr; nc-=dc;
   }
   nr = r+dr; nc = c+dc;
-  while(nr>=0 && nr<CARO_SIZE && nc>=0 && nc<CARO_SIZE && board[nr][nc]===color){
+  while(nr>=0 && nr<CARO_MAX_SIZE && nc>=0 && nc<CARO_MAX_SIZE && board[nr][nc]===color){
     cells.push([nr,nc]); nr+=dr; nc+=dc;
   }
   return cells;
@@ -1090,7 +1137,7 @@ function _caroExtendLine(board, r, c, dr, dc, color){
 function _caroOpenEnds(board, cells, dr, dc){
   const [r0,c0] = cells[0], [rN,cN] = cells[cells.length-1];
   const br=r0-dr, bc=c0-dc, ar=rN+dr, ac=cN+dc;
-  const openAt = (rr,cc)=> rr>=0 && rr<CARO_SIZE && cc>=0 && cc<CARO_SIZE && board[rr][cc]===CARO_EMPTY;
+  const openAt = (rr,cc)=> rr>=0 && rr<CARO_MAX_SIZE && cc>=0 && cc<CARO_MAX_SIZE && board[rr][cc]===CARO_EMPTY;
   let open = 0;
   if(openAt(br,bc)) open++;
   if(openAt(ar,ac)) open++;
@@ -1123,7 +1170,7 @@ function _caroAnalyzePlace(board, r, c, color){
     else if(len === 3 && open === 2) openThree++;
     else if(len === 3 && open === 1) halfThree++;
   }
-  const cr = (CARO_SIZE - 1) / 2;
+  const cr = (CARO_MAX_SIZE - 1) / 2;
   score += Math.max(0, 12 - (Math.abs(r-cr) + Math.abs(c-cr)));
   return { win:false, openFour, halfFour, openThree, halfThree, score };
 }
@@ -1223,7 +1270,9 @@ function _caroNegamax(board, depth, alpha, beta, color, oppColor, profile){
 function _caroRandomEmptyNear(board, radius){
   const cands = _caroGetCandidates(board, radius);
   if(cands.length) return cands[Math.floor(Math.random() * cands.length)];
-  for(let r=0;r<CARO_SIZE;r++) for(let c=0;c<CARO_SIZE;c++) if(!board[r][c]) return [r,c];
+  const offR = _caro ? _caro.offR : 0, offC = _caro ? _caro.offC : 0;
+  const size = _caro ? _caro.size : CARO_MIN_SIZE;
+  for(let r=offR; r<offR+size; r++) for(let c=offC; c<offC+size; c++) if(!board[r][c]) return [r,c];
   return null;
 }
 
@@ -1356,6 +1405,7 @@ function _caroEnterAIGame(levelId){
 
   _caro = {
     board: _caroNewBoard(),
+    ..._caroInitWindow(),
     turn: 'host',
     mySlot: 'host',
     roomId: null,
@@ -1374,7 +1424,6 @@ function _caroEnterAIGame(levelId){
     turnLeft: prefs.turnSec
   };
   caroMode = true;
-  try{ if(typeof logGameEvent==='function') logGameEvent('caro_match_start', { mode:'ai', ai_level:profile.id||levelId }); }catch(e){}
   // FIX: reset pinch-zoom còn sót từ ván trước khi vào ván AI mới
   _caroResetZoom();
   _caroToggleChrome(true);
@@ -1429,6 +1478,7 @@ function _caroApplyMove(r, c, slot, fromNet){
 
   const color = _caroStone(slot);
   _caro.board[r][c] = color;
+  _caroMaybeExpand(r, c);
   try{ sfxPlacePiece(); }catch(e){ try{ sfxClick(); }catch(e2){} }
 
   if(_caroCheckWin(_caro.board, r, c, color)){
@@ -1471,6 +1521,7 @@ function _caroEnterGame(roomData){
   }catch(e){}
   _caro = {
     board: _caroNewBoard(),
+    ..._caroInitWindow(),
     turn: 'host',
     mySlot,
     roomId: roomData.roomId || _caroLobby?.roomId,
@@ -1485,7 +1536,6 @@ function _caroEnterGame(roomData){
     turnLeft: turnSec
   };
   caroMode = true;
-  try{ if(typeof logGameEvent==='function') logGameEvent('caro_match_start', { mode:'online' }); }catch(e){}
   // FIX: reset pinch-zoom còn sót từ ván trước khi vào ván online mới
   _caroResetZoom();
   _caroHide('caro-lobby-panel');
@@ -1525,7 +1575,7 @@ function _caroEnterGame(roomData){
     }
     if(d.currentTurn === 'host' || d.currentTurn === 'guest'){
       let stones = 0;
-      for(let r=0;r<CARO_SIZE;r++) for(let c=0;c<CARO_SIZE;c++) if(_caro.board[r][c]) stones++;
+      for(let r=0;r<CARO_MAX_SIZE;r++) for(let c=0;c<CARO_MAX_SIZE;c++) if(_caro.board[r][c]) stones++;
       const expectTurn = (stones % 2 === 0) ? 'host' : 'guest';
       if(d.currentTurn === expectTurn && _caro.turn !== d.currentTurn){
         _caro.turn = d.currentTurn;
@@ -1545,6 +1595,7 @@ function _caroEnterGame(roomData){
       if(m.type==='caro_place' && m.seq > (_caro.moveSeq||0)){
         _caro.moveSeq = m.seq;
         if(!_caro.board[m.r][m.c]) _caro.board[m.r][m.c] = _caroStone(m.slot);
+        _caroMaybeExpand(m.r, m.c);
         _caro.turn = _caroOpp(m.slot);
       }
     });
@@ -1562,6 +1613,7 @@ function _caroEnterGame(roomData){
     const ok = _caroApplyMove(move.r, move.c, move.slot, true);
     if(!ok && move.r != null && move.c != null && !_caro.board[move.r][move.c]){
       _caro.board[move.r][move.c] = _caroStone(move.slot);
+      _caroMaybeExpand(move.r, move.c);
       _caro.turn = _caroOpp(move.slot);
       _caroRender();
       _caroStartTurnTimer();
@@ -1585,10 +1637,6 @@ function _caroEndGame(winnerSlot, fromRemote){
   _caroRender();
 
   const isAI = !!_caro.ai;
-  try{
-    const result = !winnerSlot ? 'draw' : (winnerSlot===_caro.mySlot ? 'win' : 'lose');
-    if(typeof logGameEvent==='function') logGameEvent('caro_match_end', { mode:isAI?'ai':'online', result, ai_level:isAI?(_caro.ai.id||''):undefined });
-  }catch(e){}
   try{
     if(isAI && _caro.ai.id === 'extreme' && winnerSlot === _caro.mySlot){
       window.dispatchEvent(new CustomEvent('caro-ai-win', { detail:{ level:'extreme' } }));
@@ -1859,13 +1907,7 @@ function _caroMergeMyRoom(rooms, mine){
   return list;
 }
 
-let _caroRoomListenWanted = false;
-
 function _caroStartRoomListListen(){
-  _caroRoomListenWanted = true;
-  // Tab/app đang ở nền: khoan nghe, đợi quay lại mới bật (đỡ tốn đọc Firestore
-  // trong lúc người chơi khoá máy/chuyển app mà vẫn còn đứng ở sảnh/lobby).
-  if(document.hidden) return;
   if(typeof listenOpenCaroRooms !== 'function') return;
   listenOpenCaroRooms((rooms)=>{
     // Gộp phòng mình đang host (không sanitize lại mỗi snapshot — tránh ghi Firestore liên tục)
@@ -1888,17 +1930,8 @@ function _caroStartRoomListListen(){
 }
 
 function _caroStopRoomListListen(){
-  _caroRoomListenWanted = false;
   if(typeof stopListeningOpenCaroRooms === 'function') stopListeningOpenCaroRooms();
 }
-document.addEventListener('visibilitychange', ()=>{
-  if(!_caroRoomListenWanted) return;
-  if(document.hidden){
-    if(typeof stopListeningOpenCaroRooms === 'function') stopListeningOpenCaroRooms();
-  }else{
-    _caroStartRoomListListen();
-  }
-});
 
 function _caroRenderOpenRoomLists(rooms){
   _caroLastOpenRooms = rooms || [];
@@ -1985,7 +2018,7 @@ function _caroOpenLobby(roomId, code, role, roomData){
   _caroShow('caro-lobby-panel');
   document.getElementById('caro-room-code').textContent = code;
   _caroRenderLobby(roomData);
-  _caroStartRoomListListen();
+  if(typeof listenOpenCaroRooms === 'function') listenOpenCaroRooms(_caroRenderOpenRoomLists);
 
   // Chỉ chủ phòng ghi nhịp tim — dùng để mọi người phát hiện phòng "chết" gần như tức thời
   // (xem startRoomHeartbeat/isRoomHostStale trong online-services.js).
