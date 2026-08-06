@@ -24,11 +24,30 @@ service cloud.firestore {
         && scoreField('pvpWins') && scoreField('pvpLosses') && scoreField('pvpDraws')
         && scoreField('bestPvpScore') && scoreField('bestScore');
     }
+    /* Giống scoreField() nhưng cho phép giá trị KHỞI TẠO khác 0 (vd: gold bắt đầu 20,
+       hearts bắt đầu 5) — khớp START_GOLD/MAX_HEARTS trong js/inventory.js. Sau khi đã
+       có field trên doc thì tuyệt đối chỉ Cloud Function (Admin SDK) mới đổi được. */
+    function walletField(field, startValue) {
+      return !(field in request.resource.data)
+        || (resource == null && request.resource.data[field] == startValue)
+        || (resource != null && !(field in resource.data) && request.resource.data[field] == startValue)
+        || (resource != null && field in resource.data && request.resource.data[field] == resource.data[field]);
+    }
     /* Field chỉ Cloud Function (Admin SDK) được ghi — client gửi lên field này coi như
        không đổi gì (bị bỏ qua ở tầng rule), dùng cho mốc thời gian chống báo điểm khống. */
     function fieldLocked(field) {
       return !(field in request.resource.data)
         || (resource != null && field in resource.data && request.resource.data[field] == resource.data[field]);
+    }
+    /* Vàng/kim cương/tim: trước đây 100% ở localStorage (inventory.js), ai mở Console
+       gọi grantGold()/grantDiamonds() là có tiền vô hạn — từ khi có IAP (js/iap.js) lỗ
+       này đụng thẳng tiền thật. Từ đây 3 field này + mốc hồi tim sống trên players/{uid},
+       client chỉ được thấy giá trị KHỞI TẠO đúng 1 lần lúc tạo tài khoản, sau đó chỉ đọc —
+       mọi thay đổi phải qua Cloud Function (spendCurrency/exchangeCurrency/regenHearts/
+       claimDailyReward/claimQuestReward/claimPeriodReward/giftHeart/revenuecatWebhook). */
+    function walletFieldsUnchanged() {
+      return walletField('gold', 20) && walletField('diamonds', 0) && walletField('hearts', 5)
+        && fieldLocked('heartsAt');
     }
 
     /* Chặn "báo thắng khống tức thời": trước đây bất kỳ host/guest nào cũng tự chuyển
@@ -101,8 +120,16 @@ service cloud.firestore {
       allow read: if signedIn();
       allow create, update: if isOwner(uid) && scoreFieldsUnchanged() && fieldLocked('currentRunStartedAt')
         && fieldLocked('referredBy') && fieldLocked('referralRewardPending')
-        && fieldLocked('referralRewardGold') && fieldLocked('referralRewardDiamond');
+        && fieldLocked('referralRewardGold') && fieldLocked('referralRewardDiamond')
+        && walletFieldsUnchanged();
       allow delete: if isOwner(uid);
+
+      /* Sổ "đã nhận thưởng chưa" cho quest/BXH kỳ (1 doc = 1 lần nhận, tạo bằng
+         transaction trong Cloud Function) — chỉ Admin SDK đụng vào, chặn client tự
+         tạo/xoá để nhận lại nhiều lần. */
+      match /claims/{claimId} {
+        allow read, write: if false;
+      }
 
       match /friends/{fid} {
         allow read: if signedIn();

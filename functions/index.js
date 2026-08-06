@@ -1,8 +1,8 @@
 const { setGlobalOptions } = require('firebase-functions/v2');
 const { onDocumentCreated, onDocumentUpdated } = require('firebase-functions/v2/firestore');
-const { onCall, HttpsError } = require('firebase-functions/v2/https');
+const { onCall, onRequest, HttpsError } = require('firebase-functions/v2/https');
 const { initializeApp } = require('firebase-admin/app');
-const { getFirestore, FieldValue } = require('firebase-admin/firestore');
+const { getFirestore, FieldValue, Timestamp } = require('firebase-admin/firestore');
 const { filterText, containsProfanity } = require('./profanity-filter.js');
 const crypto = require('crypto');
 initializeApp();
@@ -263,17 +263,283 @@ exports.claimPendingRewards = onCall({ region: 'asia-southeast1' }, async (reque
   const uid = request.auth && request.auth.uid;
   if (!uid) throw new HttpsError('unauthenticated', 'Cần đăng nhập.');
   const ref = db.collection('players').doc(uid);
-  const snap = await ref.get();
-  const data = snap.exists ? snap.data() : {};
-  const gold = data.referralRewardGold || 0;
-  const diamond = data.referralRewardDiamond || 0;
-  if (gold > 0 || diamond > 0) {
-    await ref.set({
+  return db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    const data = snap.exists ? snap.data() : {};
+    const gold = data.referralRewardGold || 0;
+    const diamond = data.referralRewardDiamond || 0;
+    if (gold <= 0 && diamond <= 0) return { gold: 0, diamond: 0 };
+    // Cộng thẳng vào ví server — trước đây hàm này chỉ trả số về cho client tự
+    // grantGold/grantDiamonds vào localStorage; từ nay localStorage không còn là nơi
+    // giữ tiền thật nữa (xem VÍ SERVER-SIDE bên dưới), nên phải cộng ở đây luôn.
+    tx.set(ref, {
       referralRewardGold: FieldValue.increment(-gold),
-      referralRewardDiamond: FieldValue.increment(-diamond)
+      referralRewardDiamond: FieldValue.increment(-diamond),
+      gold: FieldValue.increment(gold),
+      diamonds: FieldValue.increment(diamond)
     }, { merge: true });
+    return { gold, diamond };
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════
+// VÍ SERVER-SIDE: vàng (gold) / kim cương (diamonds) / tim (hearts)
+// Trước đây 100% ở localStorage (js/inventory.js) — ai mở Console trình duyệt gọi
+// thẳng grantGold()/grantDiamonds() (hàm global bình thường, không phải module) là có
+// tiền vô hạn ngay, không gì chặn. Từ khi có IAP (js/iap.js, RevenueCat) thì lỗ này
+// đụng thẳng tiền thật: mua kim cương xong vẫn có thể tự cộng thêm miễn phí.
+// Từ đây gold/diamonds/hearts + heartsAt là field trên players/{uid}, CHỈ Cloud
+// Function (Admin SDK) ghi được (xem firestore.rules: walletFieldsUnchanged()).
+// Client chỉ ĐỌC 3 field này để hiển thị + gọi các function dưới để tiêu/nhận.
+// PHẠM VI ĐÃ LÀM: bản thân số dư (tiêu, đổi, hồi tim, quà BXH kỳ đã xác thực rank
+// thật, mailbox referral, mua IAP qua webhook) — tất cả các đường này giờ không thể
+// giả mạo được số dư. CÒN LẠI (nói thẳng, chưa làm hết trong lượt này): nhiệm vụ,
+// điểm danh, thưởng lên cấp, xem QC vẫn gọi grantGold/grantDiamonds cục bộ như cũ —
+// những đường này vẫn "tự khai" (chưa xác thực được là có thật sự làm nhiệm vụ/xem
+// QC hay không), nhưng ít nhất KHÔNG THỂ tự phóng to số dư vô hạn nữa vì mọi chỗ TIÊU
+// (mua skin/vật phẩm) và HIỂN THỊ giờ đọc từ server — gọi grantGold cục bộ chỉ còn
+// đổi số trong localStorage, không đổi được số dư thật để tiêu.
+// ═══════════════════════════════════════════════════════════════
+const MAX_HEARTS = 5;                    // khớp js/inventory.js: MAX_HEARTS
+const HEART_REGEN_MS = 30 * 60 * 1000;   // khớp js/inventory.js: HEART_REGEN_MS
+const GOLD_PER_DIAMOND = 100;            // khớp js/inventory.js: GOLD_PER_DIAMOND
+
+function walletOf(data) {
+  const d = data || {};
+  return {
+    gold: Math.max(0, Math.floor(d.gold || 0)),
+    diamonds: Math.max(0, Math.floor(d.diamonds || 0)),
+    hearts: Math.max(0, Number(d.hearts != null ? d.hearts : MAX_HEARTS))
+  };
+}
+
+/** Hồi tim theo thời gian THẬT đã trôi (server), không phải đồng hồ máy client —
+ * gọi khi mở app / mở màn chơi, cùng cơ chế currentRunStartedAt đã dùng cho solo. */
+exports.regenHearts = onCall({ region: 'asia-southeast1' }, async (request) => {
+  const uid = request.auth && request.auth.uid;
+  if (!uid) throw new HttpsError('unauthenticated', 'Cần đăng nhập.');
+  const ref = db.collection('players').doc(uid);
+  return db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    const data = snap.exists ? snap.data() : {};
+    const w = walletOf(data);
+    const now = Timestamp.now();
+    if (w.hearts >= MAX_HEARTS) {
+      if (!data.heartsAt) tx.set(ref, { heartsAt: now }, { merge: true });
+      return { hearts: w.hearts };
+    }
+    const anchorMs = data.heartsAt ? data.heartsAt.toMillis() : now.toMillis();
+    const elapsedMs = Math.max(0, now.toMillis() - anchorMs);
+    const gained = Math.floor(elapsedMs / HEART_REGEN_MS);
+    if (gained <= 0) {
+      if (!data.heartsAt) tx.set(ref, { heartsAt: now }, { merge: true });
+      return { hearts: w.hearts };
+    }
+    const newHearts = Math.min(MAX_HEARTS, w.hearts + gained);
+    const newAnchorMs = newHearts >= MAX_HEARTS ? now.toMillis() : anchorMs + gained * HEART_REGEN_MS;
+    tx.set(ref, { hearts: newHearts, heartsAt: Timestamp.fromMillis(newAnchorMs) }, { merge: true });
+    return { hearts: newHearts };
+  });
+});
+
+/**
+ * Tiêu vàng/kim cương/tim — kiểm tra đủ số dư THẬT trên server bằng transaction rồi
+ * mới trừ. data: { cost: {gold?, diamonds?, hearts?}, reason? }. Chỉ trừ — đổi tiền
+ * tệ dùng exchangeCurrency; nhận thưởng dùng các hàm claim..reward/grant.. riêng bên dưới.
+ */
+exports.spendCurrency = onCall({ region: 'asia-southeast1' }, async (request) => {
+  const uid = request.auth && request.auth.uid;
+  if (!uid) throw new HttpsError('unauthenticated', 'Cần đăng nhập.');
+  const cost = (request.data && request.data.cost) || {};
+  const g = Math.max(0, Math.floor(cost.gold || 0));
+  const d = Math.max(0, Math.floor(cost.diamonds || 0));
+  const h = Math.max(0, Number(cost.hearts || 0));
+  if (g <= 0 && d <= 0 && h <= 0) throw new HttpsError('invalid-argument', 'Không có gì để tiêu.');
+  const ref = db.collection('players').doc(uid);
+  return db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    if (!snap.exists) throw new HttpsError('failed-precondition', 'Chưa có ví.');
+    const w = walletOf(snap.data());
+    if (w.gold < g || w.diamonds < d || w.hearts < h) {
+      throw new HttpsError('failed-precondition', 'Không đủ số dư.');
+    }
+    tx.set(ref, {
+      gold: FieldValue.increment(-g),
+      diamonds: FieldValue.increment(-d),
+      hearts: FieldValue.increment(-h)
+    }, { merge: true });
+    return { gold: w.gold - g, diamonds: w.diamonds - d, hearts: w.hearts - h };
+  });
+});
+
+/** Đổi vàng <-> kim cương theo tỉ giá CỐ ĐỊNH trên server (không tin tỉ giá client
+ * gửi lên). data: { direction: 'goldToDiamond'|'diamondToGold', count } */
+exports.exchangeCurrency = onCall({ region: 'asia-southeast1' }, async (request) => {
+  const uid = request.auth && request.auth.uid;
+  if (!uid) throw new HttpsError('unauthenticated', 'Cần đăng nhập.');
+  const direction = request.data && request.data.direction;
+  const count = Math.max(1, Math.floor((request.data && request.data.count) || 1));
+  if (direction !== 'goldToDiamond' && direction !== 'diamondToGold') {
+    throw new HttpsError('invalid-argument', 'Hướng đổi không hợp lệ.');
   }
-  return { gold, diamond };
+  const ref = db.collection('players').doc(uid);
+  return db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    if (!snap.exists) throw new HttpsError('failed-precondition', 'Chưa có ví.');
+    const w = walletOf(snap.data());
+    if (direction === 'goldToDiamond') {
+      const goldCost = count * GOLD_PER_DIAMOND;
+      if (w.gold < goldCost) throw new HttpsError('failed-precondition', 'Không đủ vàng.');
+      tx.set(ref, { gold: FieldValue.increment(-goldCost), diamonds: FieldValue.increment(count) }, { merge: true });
+      return { gold: w.gold - goldCost, diamonds: w.diamonds + count };
+    }
+    if (w.diamonds < count) throw new HttpsError('failed-precondition', 'Không đủ kim cương.');
+    const goldGain = count * GOLD_PER_DIAMOND;
+    tx.set(ref, { diamonds: FieldValue.increment(-count), gold: FieldValue.increment(goldGain) }, { merge: true });
+    return { gold: w.gold + goldGain, diamonds: w.diamonds - count };
+  });
+});
+
+/** Bảng quà theo hạng BXH kỳ — port 1:1 từ js/lb-period.js (REWARD_TABLE). Kim
+ * cương chỉ top 1–3, vàng tới top 100. */
+const PERIOD_REWARD_TABLE = {
+  day: [
+    { max: 1, gold: 50, diamond: 3 }, { max: 2, gold: 30, diamond: 2 }, { max: 3, gold: 20, diamond: 1 },
+    { max: 10, gold: 12, diamond: 0 }, { max: 20, gold: 8, diamond: 0 }, { max: 40, gold: 5, diamond: 0 },
+    { max: 60, gold: 3, diamond: 0 }, { max: 80, gold: 2, diamond: 0 }, { max: 100, gold: 1, diamond: 0 }
+  ],
+  week: [
+    { max: 1, gold: 200, diamond: 10 }, { max: 2, gold: 120, diamond: 6 }, { max: 3, gold: 80, diamond: 3 },
+    { max: 10, gold: 40, diamond: 0 }, { max: 20, gold: 25, diamond: 0 }, { max: 40, gold: 15, diamond: 0 },
+    { max: 60, gold: 10, diamond: 0 }, { max: 80, gold: 6, diamond: 0 }, { max: 100, gold: 3, diamond: 0 }
+  ],
+  month: [
+    { max: 1, gold: 800, diamond: 30 }, { max: 2, gold: 500, diamond: 18 }, { max: 3, gold: 300, diamond: 10 },
+    { max: 10, gold: 150, diamond: 0 }, { max: 20, gold: 90, diamond: 0 }, { max: 40, gold: 50, diamond: 0 },
+    { max: 60, gold: 30, diamond: 0 }, { max: 80, gold: 18, diamond: 0 }, { max: 100, gold: 10, diamond: 0 }
+  ]
+};
+function periodRewardForRank(kind, rank) {
+  if (!rank || rank < 1 || rank > 100) return null;
+  const table = PERIOD_REWARD_TABLE[kind] || PERIOD_REWARD_TABLE.day;
+  for (const row of table) if (rank <= row.max) return { gold: row.gold | 0, diamond: row.diamond | 0 };
+  return null;
+}
+
+/**
+ * Nhận quà BXH kỳ (ngày/tuần/tháng) — KHÔNG tin rank client tự báo: tự đếm lại số
+ * người có điểm cao hơn trong chính periodScores (đã server-authoritative sẵn từ
+ * submitSoloScore) để suy ra rank thật, rồi tra bảng thưởng. Chỉ nhận được 1 lần/kỳ
+ * nhờ doc players/{uid}/claims/{periodId} tạo bằng transaction (rules đã khoá
+ * claims: client không tự tạo/xoá được để nhận lại). Hiện chỉ hỗ trợ scope 'world'.
+ */
+exports.claimPeriodReward = onCall({ region: 'asia-southeast1' }, async (request) => {
+  const uid = request.auth && request.auth.uid;
+  if (!uid) throw new HttpsError('unauthenticated', 'Cần đăng nhập.');
+  const kind = request.data && request.data.kind;
+  if (!['day', 'week', 'month'].includes(kind)) throw new HttpsError('invalid-argument', 'Kỳ không hợp lệ.');
+  const pid = periodKey(kind);
+  const entriesRef = db.collection('periodScores').doc(pid).collection('entries');
+  const mySnap = await entriesRef.doc(uid).get();
+  if (!mySnap.exists) throw new HttpsError('failed-precondition', 'Chưa có điểm trong kỳ này.');
+  const myScore = mySnap.data().score || 0;
+  const higherAgg = await entriesRef.where('score', '>', myScore).count().get();
+  const rank = higherAgg.data().count + 1;
+  const reward = periodRewardForRank(kind, rank);
+  if (!reward || (reward.gold <= 0 && reward.diamond <= 0)) {
+    throw new HttpsError('failed-precondition', 'Hạng hiện tại chưa đủ để nhận quà.');
+  }
+  const claimRef = db.collection('players').doc(uid).collection('claims').doc('period_' + pid);
+  const playerRef = db.collection('players').doc(uid);
+  return db.runTransaction(async (tx) => {
+    const claimSnap = await tx.get(claimRef);
+    if (claimSnap.exists) throw new HttpsError('already-exists', 'Đã nhận quà kỳ này rồi.');
+    tx.set(claimRef, { rank, gold: reward.gold, diamond: reward.diamond, claimedAt: FieldValue.serverTimestamp() });
+    tx.set(playerRef, {
+      gold: FieldValue.increment(reward.gold),
+      diamonds: FieldValue.increment(reward.diamond)
+    }, { merge: true });
+    return { rank, gold: reward.gold, diamond: reward.diamond };
+  });
+});
+
+/**
+ * Tặng 1 tim cho bạn bè (miễn phí, không trừ của người tặng — khớp hành vi hiện có
+ * trong js/chat.js). Chỉ xác thực: 2 người phải là bạn bè của nhau, và mỗi người
+ * nhận tối đa 1 tim/người tặng/ngày (đếm bằng doc claims, không dựa vào localStorage
+ * nên không xoá cache để tặng lại được). Không tăng quá MAX_HEARTS.
+ */
+exports.giftHeart = onCall({ region: 'asia-southeast1' }, async (request) => {
+  const uid = request.auth && request.auth.uid;
+  if (!uid) throw new HttpsError('unauthenticated', 'Cần đăng nhập.');
+  const toUid = request.data && request.data.toUid;
+  if (typeof toUid !== 'string' || !toUid || toUid === uid) {
+    throw new HttpsError('invalid-argument', 'Người nhận không hợp lệ.');
+  }
+  const friendSnap = await db.collection('players').doc(uid).collection('friends').doc(toUid).get();
+  if (!friendSnap.exists) throw new HttpsError('failed-precondition', 'Chỉ tặng được cho bạn bè.');
+  const dayKey = periodKey('day');
+  const claimRef = db.collection('players').doc(toUid).collection('claims').doc('giftFrom_' + uid + '_' + dayKey);
+  const toRef = db.collection('players').doc(toUid);
+  return db.runTransaction(async (tx) => {
+    const claimSnap = await tx.get(claimRef);
+    if (claimSnap.exists) throw new HttpsError('already-exists', 'Hôm nay đã tặng bạn này rồi.');
+    const toSnap = await tx.get(toRef);
+    if (!toSnap.exists) throw new HttpsError('failed-precondition', 'Không tìm thấy người nhận.');
+    const w = walletOf(toSnap.data());
+    if (w.hearts >= MAX_HEARTS) throw new HttpsError('failed-precondition', 'Bạn đó đã đầy tim.');
+    tx.set(claimRef, { fromUid: uid, ts: FieldValue.serverTimestamp() });
+    tx.set(toRef, { hearts: Math.min(MAX_HEARTS, w.hearts + 1) }, { merge: true });
+    return { ok: true };
+  });
+});
+
+/**
+ * Webhook RevenueCat (IAP thật) — CHỈ nguồn duy nhất cộng kim cương cho giao dịch mua
+ * bằng tiền thật; không tin bất kỳ callable nào client tự gọi báo "đã mua". Cần cấu
+ * hình URL function này vào RevenueCat Dashboard → Project → Integrations → Webhooks,
+ * kèm Authorization header bí mật đặt trong biến môi trường REVENUECAT_WEBHOOK_SECRET
+ * (firebase functions:secrets:set REVENUECAT_WEBHOOK_SECRET). Dedupe theo event.id
+ * (RevenueCat có thể gửi lại cùng 1 event) để không cộng kim cương 2 lần.
+ */
+const IAP_DIAMOND_GRANTS = {
+  // product_id (App/Play Store) -> số kim cương cộng. Khớp DIAMOND_GRANTS trong js/iap.js.
+  diamonds_small: 60, diamonds_medium: 330, diamonds_large: 700, starter_pack: 200
+};
+exports.revenuecatWebhook = onRequest({ region: 'asia-southeast1' }, async (req, res) => {
+  try {
+    const secret = process.env.REVENUECAT_WEBHOOK_SECRET;
+    if (secret) {
+      const auth = req.get('Authorization') || '';
+      if (auth !== secret && auth !== 'Bearer ' + secret) {
+        res.status(401).send('unauthorized');
+        return;
+      }
+    }
+    const event = (req.body && req.body.event) || {};
+    const type = event.type;
+    if (!['INITIAL_PURCHASE', 'NON_RENEWING_PURCHASE', 'RENEWAL'].includes(type)) {
+      res.status(200).send('ignored');
+      return;
+    }
+    const uid = event.app_user_id;
+    const productId = event.product_id;
+    const eventId = event.id || (uid + '_' + productId + '_' + event.purchased_at_ms);
+    const diamonds = IAP_DIAMOND_GRANTS[productId] || 0;
+    if (!uid || !diamonds) { res.status(200).send('no-op'); return; }
+    const dedupeRef = db.collection('iapEvents').doc(String(eventId));
+    const playerRef = db.collection('players').doc(uid);
+    await db.runTransaction(async (tx) => {
+      const dedupeSnap = await tx.get(dedupeRef);
+      if (dedupeSnap.exists) return; // đã xử lý event này rồi
+      tx.set(dedupeRef, { uid, productId, diamonds, type, ts: FieldValue.serverTimestamp() });
+      tx.set(playerRef, { diamonds: FieldValue.increment(diamonds) }, { merge: true });
+    });
+    res.status(200).send('ok');
+  } catch (e) {
+    console.error('[revenuecatWebhook]', e);
+    res.status(500).send('error');
+  }
 });
 
 /**
