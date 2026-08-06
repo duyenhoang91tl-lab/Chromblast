@@ -188,10 +188,24 @@ function _vsPlaceAt(P,R,C,fromNetwork){
   if(P.el.cards.classList.contains('show')) return;
   const pc=P.pieces[P.selected];
   if(!pc||pc.used) return;
-  if(!_vsCanPlace(P,pc.shape,R,C)){ try{ sfxInvalid(); }catch(e){} return; }
+  // Nước đi TỪ MẠNG đã được máy người gửi xác thực hợp lệ rồi — không kiểm
+  // tra lại _vsCanPlace ở đây nữa. Trước đây nếu bàn mô phỏng đối thủ trên
+  // máy mình lệch dù chỉ 1 ô (đá/băng hết hạn không đúng lúc, độ trễ mạng…),
+  // nước đi bị âm thầm huỷ bỏ và mọi nước đi sau đó của đối thủ cũng hỏng
+  // theo — người chơi không bao giờ thấy đối thủ đánh gì nữa. Giờ luôn áp
+  // dụng nước đi từ mạng, đồng thời dọn sạch mọi thứ đang chặn ô đó (đá/băng
+  // lệch cục bộ) để bàn tự đồng bộ lại đúng theo dữ liệu đã xác thực.
+  if(!fromNetwork){
+    if(!_vsCanPlace(P,pc.shape,R,C)){ try{ sfxInvalid(); }catch(e){} return; }
+  }
   const pieceIndex=P.selected;
   const shapeSnap=pc.shape.map(([r,c])=>[r,c]);
-  pc.shape.forEach(([dr,dc])=>{ P.board[R+dr][C+dc]=pc.color; });
+  pc.shape.forEach(([dr,dc])=>{
+    const rr=R+dr, cc=C+dc;
+    if(rr<0||rr>=VS_N||cc<0||cc>=VS_N) return;
+    if(fromNetwork){ const kk=rr+','+cc; P.rocks.delete(kk); P.ice.delete(kk); }
+    P.board[rr][cc]=pc.color;
+  });
   pc.used=true; P.selected=-1;
   P.score+=pc.shape.length;
   try{ sfxPlacePiece(); }catch(e){}
@@ -214,6 +228,7 @@ function _vsPlaceAt(P,R,C,fromNetwork){
   }
   if(_vsMarkDoneIfStuck(P)) return;
 }
+
 
 // Kiểm tra P còn nước đi không, đồng bộ P.done + note theo đúng trạng thái
 // HIỆN TẠI (thay vì chỉ set done=true 1 lần rồi bỏ quên) — sửa lỗi: trước đó
