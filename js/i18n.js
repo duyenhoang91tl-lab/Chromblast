@@ -13,6 +13,13 @@ const I18N = {
 
 vi: {
   langName:'Tiếng Việt',
+  onboardTitle1:'Kéo khối vào bàn cờ',
+  onboardDesc1:'Chạm và kéo 1 khối gạch từ khay bên dưới, thả vào ô trống trên bàn cờ.',
+  onboardTitle2:'Lấp đầy 1 hàng hoặc cột',
+  onboardDesc2:'Khi 1 hàng hoặc cột được lấp kín, nó sẽ nổ và bạn ghi điểm. Càng nổ nhiều lượt liền, điểm càng cao!',
+  onboardNext:'TIẾP THEO',
+  onboardStart:'BẮT ĐẦU CHƠI!',
+  onboardSkip:'BỎ QUA',
   // Màn hình đăng nhập
   authSub:'🔐 Đăng nhập để bắt đầu chơi',
   guestPlay:'Chơi Ngay',
@@ -138,6 +145,13 @@ vi: {
 
 en: {
   langName:'English',
+  onboardTitle1:'Drag a piece onto the board',
+  onboardDesc1:'Touch and drag a piece from the tray below, then drop it on an empty cell.',
+  onboardTitle2:'Fill a row or column',
+  onboardDesc2:'When a row or column is completely filled, it clears and you score! Chain clears for even more points.',
+  onboardNext:'NEXT',
+  onboardStart:'START PLAYING!',
+  onboardSkip:'SKIP',
   authSub:'🔐 Sign in to start playing',
   guestPlay:'Play Now',
   orDivider:'— or —',

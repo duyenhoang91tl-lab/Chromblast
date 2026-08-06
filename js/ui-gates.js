@@ -9,6 +9,11 @@ const NOTIF_ASKED_KEY = 'chromablast_notif_asked_v1';
 
 const NOTIF_PREF_KEY = 'chromablast_notif_pref_v1';
 
+const TUTORIAL_SEEN_KEY = 'chromablast_tutorial_seen_v1';
+
+const TUTORIAL_TOTAL_STEPS = 2;
+let _tutorialStep = 1;
+
 function _gateGet(key){
   try{
     return (typeof safeGet==='function') ? safeGet(key) : localStorage.getItem(key);
@@ -27,6 +32,10 @@ function hasAcceptedTerms(){ return _gateGet(TOS_ACCEPT_KEY) === '1'; }
 function setAcceptedTerms(){ _gateSet(TOS_ACCEPT_KEY, '1'); }
 
 function hasAskedNotifications(){ return _gateGet(NOTIF_ASKED_KEY) === '1'; }
+
+function hasSeenTutorial(){ return _gateGet(TUTORIAL_SEEN_KEY) === '1'; }
+
+function setTutorialSeen(){ _gateSet(TUTORIAL_SEEN_KEY, '1'); }
 
 function setNotifAsked(pref){
   _gateSet(NOTIF_ASKED_KEY, '1');
@@ -49,6 +58,8 @@ function hideTermsGate(){ _setGateVisible('tos-gate', false); if(typeof syncMenu
 
 function hideNotifGate(){ _setGateVisible('notif-gate', false); if(typeof syncMenuOpenState==='function') syncMenuOpenState(); }
 
+function hideTutorialGate(){ _setGateVisible('tutorial-gate', false); if(typeof syncMenuOpenState==='function') syncMenuOpenState(); }
+
 function showTermsGate(){
   try{ if(typeof applyI18nDom==='function') applyI18nDom(); }catch(e){}
   hideNotifGate();
@@ -58,9 +69,47 @@ function showTermsGate(){
 
 function showNotifGate(){
   try{ if(typeof applyI18nDom==='function') applyI18nDom(); }catch(e){}
+  hideTutorialGate();
   hideTermsGate();
   _setGateVisible('notif-gate', true);
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
+}
+
+function _renderTutorialStep(){
+  const gate = document.getElementById('tutorial-gate');
+  if(!gate) return;
+  gate.querySelectorAll('.tutorial-step').forEach(el=>{
+    el.classList.toggle('active', Number(el.dataset.tutorialStep)===_tutorialStep);
+  });
+  gate.querySelectorAll('.tutorial-dots span').forEach((el,i)=>{
+    el.classList.toggle('active', i===(_tutorialStep-1));
+  });
+  const nextBtn = document.getElementById('tutorial-next-btn');
+  if(nextBtn){
+    const lastStep = _tutorialStep >= TUTORIAL_TOTAL_STEPS;
+    nextBtn.setAttribute('data-i18n', lastStep ? 'onboardStart' : 'onboardNext');
+    nextBtn.textContent = lastStep
+      ? (typeof t==='function' ? t('onboardStart') : 'BẮT ĐẦU CHƠI!')
+      : (typeof t==='function' ? t('onboardNext') : 'TIẾP THEO');
+  }
+}
+
+function showTutorialGate(){
+  try{ if(typeof applyI18nDom==='function') applyI18nDom(); }catch(e){}
+  hideTermsGate();
+  hideNotifGate();
+  _tutorialStep = 1;
+  _renderTutorialStep();
+  _setGateVisible('tutorial-gate', true);
+  if(typeof syncMenuOpenState==='function') syncMenuOpenState();
+  try{ if(typeof logGameEvent==='function') logGameEvent('tutorial_start', {}); }catch(e){}
+}
+
+function _closeTutorialGate(reason){
+  setTutorialSeen();
+  hideTutorialGate();
+  try{ if(typeof logGameEvent==='function') logGameEvent('tutorial_end', { reason, step_reached:_tutorialStep }); }catch(e){}
+  if(typeof maybeShowPreGameGates==='function') maybeShowPreGameGates();
 }
 
 function setStartScreenVisible(on){
@@ -87,6 +136,7 @@ function maybeShowPreGameGates(){
   if(auth && auth.style.display !== 'none' && !auth.classList.contains('hide')){
     hideTermsGate();
     hideNotifGate();
+    hideTutorialGate();
     setStartScreenVisible(false);
     if(typeof syncMenuOpenState==='function') syncMenuOpenState();
     return;
@@ -104,6 +154,12 @@ function maybeShowPreGameGates(){
     return;
   }
   hideNotifGate();
+  if(!hasSeenTutorial()){
+    setStartScreenVisible(false);
+    showTutorialGate();
+    return;
+  }
+  hideTutorialGate();
   setStartScreenVisible(true);
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
 }
@@ -158,6 +214,16 @@ function initPreGameGates(){
     setNotifAsked('deny');
     hideNotifGate();
     maybeShowPreGameGates();
+  });
+  document.getElementById('tutorial-next-btn')?.addEventListener('click', ()=>{
+    try{ sfxClick(); }catch(e){}
+    if(_tutorialStep >= TUTORIAL_TOTAL_STEPS){ _closeTutorialGate('complete'); return; }
+    _tutorialStep++;
+    _renderTutorialStep();
+  });
+  document.getElementById('tutorial-skip-btn')?.addEventListener('click', ()=>{
+    try{ sfxClick(); }catch(e){}
+    _closeTutorialGate('skip');
   });
   maybeShowPreGameGates();
 }

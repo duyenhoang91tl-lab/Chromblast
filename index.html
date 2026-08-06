@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>ChromaBlast</title>
-<link rel="stylesheet" href="css/main.css?v=20260801o">
+<link rel="stylesheet" href="css/main.css?v=20260801p">
 <link rel="stylesheet" href="css/saga-map.css?v=20260801b">
 <link rel="stylesheet" href="css/sky-atmosphere.css?v=20260801b">
 <link rel="stylesheet" href="css/nick-fonts.css?v=20260801b">
@@ -189,6 +189,46 @@
       <p class="notif-hint" data-i18n="notifHint">Nhắc tim hồi, quà điểm danh và sự kiện trong game.</p>
       <button type="button" class="tos-accept" id="notif-allow-btn" data-i18n="notifAllow">CHO PHÉP</button>
       <button type="button" class="notif-deny" id="notif-deny-btn" data-i18n="notifDeny">KHÔNG PHẢI BÂY GIỜ</button>
+    </div>
+  </div>
+</div>
+
+<!-- Hướng dẫn 2 bước cho người chơi lần đầu — sau thông báo, trước vào game -->
+<div id="tutorial-gate" class="tos-gate tutorial-gate" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="tutorial-title">
+  <div class="tos-card">
+    <div class="tos-head">
+      <div class="tos-brand" aria-hidden="true">
+        <span class="logo-chroma">CHROMA</span><span class="logo-blast">BLAST</span>
+      </div>
+    </div>
+    <div class="tos-body">
+      <div class="tutorial-step active" data-tutorial-step="1">
+        <div class="tutorial-anim tutorial-anim-drag" aria-hidden="true">
+          <div class="tanim-tray"><div class="tanim-piece"><span></span><span></span><span></span></div></div>
+          <div class="tanim-grid">
+            <div class="tanim-cell" data-c="0"></div><div class="tanim-cell" data-c="1"></div><div class="tanim-cell" data-c="2"></div>
+            <div class="tanim-cell" data-c="0"></div><div class="tanim-cell" data-c="1"></div><div class="tanim-cell" data-c="2"></div>
+            <div class="tanim-cell" data-c="0"></div><div class="tanim-cell" data-c="1"></div><div class="tanim-cell" data-c="2"></div>
+          </div>
+          <div class="tanim-hand" aria-hidden="true">👆</div>
+        </div>
+        <h2 id="tutorial-title" class="tos-title" data-i18n="onboardTitle1">Kéo khối vào bàn cờ</h2>
+        <p class="tos-desc" data-i18n="onboardDesc1">Chạm và kéo 1 khối gạch từ khay bên dưới, thả vào ô trống trên bàn cờ.</p>
+      </div>
+      <div class="tutorial-step" data-tutorial-step="2">
+        <div class="tutorial-anim tutorial-anim-clear" aria-hidden="true">
+          <div class="tanim-grid tanim-grid-clear">
+            <div class="tanim-cell filled"></div><div class="tanim-cell filled"></div><div class="tanim-cell filled"></div>
+            <div class="tanim-cell"></div><div class="tanim-cell filled"></div><div class="tanim-cell"></div>
+            <div class="tanim-cell"></div><div class="tanim-cell filled"></div><div class="tanim-cell"></div>
+          </div>
+        </div>
+        <h2 class="tos-title" data-i18n="onboardTitle2">Lấp đầy 1 hàng hoặc cột</h2>
+        <p class="tos-desc" data-i18n="onboardDesc2">Khi 1 hàng hoặc cột được lấp kín, nó sẽ nổ và bạn ghi điểm. Càng nổ nhiều lượt liền, điểm càng cao!</p>
+      </div>
+      <div class="tutorial-dots"><span class="active"></span><span></span></div>
+      <button type="button" class="tos-accept" id="tutorial-next-btn" data-i18n="onboardNext">TIẾP THEO</button>
+      <button type="button" class="notif-deny" id="tutorial-skip-btn" data-i18n="onboardSkip">BỎ QUA</button>
     </div>
   </div>
 </div>
@@ -1312,7 +1352,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-functions-compat.js"></script>
 <script src="js/firebase-config.js?v=20260801c"></script>
 <script src="js/ganalytics.js?v=20260801a"></script>
-<script src="js/i18n.js?v=20260801b"></script>
+<script src="js/i18n.js?v=20260801c"></script>
 <script src="js/caro-loader.js?v=20260801c"></script>
 <script src="js/sky-atmosphere.js?v=20260801b"></script>
 <script src="js/i18n-content.js?v=20260801b"></script>
@@ -1339,7 +1379,7 @@
 <script src="js/effects.js?v=20260801b"></script>
 <script src="js/effects-scenery.js?v=20260801b"></script>
 <script src="js/ui.js?v=20260801c"></script>
-<script src="js/ui-gates.js?v=20260801b"></script>
+<script src="js/ui-gates.js?v=20260801c"></script>
 <script src="js/ui-settings.js?v=20260801e"></script>
 <script src="maps/map01.js?v=20260801b"></script>
 <script src="maps/map02.js?v=20260801b"></script>
@@ -1362,7 +1402,7 @@
 <script src="js/boss/feather-storm-boss.js?v=20260801b"></script>
 <script src="js/boss/mega-dragon.js?v=20260801b"></script>
 <script src="js/boss-manager.js?v=20260801b"></script>
-<script src="js/auth.js?v=20260801c"></script>
+<script src="js/auth.js?v=20260801d"></script>
 <script src="js/round-mechanics.js?v=20260801b"></script>
 <script src="js/engine.js?v=20260801c"></script>
 <script src="js/engine-input.js?v=20260801b"></script>

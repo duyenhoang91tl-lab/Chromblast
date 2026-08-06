@@ -477,7 +477,8 @@ body.mode-exclusive #gchat-fab {
   box-shadow:0 2px 0 #145028, inset 0 1px 0 rgba(255,255,255,0.28);
 }
 body.tos-open #start-screen,
-body.notif-open #start-screen{
+body.notif-open #start-screen,
+body.tutorial-open #start-screen{
   display:none !important;
   visibility:hidden !important;
   pointer-events:none !important;
@@ -505,6 +506,68 @@ body.notif-open #start-screen{
   cursor:pointer;
 }
 .notif-deny:active{ opacity:0.7; }
+
+/* ══════════════════ HƯỚNG DẪN LẦN ĐẦU (tutorial-gate) ══════════════════ */
+.tutorial-step{ display:none; }
+.tutorial-step.active{ display:block; animation:fadeUp 0.3s ease-out both; }
+.tutorial-dots{ display:flex; justify-content:center; gap:6px; margin:2px 0 4px; }
+.tutorial-dots span{
+  width:7px; height:7px; border-radius:50%;
+  background:rgba(0,0,0,0.15); transition:background .2s, transform .2s;
+}
+.tutorial-dots span.active{ background:#e85d2a; transform:scale(1.25); }
+
+.tutorial-anim{
+  position:relative; width:min(220px, 70vw); height:150px;
+  margin:0 auto 14px; display:flex; align-items:center; justify-content:center;
+}
+.tanim-grid{
+  display:grid; grid-template-columns:repeat(3, 34px); grid-template-rows:repeat(3, 34px);
+  gap:3px; margin:0 auto;
+}
+.tanim-cell{
+  width:34px; height:34px; border-radius:6px;
+  background:rgba(0,0,0,0.06); border:1px solid rgba(0,0,0,0.08);
+}
+/* Bước 1: khối gạch trôi từ khay vào ô giữa-dưới của bàn, lặp lại */
+.tanim-tray{ position:absolute; left:8px; bottom:6px; }
+.tanim-piece{ display:flex; gap:3px; animation:tanimDrag 2.2s ease-in-out infinite; }
+.tanim-piece span{
+  width:20px; height:20px; border-radius:5px;
+  background:linear-gradient(180deg,#5cc8ff,#1f8fe0);
+  box-shadow:0 2px 0 rgba(0,0,0,0.15);
+}
+.tanim-hand{
+  position:absolute; left:34px; bottom:14px; font-size:22px;
+  animation:tanimHand 2.2s ease-in-out infinite;
+  filter:drop-shadow(0 2px 2px rgba(0,0,0,0.25));
+}
+@keyframes tanimDrag{
+  0%,8%{ transform:translate(0,0); opacity:1; }
+  45%,60%{ transform:translate(78px,-58px); opacity:1; }
+  75%{ opacity:0; }
+  76%{ transform:translate(0,0); opacity:0; }
+  85%,100%{ transform:translate(0,0); opacity:1; }
+}
+@keyframes tanimHand{
+  0%,8%{ transform:translate(0,0); opacity:0.95; }
+  45%,60%{ transform:translate(78px,-58px); opacity:0.95; }
+  70%,100%{ transform:translate(78px,-58px); opacity:0; }
+}
+/* Bước 2: 1 hàng ngang sáng lên rồi nổ, lặp lại */
+.tanim-grid-clear .tanim-cell.filled{
+  background:linear-gradient(180deg,#ffb84d,#e07a1a);
+  animation:tanimClearRow 2s ease-in-out infinite;
+}
+.tanim-grid-clear .tanim-cell.filled:nth-child(1){ animation-delay:0s; }
+.tanim-grid-clear .tanim-cell.filled:nth-child(2){ animation-delay:0.06s; }
+.tanim-grid-clear .tanim-cell.filled:nth-child(3){ animation-delay:0.12s; }
+@keyframes tanimClearRow{
+  0%,55%{ transform:scale(1); opacity:1; box-shadow:none; }
+  70%{ transform:scale(1.12); opacity:1; box-shadow:0 0 14px 2px rgba(255,213,74,0.9); }
+  85%{ transform:scale(0.4); opacity:0; }
+  86%,100%{ transform:scale(1); opacity:1; box-shadow:none; }
+}
 
 /* ══════════════════ AUTH SCREEN (Đăng nhập / Đăng ký) ══════════════════ */
 #auth-screen {

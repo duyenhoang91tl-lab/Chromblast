@@ -166,17 +166,20 @@ function syncMenuOpenState(){
   const start = document.getElementById('start-screen');
   const tos = document.getElementById('tos-gate');
   const notif = document.getElementById('notif-gate');
+  const tutorial = document.getElementById('tutorial-gate');
   const authOpen = isOverlayScreenOpen(auth);
   // Gỡ auth-open trước khi đọc start (tránh CSS ẩn start làm lệch trạng thái)
   document.body.classList.toggle('auth-open', !!authOpen);
   const startOpen = isOverlayScreenOpen(start);
   const tosOpen = !!(tos && (tos.classList.contains('show') || tos.style.display === 'flex'));
   const notifOpen = !!(notif && (notif.classList.contains('show') || notif.style.display === 'flex'));
-  const menuOpen = !!(authOpen || startOpen || tosOpen || notifOpen);
+  const tutorialOpen = !!(tutorial && (tutorial.classList.contains('show') || tutorial.style.display === 'flex'));
+  const menuOpen = !!(authOpen || startOpen || tosOpen || notifOpen || tutorialOpen);
   document.body.classList.toggle('menu-open', menuOpen);
-  document.body.classList.toggle('start-open', !!(!authOpen && startOpen && !tosOpen && !notifOpen));
+  document.body.classList.toggle('start-open', !!(!authOpen && startOpen && !tosOpen && !notifOpen && !tutorialOpen));
   document.body.classList.toggle('tos-open', !!(!authOpen && tosOpen));
   document.body.classList.toggle('notif-open', !!(!authOpen && notifOpen));
+  document.body.classList.toggle('tutorial-open', !!(!authOpen && tutorialOpen));
   try{ if(typeof syncChatFabVisibility === 'function') syncChatFabVisibility(); }catch(e){}
 }
 
