@@ -45,6 +45,9 @@ const VS_OBSTACLES = [
   { id:'fog',      nameIdx:5,  emoji:'🌫️' },
   { id:'squirrel', nameIdx:3,  emoji:'🐿️' },
   { id:'bomb',     nameIdx:6,  emoji:'💣' },
+  { id:'blackhole',nameIdx:12, emoji:'🕳️' },
+  { id:'wall',     nameIdx:15, emoji:'🧱' },
+  { id:'lightning',nameIdx:16, emoji:'⚡' },
 ];
 
 let versusMode = false;
@@ -369,6 +372,44 @@ function _vsApplyObstacle(F,ob){
       setTimeout(tick,1000);
     };
     setTimeout(tick,1000);
+  } else if(ob.id==='blackhole'){
+    // 🕳️ Hố đen: hút mất 2 ô đã lấp (mất luôn, không dịch chuyển như lốc xoáy)
+    // rồi biến chính 2 ô đó thành đá chắn tạm 8s — nặng hơn núi đá/sóc lẻ.
+    const sucked = take(filledCells,2);
+    sucked.forEach(k=>{ const [r,c]=k.split(',').map(Number); F.board[r][c]=null; F.ice.delete(k); F.rocks.add(k); });
+    setTimeout(()=>{
+      if(_vs&&versusMode){ sucked.forEach(k=>F.rocks.delete(k)); _vsRenderGrid(F); }
+    },8000);
+  } else if(ob.id==='wall'){
+    // 🧱 Tường gạch: chắn NGUYÊN 1 hàng hoặc 1 cột liền mạch (khác núi đá rải rác) — 10s.
+    const horizontal = Math.random()<0.5;
+    const line = horizontal ? Math.floor(Math.random()*VS_N) : -1;
+    const col  = horizontal ? -1 : Math.floor(Math.random()*VS_N);
+    const wallCells=[];
+    for(let i=0;i<VS_N;i++){
+      const r = horizontal ? line : i;
+      const c = horizontal ? i : col;
+      const k=r+','+c;
+      if(F.rocks.has(k)) continue;
+      wallCells.push(k); F.rocks.add(k);
+    }
+    setTimeout(()=>{
+      if(_vs&&versusMode){ wallCells.forEach(k=>F.rocks.delete(k)); _vsRenderGrid(F); }
+    },10000);
+  } else if(ob.id==='lightning'){
+    // ⚡ Sét đánh: xoá sạch NGAY 1 cụm 2×2 ô đã lấp — mất điểm tiềm năng, không như
+    // lốc xoáy (dịch chuyển chỗ khác) hay sóc (chỉ lấy lẻ tẻ 1 ô).
+    const anchors = filledCells.filter(k=>{
+      const [r,c]=k.split(',').map(Number);
+      return r<VS_N-1 && c<VS_N-1;
+    });
+    if(anchors.length){
+      const [r0,c0] = anchors[Math.floor(Math.random()*anchors.length)].split(',').map(Number);
+      for(let dr=0;dr<2;dr++)for(let dc=0;dc<2;dc++){
+        const r=r0+dr, c=c0+dc, k=r+','+c;
+        F.board[r][c]=null; F.ice.delete(k);
+      }
+    }
   }
   // báo cho nạn nhân — chỉ rung màn, KHÔNG hiện chữ thông báo (gây rối/che bàn cờ
   // lúc đang thao tác); rung là đủ để người chơi biết vừa bị đối thủ đánh úp.
