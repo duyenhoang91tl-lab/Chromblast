@@ -210,7 +210,7 @@ function _vsCanPlace(P,shape,R,C){
 }
 
 function _vsPlaceAt(P,R,C,fromNetwork){
-  if(!versusMode||P.done||P.selected<0) return;
+  if(!versusMode||(P.done&&!fromNetwork)||P.selected<0) return;
   if(P.el.cards.classList.contains('show')) return;
   const pc=P.pieces[P.selected];
   if(!pc||pc.used) return;
@@ -250,7 +250,7 @@ function _vsPlaceAt(P,R,C,fromNetwork){
   if(P.pieces.every(x=>x.used)) _vsRefill(P);
   _vsRenderAll(P);
   if(!fromNetwork && _vs && _vs.online && P.idx===0){
-    _vsBroadcastMove('place', { pieceIndex, R, C, shape: shapeSnap });
+    _vsBroadcastMove('place', { pieceIndex, R, C, shape: shapeSnap, color: pc.color });
   }
   if(_vsMarkDoneIfStuck(P)) return;
 }

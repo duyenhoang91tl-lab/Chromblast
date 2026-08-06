@@ -458,12 +458,24 @@ function _vsApplyNetworkMove(move){
 }
 
 function _vsApplyRemotePlace(P, move){
-  const idx=move.pieceIndex;
-  if(idx<0||idx>=P.pieces.length) return;
-  const pc=P.pieces[idx];
-  if(!pc||pc.used) return;
+  let idx=move.pieceIndex;
+  let pc=(idx>=0 && idx<P.pieces.length) ? P.pieces[idx] : null;
+  if(!pc || pc.used){
+    // Hang cho cua doi thu tren may minh bi lech nhip (VD: 1 nuoc di truoc do
+    // mat goi/bi tu choi do tranh chap ghi) khien P.pieces[idx] sai hoac da
+    // dung — thay vi am tham bo qua (lam gach doi thu ngung hien vinh vien tu
+    // day), dung thang du lieu tu mang (shape+color duoc gui kem) de tu phuc
+    // hoi thay vi phu thuoc trang thai cuc bo co the da sai.
+    if(!move.shape) return;
+    const fresh = { shape: move.shape.map(([r,c])=>[r,c]), color: move.color || VS_COLORS[0], used:false, rot:0 };
+    const freeIdx = P.pieces.findIndex(p=>p && !p.used);
+    if(freeIdx>=0){ P.pieces[freeIdx]=fresh; idx=freeIdx; }
+    else { P.pieces.push(fresh); idx=P.pieces.length-1; }
+    pc=fresh;
+  } else if(move.shape){
+    pc.shape=move.shape.map(([r,c])=>[r,c]);
+  }
   P.selected=idx;
-  if(move.shape) pc.shape=move.shape.map(([r,c])=>[r,c]);
   _vsPlaceAt(P, move.R, move.C, true);
 }
 
