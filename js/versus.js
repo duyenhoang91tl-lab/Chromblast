@@ -162,14 +162,13 @@ function _vsNewPlayer(idx,seed){
 function _vsAbort(){
   if(_vs && _vs.timer) clearInterval(_vs.timer);
   try{ if(typeof _vsAiStop==='function') _vsAiStop(); }catch(e){}
-  // Thoát trận online giữa chừng → dọn phòng Firestore NGAY (giống Caro): chủ phòng
-  // xoá phòng thật, khách trả phòng lại trạng thái mở. Quan trọng: KHÔNG gọi
-  // finalizeOnlineMatch ở đây — thoát ngang chừng không được tính thắng/thua cho ai,
-  // tránh người bấm Thoát bị xử thua oan (trước đây phòng bị bỏ hoang, đối thủ chơi
-  // tới hết giờ rồi so điểm với điểm đã đông cứng của người đã thoát → luôn thua oan).
+  // Thoát trận online giữa chừng → mặc định xử thua ngay cho mình (đối thủ mặc định
+  // thắng), báo thẳng lên Firestore không so điểm — giống lúc 1 ván kết thúc bình
+  // thường. Không xoá/định lại phòng nữa (forfeitOnlineMatch đã đưa phòng về trạng
+  // thái 'finished' với kết quả đã ghi, giữ nguyên như vậy).
   try{
-    if(_vs && _vs.online && _vs.online.roomId && typeof leaveOnlineRoom === 'function'){
-      leaveOnlineRoom(_vs.online.roomId).catch(()=>{});
+    if(_vs && _vs.online && _vs.online.roomId && typeof forfeitOnlineMatch === 'function'){
+      forfeitOnlineMatch(_vs.online.roomId, !!_vs.online.isHost).catch(()=>{});
     }
     if(_vs && _vs.online && typeof stopListeningRoom === 'function') stopListeningRoom();
     else if(typeof stopListeningChat === 'function') stopListeningChat();
@@ -183,10 +182,16 @@ function _vsAbort(){
 }
 
 /** Đối thủ rời trận online giữa chừng (bấm Thoát/đóng tab/mất kết nối) — huỷ trận NGAY
- * cho người còn lại thay vì bắt họ chơi tới hết giờ, và KHÔNG tính thắng/thua cho ai
- * (đối xứng với việc người thoát cũng không bị xử thua — xem _vsAbort). */
+ * cho người còn lại thay vì bắt họ chơi tới hết giờ. Tự báo hộ thua cho đối thủ ở đây
+ * (mình mặc định thắng) phòng trường hợp họ đóng tab đột ngột không kịp tự báo —
+ * forfeitOnlineMatch an toàn khi gọi 2 lần nhờ kiểm tra status đã 'finished' chưa. */
 function _vsHandleOpponentLeft(){
   if(!_vs || !_vs.online) return;
+  try{
+    if(_vs.online.roomId && typeof forfeitOnlineMatch === 'function'){
+      forfeitOnlineMatch(_vs.online.roomId, !_vs.online.isHost).catch(()=>{});
+    }
+  }catch(e){}
   try{ showHint((typeof t==='function'?t('vsOpponentLeft'):null) || 'Đối thủ đã rời trận', { hold: 2600 }); }catch(e){}
   _vsAbort();
   try{ if(typeof openVersusSetup === 'function') openVersusSetup(); }catch(e){}
