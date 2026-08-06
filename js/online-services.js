@@ -2198,6 +2198,35 @@ async function submitReferralCode(code){
   }
 }
 
+/**
+ * Đồng bộ vàng/kim cương/tim THẬT từ players/{uid} (server — xem functions/index.js:
+ * regenHearts/spendCurrency/exchangeCurrency/claimPeriodReward/giftHeart/
+ * revenuecatWebhook) về ví hiển thị cục bộ (inv trong js/inventory.js). Chỉ ĐỌC — mọi
+ * thay đổi số dư thật phải qua đúng Cloud Function tương ứng, hàm này không tự cộng gì.
+ * Dùng sau khi mua IAP / nhận quà referral để hiển thị đúng số THẬT server đã cộng,
+ * thay vì tự cộng cục bộ (đó chính là lỗ hổng đã vá — xem players/{uid}.gold trong
+ * firestore.rules: walletFieldsUnchanged()).
+ */
+async function syncWalletFromServer(){
+  try{
+    if(!await initOnlineServices() || !_onlineUid) return null;
+    const snap = await _onlineDb.collection('players').doc(_onlineUid).get();
+    if(!snap.exists) return null;
+    const d = snap.data() || {};
+    if(typeof inv === 'object' && inv){
+      if(d.gold != null) inv.gold = Math.max(0, Math.floor(d.gold));
+      if(d.diamonds != null) inv.diamonds = Math.max(0, Math.floor(d.diamonds));
+      if(d.hearts != null) inv.hearts = Math.max(0, Number(d.hearts));
+      if(typeof saveInventory === 'function') saveInventory();
+      if(typeof renderInventoryHud === 'function') renderInventoryHud();
+    }
+    return { gold: d.gold, diamonds: d.diamonds, hearts: d.hearts };
+  }catch(e){
+    console.warn('[online] syncWalletFromServer', e);
+    return null;
+  }
+}
+
 async function claimPendingReferralRewards(){
   if(!await initOnlineServices()) return;
   try{
@@ -2205,8 +2234,11 @@ async function claimPendingReferralRewards(){
     if(!fns) return;
     const res = await fns.httpsCallable('claimPendingRewards')({});
     const { gold, diamond } = res.data || {};
-    if(gold > 0 && typeof grantGold === 'function') grantGold(gold, '🎁 Thưởng mời bạn');
-    if(diamond > 0 && typeof grantDiamonds === 'function') grantDiamonds(diamond, '🎁 Thưởng mời bạn');
+    // Server (claimPendingRewards) đã cộng thẳng vào ví thật — chỉ cần kéo số THẬT
+    // về hiển thị, không tự grantGold/grantDiamonds cục bộ nữa (tránh cộng trùng).
+    if(gold > 0 || diamond > 0) await syncWalletFromServer();
+    if(gold > 0) try{ showComboFlash(0, false, '🪙 +'+gold+' · 🎁 Thưởng mời bạn'); }catch(e){}
+    if(diamond > 0) try{ showComboFlash(0, false, '💎 +'+diamond+' · 🎁 Thưởng mời bạn'); }catch(e){}
   }catch(e){
     console.warn('[online] claimPendingReferralRewards', e);
   }
