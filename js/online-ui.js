@@ -378,6 +378,17 @@ function enterOnlineVersusMatch(roomId, roomData){
     _vsApplyNetworkMove(move);
   });
 
+  // Phát hiện đối thủ rời trận giữa chừng (bấm Thoát/đóng tab/mất kết nối) để huỷ
+  // trận ngay cho mình, thay vì chơi tới hết giờ rồi mới biết — xem _vsHandleOpponentLeft.
+  if(typeof listenOnlineRoom === 'function'){
+    listenOnlineRoom(roomId, ev => {
+      if(!_vs || !_vs.online || _vs.online.roomId !== roomId) return;
+      if(ev.type === 'deleted'){ _vsHandleOpponentLeft(); return; }
+      const d = ev.data;
+      if(isHost && !d.guestId && d.status !== 'finished'){ _vsHandleOpponentLeft(); return; }
+    });
+  }
+
   try{ if(typeof _vsSetupChat === 'function') _vsSetupChat(true); }catch(e){}
 
   let cd=3;
