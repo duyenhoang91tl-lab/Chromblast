@@ -60,6 +60,11 @@
     { id: "mysticMoonveil", name: "Màn Trăng Huyền Ảo", desc: { vi: 'Sương trăng huyền bí', en: 'Mystic moonlit veil' }, diaPrice: 1 },
     { id: "mysticEmber", name: "Lửa Ma Huyền Ảo", desc: { vi: 'Đốm lửa ma lung linh', en: 'Flickering phantom embers' }, diaPrice: 1 },
     { id: "mysticOpal", name: "Ngọc Mộng Huyền Ảo", desc: { vi: 'Ngọc mộng ảo lung linh', en: 'Dreamy opal shimmer' }, diaPrice: 1 },
+    { id: "legendDragon", name: "Rồng Thần Huyền Thoại", desc: { vi: 'Vảy rồng thần lấp lánh', en: 'Shimmering divine dragon scales' }, diaPrice: 2 },
+    { id: "legendPhoenix", name: "Phượng Hoàng Huyền Thoại", desc: { vi: 'Lửa phượng hoàng bất diệt', en: 'Undying phoenix flame' }, diaPrice: 2 },
+    { id: "legendMeteor", name: "Thiên Thạch Huyền Thoại", desc: { vi: 'Sao băng xuyên vũ trụ', en: 'Meteor streaking through space' }, diaPrice: 2 },
+    { id: "legendCrown", name: "Vương Miện Huyền Thoại", desc: { vi: 'Ngọc miện hoàng gia', en: 'Royal jeweled crown' }, diaPrice: 2 },
+    { id: "legendEternal", name: "Vĩnh Hằng Huyền Thoại", desc: { vi: 'Sắc màu vĩnh hằng biến ảo', en: 'Ever-shifting eternal prism' }, diaPrice: 2 },
   ];
 
   const STARTER_IDS = BRICK_SKINS.filter(function (s) {
