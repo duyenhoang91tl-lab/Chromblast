@@ -385,6 +385,7 @@ function enterOnlineVersusMatch(roomId, roomData){
       if(!_vs || !_vs.online || _vs.online.roomId !== roomId) return;
       if(ev.type === 'deleted'){ _vsHandleOpponentLeft(); return; }
       const d = ev.data;
+      if(d.status === 'finished' && d.endReason === 'forfeit'){ _vsHandleOpponentLeft(); return; }
       if(isHost && !d.guestId && d.status !== 'finished'){ _vsHandleOpponentLeft(); return; }
     });
   }
