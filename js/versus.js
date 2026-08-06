@@ -517,6 +517,24 @@ function _vsEndMatch(){
     '<div style="font-size:11px;color:#9aa7bd;margin-top:8px;">'+t('vsXpNote', VERSUS_WIN_XP)+'</div>';
   try{ submitScoreToLeaderboard(Math.max(s1,s2)); }catch(e){}
   _vsShow('versus-result-panel');
+
+  // Đối chiếu lại điểm/rank Versus vừa hiển thị (ước tính local) với server sau khi
+  // Cloud Function applyMatchResult xử lý xong, tránh lệch với hồ sơ/BXH thật.
+  const wasOnlineMatch = !!(_vs.online && _vs.online.roomId);
+  if(typeof fetchMyVersusStats === 'function' && wasOnlineMatch){
+    setTimeout(async ()=>{
+      try{
+        const real = await fetchMyVersusStats();
+        const rank = real.rank;
+        const el = document.querySelector('#vs-result-body .vs-result-rank');
+        if(el && rank){
+          const lang = (typeof currentLang !== 'undefined' && currentLang) ? currentLang : 'vi';
+          const ptsLabel = lang !== 'vi' ? 'pts' : 'đ';
+          el.innerHTML = rank.icon+' <b>'+escapeHtml(rank.name)+'</b> · '+real.points+' '+ptsLabel;
+        }
+      }catch(e){}
+    }, 1800);
+  }
 }
 
 // ── wiring ──
