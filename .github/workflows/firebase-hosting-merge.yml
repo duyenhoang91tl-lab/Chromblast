@@ -1,8 +1,11 @@
-# Deploy THỦ CÔNG (chỉ chạy khi tự bấm "Run workflow" trong tab Actions, KHÔNG
-# tự chạy mỗi khi push) lên Firebase Hosting, project "chromblast-5cf77"
-# (xem .firebaserc). Theo đúng firebase.json: hosting.public = "legal", nên
-# workflow này CHỈ đăng 2 trang tĩnh privacy-policy.html + terms-of-service.html
-# — không đụng tới game chính (game chính deploy qua GitHub Pages, xem pages.yml).
+# Tự động deploy MỖI KHI PUSH lên nhánh main, lên Firebase Hosting, project
+# "chromblast-5cf77" (xem .firebaserc). Theo đúng firebase.json:
+# hosting.public = "legal", nên workflow này CHỈ đăng 2 trang tĩnh
+# privacy-policy.html + terms-of-service.html — không đụng tới game chính
+# (game chính deploy qua GitHub Pages, xem pages.yml).
+#
+# Vẫn có thể bấm chạy tay khi cần (tab Actions → "Deploy Firebase Hosting"
+# → nút "Run workflow"), không bắt buộc phải đợi push mới deploy được.
 #
 # CẦN LÀM 1 LẦN TRƯỚC KHI DÙNG:
 #   1. Firebase Console → Project settings → Service accounts → Generate new
@@ -13,13 +16,13 @@
 #      giá trị dán NGUYÊN VĂN nội dung file JSON vừa tải.
 #   3. (Tuỳ chọn) đổi projectId/channelId bên dưới nếu sau này thêm project
 #      hoặc kênh preview khác.
-#
-# CÁCH CHẠY: tab Actions trên GitHub → chọn "Deploy Firebase Hosting (thủ công)"
-# ở cột trái → nút "Run workflow".
 
-name: Deploy Firebase Hosting (thủ công)
+name: Deploy Firebase Hosting
 
 on:
+  push:
+    branches: [main]
+    paths: ['legal/**', 'firebase.json', '.firebaserc', '.github/workflows/firebase-hosting-merge.yml']
   workflow_dispatch:
 
 permissions:
