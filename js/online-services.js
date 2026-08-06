@@ -1643,7 +1643,7 @@ function _chatMsgPayload(text){
   if(typeof ProfanityFilter !== 'undefined'){
     raw = ProfanityFilter.filterText(raw);
   }
-  return {
+  const payload = {
     uid: _onlineUid,
     name: getOnlineDisplayName(),
     avatar: (typeof getPlayerAvatar === 'function') ? getPlayerAvatar() : '🐶',
@@ -1652,6 +1652,16 @@ function _chatMsgPayload(text){
     versusPoints: _myVersusPointsSafe(),
     ts: firebase.firestore.FieldValue.serverTimestamp()
   };
+  try{
+    if(typeof getPlayerNameStyle === 'function'){
+      const st = getPlayerNameStyle();
+      payload.nameColor = st.color || '#ffffff';
+      payload.nameBold = !!st.bold;
+      payload.nameItalic = !!st.italic;
+      payload.nameFontId = st.fontId || 'nunito';
+    }
+  }catch(e){}
+  return payload;
 }
 
 /** Chat trong phòng (Caro / Versus) — hỗ trợ nhiều listener */
