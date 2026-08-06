@@ -1905,3 +1905,277 @@ html[data-brick-skin="mysticOpal"] .sc.gem.glow-5 {
   filter: none !important;
   animation: none !important;
 }
+
+/* ── Huyền Thoại (5 mẫu cao cấp hơn, mua bằng kim cương, giá 2) ── */
+@keyframes legendAuraPulse {
+  0%, 100% { filter: brightness(1) saturate(1); }
+  50% { filter: brightness(1.25) saturate(1.3); }
+}
+@keyframes legendHueShift {
+  0%   { filter: hue-rotate(0deg) brightness(1.05); }
+  50%  { filter: hue-rotate(180deg) brightness(1.18); }
+  100% { filter: hue-rotate(360deg) brightness(1.05); }
+}
+
+/* ── legendDragon ── */
+.brick-swatch[data-brick-skin="legendDragon"]{ border-radius:5px!important; background:repeating-linear-gradient(135deg, rgba(255,255,255,0.10) 0 3px, transparent 3px 6px, rgba(0,0,0,0.14) 6px 9px, transparent 9px 12px), linear-gradient(160deg, color-mix(in srgb, var(--cc) 45%, #baffd8) 0%, color-mix(in srgb, var(--cc) 60%, #1c7a52) 55%, color-mix(in srgb, var(--cc) 55%, #06301e) 100%)!important; box-shadow:0 0 10px 3px color-mix(in srgb, var(--cc) 50%, #ffd76a), inset 0 2px 3px rgba(255,255,255,0.3)!important; border:1px solid rgba(255,215,106,0.55)!important; filter:none!important; }
+html[data-brick-skin="legendDragon"] .cell.filled,
+html[data-brick-skin="legendDragon"] .cell.preview-ok,
+html[data-brick-skin="legendDragon"] .sc.gem,
+.vs-half[data-brick-skin="legendDragon"] .vs-cell.vs-filled {
+  border: 1px solid rgba(255,215,106,0.55) !important;
+  border-radius: 5px !important;
+  background:
+    repeating-linear-gradient(135deg, rgba(255,255,255,0.10) 0 3px, transparent 3px 6px, rgba(0,0,0,0.14) 6px 9px, transparent 9px 12px),
+    linear-gradient(160deg, color-mix(in srgb, var(--cc) 45%, #baffd8) 0%, color-mix(in srgb, var(--cc) 60%, #1c7a52) 55%, color-mix(in srgb, var(--cc) 55%, #06301e) 100%) !important;
+  box-shadow: 0 0 14px 3px color-mix(in srgb, var(--cc) 55%, #ffd76a), inset 0 2px 3px rgba(255,255,255,0.35), inset 0 -3px 6px rgba(0,20,10,0.45) !important;
+  filter: none !important;
+}
+html[data-brick-skin="legendDragon"] .cell.filled::before,
+html[data-brick-skin="legendDragon"] .cell.preview-ok::before,
+html[data-brick-skin="legendDragon"] .sc.gem::before,
+.vs-half[data-brick-skin="legendDragon"] .vs-cell.vs-filled::before {
+  content:'' !important; opacity: 1 !important;
+  background:
+    radial-gradient(circle at 22% 18%, rgba(220,255,230,0.95) 0 1px, transparent 1.8px),
+    radial-gradient(circle at 55% 12%, rgba(220,255,230,0.75) 0 0.8px, transparent 1.6px),
+    radial-gradient(circle at 78% 30%, rgba(220,255,230,0.7) 0 0.9px, transparent 1.7px),
+    radial-gradient(circle at 34% 58%, rgba(220,255,230,0.6) 0 0.8px, transparent 1.5px),
+    radial-gradient(circle at 70% 66%, rgba(220,255,230,0.55) 0 0.9px, transparent 1.6px),
+    linear-gradient(115deg, transparent 25%, rgba(255,225,140,0.75) 42%, transparent 58%) !important;
+  background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 240% 240% !important;
+  background-repeat: no-repeat !important;
+  animation: mysticSweep 2.6s ease-in-out infinite, mysticTwinkle 1.6s ease-in-out infinite, legendAuraPulse 2.4s ease-in-out infinite !important;
+}
+html[data-brick-skin="legendDragon"] .p-cell.sweet,
+html[data-brick-skin="legendDragon"] #drag-ghost .g-cell.sweet,
+.vs-half[data-brick-skin="legendDragon"] .vs-mini-sweet {
+  border: 1px solid rgba(255,215,106,0.55) !important;
+  border-radius: 3px !important;
+  background:
+    repeating-linear-gradient(135deg, rgba(255,255,255,0.10) 0 3px, transparent 3px 6px, rgba(0,0,0,0.14) 6px 9px, transparent 9px 12px),
+    linear-gradient(160deg, color-mix(in srgb, var(--cc) 45%, #baffd8) 0%, color-mix(in srgb, var(--cc) 60%, #1c7a52) 55%, color-mix(in srgb, var(--cc) 55%, #06301e) 100%) !important;
+  box-shadow: 0 0 14px 3px color-mix(in srgb, var(--cc) 55%, #ffd76a), inset 0 2px 3px rgba(255,255,255,0.35) !important;
+  filter: none !important;
+}
+html[data-brick-skin="legendDragon"] .p-cell.sweet::after,
+html[data-brick-skin="legendDragon"] #drag-ghost .g-cell.sweet::before {
+  opacity: 0.1 !important;
+  content: none !important;
+}
+html[data-brick-skin="legendDragon"] .sc.gem.glow-1,
+html[data-brick-skin="legendDragon"] .sc.gem.glow-2,
+html[data-brick-skin="legendDragon"] .sc.gem.glow-3,
+html[data-brick-skin="legendDragon"] .sc.gem.glow-4,
+html[data-brick-skin="legendDragon"] .sc.gem.glow-5 {
+  filter: none !important;
+  animation: none !important;
+}
+
+/* ── legendPhoenix ── */
+.brick-swatch[data-brick-skin="legendPhoenix"]{ border-radius:4px!important; background:radial-gradient(ellipse at 50% 85%, color-mix(in srgb, var(--cc) 60%, #ffcf5c) 0%, color-mix(in srgb, var(--cc) 55%, #ff5a1f) 40%, color-mix(in srgb, var(--cc) 55%, #7a0f1f) 75%, #1a0308 100%)!important; box-shadow:0 0 10px 3px color-mix(in srgb, var(--cc) 50%, #ff7a1f), inset 0 -3px 6px rgba(255,140,40,0.35)!important; border:1px solid rgba(255,180,80,0.55)!important; filter:none!important; }
+html[data-brick-skin="legendPhoenix"] .cell.filled,
+html[data-brick-skin="legendPhoenix"] .cell.preview-ok,
+html[data-brick-skin="legendPhoenix"] .sc.gem,
+.vs-half[data-brick-skin="legendPhoenix"] .vs-cell.vs-filled {
+  border: 1px solid rgba(255,180,80,0.55) !important;
+  border-radius: 4px !important;
+  background: radial-gradient(ellipse at 50% 85%, color-mix(in srgb, var(--cc) 60%, #ffcf5c) 0%, color-mix(in srgb, var(--cc) 55%, #ff5a1f) 40%, color-mix(in srgb, var(--cc) 55%, #7a0f1f) 75%, #1a0308 100%) !important;
+  box-shadow: 0 0 15px 3px color-mix(in srgb, var(--cc) 55%, #ff7a1f), inset 0 -4px 8px rgba(255,140,40,0.4), inset 0 2px 3px rgba(255,235,180,0.4) !important;
+  filter: none !important;
+}
+html[data-brick-skin="legendPhoenix"] .cell.filled::before,
+html[data-brick-skin="legendPhoenix"] .cell.preview-ok::before,
+html[data-brick-skin="legendPhoenix"] .sc.gem::before,
+.vs-half[data-brick-skin="legendPhoenix"] .vs-cell.vs-filled::before {
+  content:'' !important; opacity: 1 !important;
+  background:
+    radial-gradient(circle at 22% 18%, rgba(255,232,196,0.95) 0 1px, transparent 1.8px),
+    radial-gradient(circle at 55% 12%, rgba(255,232,196,0.75) 0 0.8px, transparent 1.6px),
+    radial-gradient(circle at 78% 30%, rgba(255,232,196,0.7) 0 0.9px, transparent 1.7px),
+    radial-gradient(circle at 34% 58%, rgba(255,200,150,0.6) 0 0.8px, transparent 1.5px),
+    radial-gradient(circle at 70% 66%, rgba(255,200,150,0.55) 0 0.9px, transparent 1.6px),
+    linear-gradient(115deg, transparent 25%, rgba(255,200,120,0.75) 42%, transparent 58%) !important;
+  background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 240% 240% !important;
+  background-repeat: no-repeat !important;
+  animation: mysticSweep 2.1s ease-in-out infinite, mysticTwinkle 1s ease-in-out infinite, legendAuraPulse 1.7s ease-in-out infinite !important;
+}
+html[data-brick-skin="legendPhoenix"] .p-cell.sweet,
+html[data-brick-skin="legendPhoenix"] #drag-ghost .g-cell.sweet,
+.vs-half[data-brick-skin="legendPhoenix"] .vs-mini-sweet {
+  border: 1px solid rgba(255,180,80,0.55) !important;
+  border-radius: 3px !important;
+  background: radial-gradient(ellipse at 50% 85%, color-mix(in srgb, var(--cc) 60%, #ffcf5c) 0%, color-mix(in srgb, var(--cc) 55%, #ff5a1f) 40%, color-mix(in srgb, var(--cc) 55%, #7a0f1f) 75%, #1a0308 100%) !important;
+  box-shadow: 0 0 15px 3px color-mix(in srgb, var(--cc) 55%, #ff7a1f), inset 0 -4px 8px rgba(255,140,40,0.4) !important;
+  filter: none !important;
+}
+html[data-brick-skin="legendPhoenix"] .p-cell.sweet::after,
+html[data-brick-skin="legendPhoenix"] #drag-ghost .g-cell.sweet::before {
+  opacity: 0.1 !important;
+  content: none !important;
+}
+html[data-brick-skin="legendPhoenix"] .sc.gem.glow-1,
+html[data-brick-skin="legendPhoenix"] .sc.gem.glow-2,
+html[data-brick-skin="legendPhoenix"] .sc.gem.glow-3,
+html[data-brick-skin="legendPhoenix"] .sc.gem.glow-4,
+html[data-brick-skin="legendPhoenix"] .sc.gem.glow-5 {
+  filter: none !important;
+  animation: none !important;
+}
+
+/* ── legendMeteor ── */
+.brick-swatch[data-brick-skin="legendMeteor"]{ border-radius:4px!important; background:radial-gradient(circle at 68% 32%, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.25) 8%, transparent 16%), linear-gradient(115deg, color-mix(in srgb, var(--cc) 55%, #fff) 0%, color-mix(in srgb, var(--cc) 55%, #2a2a5c) 30%, #0a0a1a 70%)!important; box-shadow:0 0 10px 3px color-mix(in srgb, var(--cc) 50%, #9ad5ff), inset 0 0 8px rgba(255,255,255,0.18)!important; border:1px solid rgba(154,213,255,0.5)!important; filter:none!important; }
+html[data-brick-skin="legendMeteor"] .cell.filled,
+html[data-brick-skin="legendMeteor"] .cell.preview-ok,
+html[data-brick-skin="legendMeteor"] .sc.gem,
+.vs-half[data-brick-skin="legendMeteor"] .vs-cell.vs-filled {
+  border: 1px solid rgba(154,213,255,0.5) !important;
+  border-radius: 4px !important;
+  background:
+    radial-gradient(circle at 68% 32%, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.25) 8%, transparent 16%),
+    linear-gradient(115deg, color-mix(in srgb, var(--cc) 55%, #fff) 0%, color-mix(in srgb, var(--cc) 55%, #2a2a5c) 30%, #0a0a1a 70%) !important;
+  box-shadow: 0 0 14px 3px color-mix(in srgb, var(--cc) 50%, #9ad5ff), inset 0 0 10px rgba(255,255,255,0.22) !important;
+  filter: none !important;
+}
+html[data-brick-skin="legendMeteor"] .cell.filled::before,
+html[data-brick-skin="legendMeteor"] .cell.preview-ok::before,
+html[data-brick-skin="legendMeteor"] .sc.gem::before,
+.vs-half[data-brick-skin="legendMeteor"] .vs-cell.vs-filled::before {
+  content:'' !important; opacity: 1 !important;
+  background:
+    radial-gradient(circle at 22% 18%, rgba(220,240,255,0.95) 0 1px, transparent 1.8px),
+    radial-gradient(circle at 55% 12%, rgba(220,240,255,0.75) 0 0.8px, transparent 1.6px),
+    radial-gradient(circle at 78% 30%, rgba(220,240,255,0.7) 0 0.9px, transparent 1.7px),
+    radial-gradient(circle at 34% 58%, rgba(220,240,255,0.6) 0 0.8px, transparent 1.5px),
+    radial-gradient(circle at 70% 66%, rgba(220,240,255,0.55) 0 0.9px, transparent 1.6px),
+    linear-gradient(115deg, transparent 20%, rgba(255,255,255,0.85) 38%, transparent 50%) !important;
+  background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 260% 260% !important;
+  background-repeat: no-repeat !important;
+  animation: mysticSweep 1.5s linear infinite, mysticTwinkle 1.3s ease-in-out infinite, legendAuraPulse 2s ease-in-out infinite !important;
+}
+html[data-brick-skin="legendMeteor"] .p-cell.sweet,
+html[data-brick-skin="legendMeteor"] #drag-ghost .g-cell.sweet,
+.vs-half[data-brick-skin="legendMeteor"] .vs-mini-sweet {
+  border: 1px solid rgba(154,213,255,0.5) !important;
+  border-radius: 3px !important;
+  background:
+    radial-gradient(circle at 68% 32%, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.25) 8%, transparent 16%),
+    linear-gradient(115deg, color-mix(in srgb, var(--cc) 55%, #fff) 0%, color-mix(in srgb, var(--cc) 55%, #2a2a5c) 30%, #0a0a1a 70%) !important;
+  box-shadow: 0 0 14px 3px color-mix(in srgb, var(--cc) 50%, #9ad5ff), inset 0 0 10px rgba(255,255,255,0.22) !important;
+  filter: none !important;
+}
+html[data-brick-skin="legendMeteor"] .p-cell.sweet::after,
+html[data-brick-skin="legendMeteor"] #drag-ghost .g-cell.sweet::before {
+  opacity: 0.1 !important;
+  content: none !important;
+}
+html[data-brick-skin="legendMeteor"] .sc.gem.glow-1,
+html[data-brick-skin="legendMeteor"] .sc.gem.glow-2,
+html[data-brick-skin="legendMeteor"] .sc.gem.glow-3,
+html[data-brick-skin="legendMeteor"] .sc.gem.glow-4,
+html[data-brick-skin="legendMeteor"] .sc.gem.glow-5 {
+  filter: none !important;
+  animation: none !important;
+}
+
+/* ── legendCrown ── */
+.brick-swatch[data-brick-skin="legendCrown"]{ border-radius:5px!important; background:linear-gradient(125deg, color-mix(in srgb, var(--cc) 35%, #fff8d8) 0%, color-mix(in srgb, var(--cc) 50%, #ffd700) 22%, color-mix(in srgb, var(--cc) 55%, #6a3fc7) 50%, color-mix(in srgb, var(--cc) 50%, #ffd700) 78%, color-mix(in srgb, var(--cc) 35%, #fff8d8) 100%)!important; box-shadow:0 0 10px 3px color-mix(in srgb, var(--cc) 40%, #ffd700), inset 0 2px 3px rgba(255,255,255,0.5)!important; border:1px solid rgba(255,215,0,0.6)!important; filter:none!important; }
+html[data-brick-skin="legendCrown"] .cell.filled,
+html[data-brick-skin="legendCrown"] .cell.preview-ok,
+html[data-brick-skin="legendCrown"] .sc.gem,
+.vs-half[data-brick-skin="legendCrown"] .vs-cell.vs-filled {
+  border: 1px solid rgba(255,215,0,0.6) !important;
+  border-radius: 5px !important;
+  background: linear-gradient(125deg, color-mix(in srgb, var(--cc) 35%, #fff8d8) 0%, color-mix(in srgb, var(--cc) 50%, #ffd700) 22%, color-mix(in srgb, var(--cc) 55%, #6a3fc7) 50%, color-mix(in srgb, var(--cc) 50%, #ffd700) 78%, color-mix(in srgb, var(--cc) 35%, #fff8d8) 100%) !important;
+  box-shadow: 0 0 14px 3px color-mix(in srgb, var(--cc) 45%, #ffd700), inset 0 2px 3px rgba(255,255,255,0.55) !important;
+  filter: none !important;
+}
+html[data-brick-skin="legendCrown"] .cell.filled::before,
+html[data-brick-skin="legendCrown"] .cell.preview-ok::before,
+html[data-brick-skin="legendCrown"] .sc.gem::before,
+.vs-half[data-brick-skin="legendCrown"] .vs-cell.vs-filled::before {
+  content:'' !important; opacity: 1 !important;
+  background:
+    radial-gradient(circle at 22% 18%, rgba(255,250,220,0.95) 0 1px, transparent 1.8px),
+    radial-gradient(circle at 55% 12%, rgba(255,250,220,0.8) 0 0.8px, transparent 1.6px),
+    radial-gradient(circle at 78% 30%, rgba(255,250,220,0.75) 0 0.9px, transparent 1.7px),
+    radial-gradient(circle at 34% 58%, rgba(230,210,255,0.65) 0 0.8px, transparent 1.5px),
+    radial-gradient(circle at 70% 66%, rgba(255,250,220,0.6) 0 0.9px, transparent 1.6px),
+    linear-gradient(115deg, transparent 25%, rgba(255,255,255,0.8) 42%, transparent 58%) !important;
+  background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 240% 240% !important;
+  background-repeat: no-repeat !important;
+  animation: mysticSweep 2.9s ease-in-out infinite, mysticTwinkle 1.6s ease-in-out infinite, legendAuraPulse 2.6s ease-in-out infinite !important;
+}
+html[data-brick-skin="legendCrown"] .p-cell.sweet,
+html[data-brick-skin="legendCrown"] #drag-ghost .g-cell.sweet,
+.vs-half[data-brick-skin="legendCrown"] .vs-mini-sweet {
+  border: 1px solid rgba(255,215,0,0.6) !important;
+  border-radius: 3px !important;
+  background: linear-gradient(125deg, color-mix(in srgb, var(--cc) 35%, #fff8d8) 0%, color-mix(in srgb, var(--cc) 50%, #ffd700) 22%, color-mix(in srgb, var(--cc) 55%, #6a3fc7) 50%, color-mix(in srgb, var(--cc) 50%, #ffd700) 78%, color-mix(in srgb, var(--cc) 35%, #fff8d8) 100%) !important;
+  box-shadow: 0 0 14px 3px color-mix(in srgb, var(--cc) 45%, #ffd700), inset 0 2px 3px rgba(255,255,255,0.55) !important;
+  filter: none !important;
+}
+html[data-brick-skin="legendCrown"] .p-cell.sweet::after,
+html[data-brick-skin="legendCrown"] #drag-ghost .g-cell.sweet::before {
+  opacity: 0.1 !important;
+  content: none !important;
+}
+html[data-brick-skin="legendCrown"] .sc.gem.glow-1,
+html[data-brick-skin="legendCrown"] .sc.gem.glow-2,
+html[data-brick-skin="legendCrown"] .sc.gem.glow-3,
+html[data-brick-skin="legendCrown"] .sc.gem.glow-4,
+html[data-brick-skin="legendCrown"] .sc.gem.glow-5 {
+  filter: none !important;
+  animation: none !important;
+}
+
+/* ── legendEternal ── */
+.brick-swatch[data-brick-skin="legendEternal"]{ border-radius:6px!important; background:linear-gradient(120deg, color-mix(in srgb, var(--cc) 40%, #ff9ad5) 0%, color-mix(in srgb, var(--cc) 40%, #9ad5ff) 25%, color-mix(in srgb, var(--cc) 40%, #d5ff9a) 50%, color-mix(in srgb, var(--cc) 40%, #ffd59a) 75%, color-mix(in srgb, var(--cc) 40%, #ff9ad5) 100%)!important; box-shadow:0 0 10px 3px color-mix(in srgb, var(--cc) 40%, #fff), inset 0 2px 3px rgba(255,255,255,0.5)!important; border:1px solid rgba(255,255,255,0.6)!important; filter:none!important; }
+html[data-brick-skin="legendEternal"] .cell.filled,
+html[data-brick-skin="legendEternal"] .cell.preview-ok,
+html[data-brick-skin="legendEternal"] .sc.gem,
+.vs-half[data-brick-skin="legendEternal"] .vs-cell.vs-filled {
+  border: 1px solid rgba(255,255,255,0.6) !important;
+  border-radius: 6px !important;
+  background: linear-gradient(120deg, color-mix(in srgb, var(--cc) 40%, #ff9ad5) 0%, color-mix(in srgb, var(--cc) 40%, #9ad5ff) 25%, color-mix(in srgb, var(--cc) 40%, #d5ff9a) 50%, color-mix(in srgb, var(--cc) 40%, #ffd59a) 75%, color-mix(in srgb, var(--cc) 40%, #ff9ad5) 100%) !important;
+  box-shadow: 0 0 14px 3px color-mix(in srgb, var(--cc) 45%, #fff), inset 0 2px 3px rgba(255,255,255,0.55) !important;
+  filter: none !important;
+}
+html[data-brick-skin="legendEternal"] .cell.filled::before,
+html[data-brick-skin="legendEternal"] .cell.preview-ok::before,
+html[data-brick-skin="legendEternal"] .sc.gem::before,
+.vs-half[data-brick-skin="legendEternal"] .vs-cell.vs-filled::before {
+  content:'' !important; opacity: 1 !important;
+  background:
+    radial-gradient(circle at 22% 18%, rgba(255,255,255,0.9) 0 1px, transparent 1.8px),
+    radial-gradient(circle at 55% 12%, rgba(255,255,255,0.85) 0 0.8px, transparent 1.6px),
+    radial-gradient(circle at 78% 30%, rgba(255,255,255,0.8) 0 0.9px, transparent 1.7px),
+    radial-gradient(circle at 34% 58%, rgba(255,255,255,0.7) 0 0.8px, transparent 1.5px),
+    radial-gradient(circle at 70% 66%, rgba(255,255,255,0.65) 0 0.9px, transparent 1.6px),
+    linear-gradient(115deg, transparent 25%, rgba(255,255,255,0.85) 42%, transparent 58%) !important;
+  background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 240% 240% !important;
+  background-repeat: no-repeat !important;
+  animation: mysticSweep 3.2s ease-in-out infinite, mysticTwinkle 1.8s ease-in-out infinite, legendHueShift 4s linear infinite !important;
+}
+html[data-brick-skin="legendEternal"] .p-cell.sweet,
+html[data-brick-skin="legendEternal"] #drag-ghost .g-cell.sweet,
+.vs-half[data-brick-skin="legendEternal"] .vs-mini-sweet {
+  border: 1px solid rgba(255,255,255,0.6) !important;
+  border-radius: 3px !important;
+  background: linear-gradient(120deg, color-mix(in srgb, var(--cc) 40%, #ff9ad5) 0%, color-mix(in srgb, var(--cc) 40%, #9ad5ff) 25%, color-mix(in srgb, var(--cc) 40%, #d5ff9a) 50%, color-mix(in srgb, var(--cc) 40%, #ffd59a) 75%, color-mix(in srgb, var(--cc) 40%, #ff9ad5) 100%) !important;
+  box-shadow: 0 0 14px 3px color-mix(in srgb, var(--cc) 45%, #fff), inset 0 2px 3px rgba(255,255,255,0.55) !important;
+  filter: none !important;
+}
+html[data-brick-skin="legendEternal"] .p-cell.sweet::after,
+html[data-brick-skin="legendEternal"] #drag-ghost .g-cell.sweet::before {
+  opacity: 0.1 !important;
+  content: none !important;
+}
+html[data-brick-skin="legendEternal"] .sc.gem.glow-1,
+html[data-brick-skin="legendEternal"] .sc.gem.glow-2,
+html[data-brick-skin="legendEternal"] .sc.gem.glow-3,
+html[data-brick-skin="legendEternal"] .sc.gem.glow-4,
+html[data-brick-skin="legendEternal"] .sc.gem.glow-5 {
+  filter: none !important;
+  animation: none !important;
+}
