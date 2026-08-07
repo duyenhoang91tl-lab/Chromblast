@@ -3711,6 +3711,7 @@ body:has(#secret-stage.active) .streak-dot.lit{
 }
 .vs-cell.vs-rock{ background:#4a4a55 !important; filter:none; }
 .vs-cell.vs-ice{ outline:2px solid #9adcff; outline-offset:-2px; }
+.vs-cell.vs-ice-cracked{ outline:2px dashed #9adcff; outline-offset:-2px; opacity:0.85; }
 /* 💣 Bom hẹn giờ (Versus) — luôn hiện rõ + đếm ngược, giống map thường */
 .vs-cell.vs-bomb::after{
   content:'💣'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center;

@@ -446,7 +446,11 @@ function _vsRenderGrid(P){
     else if(v){
       cls+=' vs-filled';
       cc = fog ? '#5a5f6e' : v;
-      if(P.ice.has(k)){ cls+=' vs-ice'; txt='🧊'; }
+      if(P.ice.has(k)){
+        const iceStage=P.ice.get(k);
+        cls += iceStage>=2 ? ' vs-ice' : ' vs-ice vs-ice-cracked';
+        txt = iceStage>=2 ? '🧊' : '💢';
+      }
     }
     const isBomb = !!(P.bomb && P.bomb.r===r && P.bomb.c===c);
     if(isBomb) cls+=' vs-bomb';
