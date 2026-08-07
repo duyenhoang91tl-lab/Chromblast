@@ -3,6 +3,7 @@ const { onDocumentCreated, onDocumentUpdated } = require('firebase-functions/v2/
 const { onCall, onRequest, HttpsError } = require('firebase-functions/v2/https');
 const { initializeApp } = require('firebase-admin/app');
 const { getFirestore, FieldValue, Timestamp } = require('firebase-admin/firestore');
+const { getAuth } = require('firebase-admin/auth');
 const { filterText, containsProfanity } = require('./profanity-filter.js');
 const crypto = require('crypto');
 initializeApp();
@@ -10,6 +11,7 @@ initializeApp();
 // trên firebase-admin@14 kiểu namespace cũ báo lỗi "admin.firestore is not a function"
 // (namespace không còn tự đăng ký khi chỉ require('firebase-admin') trơn).
 const db = getFirestore();
+const auth = getAuth();
 // Đặt vùng mặc định cho toàn bộ function trong file này — nên trùng với
 // vùng của Cloud Firestore trong dự án Firebase để giảm độ trễ.
 setGlobalOptions({ region: 'asia-southeast1' });
@@ -779,13 +781,20 @@ exports.registerAccount = onCall({ region: 'asia-southeast1' }, async (request) 
 
   const pw = _hashSecret(password);
   const sa = _hashSecret(secA);
+  const stableUid = 'acct_' + crypto.randomBytes(16).toString('hex');
   await ref.set({
     username, role: 'user', secQ,
     passwordHash: pw.hash, passwordSalt: pw.salt,
     secAHash: sa.hash, secASalt: sa.salt,
+    uid: stableUid,
     createdAt: FieldValue.serverTimestamp()
   });
-  return { ok: true, username, role: 'user' };
+  // UID cố định gắn với tài khoản (không phải UID ẩn danh theo thiết bị) — client
+  // đăng nhập Firebase Auth bằng token này thì players/{uid} (cấp độ, XP, hạng
+  // Caro/Versus, vàng/kim cương...) sẽ đi theo tài khoản, không mất khi đổi máy/
+  // dùng ẩn danh/xoá cache.
+  const token = await auth.createCustomToken(stableUid);
+  return { ok: true, username, role: 'user', token };
 });
 
 /** Đăng nhập. Trả về {ok, username, role}. */
@@ -805,7 +814,14 @@ exports.loginAccount = onCall({ region: 'asia-southeast1' }, async (request) => 
     throw new HttpsError('permission-denied', 'errWrongLogin');
   }
   await _clearFailedAttempts(ref);
-  return { ok: true, username: u.username, role: u.role || 'user' };
+  // Tài khoản tạo trước khi có tính năng này chưa có uid cố định — tạo bù 1 lần.
+  let stableUid = u.uid;
+  if (!stableUid) {
+    stableUid = 'acct_' + crypto.randomBytes(16).toString('hex');
+    await ref.update({ uid: stableUid }).catch(() => {});
+  }
+  const token = await auth.createCustomToken(stableUid);
+  return { ok: true, username: u.username, role: u.role || 'user', token };
 });
 
 /** Đổi mật khẩu khi đã đăng nhập (biết mật khẩu cũ). */

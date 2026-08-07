@@ -177,6 +177,7 @@ async function _upsertPlayerProfile(){
     displayNameLower: String(name || '').toLowerCase(),
     avatar,
     level: (typeof playerLevel !== 'undefined' ? playerLevel : 1),
+    xp: (typeof playerXP !== 'undefined' ? playerXP : 0),
     mapNormal: (typeof normalMapStage !== 'undefined' ? Math.max(0, (normalMapStage|0) - 1) : 0),
     mapSecret: (typeof unlockGateStageIndex !== 'undefined' ? (unlockGateStageIndex|0) : 0),
     country: region.country || 'VN',
