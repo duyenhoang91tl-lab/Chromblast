@@ -406,19 +406,19 @@ exports.exchangeCurrency = onCall({ region: 'asia-southeast1' }, async (request)
  * cương chỉ top 1–3, vàng tới top 100. */
 const PERIOD_REWARD_TABLE = {
   day: [
-    { max: 1, gold: 50, diamond: 3 }, { max: 2, gold: 30, diamond: 2 }, { max: 3, gold: 20, diamond: 1 },
-    { max: 10, gold: 12, diamond: 0 }, { max: 20, gold: 8, diamond: 0 }, { max: 40, gold: 5, diamond: 0 },
-    { max: 60, gold: 3, diamond: 0 }, { max: 80, gold: 2, diamond: 0 }, { max: 100, gold: 1, diamond: 0 }
+    { max: 1, gold: 25, diamond: 3 }, { max: 2, gold: 15, diamond: 2 }, { max: 3, gold: 10, diamond: 1 },
+    { max: 10, gold: 6, diamond: 0 }, { max: 20, gold: 4, diamond: 0 }, { max: 40, gold: 3, diamond: 0 },
+    { max: 60, gold: 2, diamond: 0 }, { max: 80, gold: 1, diamond: 0 }, { max: 100, gold: 1, diamond: 0 }
   ],
   week: [
-    { max: 1, gold: 140, diamond: 6 }, { max: 2, gold: 84, diamond: 3 }, { max: 3, gold: 56, diamond: 2 },
-    { max: 10, gold: 28, diamond: 0 }, { max: 20, gold: 18, diamond: 0 }, { max: 40, gold: 11, diamond: 0 },
-    { max: 60, gold: 7, diamond: 0 }, { max: 80, gold: 4, diamond: 0 }, { max: 100, gold: 2, diamond: 0 }
+    { max: 1, gold: 70, diamond: 6 }, { max: 2, gold: 42, diamond: 3 }, { max: 3, gold: 28, diamond: 2 },
+    { max: 10, gold: 14, diamond: 0 }, { max: 20, gold: 9, diamond: 0 }, { max: 40, gold: 6, diamond: 0 },
+    { max: 60, gold: 4, diamond: 0 }, { max: 80, gold: 2, diamond: 0 }, { max: 100, gold: 1, diamond: 0 }
   ],
   month: [
-    { max: 1, gold: 560, diamond: 10 }, { max: 2, gold: 350, diamond: 5 }, { max: 3, gold: 210, diamond: 3 },
-    { max: 10, gold: 105, diamond: 0 }, { max: 20, gold: 63, diamond: 0 }, { max: 40, gold: 35, diamond: 0 },
-    { max: 60, gold: 21, diamond: 0 }, { max: 80, gold: 13, diamond: 0 }, { max: 100, gold: 7, diamond: 0 }
+    { max: 1, gold: 280, diamond: 10 }, { max: 2, gold: 175, diamond: 5 }, { max: 3, gold: 105, diamond: 3 },
+    { max: 10, gold: 53, diamond: 0 }, { max: 20, gold: 32, diamond: 0 }, { max: 40, gold: 18, diamond: 0 },
+    { max: 60, gold: 11, diamond: 0 }, { max: 80, gold: 7, diamond: 0 }, { max: 100, gold: 4, diamond: 0 }
   ]
 };
 function periodRewardForRank(kind, rank) {
