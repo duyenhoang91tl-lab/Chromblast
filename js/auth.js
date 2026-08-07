@@ -34,6 +34,50 @@ function _authErrMsg(err){
   return (typeof t === 'function') ? t('errNetwork') : 'Lỗi kết nối mạng — vui lòng thử lại.';
 }
 
+/** Sau khi đăng nhập/đăng ký username+mật khẩu thành công, đổi từ UID ẩn danh theo
+ * thiết bị (Firebase Auth anonymous — xem online-services.js: initOnlineServices)
+ * sang UID CỐ ĐỊNH của tài khoản, qua custom token server vừa phát. Nhờ vậy
+ * players/{uid} (cấp độ, XP, hạng Caro/Versus, BXH...) đi theo tài khoản thay vì bị
+ * mất khi đổi máy / dùng tab ẩn danh / xoá cache trình duyệt — đúng như kỳ vọng khi
+ * đã đăng ký tài khoản.
+ *
+ * Không đụng vào vàng/kim cương/tim ở đây — việc nối ví vào server đang được làm
+ * riêng, từng bước một cách thận trọng (xem docs/SERVER_WALLET_PROGRESS.md), không
+ * nên xen vào giữa chừng. Chỉ đồng bộ cấp độ/XP, và CHỈ khôi phục nếu server đang
+ * cao hơn máy này (không bao giờ hạ thấp tiến trình đang có).
+ */
+async function _syncAccountIdentity(token){
+  if(!token) return;
+  try{
+    if(typeof firebase === 'undefined' || !window.FIREBASE_CONFIG) return;
+    if(!firebase.apps.length) firebase.initializeApp(window.FIREBASE_CONFIG);
+    await firebase.auth().signInWithCustomToken(token);
+    if(typeof _onlineDb === 'undefined' || !_onlineDb){
+      // initOnlineServices() chưa từng chạy (hiếm) — chạy 1 lần để có _onlineDb/_onlineUid.
+      if(typeof initOnlineServices === 'function') await initOnlineServices();
+    }
+    const uid = firebase.auth().currentUser ? firebase.auth().currentUser.uid : null;
+    if(typeof _onlineUid !== 'undefined') _onlineUid = uid;
+    // Đẩy tiến trình hiện có (cấp độ/XP/avatar/tên...) lên đúng players/{uid} của
+    // tài khoản vừa đăng nhập, rồi đọc lại để đối chiếu.
+    if(typeof _upsertPlayerProfile === 'function') await _upsertPlayerProfile();
+    if(typeof _onlineDb !== 'undefined' && _onlineDb && uid){
+      const snap = await _onlineDb.collection('players').doc(uid).get();
+      if(snap.exists){
+        const d = snap.data();
+        const curLevel = (typeof playerLevel === 'number') ? playerLevel : 1;
+        if(typeof d.level === 'number' && d.level > curLevel){
+          playerLevel = d.level;
+          playerXP = (typeof d.xp === 'number') ? d.xp : 0;
+          try{ if(typeof savePlayerXP === 'function') savePlayerXP(); }catch(e){}
+          try{ if(typeof renderPlayerXP === 'function') renderPlayerXP(); }catch(e){}
+          try{ if(typeof refreshArcadeHud === 'function') refreshArcadeHud(); }catch(e){}
+        }
+      }
+    }
+  }catch(e){ console.warn('[auth] _syncAccountIdentity failed', e); }
+}
+
 function applyLoggedInUser(username, role){
   currentUser = { username, role: role || 'user' };
   setSession(JSON.stringify({ username, role: currentUser.role }));
@@ -58,6 +102,7 @@ async function doLogin(username, password){
     const res = await fns.httpsCallable('loginAccount')({ username, password });
     const data = res.data || {};
     applyLoggedInUser(data.username || username, data.role);
+    if(data.token) await _syncAccountIdentity(data.token);
     if(typeof logGameEvent === 'function') logGameEvent('login', { method: 'username_password' });
     hideAuthScreen();
   }catch(e){
@@ -82,6 +127,7 @@ async function doRegister(username, password, password2, secQ, secA){
     const res = await fns.httpsCallable('registerAccount')({ username, password, secQ, secA });
     const data = res.data || {};
     applyLoggedInUser(data.username || username, data.role);
+    if(data.token) await _syncAccountIdentity(data.token);
     if(typeof logGameEvent === 'function') logGameEvent('sign_up', { method: 'username_password' });
     hideAuthScreen();
   }catch(e){
@@ -324,5 +370,15 @@ function initAuthScreen(){
 function doLogout(){
   clearSession();
   currentUser = null;
+  // Đăng xuất luôn khỏi Firebase Auth (không chỉ xoá phiên hiển thị username) — nếu
+  // không, do bật Auth.Persistence.LOCAL, UID cố định của tài khoản vẫn còn được lưu
+  // sau khi tải lại trang, người chơi tiếp theo trên máy dùng chung (VD quán net) sẽ
+  // vô tình chơi tiếp dưới tài khoản vừa đăng xuất.
+  try{
+    if(typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length && firebase.auth().currentUser){
+      firebase.auth().signOut().catch(()=>{}).finally(()=>location.reload());
+      return;
+    }
+  }catch(e){}
   location.reload(); // tải lại trang để đưa về màn hình đăng nhập, dọn sạch trạng thái game
 }
