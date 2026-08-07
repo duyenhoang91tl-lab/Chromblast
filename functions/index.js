@@ -762,7 +762,15 @@ function _verifySecret(raw, hash, salt) {
   } catch (e) { return false; }
 }
 
-/** Đăng ký tài khoản mới. Trả về {ok, username, role}. */
+/**
+ * Đăng ký tài khoản mới. Nếu máy đang đăng nhập sẵn Google/Facebook/Play Games
+ * (không phải ẩn danh) thì username/mật khẩu mới được GẮN VÀO CHÍNH uid đó thay
+ * vì tạo 1 uid riêng — nhờ vậy mở game bằng Google rồi tạo thêm username/mật
+ * khẩu vẫn là CHUNG 1 tài khoản, không bị tách tiến trình theo kiểu đăng nhập.
+ * Nếu máy đang ẩn danh hoặc chưa đăng nhập gì thì vẫn tạo uid cố định riêng như
+ * trước — không đổi hành vi cho người chỉ dùng username/mật khẩu (không social).
+ * Trả về {ok, username, role, token}.
+ */
 exports.registerAccount = onCall({ region: 'asia-southeast1' }, async (request) => {
   const data = request.data || {};
   const username = typeof data.username === 'string' ? data.username.trim() : '';
@@ -779,9 +787,17 @@ exports.registerAccount = onCall({ region: 'asia-southeast1' }, async (request) 
   const snap = await ref.get();
   if (snap.exists) throw new HttpsError('already-exists', 'errUserExists');
 
+  // Chỉ dùng lại uid hiện tại khi máy đang đăng nhập THẬT bằng 1 trong 3 social
+  // provider dưới đây (không phải ẩn danh, không phải 'custom' từ 1 tài khoản
+  // username/mật khẩu khác đang đăng nhập sẵn) — tránh gộp nhầm 2 danh tính.
+  const SOCIAL_PROVIDERS = ['google.com', 'facebook.com', 'playgames.google.com'];
+  const signInProvider = (request.auth && request.auth.token && request.auth.token.firebase)
+    ? request.auth.token.firebase.sign_in_provider : null;
+  const linkedUid = (request.auth && SOCIAL_PROVIDERS.includes(signInProvider)) ? request.auth.uid : null;
+
   const pw = _hashSecret(password);
   const sa = _hashSecret(secA);
-  const stableUid = 'acct_' + crypto.randomBytes(16).toString('hex');
+  const stableUid = linkedUid || ('acct_' + crypto.randomBytes(16).toString('hex'));
   await ref.set({
     username, role: 'user', secQ,
     passwordHash: pw.hash, passwordSalt: pw.salt,
