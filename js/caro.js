@@ -711,8 +711,15 @@ async function openPlayerCard(opts){
   const coupleEl = document.getElementById('pc-couple');
   if(coupleEl){ coupleEl.hidden = true; coupleEl.innerHTML = ''; }
   const friendBtn = document.getElementById('pc-friend-btn');
+  const dmBtn = document.getElementById('pc-dm-btn');
   const msg = document.getElementById('pc-msg');
   if(msg) msg.textContent = '';
+  if(dmBtn){
+    dmBtn.hidden = isSelf || !uid;
+    dmBtn.dataset.uid = uid || '';
+    dmBtn.dataset.name = fallbackName;
+    dmBtn.dataset.avatar = fallbackAv;
+  }
   if(friendBtn){
     friendBtn.hidden = isSelf;
     friendBtn.dataset.uid = uid || '';
@@ -2529,6 +2536,14 @@ function applyCaroSettings(){
         btn.disabled = true;
         btn.textContent = typeof t==='function'?t('caroFriendRequestedShort'):'Đã mời';
       }
+    });
+    document.getElementById('pc-dm-btn')?.addEventListener('click', ()=>{
+      try{sfxClick();}catch(e){}
+      const btn = document.getElementById('pc-dm-btn');
+      if(!btn || !btn.dataset.uid) return;
+      const uid = btn.dataset.uid, name = btn.dataset.name, avatar = btn.dataset.avatar;
+      closePlayerCard();
+      if(typeof openPrivateChatWith === 'function') openPrivateChatWith(uid, name, avatar);
     });
     refreshCaroButton();
   }
