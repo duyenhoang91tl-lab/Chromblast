@@ -1064,6 +1064,80 @@ function _isNativeCapacitor(){
   }catch(e){ return false; }
 }
 
+async function signInWithFacebook(){
+  // Web: dùng signInWithPopup của Firebase (cần bật provider Facebook trong
+  // Firebase Console + App ID/Secret lấy từ Meta for Developers trước).
+  // Android: dùng Capgo SocialLogin (facebook) → Firebase credential, cần
+  // thêm FACEBOOK_APP_ID (window.FACEBOOK_APP_ID) + khai báo trong
+  // android/app/src/main/res/values/strings.xml (facebook_app_id,
+  // facebook_client_token) giống hệt cách GOOGLE_WEB_CLIENT_ID đã làm.
+  if(!isOnlineServicesEnabled()) throw new Error('online_disabled');
+
+  if(!firebase.apps.length) firebase.initializeApp(window.FIREBASE_CONFIG);
+  if(!_onlineAuth) _onlineAuth = firebase.auth();
+  if(!_onlineDb) _onlineDb = firebase.firestore();
+
+  if(_isNativeCapacitor()){
+    await _signInWithFacebookNative();
+  } else {
+    const provider = new firebase.auth.FacebookAuthProvider();
+    provider.addScope('public_profile');
+    await _onlineAuth.signInWithPopup(provider);
+  }
+
+  if(!_onlineAuth.currentUser) throw new Error('auth_no_user');
+  _onlineUid = _onlineAuth.currentUser.uid;
+  const name = _onlineAuth.currentUser.displayName;
+  if(name) _onlineDisplayName = name;
+  try{
+    if(typeof getPlayerProfile === 'function' && typeof savePlayerProfile === 'function'){
+      const p = getPlayerProfile();
+      if(name && (!p.nick || /^Khách#/.test(p.nick))) savePlayerProfile({ nick: name });
+    }
+  }catch(e){}
+  _onlineReady = true;
+  await _upsertPlayerProfile();
+  logGameEvent('login', { method: 'facebook' });
+  return _onlineUid;
+}
+
+async function _ensureSocialLoginFacebook(){
+  const SocialLogin = window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.SocialLogin;
+  if(!SocialLogin) throw Object.assign(new Error('facebook_plugin_missing'), { code: 'facebook_plugin_missing' });
+  const appId = window.FACEBOOK_APP_ID;
+  if(!appId) throw Object.assign(new Error('facebook_app_id_missing'), { code: 'facebook_app_id_missing' });
+  if(!_ensureSocialLoginFacebook._inited){
+    if(!window.__socialLoginFacebookReady){
+      await SocialLogin.initialize({
+        facebook: { appId }
+      });
+    }
+    _ensureSocialLoginFacebook._inited = true;
+  }
+  return SocialLogin;
+}
+
+async function _signInWithFacebookNative(){
+  const SocialLogin = await _ensureSocialLoginFacebook();
+  const login = await SocialLogin.login({
+    provider: 'facebook',
+    options: { permissions: ['public_profile', 'email'] }
+  });
+  const accessToken = login && login.result && (login.result.accessToken?.token || login.result.accessToken);
+  if(!accessToken){
+    throw Object.assign(new Error('facebook_no_access_token'), { code: 'facebook_no_access_token' });
+  }
+  const credential = firebase.auth.FacebookAuthProvider.credential(accessToken);
+  if(_onlineAuth.currentUser && _onlineAuth.currentUser.isAnonymous){
+    await _onlineAuth.currentUser.linkWithCredential(credential).catch(async (e)=>{
+      if(e && e.code === 'auth/credential-already-in-use') await _onlineAuth.signInWithCredential(credential);
+      else throw e;
+    });
+  } else {
+    await _onlineAuth.signInWithCredential(credential);
+  }
+}
+
 async function _ensureSocialLoginGoogle(){
   const SocialLogin = window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.SocialLogin;
   if(!SocialLogin) throw Object.assign(new Error('google_plugin_missing'), { code: 'google_plugin_missing' });
@@ -1122,6 +1196,18 @@ function friendlyOnlineAuthError(e){
   if(code.includes('google_no_id_token') || code.includes('Developer console is not set up') || code.includes('28444')){
     return (typeof t==='function' ? t('onlineAuthSha') : null)
       || 'Google Sign-In chưa khớp SHA-1. Thêm SHA-1 debug/release vào Firebase Android app rồi tải lại google-services.json';
+  }
+  if(code.includes('facebook_plugin_missing') || code.includes('facebook_app_id_missing')){
+    return (typeof t==='function' ? t('onlineAuthFbNativeSetup') : null)
+      || 'Thiếu cấu hình Facebook Login trên app — cần FACEBOOK_APP_ID + facebook_client_token (strings.xml)';
+  }
+  if(code.includes('facebook_no_access_token')){
+    return (typeof t==='function' ? t('onlineAuthFbFail') : null)
+      || 'Đăng nhập Facebook chưa lấy được access token — thử lại';
+  }
+  if(code.includes('auth/account-exists-with-different-credential')){
+    return (typeof t==='function' ? t('onlineAuthDiffCred') : null)
+      || 'Email này đã đăng ký bằng cách khác (VD: Google) — hãy đăng nhập lại đúng cách đã dùng lần đầu';
   }
   if(code.includes('network-request-failed')){
     return (typeof t==='function' ? t('onlineAuthNetwork') : null) || 'Mất mạng — kiểm tra kết nối rồi thử lại';

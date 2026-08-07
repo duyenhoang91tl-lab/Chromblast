@@ -543,6 +543,28 @@ function onLeaveLobbyToHub(){
     }
   });
 
+  document.getElementById('online-facebook-btn')?.addEventListener('click', async ()=>{
+    const btn = document.getElementById('online-facebook-btn');
+    if(btn) btn.disabled = true;
+    try{
+      await signInWithFacebook();
+      _onlineStatus('Facebook · '+getOnlineDisplayName());
+    }catch(e){
+      const msg = typeof friendlyOnlineAuthError === 'function' ? friendlyOnlineAuthError(e) : (e && e.message);
+      if(!msg){ _onlineStatus(''); return; }
+      const soft = /unauthorized-domain|facebook_plugin|facebook_app_id|facebook_no_access/i.test(String((e&&e.code)||e.message||'')+msg);
+      const el = document.getElementById('online-status');
+      if(el){
+        el.textContent = msg;
+        el.className = 'online-status' + (soft ? ' warn' : ' err');
+      } else {
+        _onlineStatus(msg, true);
+      }
+    }finally{
+      if(btn) btn.disabled = false;
+    }
+  });
+
   document.getElementById('online-delete-account-btn')?.addEventListener('click', async ()=>{
     const btn = document.getElementById('online-delete-account-btn');
     const msgEl = document.getElementById('pp-msg');

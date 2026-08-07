@@ -34,6 +34,7 @@ Project settings → **Add app** → Web `</>` → copy `appId` dạng `1:470820
 |----------|------------|
 | Anonymous | **Bật** (bắt buộc — vào phòng nhanh) |
 | Google | **Bật** (app Android + web) |
+| Facebook | **Bật** (app Android + web) — xem checklist riêng bên dưới |
 
 **Authorized domains** (Authentication → Settings):
 - Luôn có: `localhost`
@@ -57,6 +58,15 @@ keytool -list -v -keystore %USERPROFILE%\.android\debug.keystore -alias androidd
 
 Nếu thấy lỗi `auth/unauthorized-domain` trên **web**: thêm domain vào Authorized domains.
 Nếu lỗi Google trên **app**: gần như chắc thiếu/sai SHA-1 hoặc dùng nhầm client ID.
+
+**Facebook Login — checklist (code đã có sẵn trong `js/online-services.js`, chỉ còn thiếu cấu hình):**
+1. Tạo app tại [Meta for Developers](https://developers.facebook.com/) → thêm sản phẩm **Facebook Login**
+2. Lấy **App ID** + **App Secret**
+3. Firebase Console → Authentication → Sign-in method → **Facebook** → dán App ID + App Secret → copy **OAuth redirect URI** Firebase đưa ra, dán lại vào Meta app (Facebook Login → Settings → Valid OAuth Redirect URIs)
+4. Web: xong bước 3 là nút "Đăng nhập Facebook" hoạt động ngay (dùng `signInWithPopup`)
+5. Android (native, không bắt buộc nếu chỉ chơi web): thêm `window.FACEBOOK_APP_ID` trong `js/firebase-config.js`, khai báo `facebook_app_id` + `facebook_client_token` trong `android/app/src/main/res/values/strings.xml`, và bật `facebook` trong cấu hình `@capgo/capacitor-social-login` (giống hệt phần Google ở trên) rồi `npm run cap:sync`
+
+**Instagram / TikTok:** Firebase Authentication **không** hỗ trợ sẵn 2 provider này (chỉ có Google/Facebook/Apple/Microsoft/Yahoo/GitHub/Twitter + email/phone + OAuth tuỳ biến). Muốn đăng nhập bằng Instagram hoặc TikTok cần tự dựng luồng OAuth riêng (đăng ký app trên Meta/TikTok developer portal, xin App ID/Secret, viết Cloud Function đổi authorization code lấy được từ Instagram/TikTok thành Firebase custom token) — là một hạng mục backend riêng, chưa làm trong repo này.
 
 ### 1c. Firestore Database
 **Build → Firestore Database → Create database**
