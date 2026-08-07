@@ -599,11 +599,11 @@ function _caroRenderOppRankLine(){
   if(!c || !c.loaded || (!c.caroRank && !c.vsRank)){ el.hidden = true; el.innerHTML = ''; return; }
   const parts = [];
   if(c.caroRank){
-    parts.push('<span class="caro-rank-mini">XO: '+c.caroRank.icon+' '+
+    parts.push('<span class="caro-rank-mini">❌⭕ '+
       (typeof escapeHtml==='function'?escapeHtml(c.caroRank.name):c.caroRank.name)+'</span>');
   }
   if(c.vsRank){
-    parts.push('<span class="caro-rank-mini">'+(typeof t==='function'?t('vsShort'):'Versus')+': '+c.vsRank.icon+' '+
+    parts.push('<span class="caro-rank-mini">⚔️ '+
       (typeof escapeHtml==='function'?escapeHtml(c.vsRank.name):c.vsRank.name)+'</span>');
   }
   el.hidden = false;
