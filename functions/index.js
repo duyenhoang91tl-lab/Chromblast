@@ -809,7 +809,16 @@ exports.registerAccount = onCall({ region: 'asia-southeast1' }, async (request) 
   // đăng nhập Firebase Auth bằng token này thì players/{uid} (cấp độ, XP, hạng
   // Caro/Versus, vàng/kim cương...) sẽ đi theo tài khoản, không mất khi đổi máy/
   // dùng ẩn danh/xoá cache.
-  const token = await auth.createCustomToken(stableUid);
+  // Bọc riêng: phát token chỉ là bước ĐỒNG BỘ THÊM, không phải điều kiện để đăng
+  // ký thành công — nếu project thiếu quyền IAM "Service Account Token Creator"
+  // (createCustomToken cần quyền này để ký token) thì chỉ bỏ qua bước đồng bộ,
+  // KHÔNG được để cả API báo lỗi và chặn mất tài khoản vừa tạo xong.
+  let token = null;
+  try{
+    token = await auth.createCustomToken(stableUid);
+  }catch(e){
+    console.error('[registerAccount] createCustomToken failed — kiểm tra quyền IAM "Service Account Token Creator" của service account Cloud Functions', e);
+  }
   return { ok: true, username, role: 'user', token };
 });
 
@@ -836,7 +845,14 @@ exports.loginAccount = onCall({ region: 'asia-southeast1' }, async (request) => 
     stableUid = 'acct_' + crypto.randomBytes(16).toString('hex');
     await ref.update({ uid: stableUid }).catch(() => {});
   }
-  const token = await auth.createCustomToken(stableUid);
+  // Xem chú thích ở registerAccount: phát token là bước đồng bộ thêm, lỗi ở đây
+  // (VD thiếu quyền IAM) không được chặn đăng nhập bình thường.
+  let token = null;
+  try{
+    token = await auth.createCustomToken(stableUid);
+  }catch(e){
+    console.error('[loginAccount] createCustomToken failed — kiểm tra quyền IAM "Service Account Token Creator" của service account Cloud Functions', e);
+  }
   return { ok: true, username: u.username, role: u.role || 'user', token };
 });
 
