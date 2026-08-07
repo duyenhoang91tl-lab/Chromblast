@@ -972,7 +972,7 @@ body.tutorial-open #start-screen{
 #online-lobby-leave, #caro-lobby-leave, #online-mm-cancel, #caro-mm-cancel,
 #online-join-btn, #caro-join-btn, #caro-lobby-skin-btn, #caro-hub-skin-btn,
 #caro-rank-btn, #account-edit-profile, #vs-close-btn,
-#online-google-btn, #pp-save-style, #guest-play-btn,
+#auth-google-btn, #auth-facebook-btn, #auth-playgames-btn, #pp-save-style, #guest-play-btn,
 #online-find-btn, #caro-find-btn, #caro-ai-start-btn {
   color: #ffffff !important;
   text-shadow: 0 1px 2px rgba(0,0,0,0.35);
