@@ -411,14 +411,14 @@ const PERIOD_REWARD_TABLE = {
     { max: 60, gold: 3, diamond: 0 }, { max: 80, gold: 2, diamond: 0 }, { max: 100, gold: 1, diamond: 0 }
   ],
   week: [
-    { max: 1, gold: 200, diamond: 6 }, { max: 2, gold: 120, diamond: 3 }, { max: 3, gold: 80, diamond: 2 },
-    { max: 10, gold: 40, diamond: 0 }, { max: 20, gold: 25, diamond: 0 }, { max: 40, gold: 15, diamond: 0 },
-    { max: 60, gold: 10, diamond: 0 }, { max: 80, gold: 6, diamond: 0 }, { max: 100, gold: 3, diamond: 0 }
+    { max: 1, gold: 140, diamond: 6 }, { max: 2, gold: 84, diamond: 3 }, { max: 3, gold: 56, diamond: 2 },
+    { max: 10, gold: 28, diamond: 0 }, { max: 20, gold: 18, diamond: 0 }, { max: 40, gold: 11, diamond: 0 },
+    { max: 60, gold: 7, diamond: 0 }, { max: 80, gold: 4, diamond: 0 }, { max: 100, gold: 2, diamond: 0 }
   ],
   month: [
-    { max: 1, gold: 800, diamond: 10 }, { max: 2, gold: 500, diamond: 5 }, { max: 3, gold: 300, diamond: 3 },
-    { max: 10, gold: 150, diamond: 0 }, { max: 20, gold: 90, diamond: 0 }, { max: 40, gold: 50, diamond: 0 },
-    { max: 60, gold: 30, diamond: 0 }, { max: 80, gold: 18, diamond: 0 }, { max: 100, gold: 10, diamond: 0 }
+    { max: 1, gold: 560, diamond: 10 }, { max: 2, gold: 350, diamond: 5 }, { max: 3, gold: 210, diamond: 3 },
+    { max: 10, gold: 105, diamond: 0 }, { max: 20, gold: 63, diamond: 0 }, { max: 40, gold: 35, diamond: 0 },
+    { max: 60, gold: 21, diamond: 0 }, { max: 80, gold: 13, diamond: 0 }, { max: 100, gold: 7, diamond: 0 }
   ]
 };
 function periodRewardForRank(kind, rank) {
