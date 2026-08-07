@@ -749,13 +749,13 @@ async function openPlayerCard(opts){
         const caroLine = (typeof t==='function'
           ? (t('caroWinRateLabel')+': '+rate+'%')
           : (rate+'%'));
-        statsHtml += '<div class="pc-mode-stats"><b>Caro</b> — '+caroTitle+'<br>'+caroLine+'</div>';
+        statsHtml += '<div class="pc-mode-stats">❌⭕ '+(caroRank && typeof rankNameFxHtml==='function' ? rankNameFxHtml(caroTitle, caroRank.tier) : escapeHtml(caroTitle))+'<br>'+caroLine+'</div>';
       }
       {
         const vsLine = (typeof t==='function'
           ? (t('caroWinRateLabel')+': '+vsRate+'%')
           : (vsRate+'%'));
-        statsHtml += '<div class="pc-mode-stats"><b>Versus</b> — '+vsTitle+'<br>'+vsLine+'</div>';
+        statsHtml += '<div class="pc-mode-stats">⚔️ '+(vsRank && typeof rankNameFxHtml==='function' ? rankNameFxHtml(vsTitle, vsRank.tier) : escapeHtml(vsTitle))+'<br>'+vsLine+'</div>';
       }
       document.getElementById('pc-stats').innerHTML = statsHtml || (typeof t==='function'?t('caroNoStats'):'Chưa có thống kê');
     }catch(e){}
@@ -791,13 +791,13 @@ async function openPlayerCard(opts){
     const visVersus = prof.visVersus !== false;
     let statsHtml = '';
     if(hasCaro && visCaro){
-      statsHtml += '<div class="pc-mode-stats"><b>Caro</b> — '+caroTitle+'<br>'+caroLine+'</div>';
+      statsHtml += '<div class="pc-mode-stats">❌⭕ '+(caroRank && typeof rankNameFxHtml==='function' ? rankNameFxHtml(caroTitle, caroRank.tier) : escapeHtml(caroTitle))+'<br>'+caroLine+'</div>';
     }
     if(hasVs && visVersus){
       const vsLine = (typeof t==='function'
         ? (t('caroWinRateLabel')+': '+vsRate+'%')
         : (vsRate+'%'));
-      statsHtml += '<div class="pc-mode-stats"><b>Versus</b> — '+vsTitle+'<br>'+vsLine+'</div>';
+      statsHtml += '<div class="pc-mode-stats">⚔️ '+(vsRank && typeof rankNameFxHtml==='function' ? rankNameFxHtml(vsTitle, vsRank.tier) : escapeHtml(vsTitle))+'<br>'+vsLine+'</div>';
     }
     document.getElementById('pc-stats').innerHTML = statsHtml || (typeof t==='function'?t('caroNoStats'):'Chưa có thống kê');
     if(visMaps){

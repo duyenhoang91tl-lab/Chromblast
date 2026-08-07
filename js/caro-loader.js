@@ -14,7 +14,7 @@
   // Version cache-busting cho 2 file nạp trễ này — bump khi sửa caro.js/caro-social.js
   // (2 file <script> nạp sẵn khác đã có ?v=... ngay trong index.html, riêng 2 file
   // lazy-load này trước đây KHÔNG có version gì cả nên dễ bị cache cũ dai dẳng).
-  var CARO_LAZY_V = '20260804a';
+  var CARO_LAZY_V = '20260804b';
 
   function loadScriptOnce(src){
     return new Promise(function(resolve, reject){
