@@ -2066,6 +2066,12 @@ function _caroOpenLobby(roomId, code, role, roomData){
   listenOnlineRoom(roomId, ev=>{
     if(ev.type==='deleted'){ closeCaroHub(); _caroHandleHostLeft(); return; }
     const d = ev.data;
+    const myUid = typeof getOnlineUid === 'function' ? getOnlineUid() : null;
+    if(_caroLobby && _caroLobby.role === 'guest' && myUid && d.kickedGuestId === myUid){
+      closeCaroHub();
+      _caroReturnToRoomList(t('roomKickedMsg', d.hostName || '?'));
+      return;
+    }
     const prevGuestId = _caroLobby && _caroLobby.roomData ? _caroLobby.roomData.guestId : null;
     _caroLobby.roomData = d;
     _caroSyncRoomPrefsFromData(d);
@@ -2131,6 +2137,9 @@ function _caroRenderLobby(d){
 
   const hostUid = d.hostId || '';
   const guestUid = d.guestId || '';
+  const kickBtnHtml = (hostIsMe && guestName)
+    ? '<button type="button" class="caro-kick-btn" id="caro-kick-guest-btn" data-uid="'+escapeHtml(guestUid)+'" data-name="'+escapeHtml(guestName)+'">'+escapeHtml(t('roomKickBtn'))+'</button>'
+    : '';
   document.getElementById('caro-lobby-players').innerHTML =
     '<div class="online-player caro-lobby-seat" data-uid="'+escapeHtml(hostUid)+'" data-name="'+escapeHtml(host)+'" data-avatar="'+hostAv+'">'+
       '<button type="button" class="caro-seat-av" data-uid="'+escapeHtml(hostUid)+'" data-name="'+escapeHtml(host)+'" data-avatar="'+hostAv+'">'+hostAv+'</button>'+
@@ -2141,7 +2150,17 @@ function _caroRenderLobby(d){
       '<button type="button" class="caro-seat-av" data-uid="'+escapeHtml(guestUid)+'" data-name="'+escapeHtml(guestName||'')+'" data-avatar="'+guestAv+'" '+(guestName?'':'disabled')+'>'+(guestName?guestAv:'❔')+'</button>'+
       '<span class="caro-seat-info">'+guestRankHtml+
         '<span class="caro-seat-name-row"><span class="caro-o">O</span> <span class="caro-seat-name">'+guestLabel+'</span></span>'+
-      '</span></div>';
+      '</span>'+kickBtnHtml+'</div>';
+
+  document.getElementById('caro-kick-guest-btn')?.addEventListener('click', (e)=>{
+    e.preventDefault(); e.stopPropagation();
+    const btn = e.currentTarget;
+    const gName = btn.dataset.name || '?';
+    if(!confirm(t('roomKickConfirm', gName))) return;
+    if(typeof kickRoomGuest === 'function' && _caroLobby && _caroLobby.roomId){
+      kickRoomGuest(_caroLobby.roomId).catch(()=>{});
+    }
+  });
 
   document.querySelectorAll('#caro-lobby-players .caro-seat-av').forEach(btn=>{
     btn.addEventListener('click', (e)=>{
