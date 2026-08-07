@@ -3604,7 +3604,9 @@ body:has(#secret-stage.active) .streak-dot.lit{
   font-size:18px; line-height:1;
   background:rgba(255,255,255,0.1);
   border:1px solid rgba(255,255,255,0.16);
+  cursor:pointer;
 }
+.vs-chip-avatar:active{ transform: scale(0.92); }
 .vs-chip-meta{
   display:flex; flex-direction:column; gap:1px; min-width:0;
 }

@@ -288,6 +288,23 @@ function _vsBuildArena(){
     const msg = (typeof t==='function'?t('caroQuitConfirm'):null) || 'Thoát trận?';
     if(confirm(msg)) _vsAbort();
   });
+  document.getElementById('vs-chip-avatar0')?.addEventListener('click', (ev)=>{
+    ev.stopPropagation();
+    try{ sfxClick(); }catch(e){}
+    if(typeof openOwnPlayerCard === 'function') openOwnPlayerCard();
+  });
+  document.getElementById('vs-chip-avatar1')?.addEventListener('click', (ev)=>{
+    ev.stopPropagation();
+    try{ sfxClick(); }catch(e){}
+    const online = !!(_vs && _vs.online && _vs.online.roomId);
+    const oppUid = online ? (_vs.online.oppUid || null) : null;
+    if(typeof openPlayerCard !== 'function') return;
+    openPlayerCard({
+      uid: oppUid,
+      name: (_vs && _vs.names && _vs.names[1]) || 'Player',
+      avatar: (_vs && _vs.avatars && _vs.avatars[1]) || '🐱'
+    });
+  });
   document.getElementById('vs-chat-fab')?.addEventListener('click', ()=>{
     try{ sfxClick(); }catch(e){}
     _vsToggleChat();
