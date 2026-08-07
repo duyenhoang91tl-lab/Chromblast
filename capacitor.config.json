@@ -13,10 +13,14 @@
     "SocialLogin": {
       "providers": {
         "google": true,
-        "facebook": false,
+        "facebook": true,
         "apple": false,
         "twitter": false
       }
+    },
+    "FirebaseAuthentication": {
+      "skipNativeAuth": true,
+      "providers": ["playgames.google.com"]
     }
   }
 }

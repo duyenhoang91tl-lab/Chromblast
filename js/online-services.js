@@ -1123,16 +1123,14 @@ async function _ensureSocialLoginFacebook(){
  * tồn tại trên web), khác với Google/Facebook ở trên.
  *
  * @capgo/capacitor-social-login (đang dùng cho Google/Facebook) KHÔNG hỗ trợ
- * Play Games. Cần cài thêm 1 plugin Capacitor riêng cho Play Games Services,
- * đăng ký trong MainActivity.java, và liên kết app với Play Games Services
- * trong Play Console (Play Console → Play Games Services → thiết lập, lấy
- * OAuth client ID Android/Web). Xem docs/ONLINE_MULTIPLAYER.md để biết plugin
- * gợi ý + các bước cụ thể — mình chưa cài sẵn plugin đó trong repo vì cần
- * bạn chọn/xác nhận (native, không test được qua trình duyệt).
+ * Play Games nên dùng plugin riêng: @capacitor-firebase/authentication
+ * (skipNativeAuth:true trong capacitor.config.json — chỉ lấy credential từ
+ * Play Games native, KHÔNG để plugin tự đăng nhập Firebase native song song,
+ * để mọi thứ vẫn đi qua đúng 1 chỗ _onlineAuth.signInWithCredential như
+ * Google/Facebook, tránh 2 phiên đăng nhập lệch nhau).
  *
- * window.PlayGamesSignIn.getServerAuthCode() là "điểm nối" mong đợi: bất kỳ
- * plugin nào cài vào chỉ cần expose đúng hàm này (trả về serverAuthCode
- * dạng string) là chạy được ngay với đoạn dưới, không cần sửa lại chỗ khác.
+ * Cần bạn tự làm ở Play Console + Firebase Console (không làm được qua trình
+ * duyệt) — xem checklist chi tiết trong docs/ONLINE_MULTIPLAYER.md.
  */
 async function signInWithPlayGames(){
   if(!isOnlineServicesEnabled()) throw new Error('online_disabled');
@@ -1143,12 +1141,19 @@ async function signInWithPlayGames(){
   if(!_onlineAuth) _onlineAuth = firebase.auth();
   if(!_onlineDb) _onlineDb = firebase.firestore();
 
-  const bridge = window.PlayGamesSignIn;
-  if(!bridge || typeof bridge.getServerAuthCode !== 'function'){
+  const FirebaseAuthentication = window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.FirebaseAuthentication;
+  if(!FirebaseAuthentication){
     throw Object.assign(new Error('playgames_plugin_missing'), { code: 'playgames_plugin_missing' });
   }
-  const serverAuthCode = await bridge.getServerAuthCode();
+  const result = await FirebaseAuthentication.signInWithPlayGames();
+  // Tuỳ phiên bản plugin, credential trả về có thể nằm ở tên field khác
+  // nhau (serverAuthCode / idToken / accessToken) — thử lần lượt, không
+  // đoán cứng 1 tên. Nếu vẫn login lỗi, log `result` ra console để biết
+  // chính xác field nào có giá trị rồi chỉnh lại đoạn này.
+  const cred = (result && result.credential) || {};
+  const serverAuthCode = cred.serverAuthCode || cred.idToken || cred.accessToken;
   if(!serverAuthCode){
+    console.warn('[PlayGames] không tìm thấy credential khả dụng, ket qua tra ve:', result);
     throw Object.assign(new Error('playgames_no_auth_code'), { code: 'playgames_no_auth_code' });
   }
   const credential = firebase.auth.PlayGamesAuthProvider.credential(serverAuthCode);
