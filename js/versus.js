@@ -458,6 +458,8 @@ function _vsTick(){
   }
   if(_vs.timeLeft<=0){ _vsEndMatch(); return; }
   _vs.timeLeft--;
+  const bc=document.getElementById('burst-count');
+  if(bc){ const [P0,P1]=_vs.players; bc.textContent='⚔️ '+P0.score+' vs '+P1.score+'  ⏱'+_vs.timeLeft+'s'; }
 }
 
 function _vsEndMatch(){
