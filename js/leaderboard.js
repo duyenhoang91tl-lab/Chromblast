@@ -209,8 +209,7 @@ async function renderLeaderboardPanel(){
   const region = typeof getPlayerRegion === 'function' ? getPlayerRegion() : { country:'VN', continent:'AS' };
   if(sub){
     if(_lbMode === 'global-caro') sub.textContent = typeof t==='function'?t('lbSubCaro'):'';
-    else if(_lbMode === 'global-solo') sub.textContent = typeof t==='function'?t('lbSubGlobal'):'';
-    else if(_lbMode === 'friends-alltime') sub.textContent = typeof t==='function'?t('lbSubFriends'):'BXH bạn bè (điểm cao nhất)';
+    else if(_lbMode === 'global-versus') sub.textContent = typeof t==='function'?t('lbSubVersus'):'';
     else {
       const scopeLab = {
         world: typeof t==='function'?t('lbScopeWorld'):'Thế giới',
@@ -221,13 +220,6 @@ async function renderLeaderboardPanel(){
       const perLab = { day:'Ngày', week:'Tuần', month:'Tháng' }[_lbPeriod];
       sub.textContent = '🏆 '+scopeLab+' · '+perLab+' · Top 100';
     }
-  }
-
-  // Region picker label
-  const regionLab = document.getElementById('lb-region-label');
-  if(regionLab){
-    regionLab.textContent = (typeof labelCountry==='function'?labelCountry(region.country):region.country)+
-      ' · '+(typeof labelContinent==='function'?labelContinent(region.continent):region.continent);
   }
 
   if(!list) return;
@@ -251,24 +243,21 @@ async function renderLeaderboardPanel(){
     return;
   }
 
-  if(_lbMode === 'friends-alltime'){
-    let rows = [];
-    if(typeof fetchFriendsLeaderboard === 'function' && isOnlineServicesEnabled()){
-      rows = await fetchFriendsLeaderboard(100) || [];
-    }
-    if(!rows.length){
-      const friends = typeof getFriendsList === 'function' ? getFriendsList() : [];
-      list.innerHTML = friends.length
-        ? '<div class="lb-empty">'+(typeof t==='function'?t('lbFriendsNoScore'):'Bạn bè chưa có điểm online')+'</div>'
-        : '<div class="lb-empty">'+(typeof t==='function'?t('gchatNoFriends'):'Chưa có bạn')+'</div>';
+  if(_lbMode === 'global-versus'){
+    if(typeof fetchVersusLeaderboard !== 'function' || !isOnlineServicesEnabled()){
+      list.innerHTML = '<div class="lb-empty">'+(typeof t==='function'?t('lbOfflineGlobal'):'')+'</div>';
       if(myRankBox) myRankBox.textContent = '';
       return;
     }
-    _renderLbRows(list, rows, myName);
-    const mine = rows.find(r => r.name === myName || (typeof getOnlineUid==='function' && r.playerId===getOnlineUid()));
-    if(myRankBox) myRankBox.textContent = mine
-      ? (typeof t==='function'?t('lbMyRank', mine.rank, rows.length, mine.score.toLocaleString()):('#'+mine.rank))
-      : (typeof t==='function'?t('lbNoRank'):'');
+    const rows = await fetchVersusLeaderboard(20);
+    renderVersusLeaderboardList(list, rows, myName);
+    const mine = rows.find(r => r.name === myName);
+    const stats = await fetchMyVersusStats();
+    if(myRankBox){
+      myRankBox.textContent = mine
+        ? t('caroLbMyRank', mine.rank, rows.length, mine.wins, mine.losses, mine.draws, mine.winRate, mine.points)
+        : (stats.total > 0 ? t('caroLbMyStats', stats.wins, stats.losses, stats.draws, stats.winRate, stats.points) : t('caroLbNoPlay'));
+    }
     return;
   }
 
@@ -283,23 +272,6 @@ async function renderLeaderboardPanel(){
     }
     await _updateClaimButton();
     return;
-  }
-
-  let top = [], mine = null;
-  if(typeof fetchGlobalLeaderboard === 'function' && isOnlineServicesEnabled()){
-    top = await fetchGlobalLeaderboard(100, 'solo') || [];
-    mine = await fetchMyGlobalRank('solo');
-  } else {
-    list.innerHTML = '<div class="lb-empty">'+(typeof t==='function'?t('lbOfflineGlobal'):'')+'</div>';
-    if(myRankBox) myRankBox.textContent = '';
-    return;
-  }
-
-  _renderLbRows(list, top, myName);
-  if(myRankBox){
-    myRankBox.textContent = mine
-      ? t('lbMyRank', mine.rank, mine.total, mine.score.toLocaleString())
-      : t('lbNoRank');
   }
 }
 
@@ -345,18 +317,6 @@ function initLeaderboardPanel(){
     }
     await _updateClaimButton();
   });
-
-  const regionSel = document.getElementById('lb-country-select');
-  if(regionSel && typeof countryOptions === 'function'){
-    const cur = typeof getPlayerRegion === 'function' ? getPlayerRegion().country : 'VN';
-    regionSel.innerHTML = countryOptions().map(o=>
-      '<option value="'+o.code+'"'+(o.code===cur?' selected':'')+'>'+escapeHtml(o.label)+'</option>'
-    ).join('');
-    regionSel.addEventListener('change', ()=>{
-      if(typeof setPlayerCountry === 'function') setPlayerCountry(regionSel.value);
-      renderLeaderboardPanel();
-    });
-  }
 
   function openPanel(){
     if(typeof sfxClick === 'function') sfxClick();
