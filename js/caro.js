@@ -749,8 +749,8 @@ async function openPlayerCard(opts){
       const vsRate = vs.winRate != null ? vs.winRate : 0;
       const caroRank = s.rank || null;
       const vsRank = (typeof getVersusRank === 'function') ? getVersusRank(vs.points||0) : null;
-      const caroTitle = caroRank ? (caroRank.icon+' '+caroRank.name) : '';
-      const vsTitle = vsRank ? (vsRank.icon+' '+vsRank.name) : '';
+      const caroTitle = caroRank ? caroRank.name : '';
+      const vsTitle = vsRank ? vsRank.name : '';
       let statsHtml = '';
       {
         const caroLine = (typeof t==='function'
@@ -782,8 +782,8 @@ async function openPlayerCard(opts){
     const vsRate = vs.winRate != null ? vs.winRate : 0;
     const vsRank = (typeof getVersusRank === 'function') ? getVersusRank(vs.points||0) : null;
     const caroRank = s.rank || null;
-    const caroTitle = caroRank ? (caroRank.icon+' '+caroRank.name) : '';
-    const vsTitle = vsRank ? (vsRank.icon+' '+vsRank.name) : '';
+    const caroTitle = caroRank ? caroRank.name : '';
+    const vsTitle = vsRank ? vsRank.name : '';
     const bestTier = Math.max(caroRank ? (caroRank.tier||0) : 0, vsRank ? (vsRank.tier||0) : 0);
     const pcNameEl = document.getElementById('pc-name');
     if(pcNameEl){
