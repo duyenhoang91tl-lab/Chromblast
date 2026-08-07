@@ -660,6 +660,8 @@ body.tutorial-open #start-screen{
 .admin-panel-like.show { display:flex; }
 /* Caro cài đặt phải nổi trên #caro-stage (z-index 10060) khi chơi online */
 #caro-settings-panel.admin-panel-like { z-index: 10070; }
+/* Hồ sơ đối thủ/của bạn (bấm avatar) cũng phải nổi trên #caro-stage, nếu không sẽ bị ẩn phía sau màn chơi */
+#player-card-panel.admin-panel-like { z-index: 10070; }
 .admin-map-btn.locked { opacity:0.4; cursor:not-allowed; }
 .admin-map-btn.locked:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); }
 .admin-card {
@@ -1103,7 +1105,7 @@ body.tutorial-open #start-screen{
 }
 #caro-stage.active { display: flex !important; visibility: visible !important; }
 .caro-topbar {
-  width: min(96vw, 460px); display: flex; justify-content: space-between; align-items: center;
+  width: min(96vw, 460px); display: flex; justify-content: space-between; align-items: flex-start;
   color: #f2f2f7; font-weight: 800; font-size: 14px; gap: 8px;
   margin-top: 0; flex-shrink: 0;
 }
@@ -1113,10 +1115,12 @@ body.tutorial-open #start-screen{
   padding: 4px 8px 4px 4px; border-radius: 14px;
   background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
 }
+.caro-opp-chip { margin-top: 14px; }
 .caro-opp-chip.tappable { border-color: rgba(255,213,74,0.35); }
 .caro-me-chip {
   flex: 0 1 auto;
   max-width: min(58vw, 280px);
+  margin-bottom: 14px;
   border-color: rgba(120, 190, 255, 0.28);
   background: rgba(40, 70, 110, 0.28);
 }
