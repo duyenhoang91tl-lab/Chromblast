@@ -208,8 +208,7 @@ async function renderLeaderboardPanel(){
 
   const region = typeof getPlayerRegion === 'function' ? getPlayerRegion() : { country:'VN', continent:'AS' };
   if(sub){
-    if(_lbMode === 'local') sub.textContent = typeof t==='function'?t('lbSub'):'';
-    else if(_lbMode === 'global-caro') sub.textContent = typeof t==='function'?t('lbSubCaro'):'';
+    if(_lbMode === 'global-caro') sub.textContent = typeof t==='function'?t('lbSubCaro'):'';
     else if(_lbMode === 'global-solo') sub.textContent = typeof t==='function'?t('lbSubGlobal'):'';
     else if(_lbMode === 'friends-alltime') sub.textContent = typeof t==='function'?t('lbSubFriends'):'BXH bạn bè (điểm cao nhất)';
     else {
@@ -287,10 +286,7 @@ async function renderLeaderboardPanel(){
   }
 
   let top = [], mine = null;
-  if(_lbMode === 'local'){
-    top = fetchTopScores(100);
-    mine = fetchMyRank();
-  } else if(typeof fetchGlobalLeaderboard === 'function' && isOnlineServicesEnabled()){
+  if(typeof fetchGlobalLeaderboard === 'function' && isOnlineServicesEnabled()){
     top = await fetchGlobalLeaderboard(100, 'solo') || [];
     mine = await fetchMyGlobalRank('solo');
   } else {
