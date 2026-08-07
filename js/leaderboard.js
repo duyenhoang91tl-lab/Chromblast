@@ -338,6 +338,13 @@ function initLeaderboardPanel(){
   }
   function closePanel(){ panel.classList.remove('show'); }
   btn.addEventListener('click', openPanel);
+  // Nút trong Settings Hub (☰ → Xếp hạng) — leaderboard-btn ở header chính bị ẩn ở
+  // chế độ HUD gọn (hud-arcade) nên đây là lối vào thực tế duy nhất cho hầu hết người
+  // chơi. Đóng Settings Hub trước khi mở, giống cách các nút set-btn-* khác đang làm.
+  document.getElementById('set-btn-leaderboard')?.addEventListener('click', ()=>{
+    document.getElementById('settings-panel')?.classList.remove('show');
+    openPanel();
+  });
   document.getElementById('leaderboard-close-btn').addEventListener('click', closePanel);
   panel.addEventListener('click', (e) => { if(e.target === panel) closePanel(); });
 }
