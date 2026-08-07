@@ -1117,6 +1117,65 @@ async function _ensureSocialLoginFacebook(){
   return SocialLogin;
 }
 
+/**
+ * Đăng nhập bằng Google Play Games — CHỈ có trên Android (Play Games không
+ * tồn tại trên web), khác với Google/Facebook ở trên.
+ *
+ * @capgo/capacitor-social-login (đang dùng cho Google/Facebook) KHÔNG hỗ trợ
+ * Play Games. Cần cài thêm 1 plugin Capacitor riêng cho Play Games Services,
+ * đăng ký trong MainActivity.java, và liên kết app với Play Games Services
+ * trong Play Console (Play Console → Play Games Services → thiết lập, lấy
+ * OAuth client ID Android/Web). Xem docs/ONLINE_MULTIPLAYER.md để biết plugin
+ * gợi ý + các bước cụ thể — mình chưa cài sẵn plugin đó trong repo vì cần
+ * bạn chọn/xác nhận (native, không test được qua trình duyệt).
+ *
+ * window.PlayGamesSignIn.getServerAuthCode() là "điểm nối" mong đợi: bất kỳ
+ * plugin nào cài vào chỉ cần expose đúng hàm này (trả về serverAuthCode
+ * dạng string) là chạy được ngay với đoạn dưới, không cần sửa lại chỗ khác.
+ */
+async function signInWithPlayGames(){
+  if(!isOnlineServicesEnabled()) throw new Error('online_disabled');
+  if(!_isNativeCapacitor()){
+    throw Object.assign(new Error('playgames_android_only'), { code: 'playgames_android_only' });
+  }
+  if(!firebase.apps.length) firebase.initializeApp(window.FIREBASE_CONFIG);
+  if(!_onlineAuth) _onlineAuth = firebase.auth();
+  if(!_onlineDb) _onlineDb = firebase.firestore();
+
+  const bridge = window.PlayGamesSignIn;
+  if(!bridge || typeof bridge.getServerAuthCode !== 'function'){
+    throw Object.assign(new Error('playgames_plugin_missing'), { code: 'playgames_plugin_missing' });
+  }
+  const serverAuthCode = await bridge.getServerAuthCode();
+  if(!serverAuthCode){
+    throw Object.assign(new Error('playgames_no_auth_code'), { code: 'playgames_no_auth_code' });
+  }
+  const credential = firebase.auth.PlayGamesAuthProvider.credential(serverAuthCode);
+  if(_onlineAuth.currentUser && _onlineAuth.currentUser.isAnonymous){
+    await _onlineAuth.currentUser.linkWithCredential(credential).catch(async (e)=>{
+      if(e && e.code === 'auth/credential-already-in-use') await _onlineAuth.signInWithCredential(credential);
+      else throw e;
+    });
+  } else {
+    await _onlineAuth.signInWithCredential(credential);
+  }
+
+  if(!_onlineAuth.currentUser) throw new Error('auth_no_user');
+  _onlineUid = _onlineAuth.currentUser.uid;
+  const name = _onlineAuth.currentUser.displayName;
+  if(name) _onlineDisplayName = name;
+  try{
+    if(typeof getPlayerProfile === 'function' && typeof savePlayerProfile === 'function'){
+      const p = getPlayerProfile();
+      if(name && (!p.nick || /^Khách#/.test(p.nick))) savePlayerProfile({ nick: name });
+    }
+  }catch(e){}
+  _onlineReady = true;
+  await _upsertPlayerProfile();
+  logGameEvent('login', { method: 'playgames' });
+  return _onlineUid;
+}
+
 async function _signInWithFacebookNative(){
   const SocialLogin = await _ensureSocialLoginFacebook();
   const login = await SocialLogin.login({
@@ -1208,6 +1267,18 @@ function friendlyOnlineAuthError(e){
   if(code.includes('auth/account-exists-with-different-credential')){
     return (typeof t==='function' ? t('onlineAuthDiffCred') : null)
       || 'Email này đã đăng ký bằng cách khác (VD: Google) — hãy đăng nhập lại đúng cách đã dùng lần đầu';
+  }
+  if(code.includes('playgames_android_only')){
+    return (typeof t==='function' ? t('onlineAuthPgWebOnly') : null)
+      || 'Đăng nhập Play Games chỉ dùng được trên app Android, không có trên web';
+  }
+  if(code.includes('playgames_plugin_missing')){
+    return (typeof t==='function' ? t('onlineAuthPgNativeSetup') : null)
+      || 'Thiếu plugin Play Games Services trên app — xem docs/ONLINE_MULTIPLAYER.md để cài';
+  }
+  if(code.includes('playgames_no_auth_code')){
+    return (typeof t==='function' ? t('onlineAuthPgFail') : null)
+      || 'Đăng nhập Play Games chưa lấy được mã xác thực — thử lại';
   }
   if(code.includes('network-request-failed')){
     return (typeof t==='function' ? t('onlineAuthNetwork') : null) || 'Mất mạng — kiểm tra kết nối rồi thử lại';

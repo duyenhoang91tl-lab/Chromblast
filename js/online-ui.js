@@ -565,6 +565,36 @@ function onLeaveLobbyToHub(){
     }
   });
 
+  // Play Games chỉ có trên app Android — nút ẩn mặc định trong HTML, chỉ
+  // hiện khi đang chạy native Capacitor (web/desktop không có Play Games).
+  try{
+    if(typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform && Capacitor.isNativePlatform()){
+      const pgBtn = document.getElementById('online-playgames-btn');
+      if(pgBtn) pgBtn.hidden = false;
+    }
+  }catch(e){}
+  document.getElementById('online-playgames-btn')?.addEventListener('click', async ()=>{
+    const btn = document.getElementById('online-playgames-btn');
+    if(btn) btn.disabled = true;
+    try{
+      await signInWithPlayGames();
+      _onlineStatus('Play Games · '+getOnlineDisplayName());
+    }catch(e){
+      const msg = typeof friendlyOnlineAuthError === 'function' ? friendlyOnlineAuthError(e) : (e && e.message);
+      if(!msg){ _onlineStatus(''); return; }
+      const soft = /playgames_android_only|playgames_plugin_missing|playgames_no_auth_code/i.test(String((e&&e.code)||e.message||'')+msg);
+      const el = document.getElementById('online-status');
+      if(el){
+        el.textContent = msg;
+        el.className = 'online-status' + (soft ? ' warn' : ' err');
+      } else {
+        _onlineStatus(msg, true);
+      }
+    }finally{
+      if(btn) btn.disabled = false;
+    }
+  });
+
   document.getElementById('online-delete-account-btn')?.addEventListener('click', async ()=>{
     const btn = document.getElementById('online-delete-account-btn');
     const msgEl = document.getElementById('pp-msg');
