@@ -187,6 +187,7 @@ function _vsAbort(){
  * forfeitOnlineMatch an toàn khi gọi 2 lần nhờ kiểm tra status đã 'finished' chưa. */
 function _vsHandleOpponentLeft(){
   if(!_vs || !_vs.online) return;
+  try{ if(typeof sfxRoomLeave==='function') sfxRoomLeave(); }catch(e){}
   try{
     if(_vs.online.roomId && typeof forfeitOnlineMatch === 'function'){
       forfeitOnlineMatch(_vs.online.roomId, !_vs.online.isHost).catch(()=>{});

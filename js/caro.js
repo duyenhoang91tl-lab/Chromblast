@@ -2066,9 +2066,16 @@ function _caroOpenLobby(roomId, code, role, roomData){
   listenOnlineRoom(roomId, ev=>{
     if(ev.type==='deleted'){ closeCaroHub(); _caroHandleHostLeft(); return; }
     const d = ev.data;
+    const prevGuestId = _caroLobby && _caroLobby.roomData ? _caroLobby.roomData.guestId : null;
     _caroLobby.roomData = d;
     _caroSyncRoomPrefsFromData(d);
     _caroRenderLobby(d);
+    // Tiếng báo có người vào/rời phòng chờ — chỉ khi còn ở sảnh (chưa vào trận); lúc đang
+    // chơi thì có tiếng riêng ở _caroHandleGuestLeft/_caroHandleHostLeft.
+    if(d.status !== 'playing'){
+      if(!prevGuestId && d.guestId){ try{ if(typeof sfxRoomJoin==='function') sfxRoomJoin(); }catch(e){} }
+      else if(prevGuestId && !d.guestId){ try{ if(typeof sfxRoomLeave==='function') sfxRoomLeave(); }catch(e){} }
+    }
     if(d.status==='playing' && !caroMode) _caroEnterGame({ roomId, ...d });
   });
 }
@@ -2084,11 +2091,13 @@ function _caroReturnToRoomList(msg){
 
 /** Phòng bị xoá vì chủ phòng đã rời/mất kết nối (trường hợp chính yêu cầu ở đây). */
 function _caroHandleHostLeft(){
+  try{ if(typeof sfxRoomLeave==='function') sfxRoomLeave(); }catch(e){}
   _caroReturnToRoomList(typeof t==='function' ? t('caroHostLeftRoom') : 'Chủ phòng đã rời phòng');
 }
 
 /** Khách rời/mất kết nối giữa trận — báo cho chủ phòng để không bị treo chờ vô thời hạn. */
 function _caroHandleGuestLeft(){
+  try{ if(typeof sfxRoomLeave==='function') sfxRoomLeave(); }catch(e){}
   _caroReturnToRoomList(typeof t==='function' ? t('caroGuestLeftRoom') : 'Đối thủ đã rời trận');
 }
 

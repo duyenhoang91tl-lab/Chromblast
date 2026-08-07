@@ -178,6 +178,7 @@ function openOnlineLobby(roomId, code, role, roomData){
   listenOnlineRoom(roomId, ev => {
     if(ev.type==='deleted'){
       // Phòng bị xóa → về hub, vẫn xem danh sách phòng khác
+      try{ if(typeof sfxRoomLeave==='function') sfxRoomLeave(); }catch(e){}
       stopListeningRoom();
       _onlineLobby=null;
       _onlineHide('online-lobby-panel');
@@ -186,8 +187,15 @@ function openOnlineLobby(roomId, code, role, roomData){
       return;
     }
     const d=ev.data;
+    const prevGuestId = _onlineLobby && _onlineLobby.roomData ? _onlineLobby.roomData.guestId : null;
     _onlineLobby.roomData=d;
     _renderLobby(d);
+    // Tiếng báo có người vào/rời phòng chờ — chỉ khi còn ở sảnh (chưa vào trận); lúc đang
+    // chơi thì có tiếng riêng ở _vsHandleOpponentLeft.
+    if(d.status !== 'playing'){
+      if(!prevGuestId && d.guestId){ try{ if(typeof sfxRoomJoin==='function') sfxRoomJoin(); }catch(e){} }
+      else if(prevGuestId && !d.guestId){ try{ if(typeof sfxRoomLeave==='function') sfxRoomLeave(); }catch(e){} }
+    }
     if(d.status==='playing' && d.seed!=null && !versusMode){
       enterOnlineVersusMatch(roomId, d);
     }
