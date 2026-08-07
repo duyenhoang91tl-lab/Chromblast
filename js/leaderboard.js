@@ -96,12 +96,34 @@ function _renderLbRows(list, top, myName){
   top.forEach((e,i) => {
     const row = document.createElement('div');
     const rank = e.rank || (i+1);
-    row.className = 'lb-row' + (e.name === myName ? ' me' : '');
+    const isMe = e.name === myName;
+    row.className = 'lb-row' + (isMe ? ' me' : '');
     const medal = rank===1 ? '🥇' : rank===2 ? '🥈' : rank===3 ? '🥉' : String(rank);
     const geo = e.country ? (' <span class="lb-geo">'+escapeHtml(e.country)+'</span>') : '';
     row.innerHTML = '<span class="lb-rank">'+medal+'</span>'
       + '<span class="lb-name">'+escapeHtml(e.name)+geo+'</span>'
       + '<span class="lb-score">'+(e.score|0).toLocaleString()+'</span>';
+    // Bấm vào tên/avatar để mở hồ sơ người chơi (xem info, kết bạn) — giống
+    // hệt cách bấm avatar trong chat mở openPlayerCard. Chỉ áp dụng cho hàng
+    // có playerId (BXH online theo bạn bè/kỳ) — BXH local không có uid.
+    if(e.playerId){
+      const nameEl = row.querySelector('.lb-name');
+      if(nameEl){
+        nameEl.classList.add('lb-name-tappable');
+        nameEl.setAttribute('role', 'button');
+        nameEl.setAttribute('tabindex', '0');
+        const openThisCard = ()=>{
+          try{ sfxClick(); }catch(e){}
+          const opts = { uid: e.playerId, name: e.name, self: isMe };
+          if(typeof openPlayerCard === 'function'){ openPlayerCard(opts); return; }
+          if(typeof window.ensureCaroLoaded === 'function'){
+            window.ensureCaroLoaded().then(()=>{ if(typeof openPlayerCard === 'function') openPlayerCard(opts); }).catch(()=>{});
+          }
+        };
+        nameEl.addEventListener('click', ev=>{ ev.stopPropagation(); openThisCard(); });
+        nameEl.addEventListener('keydown', ev=>{ if(ev.key==='Enter'||ev.key===' '){ ev.preventDefault(); openThisCard(); } });
+      }
+    }
     list.appendChild(row);
   });
 }
