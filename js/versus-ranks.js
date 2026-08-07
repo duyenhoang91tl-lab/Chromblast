@@ -117,3 +117,50 @@ async function fetchMyVersusStats(){
   }
   return getLocalVersusStats();
 }
+
+/** BXH toàn cầu Đấu 1-1 online — cấu trúc y hệt fetchCaroLeaderboard (js/caro-ranks.js). */
+async function fetchVersusLeaderboard(limit){
+  if(typeof initOnlineServices === 'function' && await initOnlineServices()){
+    try{
+      const snap = await firebase.firestore().collection('players')
+        .orderBy('pvpPoints', 'desc').limit(limit || 30).get();
+      const rows = [];
+      snap.docs.forEach((doc, i) => {
+        const d = doc.data();
+        const stats = normalizeVersusStats(d);
+        if(stats.total <= 0 && stats.points <= 0) return;
+        rows.push({
+          rank: i + 1,
+          playerId: doc.id,
+          name: d.displayName || 'Player',
+          ...stats
+        });
+      });
+      return rows;
+    }catch(e){ console.warn('[versus] leaderboard', e); }
+  }
+  return [];
+}
+
+function renderVersusLeaderboardList(listEl, rows, myName){
+  if(!listEl) return;
+  listEl.innerHTML = '';
+  if(!rows.length){
+    listEl.innerHTML = '<div class="lb-empty">'+t('vsLbEmpty')+'</div>';
+    return;
+  }
+  rows.forEach((e, i) => {
+    const row = document.createElement('div');
+    row.className = 'lb-row caro-lb-row' + (e.name === myName ? ' me' : '');
+    const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':String(i+1);
+    row.innerHTML =
+      '<span class="lb-rank">'+medal+'</span>'+
+      '<span class="lb-name">'+escapeHtml(e.rank.icon)+' '+
+        (typeof rankNameFxHtml==='function' ? rankNameFxHtml(e.name, e.rank.tier) : escapeHtml(e.name))+
+        '<span class="caro-lb-title">'+escapeHtml(e.rank.name)+'</span></span>'+
+      '<span class="lb-score caro-lb-wld">'+e.wins+'/'+e.losses+'/'+e.draws+
+        ' <small>'+e.winRate+'%</small></span>'+
+      '<span class="caro-lb-pts">'+e.points+'</span>';
+    listEl.appendChild(row);
+  });
+}

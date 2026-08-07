@@ -411,12 +411,12 @@ const PERIOD_REWARD_TABLE = {
     { max: 60, gold: 3, diamond: 0 }, { max: 80, gold: 2, diamond: 0 }, { max: 100, gold: 1, diamond: 0 }
   ],
   week: [
-    { max: 1, gold: 200, diamond: 10 }, { max: 2, gold: 120, diamond: 6 }, { max: 3, gold: 80, diamond: 3 },
+    { max: 1, gold: 200, diamond: 6 }, { max: 2, gold: 120, diamond: 3 }, { max: 3, gold: 80, diamond: 2 },
     { max: 10, gold: 40, diamond: 0 }, { max: 20, gold: 25, diamond: 0 }, { max: 40, gold: 15, diamond: 0 },
     { max: 60, gold: 10, diamond: 0 }, { max: 80, gold: 6, diamond: 0 }, { max: 100, gold: 3, diamond: 0 }
   ],
   month: [
-    { max: 1, gold: 800, diamond: 30 }, { max: 2, gold: 500, diamond: 18 }, { max: 3, gold: 300, diamond: 10 },
+    { max: 1, gold: 800, diamond: 10 }, { max: 2, gold: 500, diamond: 5 }, { max: 3, gold: 300, diamond: 3 },
     { max: 10, gold: 150, diamond: 0 }, { max: 20, gold: 90, diamond: 0 }, { max: 40, gold: 50, diamond: 0 },
     { max: 60, gold: 30, diamond: 0 }, { max: 80, gold: 18, diamond: 0 }, { max: 100, gold: 10, diamond: 0 }
   ]
@@ -762,7 +762,15 @@ function _verifySecret(raw, hash, salt) {
   } catch (e) { return false; }
 }
 
-/** Đăng ký tài khoản mới. Trả về {ok, username, role}. */
+/**
+ * Đăng ký tài khoản mới. Nếu máy đang đăng nhập sẵn Google/Facebook/Play Games
+ * (không phải ẩn danh) thì username/mật khẩu mới được GẮN VÀO CHÍNH uid đó thay
+ * vì tạo 1 uid riêng — nhờ vậy mở game bằng Google rồi tạo thêm username/mật
+ * khẩu vẫn là CHUNG 1 tài khoản, không bị tách tiến trình theo kiểu đăng nhập.
+ * Nếu máy đang ẩn danh hoặc chưa đăng nhập gì thì vẫn tạo uid cố định riêng như
+ * trước — không đổi hành vi cho người chỉ dùng username/mật khẩu (không social).
+ * Trả về {ok, username, role, token}.
+ */
 exports.registerAccount = onCall({ region: 'asia-southeast1' }, async (request) => {
   const data = request.data || {};
   const username = typeof data.username === 'string' ? data.username.trim() : '';
@@ -779,9 +787,17 @@ exports.registerAccount = onCall({ region: 'asia-southeast1' }, async (request) 
   const snap = await ref.get();
   if (snap.exists) throw new HttpsError('already-exists', 'errUserExists');
 
+  // Chỉ dùng lại uid hiện tại khi máy đang đăng nhập THẬT bằng 1 trong 3 social
+  // provider dưới đây (không phải ẩn danh, không phải 'custom' từ 1 tài khoản
+  // username/mật khẩu khác đang đăng nhập sẵn) — tránh gộp nhầm 2 danh tính.
+  const SOCIAL_PROVIDERS = ['google.com', 'facebook.com', 'playgames.google.com'];
+  const signInProvider = (request.auth && request.auth.token && request.auth.token.firebase)
+    ? request.auth.token.firebase.sign_in_provider : null;
+  const linkedUid = (request.auth && SOCIAL_PROVIDERS.includes(signInProvider)) ? request.auth.uid : null;
+
   const pw = _hashSecret(password);
   const sa = _hashSecret(secA);
-  const stableUid = 'acct_' + crypto.randomBytes(16).toString('hex');
+  const stableUid = linkedUid || ('acct_' + crypto.randomBytes(16).toString('hex'));
   await ref.set({
     username, role: 'user', secQ,
     passwordHash: pw.hash, passwordSalt: pw.salt,

@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>ChromaBlast</title>
-<link rel="stylesheet" href="css/main.css?v=20260807z">
+<link rel="stylesheet" href="css/main.css?v=20260808a">
 <link rel="stylesheet" href="css/saga-map.css?v=20260801b">
 <link rel="stylesheet" href="css/sky-atmosphere.css?v=20260801b">
 <link rel="stylesheet" href="css/nick-fonts.css?v=20260801b">
@@ -342,10 +342,7 @@
           <button type="button" class="set-action set-c-purple" id="set-btn-bricks"><span class="set-act-ico">🧱</span><span data-i18n="setBricks">Gạch</span></button>
           <button type="button" class="set-action set-c-purple" id="set-btn-boards"><span class="set-act-ico set-act-ico-wood" aria-hidden="true"></span><span data-i18n="setBoards">Nền bàn</span></button>
           <button type="button" class="set-action set-c-purple" id="set-btn-spin"><span class="set-act-ico">🎡</span><span data-i18n="setSpin">Vòng quay</span></button>
-          <button type="button" class="set-action set-c-purple" id="set-btn-versus" style="display:none"><span class="set-act-ico">⚔️</span><span data-i18n="vsTitle">Đấu 1-1</span></button>
           <button type="button" class="set-action set-c-purple" id="set-btn-more"><span class="set-act-ico">⚙️</span><span data-i18n="setMore">Cài đặt</span></button>
-          <button type="button" class="set-action set-c-purple" id="set-btn-home"><span class="set-act-ico">🏠</span><span data-i18n="setHome">Trang chủ</span></button>
-          <button type="button" class="set-action set-c-purple" id="set-btn-replay"><span class="set-act-ico">🔁</span><span data-i18n="setReplay">Chơi lại</span></button>
         </div>
       </div>
     </div>
@@ -637,8 +634,6 @@
 
       <div class="gchat-pane" data-pane="friends">
         <div id="gchat-friend-cap" class="gchat-friend-cap"></div>
-        <button type="button" id="gchat-blocked-toggle" class="gchat-blocked-toggle" data-i18n="gchatBlockedToggle">🚫 Người bị chặn</button>
-        <div id="gchat-blocked-panel" class="gchat-blocked-panel" hidden></div>
         <div id="gchat-friend-requests" class="gchat-friend-requests"></div>
         <div id="gchat-friends-list" class="gchat-friends-list"></div>
         <div id="gchat-friends-thread" class="gchat-friends-thread" hidden>
@@ -809,11 +804,9 @@
     <div class="admin-card lb-card-wide">
       <div class="admin-title"><span data-i18n="leaderboardTitle">🏆 Bảng xếp hạng</span><button class="admin-close" id="leaderboard-close-btn">✕</button></div>
       <div class="lb-tabs">
-        <button type="button" class="lb-tab active" data-lb-mode="period" data-i18n="lbTabPeriod">🏅 Kỳ</button>
-        <button type="button" class="lb-tab" data-lb-mode="friends-alltime" data-i18n="lbTabFriends">🤝 Bạn bè</button>
-        <button type="button" class="lb-tab" data-lb-mode="global-solo" data-i18n="lbTabGlobal">🌐 All-time</button>
+        <button type="button" class="lb-tab active" data-lb-mode="period" data-i18n="lbTabPeriod">🧨 Blast</button>
+        <button type="button" class="lb-tab" data-lb-mode="global-versus" data-i18n="lbTabVersus">⚔️ Versus</button>
         <button type="button" class="lb-tab" data-lb-mode="global-caro" data-i18n="lbTabCaro">❌⭕ Caro</button>
-        <button type="button" class="lb-tab" data-lb-mode="local" data-i18n="lbTabLocal">📱 Máy</button>
       </div>
       <div id="lb-period-tabs" class="lb-tabs lb-period-tabs">
         <button type="button" class="lb-period-tab active" data-lb-period="day">📅 Ngày</button>
@@ -825,11 +818,6 @@
         <button type="button" class="lb-scope-tab" data-lb-scope="continent" data-i18n="lbScopeContinent">🗺️ Châu lục</button>
         <button type="button" class="lb-scope-tab" data-lb-scope="country" data-i18n="lbScopeCountry">🏳️ Đất nước</button>
         <button type="button" class="lb-scope-tab" data-lb-scope="friends" data-i18n="lbScopeFriends">🤝 Bạn bè</button>
-      </div>
-      <div class="lb-region-row">
-        <label data-i18n="lbRegion">Quốc gia của bạn</label>
-        <select id="lb-country-select" class="lb-country-select"></select>
-        <span id="lb-region-label" class="lb-region-label"></span>
       </div>
       <div class="admin-sub" id="leaderboard-sub" data-i18n="lbSub">Top 100 — thưởng vàng theo hạng; kim cương chỉ top 1–3.</div>
       <div id="lb-reward-preview" class="lb-reward-preview"></div>
@@ -854,8 +842,9 @@
           <div class="friends-invite-title" data-i18n="friendsInviteTitle">💎 Mời bạn cùng nhận quà</div>
           <div class="friends-invite-desc" data-i18n="friendsInviteDesc">Chia sẻ mã của bạn — khi bạn bè nhập mã thành công, cả hai cùng nhận 1 kim cương!</div>
           <div class="friends-invite-code-row">
-            <span class="friends-invite-code" id="friends-invite-code">CB------</span>
-            <button type="button" id="friends-invite-share-btn" class="auth-submit-btn" data-i18n="friendsInviteShare">📤 Chia sẻ mã</button>
+            <button type="button" id="friends-invite-share-btn" class="auth-submit-btn friends-invite-share-btn">
+              <span data-i18n="friendsInviteShare">📤 Chia sẻ mã</span> <span id="friends-invite-code" class="friends-invite-code">CB------</span>
+            </button>
           </div>
           <div class="friends-invite-claim-row">
             <input type="text" id="friends-invite-claim-input" class="friends-search-input" maxlength="10" autocomplete="off" data-i18n-placeholder="friendsInviteClaimPh" placeholder="Nhập mã bạn bè...">
@@ -871,7 +860,6 @@
         <div class="friends-section-title" data-i18n="friendsMyList">Bạn của bạn</div>
         <div id="friends-panel-list" class="friends-panel-list"></div>
         <div class="friends-section-title" data-i18n="friendsSuggest">Gợi ý kết bạn</div>
-        <div class="admin-sub" data-i18n="friendsSuggestHint">20 người chơi ngẫu nhiên trên server — gửi lời mời hàng loạt</div>
         <div id="friends-suggest-list" class="friends-suggest-list"></div>
         <div class="friends-suggest-actions">
           <button type="button" id="friends-suggest-refresh" class="auth-submit-btn btn-ghost" style="background:rgba(255,255,255,0.12);" data-i18n="friendsRefresh">🔄 Đổi danh sách</button>
@@ -1134,6 +1122,7 @@
       <div id="pc-couple" class="pc-couple" hidden></div>
       <div id="pc-stats" class="pc-stats" data-i18n="caroNoStats">Chưa có thống kê</div>
       <button type="button" id="pc-friend-btn" class="auth-submit-btn btn-on-color" style="background:linear-gradient(135deg,#2e7d32,#66bb6a);margin-top:12px;" data-i18n="caroAddFriend">🤝 Kết bạn</button>
+      <button type="button" id="pc-dm-btn" class="auth-submit-btn btn-ghost" style="background:rgba(255,255,255,0.12);margin-top:8px;" data-i18n="pcDmBtn">💬 Nhắn tin riêng</button>
       <div id="pc-msg" class="account-msg" style="margin-top:8px;"></div>
     </div>
   </div>
@@ -1378,76 +1367,76 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-functions-compat.js"></script>
-<script src="js/firebase-config.js?v=20260801c"></script>
-<script src="js/ganalytics.js?v=20260801a"></script>
-<script src="js/i18n.js?v=20260801c"></script>
-<script src="js/caro-loader.js?v=20260801c"></script>
-<script src="js/sky-atmosphere.js?v=20260801b"></script>
-<script src="js/i18n-content.js?v=20260801b"></script>
-<script src="js/audio.js?v=20260801b"></script>
-<script src="js/save.js?v=20260801b"></script>
-<script src="js/geo-region.js?v=20260801b"></script>
-<script src="js/brick-skins.js?v=20260807a"></script>
-<script src="js/map-boards.js?v=20260801b"></script>
-<script src="js/daily-rewards.js?v=20260801c"></script>
-<script src="js/profanity-filter.js?v=20260801b"></script>
-<script src="js/online-services.js?v=20260807z"></script>
-<script src="js/caro-ranks.js?v=20260801b"></script>
-<script src="js/versus-ranks.js?v=20260801b"></script>
-<script src="js/player-profile.js?v=20260807z"></script>
-<script src="js/mech-config.js?v=20260801b"></script>
-<script src="js/progression.js?v=20260801c"></script>
-<script src="js/inventory.js?v=20260801c"></script>
-<script src="js/quests.js?v=20260801c"></script>
-<script src="js/lb-period.js?v=20260801c"></script>
-<script src="js/leaderboard.js?v=20260801b"></script>
-<script src="js/lb-notify.js?v=20260804a"></script>
-<script src="js/economy-shop.js?v=20260807a"></script>
-<script src="js/lucky-spin.js?v=20260801b"></script>
-<script src="js/effects.js?v=20260801b"></script>
-<script src="js/effects-scenery.js?v=20260801b"></script>
-<script src="js/ui.js?v=20260807z"></script>
-<script src="js/ui-gates.js?v=20260801c"></script>
-<script src="js/ui-settings.js?v=20260801e"></script>
-<script src="maps/map01.js?v=20260801b"></script>
-<script src="maps/map02.js?v=20260801b"></script>
-<script src="maps/map03.js?v=20260801b"></script>
-<script src="maps/map04.js?v=20260801b"></script>
-<script src="maps/map05.js?v=20260801b"></script>
-<script src="maps/map06.js?v=20260801b"></script>
-<script src="maps/map07.js?v=20260801b"></script>
-<script src="maps/map08.js?v=20260801b"></script>
-<script src="maps/map09.js?v=20260801b"></script>
-<script src="maps/map11.js?v=20260801b"></script>
-<script src="maps/map12.js?v=20260801b"></script>
-<script src="maps/map13.js?v=20260801b"></script>
-<script src="maps/map14.js?v=20260801b"></script>
-<script src="maps/map15.js?v=20260801b"></script>
-<script src="maps/map16.js?v=20260801b"></script>
-<script src="maps/map17.js?v=20260801b"></script>
-<script src="maps/map18.js?v=20260801b"></script>
-<script src="maps/map19.js?v=20260801b"></script>
-<script src="js/boss/feather-storm-boss.js?v=20260801b"></script>
-<script src="js/boss/mega-dragon.js?v=20260801b"></script>
-<script src="js/boss-manager.js?v=20260801b"></script>
-<script src="js/auth.js?v=20260801d"></script>
-<script src="js/round-mechanics.js?v=20260801b"></script>
-<script src="js/engine.js?v=20260801c"></script>
-<script src="js/engine-input.js?v=20260801b"></script>
-<script src="js/engine-powers.js?v=20260801b"></script>
-<script src="js/main.js?v=20260801b"></script>
-<script src="js/map-manager.js?v=20260801c"></script>
-<script src="js/saga-map.js?v=20260801b"></script>
-<script src="js/orientation-lock.js?v=20260801b"></script>
-<script src="js/native.js?v=20260801d"></script>
-<script src="js/iap-config.js?v=20260804a"></script>
-<script src="js/iap.js?v=20260804a"></script>
-<script src="js/versus.js?v=20260807z"></script>
-<script src="js/versus-ui.js?v=20260801e"></script>
-<script src="js/versus-social.js?v=20260801b"></script>
-<script src="js/versus-ai.js?v=20260801b"></script>
-<script src="js/online-ui.js?v=20260801c"></script>
-<script src="js/chat.js?v=20260807z"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/ganalytics.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/caro-loader.js"></script>
+<script src="js/sky-atmosphere.js"></script>
+<script src="js/i18n-content.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/save.js"></script>
+<script src="js/geo-region.js"></script>
+<script src="js/brick-skins.js"></script>
+<script src="js/map-boards.js"></script>
+<script src="js/daily-rewards.js"></script>
+<script src="js/profanity-filter.js"></script>
+<script src="js/online-services.js"></script>
+<script src="js/caro-ranks.js"></script>
+<script src="js/versus-ranks.js"></script>
+<script src="js/player-profile.js"></script>
+<script src="js/mech-config.js"></script>
+<script src="js/progression.js"></script>
+<script src="js/inventory.js"></script>
+<script src="js/quests.js"></script>
+<script src="js/lb-period.js"></script>
+<script src="js/leaderboard.js"></script>
+<script src="js/lb-notify.js"></script>
+<script src="js/economy-shop.js"></script>
+<script src="js/lucky-spin.js"></script>
+<script src="js/effects.js"></script>
+<script src="js/effects-scenery.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/ui-gates.js"></script>
+<script src="js/ui-settings.js"></script>
+<script src="maps/map01.js"></script>
+<script src="maps/map02.js"></script>
+<script src="maps/map03.js"></script>
+<script src="maps/map04.js"></script>
+<script src="maps/map05.js"></script>
+<script src="maps/map06.js"></script>
+<script src="maps/map07.js"></script>
+<script src="maps/map08.js"></script>
+<script src="maps/map09.js"></script>
+<script src="maps/map11.js"></script>
+<script src="maps/map12.js"></script>
+<script src="maps/map13.js"></script>
+<script src="maps/map14.js"></script>
+<script src="maps/map15.js"></script>
+<script src="maps/map16.js"></script>
+<script src="maps/map17.js"></script>
+<script src="maps/map18.js"></script>
+<script src="maps/map19.js"></script>
+<script src="js/boss/feather-storm-boss.js"></script>
+<script src="js/boss/mega-dragon.js"></script>
+<script src="js/boss-manager.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/round-mechanics.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/engine-input.js"></script>
+<script src="js/engine-powers.js"></script>
+<script src="js/main.js"></script>
+<script src="js/map-manager.js"></script>
+<script src="js/saga-map.js"></script>
+<script src="js/orientation-lock.js"></script>
+<script src="js/native.js"></script>
+<script src="js/iap-config.js"></script>
+<script src="js/iap.js"></script>
+<script src="js/versus.js"></script>
+<script src="js/versus-ui.js"></script>
+<script src="js/versus-social.js"></script>
+<script src="js/versus-ai.js"></script>
+<script src="js/online-ui.js"></script>
+<script src="js/chat.js"></script>
 <!-- js/caro.js + js/caro-social.js: nạp trễ (lazy-load) qua js/caro-loader.js
      khi người chơi bấm #caro-btn hoặc nhận lời mời Caro qua chat, để
      giảm dung lượng tải ban đầu (~104KB) cho người chưa vào chế độ này. -->

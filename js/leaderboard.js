@@ -96,12 +96,34 @@ function _renderLbRows(list, top, myName){
   top.forEach((e,i) => {
     const row = document.createElement('div');
     const rank = e.rank || (i+1);
-    row.className = 'lb-row' + (e.name === myName ? ' me' : '');
+    const isMe = e.name === myName;
+    row.className = 'lb-row' + (isMe ? ' me' : '');
     const medal = rank===1 ? '🥇' : rank===2 ? '🥈' : rank===3 ? '🥉' : String(rank);
     const geo = e.country ? (' <span class="lb-geo">'+escapeHtml(e.country)+'</span>') : '';
     row.innerHTML = '<span class="lb-rank">'+medal+'</span>'
       + '<span class="lb-name">'+escapeHtml(e.name)+geo+'</span>'
       + '<span class="lb-score">'+(e.score|0).toLocaleString()+'</span>';
+    // Bấm vào tên/avatar để mở hồ sơ người chơi (xem info, kết bạn) — giống
+    // hệt cách bấm avatar trong chat mở openPlayerCard. Chỉ áp dụng cho hàng
+    // có playerId (BXH online theo bạn bè/kỳ) — BXH local không có uid.
+    if(e.playerId){
+      const nameEl = row.querySelector('.lb-name');
+      if(nameEl){
+        nameEl.classList.add('lb-name-tappable');
+        nameEl.setAttribute('role', 'button');
+        nameEl.setAttribute('tabindex', '0');
+        const openThisCard = ()=>{
+          try{ sfxClick(); }catch(e){}
+          const opts = { uid: e.playerId, name: e.name, self: isMe };
+          if(typeof openPlayerCard === 'function'){ openPlayerCard(opts); return; }
+          if(typeof window.ensureCaroLoaded === 'function'){
+            window.ensureCaroLoaded().then(()=>{ if(typeof openPlayerCard === 'function') openPlayerCard(opts); }).catch(()=>{});
+          }
+        };
+        nameEl.addEventListener('click', ev=>{ ev.stopPropagation(); openThisCard(); });
+        nameEl.addEventListener('keydown', ev=>{ if(ev.key==='Enter'||ev.key===' '){ ev.preventDefault(); openThisCard(); } });
+      }
+    }
     list.appendChild(row);
   });
 }
@@ -146,25 +168,34 @@ async function _updateClaimButton(){
     btn.disabled = true;
     return;
   }
+  // Hiển thị hạng theo đúng tab đang xem (bạn bè/khu vực/thế giới) — chỉ để
+  // tham khảo, không quyết định điều kiện nhận thưởng.
   const mine = await findMyPeriodRank(_lbPeriod, _lbScope, { previous: true });
-  const claimed = typeof hasClaimedPeriod === 'function' && hasClaimedPeriod(mine.periodId, _lbScope);
   if(note){
     note.textContent = mine.rank
       ? ((typeof t==='function'?t('lbPrevRank'):'Hạng kỳ trước')+': #'+mine.rank+' · '+(mine.score||0).toLocaleString())
       : (typeof t==='function'?t('lbPrevNoRank'):'Kỳ trước chưa vào top');
   }
-  if(!mine.rank || mine.rank > 100 || claimed){
+  // Điều kiện + trạng thái "đã nhận" luôn xét theo hạng THẾ GIỚI — Cloud
+  // Function claimPeriodReward (functions/index.js) chỉ tính hạng từ
+  // periodScores toàn server (không có khái niệm scope bạn bè/khu vực), nên
+  // phải dùng đúng world ở đây, bất kể đang xem tab nào, để không hiện sai
+  // trạng thái nút (VD đang xem tab bạn bè, hạng bạn bè #500 nhưng hạng thế
+  // giới thực tế #50 vẫn đủ điều kiện nhận thưởng).
+  const world = _lbScope === 'world' ? mine : await findMyPeriodRank(_lbPeriod, 'world', { previous: true });
+  const claimed = typeof hasClaimedPeriod === 'function' && hasClaimedPeriod(world.periodId, 'world');
+  if(!world.rank || world.rank > 100 || claimed){
     btn.disabled = true;
     btn.textContent = claimed
       ? (typeof t==='function'?t('lbClaimed'):'✅ Đã nhận thưởng kỳ trước')
       : (typeof t==='function'?t('lbClaimUnavailable'):'Chưa đủ điều kiện nhận thưởng');
     return;
   }
-  const reward = typeof rewardForRank === 'function' ? rewardForRank(_lbPeriod, mine.rank) : null;
+  const reward = typeof rewardForRank === 'function' ? rewardForRank(_lbPeriod, world.rank) : null;
   btn.disabled = false;
   const dia = reward && reward.diamond ? (' + 💎'+reward.diamond) : '';
   btn.textContent = (typeof t==='function'?t('lbClaimBtn'):'🎁 Nhận thưởng')+
-    ' · #'+mine.rank+' · 🪙'+(reward?reward.gold:0)+dia;
+    ' · #'+world.rank+' · 🪙'+(reward?reward.gold:0)+dia;
 }
 
 async function renderLeaderboardPanel(){
@@ -177,10 +208,8 @@ async function renderLeaderboardPanel(){
 
   const region = typeof getPlayerRegion === 'function' ? getPlayerRegion() : { country:'VN', continent:'AS' };
   if(sub){
-    if(_lbMode === 'local') sub.textContent = typeof t==='function'?t('lbSub'):'';
-    else if(_lbMode === 'global-caro') sub.textContent = typeof t==='function'?t('lbSubCaro'):'';
-    else if(_lbMode === 'global-solo') sub.textContent = typeof t==='function'?t('lbSubGlobal'):'';
-    else if(_lbMode === 'friends-alltime') sub.textContent = typeof t==='function'?t('lbSubFriends'):'BXH bạn bè (điểm cao nhất)';
+    if(_lbMode === 'global-caro') sub.textContent = typeof t==='function'?t('lbSubCaro'):'';
+    else if(_lbMode === 'global-versus') sub.textContent = typeof t==='function'?t('lbSubVersus'):'';
     else {
       const scopeLab = {
         world: typeof t==='function'?t('lbScopeWorld'):'Thế giới',
@@ -191,13 +220,6 @@ async function renderLeaderboardPanel(){
       const perLab = { day:'Ngày', week:'Tuần', month:'Tháng' }[_lbPeriod];
       sub.textContent = '🏆 '+scopeLab+' · '+perLab+' · Top 100';
     }
-  }
-
-  // Region picker label
-  const regionLab = document.getElementById('lb-region-label');
-  if(regionLab){
-    regionLab.textContent = (typeof labelCountry==='function'?labelCountry(region.country):region.country)+
-      ' · '+(typeof labelContinent==='function'?labelContinent(region.continent):region.continent);
   }
 
   if(!list) return;
@@ -221,24 +243,21 @@ async function renderLeaderboardPanel(){
     return;
   }
 
-  if(_lbMode === 'friends-alltime'){
-    let rows = [];
-    if(typeof fetchFriendsLeaderboard === 'function' && isOnlineServicesEnabled()){
-      rows = await fetchFriendsLeaderboard(100) || [];
-    }
-    if(!rows.length){
-      const friends = typeof getFriendsList === 'function' ? getFriendsList() : [];
-      list.innerHTML = friends.length
-        ? '<div class="lb-empty">'+(typeof t==='function'?t('lbFriendsNoScore'):'Bạn bè chưa có điểm online')+'</div>'
-        : '<div class="lb-empty">'+(typeof t==='function'?t('gchatNoFriends'):'Chưa có bạn')+'</div>';
+  if(_lbMode === 'global-versus'){
+    if(typeof fetchVersusLeaderboard !== 'function' || !isOnlineServicesEnabled()){
+      list.innerHTML = '<div class="lb-empty">'+(typeof t==='function'?t('lbOfflineGlobal'):'')+'</div>';
       if(myRankBox) myRankBox.textContent = '';
       return;
     }
-    _renderLbRows(list, rows, myName);
-    const mine = rows.find(r => r.name === myName || (typeof getOnlineUid==='function' && r.playerId===getOnlineUid()));
-    if(myRankBox) myRankBox.textContent = mine
-      ? (typeof t==='function'?t('lbMyRank', mine.rank, rows.length, mine.score.toLocaleString()):('#'+mine.rank))
-      : (typeof t==='function'?t('lbNoRank'):'');
+    const rows = await fetchVersusLeaderboard(20);
+    renderVersusLeaderboardList(list, rows, myName);
+    const mine = rows.find(r => r.name === myName);
+    const stats = await fetchMyVersusStats();
+    if(myRankBox){
+      myRankBox.textContent = mine
+        ? t('caroLbMyRank', mine.rank, rows.length, mine.wins, mine.losses, mine.draws, mine.winRate, mine.points)
+        : (stats.total > 0 ? t('caroLbMyStats', stats.wins, stats.losses, stats.draws, stats.winRate, stats.points) : t('caroLbNoPlay'));
+    }
     return;
   }
 
@@ -253,26 +272,6 @@ async function renderLeaderboardPanel(){
     }
     await _updateClaimButton();
     return;
-  }
-
-  let top = [], mine = null;
-  if(_lbMode === 'local'){
-    top = fetchTopScores(100);
-    mine = fetchMyRank();
-  } else if(typeof fetchGlobalLeaderboard === 'function' && isOnlineServicesEnabled()){
-    top = await fetchGlobalLeaderboard(100, 'solo') || [];
-    mine = await fetchMyGlobalRank('solo');
-  } else {
-    list.innerHTML = '<div class="lb-empty">'+(typeof t==='function'?t('lbOfflineGlobal'):'')+'</div>';
-    if(myRankBox) myRankBox.textContent = '';
-    return;
-  }
-
-  _renderLbRows(list, top, myName);
-  if(myRankBox){
-    myRankBox.textContent = mine
-      ? t('lbMyRank', mine.rank, mine.total, mine.score.toLocaleString())
-      : t('lbNoRank');
   }
 }
 
@@ -318,18 +317,6 @@ function initLeaderboardPanel(){
     }
     await _updateClaimButton();
   });
-
-  const regionSel = document.getElementById('lb-country-select');
-  if(regionSel && typeof countryOptions === 'function'){
-    const cur = typeof getPlayerRegion === 'function' ? getPlayerRegion().country : 'VN';
-    regionSel.innerHTML = countryOptions().map(o=>
-      '<option value="'+o.code+'"'+(o.code===cur?' selected':'')+'>'+escapeHtml(o.label)+'</option>'
-    ).join('');
-    regionSel.addEventListener('change', ()=>{
-      if(typeof setPlayerCountry === 'function') setPlayerCountry(regionSel.value);
-      renderLeaderboardPanel();
-    });
-  }
 
   function openPanel(){
     if(typeof sfxClick === 'function') sfxClick();

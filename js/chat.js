@@ -347,7 +347,32 @@
     let badgesHtml = '';
     if(caroRank) badgesHtml += ' <span class="gchat-rank-badge" title="Caro">'+escapeHtml(caroRank.icon+' '+caroRank.name)+'</span>';
     if(vsRank) badgesHtml += ' <span class="gchat-rank-badge" title="Đấu 1-1">'+escapeHtml(vsRank.icon+' '+vsRank.name)+'</span>';
-    name.innerHTML = escapeHtml(msg.avatar || '🐶')+' '+nameHtml+badgesHtml;
+    // Avatar tách riêng thành span bấm được (thay vì gộp cứng vào innerHTML của
+    // tên) — bấm vào để mở "tường" hồ sơ người gửi: xem thông tin, xin kết
+    // bạn, hoặc nhắn tin riêng (xem openPlayerCard ở caro.js + pc-dm-btn).
+    const avEl = document.createElement('span');
+    avEl.textContent = msg.avatar || '🐶';
+    if(msg.uid){
+      avEl.className = 'gchat-msg-avatar';
+      avEl.title = msg.name || 'Player';
+      avEl.setAttribute('role', 'button');
+      avEl.setAttribute('tabindex', '0');
+      const openThisCard = ()=>{
+        try{ sfxClick(); }catch(e){}
+        const opts = { uid: msg.uid, name: msg.name, avatar: msg.avatar, self: mine };
+        if(typeof openPlayerCard === 'function'){ openPlayerCard(opts); return; }
+        if(typeof window.ensureCaroLoaded === 'function'){
+          window.ensureCaroLoaded().then(()=>{ if(typeof openPlayerCard === 'function') openPlayerCard(opts); }).catch(()=>{});
+        }
+      };
+      avEl.addEventListener('click', e=>{ e.stopPropagation(); openThisCard(); });
+      avEl.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openThisCard(); } });
+    }
+    name.appendChild(avEl);
+    name.appendChild(document.createTextNode(' '));
+    const nameRest = document.createElement('span');
+    nameRest.innerHTML = nameHtml+badgesHtml;
+    name.appendChild(nameRest);
     head.appendChild(name);
     const when = formatMsgTime(msg.ts);
     if(when){
@@ -616,6 +641,15 @@
     }catch(e){}
     if(typeof listenFriendChat !== 'function') return;
     listenFriendChat(friend.uid, msg => appendMsg($('gchat-friends-log'), msg, 'friends'));
+  }
+
+  /** Mở khung chat riêng (tab "Bạn bè") với đúng 1 người, dùng khi bấm avatar
+   *  trong chat/hồ sơ — hoạt động cả khi 2 người CHƯA kết bạn (dmIdFor chỉ
+   *  cần 2 uid), không bắt buộc phải là bạn bè mới nhắn được. */
+  async function openPrivateChatWith(uid, name, avatar){
+    if(!uid) return;
+    openChatPanel('friends');
+    await openFriendThread({ uid, name: name || 'Player', avatar: avatar || '🐶' });
   }
 
   async function invitePlayer(toUid, gameType, displayName){
@@ -1061,6 +1095,7 @@
 
   window.openChatPanel = openChatPanel;
   window.closeChatPanel = closeChatPanel;
+  window.openPrivateChatWith = openPrivateChatWith;
   window.syncChatFabVisibility = syncChatFabVisibility;
   window.positionChatFab = positionChatFab;
   window.initGlobalChat = initGlobalChat;

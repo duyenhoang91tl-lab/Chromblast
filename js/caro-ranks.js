@@ -152,7 +152,8 @@ function renderCaroLeaderboardList(listEl, rows, myName){
   }
   rows.forEach((e, i) => {
     const row = document.createElement('div');
-    row.className = 'lb-row caro-lb-row' + (e.name === myName ? ' me' : '');
+    const isMe = e.name === myName;
+    row.className = 'lb-row caro-lb-row' + (isMe ? ' me' : '');
     const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':String(i+1);
     row.innerHTML =
       '<span class="lb-rank">'+medal+'</span>'+
@@ -162,6 +163,25 @@ function renderCaroLeaderboardList(listEl, rows, myName){
       '<span class="lb-score caro-lb-wld">'+e.wins+'/'+e.losses+'/'+e.draws+
         ' <small>'+e.winRate+'%</small></span>'+
       '<span class="caro-lb-pts">'+e.points+'</span>';
+    // Bấm vào tên để mở hồ sơ người chơi (xem info, kết bạn) — giống chat.
+    if(e.playerId){
+      const nameEl = row.querySelector('.lb-name');
+      if(nameEl){
+        nameEl.classList.add('lb-name-tappable');
+        nameEl.setAttribute('role', 'button');
+        nameEl.setAttribute('tabindex', '0');
+        const openThisCard = ()=>{
+          try{ sfxClick(); }catch(err){}
+          const opts = { uid: e.playerId, name: e.name, self: isMe };
+          if(typeof openPlayerCard === 'function'){ openPlayerCard(opts); return; }
+          if(typeof window.ensureCaroLoaded === 'function'){
+            window.ensureCaroLoaded().then(()=>{ if(typeof openPlayerCard === 'function') openPlayerCard(opts); }).catch(()=>{});
+          }
+        };
+        nameEl.addEventListener('click', ev=>{ ev.stopPropagation(); openThisCard(); });
+        nameEl.addEventListener('keydown', ev=>{ if(ev.key==='Enter'||ev.key===' '){ ev.preventDefault(); openThisCard(); } });
+      }
+    }
     listEl.appendChild(row);
   });
 }

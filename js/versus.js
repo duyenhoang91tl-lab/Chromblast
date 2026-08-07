@@ -153,7 +153,7 @@ function startVersusMatch(){
 function _vsNewPlayer(idx,seed){
   return { idx, prng:_mulberry32(seed), board:Array.from({length:VS_N},()=>Array(VS_N).fill(null)),
     pieces:[], selected:-1, score:0, combo:0, clears:0, nextCardAt:VS_CARD_EVERY,
-    rocks:new Set(), ice:new Set(), bomb:null, fogUntil:0, done:false, el:{} };
+    rocks:new Set(), ice:new Map(), bomb:null, fogUntil:0, done:false, el:{} };
 }
 
 // Nút trợ giúp ❓ nổi (z-index cao hơn đấu trường) đè lên điểm người chơi trên
@@ -322,11 +322,17 @@ function _vsResolveClears(P){
   }
   kill.forEach(k=>{
     const [r,c]=k.split(',').map(Number);
-    // 🧊 Lớp băng bảo vệ: lần dọn đầu tiên chỉ gỡ băng, GIỮ nguyên ô màu bên dưới —
-    // đúng quy luật "phá lớp bảo vệ trước rồi mới phá được ô" (như dây gai ở map
-    // thường: 1 lần nổ chỉ gỡ gai, phải nổ thêm lần nữa mới mất ô). Trước đây băng
-    // và ô màu bị xoá cùng lúc trong 1 lần đầy hàng/cột — không đúng luật bảo vệ.
-    if(P.ice.has(k)){ P.ice.delete(k); return; }
+    // 🧊 Lớp băng bảo vệ: lần dọn đầu tiên (stage 2) chỉ làm NỨT băng, GIỮ nguyên ô màu
+    // bên dưới — đúng quy luật "phá lớp bảo vệ trước rồi mới phá được ô" (như dây gai ở
+    // map thường: 1 lần nổ chỉ gỡ gai, phải nổ thêm lần nữa mới mất ô). Lần dọn thứ 2
+    // (stage 1, đã nứt) mới thực sự gỡ băng VÀ phá luôn ô màu — cùng luật 2 giai đoạn với
+    // iceCells ở map thường (js/round-mechanics.js). Trước đây chỉ có 1 giai đoạn (gỡ băng
+    // xong là coi như xong, không tính là đã phá ô) nên không khớp luật map chính.
+    if(P.ice.has(k)){
+      const stage=P.ice.get(k);
+      if(stage>=2){ P.ice.set(k,1); return; }
+      P.ice.delete(k);
+    }
     P.board[r][c]=null; P.rocks.delete(k);
   });
   return kill.size;
@@ -359,7 +365,7 @@ function _vsApplyObstacle(F,ob){
     const spots=emptyCells.concat(filledCells);
     colors.forEach(col=>{ if(!spots.length) return; const k=spots.splice(Math.floor(Math.random()*spots.length),1)[0]; const [r,c]=k.split(',').map(Number); F.board[r][c]=col; });
   } else if(ob.id==='ice'){
-    take(filledCells,4).forEach(k=>F.ice.add(k));
+    take(filledCells,4).forEach(k=>F.ice.set(k,2));
   } else if(ob.id==='fog'){
     F.fogUntil=Date.now()+10000;
     setTimeout(()=>{ if(_vs&&versusMode) _vsRenderGrid(F); },10100);

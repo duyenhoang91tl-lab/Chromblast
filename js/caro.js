@@ -599,11 +599,11 @@ function _caroRenderOppRankLine(){
   if(!c || !c.loaded || (!c.caroRank && !c.vsRank)){ el.hidden = true; el.innerHTML = ''; return; }
   const parts = [];
   if(c.caroRank){
-    parts.push('<span class="caro-rank-mini">❌⭕ '+c.caroRank.icon+' '+
+    parts.push('<span class="caro-rank-mini">XO: '+c.caroRank.icon+' '+
       (typeof escapeHtml==='function'?escapeHtml(c.caroRank.name):c.caroRank.name)+'</span>');
   }
   if(c.vsRank){
-    parts.push('<span class="caro-rank-mini">⚔️ '+c.vsRank.icon+' '+
+    parts.push('<span class="caro-rank-mini">'+(typeof t==='function'?t('vsShort'):'Versus')+': '+c.vsRank.icon+' '+
       (typeof escapeHtml==='function'?escapeHtml(c.vsRank.name):c.vsRank.name)+'</span>');
   }
   el.hidden = false;
@@ -711,8 +711,15 @@ async function openPlayerCard(opts){
   const coupleEl = document.getElementById('pc-couple');
   if(coupleEl){ coupleEl.hidden = true; coupleEl.innerHTML = ''; }
   const friendBtn = document.getElementById('pc-friend-btn');
+  const dmBtn = document.getElementById('pc-dm-btn');
   const msg = document.getElementById('pc-msg');
   if(msg) msg.textContent = '';
+  if(dmBtn){
+    dmBtn.hidden = isSelf || !uid;
+    dmBtn.dataset.uid = uid || '';
+    dmBtn.dataset.name = fallbackName;
+    dmBtn.dataset.avatar = fallbackAv;
+  }
   if(friendBtn){
     friendBtn.hidden = isSelf;
     friendBtn.dataset.uid = uid || '';
@@ -742,20 +749,20 @@ async function openPlayerCard(opts){
       const vsRate = vs.winRate != null ? vs.winRate : 0;
       const caroRank = s.rank || null;
       const vsRank = (typeof getVersusRank === 'function') ? getVersusRank(vs.points||0) : null;
-      const caroTitle = caroRank ? (caroRank.icon+' '+caroRank.name) : '';
-      const vsTitle = vsRank ? (vsRank.icon+' '+vsRank.name) : '';
+      const caroTitle = caroRank ? caroRank.name : '';
+      const vsTitle = vsRank ? vsRank.name : '';
       let statsHtml = '';
       {
         const caroLine = (typeof t==='function'
           ? (t('caroWinRateLabel')+': '+rate+'%')
           : (rate+'%'));
-        statsHtml += '<div class="pc-mode-stats"><b>Caro</b> — '+caroTitle+'<br>'+caroLine+'</div>';
+        statsHtml += '<div class="pc-mode-stats">❌⭕ '+(caroRank && typeof rankNameFxHtml==='function' ? rankNameFxHtml(caroTitle, caroRank.tier) : escapeHtml(caroTitle))+'<br>'+caroLine+'</div>';
       }
       {
         const vsLine = (typeof t==='function'
           ? (t('caroWinRateLabel')+': '+vsRate+'%')
           : (vsRate+'%'));
-        statsHtml += '<div class="pc-mode-stats"><b>Versus</b> — '+vsTitle+'<br>'+vsLine+'</div>';
+        statsHtml += '<div class="pc-mode-stats">⚔️ '+(vsRank && typeof rankNameFxHtml==='function' ? rankNameFxHtml(vsTitle, vsRank.tier) : escapeHtml(vsTitle))+'<br>'+vsLine+'</div>';
       }
       document.getElementById('pc-stats').innerHTML = statsHtml || (typeof t==='function'?t('caroNoStats'):'Chưa có thống kê');
     }catch(e){}
@@ -775,8 +782,8 @@ async function openPlayerCard(opts){
     const vsRate = vs.winRate != null ? vs.winRate : 0;
     const vsRank = (typeof getVersusRank === 'function') ? getVersusRank(vs.points||0) : null;
     const caroRank = s.rank || null;
-    const caroTitle = caroRank ? (caroRank.icon+' '+caroRank.name) : '';
-    const vsTitle = vsRank ? (vsRank.icon+' '+vsRank.name) : '';
+    const caroTitle = caroRank ? caroRank.name : '';
+    const vsTitle = vsRank ? vsRank.name : '';
     const bestTier = Math.max(caroRank ? (caroRank.tier||0) : 0, vsRank ? (vsRank.tier||0) : 0);
     const pcNameEl = document.getElementById('pc-name');
     if(pcNameEl){
@@ -791,13 +798,13 @@ async function openPlayerCard(opts){
     const visVersus = prof.visVersus !== false;
     let statsHtml = '';
     if(hasCaro && visCaro){
-      statsHtml += '<div class="pc-mode-stats"><b>Caro</b> — '+caroTitle+'<br>'+caroLine+'</div>';
+      statsHtml += '<div class="pc-mode-stats">❌⭕ '+(caroRank && typeof rankNameFxHtml==='function' ? rankNameFxHtml(caroTitle, caroRank.tier) : escapeHtml(caroTitle))+'<br>'+caroLine+'</div>';
     }
     if(hasVs && visVersus){
       const vsLine = (typeof t==='function'
         ? (t('caroWinRateLabel')+': '+vsRate+'%')
         : (vsRate+'%'));
-      statsHtml += '<div class="pc-mode-stats"><b>Versus</b> — '+vsTitle+'<br>'+vsLine+'</div>';
+      statsHtml += '<div class="pc-mode-stats">⚔️ '+(vsRank && typeof rankNameFxHtml==='function' ? rankNameFxHtml(vsTitle, vsRank.tier) : escapeHtml(vsTitle))+'<br>'+vsLine+'</div>';
     }
     document.getElementById('pc-stats').innerHTML = statsHtml || (typeof t==='function'?t('caroNoStats'):'Chưa có thống kê');
     if(visMaps){
@@ -2529,6 +2536,14 @@ function applyCaroSettings(){
         btn.disabled = true;
         btn.textContent = typeof t==='function'?t('caroFriendRequestedShort'):'Đã mời';
       }
+    });
+    document.getElementById('pc-dm-btn')?.addEventListener('click', ()=>{
+      try{sfxClick();}catch(e){}
+      const btn = document.getElementById('pc-dm-btn');
+      if(!btn || !btn.dataset.uid) return;
+      const uid = btn.dataset.uid, name = btn.dataset.name, avatar = btn.dataset.avatar;
+      closePlayerCard();
+      if(typeof openPrivateChatWith === 'function') openPrivateChatWith(uid, name, avatar);
     });
     refreshCaroButton();
   }
