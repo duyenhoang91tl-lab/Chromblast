@@ -1695,6 +1695,28 @@ async function joinOnlineRoomById(roomId, opts){
   });
 }
 
+/**
+ * Chủ phòng kick khách ra khỏi phòng (chỉ áp dụng khi còn đang chờ trong phòng,
+ * chưa vào trận). Phòng KHÔNG bị xoá — quay lại trạng thái 'open' để chủ phòng vẫn
+ * ở nguyên phòng cũ và có thể chờ khách khác, giống hệt khi khách tự rời phòng.
+ * Đặt kickedGuestId để phía khách phân biệt được "bị kick" và hiện đúng thông báo,
+ * khác với việc tự mình chủ động rời phòng (không cần báo lại cho chính mình).
+ */
+async function kickRoomGuest(roomId){
+  if(!_onlineDb || !roomId || !_onlineUid) return false;
+  const ref = _onlineDb.collection('rooms').doc(roomId);
+  const snap = await ref.get();
+  if(!snap.exists) return false;
+  const d = snap.data();
+  if(d.hostId !== _onlineUid || !d.guestId) return false;
+  await ref.update({
+    guestId: null, guestName: null, guestAvatar: null, guestReady: false, status: 'open',
+    kickedGuestId: d.guestId,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  return true;
+}
+
 async function leaveOnlineRoom(roomId){
   if(!_onlineDb || !roomId) return;
   // Dừng nhịp tim ngay lập tức nếu đây là phòng mình đang host — không chờ vòng lặp tiếp theo.
