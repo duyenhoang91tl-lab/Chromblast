@@ -965,6 +965,7 @@ body.tutorial-open #start-screen{
 }
 .online-player .online-wait { color:rgba(255,255,255,0.78); font-weight:700; }
 .online-player .versus-seat-rank { font-size:10px; font-weight:700; color:#ffd700; margin-bottom:2px; }
+.online-player .caro-kick-btn{ display:block; margin:8px 0 0; }
 /* Nút phụ (nền tối / trong suốt / màu đậm) — chữ trắng nổi */
 .auth-submit-btn.btn-ghost,
 .auth-submit-btn.btn-on-color,

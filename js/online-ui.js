@@ -187,6 +187,16 @@ function openOnlineLobby(roomId, code, role, roomData){
       return;
     }
     const d=ev.data;
+    const myUid = typeof getOnlineUid === 'function' ? getOnlineUid() : null;
+    if(_onlineLobby && _onlineLobby.role === 'guest' && myUid && d.kickedGuestId === myUid){
+      stopListeningRoom();
+      _onlineLobby=null;
+      _onlineHide('online-lobby-panel');
+      _onlineShow('online-hub-panel');
+      _onlineStartRoomListListen();
+      try{ _onlineStatus(t('roomKickedMsg', d.hostName || '?')); }catch(e){}
+      return;
+    }
     const prevGuestId = _onlineLobby && _onlineLobby.roomData ? _onlineLobby.roomData.guestId : null;
     _onlineLobby.roomData=d;
     _renderLobby(d);
@@ -221,11 +231,23 @@ function _renderLobby(d){
   const guestRankHtml = (typeof getVersusRank === 'function' && d.guestName && d.guestVersusPoints != null)
     ? '<div class="versus-seat-rank">'+escapeHtml(getVersusRank(d.guestVersusPoints).icon+' '+getVersusRank(d.guestVersusPoints).name)+'</div>'
     : '';
+  const isHost = _onlineLobby && _onlineLobby.role==='host';
+  const kickBtnHtml = (isHost && d.guestName)
+    ? '<button type="button" class="caro-kick-btn" id="online-kick-guest-btn" data-name="'+escapeHtml(d.guestName)+'">'+escapeHtml(t('roomKickBtn'))+'</button>'
+    : '';
   document.getElementById('online-lobby-players').innerHTML=
     '<div class="online-player">'+hostRankHtml+'<span>👑</span> '+hostNameHtml+'</div>'+
-    '<div class="online-player">'+guestRankHtml+'<span>⚔️</span> '+guest+'</div>';
+    '<div class="online-player">'+guestRankHtml+'<span>⚔️</span> '+guest+kickBtnHtml+'</div>';
+
+  document.getElementById('online-kick-guest-btn')?.addEventListener('click', (e)=>{
+    e.preventDefault(); e.stopPropagation();
+    const gName = e.currentTarget.dataset.name || '?';
+    if(!confirm(t('roomKickConfirm', gName))) return;
+    if(typeof kickRoomGuest === 'function' && _onlineLobby && _onlineLobby.roomId){
+      kickRoomGuest(_onlineLobby.roomId).catch(()=>{});
+    }
+  });
   const startBtn=document.getElementById('online-start-btn');
-  const isHost=_onlineLobby && _onlineLobby.role==='host';
   if(startBtn){
     startBtn.style.display = (isHost && d.status==='ready' && d.guestId) ? 'block' : 'none';
   }
