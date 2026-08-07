@@ -60,6 +60,11 @@
     <div class="auth-sub" data-i18n="authSub">🔐 Đăng nhập để bắt đầu chơi</div>
     <button type="button" id="guest-play-btn" class="auth-submit-btn btn-on-color" style="background:linear-gradient(135deg,#56AB2F,#A8E063);margin-bottom:16px;" data-i18n="guestPlay">Chơi Ngay</button>
     <div class="auth-switch" style="margin-bottom:10px;" data-i18n="orDivider">— hoặc —</div>
+    <button type="button" id="auth-google-btn" class="auth-submit-btn btn-on-color" style="background:#4285f4;margin-bottom:10px;" data-i18n="onlineGoogle">Đăng nhập Google</button>
+    <button type="button" id="auth-facebook-btn" class="auth-submit-btn btn-on-color" style="background:#1877F2;margin-bottom:10px;" data-i18n="onlineFacebook">Đăng nhập Facebook</button>
+    <button type="button" id="auth-playgames-btn" class="auth-submit-btn btn-on-color" style="background:#43A047;margin-bottom:10px;" hidden data-i18n="onlinePlayGames">Đăng nhập Play Games</button>
+    <div id="auth-social-status" class="online-status"></div>
+    <div class="auth-switch" style="margin-bottom:10px;" data-i18n="orDivider">— hoặc —</div>
     <div id="lang-picker-auth" class="lang-picker"></div>
 
     <form id="login-form" class="auth-form active">
@@ -907,9 +912,6 @@
       <div class="admin-title"><span data-i18n="onlineTitle">🌐 Đấu 1-1 Online</span><button class="admin-close" id="online-hub-close">✕</button></div>
       <div id="online-disabled-note" class="online-note" data-i18n="onlineDisabled">Chưa bật Firebase — xem docs/ONLINE_MULTIPLAYER.md để cấu hình trước khi phát hành online.</div>
       <div id="online-status" class="online-status"></div>
-      <button type="button" id="online-google-btn" class="auth-submit-btn btn-on-color" style="background:#4285f4;margin-bottom:10px;" data-i18n="onlineGoogle">Đăng nhập Google</button>
-      <button type="button" id="online-facebook-btn" class="auth-submit-btn btn-on-color" style="background:#1877F2;margin-bottom:10px;" data-i18n="onlineFacebook">Đăng nhập Facebook</button>
-      <button type="button" id="online-playgames-btn" class="auth-submit-btn btn-on-color" style="background:#43A047;margin-bottom:10px;" hidden data-i18n="onlinePlayGames">Đăng nhập Play Games</button>
 
       <div class="caro-waiting-block">
         <div class="caro-waiting-head">
