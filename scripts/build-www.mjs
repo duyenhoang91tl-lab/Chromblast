@@ -76,23 +76,41 @@ const pct = (100 - (afterTotal / beforeTotal) * 100).toFixed(1);
 console.log('www/ built:', items.join(', '));
 console.log(`Minify JS+CSS: ${(beforeTotal/1024).toFixed(0)}KB → ${(afterTotal/1024).toFixed(0)}KB (giảm ${pct}%)`);
 
-// --- Cache-busting cho CSS (thêm 29/07/26) ---
-// Trước đây www/index.html trỏ <link href="main.css"> không có version, nên sau khi
-// deploy, trình duyệt/app có thể vẫn phục vụ bản CSS cache cũ (đặc biệt trên
-// GitHub Pages/CDN) — sửa CSS xong test không thấy đổi dù đã push đúng. Giờ mỗi lần
-// build sẽ gắn ?v=<hash nội dung file> vào các thẻ <link> CSS cục bộ trong
-// www/index.html, hash đổi khi nội dung đổi → trình duyệt luôn tải bản mới.
+// --- Cache-busting tự động theo hash nội dung (CSS: từ 29/07/26; JS: từ hôm nay) ---
+// Trước đây www/index.html trỏ <link href="main.css"> / <script src="js/x.js">
+// không có version, hoặc dùng version ghi TAY (?v=20260801x) — dễ quên tăng khi
+// sửa file, khiến trình duyệt/app tiếp tục phục vụ bản CACHE CŨ dù server đã có
+// bản mới (đã xảy ra thật với js/online-ui.js + js/versus.js, khiến 1 bản vá lỗi
+// Đấu 1-1 online không đến được người chơi dù đã push). Giờ MỌI lần build sẽ tự
+// gắn ?v=<hash nội dung file, 8 ký tự> vào TẤT CẢ thẻ <link>/<script> trỏ file
+// .css/.js CỤC BỘ trong www/index.html — hash đổi khi và chỉ khi nội dung file
+// đổi, nên không cần ai nhớ tăng version tay nữa. Script CDN ngoài (gstatic.com…)
+// không khớp pattern (chỉ bắt href/src bắt đầu bằng ký tự thường, không phải
+// "http") nên không bị đụng vào.
 const htmlPath = 'www/index.html';
 let html = readFileSync(htmlPath, 'utf8');
-const localCssHrefs = [...html.matchAll(/href="([^"?]+\.css)"/g)].map(m => m[1]);
-for (const href of new Set(localCssHrefs)) {
-  const filePath = path.join('www', href);
-  try {
-    const hash = createHash('sha1').update(readFileSync(filePath)).digest('hex').slice(0, 8);
-    html = html.split(`href="${href}"`).join(`href="${href}?v=${hash}"`);
-  } catch (err) {
-    console.warn(`⚠️  Bỏ qua cache-busting cho ${href}: ${err.message.split('\n')[0]}`);
-  }
+
+function cacheBustAttr(html, attr, exts) {
+  const extPattern = exts.map(e => e.replace('.', '\\.')).join('|');
+  const re = new RegExp(`${attr}="([a-zA-Z0-9_./-]+(?:${extPattern}))(\\?v=[a-zA-Z0-9]+)?"`, 'g');
+  const touched = new Set();
+  html = html.replace(re, (whole, filePath) => {
+    const diskPath = path.join('www', filePath);
+    try {
+      const hash = createHash('sha1').update(readFileSync(diskPath)).digest('hex').slice(0, 8);
+      touched.add(filePath);
+      return `${attr}="${filePath}?v=${hash}"`;
+    } catch (err) {
+      console.warn(`⚠️  Bỏ qua cache-busting cho ${filePath}: ${err.message.split('\n')[0]}`);
+      return whole;
+    }
+  });
+  return { html, touched };
 }
+
+({ html } = cacheBustAttr(html, 'href', ['.css']));
+const jsResult = cacheBustAttr(html, 'src', ['.js']);
+html = jsResult.html;
+
 writeFileSync(htmlPath, html);
-console.log('Cache-busting: đã gắn ?v=hash vào', [...new Set(localCssHrefs)].join(', '));
+console.log('Cache-busting (hash nội dung): CSS + ' + jsResult.touched.size + ' file JS (js/ + maps/).');
