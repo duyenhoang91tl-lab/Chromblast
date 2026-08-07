@@ -12,7 +12,7 @@
 <link rel="stylesheet" href="css/saga-map.css?v=20260801b">
 <link rel="stylesheet" href="css/sky-atmosphere.css?v=20260801b">
 <link rel="stylesheet" href="css/nick-fonts.css?v=20260801b">
-<link rel="stylesheet" href="css/brick-skins.css?v=20260801b">
+<link rel="stylesheet" href="css/brick-skins.css?v=20260807a">
 <link rel="stylesheet" href="css/map-boards.css?v=20260801b">
 </head>
 <body class="menu-open auth-open">
@@ -59,6 +59,11 @@
     <div class="auth-logo"><span class="logo-chroma">CHROMA</span><span class="logo-blast">BLAST</span></div>
     <div class="auth-sub" data-i18n="authSub">🔐 Đăng nhập để bắt đầu chơi</div>
     <button type="button" id="guest-play-btn" class="auth-submit-btn btn-on-color" style="background:linear-gradient(135deg,#56AB2F,#A8E063);margin-bottom:16px;" data-i18n="guestPlay">Chơi Ngay</button>
+    <div class="auth-switch" style="margin-bottom:10px;" data-i18n="orDivider">— hoặc —</div>
+    <button type="button" id="auth-google-btn" class="auth-submit-btn btn-on-color" style="background:#4285f4;margin-bottom:10px;" data-i18n="onlineGoogle">Đăng nhập Google</button>
+    <button type="button" id="auth-facebook-btn" class="auth-submit-btn btn-on-color" style="background:#1877F2;margin-bottom:10px;" data-i18n="onlineFacebook">Đăng nhập Facebook</button>
+    <button type="button" id="auth-playgames-btn" class="auth-submit-btn btn-on-color" style="background:#43A047;margin-bottom:10px;" hidden data-i18n="onlinePlayGames">Đăng nhập Play Games</button>
+    <div id="auth-social-status" class="online-status"></div>
     <div class="auth-switch" style="margin-bottom:10px;" data-i18n="orDivider">— hoặc —</div>
     <div id="lang-picker-auth" class="lang-picker"></div>
 
@@ -333,6 +338,7 @@
           <button type="button" class="set-action set-c-purple" id="set-btn-shop"><span class="set-act-ico">🛒</span><span data-i18n="setShop">Cửa hàng</span></button>
           <button type="button" class="set-action set-c-purple" id="set-btn-friends"><span class="set-act-ico">🤝</span><span data-i18n="setFriends">Bạn bè</span></button>
           <button type="button" class="set-action set-c-purple" id="set-btn-cup"><span class="set-act-ico">🏆</span><span data-i18n="setCup">Cúp</span></button>
+          <button type="button" class="set-action set-c-purple" id="set-btn-leaderboard"><span class="set-act-ico">📊</span><span data-i18n="setLeaderboard">Xếp hạng</span></button>
           <button type="button" class="set-action set-c-purple" id="set-btn-bricks"><span class="set-act-ico">🧱</span><span data-i18n="setBricks">Gạch</span></button>
           <button type="button" class="set-action set-c-purple" id="set-btn-boards"><span class="set-act-ico set-act-ico-wood" aria-hidden="true"></span><span data-i18n="setBoards">Nền bàn</span></button>
           <button type="button" class="set-action set-c-purple" id="set-btn-spin"><span class="set-act-ico">🎡</span><span data-i18n="setSpin">Vòng quay</span></button>
@@ -377,14 +383,6 @@
           </div>
         </div>
         <button type="button" class="settings-row" id="set-contact-btn"><span data-i18n="setContact">Liên hệ</span><span class="settings-chev">›</span><span class="set-dot set-dot-inline"></span></button>
-        <button type="button" class="settings-row" id="set-share-btn"><span data-i18n="setShare">Chia sẻ bạn bè</span><span class="settings-chev">›</span></button>
-        <div class="auth-field" style="margin-top:8px;">
-          <label data-i18n="referralInputLabel">Có mã mời từ bạn bè?</label>
-          <div style="display:flex;gap:6px;">
-            <input type="text" id="set-referral-code-input" maxlength="8" data-i18n-placeholder="referralInputPlaceholder" placeholder="CBABC123" style="flex:1;text-transform:uppercase;letter-spacing:1px;text-align:center;font-weight:700;">
-            <button type="button" class="auth-submit-btn btn-ghost" id="set-referral-submit-btn" style="width:auto;padding:0 16px;margin:0;" data-i18n="referralSubmitBtn">Nhập</button>
-          </div>
-        </div>
         <div class="settings-social">
           <a class="soc-btn soc-tt" href="https://www.tiktok.com/" target="_blank" rel="noopener" title="TikTok">♪</a>
           <a class="soc-btn soc-dc" href="https://discord.com/" target="_blank" rel="noopener" title="Discord">☺</a>
@@ -395,9 +393,6 @@
         <button type="button" class="settings-row" id="set-terms-btn"><span data-i18n="setTerms">Điều khoản</span><span class="settings-chev">›</span></button>
         <button type="button" class="settings-row" id="set-privacy-btn"><span data-i18n="setPrivacy">Chính sách riêng tư</span><span class="settings-chev">›</span></button>
         <button type="button" class="settings-row" id="set-about-btn"><span data-i18n="setAbout">Về chúng tôi</span><span class="settings-chev">›</span></button>
-
-        <hr class="account-divider">
-        <button class="logout-btn" id="logout-btn" data-i18n="logoutBtn">🚪 Đăng xuất</button>
       </div>
     </div>
   </div>
@@ -756,6 +751,9 @@
         <button type="button" class="pp-vis-toggle active" id="pp-vis-versus"></button>
       </div>
 
+      <button class="logout-btn" id="logout-btn" data-i18n="logoutBtn" style="margin-top:14px;">🚪 Đăng xuất</button>
+      <button type="button" id="online-delete-account-btn" class="online-delete-account-btn" data-i18n="onlineDeleteAccount">Xóa tài khoản</button>
+
       <div class="account-msg" id="pp-msg"></div>
     </div>
   </div>
@@ -852,6 +850,19 @@
       </div>
       <div class="friends-body">
         <div id="friends-cap-line" class="gchat-friend-cap"></div>
+        <div class="friends-invite-card">
+          <div class="friends-invite-title" data-i18n="friendsInviteTitle">💎 Mời bạn cùng nhận quà</div>
+          <div class="friends-invite-desc" data-i18n="friendsInviteDesc">Chia sẻ mã của bạn — khi bạn bè nhập mã thành công, cả hai cùng nhận 1 kim cương!</div>
+          <div class="friends-invite-code-row">
+            <span class="friends-invite-code" id="friends-invite-code">CB------</span>
+            <button type="button" id="friends-invite-share-btn" class="auth-submit-btn" data-i18n="friendsInviteShare">📤 Chia sẻ mã</button>
+          </div>
+          <div class="friends-invite-claim-row">
+            <input type="text" id="friends-invite-claim-input" class="friends-search-input" maxlength="10" autocomplete="off" data-i18n-placeholder="friendsInviteClaimPh" placeholder="Nhập mã bạn bè...">
+            <button type="button" id="friends-invite-claim-btn" class="friends-search-btn" data-i18n="friendsInviteClaim">Nhận</button>
+          </div>
+          <div id="friends-invite-status" class="friends-status" aria-live="polite"></div>
+        </div>
         <div class="friends-search-row">
           <input type="search" id="friends-search-input" class="friends-search-input" maxlength="40" autocomplete="off" data-i18n-placeholder="friendsSearchPh" placeholder="Tìm theo tên hoặc ID...">
           <button type="button" id="friends-search-btn" class="friends-search-btn" data-i18n="friendsSearch">Tìm</button>
@@ -901,8 +912,6 @@
       <div class="admin-title"><span data-i18n="onlineTitle">🌐 Đấu 1-1 Online</span><button class="admin-close" id="online-hub-close">✕</button></div>
       <div id="online-disabled-note" class="online-note" data-i18n="onlineDisabled">Chưa bật Firebase — xem docs/ONLINE_MULTIPLAYER.md để cấu hình trước khi phát hành online.</div>
       <div id="online-status" class="online-status"></div>
-      <button type="button" id="online-google-btn" class="auth-submit-btn btn-on-color" style="background:#4285f4;margin-bottom:10px;" data-i18n="onlineGoogle">Đăng nhập Google</button>
-      <button type="button" id="online-delete-account-btn" class="online-delete-account-btn" data-i18n="onlineDeleteAccount">🗑️ Xoá tài khoản online &amp; dữ liệu</button>
 
       <div class="caro-waiting-block">
         <div class="caro-waiting-head">
@@ -1143,6 +1152,19 @@
         <label data-i18n="caroBgLabel">Nền bàn (map xếp hình)</label>
         <div id="caro-skin-grid" class="caro-skin-grid"></div>
       </div>
+      <div class="auth-field" style="margin-top:12px;">
+        <label data-i18n="caroSoundLabel">Âm thanh</label>
+        <div class="settings-toggles settings-toggles-prefs">
+          <button type="button" class="set-toggle" id="caro-sfx-toggle">
+            <span class="set-toggle-ico" id="caro-sfx-ico">🔊</span>
+            <span class="set-toggle-lab" data-i18n="setSound">Âm thanh</span>
+          </button>
+          <button type="button" class="set-toggle" id="caro-bgm-toggle">
+            <span class="set-toggle-ico" id="caro-bgm-ico">🎵</span>
+            <span class="set-toggle-lab" data-i18n="setBgm">Nhạc nền</span>
+          </button>
+        </div>
+      </div>
       <button type="button" id="caro-settings-apply" class="auth-submit-btn" style="margin-top:14px;" data-i18n="caroSettingsApply">✓ Áp dụng</button>
     </div>
   </div>
@@ -1365,11 +1387,11 @@
 <script src="js/audio.js?v=20260801b"></script>
 <script src="js/save.js?v=20260801b"></script>
 <script src="js/geo-region.js?v=20260801b"></script>
-<script src="js/brick-skins.js?v=20260801b"></script>
+<script src="js/brick-skins.js?v=20260807a"></script>
 <script src="js/map-boards.js?v=20260801b"></script>
 <script src="js/daily-rewards.js?v=20260801c"></script>
 <script src="js/profanity-filter.js?v=20260801b"></script>
-<script src="js/online-services.js?v=20260801e"></script>
+<script src="js/online-services.js?v=20260801f"></script>
 <script src="js/caro-ranks.js?v=20260801b"></script>
 <script src="js/versus-ranks.js?v=20260801b"></script>
 <script src="js/player-profile.js?v=20260801b"></script>
@@ -1380,7 +1402,7 @@
 <script src="js/lb-period.js?v=20260801c"></script>
 <script src="js/leaderboard.js?v=20260801b"></script>
 <script src="js/lb-notify.js?v=20260804a"></script>
-<script src="js/economy-shop.js?v=20260801c"></script>
+<script src="js/economy-shop.js?v=20260807a"></script>
 <script src="js/lucky-spin.js?v=20260801b"></script>
 <script src="js/effects.js?v=20260801b"></script>
 <script src="js/effects-scenery.js?v=20260801b"></script>
@@ -1420,12 +1442,12 @@
 <script src="js/native.js?v=20260801d"></script>
 <script src="js/iap-config.js?v=20260804a"></script>
 <script src="js/iap.js?v=20260804a"></script>
-<script src="js/versus.js?v=20260801g"></script>
+<script src="js/versus.js?v=20260801h"></script>
 <script src="js/versus-ui.js?v=20260801e"></script>
 <script src="js/versus-social.js?v=20260801b"></script>
 <script src="js/versus-ai.js?v=20260801b"></script>
 <script src="js/online-ui.js?v=20260801c"></script>
-<script src="js/chat.js?v=20260801c"></script>
+<script src="js/chat.js?v=20260801d"></script>
 <!-- js/caro.js + js/caro-social.js: nạp trễ (lazy-load) qua js/caro-loader.js
      khi người chơi bấm #caro-btn hoặc nhận lời mời Caro qua chat, để
      giảm dung lượng tải ban đầu (~104KB) cho người chưa vào chế độ này. -->

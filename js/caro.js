@@ -841,8 +841,14 @@ function _caroStartTurnTimer(){
   _caroTimerId = setInterval(()=>{
     if(!_caro || _caro.winner){ _caroStopTimer(); return; }
     const left = Math.max(0, Math.ceil((_caro.turnEndsAt - Date.now()) / 1000));
+    const prevLeft = _caro.turnLeft;
     _caro.turnLeft = left;
     _caroUpdateTimerUI();
+    // Tiếng đếm ngược — đúng 1 tiếng mỗi khi số giây hiển thị lùi thêm 1 nấc (không phải mỗi
+    // 200ms của interval), chỉ trong 5 giây cuối để không ồn suốt cả lượt.
+    if(left !== prevLeft && left > 0 && left <= 5){
+      try{ if(typeof sfxCaroTick === 'function') sfxCaroTick(left); }catch(e){}
+    }
     if(left <= 0){
       _caroStopTimer();
       // AI không bị xử thua vì hết giờ suy nghĩ
@@ -1505,7 +1511,11 @@ function _caroApplyMove(r, c, slot, fromNet){
     sendOnlineMove(_caro.roomId, { type:'caro_place', slot, r, c, nextTurn }).then(seq=>{
       if(seq != null && _caro) _caro.moveSeq = Math.max(_caro.moveSeq || 0, seq);
     }).catch(err=> console.warn('[caro] send move', err));
-    updateOnlineRoomTurn(_caro.roomId, nextTurn).catch(err=> console.warn('[caro] turn', err));
+    // Đã BỎ lệnh updateOnlineRoomTurn() ghi thường song song ở đây — transaction
+    // sendOnlineMove() bên trên đã tự ghi currentTurn qua field nextTurn rồi.
+    // Hai lệnh ghi cùng lúc vào CÙNG 1 tài liệu phòng khiến transaction bị
+    // Firestore từ chối (failed-precondition, thấy rõ trong console), làm mất
+    // nước đi — vừa gửi vừa rớt ngẫu nhiên tuỳ độ trễ mạng.
   }
   if(!fromNet && _caro.ai && !_caro.winner) _caroScheduleAI();
   return true;
@@ -1566,13 +1576,25 @@ function _caroEnterGame(roomData){
 
   // Đăng ký room TRƯỚC — stopListeningRoomDoc không được hủy moves
   listenOnlineRoom(roomId, ev=>{
-    if(ev.type==='deleted'){ _caroQuit(); _caroHandleHostLeft(); return; }
+    if(ev.type==='deleted'){
+      // Chủ phòng rời trận giữa chừng (bấm Thoát/mất kết nối) → mình (khách) mặc định
+      // thắng. Tự báo hộ ở đây phòng trường hợp chủ phòng đóng tab đột ngột, không kịp
+      // tự báo thua từ phía họ (xem finalizeCaroMatch: an toàn gọi 2 lần, ai ghi trước
+      // thắng vì transaction kiểm tra status đã 'finished' chưa).
+      if(_caro && _caro.online && !_caro.winner && typeof finalizeCaroMatch === 'function'){
+        finalizeCaroMatch(_caro.roomId, _caro.mySlot).catch(()=>{});
+      }
+      _caroQuit(); _caroHandleHostLeft(); return;
+    }
     const d = ev.data;
     _caroApplyRoomMetaToGame(d);
     if(!_caro || _caro.winner) return;
     // Khách rời trận giữa chừng (đóng tab/thoát) → báo cho chủ phòng và đưa về danh sách,
     // tương tự chiều ngược lại, để chủ phòng không bị treo chờ vô thời hạn.
     if(isHost && !d.guestId && d.status === 'playing'){
+      if(typeof finalizeCaroMatch === 'function'){
+        finalizeCaroMatch(_caro.roomId, _caro.mySlot).catch(()=>{});
+      }
       _caroQuit();
       _caroHandleGuestLeft();
       return;
@@ -1698,6 +1720,19 @@ function _caroEndGame(winnerSlot, fromRemote){
       heartNote+
       '<div class="caro-result-hearts-left">❤️ '+heartsLeft+'</div>';
     _caroRefreshHubStats();
+    // Đối chiếu lại dòng Thắng/Thua/Hoà/Tỷ lệ vừa hiển thị (ước tính local) với server
+    // sau khi Cloud Function applyMatchResult xử lý xong, tránh lệch với BXH thật.
+    if(typeof fetchMyCaroStats === 'function'){
+      setTimeout(async ()=>{
+        try{
+          const real = await fetchMyCaroStats();
+          const wldEl = document.querySelector('#caro-result-body .caro-result-wld');
+          if(wldEl){
+            wldEl.textContent = t('caroWins')+': '+real.wins+' · '+t('caroLosses')+': '+real.losses+' · '+t('caroDraws')+': '+real.draws+' · '+t('caroWinRate', real.winRate);
+          }
+        }catch(e){}
+      }, 1800);
+    }
   }
 
   setTimeout(()=>{
@@ -1806,12 +1841,9 @@ async function _caroSendChat(e){
 
 function _caroQuit(){
   try{ if(typeof lockPortraitOrientation==='function') lockPortraitOrientation(); }catch(e){}
-  // Bấm "Thoát" giữa trận online (hoặc đang bị dọn do phòng đã mất) → báo Firestore ngay:
-  // chủ phòng thoát thì xoá phòng thật (đối thủ sẽ nhận sự kiện 'deleted' và được đưa về
-  // danh sách phòng), khách thoát thì trả phòng lại trạng thái mở cho chủ phòng.
-  if(_caro && _caro.online && _caro.roomId && typeof leaveOnlineRoom === 'function'){
-    leaveOnlineRoom(_caro.roomId).catch(()=>{});
-  }
+  // Việc báo thắng/thua (nếu có) đã được xử lý riêng ở nơi gọi hàm này (bấm nút Thoát
+  // hoặc phát hiện đối thủ rời trận — xem finalizeCaroMatch ở 2 chỗ đó), nên ở đây chỉ
+  // còn việc dọn màn hình cục bộ, không đụng gì thêm vào phòng trên Firestore nữa.
   try{ if(typeof stopRoomHeartbeat === 'function') stopRoomHeartbeat(); }catch(e){}
   caroMode = false;
   _caroStopTimer();
@@ -2034,9 +2066,22 @@ function _caroOpenLobby(roomId, code, role, roomData){
   listenOnlineRoom(roomId, ev=>{
     if(ev.type==='deleted'){ closeCaroHub(); _caroHandleHostLeft(); return; }
     const d = ev.data;
+    const myUid = typeof getOnlineUid === 'function' ? getOnlineUid() : null;
+    if(_caroLobby && _caroLobby.role === 'guest' && myUid && d.kickedGuestId === myUid){
+      closeCaroHub();
+      _caroReturnToRoomList(t('roomKickedMsg', d.hostName || '?'));
+      return;
+    }
+    const prevGuestId = _caroLobby && _caroLobby.roomData ? _caroLobby.roomData.guestId : null;
     _caroLobby.roomData = d;
     _caroSyncRoomPrefsFromData(d);
     _caroRenderLobby(d);
+    // Tiếng báo có người vào/rời phòng chờ — chỉ khi còn ở sảnh (chưa vào trận); lúc đang
+    // chơi thì có tiếng riêng ở _caroHandleGuestLeft/_caroHandleHostLeft.
+    if(d.status !== 'playing'){
+      if(!prevGuestId && d.guestId){ try{ if(typeof sfxRoomJoin==='function') sfxRoomJoin(); }catch(e){} }
+      else if(prevGuestId && !d.guestId){ try{ if(typeof sfxRoomLeave==='function') sfxRoomLeave(); }catch(e){} }
+    }
     if(d.status==='playing' && !caroMode) _caroEnterGame({ roomId, ...d });
   });
 }
@@ -2052,11 +2097,13 @@ function _caroReturnToRoomList(msg){
 
 /** Phòng bị xoá vì chủ phòng đã rời/mất kết nối (trường hợp chính yêu cầu ở đây). */
 function _caroHandleHostLeft(){
+  try{ if(typeof sfxRoomLeave==='function') sfxRoomLeave(); }catch(e){}
   _caroReturnToRoomList(typeof t==='function' ? t('caroHostLeftRoom') : 'Chủ phòng đã rời phòng');
 }
 
 /** Khách rời/mất kết nối giữa trận — báo cho chủ phòng để không bị treo chờ vô thời hạn. */
 function _caroHandleGuestLeft(){
+  try{ if(typeof sfxRoomLeave==='function') sfxRoomLeave(); }catch(e){}
   _caroReturnToRoomList(typeof t==='function' ? t('caroGuestLeftRoom') : 'Đối thủ đã rời trận');
 }
 
@@ -2090,6 +2137,9 @@ function _caroRenderLobby(d){
 
   const hostUid = d.hostId || '';
   const guestUid = d.guestId || '';
+  const kickBtnHtml = (hostIsMe && guestName)
+    ? '<button type="button" class="caro-kick-btn" id="caro-kick-guest-btn" data-uid="'+escapeHtml(guestUid)+'" data-name="'+escapeHtml(guestName)+'">'+escapeHtml(t('roomKickBtn'))+'</button>'
+    : '';
   document.getElementById('caro-lobby-players').innerHTML =
     '<div class="online-player caro-lobby-seat" data-uid="'+escapeHtml(hostUid)+'" data-name="'+escapeHtml(host)+'" data-avatar="'+hostAv+'">'+
       '<button type="button" class="caro-seat-av" data-uid="'+escapeHtml(hostUid)+'" data-name="'+escapeHtml(host)+'" data-avatar="'+hostAv+'">'+hostAv+'</button>'+
@@ -2100,7 +2150,17 @@ function _caroRenderLobby(d){
       '<button type="button" class="caro-seat-av" data-uid="'+escapeHtml(guestUid)+'" data-name="'+escapeHtml(guestName||'')+'" data-avatar="'+guestAv+'" '+(guestName?'':'disabled')+'>'+(guestName?guestAv:'❔')+'</button>'+
       '<span class="caro-seat-info">'+guestRankHtml+
         '<span class="caro-seat-name-row"><span class="caro-o">O</span> <span class="caro-seat-name">'+guestLabel+'</span></span>'+
-      '</span></div>';
+      '</span>'+kickBtnHtml+'</div>';
+
+  document.getElementById('caro-kick-guest-btn')?.addEventListener('click', (e)=>{
+    e.preventDefault(); e.stopPropagation();
+    const btn = e.currentTarget;
+    const gName = btn.dataset.name || '?';
+    if(!confirm(t('roomKickConfirm', gName))) return;
+    if(typeof kickRoomGuest === 'function' && _caroLobby && _caroLobby.roomId){
+      kickRoomGuest(_caroLobby.roomId).catch(()=>{});
+    }
+  });
 
   document.querySelectorAll('#caro-lobby-players .caro-seat-av').forEach(btn=>{
     btn.addEventListener('click', (e)=>{
@@ -2319,6 +2379,7 @@ function openCaroSettings(fromGame){
   if(_caro && _caro.turnSec) _caroPrefsDraft.turnSec = _caro.turnSec;
   _caroFillSkinGrid(document.getElementById('caro-skin-grid'));
   _caroSyncPrefUI(_caroPrefsDraft);
+  try{ if(typeof syncSettingsToggles==='function') syncSettingsToggles(); }catch(e){}
   _caroShow('caro-settings-panel');
 }
 
@@ -2412,7 +2473,16 @@ function applyCaroSettings(){
       try{ sfxClick(); }catch(e){}
       if(typeof openChatPanel === 'function') openChatPanel('friends');
     });
-    document.getElementById('caro-quit-btn')?.addEventListener('click', ()=>{ if(confirm(t('caroQuitConfirm'))) _caroQuit(); });
+    document.getElementById('caro-quit-btn')?.addEventListener('click', ()=>{
+      if(!confirm(t('caroQuitConfirm'))) return;
+      // Thoát giữa trận online đang chơi thật (chưa ai thắng) → mặc định xử thua ngay
+      // cho mình, đối thủ mặc định thắng — báo thẳng lên Firestore giống lúc 1 ván kết
+      // thúc bình thường.
+      if(_caro && _caro.online && _caro.roomId && !_caro.winner && typeof finalizeCaroMatch === 'function'){
+        finalizeCaroMatch(_caro.roomId, _caroOpp(_caro.mySlot)).catch(()=>{});
+      }
+      _caroQuit();
+    });
     document.getElementById('caro-result-close')?.addEventListener('click', _caroQuit);
     document.getElementById('caro-chat-toggle')?.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} _caroToggleChat(); });
     document.getElementById('caro-chat-close')?.addEventListener('click', ()=> _caroToggleChat(false));

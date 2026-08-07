@@ -967,13 +967,14 @@ body.tutorial-open #start-screen{
 }
 .online-player .online-wait { color:rgba(255,255,255,0.78); font-weight:700; }
 .online-player .versus-seat-rank { font-size:10px; font-weight:700; color:#ffd700; margin-bottom:2px; }
+.online-player .caro-kick-btn{ display:block; margin:8px 0 0; }
 /* Nút phụ (nền tối / trong suốt / màu đậm) — chữ trắng nổi */
 .auth-submit-btn.btn-ghost,
 .auth-submit-btn.btn-on-color,
 #online-lobby-leave, #caro-lobby-leave, #online-mm-cancel, #caro-mm-cancel,
 #online-join-btn, #caro-join-btn, #caro-lobby-skin-btn, #caro-hub-skin-btn,
 #caro-rank-btn, #account-edit-profile, #vs-close-btn,
-#online-google-btn, #pp-save-style, #guest-play-btn,
+#auth-google-btn, #auth-facebook-btn, #auth-playgames-btn, #pp-save-style, #guest-play-btn,
 #online-find-btn, #caro-find-btn, #caro-ai-start-btn {
   color: #ffffff !important;
   text-shadow: 0 1px 2px rgba(0,0,0,0.35);
@@ -1185,6 +1186,12 @@ body.tutorial-open #start-screen{
 .caro-lobby-seat { display: flex; align-items: center; }
 .caro-seat-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
 .caro-seat-rank { font-size: 10px; font-weight: 700; color: #ffd700; }
+.caro-kick-btn{
+  margin-left:auto; padding:5px 10px; border-radius:10px; font-size:11px; font-weight:800;
+  background:rgba(229,57,53,0.18); border:1px solid rgba(229,57,53,0.55); color:#FF8A80;
+  flex-shrink:0;
+}
+.caro-kick-btn:active{ transform:scale(0.95); }
 .caro-seat-name-row { display: flex; align-items: center; gap: 6px; min-width: 0; }
 .caro-seat-name { flex: 1; min-width: 0; }
 .pp-avatar-list {
@@ -3601,7 +3608,9 @@ body:has(#secret-stage.active) .streak-dot.lit{
   font-size:18px; line-height:1;
   background:rgba(255,255,255,0.1);
   border:1px solid rgba(255,255,255,0.16);
+  cursor:pointer;
 }
+.vs-chip-avatar:active{ transform: scale(0.92); }
 .vs-chip-meta{
   display:flex; flex-direction:column; gap:1px; min-width:0;
 }
@@ -5271,6 +5280,9 @@ body:has(#secret-stage.active) .streak-dot.lit{
 .shop-tabs{ display:flex; gap:6px; margin-bottom:10px; }
 .shop-tab{ flex:1; border:1px solid rgba(255,255,255,0.16); background:rgba(255,255,255,0.06); color:#fff; border-radius:10px; padding:8px 6px; font-weight:800; font-size:12px; cursor:pointer; }
 .shop-tab.active{ border-color:#ffd54a; background:rgba(255,213,74,0.16); color:#ffd54a; }
+.shop-currency-filter{ display:flex; gap:6px; margin-bottom:8px; }
+.shop-currency-btn{ flex:1; border:1px solid rgba(255,255,255,0.14); background:rgba(255,255,255,0.05); color:rgba(255,255,255,0.75); border-radius:20px; padding:6px 6px; font-weight:800; font-size:11px; cursor:pointer; }
+.shop-currency-btn.active{ border-color:#7dd3fc; background:rgba(125,211,252,0.16); color:#7dd3fc; }
 .shop-grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; max-height:55vh; overflow:auto; }
 .shop-item{ border:1px solid rgba(255,255,255,0.14); background:rgba(255,255,255,0.06); border-radius:12px; padding:10px 8px; color:#fff; text-align:center; }
 .shop-item.owned{ opacity:0.55; cursor:default; }
@@ -5476,6 +5488,22 @@ body:has(#secret-stage.active) .streak-dot.lit{
   color:rgba(255,236,180,0.9); text-align:center;
 }
 .friends-status.err{ color:#FFAB91; }
+.friends-invite-card{
+  margin:4px 0 12px; padding:12px; border-radius:14px;
+  background:linear-gradient(135deg, rgba(255,213,74,0.16), rgba(255,255,255,0.06));
+  border:1px solid rgba(255,213,74,0.35);
+}
+.friends-invite-title{ font-size:14px; font-weight:900; color:#FFD54A; margin-bottom:4px; }
+.friends-invite-desc{ font-size:12px; font-weight:700; color:rgba(255,255,255,0.8); line-height:1.4; margin-bottom:10px; }
+.friends-invite-code-row{ display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+.friends-invite-code{
+  flex:1; min-width:0; text-align:center; padding:9px 10px; border-radius:12px;
+  background:rgba(0,0,0,0.28); border:1px dashed rgba(255,213,74,0.5);
+  font-size:15px; font-weight:900; letter-spacing:2px; color:#FFD54A;
+}
+.friends-invite-code-row .auth-submit-btn{ margin:0; flex-shrink:0; padding:0 14px; white-space:nowrap; }
+.friends-invite-claim-row{ display:flex; gap:8px; }
+.friends-invite-claim-row .friends-search-input{ text-transform:uppercase; }
 .pp-id-row{
   display:flex; align-items:center; flex-wrap:wrap; gap:8px;
   margin:8px 0 10px; padding:8px 10px; border-radius:12px;

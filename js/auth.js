@@ -195,6 +195,35 @@ function hideAuthScreen(){
   }, 500);
 }
 
+/** Gắn 1 nút đăng nhập mạng xã hội trên màn hình chính: đăng nhập xong thì vào
+ * thẳng game (giống doLogin/guest-play-btn), lỗi thì báo ngay dưới các nút. */
+function _initAuthSocialBtn(btnId, label, signInFn, softErrRegex){
+  const btn = document.getElementById(btnId);
+  if(!btn || !signInFn) return;
+  btn.addEventListener('click', async ()=>{
+    sfxClick();
+    btn.disabled = true;
+    const statusEl = document.getElementById('auth-social-status');
+    if(statusEl){ statusEl.textContent=''; statusEl.className='online-status'; }
+    try{
+      await signInFn();
+      if(typeof logGameEvent === 'function') logGameEvent('login', { method: label.toLowerCase().replace(' ','_') });
+      currentUser = null;
+      if(typeof updateDailyBadge === 'function') updateDailyBadge();
+      hideAuthScreen();
+    }catch(e){
+      const msg = typeof friendlyOnlineAuthError === 'function' ? friendlyOnlineAuthError(e) : (e && e.message);
+      if(msg && statusEl){
+        const soft = softErrRegex.test(String((e&&e.code)||e.message||'')+msg);
+        statusEl.textContent = msg;
+        statusEl.className = 'online-status' + (soft ? ' warn' : ' err');
+      }
+    }finally{
+      btn.disabled = false;
+    }
+  });
+}
+
 function initAuthScreen(){
   const loginForm = document.getElementById('login-form');
   const registerForm = document.getElementById('register-form');
@@ -211,6 +240,21 @@ function initAuthScreen(){
     if(typeof updateDailyBadge === 'function') updateDailyBadge();
     hideAuthScreen();
   });
+
+  _initAuthSocialBtn('auth-google-btn', 'Google', typeof signInWithGoogle==='function' ? signInWithGoogle : null,
+    /unauthorized-domain|google_plugin|google_web_client|google_no_id|28444|SHA/i);
+  _initAuthSocialBtn('auth-facebook-btn', 'Facebook', typeof signInWithFacebook==='function' ? signInWithFacebook : null,
+    /unauthorized-domain|facebook_plugin|facebook_app_id|facebook_no_access/i);
+  // Play Games chỉ có trên app Android — nút ẩn mặc định trong HTML, chỉ
+  // hiện khi đang chạy native Capacitor (web/desktop không có Play Games).
+  try{
+    if(typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform && Capacitor.isNativePlatform()){
+      const pgBtn = document.getElementById('auth-playgames-btn');
+      if(pgBtn) pgBtn.hidden = false;
+    }
+  }catch(e){}
+  _initAuthSocialBtn('auth-playgames-btn', 'Play Games', typeof signInWithPlayGames==='function' ? signInWithPlayGames : null,
+    /playgames_android_only|playgames_plugin_missing|playgames_no_auth_code/i);
 
   showRegister.addEventListener('click', ()=> showAuthForm('register'));
   showLogin.addEventListener('click', ()=> showAuthForm('login'));

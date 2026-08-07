@@ -45,6 +45,9 @@ const VS_OBSTACLES = [
   { id:'fog',      nameIdx:5,  emoji:'🌫️' },
   { id:'squirrel', nameIdx:3,  emoji:'🐿️' },
   { id:'bomb',     nameIdx:6,  emoji:'💣' },
+  { id:'blackhole',nameIdx:12, emoji:'🕳️' },
+  { id:'wall',     nameIdx:15, emoji:'🧱' },
+  { id:'lightning',nameIdx:16, emoji:'⚡' },
 ];
 
 let versusMode = false;
@@ -72,6 +75,7 @@ function refreshVersusButton(){
   const btn=document.getElementById('versus-btn');
   if(btn){
     btn.classList.add('vs-unlocked');
+    btn.style.display = 'flex';
     btn.setAttribute('aria-hidden', 'false');
     btn.title = (typeof t==='function' ? t('ttVersus') : 'Đấu 1-1');
   }
@@ -158,7 +162,14 @@ function _vsNewPlayer(idx,seed){
 function _vsAbort(){
   if(_vs && _vs.timer) clearInterval(_vs.timer);
   try{ if(typeof _vsAiStop==='function') _vsAiStop(); }catch(e){}
+  // Thoát trận online giữa chừng → mặc định xử thua ngay cho mình (đối thủ mặc định
+  // thắng), báo thẳng lên Firestore không so điểm — giống lúc 1 ván kết thúc bình
+  // thường. Không xoá/định lại phòng nữa (forfeitOnlineMatch đã đưa phòng về trạng
+  // thái 'finished' với kết quả đã ghi, giữ nguyên như vậy).
   try{
+    if(_vs && _vs.online && _vs.online.roomId && typeof forfeitOnlineMatch === 'function'){
+      forfeitOnlineMatch(_vs.online.roomId, !!_vs.online.isHost).catch(()=>{});
+    }
     if(_vs && _vs.online && typeof stopListeningRoom === 'function') stopListeningRoom();
     else if(typeof stopListeningChat === 'function') stopListeningChat();
   }catch(e){}
@@ -168,6 +179,23 @@ function _vsAbort(){
   versusMode=false; _vs=null;
   try{ if(typeof setExclusivePlayMode === 'function') setExclusivePlayMode(null); }catch(e){}
   try{ startBgm('main'); }catch(e){}
+}
+
+/** Đối thủ rời trận online giữa chừng (bấm Thoát/đóng tab/mất kết nối) — huỷ trận NGAY
+ * cho người còn lại thay vì bắt họ chơi tới hết giờ. Tự báo hộ thua cho đối thủ ở đây
+ * (mình mặc định thắng) phòng trường hợp họ đóng tab đột ngột không kịp tự báo —
+ * forfeitOnlineMatch an toàn khi gọi 2 lần nhờ kiểm tra status đã 'finished' chưa. */
+function _vsHandleOpponentLeft(){
+  if(!_vs || !_vs.online) return;
+  try{ if(typeof sfxRoomLeave==='function') sfxRoomLeave(); }catch(e){}
+  try{
+    if(_vs.online.roomId && typeof forfeitOnlineMatch === 'function'){
+      forfeitOnlineMatch(_vs.online.roomId, !_vs.online.isHost).catch(()=>{});
+    }
+  }catch(e){}
+  try{ showHint((typeof t==='function'?t('vsOpponentLeft'):null) || 'Đối thủ đã rời trận', { hold: 2600 }); }catch(e){}
+  _vsAbort();
+  try{ if(typeof openVersusSetup === 'function') openVersusSetup(); }catch(e){}
 }
 
 // ── Render ──
@@ -183,14 +211,28 @@ function _vsCanPlace(P,shape,R,C){
 }
 
 function _vsPlaceAt(P,R,C,fromNetwork){
-  if(!versusMode||P.done||P.selected<0) return;
+  if(!versusMode||(P.done&&!fromNetwork)||P.selected<0) return;
   if(P.el.cards.classList.contains('show')) return;
   const pc=P.pieces[P.selected];
   if(!pc||pc.used) return;
-  if(!_vsCanPlace(P,pc.shape,R,C)){ try{ sfxInvalid(); }catch(e){} return; }
+  // Nước đi TỪ MẠNG đã được máy người gửi xác thực hợp lệ rồi — không kiểm
+  // tra lại _vsCanPlace ở đây nữa. Trước đây nếu bàn mô phỏng đối thủ trên
+  // máy mình lệch dù chỉ 1 ô (đá/băng hết hạn không đúng lúc, độ trễ mạng…),
+  // nước đi bị âm thầm huỷ bỏ và mọi nước đi sau đó của đối thủ cũng hỏng
+  // theo — người chơi không bao giờ thấy đối thủ đánh gì nữa. Giờ luôn áp
+  // dụng nước đi từ mạng, đồng thời dọn sạch mọi thứ đang chặn ô đó (đá/băng
+  // lệch cục bộ) để bàn tự đồng bộ lại đúng theo dữ liệu đã xác thực.
+  if(!fromNetwork){
+    if(!_vsCanPlace(P,pc.shape,R,C)){ try{ sfxInvalid(); }catch(e){} return; }
+  }
   const pieceIndex=P.selected;
   const shapeSnap=pc.shape.map(([r,c])=>[r,c]);
-  pc.shape.forEach(([dr,dc])=>{ P.board[R+dr][C+dc]=pc.color; });
+  pc.shape.forEach(([dr,dc])=>{
+    const rr=R+dr, cc=C+dc;
+    if(rr<0||rr>=VS_N||cc<0||cc>=VS_N) return;
+    if(fromNetwork){ const kk=rr+','+cc; P.rocks.delete(kk); P.ice.delete(kk); }
+    P.board[rr][cc]=pc.color;
+  });
   pc.used=true; P.selected=-1;
   P.score+=pc.shape.length;
   try{ sfxPlacePiece(); }catch(e){}
@@ -209,10 +251,11 @@ function _vsPlaceAt(P,R,C,fromNetwork){
   if(P.pieces.every(x=>x.used)) _vsRefill(P);
   _vsRenderAll(P);
   if(!fromNetwork && _vs && _vs.online && P.idx===0){
-    _vsBroadcastMove('place', { pieceIndex, R, C, shape: shapeSnap });
+    _vsBroadcastMove('place', { pieceIndex, R, C, shape: shapeSnap, color: pc.color });
   }
   if(_vsMarkDoneIfStuck(P)) return;
 }
+
 
 // Kiểm tra P còn nước đi không, đồng bộ P.done + note theo đúng trạng thái
 // HIỆN TẠI (thay vì chỉ set done=true 1 lần rồi bỏ quên) — sửa lỗi: trước đó
@@ -335,6 +378,44 @@ function _vsApplyObstacle(F,ob){
       setTimeout(tick,1000);
     };
     setTimeout(tick,1000);
+  } else if(ob.id==='blackhole'){
+    // 🕳️ Hố đen: hút mất 2 ô đã lấp (mất luôn, không dịch chuyển như lốc xoáy)
+    // rồi biến chính 2 ô đó thành đá chắn tạm 8s — nặng hơn núi đá/sóc lẻ.
+    const sucked = take(filledCells,2);
+    sucked.forEach(k=>{ const [r,c]=k.split(',').map(Number); F.board[r][c]=null; F.ice.delete(k); F.rocks.add(k); });
+    setTimeout(()=>{
+      if(_vs&&versusMode){ sucked.forEach(k=>F.rocks.delete(k)); _vsRenderGrid(F); }
+    },8000);
+  } else if(ob.id==='wall'){
+    // 🧱 Tường gạch: chắn NGUYÊN 1 hàng hoặc 1 cột liền mạch (khác núi đá rải rác) — 10s.
+    const horizontal = Math.random()<0.5;
+    const line = horizontal ? Math.floor(Math.random()*VS_N) : -1;
+    const col  = horizontal ? -1 : Math.floor(Math.random()*VS_N);
+    const wallCells=[];
+    for(let i=0;i<VS_N;i++){
+      const r = horizontal ? line : i;
+      const c = horizontal ? i : col;
+      const k=r+','+c;
+      if(F.rocks.has(k)) continue;
+      wallCells.push(k); F.rocks.add(k);
+    }
+    setTimeout(()=>{
+      if(_vs&&versusMode){ wallCells.forEach(k=>F.rocks.delete(k)); _vsRenderGrid(F); }
+    },10000);
+  } else if(ob.id==='lightning'){
+    // ⚡ Sét đánh: xoá sạch NGAY 1 cụm 2×2 ô đã lấp — mất điểm tiềm năng, không như
+    // lốc xoáy (dịch chuyển chỗ khác) hay sóc (chỉ lấy lẻ tẻ 1 ô).
+    const anchors = filledCells.filter(k=>{
+      const [r,c]=k.split(',').map(Number);
+      return r<VS_N-1 && c<VS_N-1;
+    });
+    if(anchors.length){
+      const [r0,c0] = anchors[Math.floor(Math.random()*anchors.length)].split(',').map(Number);
+      for(let dr=0;dr<2;dr++)for(let dc=0;dc<2;dc++){
+        const r=r0+dr, c=c0+dc, k=r+','+c;
+        F.board[r][c]=null; F.ice.delete(k);
+      }
+    }
   }
   // báo cho nạn nhân — chỉ rung màn, KHÔNG hiện chữ thông báo (gây rối/che bàn cờ
   // lúc đang thao tác); rung là đủ để người chơi biết vừa bị đối thủ đánh úp.
@@ -437,27 +518,49 @@ function _vsEndMatch(){
     '<div style="font-size:11px;color:#9aa7bd;margin-top:8px;">'+t('vsXpNote', VERSUS_WIN_XP)+'</div>';
   try{ submitScoreToLeaderboard(Math.max(s1,s2)); }catch(e){}
   _vsShow('versus-result-panel');
+
+  // Đối chiếu lại điểm/rank Versus vừa hiển thị (ước tính local) với server sau khi
+  // Cloud Function applyMatchResult xử lý xong, tránh lệch với hồ sơ/BXH thật.
+  const wasOnlineMatch = !!(_vs.online && _vs.online.roomId);
+  if(typeof fetchMyVersusStats === 'function' && wasOnlineMatch){
+    setTimeout(async ()=>{
+      try{
+        const real = await fetchMyVersusStats();
+        const rank = real.rank;
+        const el = document.querySelector('#vs-result-body .vs-result-rank');
+        if(el && rank){
+          const lang = (typeof currentLang !== 'undefined' && currentLang) ? currentLang : 'vi';
+          const ptsLabel = lang !== 'vi' ? 'pts' : 'đ';
+          el.innerHTML = rank.icon+' <b>'+escapeHtml(rank.name)+'</b> · '+real.points+' '+ptsLabel;
+        }
+      }catch(e){}
+    }, 1800);
+  }
 }
 
 // ── wiring ──
-(function initVersus(){
-  const btn=document.getElementById('versus-btn');
-  if(btn) btn.addEventListener('click', ()=>openVersusSetup());
-  const start=document.getElementById('vs-start-btn');
-  if(start) start.addEventListener('click', startVersusMatch);
-  const cancel=document.getElementById('vs-cancel-btn');
-  if(cancel) cancel.addEventListener('click', ()=>_vsHide('versus-setup-panel'));
-  const again=document.getElementById('vs-again-btn');
-  if(again) again.addEventListener('click', ()=>_vsCloseResult(true));
-  const close=document.getElementById('vs-close-btn');
-  if(close) close.addEventListener('click', ()=>_vsCloseResult(false));
-  let _vsReflowT=0;
-  const scheduleReflow=()=>{
-    clearTimeout(_vsReflowT);
-    _vsReflowT=setTimeout(_vsReflowGrids, 80);
-  };
-  window.addEventListener('resize', scheduleReflow);
-  window.addEventListener('orientationchange', ()=>setTimeout(_vsReflowGrids, 120));
-  refreshVersusButton();
+(function(){
+  function bind(){
+    const btn=document.getElementById('versus-btn');
+    if(btn) btn.addEventListener('click', ()=>openVersusSetup());
+    const start=document.getElementById('vs-start-btn');
+    if(start) start.addEventListener('click', startVersusMatch);
+    const cancel=document.getElementById('vs-cancel-btn');
+    if(cancel) cancel.addEventListener('click', ()=>_vsHide('versus-setup-panel'));
+    const again=document.getElementById('vs-again-btn');
+    if(again) again.addEventListener('click', ()=>_vsCloseResult(true));
+    const close=document.getElementById('vs-close-btn');
+    if(close) close.addEventListener('click', ()=>_vsCloseResult(false));
+    let _vsReflowT=0;
+    const scheduleReflow=()=>{
+      clearTimeout(_vsReflowT);
+      _vsReflowT=setTimeout(_vsReflowGrids, 80);
+    };
+    window.addEventListener('resize', scheduleReflow);
+    window.addEventListener('orientationchange', ()=>setTimeout(_vsReflowGrids, 120));
+    refreshVersusButton();
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
+  else bind();
 })();
 

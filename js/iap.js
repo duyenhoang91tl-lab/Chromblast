@@ -24,6 +24,16 @@
 //     starter_pack vào entitlement này (vì cả 2 đều nên tắt quảng cáo).
 //  5) RevenueCat Dashboard → API keys → copy khoá Android (khoá PUBLIC,
 //     an toàn để commit) → dán vào js/iap-config.js.
+//  6) Kim cương được cộng bởi functions/index.js: revenuecatWebhook (server-to-
+//     server, KHÔNG tin client tự báo "đã mua" nữa) — cần bật thủ công:
+//       a) RevenueCat Dashboard → Project Settings → Integrations → Webhooks
+//          → Add webhook → URL: https://asia-southeast1-<project-id>.
+//          cloudfunctions.net/revenuecatWebhook (thay <project-id> đúng project).
+//       b) Đặt 1 chuỗi bí mật bất kỳ vào ô Authorization header value của
+//          webhook đó, RỒI chạy: firebase functions:secrets:set
+//          REVENUECAT_WEBHOOK_SECRET (dán đúng chuỗi vừa đặt) → deploy lại
+//          functions. Thiếu bước 6 thì mua xong sẽ KHÔNG có kim cương (đây là
+//          chủ đích — không còn đường nào tự cộng kim cương phía client nữa).
 // ═══════════════════════════════════════════════════════════════
 (function(){
   // Số kim cương nhận được cho mỗi sản phẩm tiêu hao — sửa nếu đổi giá trị gói.
@@ -39,6 +49,7 @@
   let _ready = false;
   let _removeAdsActive = false;
   let _offeringsCache = null;
+  let _iapLinkedUid = null; // uid Firebase đã logIn() vào RevenueCat gần nhất — tránh logIn() lặp lại mỗi lần mua
 
   function _plugin(){
     try{
@@ -68,6 +79,16 @@
       if(!key || key.indexOf('REPLACE_WITH')===0){ console.warn('[iap] Chưa cấu hình REVENUECAT_ANDROID_KEY — xem js/iap-config.js'); return; }
       await _Purchases.configure({ apiKey: key });
       _ready = true;
+      // Cố gắng gắn danh tính RevenueCat = uid Firebase ngay từ đầu (không chặn init
+      // nếu chưa có mạng/chưa đăng nhập kịp) — để lần mở app sau vẫn nhận đúng
+      // entitlement remove_ads đã mua trước đó thay vì kiểm tra nhầm ID ẩn danh mới.
+      // purchaseIAP() vẫn tự gắn lại trước mỗi lần mua nên không phụ thuộc bước này.
+      try{
+        if(await initOnlineServices() && _onlineUid){
+          await _Purchases.logIn({ appUserID: _onlineUid });
+          _iapLinkedUid = _onlineUid;
+        }
+      }catch(e){ /* im lặng — sẽ thử lại lúc mua */ }
       await window.refreshEntitlements();
     }catch(e){ console.warn('[iap] init lỗi:', e); }
   };
@@ -102,6 +123,22 @@
       try{ showComboFlash(0, false, (typeof t==='function'?t('iapUnavailable'):null)||'Mua hàng chỉ khả dụng trên app Android'); }catch(e){}
       return { ok:false, reason:'unavailable' };
     }
+    // QUAN TRỌNG: revenuecatWebhook (functions/index.js) cộng kim cương vào
+    // players/{event.app_user_id} — nếu RevenueCat vẫn dùng ID ẩn danh tự sinh (mặc
+    // định lúc configure() không truyền appUserID) thì webhook sẽ không khớp được với
+    // đúng người chơi. Phải logIn() bằng CHÍNH uid Firebase trước khi mua, để
+    // app_user_id phía RevenueCat trùng với players/{uid} của mình.
+    try{
+      if(!await initOnlineServices() || !_onlineUid) throw new Error('Chưa xác định được tài khoản');
+      if(_iapLinkedUid !== _onlineUid){
+        await _Purchases.logIn({ appUserID: _onlineUid });
+        _iapLinkedUid = _onlineUid;
+      }
+    }catch(e){
+      console.warn('[iap] logIn lỗi:', e);
+      try{ showComboFlash(0, false, '⚠️ Chưa xác định được tài khoản, thử lại sau.'); }catch(e2){}
+      return { ok:false, reason:'no_uid' };
+    }
     try{ if(typeof logGameEvent==='function') logGameEvent('purchase_started', { product_id:identifier }); }catch(e){}
     try{
       const pkgs = await window.getShopOfferings();
@@ -113,8 +150,31 @@
       const ent = customerInfo && customerInfo.entitlements && customerInfo.entitlements.active;
       if(ent && ent[ENTITLEMENT_REMOVE_ADS] && ent[ENTITLEMENT_REMOVE_ADS].isActive) _persistRemoveAds(true);
 
-      const diamonds = DIAMOND_GRANTS[identifier];
-      if(diamonds && typeof grantDiamonds==='function') grantDiamonds(diamonds, 'Mua: '+identifier);
+      // KHÔNG tự cộng kim cương cục bộ ở đây nữa — đó chính là lỗ hổng đã vá (ai sửa
+      // JS/gọi thẳng hàm này cũng "mua" được miễn phí). Kim cương thật được cộng bởi
+      // functions/index.js: revenuecatWebhook (RevenueCat gọi server-to-server sau khi
+      // đã xác minh giao dịch với Google Play) — ở đây chỉ chờ vài giây rồi kéo số dư
+      // THẬT về hiển thị. Webhook thường về trong vài giây nhưng không đảm bảo tức thời,
+      // nên nếu chưa kịp thì báo "sẽ vào ví trong ít phút" thay vì báo sai số liền.
+      const identifierForGrant = identifier;
+      const expectedDiamonds = DIAMOND_GRANTS[identifier] || 0;
+      const beforeDiamonds = (typeof getDiamonds === 'function') ? getDiamonds() : 0;
+      try{ showComboFlash(0, false, '⏳ Đang xác nhận giao dịch...'); }catch(e){}
+      let gained = 0;
+      for(let i=0; i<6; i++){
+        await new Promise(r=>setTimeout(r, i===0 ? 1500 : 2000));
+        const synced = (typeof syncWalletFromServer==='function') ? await syncWalletFromServer() : null;
+        if(synced && synced.diamonds != null){
+          gained = Math.max(0, Math.floor(synced.diamonds) - beforeDiamonds);
+          if(gained > 0) break;
+        }
+      }
+      if(gained > 0){
+        try{ showComboFlash(0, false, '💎 +'+gained+' · Mua: '+identifierForGrant); }catch(e){}
+      } else {
+        try{ showComboFlash(0, false, '✅ Đã mua — kim cương sẽ vào ví trong ít phút'); }catch(e){}
+      }
+      const diamonds = gained || expectedDiamonds;
 
       try{ if(typeof logGameEvent==='function') logGameEvent('purchase_completed', { product_id:identifier, diamonds:diamonds||0 }); }catch(e){}
       if(typeof onGrant==='function') onGrant(identifier, diamonds||0);

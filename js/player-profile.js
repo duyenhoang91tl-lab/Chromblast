@@ -530,10 +530,7 @@ function _ppRefreshUI(){
   renderSettingsPlayerInfo();
 }
 
-function renderSettingsPlayerInfo(){
-  const box = document.getElementById('settings-player-info');
-  if(!box) return;
-  const info = getPlayerInfoStats();
+function _ppRenderPlayerInfoBox(box, info){
   const caro = info.caro || {};
   const rankName = (caro.rank && caro.rank.name) ? caro.rank.name : '';
   const rankIcon = (caro.rank && caro.rank.icon) ? caro.rank.icon + ' ' : '';
@@ -554,6 +551,29 @@ function renderSettingsPlayerInfo(){
         (typeof t==='function'?t('ppCaroWLD', versus.wins||0, versus.losses||0, versus.draws||0, versus.winRate||0):((versus.wins||0)+'T/'+(versus.losses||0)+'H/'+(versus.draws||0)+'Hòa · '+(versus.winRate||0)+'%'))+
         (vsRankName?' · '+vsRankName:'')+'</div>'
       : '');
+}
+
+function renderSettingsPlayerInfo(){
+  const box = document.getElementById('settings-player-info');
+  if(!box) return;
+  // Vẽ ngay bằng cache local để không có độ trễ/giật màn hình...
+  _ppRenderPlayerInfoBox(box, getPlayerInfoStats());
+  // ...rồi đối chiếu lại với server ngay sau đó (nguồn thật do Cloud Function
+  // applyMatchResult ghi) và vẽ lại nếu có khác biệt. Cache local (getLocalCaroStats/
+  // getLocalVersusStats) chỉ là số ước tính ngay sau khi 1 trận kết thúc ở máy mình,
+  // có thể lệch với BXH thật nếu bỏ qua bước đồng bộ này.
+  Promise.resolve().then(async ()=>{
+    try{
+      const jobs = [];
+      if(typeof fetchMyCaroStats === 'function') jobs.push(fetchMyCaroStats());
+      if(typeof fetchMyVersusStats === 'function') jobs.push(fetchMyVersusStats());
+      if(!jobs.length) return;
+      await Promise.all(jobs);
+      const stillOpen = document.getElementById('settings-player-info');
+      if(!stillOpen) return; // panel đã đóng, khỏi vẽ lại
+      _ppRenderPlayerInfoBox(stillOpen, getPlayerInfoStats());
+    }catch(e){}
+  });
 }
 
 function openPlayerProfilePanel(){

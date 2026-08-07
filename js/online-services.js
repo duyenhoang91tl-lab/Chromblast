@@ -11,6 +11,7 @@ let _onlineReady = false;
 let _matchmakingUnsub = null;
 let _roomUnsub = null;
 let _movesUnsub = null;
+let _walletGiftUnsub = null;
 
 const ONLINE_ROOM_CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
@@ -56,10 +57,12 @@ async function initOnlineServices(){
         try{ startInviteListener(); }catch(e){}
         try{ startFriendRequestListener(typeof window.onFriendRequestIncoming==='function'?window.onFriendRequestIncoming:null); }catch(e){}
         try{ loadBlockedList(); }catch(e){}
+        try{ startWalletGiftWatcher(); }catch(e){}
       } else {
         try{ stopPresenceHeartbeat(); }catch(e){}
         try{ stopInviteListener(); }catch(e){}
         try{ stopFriendRequestListener(); }catch(e){}
+        try{ stopWalletGiftWatcher(); }catch(e){}
       }
     });
     if(!_onlineAuth.currentUser) await _onlineAuth.signInAnonymously();
@@ -70,6 +73,7 @@ async function initOnlineServices(){
     try{ bindOnlineRoomUnloadCleanup(); }catch(e){}
     try{ startPresenceHeartbeat(); }catch(e){}
     try{ startInviteListener(); }catch(e){}
+    try{ startWalletGiftWatcher(); }catch(e){}
     try{ startFriendRequestListener(typeof window.onFriendRequestIncoming==='function'?window.onFriendRequestIncoming:null); }catch(e){}
     try{ loadBlockedList(); }catch(e){}
     try{ claimPendingReferralRewards(); }catch(e){}
@@ -233,7 +237,49 @@ async function _upsertPlayerProfile(){
   }
 }
 
-/** Gọi khi người chơi bấm bật/tắt 1 mục trong "Quyền riêng tư hồ sơ" (player-profile.js) */
+/** Ví server-side Bước 2 (docs/SERVER_WALLET_PROGRESS.md): lắng nghe field
+ *  `hearts` trên chính players/{uid} của mình — đây là cách DUY NHẤT client
+ *  nên biết "vừa được tặng tim", KHÔNG tin nội dung tin nhắn chat kind:
+ *  'heart_gift' nữa (giả mạo được, xem chat.js: appendMsg — đã bỏ
+ *  grantHearts() ở đó). So với mốc `hearts` server lần trước đã thấy
+ *  (lưu localStorage, theo uid) — server TĂNG thì cộng đúng phần chênh lệch
+ *  vào `inv.hearts` cục bộ qua grantHearts() (không ghi đè cả ví, đúng
+ *  nguyên tắc #1 trong docs/SERVER_WALLET_PROGRESS.md); server GIẢM (từ các
+ *  bước sau, VD spendCurrency) thì chỉ cập nhật lại mốc, không trừ cục bộ ở
+ *  đây. Lần đầu tiên thấy dữ liệu (chưa có mốc cũ) chỉ ghi mốc, không cộng
+ *  gì — tránh cộng nhầm "hearts hiện có" thành "vừa được tặng". */
+const WALLET_HEARTS_SEEN_KEY = 'chromablast_server_hearts_seen';
+function startWalletGiftWatcher(){
+  if(_walletGiftUnsub || !_onlineDb || !_onlineUid) return;
+  let baseline = null;
+  try{
+    const raw = JSON.parse(localStorage.getItem(WALLET_HEARTS_SEEN_KEY) || 'null');
+    if(raw && raw.uid === _onlineUid && typeof raw.hearts === 'number') baseline = raw.hearts;
+  }catch(e){}
+  const uidAtStart = _onlineUid;
+  _walletGiftUnsub = _onlineDb.collection('players').doc(uidAtStart).onSnapshot(snap => {
+    if(!snap.exists) return;
+    const d = snap.data() || {};
+    if(typeof d.hearts !== 'number') return;
+    const serverHearts = d.hearts;
+    if(baseline === null){
+      baseline = serverHearts;
+    } else if(serverHearts > baseline){
+      const delta = serverHearts - baseline;
+      baseline = serverHearts;
+      if(typeof grantHearts === 'function'){
+        const label = (typeof t === 'function' ? t('gchatHeartReceived') : '') || 'Tim từ bạn';
+        grantHearts(delta, label);
+      }
+    } else if(serverHearts < baseline){
+      baseline = serverHearts;
+    }
+    try{ localStorage.setItem(WALLET_HEARTS_SEEN_KEY, JSON.stringify({ uid: uidAtStart, hearts: baseline })); }catch(e){}
+  }, err => { console.warn('[wallet gift watch]', err); });
+}
+function stopWalletGiftWatcher(){
+  if(_walletGiftUnsub){ try{ _walletGiftUnsub(); }catch(e){} _walletGiftUnsub = null; }
+}
 async function syncProfileVisibilityOnline(){
   if(!_onlineDb || !_onlineUid) return;
   try{
@@ -1018,6 +1064,139 @@ function _isNativeCapacitor(){
   }catch(e){ return false; }
 }
 
+async function signInWithFacebook(){
+  // Web: dùng signInWithPopup của Firebase (cần bật provider Facebook trong
+  // Firebase Console + App ID/Secret lấy từ Meta for Developers trước).
+  // Android: dùng Capgo SocialLogin (facebook) → Firebase credential, cần
+  // thêm FACEBOOK_APP_ID (window.FACEBOOK_APP_ID) + khai báo trong
+  // android/app/src/main/res/values/strings.xml (facebook_app_id,
+  // facebook_client_token) giống hệt cách GOOGLE_WEB_CLIENT_ID đã làm.
+  if(!isOnlineServicesEnabled()) throw new Error('online_disabled');
+
+  if(!firebase.apps.length) firebase.initializeApp(window.FIREBASE_CONFIG);
+  if(!_onlineAuth) _onlineAuth = firebase.auth();
+  if(!_onlineDb) _onlineDb = firebase.firestore();
+
+  if(_isNativeCapacitor()){
+    await _signInWithFacebookNative();
+  } else {
+    const provider = new firebase.auth.FacebookAuthProvider();
+    provider.addScope('public_profile');
+    await _onlineAuth.signInWithPopup(provider);
+  }
+
+  if(!_onlineAuth.currentUser) throw new Error('auth_no_user');
+  _onlineUid = _onlineAuth.currentUser.uid;
+  const name = _onlineAuth.currentUser.displayName;
+  if(name) _onlineDisplayName = name;
+  try{
+    if(typeof getPlayerProfile === 'function' && typeof savePlayerProfile === 'function'){
+      const p = getPlayerProfile();
+      if(name && (!p.nick || /^Khách#/.test(p.nick))) savePlayerProfile({ nick: name });
+    }
+  }catch(e){}
+  _onlineReady = true;
+  await _upsertPlayerProfile();
+  logGameEvent('login', { method: 'facebook' });
+  return _onlineUid;
+}
+
+async function _ensureSocialLoginFacebook(){
+  const SocialLogin = window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.SocialLogin;
+  if(!SocialLogin) throw Object.assign(new Error('facebook_plugin_missing'), { code: 'facebook_plugin_missing' });
+  const appId = window.FACEBOOK_APP_ID;
+  if(!appId) throw Object.assign(new Error('facebook_app_id_missing'), { code: 'facebook_app_id_missing' });
+  if(!_ensureSocialLoginFacebook._inited){
+    if(!window.__socialLoginFacebookReady){
+      await SocialLogin.initialize({
+        facebook: { appId }
+      });
+    }
+    _ensureSocialLoginFacebook._inited = true;
+  }
+  return SocialLogin;
+}
+
+/**
+ * Đăng nhập bằng Google Play Games — CHỈ có trên Android (Play Games không
+ * tồn tại trên web), khác với Google/Facebook ở trên.
+ *
+ * @capgo/capacitor-social-login (đang dùng cho Google/Facebook) KHÔNG hỗ trợ
+ * Play Games. Cần cài thêm 1 plugin Capacitor riêng cho Play Games Services,
+ * đăng ký trong MainActivity.java, và liên kết app với Play Games Services
+ * trong Play Console (Play Console → Play Games Services → thiết lập, lấy
+ * OAuth client ID Android/Web). Xem docs/ONLINE_MULTIPLAYER.md để biết plugin
+ * gợi ý + các bước cụ thể — mình chưa cài sẵn plugin đó trong repo vì cần
+ * bạn chọn/xác nhận (native, không test được qua trình duyệt).
+ *
+ * window.PlayGamesSignIn.getServerAuthCode() là "điểm nối" mong đợi: bất kỳ
+ * plugin nào cài vào chỉ cần expose đúng hàm này (trả về serverAuthCode
+ * dạng string) là chạy được ngay với đoạn dưới, không cần sửa lại chỗ khác.
+ */
+async function signInWithPlayGames(){
+  if(!isOnlineServicesEnabled()) throw new Error('online_disabled');
+  if(!_isNativeCapacitor()){
+    throw Object.assign(new Error('playgames_android_only'), { code: 'playgames_android_only' });
+  }
+  if(!firebase.apps.length) firebase.initializeApp(window.FIREBASE_CONFIG);
+  if(!_onlineAuth) _onlineAuth = firebase.auth();
+  if(!_onlineDb) _onlineDb = firebase.firestore();
+
+  const bridge = window.PlayGamesSignIn;
+  if(!bridge || typeof bridge.getServerAuthCode !== 'function'){
+    throw Object.assign(new Error('playgames_plugin_missing'), { code: 'playgames_plugin_missing' });
+  }
+  const serverAuthCode = await bridge.getServerAuthCode();
+  if(!serverAuthCode){
+    throw Object.assign(new Error('playgames_no_auth_code'), { code: 'playgames_no_auth_code' });
+  }
+  const credential = firebase.auth.PlayGamesAuthProvider.credential(serverAuthCode);
+  if(_onlineAuth.currentUser && _onlineAuth.currentUser.isAnonymous){
+    await _onlineAuth.currentUser.linkWithCredential(credential).catch(async (e)=>{
+      if(e && e.code === 'auth/credential-already-in-use') await _onlineAuth.signInWithCredential(credential);
+      else throw e;
+    });
+  } else {
+    await _onlineAuth.signInWithCredential(credential);
+  }
+
+  if(!_onlineAuth.currentUser) throw new Error('auth_no_user');
+  _onlineUid = _onlineAuth.currentUser.uid;
+  const name = _onlineAuth.currentUser.displayName;
+  if(name) _onlineDisplayName = name;
+  try{
+    if(typeof getPlayerProfile === 'function' && typeof savePlayerProfile === 'function'){
+      const p = getPlayerProfile();
+      if(name && (!p.nick || /^Khách#/.test(p.nick))) savePlayerProfile({ nick: name });
+    }
+  }catch(e){}
+  _onlineReady = true;
+  await _upsertPlayerProfile();
+  logGameEvent('login', { method: 'playgames' });
+  return _onlineUid;
+}
+
+async function _signInWithFacebookNative(){
+  const SocialLogin = await _ensureSocialLoginFacebook();
+  const login = await SocialLogin.login({
+    provider: 'facebook',
+    options: { permissions: ['public_profile', 'email'] }
+  });
+  const accessToken = login && login.result && (login.result.accessToken?.token || login.result.accessToken);
+  if(!accessToken){
+    throw Object.assign(new Error('facebook_no_access_token'), { code: 'facebook_no_access_token' });
+  }
+  const credential = firebase.auth.FacebookAuthProvider.credential(accessToken);
+  if(_onlineAuth.currentUser && _onlineAuth.currentUser.isAnonymous){
+    await _onlineAuth.currentUser.linkWithCredential(credential).catch(async (e)=>{
+      if(e && e.code === 'auth/credential-already-in-use') await _onlineAuth.signInWithCredential(credential);
+      else throw e;
+    });
+  } else {
+    await _onlineAuth.signInWithCredential(credential);
+  }
+}
+
 async function _ensureSocialLoginGoogle(){
   const SocialLogin = window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.SocialLogin;
   if(!SocialLogin) throw Object.assign(new Error('google_plugin_missing'), { code: 'google_plugin_missing' });
@@ -1076,6 +1255,30 @@ function friendlyOnlineAuthError(e){
   if(code.includes('google_no_id_token') || code.includes('Developer console is not set up') || code.includes('28444')){
     return (typeof t==='function' ? t('onlineAuthSha') : null)
       || 'Google Sign-In chưa khớp SHA-1. Thêm SHA-1 debug/release vào Firebase Android app rồi tải lại google-services.json';
+  }
+  if(code.includes('facebook_plugin_missing') || code.includes('facebook_app_id_missing')){
+    return (typeof t==='function' ? t('onlineAuthFbNativeSetup') : null)
+      || 'Thiếu cấu hình Facebook Login trên app — cần FACEBOOK_APP_ID + facebook_client_token (strings.xml)';
+  }
+  if(code.includes('facebook_no_access_token')){
+    return (typeof t==='function' ? t('onlineAuthFbFail') : null)
+      || 'Đăng nhập Facebook chưa lấy được access token — thử lại';
+  }
+  if(code.includes('auth/account-exists-with-different-credential')){
+    return (typeof t==='function' ? t('onlineAuthDiffCred') : null)
+      || 'Email này đã đăng ký bằng cách khác (VD: Google) — hãy đăng nhập lại đúng cách đã dùng lần đầu';
+  }
+  if(code.includes('playgames_android_only')){
+    return (typeof t==='function' ? t('onlineAuthPgWebOnly') : null)
+      || 'Đăng nhập Play Games chỉ dùng được trên app Android, không có trên web';
+  }
+  if(code.includes('playgames_plugin_missing')){
+    return (typeof t==='function' ? t('onlineAuthPgNativeSetup') : null)
+      || 'Thiếu plugin Play Games Services trên app — xem docs/ONLINE_MULTIPLAYER.md để cài';
+  }
+  if(code.includes('playgames_no_auth_code')){
+    return (typeof t==='function' ? t('onlineAuthPgFail') : null)
+      || 'Đăng nhập Play Games chưa lấy được mã xác thực — thử lại';
   }
   if(code.includes('network-request-failed')){
     return (typeof t==='function' ? t('onlineAuthNetwork') : null) || 'Mất mạng — kiểm tra kết nối rồi thử lại';
@@ -1492,6 +1695,28 @@ async function joinOnlineRoomById(roomId, opts){
   });
 }
 
+/**
+ * Chủ phòng kick khách ra khỏi phòng (chỉ áp dụng khi còn đang chờ trong phòng,
+ * chưa vào trận). Phòng KHÔNG bị xoá — quay lại trạng thái 'open' để chủ phòng vẫn
+ * ở nguyên phòng cũ và có thể chờ khách khác, giống hệt khi khách tự rời phòng.
+ * Đặt kickedGuestId để phía khách phân biệt được "bị kick" và hiện đúng thông báo,
+ * khác với việc tự mình chủ động rời phòng (không cần báo lại cho chính mình).
+ */
+async function kickRoomGuest(roomId){
+  if(!_onlineDb || !roomId || !_onlineUid) return false;
+  const ref = _onlineDb.collection('rooms').doc(roomId);
+  const snap = await ref.get();
+  if(!snap.exists) return false;
+  const d = snap.data();
+  if(d.hostId !== _onlineUid || !d.guestId) return false;
+  await ref.update({
+    guestId: null, guestName: null, guestAvatar: null, guestReady: false, status: 'open',
+    kickedGuestId: d.guestId,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  return true;
+}
+
 async function leaveOnlineRoom(roomId){
   if(!_onlineDb || !roomId) return;
   // Dừng nhịp tim ngay lập tức nếu đây là phòng mình đang host — không chờ vòng lặp tiếp theo.
@@ -1815,22 +2040,37 @@ async function updateOnlineRoomMeta(roomId, meta){
 async function sendOnlineMove(roomId, payload){
   if(!_onlineDb || !roomId) return null;
   const ref = _onlineDb.collection('rooms').doc(roomId);
-  let seqOut = null;
-  await _onlineDb.runTransaction(async tx => {
-    const snap = await tx.get(ref);
-    if(!snap.exists) return;
-    const seq = (snap.data().moveSeq || 0) + 1;
-    seqOut = seq;
-    tx.update(ref, { moveSeq: seq, currentTurn: payload && payload.nextTurn != null ? payload.nextTurn : (snap.data().currentTurn || null) });
-    const moveRef = ref.collection('moves').doc();
-    tx.set(moveRef, {
-      ...payload,
-      seq,
-      playerId: _onlineUid,
-      ts: firebase.firestore.FieldValue.serverTimestamp()
+  const attempt = async () => {
+    let seqOut = null;
+    await _onlineDb.runTransaction(async tx => {
+      const snap = await tx.get(ref);
+      if(!snap.exists) return;
+      const seq = (snap.data().moveSeq || 0) + 1;
+      seqOut = seq;
+      tx.update(ref, { moveSeq: seq, currentTurn: payload && payload.nextTurn != null ? payload.nextTurn : (snap.data().currentTurn || null) });
+      const moveRef = ref.collection('moves').doc();
+      tx.set(moveRef, {
+        ...payload,
+        seq,
+        playerId: _onlineUid,
+        ts: firebase.firestore.FieldValue.serverTimestamp()
+      });
     });
-  });
-  return seqOut;
+    return seqOut;
+  };
+  // Nếu tài liệu phòng vừa bị 1 lượt ghi khác (vd. cập nhật điểm) đụng đúng
+  // lúc transaction đang chạy, Firestore từ chối với failed-precondition và
+  // nước đi bị mất hẳn nếu chỉ thử 1 lần. Thử lại thêm vài lần cách nhau một
+  // chút để tránh mất nước đi do tranh chấp thoáng qua kiểu này.
+  for(let i=0; i<3; i++){
+    try{
+      return await attempt();
+    }catch(e){
+      if(i===2) throw e;
+      await new Promise(r=>setTimeout(r, 120*(i+1)));
+    }
+  }
+  return null;
 }
 
 async function updateOnlineScores(roomId, hostScore, guestScore){
@@ -2080,11 +2320,39 @@ async function finalizeOnlineMatch(roomId, hostScore, guestScore){
     hostScore,
     guestScore,
     winnerId,
+    endReason: 'normal',
     endedAt: firebase.firestore.FieldValue.serverTimestamp()
   });
 
   // Cộng điểm thắng/thua giờ do Cloud Function applyMatchResult xử lý
   // (kích hoạt tự động khi status của phòng chuyển sang 'finished').
+}
+
+/** Xử thua trực tiếp cho 1 bên (không so điểm) khi họ rời trận Versus online giữa
+ * chừng — bấm Thoát hoặc bị phát hiện mất kết nối. loserIsHost=true nghĩa là chủ
+ * phòng thua, khách thắng, và ngược lại. Dùng transaction để an toàn nếu cả 2 phía
+ * (người thoát tự báo + người còn lại phát hiện) cùng gọi gần như đồng thời — ai ghi
+ * trước thắng, lần gọi sau sẽ thấy status đã 'finished' và bỏ qua. */
+async function forfeitOnlineMatch(roomId, loserIsHost){
+  if(!_onlineDb || !roomId) return;
+  const ref = _onlineDb.collection('rooms').doc(roomId);
+  try{
+    await _onlineDb.runTransaction(async tx => {
+      const snap = await tx.get(ref);
+      if(!snap.exists) return;
+      const d = snap.data();
+      if(d.status === 'finished') return;
+      const winnerId = loserIsHost ? (d.guestId || null) : (d.hostId || null);
+      tx.update(ref, {
+        status: 'finished',
+        hostScore: typeof d.hostScore === 'number' ? d.hostScore : 0,
+        guestScore: typeof d.guestScore === 'number' ? d.guestScore : 0,
+        winnerId,
+        endReason: 'forfeit',
+        endedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    });
+  }catch(e){ console.warn('[online] forfeitOnlineMatch', e); }
 }
 
 async function fetchGlobalLeaderboard(limit, mode){
@@ -2183,6 +2451,35 @@ async function submitReferralCode(code){
   }
 }
 
+/**
+ * Đồng bộ vàng/kim cương/tim THẬT từ players/{uid} (server — xem functions/index.js:
+ * regenHearts/spendCurrency/exchangeCurrency/claimPeriodReward/giftHeart/
+ * revenuecatWebhook) về ví hiển thị cục bộ (inv trong js/inventory.js). Chỉ ĐỌC — mọi
+ * thay đổi số dư thật phải qua đúng Cloud Function tương ứng, hàm này không tự cộng gì.
+ * Dùng sau khi mua IAP / nhận quà referral để hiển thị đúng số THẬT server đã cộng,
+ * thay vì tự cộng cục bộ (đó chính là lỗ hổng đã vá — xem players/{uid}.gold trong
+ * firestore.rules: walletFieldsUnchanged()).
+ */
+async function syncWalletFromServer(){
+  try{
+    if(!await initOnlineServices() || !_onlineUid) return null;
+    const snap = await _onlineDb.collection('players').doc(_onlineUid).get();
+    if(!snap.exists) return null;
+    const d = snap.data() || {};
+    if(typeof inv === 'object' && inv){
+      if(d.gold != null) inv.gold = Math.max(0, Math.floor(d.gold));
+      if(d.diamonds != null) inv.diamonds = Math.max(0, Math.floor(d.diamonds));
+      if(d.hearts != null) inv.hearts = Math.max(0, Number(d.hearts));
+      if(typeof saveInventory === 'function') saveInventory();
+      if(typeof renderInventoryHud === 'function') renderInventoryHud();
+    }
+    return { gold: d.gold, diamonds: d.diamonds, hearts: d.hearts };
+  }catch(e){
+    console.warn('[online] syncWalletFromServer', e);
+    return null;
+  }
+}
+
 async function claimPendingReferralRewards(){
   if(!await initOnlineServices()) return;
   try{
@@ -2190,8 +2487,11 @@ async function claimPendingReferralRewards(){
     if(!fns) return;
     const res = await fns.httpsCallable('claimPendingRewards')({});
     const { gold, diamond } = res.data || {};
-    if(gold > 0 && typeof grantGold === 'function') grantGold(gold, '🎁 Thưởng mời bạn');
-    if(diamond > 0 && typeof grantDiamonds === 'function') grantDiamonds(diamond, '🎁 Thưởng mời bạn');
+    // Server (claimPendingRewards) đã cộng thẳng vào ví thật — chỉ cần kéo số THẬT
+    // về hiển thị, không tự grantGold/grantDiamonds cục bộ nữa (tránh cộng trùng).
+    if(gold > 0 || diamond > 0) await syncWalletFromServer();
+    if(gold > 0) try{ showComboFlash(0, false, '🪙 +'+gold+' · 🎁 Thưởng mời bạn'); }catch(e){}
+    if(diamond > 0) try{ showComboFlash(0, false, '💎 +'+diamond+' · 🎁 Thưởng mời bạn'); }catch(e){}
   }catch(e){
     console.warn('[online] claimPendingReferralRewards', e);
   }

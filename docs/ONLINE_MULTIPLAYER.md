@@ -34,6 +34,7 @@ Project settings → **Add app** → Web `</>` → copy `appId` dạng `1:470820
 |----------|------------|
 | Anonymous | **Bật** (bắt buộc — vào phòng nhanh) |
 | Google | **Bật** (app Android + web) |
+| Facebook | **Bật** (app Android + web) — xem checklist riêng bên dưới |
 
 **Authorized domains** (Authentication → Settings):
 - Luôn có: `localhost`
@@ -57,6 +58,25 @@ keytool -list -v -keystore %USERPROFILE%\.android\debug.keystore -alias androidd
 
 Nếu thấy lỗi `auth/unauthorized-domain` trên **web**: thêm domain vào Authorized domains.
 Nếu lỗi Google trên **app**: gần như chắc thiếu/sai SHA-1 hoặc dùng nhầm client ID.
+
+**Facebook Login — checklist (code đã có sẵn trong `js/online-services.js`, chỉ còn thiếu cấu hình):**
+1. Tạo app tại [Meta for Developers](https://developers.facebook.com/) → thêm sản phẩm **Facebook Login**
+2. Lấy **App ID** + **App Secret**
+3. Firebase Console → Authentication → Sign-in method → **Facebook** → dán App ID + App Secret → copy **OAuth redirect URI** Firebase đưa ra, dán lại vào Meta app (Facebook Login → Settings → Valid OAuth Redirect URIs)
+4. Web: xong bước 3 là nút "Đăng nhập Facebook" hoạt động ngay (dùng `signInWithPopup`)
+5. Android (native, không bắt buộc nếu chỉ chơi web): thêm `window.FACEBOOK_APP_ID` trong `js/firebase-config.js`, khai báo `facebook_app_id` + `facebook_client_token` trong `android/app/src/main/res/values/strings.xml`, và bật `facebook` trong cấu hình `@capgo/capacitor-social-login` (giống hệt phần Google ở trên) rồi `npm run cap:sync`
+
+**Instagram / TikTok:** Firebase Authentication **không** hỗ trợ sẵn 2 provider này (chỉ có Google/Facebook/Apple/Microsoft/Yahoo/GitHub/Twitter + email/phone + OAuth tuỳ biến). Muốn đăng nhập bằng Instagram hoặc TikTok cần tự dựng luồng OAuth riêng (đăng ký app trên Meta/TikTok developer portal, xin App ID/Secret, viết Cloud Function đổi authorization code lấy được từ Instagram/TikTok thành Firebase custom token) — là một hạng mục backend riêng, chưa làm trong repo này.
+
+**Google Play Games — checklist (chỉ chạy trên app Android, không có trên web):**
+Firebase hỗ trợ sẵn provider `Play Games` (`firebase.auth.PlayGamesAuthProvider`, đã dùng trong `signInWithPlayGames()` ở `js/online-services.js`), nhưng cần 2 phần bạn tự làm vì không test được qua trình duyệt:
+1. **Play Console → Play Games Services** → tạo/liên kết game với app Android hiện tại → lấy **OAuth client ID (Android)** và **OAuth client ID (Web)**
+2. Firebase Console → Authentication → Sign-in method → **Play Games** → dán 2 client ID trên vào
+3. Cài 1 plugin Capacitor lấy được `serverAuthCode` từ Play Games native (chưa cài sẵn trong repo — gợi ý: [`capacitor-play-games-services`](https://www.npmjs.com/package/capacitor-play-games-services) hoặc [`@openforge/capacitor-game-connect`](https://www.npmjs.com/package/@openforge/capacitor-game-connect), tự chọn plugin còn cập nhật tốt tại thời điểm cài vì mảng này ít plugin ổn định), đăng ký trong `MainActivity.java`
+4. Expose kết quả qua `window.PlayGamesSignIn = { getServerAuthCode: async () => '...' }` (điểm nối mà `signInWithPlayGames()` đang gọi) — viết 1 đoạn nhỏ gọi hàm sign-in của plugin đã chọn ở bước 3 rồi trả về `serverAuthCode`
+5. `npm run cap:sync` → Rebuild APK
+
+Nút "Đăng nhập Play Games" tự ẩn trên web/trình duyệt, chỉ hiện khi mở app Android thật.
 
 ### 1c. Firestore Database
 **Build → Firestore Database → Create database**

@@ -185,6 +185,22 @@ function sfxBeeBuzz(){
 function sfxSelect(){
   playTone(440,'sine',0.04,0.12);
 }
+function sfxCaroTick(secLeft){
+  // Tiếng đếm ngược khi sắp hết giờ lượt Caro (≤5s) — cao dần khi càng gần 0 cho cảm giác gấp gáp.
+  const s = Math.max(0, Math.min(5, secLeft));
+  const f = 520 + (5 - s) * 60;
+  playTone(f, 'square', 0.08, 0.22);
+}
+/** Có người vào phòng chờ (lobby) hoặc trận đang chơi online — Caro & Versus dùng chung. */
+function sfxRoomJoin(){
+  playTone(660,'sine',0.08,0.25,0);
+  playTone(880,'sine',0.1,0.28,0.08);
+}
+/** Có người rời phòng chờ (lobby) hoặc trận đang chơi online — nhẹ hơn sfxInvalid, không gắt. */
+function sfxRoomLeave(){
+  playTone(520,'sine',0.08,0.22,0);
+  playTone(360,'sine',0.12,0.2,0.08);
+}
 function sfxRotate(){
   playTone(500,'sine',0.05,0.15,0);
   playTone(700,'sine',0.05,0.15,0.04);

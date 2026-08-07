@@ -201,10 +201,10 @@ exports.submitSoloScore = onCall({ region: 'asia-southeast1' }, async (request) 
       tx.set(playerRef, { referralRewardPending: false }, { merge: true });
       if (count >= 20) return; // vượt giới hạn 20 lượt thưởng/ngày cho 1 người mời — chặn farm
       tx.set(db.collection('players').doc(referrerUid), {
-        referralRewardGold: FieldValue.increment(20)
+        referralRewardDiamond: FieldValue.increment(1)
       }, { merge: true });
       tx.set(playerRef, {
-        referralRewardGold: FieldValue.increment(30)
+        referralRewardDiamond: FieldValue.increment(1)
       }, { merge: true });
       tx.set(capRef, { count: count + 1 }, { merge: true });
     });

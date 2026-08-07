@@ -178,6 +178,7 @@ function openOnlineLobby(roomId, code, role, roomData){
   listenOnlineRoom(roomId, ev => {
     if(ev.type==='deleted'){
       // Phòng bị xóa → về hub, vẫn xem danh sách phòng khác
+      try{ if(typeof sfxRoomLeave==='function') sfxRoomLeave(); }catch(e){}
       stopListeningRoom();
       _onlineLobby=null;
       _onlineHide('online-lobby-panel');
@@ -186,8 +187,25 @@ function openOnlineLobby(roomId, code, role, roomData){
       return;
     }
     const d=ev.data;
+    const myUid = typeof getOnlineUid === 'function' ? getOnlineUid() : null;
+    if(_onlineLobby && _onlineLobby.role === 'guest' && myUid && d.kickedGuestId === myUid){
+      stopListeningRoom();
+      _onlineLobby=null;
+      _onlineHide('online-lobby-panel');
+      _onlineShow('online-hub-panel');
+      _onlineStartRoomListListen();
+      try{ _onlineStatus(t('roomKickedMsg', d.hostName || '?')); }catch(e){}
+      return;
+    }
+    const prevGuestId = _onlineLobby && _onlineLobby.roomData ? _onlineLobby.roomData.guestId : null;
     _onlineLobby.roomData=d;
     _renderLobby(d);
+    // Tiếng báo có người vào/rời phòng chờ — chỉ khi còn ở sảnh (chưa vào trận); lúc đang
+    // chơi thì có tiếng riêng ở _vsHandleOpponentLeft.
+    if(d.status !== 'playing'){
+      if(!prevGuestId && d.guestId){ try{ if(typeof sfxRoomJoin==='function') sfxRoomJoin(); }catch(e){} }
+      else if(prevGuestId && !d.guestId){ try{ if(typeof sfxRoomLeave==='function') sfxRoomLeave(); }catch(e){} }
+    }
     if(d.status==='playing' && d.seed!=null && !versusMode){
       enterOnlineVersusMatch(roomId, d);
     }
@@ -213,11 +231,23 @@ function _renderLobby(d){
   const guestRankHtml = (typeof getVersusRank === 'function' && d.guestName && d.guestVersusPoints != null)
     ? '<div class="versus-seat-rank">'+escapeHtml(getVersusRank(d.guestVersusPoints).icon+' '+getVersusRank(d.guestVersusPoints).name)+'</div>'
     : '';
+  const isHost = _onlineLobby && _onlineLobby.role==='host';
+  const kickBtnHtml = (isHost && d.guestName)
+    ? '<button type="button" class="caro-kick-btn" id="online-kick-guest-btn" data-name="'+escapeHtml(d.guestName)+'">'+escapeHtml(t('roomKickBtn'))+'</button>'
+    : '';
   document.getElementById('online-lobby-players').innerHTML=
     '<div class="online-player">'+hostRankHtml+'<span>👑</span> '+hostNameHtml+'</div>'+
-    '<div class="online-player">'+guestRankHtml+'<span>⚔️</span> '+guest+'</div>';
+    '<div class="online-player">'+guestRankHtml+'<span>⚔️</span> '+guest+kickBtnHtml+'</div>';
+
+  document.getElementById('online-kick-guest-btn')?.addEventListener('click', (e)=>{
+    e.preventDefault(); e.stopPropagation();
+    const gName = e.currentTarget.dataset.name || '?';
+    if(!confirm(t('roomKickConfirm', gName))) return;
+    if(typeof kickRoomGuest === 'function' && _onlineLobby && _onlineLobby.roomId){
+      kickRoomGuest(_onlineLobby.roomId).catch(()=>{});
+    }
+  });
   const startBtn=document.getElementById('online-start-btn');
-  const isHost=_onlineLobby && _onlineLobby.role==='host';
   if(startBtn){
     startBtn.style.display = (isHost && d.status==='ready' && d.guestId) ? 'block' : 'none';
   }
@@ -378,6 +408,18 @@ function enterOnlineVersusMatch(roomId, roomData){
     _vsApplyNetworkMove(move);
   });
 
+  // Phát hiện đối thủ rời trận giữa chừng (bấm Thoát/đóng tab/mất kết nối) để huỷ
+  // trận ngay cho mình, thay vì chơi tới hết giờ rồi mới biết — xem _vsHandleOpponentLeft.
+  if(typeof listenOnlineRoom === 'function'){
+    listenOnlineRoom(roomId, ev => {
+      if(!_vs || !_vs.online || _vs.online.roomId !== roomId) return;
+      if(ev.type === 'deleted'){ _vsHandleOpponentLeft(); return; }
+      const d = ev.data;
+      if(d.status === 'finished' && d.endReason === 'forfeit'){ _vsHandleOpponentLeft(); return; }
+      if(isHost && !d.guestId && d.status !== 'finished'){ _vsHandleOpponentLeft(); return; }
+    });
+  }
+
   try{ if(typeof _vsSetupChat === 'function') _vsSetupChat(true); }catch(e){}
 
   let cd=3;
@@ -404,7 +446,13 @@ function _vsTickOnline(){
   if(tm){ tm.textContent=_vs.timeLeft; tm.classList.toggle('danger',_vs.timeLeft<=10); }
   if(_vs.timeLeft<=0){ _vsEndMatchOnline(); return; }
   const [P0,P1]=_vs.players;
-  if(_vs.online.isHost){
+  if(_vs.online.isHost && (P0.score!==_vs.online._lastSentHostScore || P1.score!==_vs.online._lastSentGuestScore)){
+    // Chỉ ghi lên server khi điểm THỰC SỰ đổi (thay vì mỗi giây bất kể có gì
+    // mới hay không). Ghi ít lần hơn nghĩa là ít va chạm với transaction gửi
+    // nước đi (sendOnlineMove) vào CÙNG tài liệu phòng — bớt rủi ro nước đi
+    // bị Firestore từ chối do tranh chấp ghi đồng thời.
+    _vs.online._lastSentHostScore=P0.score;
+    _vs.online._lastSentGuestScore=P1.score;
     updateOnlineScores(_vs.online.roomId, P0.score, P1.score).catch(()=>{});
   }
   document.getElementById('burst-count').textContent='⚔️ '+P0.score+' vs '+P1.score+'  ⏱'+_vs.timeLeft+'s';
@@ -440,12 +488,24 @@ function _vsApplyNetworkMove(move){
 }
 
 function _vsApplyRemotePlace(P, move){
-  const idx=move.pieceIndex;
-  if(idx<0||idx>=P.pieces.length) return;
-  const pc=P.pieces[idx];
-  if(!pc||pc.used) return;
+  let idx=move.pieceIndex;
+  let pc=(idx>=0 && idx<P.pieces.length) ? P.pieces[idx] : null;
+  if(!pc || pc.used){
+    // Hang cho cua doi thu tren may minh bi lech nhip (VD: 1 nuoc di truoc do
+    // mat goi/bi tu choi do tranh chap ghi) khien P.pieces[idx] sai hoac da
+    // dung — thay vi am tham bo qua (lam gach doi thu ngung hien vinh vien tu
+    // day), dung thang du lieu tu mang (shape+color duoc gui kem) de tu phuc
+    // hoi thay vi phu thuoc trang thai cuc bo co the da sai.
+    if(!move.shape) return;
+    const fresh = { shape: move.shape.map(([r,c])=>[r,c]), color: move.color || VS_COLORS[0], used:false, rot:0 };
+    const freeIdx = P.pieces.findIndex(p=>p && !p.used);
+    if(freeIdx>=0){ P.pieces[freeIdx]=fresh; idx=freeIdx; }
+    else { P.pieces.push(fresh); idx=P.pieces.length-1; }
+    pc=fresh;
+  } else if(move.shape){
+    pc.shape=move.shape.map(([r,c])=>[r,c]);
+  }
   P.selected=idx;
-  if(move.shape) pc.shape=move.shape.map(([r,c])=>[r,c]);
   _vsPlaceAt(P, move.R, move.C, true);
 }
 
@@ -483,30 +543,10 @@ function onLeaveLobbyToHub(){
     try{ sfxClick(); }catch(e){}
     if(typeof openChatPanel === 'function') openChatPanel('friends');
   });
-  document.getElementById('online-google-btn')?.addEventListener('click', async ()=>{
-    const btn = document.getElementById('online-google-btn');
-    if(btn) btn.disabled = true;
-    try{
-      await signInWithGoogle();
-      _onlineStatus('Google · '+getOnlineDisplayName());
-    }catch(e){
-      const msg = typeof friendlyOnlineAuthError === 'function' ? friendlyOnlineAuthError(e) : (e && e.message);
-      if(!msg){ _onlineStatus(''); return; }
-      const soft = /unauthorized-domain|google_plugin|google_web_client|google_no_id|28444|SHA/i.test(String((e&&e.code)||e.message||'')+msg);
-      const el = document.getElementById('online-status');
-      if(el){
-        el.textContent = msg;
-        el.className = 'online-status' + (soft ? ' warn' : ' err');
-      } else {
-        _onlineStatus(msg, true);
-      }
-    }finally{
-      if(btn) btn.disabled = false;
-    }
-  });
-
   document.getElementById('online-delete-account-btn')?.addEventListener('click', async ()=>{
     const btn = document.getElementById('online-delete-account-btn');
+    const msgEl = document.getElementById('pp-msg');
+    const setMsg = (text, isErr) => { if(msgEl){ msgEl.textContent = text; msgEl.className = 'account-msg' + (isErr ? ' err' : ' ok'); } };
     const label = typeof t === 'function' ? t('onlineDeleteConfirm') : null;
     const confirmMsg = label || 'Xoá vĩnh viễn tài khoản online: hồ sơ, bạn bè, chặn, điểm BXH gần đây, tin nhắn đã gửi vẫn còn ở phía người nhận. Không thể hoàn tác. Tiếp tục?';
     if(!confirm(confirmMsg)) return;
@@ -515,17 +555,17 @@ function onLeaveLobbyToHub(){
     try{
       const res = await deleteMyAccountOnline();
       if(res && res.ok){
-        _onlineStatus((typeof t==='function'?t('onlineDeleteDone'):null) || 'Đã xoá tài khoản online.', false);
+        setMsg((typeof t==='function'?t('onlineDeleteDone'):null) || 'Đã xoá tài khoản online.', false);
         const badge = document.getElementById('online-status-badge');
         if(badge) badge.textContent = '📴';
       } else if(res && res.reason === 'requires_recent_login'){
-        _onlineStatus((typeof t==='function'?t('onlineDeleteRelogin'):null) || 'Cần đăng nhập lại gần đây để xoá tài khoản Google. Vui lòng đăng nhập lại rồi thử lại.', true);
+        setMsg((typeof t==='function'?t('onlineDeleteRelogin'):null) || 'Cần đăng nhập lại gần đây để xoá tài khoản Google. Vui lòng đăng nhập lại rồi thử lại.', true);
       } else {
-        _onlineStatus((typeof t==='function'?t('onlineDeleteFail'):null) || 'Không xoá được tài khoản, thử lại sau.', true);
+        setMsg((typeof t==='function'?t('onlineDeleteFail'):null) || 'Không xoá được tài khoản, thử lại sau.', true);
       }
     }catch(e){
       console.warn('[online] delete account', e);
-      _onlineStatus('Không xoá được tài khoản, thử lại sau.', true);
+      setMsg('Không xoá được tài khoản, thử lại sau.', true);
     }finally{
       if(btn) btn.disabled = false;
     }
