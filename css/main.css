@@ -5494,13 +5494,16 @@ body:has(#secret-stage.active) .streak-dot.lit{
 }
 .friends-invite-title{ font-size:14px; font-weight:900; color:#FFD54A; margin-bottom:4px; }
 .friends-invite-desc{ font-size:12px; font-weight:700; color:rgba(255,255,255,0.8); line-height:1.4; margin-bottom:10px; }
-.friends-invite-code-row{ display:flex; align-items:center; gap:8px; margin-bottom:10px; }
-.friends-invite-code{
-  flex:1; min-width:0; text-align:center; padding:9px 10px; border-radius:12px;
-  background:rgba(0,0,0,0.28); border:1px dashed rgba(255,213,74,0.5);
-  font-size:15px; font-weight:900; letter-spacing:2px; color:#FFD54A;
+.friends-invite-code-row{ margin-bottom:10px; }
+.friends-invite-share-btn{
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  flex-wrap:wrap;
 }
-.friends-invite-code-row .auth-submit-btn{ margin:0; flex-shrink:0; padding:0 14px; white-space:nowrap; }
+.friends-invite-code{
+  padding:3px 10px; border-radius:12px;
+  background:rgba(0,0,0,0.28); border:1px dashed rgba(26,10,0,0.4);
+  font-size:14px; font-weight:900; letter-spacing:2px; color:#1a0a00;
+}
 .friends-invite-claim-row{ display:flex; gap:8px; }
 .friends-invite-claim-row .friends-search-input{ text-transform:uppercase; }
 .pp-id-row{
