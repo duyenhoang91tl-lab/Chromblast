@@ -1,7 +1,7 @@
 /* ══════════════════════════════════════════
    TÀI KHOẢN (account-hub) — điểm vào duy nhất cho hồ sơ/cài đặt/xã hội.
-   Chỉ dựng khung sườn + nối các màn đã có sẵn (đổi tên, cài đặt, bạn bè, cửa
-   hàng, nhiệm vụ). 4 panel rỗng (account-status, account-achievements,
+   Chỉ dựng khung sườn + nối các màn đã có sẵn (đổi tên, cài đặt, bạn bè, Thẻ
+   trò chơi tab Nhiệm vụ). 4 panel rỗng (account-status, account-achievements,
    account-bag, account-groups) và account-membership sẽ được đổ nội dung ở
    các lượt sau — không đụng vào từ file này.
    Dùng nguyên getPlayerAvatarDisplay()/getPlayerNickname()/getPublicPlayerId()
@@ -43,11 +43,6 @@ function _acchubCloseSub(panelId){
 
 (function initAccountHub(){
   function bind(){
-    // Nút ☰ menu chính giờ mở "Tài khoản" thay vì mở thẳng Cài đặt — Cài đặt
-    // vẫn mở được bình thường từ dòng "Cài đặt" bên trong Tài khoản.
-    document.getElementById('account-btn')?.addEventListener('click', ()=>{
-      openAccountHub();
-    });
     document.getElementById('acchub-close-btn')?.addEventListener('click', ()=>{
       try{ sfxClick(); }catch(e){}
       closeAccountHub();
@@ -61,13 +56,13 @@ function _acchubCloseSub(panelId){
     document.getElementById('acchub-btn-membership')?.addEventListener('click', ()=>{
       _acchubOpenSub('account-membership-panel');
     });
-    document.getElementById('acchub-btn-shop')?.addEventListener('click', ()=>{
-      try{ sfxClick(); }catch(e){}
-      if(typeof openShop === 'function') openShop();
+    document.getElementById('acchub-btn-friends')?.addEventListener('click', ()=>{
+      closeAccountHub();
+      if(typeof openFriendsPanel === 'function') openFriendsPanel();
     });
     document.getElementById('acchub-btn-quests')?.addEventListener('click', ()=>{
       try{ sfxClick(); }catch(e){}
-      if(typeof openQuestsScreen === 'function') openQuestsScreen();
+      if(typeof openGpcardPanel === 'function') openGpcardPanel('quests');
     });
 
     // Danh sách 7 dòng
@@ -84,14 +79,13 @@ function _acchubCloseSub(panelId){
       _acchubOpenSub('account-groups-panel');
     });
     document.getElementById('acchub-row-rename')?.addEventListener('click', ()=>{
+      closeAccountHub();
       if(typeof openPlayerProfilePanel === 'function') openPlayerProfilePanel();
     });
     document.getElementById('acchub-row-settings')?.addEventListener('click', ()=>{
       try{ sfxClick(); }catch(e){}
+      closeAccountHub();
       if(typeof openSettingsPanel === 'function') openSettingsPanel();
-    });
-    document.getElementById('acchub-row-friends')?.addEventListener('click', ()=>{
-      if(typeof openFriendsPanel === 'function') openFriendsPanel();
     });
 
     // Nút "‹" quay lại của 5 panel con rỗng

@@ -144,6 +144,7 @@ exports.submitSoloScore = onCall({ region: 'asia-southeast1' }, async (request) 
   const prevBest = playerData.bestScore || 0;
   const displayName = playerData.displayName || 'Player';
   const avatar = playerData.avatar || '🐶';
+  const level = playerData.level || 1;
 
   if (score > prevBest) {
     await playerRef.set({
@@ -162,7 +163,7 @@ exports.submitSoloScore = onCall({ region: 'asia-southeast1' }, async (request) 
     const prev = entrySnap.exists ? (entrySnap.data().score || 0) : 0;
     if (score > prev) {
       await entryRef.set({
-        uid, name: displayName, avatar, score, country, continent,
+        uid, name: displayName, avatar, score, level, country, continent,
         updatedAt: FieldValue.serverTimestamp()
       }, { merge: true });
 

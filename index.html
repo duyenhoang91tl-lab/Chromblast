@@ -8,12 +8,12 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>ChromaBlast</title>
-<link rel="stylesheet" href="css/main.css?v=20260808h">
+<link rel="stylesheet" href="css/main.css?v=20260808i">
 <link rel="stylesheet" href="css/saga-map.css?v=20260801b">
 <link rel="stylesheet" href="css/sky-atmosphere.css?v=20260801b">
 <link rel="stylesheet" href="css/nick-fonts.css?v=20260801b">
 <link rel="stylesheet" href="css/brick-skins.css?v=20260807a">
-<link rel="stylesheet" href="css/map-boards.css?v=20260801b">
+<link rel="stylesheet" href="css/map-boards.css?v=20260808a">
 </head>
 <body class="menu-open auth-open">
 <div id="sky-atmosphere" aria-hidden="true">
@@ -687,9 +687,9 @@
             <span class="acchub-icon-circle">👑</span>
             <span class="acchub-icon-label" data-i18n="acchubMembership">Hội viên</span>
           </button>
-          <button type="button" class="acchub-icon-btn" id="acchub-btn-shop">
-            <span class="acchub-icon-circle">🛒</span>
-            <span class="acchub-icon-label" data-i18n="acchubShop">Cửa hàng</span>
+          <button type="button" class="acchub-icon-btn" id="acchub-btn-friends">
+            <span class="acchub-icon-circle">🤝</span>
+            <span class="acchub-icon-label" data-i18n="acchubFriends">Bạn bè</span>
           </button>
           <button type="button" class="acchub-icon-btn" id="acchub-btn-quests">
             <span class="acchub-icon-circle">📋</span>
@@ -725,11 +725,6 @@
           <button type="button" class="acchub-row" id="acchub-row-settings">
             <span class="acchub-row-ico">⚙️</span>
             <span class="acchub-row-label" data-i18n="acchubSettings">Cài đặt</span>
-            <span class="acchub-row-arrow">›</span>
-          </button>
-          <button type="button" class="acchub-row" id="acchub-row-friends">
-            <span class="acchub-row-ico">🤝</span>
-            <span class="acchub-row-label" data-i18n="acchubFriends">Bạn bè</span>
             <span class="acchub-row-arrow">›</span>
           </button>
         </div>
@@ -1445,9 +1440,11 @@
       </label>
     </div>
     <div id="pause-overlay" class="pause-overlay">
-      <div class="pause-title" data-i18n="pauseTitle">⏸ TẠM DỪNG</div>
-      <button type="button" id="resume-btn" class="pause-btn-primary" data-i18n="resumeBtn">▶ Tiếp tục</button>
-      <button type="button" id="pause-replay-btn" class="pause-btn-secondary" style="display:none;" data-i18n="pauseReplay">🔁 Chơi lại màn này</button>
+      <div class="pause-card">
+        <div class="pause-title" data-i18n="pauseTitle">⏸ TẠM DỪNG</div>
+        <button type="button" id="resume-btn" class="pause-btn-primary" data-i18n="resumeBtn">▶ Tiếp tục</button>
+        <button type="button" id="pause-replay-btn" class="pause-btn-secondary" style="display:none;" data-i18n="pauseReplay">🔁 Chơi lại màn này</button>
+      </div>
     </div>
     <div id="game-over-overlay">
       <div id="go-title" data-i18n="gameOverTitle">🎮 Hết lượt!</div>
@@ -1570,6 +1567,7 @@
 <script src="js/gpcard.js"></script>
 <script src="js/lb-notify.js"></script>
 <script src="js/economy-shop.js"></script>
+<script src="js/gpcard-redeem.js"></script>
 <script src="js/lucky-spin.js"></script>
 <script src="js/effects.js"></script>
 <script src="js/effects-scenery.js"></script>
