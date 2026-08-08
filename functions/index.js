@@ -573,10 +573,15 @@ exports.revenuecatWebhook = onRequest({ region: 'asia-southeast1' }, async (req,
 // client tự báo trong doc rooms — firestore.rules chỉ mới khoá được "tốc độ
 // + trần điểm", còn AI THẮNG THẬT vẫn phải suy ra từ chính các nước đi đã
 // ghi ở rooms/{roomId}/moves). Toàn bộ hàm dưới đây là bản port 1:1 từ luật
-// trong js/caro.js (CARO_SIZE, _caroCheckWin) — cùng 1 bàn 15×15, cùng luật
-// chặn 2 đầu, để kết quả chấm lại khớp tuyệt đối với luật client đang chơi.
+// trong js/caro.js (CARO_MAX_SIZE, _caroCheckWin) — cùng kích thước bàn tối
+// đa 25×25 (bàn luôn cấp phát sẵn 25×25 từ đầu ván rồi "mở khoá" hiển thị
+// khi có quân đi gần rìa vùng đang hiện — xem CARO_MAX_SIZE trong js/caro.js),
+// cùng luật chặn 2 đầu, để kết quả chấm lại khớp tuyệt đối với luật client
+// đang chơi. Trước đây hằng số này lệch với client (15 vs khi đó 30), khiến
+// mọi ván có quân đi ra ngoài 15×15 gốc bị chấm lại trả về null (không tính
+// điểm cho ai) dù có người thắng thật — đã sửa cho khớp lại.
 // ═══════════════════════════════════════════════════════════════
-const CARO_SIZE = 15;
+const CARO_SIZE = 25;
 const CARO_EMPTY = 0, CARO_X = 1, CARO_O = 2; // X = host, O = guest (xem js/caro.js: _caroStone)
 
 /** Bản port 1:1 của _caroCheckWin trong js/caro.js — luật chặn 2 đầu: 5 quân

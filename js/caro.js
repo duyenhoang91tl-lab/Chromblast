@@ -4,10 +4,10 @@
 // Host = X, Guest = O. Online dùng Firebase rooms/moves (gameType:'caro').
 //
 // KÍCH THƯỚC BÀN: mặc định hiển thị CARO_MIN_SIZE (15×15), nhưng mảng dữ
-// liệu bàn cờ LUÔN cấp phát sẵn đủ CARO_MAX_SIZE (30×30) ngay từ đầu ván,
-// căn giữa vùng 15×15 ban đầu bên trong khoảng 30×30 đó (xem _caroNewBoard).
+// liệu bàn cờ LUÔN cấp phát sẵn đủ CARO_MAX_SIZE (25×25) ngay từ đầu ván,
+// căn giữa vùng 15×15 ban đầu bên trong khoảng 25×25 đó (xem _caroNewBoard).
 // Khi có quân đặt cách rìa vùng đang hiển thị <= CARO_EXPAND_MARGIN ô, bàn
-// "mở khoá" hiện toàn bộ 30×30 (_caroMaybeExpand). Nhờ toạ độ (r,c) không
+// "mở khoá" hiện toàn bộ 25×25 (_caroMaybeExpand). Nhờ toạ độ (r,c) không
 // bao giờ đổi ý nghĩa (không dồn/lệch lại), việc mở rộng an toàn cho cả ván
 // online — 2 máy áp cùng một hàm xác định (deterministic) mỗi khi có nước đi
 // mới (dù là đi tại chỗ, AI, hay nhận qua mạng) nên luôn đồng bộ kích thước.
@@ -15,7 +15,7 @@
 
 const CARO_MIN_LEVEL = 1;
 const CARO_MIN_SIZE = 15;   // Kích thước hiển thị mặc định lúc bắt đầu ván
-const CARO_MAX_SIZE = 30;   // Kích thước tối đa sau khi mở rộng hết cỡ
+const CARO_MAX_SIZE = 25;   // Kích thước tối đa sau khi mở rộng hết cỡ
 const CARO_EXPAND_MARGIN = 2; // Đặt quân cách rìa vùng hiển thị <= N ô → mở rộng
 const CARO_EMPTY = 0;
 const CARO_X = 1; // host
@@ -150,7 +150,7 @@ function _caroGetCanvas(){
   return document.getElementById('caro-canvas');
 }
 
-/** Layout ô vuông (kích thước hiển thị động: 15×15 → tối đa 30×30, xem _caroMaybeExpand) */
+/** Layout ô vuông (kích thước hiển thị động: 15×15 → tối đa 25×25, xem _caroMaybeExpand) */
 function _caroMeasure(){
   const canvas = _caroGetCanvas();
   if(!canvas || !_caro) return null;
@@ -301,7 +301,7 @@ function _caroDrawBoard(){
   ctx.stroke();
 
   // Quân X / O — (vr,vc) là toạ độ trong vùng ĐANG HIỂN THỊ, cộng offset mới
-  // ra toạ độ thật trong mảng 30×30 cố định (xem _caroMaybeExpand).
+  // ra toạ độ thật trong mảng 25×25 cố định (xem _caroMaybeExpand).
   for(let vr = 0; vr < m.size; vr++){
     for(let vc = 0; vc < m.size; vc++){
       const v = _caro.board[vr + _caro.offR][vc + _caro.offC];
@@ -1034,7 +1034,7 @@ function _caroNewBoard(){
   return Array.from({length:CARO_MAX_SIZE}, ()=>Array(CARO_MAX_SIZE).fill(CARO_EMPTY));
 }
 
-/** Vùng 15×15 mặc định căn giữa bên trong mảng 30×30 cố định. */
+/** Vùng 15×15 mặc định căn giữa bên trong mảng 25×25 cố định. */
 function _caroInitWindow(){
   const off = (CARO_MAX_SIZE - CARO_MIN_SIZE) >> 1; // 7 — lệch 1 ô so với phía đối diện, không đáng kể
   return { size: CARO_MIN_SIZE, offR: off, offC: off };
