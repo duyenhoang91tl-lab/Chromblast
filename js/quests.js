@@ -505,6 +505,11 @@
       "leaderboard-panel",
       "settings-panel",
       "settings-more-panel",
+      "gpcard-sub-rewards",
+      "gpcard-sub-quests",
+      "gpcard-sub-redeem",
+      "gpcard-sub-leaderboard",
+      "gpcard-panel",
     ].forEach(function (id) {
       document.getElementById(id)?.classList.remove("show");
     });

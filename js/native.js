@@ -219,6 +219,7 @@
   const CLOSABLE_PANELS = [
     'maphelp-panel','roundguide-panel','hiddenmap-menu-panel',
     'daily-panel','leaderboard-panel','account-panel','help-panel','unlock-overlay','saga-map-screen',
+    'gpcard-sub-rewards','gpcard-sub-quests','gpcard-sub-redeem','gpcard-sub-leaderboard','gpcard-panel',
     'versus-setup-panel','versus-result-panel','online-hub-panel','online-lobby-panel','online-matchmaking-panel',
     'caro-hub-panel','caro-lobby-panel','caro-mm-panel','caro-result-panel','caro-rank-panel','caro-settings-panel',
     'player-profile-panel','player-card-panel',

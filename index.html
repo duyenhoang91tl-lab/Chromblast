@@ -869,6 +869,49 @@
     </div>
   </div>
 
+  <!-- "Thẻ trò chơi" — điểm vào mới cho mục Xếp hạng: header cấp/XP + 4 tab
+       (Phần thưởng/Nhiệm vụ/Đi đổi/Bảng xếp hạng), mỗi tab mở 1 panel toàn màn
+       hình trượt từ phải sang. Nội dung 4 tab (#gpcard-rewards/quests/redeem/
+       leaderboard) do các phần việc riêng đổ vào — đây chỉ là khung sườn. -->
+  <div id="gpcard-panel" class="admin-panel-like">
+    <div class="gpcard-shell">
+      <div class="gpcard-header">
+        <div class="gpcard-header-top">
+          <span class="gpcard-header-icon">🎫</span>
+          <div class="gpcard-header-info">
+            <div class="gpcard-lv" id="gpcard-lv">Lv.1</div>
+            <div class="gpcard-xp-bar"><span id="gpcard-xp-fill" class="gpcard-xp-fill"></span></div>
+            <div class="gpcard-xp-text" id="gpcard-xp-text">0 / 100</div>
+          </div>
+          <button type="button" class="gpcard-upgrade-btn" id="gpcard-upgrade-btn" data-i18n="gpcardUpgrade">Nâng cấp</button>
+        </div>
+        <button type="button" class="gpcard-close" id="gpcard-close-btn">✕</button>
+      </div>
+      <div class="gpcard-tabs">
+        <button type="button" class="gpcard-tab" data-gpcard-tab="rewards" data-i18n="gpcardTabRewards">Phần thưởng</button>
+        <button type="button" class="gpcard-tab" data-gpcard-tab="quests" data-i18n="gpcardTabQuests">Nhiệm vụ</button>
+        <button type="button" class="gpcard-tab" data-gpcard-tab="redeem" data-i18n="gpcardTabRedeem">Đi đổi</button>
+        <button type="button" class="gpcard-tab" data-gpcard-tab="leaderboard" data-i18n="gpcardTabLeaderboard">Bảng xếp hạng</button>
+      </div>
+    </div>
+    <div id="gpcard-sub-rewards" class="gpcard-sub">
+      <button type="button" class="gpcard-back-btn" data-gpcard-back>‹</button>
+      <div id="gpcard-rewards" class="gpcard-sub-body"></div>
+    </div>
+    <div id="gpcard-sub-quests" class="gpcard-sub">
+      <button type="button" class="gpcard-back-btn" data-gpcard-back>‹</button>
+      <div id="gpcard-quests" class="gpcard-sub-body"></div>
+    </div>
+    <div id="gpcard-sub-redeem" class="gpcard-sub">
+      <button type="button" class="gpcard-back-btn" data-gpcard-back>‹</button>
+      <div id="gpcard-redeem" class="gpcard-sub-body"></div>
+    </div>
+    <div id="gpcard-sub-leaderboard" class="gpcard-sub">
+      <button type="button" class="gpcard-back-btn" data-gpcard-back>‹</button>
+      <div id="gpcard-leaderboard" class="gpcard-sub-body"></div>
+    </div>
+  </div>
+
   <div id="friends-panel" class="friends-screen" aria-hidden="true">
     <div class="friends-shell">
       <div class="friends-head">
@@ -1431,6 +1474,7 @@
 <script src="js/quests.js"></script>
 <script src="js/lb-period.js"></script>
 <script src="js/leaderboard.js"></script>
+<script src="js/gpcard.js"></script>
 <script src="js/lb-notify.js"></script>
 <script src="js/economy-shop.js"></script>
 <script src="js/lucky-spin.js"></script>

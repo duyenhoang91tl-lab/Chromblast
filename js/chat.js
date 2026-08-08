@@ -1079,7 +1079,7 @@
     // Đóng menu + overlay khác → màn Bạn bè là màn hình mới hoàn toàn
     try{ if(typeof closeAllSettingsOverlays==='function') closeAllSettingsOverlays(); }catch(e){}
     try{ if(typeof closeSettingsHub==='function') closeSettingsHub(); }catch(e){}
-    ['daily-panel','shop-panel','quests-screen','account-panel','player-profile-panel','leaderboard-panel']
+    ['daily-panel','shop-panel','quests-screen','account-panel','player-profile-panel','leaderboard-panel','gpcard-sub-rewards','gpcard-sub-quests','gpcard-sub-redeem','gpcard-sub-leaderboard','gpcard-panel']
       .forEach(id=>{ document.getElementById(id)?.classList.remove('show'); });
     panel.classList.add('show');
     panel.setAttribute('aria-hidden', 'false');

@@ -329,14 +329,9 @@ function initLeaderboardPanel(){
     panel.classList.add('show');
   }
   function closePanel(){ panel.classList.remove('show'); }
-  btn.addEventListener('click', openPanel);
-  // Nút trong Settings Hub (☰ → Xếp hạng) — leaderboard-btn ở header chính bị ẩn ở
-  // chế độ HUD gọn (hud-arcade) nên đây là lối vào thực tế duy nhất cho hầu hết người
-  // chơi. Đóng Settings Hub trước khi mở, giống cách các nút set-btn-* khác đang làm.
-  document.getElementById('set-btn-leaderboard')?.addEventListener('click', ()=>{
-    document.getElementById('settings-panel')?.classList.remove('show');
-    openPanel();
-  });
+  // leaderboard-btn / set-btn-leaderboard giờ mở "Thẻ trò chơi" (xem
+  // js/gpcard.js: openGpcardPanel) thay vì gọi thẳng openPanel() ở đây — không
+  // còn gắn listener ở 2 nút đó nữa để tránh mở chồng 2 panel cùng lúc.
   document.getElementById('leaderboard-close-btn').addEventListener('click', closePanel);
   panel.addEventListener('click', (e) => { if(e.target === panel) closePanel(); });
 }
