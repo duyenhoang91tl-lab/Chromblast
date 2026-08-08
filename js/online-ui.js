@@ -5,6 +5,10 @@
 
 let _onlineLobby = null; // { roomId, code, role:'host'|'guest', roomData }
 let _onlineLastOpenRooms = [];
+let _wagerOn = false;
+let _wagerCurrency = 'gold';
+let _wagerAmount = 0;
+const WAGER_PRESETS = { gold: [10, 25, 50, 100], diamond: [1, 2, 5] };
 
 function _onlineShow(id){ const el=document.getElementById(id); if(el) el.classList.add('show'); }
 function _onlineHide(id){ const el=document.getElementById(id); if(el) el.classList.remove('show'); }
@@ -86,12 +90,15 @@ function _onlineRenderRoomListTo(listId, emptyId, rooms){
     const mine = uid && r.hostId === uid;
     const here = hereId && r.roomId === hereId;
     const name = escapeHtml(r.hostName || 'Host');
+    const wagerBadge = (Number(r.wagerAmount) > 0 && (r.wagerCurrency === 'gold' || r.wagerCurrency === 'diamond'))
+      ? ' <span class="online-room-wager-badge">'+(r.wagerCurrency==='gold'?'🪙':'💎')+' '+r.wagerAmount+'</span>'
+      : '';
     const joinLabel = here
       ? (typeof t==='function'?t('onlineRoomHere'):'Đang ở')
       : (mine ? (typeof t==='function'?t('caroRoomMine'):'Của bạn') : (typeof t==='function'?t('caroRoomJoin'):'Vào'));
     return '<button type="button" class="caro-room-row'+(mine||here?' mine':'')+'" data-room="'+r.roomId+'">'+
       '<span class="caro-room-no">#'+no+'</span>'+
-      '<span class="caro-room-info"><b>'+name+(here?' <span class="online-you-here">'+(typeof t==='function'?t('onlineYouHere'):'Bạn')+'</span>':'')+'</b>'+
+      '<span class="caro-room-info"><b>'+name+wagerBadge+(here?' <span class="online-you-here">'+(typeof t==='function'?t('onlineYouHere'):'Bạn')+'</span>':'')+'</b>'+
       '<small>'+(r.code ? escapeHtml(r.code) : '')+'</small></span>'+
       '<span class="caro-room-action">'+joinLabel+'</span></button>';
   }).join('');
@@ -245,6 +252,16 @@ function _renderLobby(d){
   document.getElementById('online-lobby-players').innerHTML=
     '<div class="online-player">'+hostRankHtml+'<span>👑</span> '+hostNameHtml+'</div>'+
     '<div class="online-player">'+guestRankHtml+'<span>⚔️</span> '+guest+kickBtnHtml+'</div>';
+  const wagerEl = document.getElementById('online-lobby-wager');
+  if(wagerEl){
+    if(Number(d.wagerAmount) > 0 && (d.wagerCurrency==='gold' || d.wagerCurrency==='diamond')){
+      const label = typeof t==='function' ? t('onlineLobbyWager') : 'Cược:';
+      wagerEl.textContent = label + ' ' + (d.wagerCurrency==='gold' ? '🪙 ' : '💎 ') + d.wagerAmount + ' (' + (typeof t==='function'?t('onlineLobbyWagerPot','thắng ăn x2'):'thắng ăn x2') + ')';
+      wagerEl.style.display = '';
+    } else {
+      wagerEl.style.display = 'none';
+    }
+  }
 
   document.getElementById('online-kick-guest-btn')?.addEventListener('click', (e)=>{
     e.preventDefault(); e.stopPropagation();
@@ -274,7 +291,10 @@ async function onCreateRoom(){
       _onlineLobby = null;
       if(!wasHost) await leaveOnlineRoom(prev);
     }
-    const created = await createOnlineRoom({ gameType:'versus' });
+    const wagerOpts = _wagerOn && _wagerAmount > 0
+      ? { wagerCurrency: _wagerCurrency, wagerAmount: _wagerAmount }
+      : {};
+    const created = await createOnlineRoom(Object.assign({ gameType:'versus' }, wagerOpts));
     const room = created.room || { status:'open', hostName:getOnlineDisplayName(), gameType:'versus' };
     openOnlineLobby(created.roomId, created.code, 'host', Object.assign({}, room, {
       roomId: created.roomId,
@@ -401,12 +421,35 @@ function enterOnlineVersusMatch(roomId, roomData){
           oppSkins: {
             brickSkin: isHost ? roomData.guestBrickSkin : roomData.hostBrickSkin,
             boardSkin:  isHost ? roomData.guestBoardSkin  : roomData.hostBoardSkin
-          }
+          },
+          wager: (Number(roomData.wagerAmount) > 0 && (roomData.wagerCurrency === 'gold' || roomData.wagerCurrency === 'diamond'))
+            ? { currency: roomData.wagerCurrency, amount: Math.floor(roomData.wagerAmount) }
+            : null
         } };
   versusMode=true;
   try{ if(typeof logGameEvent==='function') logGameEvent('versus_match_start', { mode:'online' }); }catch(e){}
   _vsBuildArena();
   _vs.players.forEach(P=>{ _vsRefill(P); _vsRenderAll(P); });
+
+  // Đặt cược (nếu phòng có) — chạy nền, KHÔNG chặn đếm ngược 3-2-1. Server (escrowWager)
+  // tự kiểm tra số dư thật, không tin gì từ client. Nếu trừ được → hiện mức cược lên HUD;
+  // nếu KHÔNG trừ được (hết tiền/đổi ví giữa chừng) → huỷ trận ngay cho công bằng, đối thủ
+  // (nếu đã trừ được phần của họ) sẽ tự được hoàn lại qua applyMatchResult (không phải cả
+  // 2 bên đều escrow thành công thì hoàn, xem functions/index.js).
+  if(_vs.online.wager){
+    const w = _vs.online.wager;
+    try{
+      showHint((w.currency==='gold' ? '🪙 ' : '💎 ') + w.amount + ' · ' + (typeof t==='function'?t('vsWagerLive','Đang cược'):'Đang cược'), { hold: 2200 });
+    }catch(e){}
+    escrowMyWager(roomId).then(res=>{
+      if(!_vs || !_vs.online || _vs.online.roomId !== roomId) return; // đã thoát trận trước khi escrow xong
+      if(!res.ok){
+        try{ showHint((typeof t==='function'?t('vsWagerFail','Không đủ tiền cược — huỷ trận'):'Không đủ tiền cược — huỷ trận'), { hold: 3200 }); }catch(e){}
+        _vsAbort();
+        try{ if(typeof openVersusSetup === 'function') openVersusSetup(); }catch(e){}
+      }
+    });
+  }
 
   listenOnlineMoves(roomId, move => {
     if(!_vs || !_vs.online) return;
@@ -469,10 +512,25 @@ function _vsEndMatchOnline(){
   if(!_vs) return;
   if(_vs.timer){ clearInterval(_vs.timer); _vs.timer=null; }
   const roomId=_vs.online?.roomId;
+  const wager=_vs.online?.wager;
   const [P0,P1]=_vs.players;
   const hostScore=P0.score, guestScore=P1.score;
   if(_vs.online?.isHost && roomId){
     finalizeOnlineMatch(roomId, hostScore, guestScore).catch(()=>{});
+  }
+  // Cược (nếu có) được server (applyMatchResult, Cloud Function trigger khi phòng
+  // chuyển 'finished') xử lý — không phải ngay lập tức. Đợi 1 chút rồi kéo lại số dư
+  // thật về HUD + báo kết quả, thay vì hỏi ngay lúc chưa kịp xử lý xong.
+  if(wager && typeof syncWalletFromServer === 'function'){
+    setTimeout(()=>{
+      syncWalletFromServer().then(w=>{
+        if(!w) return;
+        try{
+          const label = (wager.currency==='gold' ? '🪙 ' : '💎 ') + (wager.currency==='gold' ? (w.gold|0) : (w.diamonds|0));
+          showComboFlash(0, false, label + ' · ' + (typeof t==='function'?t('onlineLobbyWager','Cược:'):'Cược:'));
+        }catch(e){}
+      });
+    }, 2500);
   }
   stopListeningRoom();
   _onlineLobby=null;
@@ -539,6 +597,55 @@ function onLeaveLobbyToHub(){
   document.getElementById('vs-local-btn')?.addEventListener('click', backToVersusLocal);
   document.getElementById('online-local-btn')?.addEventListener('click', backToVersusLocal);
   document.getElementById('online-hub-close')?.addEventListener('click', closeOnlineHub);
+  function renderWagerAmounts(){
+    const box = document.getElementById('online-wager-amounts');
+    if(!box) return;
+    const presets = WAGER_PRESETS[_wagerCurrency] || WAGER_PRESETS.gold;
+    if(presets.indexOf(_wagerAmount) < 0) _wagerAmount = presets[0];
+    box.innerHTML = '';
+    presets.forEach(function(n){
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'online-wager-amt-btn' + (n === _wagerAmount ? ' active' : '');
+      b.textContent = (_wagerCurrency === 'gold' ? '🪙 ' : '💎 ') + n;
+      b.addEventListener('click', function(){
+        try{ sfxClick(); }catch(e){}
+        _wagerAmount = n;
+        renderWagerAmounts();
+      });
+      box.appendChild(b);
+    });
+  }
+  document.getElementById('online-wager-toggle')?.addEventListener('click', function(){
+    try{ sfxClick(); }catch(e){}
+    _wagerOn = !_wagerOn;
+    this.classList.toggle('active', _wagerOn);
+    const picker = document.getElementById('online-wager-picker');
+    if(picker) picker.hidden = !_wagerOn;
+    if(_wagerOn){
+      renderWagerAmounts();
+      const balEl = document.getElementById('online-wager-balance');
+      if(balEl){
+        balEl.textContent = typeof t==='function' ? t('onlineWagerBalanceLoading','Đang kiểm tra số dư...') : '...';
+        if(typeof syncWalletFromServer === 'function'){
+          syncWalletFromServer().then(function(w){
+            if(!w || !balEl.isConnected) return;
+            const label = typeof t==='function' ? t('onlineWagerBalance','Số dư thật của bạn') : 'Số dư thật của bạn';
+            balEl.textContent = label + ': 🪙 ' + (w.gold|0) + ' · 💎 ' + (w.diamonds|0);
+          });
+        }
+      }
+    }
+  });
+  document.querySelectorAll('.online-wager-cur-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      try{ sfxClick(); }catch(e){}
+      _wagerCurrency = btn.getAttribute('data-cur') === 'diamond' ? 'diamond' : 'gold';
+      _wagerAmount = 0;
+      document.querySelectorAll('.online-wager-cur-btn').forEach(function(b){ b.classList.toggle('active', b === btn); });
+      renderWagerAmounts();
+    });
+  });
   document.getElementById('online-create-btn')?.addEventListener('click', onCreateRoom);
   document.getElementById('online-lobby-create')?.addEventListener('click', onCreateRoom);
   document.getElementById('online-join-btn')?.addEventListener('click', onJoinRoom);

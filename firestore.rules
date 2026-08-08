@@ -224,6 +224,25 @@ service cloud.firestore {
             || request.resource.data.guestId != request.resource.data.hostId)
         && (!('status' in request.resource.data) || request.resource.data.status != 'finished')
         && (!('winnerId' in request.resource.data) || request.resource.data.winnerId == null)
+        // Cược vàng/kim cương (tuỳ chọn, đặt lúc tạo phòng): không cược thì bỏ qua các field
+        // này hoặc để 0; có cược thì phải là số dương hợp lý + đúng loại tiền tệ. Cờ escrow/
+        // settled TUYỆT ĐỐI không được tự nhận đã escrow/settled ngay lúc tạo phòng — chỉ
+        // Cloud Function (escrowWager/applyMatchResult, Admin SDK) mới ghi được các cờ này,
+        // xem fieldLocked() ở allow update bên dưới.
+        && (
+          !('wagerAmount' in request.resource.data)
+          || request.resource.data.wagerAmount == 0
+          || (
+            request.resource.data.wagerAmount is number
+            && request.resource.data.wagerAmount > 0
+            && request.resource.data.wagerAmount <= 10000
+            && ('wagerCurrency' in request.resource.data)
+            && request.resource.data.wagerCurrency in ['gold', 'diamond']
+          )
+        )
+        && (!('hostEscrowed' in request.resource.data) || request.resource.data.hostEscrowed == false)
+        && (!('guestEscrowed' in request.resource.data) || request.resource.data.guestEscrowed == false)
+        && (!('wagerSettled' in request.resource.data) || request.resource.data.wagerSettled == false)
         // createdAt phải là mốc server thật (không tự đặt lùi về quá khứ được) — đây là
         // "đồng hồ" mà roomFinishOk() dựa vào để chặn báo thắng khống tức thời.
         && request.resource.data.createdAt == request.time;
@@ -256,6 +275,12 @@ service cloud.firestore {
             || request.resource.data.winnerId == null
             || request.resource.data.winnerId == request.resource.data.hostId
             || request.resource.data.winnerId == request.resource.data.guestId)
+        // Cược: số tiền/loại tiền bất biến sau khi tạo phòng (không cho đổi mức cược giữa
+        // chừng sau khi đối thủ đã vào — chặn kiểu nâng/hạ cược lừa đối thủ). Cờ escrow/
+        // settled chỉ Cloud Function ghi được (escrowWager/applyMatchResult) — client update
+        // KHÔNG được tự set các cờ này dù đúng hay sai giá trị.
+        && fieldLocked('wagerAmount') && fieldLocked('wagerCurrency')
+        && fieldLocked('hostEscrowed') && fieldLocked('guestEscrowed') && fieldLocked('wagerSettled')
         && roomFinishOk();
       // Chủ phòng luôn được tự xoá phòng của mình. Ngoài ra, BẤT KỲ ai đã đăng nhập cũng
       // được xoá một phòng nếu "nhịp tim" (lastSeen, nay ở collection roomPresence riêng —

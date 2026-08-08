@@ -1,5 +1,5 @@
 const { setGlobalOptions } = require('firebase-functions/v2');
-const { onDocumentCreated, onDocumentUpdated } = require('firebase-functions/v2/firestore');
+const { onDocumentCreated, onDocumentUpdated, onDocumentDeleted } = require('firebase-functions/v2/firestore');
 const { onCall, onRequest, HttpsError } = require('firebase-functions/v2/https');
 const { initializeApp } = require('firebase-admin/app');
 const { getFirestore, FieldValue, Timestamp } = require('firebase-admin/firestore');
@@ -418,6 +418,61 @@ exports.exchangeCurrency = onCall({ region: 'asia-southeast1' }, async (request)
   });
 });
 
+/**
+ * Đặt cược vàng/kim cương khi vào trận Đấu 1-1 online (Caro hoặc Versus) — trừ
+ * đúng số dư THẬT của người gọi (transaction, không tin số dư client báo) VÀ
+ * đánh dấu đã đặt cược ngay trên chính room đó, atomic trong CÙNG 1 transaction
+ * (tránh trường hợp trừ tiền xong nhưng mất mạng giữa chừng không kịp ghi nhận
+ * vào room — applyMatchResult sẽ không biết để hoàn lại). Gọi 1 lần/người/phòng,
+ * gọi lại lần 2 chỉ trả về already:true, không trừ thêm.
+ * data: { roomId }
+ */
+exports.escrowWager = onCall({ region: 'asia-southeast1' }, async (request) => {
+  const uid = request.auth && request.auth.uid;
+  if (!uid) throw new HttpsError('unauthenticated', 'Cần đăng nhập.');
+  const roomId = request.data && request.data.roomId;
+  if (!roomId || typeof roomId !== 'string') throw new HttpsError('invalid-argument', 'Thiếu roomId.');
+
+  const roomRef = db.collection('rooms').doc(roomId);
+  const playerRef = db.collection('players').doc(uid);
+
+  return db.runTransaction(async (tx) => {
+    const roomSnap = await tx.get(roomRef);
+    if (!roomSnap.exists) throw new HttpsError('not-found', 'Phòng không tồn tại.');
+    const room = roomSnap.data();
+
+    if (room.status === 'finished') throw new HttpsError('failed-precondition', 'Trận đã kết thúc.');
+    const isHost = room.hostId === uid;
+    const isGuest = room.guestId === uid;
+    if (!isHost && !isGuest) throw new HttpsError('permission-denied', 'Bạn không phải người chơi trong phòng này.');
+
+    const amount = Math.floor(Number(room.wagerAmount) || 0);
+    const currency = room.wagerCurrency;
+    if (!(amount > 0) || (currency !== 'gold' && currency !== 'diamond')) {
+      throw new HttpsError('failed-precondition', 'Phòng này không đặt cược.');
+    }
+
+    const escrowKey = isHost ? 'hostEscrowed' : 'guestEscrowed';
+    if (room[escrowKey]) return { ok: true, already: true };
+
+    const playerSnap = await tx.get(playerRef);
+    if (!playerSnap.exists) throw new HttpsError('failed-precondition', 'Chưa có ví.');
+    const w = walletOf(playerSnap.data());
+    const balance = currency === 'gold' ? w.gold : w.diamonds;
+    if (balance < amount) {
+      throw new HttpsError(
+        'failed-precondition',
+        currency === 'gold' ? 'Không đủ vàng để đặt cược.' : 'Không đủ kim cương để đặt cược.'
+      );
+    }
+
+    const field = currency === 'gold' ? 'gold' : 'diamonds';
+    tx.set(playerRef, { [field]: FieldValue.increment(-amount) }, { merge: true });
+    tx.set(roomRef, { [escrowKey]: true }, { merge: true });
+    return { ok: true, already: false, balanceAfter: balance - amount };
+  });
+});
+
 /** Bảng quà theo hạng BXH kỳ — port 1:1 từ js/lb-period.js (REWARD_TABLE). Kim
  * cương chỉ top 1–3, vàng tới top 100. */
 const PERIOD_REWARD_TABLE = {
@@ -661,6 +716,32 @@ exports.applyMatchResult = onDocumentUpdated(
     const hostId = after.hostId, guestId = after.guestId;
     if (!hostId || !guestId) return null;
 
+    // Cược vàng/kim cương (nếu phòng có đặt cược, xem escrowWager) — thắng thật ăn
+    // trọn 2 phần cược, hoà/không xác định được thắng thua thật thì hoàn lại đúng
+    // phần mỗi bên đã đặt (không ai mất tiền oan). Chỉ chạy 1 lần (wagerSettled),
+    // và chỉ hoàn/trả cho bên ĐÃ escrow thật (tránh phát sinh tiền từ hư không nếu
+    // 1 bên chưa kịp đặt cược mà trận đã kết thúc vì lý do khác).
+    const settleWager = async (finalWinnerId) => {
+      if (after.wagerSettled) return;
+      const amount = Math.floor(Number(after.wagerAmount) || 0);
+      const currency = after.wagerCurrency;
+      if (!(amount > 0) || (currency !== 'gold' && currency !== 'diamond')) return;
+      const field = currency === 'gold' ? 'gold' : 'diamonds';
+      const hostIn = !!after.hostEscrowed;
+      const guestIn = !!after.guestEscrowed;
+      if (hostIn && guestIn && (finalWinnerId === hostId || finalWinnerId === guestId)) {
+        await db.collection('players').doc(finalWinnerId).set(
+          { [field]: FieldValue.increment(amount * 2) }, { merge: true }
+        );
+      } else {
+        // Hoà, hoặc không xác định được thắng thua thật, hoặc chỉ 1 bên đặt cược
+        // thành công (bên kia lỗi/mất mạng giữa chừng) → hoàn đúng phần đã trừ.
+        if (hostIn) await db.collection('players').doc(hostId).set({ [field]: FieldValue.increment(amount) }, { merge: true });
+        if (guestIn) await db.collection('players').doc(guestId).set({ [field]: FieldValue.increment(amount) }, { merge: true });
+      }
+      await event.data.after.ref.set({ wagerSettled: true }, { merge: true }).catch(() => {});
+    };
+
     if (after.gameType === 'caro') {
       // Không tin thẳng after.winnerId/after.isDraw (client tự ghi được) — chấm lại từ
       // lịch sử nước đi thật (rooms/{roomId}/moves, chỉ Admin SDK mới đọc ở đây, và
@@ -668,7 +749,9 @@ exports.applyMatchResult = onDocumentUpdated(
       const real = await replayCaroMatch(event.params.roomId, hostId, guestId);
       if (!real) {
         // Lịch sử nước đi không đủ để xác nhận thắng/thua/hoà thật (ví dụ báo finished
-        // khống mà không hề chơi) → không cộng/trừ điểm cho ai, chỉ đánh dấu đã xử lý.
+        // khống mà không hề chơi) → không cộng/trừ điểm cho ai, hoàn cược nếu có,
+        // chỉ đánh dấu đã xử lý.
+        await settleWager(null);
         await event.data.after.ref.set({ statsApplied: true }, { merge: true }).catch(() => {});
         return null;
       }
@@ -704,6 +787,7 @@ exports.applyMatchResult = onDocumentUpdated(
         await applyPlayer(guestId, 'win');
         await applyPlayer(hostId, 'loss');
       }
+      await settleWager(isDraw ? null : winnerId);
     } else {
       const hostScore = Number(after.hostScore) || 0;
       const guestScore = Number(after.guestScore) || 0;
@@ -735,9 +819,40 @@ exports.applyMatchResult = onDocumentUpdated(
         if (u.score > prevBest) patch.bestPvpScore = u.score;
         await ref.set(patch, { merge: true });
       }));
+      await settleWager(winnerId);
     }
 
     await event.data.after.ref.set({ statsApplied: true }, { merge: true }).catch(() => {});
+    return null;
+  }
+);
+
+/**
+ * Lưới an toàn: nếu room bị XOÁ (VD dọn phòng "chết" do cả 2 mất mạng — xem
+ * firestore.rules: allow delete khi lastSeen im quá 15s) TRƯỚC KHI kịp chuyển
+ * 'finished', mà đã có cược escrow chưa được settle, thì hoàn lại đúng phần
+ * mỗi bên đã đặt — không để tiền bị trừ mà kẹt lại vĩnh viễn không ai được trả.
+ * onDocumentDeleted không có "before/after" như update, chỉ có data() của bản
+ * cuối cùng trước khi xoá.
+ */
+exports.refundAbandonedWager = onDocumentDeleted(
+  { document: 'rooms/{roomId}', region: 'asia-southeast1' },
+  async (event) => {
+    const data = event.data ? event.data.data() : null;
+    if (!data) return null;
+    if (data.status === 'finished' || data.wagerSettled) return null;
+    const amount = Math.floor(Number(data.wagerAmount) || 0);
+    const currency = data.wagerCurrency;
+    if (!(amount > 0) || (currency !== 'gold' && currency !== 'diamond')) return null;
+    const field = currency === 'gold' ? 'gold' : 'diamonds';
+    const jobs = [];
+    if (data.hostEscrowed && data.hostId) {
+      jobs.push(db.collection('players').doc(data.hostId).set({ [field]: FieldValue.increment(amount) }, { merge: true }));
+    }
+    if (data.guestEscrowed && data.guestId) {
+      jobs.push(db.collection('players').doc(data.guestId).set({ [field]: FieldValue.increment(amount) }, { merge: true }));
+    }
+    await Promise.all(jobs);
     return null;
   }
 );

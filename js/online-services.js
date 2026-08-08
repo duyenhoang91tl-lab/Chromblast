@@ -1607,6 +1607,14 @@ async function createOnlineRoom(opts){
     guestVersusPoints: null,
     guestBrickSkin: null,
     guestBoardSkin: null,
+    // Cược vàng/kim cương (tuỳ chọn) — số tiền/loại tiền bất biến sau khi tạo (rules khoá),
+    // hostEscrowed/guestEscrowed/wagerSettled CHỈ escrowWager/applyMatchResult (Cloud
+    // Function) ghi được, ở đây chỉ khởi tạo false.
+    wagerCurrency: (opts.wagerCurrency === 'gold' || opts.wagerCurrency === 'diamond') ? opts.wagerCurrency : null,
+    wagerAmount: (Number(opts.wagerAmount) > 0) ? Math.min(10000, Math.floor(opts.wagerAmount)) : 0,
+    hostEscrowed: false,
+    guestEscrowed: false,
+    wagerSettled: false,
     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
     updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
     lastSeen: firebase.firestore.FieldValue.serverTimestamp()
@@ -2451,6 +2459,27 @@ async function submitPeriodScoreOnline(score, region){
     await fns.httpsCallable('submitSoloScore')({ score: Math.floor(score), region });
   }catch(e){
     console.warn('[online] submitPeriodScoreOnline', e);
+  }
+}
+
+/**
+ * Đặt cược của MÌNH khi vào trận (xem functions/index.js: escrowWager) — trừ thẳng
+ * ví SERVER thật, không tự trừ inv cục bộ (đó là đúng lỗ hổng đã vá). Gọi 1 lần khi
+ * trận thật sự bắt đầu (status→'playing'), cả host lẫn guest đều tự gọi cho phần
+ * của mình. Sau khi trừ thành công, kéo lại số dư thật về HUD (syncWalletFromServer)
+ * để người chơi thấy đúng số còn lại ngay, không đợi lần đồng bộ kế tiếp.
+ */
+async function escrowMyWager(roomId){
+  if(!roomId) return { ok:false, reason:'no_room' };
+  if(!await initOnlineServices()) return { ok:false, reason:'offline' };
+  try{
+    const fns = _getOnlineFunctions();
+    if(!fns) return { ok:false, reason:'no_functions' };
+    await fns.httpsCallable('escrowWager')({ roomId });
+    try{ await syncWalletFromServer(); }catch(e){}
+    return { ok:true };
+  }catch(e){
+    return { ok:false, reason: (e && e.code) || 'error', message: (e && e.message) || '' };
   }
 }
 

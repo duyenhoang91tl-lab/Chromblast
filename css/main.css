@@ -1004,6 +1004,36 @@ body.tutorial-open #start-screen{
   font-size:11px; font-weight:800; cursor:pointer;
 }
 .online-delete-account-btn:hover { background:rgba(255,82,82,0.16); }
+
+.online-wager-block{ margin-top:10px; }
+.online-wager-toggle{
+  display:block; width:100%; border:1px solid rgba(255,213,74,0.35); background:rgba(255,213,74,0.08);
+  color:#ffd54a; border-radius:10px; padding:9px 10px; font-size:12px; font-weight:800; cursor:pointer;
+}
+.online-wager-toggle.active{ background:rgba(255,213,74,0.18); }
+.online-wager-picker{
+  margin-top:8px; padding:10px; border-radius:12px; border:1px solid rgba(255,213,74,0.25);
+  background:rgba(255,213,74,0.05);
+}
+.online-wager-currency{ display:flex; gap:6px; margin-bottom:8px; }
+.online-wager-cur-btn{
+  flex:1; border:1px solid rgba(255,255,255,0.2); background:rgba(255,255,255,0.06); color:#fff;
+  border-radius:9px; padding:7px 6px; font-size:12px; font-weight:800; cursor:pointer;
+}
+.online-wager-cur-btn.active{ border-color:#ffd54a; background:rgba(255,213,74,0.22); }
+.online-wager-amounts{ display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px; }
+.online-wager-amt-btn{
+  border:1px solid rgba(255,255,255,0.2); background:rgba(255,255,255,0.06); color:#fff;
+  border-radius:9px; padding:6px 12px; font-size:12px; font-weight:800; cursor:pointer;
+}
+.online-wager-amt-btn.active{ border-color:#ffd54a; background:rgba(255,213,74,0.28); color:#ffd54a; }
+.online-lobby-wager{
+  text-align:center; margin:6px 0 2px; font-size:12px; font-weight:800; color:#ffd54a;
+}
+.online-room-wager-badge{
+  display:inline-block; margin-left:4px; font-size:10px; font-weight:800; color:#ffd54a;
+  background:rgba(255,213,74,0.16); border-radius:6px; padding:1px 5px;
+}
 .online-room-code-wrap { text-align:center; font-size:14px; margin:12px 0; color:#eee; }
 .online-room-code-wrap strong { font-size:22px; letter-spacing:4px; color:#ffd700; }
 .online-players { display:flex; flex-direction:column; gap:8px; margin:12px 0; }
