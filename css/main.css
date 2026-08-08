@@ -5806,11 +5806,11 @@ body:has(#secret-stage.active) .streak-dot.lit{
 }
 .gpcard-header{
   position:relative; flex-shrink:0;
-  padding:calc(env(safe-area-inset-top,0px) + 14px) 16px 14px;
+  padding:calc(env(safe-area-inset-top,0px) + 14px) max(16px, env(safe-area-inset-right,0px)) 14px max(16px, env(safe-area-inset-left,0px));
   color:#fff;
 }
 .gpcard-close{
-  position:absolute; top:calc(env(safe-area-inset-top,0px) + 10px); right:12px;
+  position:absolute; top:calc(env(safe-area-inset-top,0px) + 10px); right:max(12px, env(safe-area-inset-right,0px));
   width:32px; height:32px; border:none; border-radius:50%;
   background:rgba(255,255,255,0.22); color:#fff; font-size:16px; font-weight:900;
   cursor:pointer; display:flex; align-items:center; justify-content:center;
@@ -5842,7 +5842,8 @@ body:has(#secret-stage.active) .streak-dot.lit{
 .gpcard-upgrade-btn:active{ transform:scale(0.96); }
 .gpcard-tabs{
   display:flex; flex-shrink:0; gap:2px;
-  padding:0 10px; border-bottom:1px solid rgba(255,255,255,0.18);
+  padding:0 max(10px, env(safe-area-inset-right,0px)) 0 max(10px, env(safe-area-inset-left,0px));
+  border-bottom:1px solid rgba(255,255,255,0.18);
 }
 .gpcard-tab{
   flex:1; min-width:0; border:none; background:none; cursor:pointer;
@@ -5861,6 +5862,20 @@ body:has(#secret-stage.active) .streak-dot.lit{
   .gpcard-header-pill{ height:12px; }
   .gpcard-tab{ font-size:11px; padding:6px 2px 7px; }
 }
+@media (orientation: landscape) and (max-height: 420px){
+  /* Điện thoại xoay ngang màn thấp: header+tab vốn cố định chiều cao, cần
+     thu gọn thêm để nhường chỗ cho nội dung — bàn cờ các panel khác đã tự
+     co theo flex/aspect-ratio, ở đây chỉ có chữ/icon nên chỉnh trực tiếp size. */
+  .gpcard-header{ padding-top:calc(env(safe-area-inset-top,0px) + 4px); padding-bottom:4px; }
+  .gpcard-header-row{ gap:6px; }
+  .gpcard-header-icon{ font-size:16px; }
+  .gpcard-header-level{ font-size:12px; }
+  .gpcard-header-pill{ height:10px; }
+  .gpcard-header-xp{ font-size:10px; }
+  .gpcard-upgrade-btn{ padding:5px 10px; font-size:11px; }
+  .gpcard-close,.gpcard-back{ width:26px; height:26px; font-size:13px; }
+  .gpcard-tab{ font-size:10px; padding:4px 2px 5px; }
+}
 
 /* Giai đoạn 3: 4 panel trượt toàn màn hình cho từng tab — đè lên toàn bộ game,
    trượt vào từ bên phải khi mở, nút "<" ở góc trên trái chỉ đóng riêng panel đó
@@ -5876,7 +5891,7 @@ body:has(#secret-stage.active) .streak-dot.lit{
 }
 .gpcard-subpanel.show{ transform:translateX(0); }
 .gpcard-back{
-  position:absolute; top:calc(env(safe-area-inset-top,0px) + 10px); left:12px; z-index:1;
+  position:absolute; top:calc(env(safe-area-inset-top,0px) + 10px); left:max(12px, env(safe-area-inset-left,0px)); z-index:1;
   width:32px; height:32px; border:none; border-radius:50%;
   background:rgba(255,255,255,0.22); color:#fff; font-size:16px; font-weight:900;
   cursor:pointer; display:flex; align-items:center; justify-content:center;
@@ -5884,8 +5899,9 @@ body:has(#secret-stage.active) .streak-dot.lit{
 .gpcard-back:active{ opacity:0.8; }
 .gpcard-subpanel-body{
   width:100%; max-width:560px; height:100%; margin:0 auto;
-  padding-top:calc(env(safe-area-inset-top,0px) + 54px);
+  padding:calc(env(safe-area-inset-top,0px) + 54px) max(0px, env(safe-area-inset-right,0px)) env(safe-area-inset-bottom,0px) max(0px, env(safe-area-inset-left,0px));
   overflow-y:auto; -webkit-overflow-scrolling:touch;
+  box-sizing:border-box;
 }
 @media (prefers-reduced-motion: reduce){
   .gpcard-subpanel{ transition:none; }
@@ -5893,6 +5909,10 @@ body:has(#secret-stage.active) .streak-dot.lit{
 @media (orientation: landscape){
   .gpcard-subpanel-body{ max-width:720px; padding-top:calc(env(safe-area-inset-top,0px) + 46px); }
   .gpcard-back{ top:calc(env(safe-area-inset-top,0px) + 8px); }
+}
+@media (orientation: landscape) and (max-height: 420px){
+  .gpcard-subpanel-body{ padding-top:calc(env(safe-area-inset-top,0px) + 36px); }
+  .gpcard-back{ top:calc(env(safe-area-inset-top,0px) + 5px); width:26px; height:26px; font-size:13px; }
 }
 
 /* Giai đoạn 4: bảng màu dùng chung cho nội dung bên trong panel — nền
