@@ -20,7 +20,13 @@
     { id:'royal',     name:'Hoàng gia',    price: 300 },
     { id:'holo',      name:'Ánh cầu vồng', price: 0, diaPrice: 3 },
     { id:'starlight', name:'Ánh sao',      price: 0, diaPrice: 9 },
-    { id:'legend',    name:'Huyền thoại',  price: 0, diaPrice: 15 }
+    { id:'legend',    name:'Huyền thoại',  price: 0, diaPrice: 15 },
+    // ── 5 mẫu SIÊU cao cấp — chỉ mua bằng kim cương, ánh vàng/bạch kim lấp lánh nhẹ ──
+    { id:'gilded',      name:'Dát vàng',            price: 0, diaPrice: 10 },
+    { id:'platinum',    name:'Bạch kim',            price: 0, diaPrice: 12 },
+    { id:'imperial',    name:'Đế vương',            price: 0, diaPrice: 15 },
+    { id:'diamondgleam',name:'Kim cương lấp lánh',  price: 0, diaPrice: 17 },
+    { id:'supremegold', name:'Hoàng kim tối thượng',price: 0, diaPrice: 20 }
   ];
 
   function unlockedBubbleIds(){

@@ -616,7 +616,7 @@
         if (shopCurrencyFilter === "diamond" && diaCost <= 0) return;
       }
       const card = document.createElement("div");
-      card.className = "shop-item" + (owned ? " owned" : "");
+      card.className = "shop-item" + (owned ? " owned" : "") + (goldPrice <= 0 && diaCost > 0 ? " shop-item-premium" : "");
       card.appendChild(makeBubblePreviewEl(skin.id));
 
       const nameEl = document.createElement("div");
