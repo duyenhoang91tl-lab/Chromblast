@@ -130,6 +130,10 @@ function renderGpcardQuests(){
   function bind(){
     const tabBtn = document.querySelector('.gpcard-tab[data-gpcard-tab="quests"]');
     if(tabBtn) tabBtn.addEventListener('click', renderGpcardQuests);
+    // js/account-hub.js: nút "Nhiệm vụ" trong Tài khoản giờ gọi thẳng
+    // openGpcardPanel('quests') (không qua click tab ở trên) — lắng cả nút đó
+    // để nội dung không bị trống khi vào theo lối này.
+    document.getElementById('acchub-btn-quests')?.addEventListener('click', renderGpcardQuests);
   }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
   else bind();
