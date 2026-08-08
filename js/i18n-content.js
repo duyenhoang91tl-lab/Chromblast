@@ -1528,7 +1528,8 @@ function MILESTONE_MSG(tier){
       caroCoupleExtremeWin:'Đã thắng máy Siêu', caroCoupleDone:'Đã ghép đôi!',
       ppAvatarUpload:'📷 Up ảnh cá nhân', ppAvatarClear:'✕ Xóa ảnh',
       caroAvatarTooBig:'Ảnh quá lớn', caroAvatarSaved:'Đã lưu avatar',
-      caroBubbleBuyInShop:'🔒 Mua trong Cửa hàng', shopBubblePreviewText:'Chào bạn! 👋' },
+      caroBubbleBuyInShop:'🔒 Mua trong Cửa hàng', shopBubblePreviewText:'Chào bạn! 👋',
+      shopNameEffectPreviewText:'Người chơi', shopEquip:'Trang bị', shopUnequip:'Tháo ra' },
     en:{ caroAdFail:'Watch an ad required', caroCoupleBtn:'Couple',
       caroCoupleInvite:'Couple invite — beat Master AI together!', caroCoupleInvited:'Couple invite sent',
       caroCoupleNeedOpp:'Need an online opponent', caroCoupleAccept:'Accept couple',
@@ -1538,7 +1539,8 @@ function MILESTONE_MSG(tier){
       caroCoupleExtremeWin:'Beat Master AI', caroCoupleDone:'Coupled!',
       ppAvatarUpload:'📷 Upload photo', ppAvatarClear:'✕ Clear photo',
       caroAvatarTooBig:'Image too large', caroAvatarSaved:'Avatar saved',
-      caroBubbleBuyInShop:'🔒 Buy in the Shop', shopBubblePreviewText:'Hi there! 👋' }
+      caroBubbleBuyInShop:'🔒 Buy in the Shop', shopBubblePreviewText:'Hi there! 👋',
+      shopNameEffectPreviewText:'Player', shopEquip:'Equip', shopUnequip:'Unequip' }
   };
   Object.keys(social).forEach(l=>{ if(typeof I18N!=='undefined' && I18N[l]) Object.assign(I18N[l], social[l]); });
 })();

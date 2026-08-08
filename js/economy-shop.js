@@ -58,6 +58,7 @@
       '<button type="button" class="shop-tab active" data-shop-tab="boards">🗺️ Nền</button>' +
       '<button type="button" class="shop-tab" data-shop-tab="bricks">🧱 Gạch</button>' +
       '<button type="button" class="shop-tab" data-shop-tab="bubbles">💬 Bong bóng</button>' +
+      '<button type="button" class="shop-tab" data-shop-tab="nameeffects">✨ Hiệu ứng tên</button>' +
       '<button type="button" class="shop-tab" data-shop-tab="hearts">❤️ Tim</button>' +
       '<button type="button" class="shop-tab" data-shop-tab="diamond">💎 KC</button>' +
       '<button type="button" class="shop-tab" data-shop-tab="topup">💳 Nạp</button>' +
@@ -422,6 +423,11 @@
       return;
     }
 
+    if (tab === "nameeffects") {
+      renderNameEffectShopTab(body);
+      return;
+    }
+
     const isBoard = tab === "boards";
     const list = isBoard
       ? typeof BOARD_SKINS !== "undefined"
@@ -671,6 +677,76 @@
     body.appendChild(grid);
   }
 
+  function makeNameEffectPreviewEl(id) {
+    const wrap = document.createElement("div");
+    wrap.className = "shop-item-preview shop-nameeffect-preview";
+    const nick = tt("shopNameEffectPreviewText", "Người chơi");
+    const style = Object.assign({}, (typeof getPlayerNameStyle === "function" ? getPlayerNameStyle() : {}), { effect: id });
+    wrap.innerHTML = (typeof formatPlayerNameStyledHtml === "function")
+      ? formatPlayerNameStyledHtml(nick, style)
+      : nick;
+    return wrap;
+  }
+
+  function renderNameEffectShopTab(body) {
+    const list = typeof NAME_EFFECTS !== "undefined" ? NAME_EFFECTS : [];
+    const ownedFn = typeof isNameEffectOwned === "function" ? isNameEffectOwned : function () { return false; };
+    const equipped = typeof equippedNameEffect === "function" ? equippedNameEffect() : "";
+
+    const grid = document.createElement("div");
+    grid.className = "shop-grid";
+    list.forEach(function (fx) {
+      const owned = ownedFn(fx.id);
+      const isEquipped = owned && equipped === fx.id;
+      const diaCost = fx.diaPrice | 0;
+
+      const card = document.createElement("div");
+      card.className = "shop-item shop-item-premium" + (isEquipped ? " equipped" : "");
+      card.appendChild(makeNameEffectPreviewEl(fx.id));
+
+      const nameEl = document.createElement("div");
+      nameEl.className = "shop-item-name";
+      nameEl.textContent = fx.name || fx.id;
+      card.appendChild(nameEl);
+
+      const priceEl = document.createElement("div");
+      priceEl.className = "shop-item-price";
+      priceEl.textContent = owned ? tt("shopOwned", "Đã sở hữu") : "💎 " + diaCost;
+      card.appendChild(priceEl);
+
+      const row = document.createElement("div");
+      row.className = "shop-item-actions";
+      if (!owned) {
+        const bDia = document.createElement("button");
+        bDia.type = "button";
+        bDia.className = "shop-buy-btn shop-buy-dia";
+        bDia.textContent = tt("shopBuyDia", "KC");
+        bDia.title = tt("shopBuyWithDia", "Mua bằng kim cương");
+        bDia.addEventListener("click", function () {
+          try { sfxClick(); } catch (e) {}
+          const r = buyNameEffect(fx.id, diaCost);
+          flashBuy(r, fx, diaCost, true);
+          renderShop("nameeffects");
+        });
+        row.appendChild(bDia);
+      } else {
+        const bEquip = document.createElement("button");
+        bEquip.type = "button";
+        bEquip.className = "shop-buy-btn" + (isEquipped ? " shop-equipped-btn" : "");
+        bEquip.textContent = isEquipped ? tt("shopUnequip", "Tháo ra") : tt("shopEquip", "Trang bị");
+        bEquip.addEventListener("click", function () {
+          try { sfxClick(); } catch (e) {}
+          equipNameEffect(isEquipped ? "" : fx.id);
+          try { if (typeof refreshArcadeHud === "function") refreshArcadeHud(); } catch (e) {}
+          renderShop("nameeffects");
+        });
+        row.appendChild(bEquip);
+      }
+      card.appendChild(row);
+      grid.appendChild(card);
+    });
+    body.appendChild(grid);
+  }
   function buyBoardWithGold(id, price) {
     if (typeof isBoardSkinUnlocked === "function" && isBoardSkinUnlocked(id))
       return { ok: false, reason: "owned" };

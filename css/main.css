@@ -5568,6 +5568,9 @@ body:has(#secret-stage.active) .streak-dot.lit{
 .shop-grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; max-height:55vh; overflow:auto; }
 .shop-item{ border:1px solid rgba(255,255,255,0.14); background:rgba(255,255,255,0.06); border-radius:12px; padding:10px 8px; color:#fff; text-align:center; }
 .shop-item.owned{ opacity:0.55; cursor:default; }
+.shop-item.equipped{ border-color:rgba(255,213,74,0.7); box-shadow:0 0 0 1px rgba(255,213,74,0.5); }
+.shop-equipped-btn{ border-color:rgba(255,213,74,0.7); background:rgba(255,213,74,0.32); color:#fff8dc; }
+.shop-nameeffect-preview{ min-height:24px; font-size:15px; font-weight:900; }
 .shop-item-preview{ display:flex; justify-content:center; margin:0 auto 6px; }
 .shop-board-preview .board-swatch{ width:100%; max-width:120px; height:56px; border-radius:10px; }
 .shop-brick-preview{
@@ -5984,6 +5987,49 @@ body:has(#secret-stage.active) .streak-dot.lit{
   .rank-fx-marquee-text{ animation:none; position:static; }
   .rank-fx-marquee-box{ overflow:visible; max-width:none; white-space:normal; }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   Hiệu ứng tên mua trong Shop bằng kim cương (xem js/name-effects.js).
+   3 hiệu ứng quét gradient (goldsweep/runlight/platinum) tự có tông màu
+   riêng, không chồng được với màu tên tự chọn (giống cách rank-fx bậc cao
+   đã làm) — formatPlayerNameHtml/formatPlayerNameStyledHtml lo bỏ màu inline
+   cho nhóm này. 3 hiệu ứng còn lại (blink/glow/wave) giữ nguyên màu tự chọn.
+══════════════════════════════════════════════════════════════ */
+.name-fx-blink{ animation:nameFxBlink 1.2s ease-in-out infinite; }
+@keyframes nameFxBlink{ 0%,100%{ opacity:1; } 50%{ opacity:0.35; } }
+
+.name-fx-glow{ animation:nameFxGlow 2s ease-in-out infinite; }
+@keyframes nameFxGlow{
+  0%,100%{ text-shadow:0 0 2px currentColor; }
+  50%{ text-shadow:0 0 8px currentColor, 0 0 14px currentColor; }
+}
+
+.name-fx-wave .name-fx-letter{ display:inline-block; animation:nameFxWave 1.1s ease-in-out infinite; }
+@keyframes nameFxWave{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-3px); } }
+
+.name-fx-goldsweep,.name-fx-runlight,.name-fx-platinum{
+  background-size:250% 100%; -webkit-background-clip:text; background-clip:text; color:transparent;
+  animation:nameFxSweep 3.2s linear infinite;
+}
+.name-fx-goldsweep{
+  background-image:linear-gradient(100deg,#b8860b 0%,#b8860b 40%,#fff7c0 50%,#b8860b 60%,#b8860b 100%);
+  text-shadow:0 0 5px rgba(184,134,11,0.4);
+}
+.name-fx-runlight{
+  background-image:linear-gradient(100deg,#4fc3f7 0%,#4fc3f7 40%,#ffffff 50%,#4fc3f7 60%,#4fc3f7 100%);
+  animation-duration:1.8s;
+  text-shadow:0 0 5px rgba(79,195,247,0.4);
+}
+.name-fx-platinum{
+  background-image:linear-gradient(100deg,#9aa3ad 0%,#9aa3ad 35%,#ffffff 50%,#d8dee5 55%,#9aa3ad 65%,#9aa3ad 100%);
+  text-shadow:0 0 6px rgba(255,255,255,0.5);
+}
+@keyframes nameFxSweep{ 0%{ background-position:0% 50%; } 100%{ background-position:200% 50%; } }
+@media (prefers-reduced-motion: reduce){
+  .name-fx-blink,.name-fx-glow,.name-fx-goldsweep,.name-fx-runlight,.name-fx-platinum{ animation:none; }
+  .name-fx-wave .name-fx-letter{ animation:none; }
+}
+
 /* Giai đoạn 4: bảng màu dùng chung cho nội dung bên trong panel — nền
    sáng, chữ tối, bo góc lớn, bóng đổ mềm, cùng tông pastel tím/xanh
    dương với khung ngoài. Phần 2–5 chỉ cần gắn class này cho từng khối

@@ -1912,6 +1912,7 @@ function _chatMsgPayload(text){
       payload.nameBold = !!st.bold;
       payload.nameItalic = !!st.italic;
       payload.nameFontId = st.fontId || 'nunito';
+      payload.nameEffect = st.effect || '';
     }
   }catch(e){}
   return payload;

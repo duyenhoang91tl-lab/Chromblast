@@ -83,6 +83,8 @@ function _ppDefault(){
     unlockedBubbles: ['classic'],
     renameCount: 0,
     styleUnlocked: false,
+    nameEffect: '',
+    ownedNameEffects: [],
     /** ID công khai ngắn — chỉ hiện trong hồ sơ, dùng để tìm bạn */
     publicId: ''
   };
@@ -238,6 +240,8 @@ function getPlayerProfile(){
         if(!p.unlockedBubbles || !p.unlockedBubbles.length) p.unlockedBubbles = ['classic'];
         p.renameCount = Math.max(0, Number(j.renameCount) || 0);
         p.styleUnlocked = !!j.styleUnlocked;
+        if(typeof j.nameEffect === 'string' && (!j.nameEffect || (typeof NAME_EFFECTS!=='undefined' && NAME_EFFECTS.some(e=>e.id===j.nameEffect)))) p.nameEffect = j.nameEffect;
+        if(Array.isArray(j.ownedNameEffects)) p.ownedNameEffects = j.ownedNameEffects.filter(x=>typeof x==='string').slice(0, 20);
         if(typeof j.publicId === 'string' && /^CB[A-Z0-9]{6}$/.test(j.publicId)) p.publicId = j.publicId;
       }
     }
@@ -303,17 +307,37 @@ function getPlayerNickname(){
 
 /** Chỉ trả về span tên đã áp màu/đậm/nghiêng/font (không kèm avatar) — dùng ở
  * những nơi tên đứng riêng (HUD, chat...), khác với formatPlayerNameHtml (có avatar). */
+/** Hiệu ứng tên mua trong Shop (xem name-effects.js) — 'wave' cần bọc riêng
+ * từng ký tự để so le animation-delay, các hiệu ứng khác chỉ cần 1 class CSS
+ * (.name-fx-<id>) áp lên cả span tên, không cần đụng vào cấu trúc HTML. */
+function _ppNameEffectClass(effectId){
+  return effectId ? ' name-fx-'+effectId : '';
+}
+function _ppNameEffectInner(rawName, escapedName, effectId){
+  if(effectId !== 'wave') return escapedName;
+  return Array.from(String(rawName||'')).map(function(ch, i){
+    const escCh = (typeof escapeHtml==='function') ? escapeHtml(ch) : ch;
+    return '<span class="name-fx-letter" style="animation-delay:'+(i*0.08).toFixed(2)+'s">'+(ch===' '?'&nbsp;':escCh)+'</span>';
+  }).join('');
+}
+
+/** 3 hiệu ứng dùng kỹ thuật gradient quét chữ (background-clip:text +
+ * color:transparent, xem CSS .name-fx-goldsweep/runlight/platinum) — tự có
+ * tông màu riêng, không thể chồng thêm màu tự chọn (giống cách rank-fx bậc
+ * cao vẫn làm), nên bỏ hẳn khai báo color inline cho các hiệu ứng này. */
+const PP_NAME_FX_GRADIENT = ['goldsweep','runlight','platinum'];
+
 function formatPlayerNameStyledHtml(name, style){
   const st = style || getPlayerNameStyle();
   const n = (typeof escapeHtml === 'function' ? escapeHtml(name) : String(name||''));
   const fam = _ppFontById(st.fontId).family;
-  const css = [
-    'color:'+(st.color||'#ffffff'),
-    'font-weight:'+(st.bold ? '900' : '700'),
-    st.italic ? 'font-style:italic' : 'font-style:normal',
-    'font-family:'+fam
-  ].join(';');
-  return '<span class="player-nick" style="'+css+'">'+n+'</span>';
+  const isGrad = PP_NAME_FX_GRADIENT.indexOf(st.effect) >= 0;
+  const css = [];
+  if(!isGrad) css.push('color:'+(st.color||'#ffffff'));
+  css.push('font-weight:'+(st.bold ? '900' : '700'));
+  css.push(st.italic ? 'font-style:italic' : 'font-style:normal');
+  css.push('font-family:'+fam);
+  return '<span class="player-nick'+_ppNameEffectClass(st.effect)+'" style="'+css.join(';')+'">'+_ppNameEffectInner(name, n, st.effect)+'</span>';
 }
 
 function formatPlayerNameHtml(name, style){
@@ -321,13 +345,13 @@ function formatPlayerNameHtml(name, style){
   const n = (typeof escapeHtml === 'function' ? escapeHtml(name) : String(name||''));
   const fam = _ppFontById(st.fontId).family;
   const av = (st.avatar && PLAYER_AVATARS.includes(st.avatar)) ? st.avatar : getPlayerAvatar();
-  const css = [
-    'color:'+(st.color||'#ffffff'),
-    'font-weight:'+(st.bold ? '900' : '700'),
-    st.italic ? 'font-style:italic' : 'font-style:normal',
-    'font-family:'+fam
-  ].join(';');
-  return '<span class="player-nick-wrap"><span class="player-avatar" aria-hidden="true">'+av+'</span><span class="player-nick" style="'+css+'">'+n+'</span></span>';
+  const isGrad = PP_NAME_FX_GRADIENT.indexOf(st.effect) >= 0;
+  const css = [];
+  if(!isGrad) css.push('color:'+(st.color||'#ffffff'));
+  css.push('font-weight:'+(st.bold ? '900' : '700'));
+  css.push(st.italic ? 'font-style:italic' : 'font-style:normal');
+  css.push('font-family:'+fam);
+  return '<span class="player-nick-wrap"><span class="player-avatar" aria-hidden="true">'+av+'</span><span class="player-nick'+_ppNameEffectClass(st.effect)+'" style="'+css.join(';')+'">'+_ppNameEffectInner(name, n, st.effect)+'</span></span>';
 }
 
 /** Bọc tên bằng hiệu ứng theo bậc rank Caro/Versus — rank càng cao tên càng nổi bật:
@@ -344,20 +368,31 @@ function rankNameFxHtml(name, tier, totalTiers, style){
   const raw = Math.max(0, Math.min(total - 1, Number(tier) || 0));
   const tr = total > 1 ? Math.round((raw / (total - 1)) * 11) : 11;
   let styleAttr = '';
+  let fxClass = '';
+  let inner = n;
   if(style){
     const fam = _ppFontById(style.fontId).family;
     const parts = ['font-family:'+fam];
     if(style.italic) parts.push('font-style:italic');
     if(style.bold) parts.push('font-weight:900');
-    // Bậc 0-1 (.rank-fx-0/1) chưa có hiệu ứng màu riêng (color:inherit) → áp màu tự chọn.
-    // Từ bậc 2 trở lên, màu/gradient là hiệu ứng theo rank nên giữ nguyên, không đè màu.
-    if(tr < 2 && style.color) parts.push('color:'+style.color);
+    // Bậc 0-1 (.rank-fx-0/1) chưa có hiệu ứng màu riêng (color:inherit) → áp màu/hiệu
+    // ứng tên tự chọn. Từ bậc 2 trở lên, màu/gradient là hiệu ứng theo rank nên giữ
+    // nguyên, không đè màu — hiệu ứng tên mua trong Shop cũng bỏ qua để tránh 2
+    // gradient/animation chồng nhau trên cùng 1 chữ.
+    if(tr < 2){
+      const isGrad = style.effect && PP_NAME_FX_GRADIENT.indexOf(style.effect) >= 0;
+      if(style.color && !isGrad) parts.push('color:'+style.color);
+      if(style.effect){
+        fxClass = _ppNameEffectClass(style.effect);
+        inner = _ppNameEffectInner(name, n, style.effect);
+      }
+    }
     styleAttr = ' style="'+parts.join(';')+'"';
   }
   if(tr >= 11){
-    return '<span class="rank-fx-marquee-box"><span class="rank-fx rank-fx-'+tr+' rank-fx-marquee-text"'+styleAttr+'>'+n+'</span></span>';
+    return '<span class="rank-fx-marquee-box"><span class="rank-fx rank-fx-'+tr+fxClass+' rank-fx-marquee-text"'+styleAttr+'>'+inner+'</span></span>';
   }
-  return '<span class="rank-fx rank-fx-'+tr+'"'+styleAttr+'>'+n+'</span>';
+  return '<span class="rank-fx rank-fx-'+tr+fxClass+'"'+styleAttr+'>'+inner+'</span>';
 }
 
 function getPlayerNameStyle(){
@@ -367,7 +402,8 @@ function getPlayerNameStyle(){
     bold: !!p.bold,
     italic: !!p.italic,
     fontId: p.fontId || 'nunito',
-    avatar: getPlayerAvatar()
+    avatar: getPlayerAvatar(),
+    effect: p.nameEffect || ''
   };
 }
 

@@ -330,7 +330,8 @@
       color: msg.nameColor || '#ffffff',
       bold: !!msg.nameBold,
       italic: !!msg.nameItalic,
-      fontId: msg.nameFontId || 'nunito'
+      fontId: msg.nameFontId || 'nunito',
+      effect: msg.nameEffect || ''
     };
     let nameHtml = (typeof formatPlayerNameStyledHtml === 'function')
       ? formatPlayerNameStyledHtml(msg.name || 'Player', senderStyle)
