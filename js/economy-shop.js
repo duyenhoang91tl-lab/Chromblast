@@ -42,26 +42,104 @@
   function diamonds() {
     return typeof getDiamonds === "function" ? getDiamonds() : 0;
   }
+  function hearts() {
+    try {
+      if (typeof Inventory !== "undefined") {
+        if (typeof Inventory.applyHeartRegen === "function") Inventory.applyHeartRegen();
+        return Inventory.hearts || 0;
+      }
+    } catch (e) {}
+    return 0;
+  }
+
+  // Danh sách ô của màn hình gốc Cửa hàng (shop2-grid). 6 mục đầu dùng đúng
+  // dữ liệu/logic mua đã có (renderShop(tab) không đổi gì). 5 mục "locked" chưa
+  // có vật phẩm/giá nào trong code — không tự đặt ra, chỉ hiện ô khoá "Sắp ra
+  // mắt" chờ có dữ liệu thật.
+  const SHOP2_TILES = [
+    { tab: "topup", ico: "💳", key: "shopTabTopup", fb: "Nạp" },
+    { tab: "boards", ico: "🗺️", key: "shopTabBoards", fb: "Nền" },
+    { tab: "bricks", ico: "🧱", key: "shopTabBricks", fb: "Gạch" },
+    { tab: "bubbles", ico: "💬", key: "shopTabBubbles", fb: "Bong bóng" },
+    { tab: "hearts", ico: "❤️", key: "shopTabHearts", fb: "Tim" },
+    { tab: "diamond", ico: "💎", key: "shopTabDiamond", fb: "Kim cương" },
+    { tab: "nameeffects", ico: "✨", key: "shopTabNameeffects", fb: "Hiệu ứng tên" },
+    { tab: "chests", ico: "🎁", key: "shopTabChests", fb: "Rương", locked: true },
+    { tab: "skills", ico: "🌀", key: "shopTabSkills", fb: "Kỹ năng", locked: true },
+    { tab: "textfx", ico: "💫", key: "shopTabTextfx", fb: "Hiệu ứng chữ", locked: true },
+    { tab: "cards", ico: "🃏", key: "shopTabCards", fb: "Thẻ", locked: true },
+  ];
+
+  function refreshShopBalance() {
+    const h = document.getElementById("shop2-bal-heart");
+    const d = document.getElementById("shop2-bal-dia");
+    const gEl = document.getElementById("shop2-bal-gold");
+    if (h) h.textContent = String(hearts());
+    if (d) d.textContent = String(diamonds());
+    if (gEl) gEl.textContent = String(gold());
+  }
+
+  function renderShop2Grid() {
+    const grid = document.getElementById("shop2-grid");
+    if (!grid) return;
+    grid.innerHTML = "";
+    SHOP2_TILES.forEach(function (item) {
+      const tile = document.createElement("button");
+      tile.type = "button";
+      tile.className = "shop2-tile" + (item.locked ? " locked" : "");
+      tile.innerHTML =
+        (item.locked ? '<span class="shop2-tile-lock">🔒</span>' : "") +
+        '<span class="shop2-tile-ico">' + item.ico + "</span>" +
+        '<span class="shop2-tile-label">' + tt(item.key, item.fb) + "</span>" +
+        (item.locked ? '<span class="shop2-tile-soon">' + tt("shopComingSoon", "Sắp ra mắt") + "</span>" : "");
+      tile.addEventListener("click", function () {
+        try {
+          sfxClick();
+        } catch (e) {}
+        if (item.locked) {
+          try {
+            showComboFlash(0, false, tt("shopComingSoon", "Sắp ra mắt"));
+          } catch (e) {}
+          return;
+        }
+        openShop2Sub(item.tab, tt(item.key, item.fb));
+      });
+      grid.appendChild(tile);
+    });
+  }
+
+  function openShop2Sub(tab, title) {
+    const panel = document.getElementById("shop-panel");
+    if (!panel) return;
+    const titleEl = document.getElementById("shop2-sub-title");
+    if (titleEl) titleEl.textContent = title || "";
+    panel.classList.add("shop2-sub-open");
+    renderShop(tab);
+  }
 
   function ensureShopPanel() {
     let panel = document.getElementById("shop-panel");
     if (panel) return panel;
     panel = document.createElement("div");
     panel.id = "shop-panel";
-    panel.className = "admin-panel-like shop-panel";
+    panel.className = "admin-panel-like shop-panel shop2";
     panel.innerHTML =
-      '<div class="admin-card shop-card">' +
-      '<div class="admin-title"><span data-i18n="shopTitle">🛒 Cửa hàng</span>' +
-      '<button type="button" class="admin-close" id="shop-close-btn">✕</button></div>' +
-      '<div class="shop-gold-row" id="shop-gold-row">🪙 0 · 💎 0</div>' +
-      '<div class="shop-tabs">' +
-      '<button type="button" class="shop-tab active" data-shop-tab="boards">🗺️ Nền</button>' +
-      '<button type="button" class="shop-tab" data-shop-tab="bricks">🧱 Gạch</button>' +
-      '<button type="button" class="shop-tab" data-shop-tab="bubbles">💬 Bong bóng</button>' +
-      '<button type="button" class="shop-tab" data-shop-tab="nameeffects">✨ Hiệu ứng tên</button>' +
-      '<button type="button" class="shop-tab" data-shop-tab="hearts">❤️ Tim</button>' +
-      '<button type="button" class="shop-tab" data-shop-tab="diamond">💎 KC</button>' +
-      '<button type="button" class="shop-tab" data-shop-tab="topup">💳 Nạp</button>' +
+      '<div class="shop2-hub" id="shop2-hub">' +
+      '<div class="shop2-hub-top">' +
+      '<div class="shop2-hub-title">🛒 <span data-i18n="shopTitle">Cửa hàng</span></div>' +
+      '<button type="button" class="shop2-close" id="shop-close-btn">✕</button>' +
+      "</div>" +
+      '<div class="shop2-balance-row">' +
+      '<span class="shop2-bal-chip">❤️ <b id="shop2-bal-heart">0</b></span>' +
+      '<span class="shop2-bal-chip">💎 <b id="shop2-bal-dia">0</b></span>' +
+      '<span class="shop2-bal-chip">🪙 <b id="shop2-bal-gold">0</b></span>' +
+      "</div>" +
+      '<div class="shop2-grid" id="shop2-grid"></div>' +
+      "</div>" +
+      '<div class="shop2-sub" id="shop2-sub">' +
+      '<div class="shop2-sub-top">' +
+      '<button type="button" class="shop2-back" id="shop2-back-btn">‹</button>' +
+      '<div class="shop2-sub-title" id="shop2-sub-title"></div>' +
       "</div>" +
       '<div id="shop-body" class="shop-body"></div>' +
       "</div>";
@@ -70,17 +148,14 @@
       if (e.target === panel) closeShop();
     });
     document.getElementById("shop-close-btn").addEventListener("click", closeShop);
-    panel.querySelectorAll(".shop-tab").forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        try {
-          sfxClick();
-        } catch (e) {}
-        panel.querySelectorAll(".shop-tab").forEach(function (b) {
-          b.classList.toggle("active", b === btn);
-        });
-        renderShop(btn.getAttribute("data-shop-tab"));
-      });
+    document.getElementById("shop2-back-btn").addEventListener("click", function () {
+      try {
+        sfxClick();
+      } catch (e) {}
+      panel.classList.remove("shop2-sub-open");
+      refreshShopBalance();
     });
+    renderShop2Grid();
     return panel;
   }
 
@@ -306,8 +381,7 @@
   function renderShop(tab) {
     tab = tab || "boards";
     const body = document.getElementById("shop-body");
-    const goldRow = document.getElementById("shop-gold-row");
-    if (goldRow) goldRow.textContent = "🪙 " + gold() + " · 💎 " + diamonds();
+    refreshShopBalance();
     if (!body) return;
     body.innerHTML = "";
 
@@ -816,10 +890,14 @@
   function openShop(tab) {
     ensureShopPanel();
     const panel = document.getElementById("shop-panel");
-    panel.querySelectorAll(".shop-tab").forEach(function (b) {
-      b.classList.toggle("active", b.getAttribute("data-shop-tab") === (tab || "boards"));
-    });
-    renderShop(tab || "boards");
+    refreshShopBalance();
+    if (tab) {
+      const item = SHOP2_TILES.filter(function (x) { return x.tab === tab; })[0];
+      openShop2Sub(tab, item ? tt(item.key, item.fb) : "");
+    } else {
+      panel.classList.remove("shop2-sub-open");
+      renderShop2Grid();
+    }
     panel.classList.add("show");
     try {
       if (typeof applyI18nDom === "function") applyI18nDom();
@@ -838,7 +916,7 @@
         try {
           sfxClick();
         } catch (e) {}
-        openShop("boards");
+        openShop();
       });
     }
     const setBtn = document.getElementById("set-btn-shop");
@@ -850,7 +928,7 @@
         try {
           if (typeof closeSettingsHub === "function") closeSettingsHub();
         } catch (e) {}
-        openShop("boards");
+        openShop();
       });
     }
   }
