@@ -3797,6 +3797,55 @@ body:has(#secret-stage.active) .streak-dot.lit{
   overflow:hidden;
   gap:6px;
 }
+/* ═══ Versus 1-1: tông pastel mây trời sáng, đồng bộ phong cách màn "Tài
+   khoản" (account-hub) — nền + chữ sáng thay vì tối như trước. ═══ */
+#versus-arena{
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 15%, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0) 60%),
+    radial-gradient(ellipse 55% 35% at 85% 78%, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 60%),
+    linear-gradient(180deg, #E9F4FF 0%, #E6DBFB 55%, #F1ECFF 100%);
+}
+#versus-arena .vs-chip-name{ color:#2E2158; }
+#versus-arena .vs-chip-rank{ color:#9A6B00; }
+#versus-arena .vs-chip-couple{ color:#B8348A; }
+#versus-arena .vs-chip-score{ color:#33459C; }
+#versus-arena .vs-chip-combo{ color:#B8860B; }
+#versus-arena .vs-player-chip{
+  background:rgba(255,255,255,0.62);
+  border:1px solid rgba(120,100,200,0.28);
+  color:#2E2158;
+  box-shadow:0 3px 10px rgba(90,70,150,0.14);
+}
+#versus-arena .vs-chip-top{
+  border-color:rgba(216,90,130,0.35);
+  background:rgba(255,232,240,0.72);
+}
+#versus-arena .vs-chip-bottom{
+  border-color:rgba(90,140,216,0.32);
+  background:rgba(228,240,255,0.72);
+}
+#versus-arena .vs-chip-avatar{
+  background:rgba(255,255,255,0.85);
+  border:1px solid rgba(120,100,200,0.22);
+}
+#versus-arena .vs-layout-toggle-btn{
+  border-color:rgba(120,100,200,0.35);
+  background:rgba(255,255,255,0.75);
+  color:#3A2C63;
+  box-shadow:0 2px 8px rgba(90,70,150,0.16);
+}
+#versus-arena .vs-layout-toggle-btn[aria-pressed="true"]{
+  border-color:rgba(184,134,11,0.6);
+  background:linear-gradient(145deg, rgba(255,213,74,0.5), rgba(255,193,74,0.4));
+  color:#7A5300;
+}
+#versus-arena .vs-quit-btn,
+#versus-arena #vs-quit-btn{
+  border-color:rgba(255,255,255,0.6);
+  box-shadow:0 2px 6px rgba(90,70,150,0.2);
+}
+#versus-arena .vs-btn-online, #versus-arena .vs-timer-num{ text-shadow:none; }
+
 /* Topbar: chat trái — đồng hồ + Thoát phải (cùng hàng, size nhỏ) */
 .vs-topbar{
   position:absolute;
