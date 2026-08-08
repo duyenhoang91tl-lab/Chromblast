@@ -5890,4 +5890,16 @@ body:has(#secret-stage.active) .streak-dot.lit{
   .gpcard-back{ top:calc(env(safe-area-inset-top,0px) + 8px); }
 }
 
+/* Giai đoạn 4: bảng màu dùng chung cho nội dung bên trong panel — nền
+   sáng, chữ tối, bo góc lớn, bóng đổ mềm, cùng tông pastel tím/xanh
+   dương với khung ngoài. Phần 2–5 chỉ cần gắn class này cho từng khối
+   nội dung khi đổ vào #gpcard-rewards/quests/redeem/leaderboard, không
+   cần định nghĩa lại style card từ đầu. */
+.gpcard-card{
+  background:#f8f6ff; color:#3a3358; border-radius:18px;
+  box-shadow:0 8px 24px rgba(76,58,150,0.18);
+  padding:16px; margin:0 0 12px;
+}
+.gpcard-card:last-child{ margin-bottom:0; }
+
 /* deploy-trigger: kich hoat lai GitHub Pages deploy sau khi doi Source sang GitHub Actions */
