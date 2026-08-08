@@ -1689,6 +1689,30 @@ function MILESTONE_MSG(tier){
       acchubStatus:'My Status', acchubAchievements:'My Achievements',
       acchubBag:'My Bag', acchubGroups:'Groups', acchubRename:'Rename',
       acchubSettings:'Settings', acchubFriends:'Friends', acchubIdPrefix:'ID:'
+    },
+    ko:{
+      acchubMembership:'멤버십', acchubShop:'상점', acchubQuests:'퀘스트',
+      acchubStatus:'내 상태', acchubAchievements:'내 업적',
+      acchubBag:'내 가방', acchubGroups:'그룹', acchubRename:'이름 변경',
+      acchubSettings:'설정', acchubFriends:'친구', acchubIdPrefix:'ID:'
+    },
+    ja:{
+      acchubMembership:'メンバーシップ', acchubShop:'ショップ', acchubQuests:'クエスト',
+      acchubStatus:'自分のステータス', acchubAchievements:'実績',
+      acchubBag:'持ち物', acchubGroups:'グループ', acchubRename:'名前変更',
+      acchubSettings:'設定', acchubFriends:'フレンド', acchubIdPrefix:'ID:'
+    },
+    zh:{
+      acchubMembership:'会员', acchubShop:'商店', acchubQuests:'任务',
+      acchubStatus:'我的状态', acchubAchievements:'我的成就',
+      acchubBag:'我的背包', acchubGroups:'群组', acchubRename:'改名',
+      acchubSettings:'设置', acchubFriends:'好友', acchubIdPrefix:'ID:'
+    },
+    es:{
+      acchubMembership:'Membresía', acchubShop:'Tienda', acchubQuests:'Misiones',
+      acchubStatus:'Mi estado', acchubAchievements:'Mis logros',
+      acchubBag:'Mi bolsa', acchubGroups:'Grupos', acchubRename:'Cambiar nombre',
+      acchubSettings:'Configuración', acchubFriends:'Amigos', acchubIdPrefix:'ID:'
     }
   };
   Object.keys(fill).forEach(l=>{ if(typeof I18N!=='undefined' && I18N[l]) Object.assign(I18N[l], fill[l]); });
@@ -1723,6 +1747,62 @@ function MILESTONE_MSG(tier){
       acgrpSoonSub:'You can already add friends and pair up in the Friends section.',
       acmemActiveTitle:'Ads removed permanently',
       acmemActiveSub:'Thanks for supporting ChromaBlast!'
+    },
+    ko:{
+      acstLevel:'레벨 {0}', acstMapNormal:'일반 맵', acstMapSecret:'히든 맵',
+      acstRankCaro:'캐로 랭크', acstRankVersus:'대결 랭크',
+      acachMapNormal:'클리어한 일반 맵', acachMapSecret:'클리어한 히든 맵',
+      acachLevel:'현재 레벨', acachRankCaro:'캐로 랭크',
+      acachRankVersus:'대결 랭크', acachWins:'승',
+      acachStreak:'출석 연속일', acachStreakSub:'현재 연속',
+      acbagTabBoards:'보드', acbagTabBricks:'블록 스킨',
+      acbagUse:'사용', acbagInUse:'사용 중',
+      acgrpSoonTitle:'그룹 기능이 곧 출시됩니다',
+      acgrpSoonSub:'지금 바로 친구 메뉴에서 친구 추가와 커플 맺기를 할 수 있어요.',
+      acmemActiveTitle:'광고가 영구적으로 제거되었습니다',
+      acmemActiveSub:'ChromaBlast를 응원해 주셔서 감사합니다!'
+    },
+    ja:{
+      acstLevel:'レベル {0}', acstMapNormal:'通常マップ', acstMapSecret:'隠しマップ',
+      acstRankCaro:'キャロランク', acstRankVersus:'対戦ランク',
+      acachMapNormal:'クリア済み通常マップ', acachMapSecret:'クリア済み隠しマップ',
+      acachLevel:'現在のレベル', acachRankCaro:'キャロランク',
+      acachRankVersus:'対戦ランク', acachWins:'勝',
+      acachStreak:'ログインストリーク', acachStreakSub:'現在のストリーク',
+      acbagTabBoards:'ボード', acbagTabBricks:'ブロックスキン',
+      acbagUse:'使う', acbagInUse:'使用中',
+      acgrpSoonTitle:'グループ機能は近日公開',
+      acgrpSoonSub:'フレンドメニューで今すぐ友達追加やカップル登録ができます。',
+      acmemActiveTitle:'広告を永久に削除しました',
+      acmemActiveSub:'ChromaBlastを応援してくれてありがとう！'
+    },
+    zh:{
+      acstLevel:'等级 {0}', acstMapNormal:'普通地图', acstMapSecret:'隐藏地图',
+      acstRankCaro:'五子棋段位', acstRankVersus:'对战段位',
+      acachMapNormal:'已通关普通地图', acachMapSecret:'已通关隐藏地图',
+      acachLevel:'当前等级', acachRankCaro:'五子棋段位',
+      acachRankVersus:'对战段位', acachWins:'胜场',
+      acachStreak:'连续签到', acachStreakSub:'当前连续天数',
+      acbagTabBoards:'棋盘', acbagTabBricks:'方块皮肤',
+      acbagUse:'使用', acbagInUse:'使用中',
+      acgrpSoonTitle:'群组功能即将推出',
+      acgrpSoonSub:'你现在就可以在好友页面加好友和配对。',
+      acmemActiveTitle:'已永久移除广告',
+      acmemActiveSub:'感谢你支持 ChromaBlast！'
+    },
+    es:{
+      acstLevel:'Nivel {0}', acstMapNormal:'Mapas normales', acstMapSecret:'Mapas ocultos',
+      acstRankCaro:'Rango de Caro', acstRankVersus:'Rango Versus',
+      acachMapNormal:'Mapas normales superados', acachMapSecret:'Mapas ocultos superados',
+      acachLevel:'Nivel actual', acachRankCaro:'Rango de Caro',
+      acachRankVersus:'Rango Versus', acachWins:'victorias',
+      acachStreak:'Racha de check-in', acachStreakSub:'Racha actual',
+      acbagTabBoards:'Tableros', acbagTabBricks:'Ladrillos',
+      acbagUse:'Usar', acbagInUse:'En uso',
+      acgrpSoonTitle:'La función de grupos llegará pronto',
+      acgrpSoonSub:'Ya puedes añadir amigos y emparejarte en la sección de Amigos.',
+      acmemActiveTitle:'Anuncios eliminados permanentemente',
+      acmemActiveSub:'¡Gracias por apoyar a ChromaBlast!'
     }
   };
   Object.keys(fill).forEach(l=>{ if(typeof I18N!=='undefined' && I18N[l]) Object.assign(I18N[l], fill[l]); });
