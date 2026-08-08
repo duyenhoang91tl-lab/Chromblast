@@ -800,6 +800,23 @@
     </div>
   </div>
 
+  <div id="game-pass-card" class="gpcard-panel">
+    <div class="gpcard-shell">
+      <div class="gpcard-header">
+        <button type="button" class="gpcard-close" id="gpcard-close-btn" aria-label="Close">✕</button>
+        <div class="gpcard-header-row">
+          <span class="gpcard-header-icon">🎫</span>
+          <span class="gpcard-header-level">Lv.<span id="gpcard-level-num">1</span></span>
+          <div class="gpcard-header-pill">
+            <div class="gpcard-header-pill-fill" id="gpcard-xp-fill"></div>
+          </div>
+          <span class="gpcard-header-xp" id="gpcard-xp-num">0/100</span>
+          <button type="button" class="gpcard-upgrade-btn" id="gpcard-upgrade-btn" data-i18n="gpcardUpgrade">Nâng cấp</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="leaderboard-panel" class="admin-panel-like">
     <div class="admin-card lb-card-wide">
       <div class="admin-title"><span data-i18n="leaderboardTitle">🏆 Bảng xếp hạng</span><button class="admin-close" id="leaderboard-close-btn">✕</button></div>
@@ -1387,6 +1404,7 @@
 <script src="js/chat-bubble-skins.js"></script>
 <script src="js/mech-config.js"></script>
 <script src="js/progression.js"></script>
+<script src="js/game-pass-card.js"></script>
 <script src="js/inventory.js"></script>
 <script src="js/quests.js"></script>
 <script src="js/lb-period.js"></script>

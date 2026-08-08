@@ -1595,3 +1595,15 @@ function MILESTONE_MSG(tier){
   Object.keys(fill).forEach(l=>{ if(typeof I18N!=='undefined' && I18N[l]) Object.assign(I18N[l], fill[l]); });
 })();
 
+(function(){
+  const fill = {
+    vi:{
+      gpcardUpgrade:'Nâng cấp'
+    },
+    en:{
+      gpcardUpgrade:'Upgrade'
+    }
+  };
+  Object.keys(fill).forEach(l=>{ if(typeof I18N!=='undefined' && I18N[l]) Object.assign(I18N[l], fill[l]); });
+})();
+
