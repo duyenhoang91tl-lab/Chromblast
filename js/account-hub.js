@@ -43,6 +43,12 @@ function _acchubCloseSub(panelId){
 
 (function initAccountHub(){
   function bind(){
+    // Nút ☰ menu chính mở lại đúng Menu đầy đủ (settings-panel) như trước —
+    // bấm "Tài khoản" bên trong Menu đó mới mở màn Tài khoản này (xem
+    // js/player-profile.js: settings-player-edit đã gọi sẵn openAccountHub()).
+    document.getElementById('account-btn')?.addEventListener('click', ()=>{
+      if(typeof openSettingsPanel === 'function') openSettingsPanel();
+    });
     document.getElementById('acchub-close-btn')?.addEventListener('click', ()=>{
       try{ sfxClick(); }catch(e){}
       closeAccountHub();
