@@ -5114,11 +5114,30 @@ body:has(#secret-stage.active) .streak-dot.lit{
   margin:0 14px 18px; padding:16px 14px 22px;
   max-height:none; flex:1; min-height:0;
   border-radius:18px;
-  background:linear-gradient(180deg, rgba(28, 18, 52, 0.78) 0%, rgba(16, 10, 34, 0.86) 100%);
-  border:1px solid rgba(180,140,255,0.22);
-  box-shadow:0 10px 36px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.1);
-  backdrop-filter: blur(2px);
+  background:linear-gradient(180deg, #ffffff 0%, #ffe3ee 100%);
+  border:1px solid rgba(230,120,160,0.25);
+  box-shadow:0 10px 36px rgba(200,90,130,0.16), inset 0 1px 0 rgba(255,255,255,0.6);
 }
+/* Nền sáng nên thẻ thông tin người chơi + hàng bật/tắt SFX-BGM-thông báo đổi
+   từ chữ trắng-trên-tối sang chữ tối-trên-sáng */
+.settings-overlay.menu-fullscreen .pp-info-card{
+  background:rgba(255,150,180,0.1);
+  border:1px solid rgba(230,120,160,0.25);
+  color:#5a3345;
+}
+.settings-overlay.menu-fullscreen .pp-info-row,
+.settings-overlay.menu-fullscreen .pp-caro-line{ color:#5a3345; }
+.settings-overlay.menu-fullscreen .pp-stat{ background:rgba(255,150,180,0.14); }
+.settings-overlay.menu-fullscreen .pp-stat small{ color:rgba(90,51,69,0.6); }
+.settings-overlay.menu-fullscreen .pp-stat b{ color:#c4567a; }
+.settings-overlay.menu-fullscreen .settings-pref-hint{ color:rgba(90,51,69,0.6); }
+.settings-overlay.menu-fullscreen .set-toggle{ color:#5a3345; }
+.settings-overlay.menu-fullscreen .set-toggle-ico{ filter:drop-shadow(0 2px 4px rgba(200,90,130,0.25)); }
+.settings-overlay.menu-fullscreen .settings-appinfo{ border-bottom:1px solid rgba(200,90,130,0.18); }
+.settings-overlay.menu-fullscreen .settings-appname{ color:#5a3345; }
+.settings-overlay.menu-fullscreen .settings-appver{ color:rgba(90,51,69,0.6); }
+.settings-overlay.menu-fullscreen .settings-row{ color:#5a3345; border-bottom:1px solid rgba(200,90,130,0.18); }
+.settings-overlay.menu-fullscreen .settings-social{ border-bottom:1px solid rgba(200,90,130,0.18); }
 .settings-overlay.menu-fullscreen .menu-top-row{
   display:grid;
   grid-template-columns:1fr 1fr;
