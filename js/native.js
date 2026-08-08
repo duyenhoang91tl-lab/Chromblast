@@ -224,6 +224,7 @@
     'caro-hub-panel','caro-lobby-panel','caro-mm-panel','caro-result-panel','caro-rank-panel','caro-settings-panel',
     'player-profile-panel','player-card-panel',
     'friends-panel','shop-panel','quests-screen',
+    'account-hub','account-status-panel','account-achievements-panel','account-bag-panel','account-groups-panel','account-membership-panel',
     'settings-panel','settings-more-panel','settings-lang-panel','settings-cup-panel','settings-text-panel',
     'brick-skin-panel',
     'board-skin-panel',
