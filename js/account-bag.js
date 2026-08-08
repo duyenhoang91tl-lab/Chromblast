@@ -29,9 +29,16 @@
 ══════════════════════════════════════════ */
 
 const ACBAG_BRICK_PREVIEW_COLORS = ["#E24B4A", "#378ADD", "#1D9E75", "#EF9F27"];
-const ACBAG_CATEGORIES = ['skills', 'boards', 'bricks', 'bubbles', 'maps'];
-const ACBAG_CAT_ICON = { skills:'🔥', boards:'🖼️', bricks:'🧱', bubbles:'💬', maps:'🗺️' };
-const ACBAG_CAT_KEY  = { skills:'acbagCatSkills', boards:'acbagCatBoards', bricks:'acbagCatBricks', bubbles:'acbagCatBubbles', maps:'acbagCatMaps' };
+const ACBAG_CATEGORIES = ['skills', 'boards', 'bricks', 'bubbles', 'maps', 'chests', 'fonts', 'nametags'];
+const ACBAG_CAT_ICON = { skills:'🔥', boards:'🖼️', bricks:'🧱', bubbles:'💬', maps:'🗺️', chests:'🎁', fonts:'🔤', nametags:'🏷️' };
+const ACBAG_CAT_KEY  = { skills:'acbagCatSkills', boards:'acbagCatBoards', bricks:'acbagCatBricks', bubbles:'acbagCatBubbles', maps:'acbagCatMaps', chests:'acbagCatChests', fonts:'acbagCatFonts', nametags:'acbagCatNameTags' };
+// 3 hạng mục dưới đây CHƯA có hệ thống dữ liệu thật trong dự án (không có field/
+// list nào lưu rương/mẫu chữ/mẫu tên hiển thị đã sở hữu) — đang được xây ở luồng
+// khác. Thêm trước lối vào + trạng thái "sắp ra mắt" (đúng mẫu account-groups.js
+// đã dùng cho Hội nhóm) để có chỗ đứng sẵn trong danh sách hạng mục; PHẦN DỮ LIỆU
+// THẬT sẽ do luồng đang xây kia đổ vào _acbagRenderDetail() sau, không tự bịa số
+// liệu/danh sách vật phẩm ở đây.
+const ACBAG_CAT_SOON = { chests:true, fonts:true, nametags:true };
 let _acbagView = 'categories'; // 'categories' | 'skills' | 'boards' | 'bricks' | 'bubbles' | 'maps'
 
 function _acbagT(k, ...args){ return (typeof t === 'function') ? t(k, ...args) : k; }
@@ -39,6 +46,7 @@ function _acbagEsc(s){ return (typeof escapeHtml === 'function') ? escapeHtml(s)
 
 /* ── Đếm số lượng sở hữu / tổng số của từng hạng mục — dùng cho badge số ở danh sách hạng mục ── */
 function _acbagCatCount(cat){
+  if(ACBAG_CAT_SOON[cat]) return { owned:null, total:null, soon:true };
   if(cat === 'skills'){
     const n = (typeof inv === 'object' && inv) ? ((inv.fires|0)+(inv.bubbles|0)+(inv.winds|0)) : 0;
     return { owned:n, total:null }; // skill là số lượng dùng dần, không có "tổng" cố định
@@ -70,11 +78,11 @@ function _acbagRenderCategories(){
   if(!wrap) return;
   wrap.innerHTML = ACBAG_CATEGORIES.map(cat=>{
     const c = _acbagCatCount(cat);
-    const countTxt = c.total===null ? String(c.owned) : (c.owned+'/'+c.total);
-    return '<button type="button" class="acbag-cat-row" data-cat="'+cat+'">'
+    const countTxt = c.soon ? _acbagT('acbagSoonBadge') : (c.total===null ? String(c.owned) : (c.owned+'/'+c.total));
+    return '<button type="button" class="acbag-cat-row' + (c.soon ? ' soon' : '') + '" data-cat="'+cat+'">'
       + '<span class="acbag-cat-ico">'+ACBAG_CAT_ICON[cat]+'</span>'
       + '<span class="acbag-cat-label">'+_acbagEsc(_acbagT(ACBAG_CAT_KEY[cat]))+'</span>'
-      + '<span class="acbag-cat-count">'+countTxt+'</span>'
+      + '<span class="acbag-cat-count' + (c.soon ? ' soon' : '') + '">'+_acbagEsc(countTxt)+'</span>'
       + '<span class="acbag-cat-arrow">›</span>'
       + '</button>';
   }).join('');
@@ -252,12 +260,26 @@ function _acbagRenderMaps(grid){
 }
 
 /* ── Bước 2: chi tiết 1 hạng mục ── */
+/* ── Rương / Mẫu chữ / Mẫu tên hiển thị: chưa có hệ thống dữ liệu thật, hiện
+   trạng thái "sắp ra mắt" đúng mẫu account-groups.js (Hội nhóm) đang dùng —
+   không tự bịa vật phẩm/số lượng khi chưa có quyết định thiết kế dữ liệu. ── */
+function _acbagRenderSoon(grid, cat){
+  grid.className = 'acbag-soon-wrap';
+  grid.innerHTML =
+    '<div class="acbag-empty">'
+    + '<div class="acbag-empty-icon">'+ACBAG_CAT_ICON[cat]+'</div>'
+    + '<div class="acbag-empty-title">'+_acbagEsc(_acbagT('acbagSoonTitle'))+'</div>'
+    + '<div class="acbag-empty-sub">'+_acbagEsc(_acbagT('acbagSoonSub'))+'</div>'
+    + '</div>';
+}
+
 function _acbagRenderDetail(){
   const titleEl = document.getElementById('acbag-detail-title');
   const grid = document.getElementById('acbag-grid');
   if(!titleEl || !grid) return;
   titleEl.textContent = _acbagT(ACBAG_CAT_KEY[_acbagView] || '');
 
+  if(ACBAG_CAT_SOON[_acbagView]){ _acbagRenderSoon(grid, _acbagView); return; }
   if(_acbagView === 'skills'){ _acbagRenderSkills(grid); return; }
   if(_acbagView === 'maps'){ _acbagRenderMaps(grid); return; }
 

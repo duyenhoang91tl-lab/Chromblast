@@ -6503,6 +6503,22 @@ body:has(#secret-stage.active) .streak-dot.lit{
   justify-content:center; font-size:22px; background:linear-gradient(135deg,#fff,#eee6ff);
 }
 
+/* Hạng mục "sắp ra mắt" (Rương/Mẫu chữ/Mẫu tên hiển thị) — badge nhạt hơn số
+   thật ở danh sách, và cùng khối trạng thái rỗng account-groups.js đang dùng. */
+.acbag-cat-count.soon{ font-size:11px; color:rgba(43,35,64,0.4); }
+.acbag-cat-row.soon{ opacity:0.86; }
+.acbag-empty{
+  display:flex; flex-direction:column; align-items:center; text-align:center;
+  gap:10px; padding:56px 20px 40px;
+}
+.acbag-empty-icon{
+  width:84px; height:84px; border-radius:50%; background:#fff;
+  display:flex; align-items:center; justify-content:center; font-size:38px;
+  box-shadow:0 4px 14px rgba(60,40,100,0.14); opacity:0.55;
+}
+.acbag-empty-title{ font-size:16px; font-weight:900; color:#2b2340; }
+.acbag-empty-sub{ font-size:13px; font-weight:700; color:rgba(43,35,64,0.55); max-width:260px; line-height:1.5; }
+
 /* ══════════════════════════════════════════
    TÀI KHOẢN → "Hội nhóm" (#account-groups) — trạng thái sắp ra mắt.
 ══════════════════════════════════════════ */
