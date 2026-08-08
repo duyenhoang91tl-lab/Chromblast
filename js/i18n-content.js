@@ -1692,7 +1692,9 @@ function MILESTONE_MSG(tier){
       acbagTabBoards:'Nền bàn', acbagTabBricks:'Mẫu gạch',
       acbagUse:'Dùng', acbagInUse:'Đang dùng',
       acgrpSoonTitle:'Tính năng Hội nhóm sẽ sớm ra mắt',
-      acgrpSoonSub:'Bạn có thể kết bạn và ghép đôi ngay bây giờ ở mục Bạn bè.'
+      acgrpSoonSub:'Bạn có thể kết bạn và ghép đôi ngay bây giờ ở mục Bạn bè.',
+      acmemActiveTitle:'Đã bỏ quảng cáo vĩnh viễn',
+      acmemActiveSub:'Cảm ơn bạn đã ủng hộ ChromaBlast!'
     },
     en:{
       acstLevel:'Level {0}', acstMapNormal:'Normal maps', acstMapSecret:'Hidden maps',
@@ -1704,7 +1706,9 @@ function MILESTONE_MSG(tier){
       acbagTabBoards:'Boards', acbagTabBricks:'Brick skins',
       acbagUse:'Use', acbagInUse:'In use',
       acgrpSoonTitle:'Groups feature is coming soon',
-      acgrpSoonSub:'You can already add friends and pair up in the Friends section.'
+      acgrpSoonSub:'You can already add friends and pair up in the Friends section.',
+      acmemActiveTitle:'Ads removed permanently',
+      acmemActiveSub:'Thanks for supporting ChromaBlast!'
     }
   };
   Object.keys(fill).forEach(l=>{ if(typeof I18N!=='undefined' && I18N[l]) Object.assign(I18N[l], fill[l]); });

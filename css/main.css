@@ -6180,6 +6180,39 @@ body:has(#secret-stage.active) .streak-dot.lit{
 }
 .acgrp-empty-title{ font-size:16px; font-weight:900; color:#2b2340; }
 .acgrp-empty-sub{ font-size:13px; font-weight:700; color:rgba(43,35,64,0.55); max-width:260px; line-height:1.5; }
+
+/* ══════════════════════════════════════════
+   TÀI KHOẢN → "Hội viên" (#account-membership) — tông sang trọng hơn 1 chút
+   (thêm ánh vàng nhạt), vẫn cùng gia đình pastel với khung account-hub.
+══════════════════════════════════════════ */
+.acmem-loading, .acmem-empty{
+  text-align:center; font-size:13px; font-weight:700; color:rgba(43,35,64,0.55);
+  padding:40px 16px;
+}
+.acmem-active{
+  display:flex; flex-direction:column; align-items:center; text-align:center;
+  gap:8px; padding:32px 20px; margin-top:14px; border-radius:20px;
+  background:linear-gradient(180deg, rgba(255,213,74,0.28), rgba(255,213,74,0.08));
+  border:2px solid #ffd54a; box-shadow:0 6px 18px rgba(180,140,0,0.14);
+}
+.acmem-active-icon{ font-size:40px; }
+.acmem-active-title{ font-size:16px; font-weight:900; color:#2b2340; }
+.acmem-active-sub{ font-size:13px; font-weight:700; color:rgba(43,35,64,0.6); }
+.acmem-intro{
+  display:flex; flex-direction:column; align-items:center; text-align:center;
+  gap:6px; padding:26px 18px 18px; margin-top:14px; border-radius:20px;
+  background:#fff; box-shadow:0 4px 16px rgba(60,40,100,0.14);
+  border:1px solid rgba(255,213,74,0.5);
+}
+.acmem-intro-icon{ font-size:36px; }
+.acmem-intro-title{ font-size:16px; font-weight:900; color:#2b2340; }
+.acmem-intro-desc{ font-size:13px; font-weight:700; color:rgba(43,35,64,0.6); margin-bottom:4px; }
+.acmem-buy-btn{ width:100%; margin-top:6px !important; }
+.acmem-restore-btn{
+  display:block; margin:14px auto 0; background:transparent; border:none;
+  color:rgba(43,35,64,0.5); font-size:12px; font-weight:700; text-decoration:underline;
+  cursor:pointer;
+}
 .acbag-use-btn{
   margin-top:6px; border:none; border-radius:10px; padding:5px 10px;
   background:linear-gradient(135deg,#c9b6f0,#a7b8f0); color:#2b2340;
