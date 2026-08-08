@@ -57,6 +57,7 @@
       '<div class="shop-tabs">' +
       '<button type="button" class="shop-tab active" data-shop-tab="boards">🗺️ Nền</button>' +
       '<button type="button" class="shop-tab" data-shop-tab="bricks">🧱 Gạch</button>' +
+      '<button type="button" class="shop-tab" data-shop-tab="bubbles">💬 Bong bóng</button>' +
       '<button type="button" class="shop-tab" data-shop-tab="hearts">❤️ Tim</button>' +
       '<button type="button" class="shop-tab" data-shop-tab="diamond">💎 KC</button>' +
       '<button type="button" class="shop-tab" data-shop-tab="topup">💳 Nạp</button>' +
@@ -457,6 +458,11 @@
       return;
     }
 
+    if (tab === "bubbles") {
+      renderBubbleShopTab(body);
+      return;
+    }
+
     const isBoard = tab === "boards";
     const list = isBoard
       ? typeof BOARD_SKINS !== "undefined"
@@ -604,6 +610,106 @@
     try {
       if (typeof sfxUnlock === "function") sfxUnlock();
     } catch (e) {}
+  }
+
+  function makeBubblePreviewEl(id) {
+    const wrap = document.createElement("div");
+    wrap.className = "shop-item-preview shop-bubble-preview";
+    const b = document.createElement("span");
+    b.className = "caro-chat-text bubble-" + id;
+    b.textContent = tt("shopBubblePreviewText", "Chào bạn! 👋");
+    wrap.appendChild(b);
+    return wrap;
+  }
+
+  function renderBubbleShopTab(body) {
+    const list = typeof CHAT_BUBBLE_SKINS !== "undefined" ? CHAT_BUBBLE_SKINS : [];
+    const unlockedFn = typeof isBubbleSkinUnlocked === "function" ? isBubbleSkinUnlocked : function () { return true; };
+
+    const filterBar = document.createElement("div");
+    filterBar.className = "shop-currency-filter";
+    [
+      { key: "all", label: tt("shopFilterAll", "Tất cả") },
+      { key: "gold", label: "🪙 " + tt("shopFilterGold", "Vàng") },
+      { key: "diamond", label: "💎 " + tt("shopFilterDia", "Kim cương") },
+    ].forEach(function (f) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "shop-currency-btn" + (shopCurrencyFilter === f.key ? " active" : "");
+      b.textContent = f.label;
+      b.addEventListener("click", function () {
+        try { sfxClick(); } catch (e) {}
+        shopCurrencyFilter = f.key;
+        renderShop("bubbles");
+      });
+      filterBar.appendChild(b);
+    });
+    body.appendChild(filterBar);
+
+    const grid = document.createElement("div");
+    grid.className = "shop-grid";
+    list.forEach(function (skin) {
+      const owned = unlockedFn(skin.id);
+      const goldPrice = skin.price | 0;
+      const diaCost = skin.diaPrice | 0;
+      if (!owned) {
+        if (shopCurrencyFilter === "gold" && goldPrice <= 0) return;
+        if (shopCurrencyFilter === "diamond" && diaCost <= 0) return;
+      }
+      const card = document.createElement("div");
+      card.className = "shop-item" + (owned ? " owned" : "");
+      card.appendChild(makeBubblePreviewEl(skin.id));
+
+      const nameEl = document.createElement("div");
+      nameEl.className = "shop-item-name";
+      nameEl.textContent = skin.name || skin.id;
+      card.appendChild(nameEl);
+
+      const priceEl = document.createElement("div");
+      priceEl.className = "shop-item-price";
+      priceEl.textContent = owned
+        ? tt("shopOwned", "Đã sở hữu")
+        : goldPrice
+          ? "🪙 " + goldPrice
+          : "💎 " + diaCost;
+      card.appendChild(priceEl);
+
+      if (!owned) {
+        const row = document.createElement("div");
+        row.className = "shop-item-actions";
+        if (goldPrice > 0) {
+          const bGold = document.createElement("button");
+          bGold.type = "button";
+          bGold.className = "shop-buy-btn";
+          bGold.textContent = tt("shopBuy", "Mua");
+          bGold.title = tt("shopBuyGold", "Mua bằng vàng");
+          bGold.addEventListener("click", function () {
+            try { sfxClick(); } catch (e) {}
+            const r = buyBubbleSkinWithGold(skin.id, goldPrice);
+            flashBuy(r, skin, goldPrice, false);
+            renderShop("bubbles");
+          });
+          row.appendChild(bGold);
+        }
+        if (diaCost > 0) {
+          const bDia = document.createElement("button");
+          bDia.type = "button";
+          bDia.className = "shop-buy-btn shop-buy-dia";
+          bDia.textContent = tt("shopBuyDia", "KC");
+          bDia.title = tt("shopBuyWithDia", "Mua bằng kim cương");
+          bDia.addEventListener("click", function () {
+            try { sfxClick(); } catch (e) {}
+            const r = buyBubbleSkinWithDiamond(skin.id, diaCost);
+            flashBuy(r, skin, diaCost, true);
+            renderShop("bubbles");
+          });
+          row.appendChild(bDia);
+        }
+        card.appendChild(row);
+      }
+      grid.appendChild(card);
+    });
+    body.appendChild(grid);
   }
 
   function buyBoardWithGold(id, price) {

@@ -1513,7 +1513,8 @@ function MILESTONE_MSG(tier){
       caroCoupleIncoming:'Có lời mời kết đôi — mở chat để nhận',
       caroCoupleExtremeWin:'Đã thắng máy Siêu', caroCoupleDone:'Đã ghép đôi!',
       ppAvatarUpload:'📷 Up ảnh cá nhân', ppAvatarClear:'✕ Xóa ảnh',
-      caroAvatarTooBig:'Ảnh quá lớn', caroAvatarSaved:'Đã lưu avatar' },
+      caroAvatarTooBig:'Ảnh quá lớn', caroAvatarSaved:'Đã lưu avatar',
+      caroBubbleBuyInShop:'🔒 Mua trong Cửa hàng', shopBubblePreviewText:'Chào bạn! 👋' },
     en:{ caroAdFail:'Watch an ad required', caroCoupleBtn:'Couple',
       caroCoupleInvite:'Couple invite — beat Master AI together!', caroCoupleInvited:'Couple invite sent',
       caroCoupleNeedOpp:'Need an online opponent', caroCoupleAccept:'Accept couple',
@@ -1522,7 +1523,8 @@ function MILESTONE_MSG(tier){
       caroCoupleIncoming:'Couple invite — open chat to accept',
       caroCoupleExtremeWin:'Beat Master AI', caroCoupleDone:'Coupled!',
       ppAvatarUpload:'📷 Upload photo', ppAvatarClear:'✕ Clear photo',
-      caroAvatarTooBig:'Image too large', caroAvatarSaved:'Avatar saved' }
+      caroAvatarTooBig:'Image too large', caroAvatarSaved:'Avatar saved',
+      caroBubbleBuyInShop:'🔒 Buy in the Shop', shopBubblePreviewText:'Hi there! 👋' }
   };
   Object.keys(social).forEach(l=>{ if(typeof I18N!=='undefined' && I18N[l]) Object.assign(I18N[l], social[l]); });
 })();

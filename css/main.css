@@ -1346,6 +1346,80 @@ body.tutorial-open #start-screen{
 .caro-chat-text.bubble-sweet { background: linear-gradient(135deg,#ff80ab,#ea80fc); color:#1a0a12; }
 .caro-chat-text.bubble-gold { background: linear-gradient(135deg,#ffe082,#ffb300); color:#3e2723; }
 .caro-chat-text.bubble-ink { background: #111; border: 1px dashed #90caf9; }
+
+/* ── 10 bong bóng chat bán trong Shop (tab 💬) — độ cầu kỳ/hiệu ứng tăng dần theo giá ── */
+.caro-chat-text.bubble-frost, .caro-float-bubble.style-frost {
+  background: rgba(210,240,255,0.16); border: 1px solid rgba(180,230,255,0.5);
+}
+.caro-chat-text.bubble-mint, .caro-float-bubble.style-mint {
+  background: linear-gradient(135deg,#b9fbc0,#6fe7b7); color:#0b3d2a; border:1px solid rgba(255,255,255,0.45);
+}
+.caro-chat-text.bubble-bubblegum, .caro-float-bubble.style-bubblegum {
+  background: linear-gradient(135deg,#f7b2e0,#c8a2ff); color:#3a0a3a; border:1px solid rgba(255,255,255,0.45);
+}
+.caro-chat-text.bubble-sunset, .caro-float-bubble.style-sunset {
+  background: linear-gradient(135deg,#ff9a5a,#ff5f96); color:#2b0a12;
+  border:1px solid rgba(255,214,170,0.65); box-shadow:0 0 8px rgba(255,120,120,0.35);
+}
+.caro-chat-text.bubble-ocean, .caro-float-bubble.style-ocean {
+  background: linear-gradient(135deg,#2196f3,#00c6d4); color:#fff;
+  border:1px solid rgba(150,230,255,0.65); animation: bubbleGlowSoft 2.2s ease-in-out infinite;
+}
+.caro-chat-text.bubble-emerald, .caro-float-bubble.style-emerald {
+  background: linear-gradient(135deg,#0f9b6c,#3ee08a); color:#04241a;
+  border:1px solid rgba(160,255,210,0.7); animation: bubbleGlowSoft 2.2s ease-in-out infinite;
+}
+.caro-chat-text.bubble-royal, .caro-float-bubble.style-royal {
+  background: linear-gradient(135deg,#3a1466,#6b2fb3); color:#ffe9a8;
+  border:2px solid #ffd54a; animation: bubbleGlowGold 1.8s ease-in-out infinite;
+}
+.caro-chat-text.bubble-holo, .caro-float-bubble.style-holo {
+  background: linear-gradient(120deg,#ff9a9e,#fad0c4,#fbc2eb,#a18cd1,#8fd3f4,#ff9a9e);
+  background-size: 300% 300%; color:#1a0a2a; border:1px solid rgba(255,255,255,0.65);
+  animation: bubbleHoloShift 3s linear infinite;
+}
+.caro-chat-text.bubble-starlight, .caro-float-bubble.style-starlight {
+  background:
+    radial-gradient(circle at 15% 30%, rgba(255,255,255,0.95) 0 1px, transparent 2px),
+    radial-gradient(circle at 70% 55%, rgba(255,255,255,0.85) 0 1px, transparent 2px),
+    radial-gradient(circle at 40% 80%, rgba(255,255,255,0.75) 0 1px, transparent 2px),
+    radial-gradient(circle at 85% 20%, rgba(255,255,255,0.7) 0 1px, transparent 2px),
+    linear-gradient(135deg,#0b1236,#1c2a6b);
+  color:#eaf2ff; border:1px solid rgba(150,200,255,0.65);
+  animation: bubbleStarlightGlow 2s ease-in-out infinite;
+}
+.caro-chat-text.bubble-legend, .caro-float-bubble.style-legend {
+  background: linear-gradient(135deg,#0a0a0a,#2a2110); color:#ffd54a;
+  border:2px solid #ff4444;
+  animation: bubbleLegendBorder 1.4s linear infinite, bubbleLegendPulse 1.4s ease-in-out infinite;
+}
+@keyframes bubbleGlowSoft {
+  0%,100% { filter: brightness(1); }
+  50%     { filter: brightness(1.18); }
+}
+@keyframes bubbleGlowGold {
+  0%,100% { box-shadow:0 0 4px 1px rgba(255,213,74,0.4), 0 0 12px rgba(107,47,179,0.5); }
+  50%     { box-shadow:0 0 6px 2px rgba(255,213,74,0.7), 0 0 20px rgba(107,47,179,0.75); }
+}
+@keyframes bubbleHoloShift {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+@keyframes bubbleStarlightGlow {
+  0%,100% { box-shadow: 0 0 6px rgba(150,200,255,0.35); }
+  50%     { box-shadow: 0 0 14px rgba(180,220,255,0.6); }
+}
+@keyframes bubbleLegendBorder {
+  0%   { border-color:#ff4444; }
+  25%  { border-color:#ffd54a; }
+  50%  { border-color:#00e5ff; }
+  75%  { border-color:#cc44ff; }
+  100% { border-color:#ff4444; }
+}
+@keyframes bubbleLegendPulse {
+  0%,100% { box-shadow: 0 0 8px rgba(255,213,74,0.4); }
+  50%     { box-shadow: 0 0 16px rgba(255,213,74,0.7); }
+}
 .caro-chat-fx { font-size: 14px; }
 .caro-chat-form {
   display: flex; gap: 6px; padding: 8px 10px 10px;

@@ -27,7 +27,17 @@
     { id:'neon',    label:'Neon', premium:true },
     { id:'sweet',   label:'Ngọt', premium:true },
     { id:'gold',    label:'Vàng', premium:true },
-    { id:'ink',     label:'Mực', premium:true }
+    { id:'ink',     label:'Mực', premium:true },
+    { id:'frost',     label:'Băng giá',     shop:true },
+    { id:'mint',      label:'Bạc hà',       shop:true },
+    { id:'bubblegum', label:'Kẹo bông',     shop:true },
+    { id:'sunset',    label:'Hoàng hôn',    shop:true },
+    { id:'ocean',     label:'Đại dương',    shop:true },
+    { id:'emerald',   label:'Ngọc lục bảo', shop:true },
+    { id:'royal',     label:'Hoàng gia',    shop:true },
+    { id:'holo',      label:'Cầu vồng',     shop:true },
+    { id:'starlight', label:'Ánh sao',      shop:true },
+    { id:'legend',    label:'Huyền thoại',  shop:true }
   ];
 
   const bubbleQueue = [];
@@ -490,9 +500,14 @@
       b.type = 'button';
       b.className = 'caro-bubble-pick style-'+st.id+(currentBubbleStyle()===st.id?' active':'')+(unlocked.indexOf(st.id)<0?' locked':'');
       b.textContent = st.label;
+      if(st.shop && unlocked.indexOf(st.id)<0) b.title = tt('caroBubbleBuyInShop','🔒 Mua trong Cửa hàng');
       b.addEventListener('click', async ()=>{
         try{sfxClick();}catch(e){}
         if(unlocked.indexOf(st.id)<0){
+          if(st.shop){
+            try{ showComboFlash(0,false, tt('caroBubbleBuyInShop','🔒 Mua trong Cửa hàng')); }catch(e2){}
+            return;
+          }
           try{
             await watchAd();
             const list = unlockedBubbles();
