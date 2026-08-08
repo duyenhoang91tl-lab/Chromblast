@@ -84,13 +84,16 @@ function _acchubCloseSub(panelId){
       _acchubOpenSub('account-groups-panel');
     });
     document.getElementById('acchub-row-rename')?.addEventListener('click', ()=>{
+      closeAccountHub();
       if(typeof openPlayerProfilePanel === 'function') openPlayerProfilePanel();
     });
     document.getElementById('acchub-row-settings')?.addEventListener('click', ()=>{
       try{ sfxClick(); }catch(e){}
+      closeAccountHub();
       if(typeof openSettingsPanel === 'function') openSettingsPanel();
     });
     document.getElementById('acchub-row-friends')?.addEventListener('click', ()=>{
+      closeAccountHub();
       if(typeof openFriendsPanel === 'function') openFriendsPanel();
     });
 
