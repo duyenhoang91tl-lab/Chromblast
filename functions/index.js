@@ -73,6 +73,22 @@ function periodKey(kind, when) {
   return periodKey('day', when);
 }
 
+/** Port 1:1 từ js/lb-period.js — nhận quà là nhận cho kỳ VỪA KẾT THÚC (hôm qua/tuần
+ * trước/tháng trước), không phải kỳ đang chạy dở. Client gọi claimPeriodRewardOnline
+ * cũng hiểu theo nghĩa này (xem previousPeriodKey ở lb-period.js) — 2 bên phải khớp
+ * kỳ thì rank tính ra mới đúng cái người chơi đang xem trên màn hình. */
+function previousPeriodKey(kind) {
+  const now = new Date();
+  if (kind === 'day') return periodKey('day', new Date(now.getTime() - 86400000));
+  if (kind === 'week') return periodKey('week', new Date(now.getTime() - 7 * 86400000));
+  if (kind === 'month') {
+    const y = now.getUTCFullYear(), m = now.getUTCMonth();
+    const prev = m === 0 ? new Date(Date.UTC(y - 1, 11, 15)) : new Date(Date.UTC(y, m - 1, 15));
+    return periodKey('month', prev);
+  }
+  return periodKey(kind);
+}
+
 /**
  * Đánh dấu bắt đầu 1 ván chơi đơn — ghi mốc thời gian server (client không sửa được,
  * xem firestore.rules: fieldLocked('currentRunStartedAt')). submitSoloScore dùng mốc
@@ -429,8 +445,10 @@ function periodRewardForRank(kind, rank) {
 }
 
 /**
- * Nhận quà BXH kỳ (ngày/tuần/tháng) — KHÔNG tin rank client tự báo: tự đếm lại số
- * người có điểm cao hơn trong chính periodScores (đã server-authoritative sẵn từ
+ * Nhận quà BXH kỳ VỪA KẾT THÚC (hôm qua/tuần trước/tháng trước — previousPeriodKey,
+ * khớp với những gì client đang hiển thị cho người chơi xem trước khi bấm nhận,
+ * KHÔNG phải kỳ đang chạy dở) — KHÔNG tin rank client tự báo: tự đếm lại số người
+ * có điểm cao hơn trong chính periodScores (đã server-authoritative sẵn từ
  * submitSoloScore) để suy ra rank thật, rồi tra bảng thưởng. Chỉ nhận được 1 lần/kỳ
  * nhờ doc players/{uid}/claims/{periodId} tạo bằng transaction (rules đã khoá
  * claims: client không tự tạo/xoá được để nhận lại). Hiện chỉ hỗ trợ scope 'world'.
@@ -440,16 +458,16 @@ exports.claimPeriodReward = onCall({ region: 'asia-southeast1' }, async (request
   if (!uid) throw new HttpsError('unauthenticated', 'Cần đăng nhập.');
   const kind = request.data && request.data.kind;
   if (!['day', 'week', 'month'].includes(kind)) throw new HttpsError('invalid-argument', 'Kỳ không hợp lệ.');
-  const pid = periodKey(kind);
+  const pid = previousPeriodKey(kind);
   const entriesRef = db.collection('periodScores').doc(pid).collection('entries');
   const mySnap = await entriesRef.doc(uid).get();
-  if (!mySnap.exists) throw new HttpsError('failed-precondition', 'Chưa có điểm trong kỳ này.');
+  if (!mySnap.exists) throw new HttpsError('failed-precondition', 'Chưa có điểm trong kỳ vừa kết thúc.');
   const myScore = mySnap.data().score || 0;
   const higherAgg = await entriesRef.where('score', '>', myScore).count().get();
   const rank = higherAgg.data().count + 1;
   const reward = periodRewardForRank(kind, rank);
   if (!reward || (reward.gold <= 0 && reward.diamond <= 0)) {
-    throw new HttpsError('failed-precondition', 'Hạng hiện tại chưa đủ để nhận quà.');
+    throw new HttpsError('failed-precondition', 'Hạng ở kỳ vừa kết thúc chưa đủ để nhận quà.');
   }
   const claimRef = db.collection('players').doc(uid).collection('claims').doc('period_' + pid);
   const playerRef = db.collection('players').doc(uid);
