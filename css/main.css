@@ -660,7 +660,7 @@ body.tutorial-open #start-screen{
 /* Caro cài đặt phải nổi trên #caro-stage (z-index 10060) khi chơi online */
 #caro-settings-panel.admin-panel-like { z-index: 10070; }
 /* Hồ sơ đối thủ/của bạn (bấm avatar) cũng phải nổi trên #caro-stage, nếu không sẽ bị ẩn phía sau màn chơi */
-#player-card-panel.admin-panel-like { z-index: 10070; }
+#player-card-panel.admin-panel-like { z-index: 10090; }
 .admin-map-btn.locked { opacity:0.4; cursor:not-allowed; }
 .admin-map-btn.locked:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); }
 .admin-card {
