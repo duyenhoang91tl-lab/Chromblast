@@ -8,7 +8,7 @@ let _onlineLastOpenRooms = [];
 let _wagerOn = false;
 let _wagerCurrency = 'gold';
 let _wagerAmount = 0;
-const WAGER_PRESETS = { gold: [10, 25, 50, 100], diamond: [1, 2, 5] };
+const WAGER_PRESETS = { gold: [5, 10, 15, 20, 30], diamond: [1, 2, 5, 10, 20] };
 
 function _onlineShow(id){ const el=document.getElementById(id); if(el) el.classList.add('show'); }
 function _onlineHide(id){ const el=document.getElementById(id); if(el) el.classList.remove('show'); }
