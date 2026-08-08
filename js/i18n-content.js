@@ -2005,3 +2005,26 @@ function MILESTONE_MSG(tier){
   };
   Object.keys(fill).forEach(l=>{ if(typeof I18N!=='undefined' && I18N[l]) Object.assign(I18N[l], fill[l]); });
 })();
+
+// ── Rà soát bổ sung 2: bảng hồ sơ đối thủ Caro (pc-stats) + tab "Hành trình"
+// trong Thẻ trò chơi — cũng luôn rơi về fallback tiếng Việt hard-code dù chọn
+// ngôn ngữ khác, thiếu hẳn khỏi bảng dịch. ──
+(function(){
+  const fill = {
+    vi:{
+      caroNoProfileAvailable:'Chưa có hồ sơ để hiển thị',
+      caroProfileLoadError:'Không tải được hồ sơ, thử lại sau',
+      gpcardJourneyStatus:'Đã qua', gpcardJourneyStatusEnd:'map ẩn',
+      gpcardJourneyFree:'Bản miễn phí', gpcardJourneyPremium:'Bản nâng cấp',
+      gpcardJourneyClaimAll:'Nhận đồng loạt'
+    },
+    en:{
+      caroNoProfileAvailable:'No profile to show',
+      caroProfileLoadError:'Could not load profile, try again later',
+      gpcardJourneyStatus:'Cleared', gpcardJourneyStatusEnd:'hidden maps',
+      gpcardJourneyFree:'Free track', gpcardJourneyPremium:'Premium track',
+      gpcardJourneyClaimAll:'Claim all'
+    }
+  };
+  Object.keys(fill).forEach(l=>{ if(typeof I18N!=='undefined' && I18N[l]) Object.assign(I18N[l], fill[l]); });
+})();

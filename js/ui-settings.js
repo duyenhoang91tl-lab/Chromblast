@@ -247,14 +247,7 @@ function initSettingsMenu(){
     sfxClick();
     if(typeof openLuckySpin==='function') openLuckySpin();
   });
-  document.getElementById('set-btn-versus')?.addEventListener('click', ()=>{
-    sfxClick();
-    closeAllSettingsOverlays();
-    if(typeof openVersusSetup==='function') openVersusSetup();
-  });
   document.getElementById('set-btn-more')?.addEventListener('click', ()=>{ sfxClick(); openSettingsMore(); });
-  document.getElementById('set-btn-home')?.addEventListener('click', ()=>{ sfxClick(); settingsGoHome(); });
-  document.getElementById('set-btn-replay')?.addEventListener('click', settingsReplay);
   document.getElementById('pause-replay-btn')?.addEventListener('click', ()=>{
     if(typeof replayFromPause==='function') replayFromPause();
   });
