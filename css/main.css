@@ -5209,10 +5209,22 @@ body:has(#secret-stage.active) .streak-dot.lit{
 /* Pause overlay — resume + replay (hidden maps) */
 .pause-overlay{
   display:none; position:absolute; inset:0; z-index:100;
-  background:rgba(0,0,0,0.78);
+  background:rgba(0,0,0,0.55);
   border-radius:14px;
   flex-direction:column; align-items:center; justify-content:center; gap:14px;
   padding:20px;
+}
+.pause-card{
+  display:flex; flex-direction:column; align-items:center; gap:14px;
+  width:100%; max-width:300px; padding:28px 22px;
+  border-radius:24px;
+  background:linear-gradient(160deg,
+    rgba(255,183,120,0.4) 0%,
+    rgba(255,140,150,0.38) 45%,
+    rgba(150,110,210,0.4) 100%);
+  backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+  border:1px solid rgba(255,255,255,0.35);
+  box-shadow:0 8px 30px rgba(60,20,60,0.35), inset 0 1px 0 rgba(255,255,255,0.3);
 }
 .pause-title{
   font-size:28px; font-weight:900; color:#fff;
