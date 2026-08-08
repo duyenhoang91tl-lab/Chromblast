@@ -6090,6 +6090,9 @@ body:has(#secret-stage.active) .streak-dot.lit{
 }
 .gpcard-quest-act.go{ background:#ffb454; color:#5a3400; }
 .gpcard-quest-act.claim{ background:linear-gradient(135deg,#ff6600,#ffaa00); color:#3a1a00; }
+.gpcard-quest-act.go{ background:#ffb454; color:#5a3400; }
+.gpcard-quest-act.claim{ background:linear-gradient(135deg,#ff6600,#ffaa00); color:#3a1a00; }
+.gpcard-quest-act.done{ background:#e2ddf5; color:#9a8fc0; cursor:default; }
 .gpcard-quest-bar-track{
   position:absolute; left:8px; right:8px; bottom:0; height:2px;
   border-radius:999px; background:#e7e2f7; overflow:hidden;
@@ -6165,6 +6168,31 @@ body:has(#secret-stage.active) .streak-dot.lit{
   background:linear-gradient(135deg,#ff6600,#ffaa00); box-shadow:0 4px 12px rgba(255,102,0,0.35);
 }
 .gpcard-jr-claimall-btn:disabled{ background:#e2ddf5; color:#9a8fc0; box-shadow:none; cursor:default; }
+
+/* Tab "Đi đổi" (#gpcard-redeem) */
+.gpcard-redeem-balance{
+  text-align:center; font-weight:900; font-size:16px; color:#5a4f8a; padding:10px 16px;
+}
+.gpcard-redeem-grid{
+  display:grid; grid-template-columns:1fr 1fr; gap:10px;
+}
+.gpcard-redeem-card{
+  background:#fff; border-radius:14px; padding:10px; text-align:center;
+  box-shadow:0 4px 10px rgba(76,58,150,0.10); display:flex; flex-direction:column; align-items:center; gap:4px;
+}
+.gpcard-redeem-card.owned{ opacity:0.6; }
+.gpcard-redeem-preview{ width:100%; height:64px; display:flex; align-items:center; justify-content:center; }
+.gpcard-redeem-swatch{ width:56px; height:56px; border-radius:12px; }
+.gpcard-redeem-heart-preview{ font-size:34px; }
+.gpcard-redeem-name{ font-weight:800; font-size:13px; color:#3a2f55; }
+.gpcard-redeem-price{ font-weight:700; font-size:12px; color:#7a6fae; }
+.gpcard-redeem-actions{ display:flex; gap:6px; width:100%; margin-top:2px; }
+.gpcard-redeem-btn{
+  flex:1; border:none; border-radius:999px; padding:7px 4px; font-weight:900; font-size:12px;
+  color:#fff; background:linear-gradient(135deg, var(--gpcard-accent) 0%, var(--gpcard-accent2) 100%);
+}
+.gpcard-redeem-btn.gpcard-redeem-btn-dia{ background:linear-gradient(135deg, #9c7bf0 0%, #6f5bd0 100%); }
+.gpcard-redeem-btn.disabled{ background:#e2ddf5; color:#9a8fc0; }
 /* ══════════════════════════════════════════
    TÀI KHOẢN (account-hub) — điểm vào duy nhất hồ sơ/cài đặt/xã hội.
    Nền pastel tím/xanh dương nhạt, card bo góc lớn — cùng gia đình màu với các

@@ -1768,7 +1768,11 @@ function MILESTONE_MSG(tier){
       gpcardJourneyStatusEnd:'Kết thúc hành trình',
       gpcardJourneyFree:'Hành trình miễn phí',
       gpcardJourneyPremium:'Nâng cấp hành trình',
-      gpcardJourneyClaimAll:'Nhận hết'
+      gpcardJourneyClaimAll:'Nhận hết',
+      gpcardRedeemBtn:'Đi đổi',
+      gpcardRedeemAllOwned:'Bạn đã sở hữu hết rồi!',
+      gpcardRedeemNotEnoughGold:'Không đủ vàng',
+      gpcardRedeemNotEnoughDia:'Không đủ kim cương'
     },
     en:{
       gpcardUpgrade:'Upgrade',
@@ -1783,7 +1787,11 @@ function MILESTONE_MSG(tier){
       gpcardJourneyStatusEnd:'Journey end',
       gpcardJourneyFree:'Free journey',
       gpcardJourneyPremium:'Upgrade journey',
-      gpcardJourneyClaimAll:'Claim all'
+      gpcardJourneyClaimAll:'Claim all',
+      gpcardRedeemBtn:'Redeem',
+      gpcardRedeemAllOwned:'You already own everything!',
+      gpcardRedeemNotEnoughGold:'Not enough gold',
+      gpcardRedeemNotEnoughDia:'Not enough diamonds'
     },
     ko:{
       gpcardUpgrade:'업그레이드',
@@ -1798,7 +1806,11 @@ function MILESTONE_MSG(tier){
       gpcardJourneyStatusEnd:'여정 종료',
       gpcardJourneyFree:'무료 여정',
       gpcardJourneyPremium:'여정 업그레이드',
-      gpcardJourneyClaimAll:'모두 받기'
+      gpcardJourneyClaimAll:'모두 받기',
+      gpcardRedeemBtn:'교환',
+      gpcardRedeemAllOwned:'이미 모두 보유하고 있어요!',
+      gpcardRedeemNotEnoughGold:'골드가 부족해요',
+      gpcardRedeemNotEnoughDia:'다이아몬드가 부족해요'
     },
     ja:{
       gpcardUpgrade:'アップグレード',
@@ -1813,7 +1825,11 @@ function MILESTONE_MSG(tier){
       gpcardJourneyStatusEnd:'旅の終わり',
       gpcardJourneyFree:'無料の旅',
       gpcardJourneyPremium:'旅のアップグレード',
-      gpcardJourneyClaimAll:'すべて受け取る'
+      gpcardJourneyClaimAll:'すべて受け取る',
+      gpcardRedeemBtn:'交換',
+      gpcardRedeemAllOwned:'すべて所持済みです！',
+      gpcardRedeemNotEnoughGold:'ゴールドが足りません',
+      gpcardRedeemNotEnoughDia:'ダイヤが足りません'
     },
     zh:{
       gpcardUpgrade:'升级',
@@ -1828,7 +1844,11 @@ function MILESTONE_MSG(tier){
       gpcardJourneyStatusEnd:'旅程结束',
       gpcardJourneyFree:'免费旅程',
       gpcardJourneyPremium:'升级旅程',
-      gpcardJourneyClaimAll:'全部领取'
+      gpcardJourneyClaimAll:'全部领取',
+      gpcardRedeemBtn:'兑换',
+      gpcardRedeemAllOwned:'你已经全部拥有了！',
+      gpcardRedeemNotEnoughGold:'金币不足',
+      gpcardRedeemNotEnoughDia:'钻石不足'
     },
     es:{
       gpcardUpgrade:'Mejorar',
@@ -1843,7 +1863,11 @@ function MILESTONE_MSG(tier){
       gpcardJourneyStatusEnd:'Fin del viaje',
       gpcardJourneyFree:'Viaje gratis',
       gpcardJourneyPremium:'Mejorar viaje',
-      gpcardJourneyClaimAll:'Reclamar todo'
+      gpcardJourneyClaimAll:'Reclamar todo',
+      gpcardRedeemBtn:'Canjear',
+      gpcardRedeemAllOwned:'¡Ya tienes todo!',
+      gpcardRedeemNotEnoughGold:'Oro insuficiente',
+      gpcardRedeemNotEnoughDia:'Diamantes insuficientes'
     }
   };
   Object.keys(fill).forEach(l=>{ if(typeof I18N!=='undefined' && I18N[l]) Object.assign(I18N[l], fill[l]); });
