@@ -11,16 +11,16 @@
   // Giá tăng dần theo độ cầu kỳ hình ảnh (xem css/main.css) — 7 kiểu trả vàng (5-100),
   // 3 kiểu cao cấp nhất trả kim cương (1-5).
   const CHAT_BUBBLE_SKINS = [
-    { id:'frost',     name:'Băng giá',     price:5   },
-    { id:'mint',      name:'Bạc hà',       price:10  },
-    { id:'bubblegum', name:'Kẹo bông gòn', price:15  },
-    { id:'sunset',    name:'Hoàng hôn',    price:25  },
-    { id:'ocean',     name:'Đại dương',    price:40  },
-    { id:'emerald',   name:'Ngọc lục bảo', price:60  },
-    { id:'royal',     name:'Hoàng gia',    price:100 },
-    { id:'holo',      name:'Ánh cầu vồng', price:0, diaPrice:1 },
-    { id:'starlight', name:'Ánh sao',      price:0, diaPrice:3 },
-    { id:'legend',    name:'Huyền thoại',  price:0, diaPrice:5 }
+    { id:'frost',     name:'Băng giá',     price: 15   },
+    { id:'mint',      name:'Bạc hà',       price: 30  },
+    { id:'bubblegum', name:'Kẹo bông gòn', price: 45  },
+    { id:'sunset',    name:'Hoàng hôn',    price: 75  },
+    { id:'ocean',     name:'Đại dương',    price: 120  },
+    { id:'emerald',   name:'Ngọc lục bảo', price: 180  },
+    { id:'royal',     name:'Hoàng gia',    price: 300 },
+    { id:'holo',      name:'Ánh cầu vồng', price: 0, diaPrice: 3 },
+    { id:'starlight', name:'Ánh sao',      price: 0, diaPrice: 9 },
+    { id:'legend',    name:'Huyền thoại',  price: 0, diaPrice: 15 }
   ];
 
   function unlockedBubbleIds(){

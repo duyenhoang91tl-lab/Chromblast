@@ -31,7 +31,7 @@
     return s;
   }
 
-  const HEART_GOLD_PRICE = 8;
+  const HEART_GOLD_PRICE = 24;
   const HEART_PACK = 1;
   const BRICK_PREVIEW_COLORS = ["#E24B4A", "#378ADD", "#1D9E75", "#EF9F27"];
   let shopCurrencyFilter = "all"; // "all" | "gold" | "diamond" — loc mua theo vang/kim cuong o tab Nen/Gach
