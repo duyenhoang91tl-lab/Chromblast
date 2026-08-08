@@ -6054,7 +6054,11 @@ body:has(#secret-stage.active) .streak-dot.lit{
 .gpcard-lb-name{ flex:1; min-width:0; font-weight:700; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .gpcard-lb-score{ font-weight:900; font-size:13px; color:#5a4f8a; flex-shrink:0; }
 
-/* Tab "Nhiệm vụ" (#gpcard-quests) */
+/* Tab "Nhiệm vụ" (#gpcard-quests) — cùng khuôn hàng bảng 1 dòng như tab
+   "Bảng xếp hạng" (.gpcard-lb-row): icon tròn nhỏ bên trái, tên+thưởng gộp 1
+   dòng ở giữa (flex:1, cắt gọn), giá trị/nút bên phải. Tiến độ gộp thành 1 dải
+   mỏng ở mép dưới hàng (position:absolute) thay vì 1 dòng riêng, để giữ đúng bố
+   cục 1 dòng/hàng như bảng xếp hạng — không thêm dòng phụ nào khác. */
 .gpcard-quest-cat-row{ display:flex; gap:8px; padding:8px; }
 .gpcard-quest-cat-btn{
   flex:1; border:none; border-radius:12px; padding:9px 4px;
@@ -6062,27 +6066,35 @@ body:has(#secret-stage.active) .streak-dot.lit{
 }
 .gpcard-quest-cat-btn.active{ background:linear-gradient(135deg,#a7b8f0,#c9b6f0); color:#fff; }
 .gpcard-quest-list-card{ padding:10px 8px; }
-.gpcard-quest-list{ display:flex; flex-direction:column; gap:8px; }
-.gpcard-quest-row{ display:flex; align-items:center; gap:10px; padding:8px 6px; border-radius:12px; }
+.gpcard-quest-list{ display:flex; flex-direction:column; gap:2px; max-height:54vh; overflow-y:auto; }
+.gpcard-quest-row{
+  position:relative; display:flex; align-items:center; gap:10px; padding:8px 8px;
+  border-radius:10px; overflow:hidden;
+}
 .gpcard-quest-row.ready{ background:#fff2d9; }
 .gpcard-quest-row.claimed{ opacity:0.55; }
 .gpcard-quest-ico{
-  width:36px; height:36px; border-radius:50%; flex-shrink:0;
-  display:flex; align-items:center; justify-content:center; font-size:18px; color:#fff;
+  width:26px; height:26px; border-radius:50%; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; font-size:13px; color:#fff;
 }
-.gpcard-quest-main{ flex:1; min-width:0; }
-.gpcard-quest-title{ font-size:13px; font-weight:900; line-height:1.25; }
-.gpcard-quest-reward{ font-size:11px; font-weight:700; color:#c98a1a; margin-top:1px; }
-.gpcard-quest-bar{ height:5px; border-radius:999px; background:#e7e2f7; overflow:hidden; margin-top:5px; }
-.gpcard-quest-bar i{ display:block; height:100%; border-radius:999px; background:linear-gradient(90deg,#a7b8f0,#c9b6f0); }
-.gpcard-quest-prog{ font-size:10px; font-weight:800; color:#9a8fc0; margin-top:2px; }
+.gpcard-quest-title{
+  flex:1; min-width:0; font-weight:700; font-size:13px; color:#2b2340;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.gpcard-quest-reward-sub{ font-weight:600; font-size:11px; color:#9a8fc0; }
+.gpcard-quest-val{ flex-shrink:0; font-weight:900; font-size:13px; color:#5a4f8a; }
+.gpcard-quest-val.done{ color:#1dd1a1; font-size:15px; }
 .gpcard-quest-act{
-  flex-shrink:0; border:none; border-radius:999px; padding:8px 12px;
+  flex-shrink:0; border:none; border-radius:999px; padding:6px 12px;
   font-weight:900; font-size:11px; cursor:pointer; white-space:nowrap;
 }
 .gpcard-quest-act.go{ background:#ffb454; color:#5a3400; }
 .gpcard-quest-act.claim{ background:linear-gradient(135deg,#ff6600,#ffaa00); color:#3a1a00; }
-.gpcard-quest-act.done{ background:#e2ddf5; color:#9a8fc0; cursor:default; }
+.gpcard-quest-bar-track{
+  position:absolute; left:8px; right:8px; bottom:0; height:2px;
+  border-radius:999px; background:#e7e2f7; overflow:hidden;
+}
+.gpcard-quest-bar-track i{ display:block; height:100%; background:linear-gradient(90deg,#a7b8f0,#c9b6f0); }
 
 /* Tab "Hành trình" (#gpcard-rewards) — mốc thưởng theo map ẩn */
 .gpcard-jr-status{ text-align:center; font-size:13px; font-weight:800; color:#5a4f8a; padding:10px 16px; }

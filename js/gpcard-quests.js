@@ -26,8 +26,7 @@ function _gpcardQuestIcoColor(def){
 
 function _gpcardQuestActionHtml(cat, def, done, claimed){
   if(claimed){
-    return '<button type="button" class="gpcard-quest-act done" disabled>'
-      + (typeof t === 'function' ? t('gpcardQuestDone') : 'Hoàn thành') + '</button>';
+    return '<span class="gpcard-quest-val done">✓</span>';
   }
   if(done){
     return '<button type="button" class="gpcard-quest-act claim" data-gpcard-quest-claim'
@@ -46,15 +45,14 @@ function _gpcardQuestRowHtml(cat, def, st){
   const rewardLine = def.useDailyClaim
     ? (typeof t === 'function' ? t('questsCheckinReward') : 'XP + vàng + tim')
     : questsRewardText(def.reward);
+  // Hàng 1 dòng duy nhất theo đúng khuôn bảng xếp hạng (icon tròn nhỏ bên trái,
+  // tên+thưởng gộp 1 dòng ở giữa, giá trị/nút bên phải) — tiến độ gộp vào 1 dải
+  // mỏng ở mép dưới hàng thay vì 1 dòng riêng, để không phá bố cục 1 dòng/hàng.
   return '<div class="gpcard-quest-row' + (claimed ? ' claimed' : done ? ' ready' : '') + '">'
-    + '<div class="gpcard-quest-ico" style="background:' + _gpcardQuestIcoColor(def) + '">' + def.icon + '</div>'
-    + '<div class="gpcard-quest-main">'
-      + '<div class="gpcard-quest-title">' + questsTitleOf(def) + '</div>'
-      + '<div class="gpcard-quest-reward">' + rewardLine + '</div>'
-      + '<div class="gpcard-quest-bar"><i style="width:' + pct + '%"></i></div>'
-      + '<div class="gpcard-quest-prog">' + prog + '/' + def.target + '</div>'
-    + '</div>'
+    + '<span class="gpcard-quest-ico" style="background:' + _gpcardQuestIcoColor(def) + '">' + def.icon + '</span>'
+    + '<span class="gpcard-quest-title">' + questsTitleOf(def) + ' <span class="gpcard-quest-reward-sub">· ' + rewardLine + '</span></span>'
     + _gpcardQuestActionHtml(cat, def, done, claimed)
+    + '<span class="gpcard-quest-bar-track"><i style="width:' + pct + '%"></i></span>'
     + '</div>';
 }
 
