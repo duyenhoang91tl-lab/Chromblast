@@ -707,6 +707,69 @@ body.tutorial-open #start-screen{
 
 /* Hồ sơ đối thủ/của bạn (bấm avatar) cũng phải nổi trên #caro-stage, nếu không sẽ bị ẩn phía sau màn chơi */
 #player-card-panel.admin-panel-like { z-index: 10090; }
+
+/* ── Màn vào Caro (#caro-hub-panel) — toàn màn hình, nền pastel hồng tím
+   nhạt, cùng phong cách với màn "Tài khoản" (.acchub-panel) thay vì modal
+   căn giữa mặc định của .admin-panel-like. Theo đúng khuôn đã dùng cho
+   #gpcard-panel: bỏ padding/căn giữa của .admin-panel-like, cho .admin-card
+   giãn hết cỡ rồi tự đặt nền/màu chữ riêng — không đụng rule .admin-panel-like
+   / .admin-card gốc (dùng chung với nhiều panel khác). ── */
+#caro-hub-panel.admin-panel-like{
+  padding:0; align-items:stretch; justify-content:stretch; background:transparent;
+}
+#caro-hub-panel .admin-card{
+  width:100%; max-width:none; height:100%; max-height:none;
+  margin:0; border:none; border-radius:0; box-shadow:none;
+  background:linear-gradient(165deg,#f6d9ee 0%,#e9d3f3 50%,#dcd8f6 100%);
+  color:#2b2340;
+  padding:max(20px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+}
+#caro-hub-panel .admin-title{ color:#2b2340; }
+#caro-hub-panel .admin-close{ color:#6b5f8a; }
+#caro-hub-panel .admin-sub,
+#caro-hub-panel .caro-prefs-row,
+#caro-hub-panel .caro-hub-divider,
+#caro-hub-panel .caro-room-count,
+#caro-hub-panel .auth-field label { color:#6b5f8a; }
+#caro-hub-panel .caro-seg-btn{
+  background:#fff; color:#4a3f6b; border-color:rgba(90,70,140,0.25);
+}
+#caro-hub-panel .online-status{ color:#3d8f5c; }
+#caro-hub-panel .online-status.warn{ color:#a5730a; }
+#caro-hub-panel .auth-field input{
+  background:#fff; border-color:rgba(90,70,140,0.25); color:#2b2340;
+}
+/* Nút phụ (btn-ghost) vốn ép chữ trắng + nền đen mờ trong style tag lẫn CSS
+   !important cho theme tối — phải !important + chọn theo #id để thắng cả 2. */
+#caro-hub-panel .auth-submit-btn.btn-ghost{
+  color:#4a3f6b !important; text-shadow:none !important;
+  background:#fff !important; border:1px solid rgba(90,70,140,0.28) !important;
+}
+#caro-hub-panel .caro-hub-stats .caro-rank-badge{
+  background:#fff; border-color:rgba(90,70,140,0.18);
+}
+#caro-hub-panel .caro-rank-name{ color:#a5730a; }
+#caro-hub-panel .caro-rank-pts,
+#caro-hub-panel .caro-rate,
+#caro-hub-panel .caro-wld{ color:#6b5f8a; }
+#caro-hub-panel .caro-rank-progress{ background:rgba(90,70,140,0.15); }
+#caro-hub-panel .caro-room-row{
+  background:#fff; border-color:rgba(90,70,140,0.18); color:#2b2340;
+}
+#caro-hub-panel .caro-room-row.mine{ background:rgba(255,213,74,0.18); border-color:rgba(200,150,20,0.4); }
+#caro-hub-panel .caro-room-info small{ color:#6b5f8a; }
+#caro-hub-panel .caro-ai-level{
+  background:rgba(90,180,110,0.16); color:#2b5c3a; border-color:rgba(90,180,110,0.35);
+}
+#caro-hub-panel .caro-ai-level:hover,
+#caro-hub-panel .caro-ai-level:active{ background:rgba(90,180,110,0.3); }
+#caro-hub-panel .caro-ai-level[data-level="extreme"]{
+  background:rgba(150,90,190,0.18); color:#5c2b7a; border-color:rgba(150,90,190,0.4);
+}
+@media (orientation: landscape){
+  #caro-hub-panel .admin-card{ max-width:640px; margin:0 auto; }
+}
+
 .admin-map-btn.locked { opacity:0.4; cursor:not-allowed; }
 .admin-map-btn.locked:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); }
 .admin-card {
