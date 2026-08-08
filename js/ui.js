@@ -414,16 +414,9 @@ async function doChangePassword(oldPass, newPass, newPass2){
 }
 
 function initAccountPanel(){
-  // Nút ⚙️ mở Settings hub (không mở thẳng account)
-  const accountBtn = document.getElementById('account-btn');
+  // Nút ☰ mở "Tài khoản" (js/account-hub.js sở hữu handler này) — Cài đặt giờ mở
+  // từ bên trong Tài khoản, không mở thẳng từ nút này nữa.
   const panel = document.getElementById('account-panel');
-  if(accountBtn){
-    accountBtn.addEventListener('click', ()=>{
-      sfxClick();
-      if(typeof openSettingsPanel==='function') openSettingsPanel();
-      else panel.classList.add('show');
-    });
-  }
   document.getElementById('account-close-btn').addEventListener('click', ()=>{
     panel.classList.remove('show');
   });

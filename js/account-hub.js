@@ -43,6 +43,11 @@ function _acchubCloseSub(panelId){
 
 (function initAccountHub(){
   function bind(){
+    // Nút ☰ menu chính giờ mở "Tài khoản" thay vì mở thẳng Cài đặt — Cài đặt
+    // vẫn mở được bình thường từ dòng "Cài đặt" bên trong Tài khoản.
+    document.getElementById('account-btn')?.addEventListener('click', ()=>{
+      openAccountHub();
+    });
     document.getElementById('acchub-close-btn')?.addEventListener('click', ()=>{
       try{ sfxClick(); }catch(e){}
       closeAccountHub();

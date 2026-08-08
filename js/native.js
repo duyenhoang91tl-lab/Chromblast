@@ -228,6 +228,7 @@
     'brick-skin-panel',
     'board-skin-panel',
     'spin-panel',
+    'account-hub','game-pass-card',
   ];
 
   function anyHiddenMapActive(){
@@ -247,6 +248,14 @@
         questsHandleBack();
         return;
       }
+    }catch(e){}
+    // 0b. Tài khoản / Thẻ trò chơi: panel con (Trạng thái/Nhiệm vụ/Bảng xếp
+    // hạng/...) đang mở → đóng riêng panel con đó trước, chưa đóng cả khung.
+    try{
+      const openAhubSub = document.querySelector('.ahub-subpanel.show');
+      if(openAhubSub){ openAhubSub.classList.remove('show'); return; }
+      const openGpcardSub = document.querySelector('.gpcard-subpanel.show');
+      if(openGpcardSub){ openGpcardSub.classList.remove('show'); return; }
     }catch(e){}
     // 1. Đóng panel đang mở
     for(const id of CLOSABLE_PANELS){
