@@ -1233,7 +1233,7 @@ function MILESTONE_MSG(tier){
     dailyFlash:'🎁 +{0} XP · 🪙 +1 · ❤️ +{2} (ngày {1}/7)',
     dailyGold:'Điểm danh', dailyHeart:'Điểm danh',
     lbTabPeriod:'🧨 Blast', lbTabFriends:'🤝 Bạn bè', lbTabVersus:'⚔️ Versus', lbSubVersus:'BXH Đấu 1-1 — danh hiệu, tỷ lệ thắng/thua/hòa.', vsLbEmpty:'Chưa có dữ liệu',
-    gpcardUpgrade:'Nâng cấp', gpcardTabRewards:'Phần thưởng', gpcardTabQuests:'Nhiệm vụ', gpcardTabRedeem:'Đi đổi', gpcardTabLeaderboard:'Bảng xếp hạng',
+    gpcardUpgrade:'Nâng cấp', gpcardTabRewards:'Hành trình', gpcardTabQuests:'Nhiệm vụ', gpcardTabRedeem:'Đi đổi', gpcardTabLeaderboard:'Bảng xếp hạng',
     lbScopeWorld:'🌍 Thế giới', lbScopeContinent:'🗺️ Châu lục', lbScopeCountry:'🏳️ Đất nước', lbScopeFriends:'🤝 Bạn bè',
     lbSubFriends:'BXH bạn bè (điểm cao nhất)', lbRegion:'Quốc gia của bạn',
     lbRewardTitle:'Quà top (kỳ trước)', lbPrevRank:'Hạng kỳ trước', lbPrevNoRank:'Kỳ trước chưa vào top',
@@ -1292,7 +1292,7 @@ function MILESTONE_MSG(tier){
     dailyFlash:'🎁 +{0} XP · 🪙 +1 · ❤️ +{2} (day {1}/7)',
     dailyGold:'Check-in', dailyHeart:'Check-in',
     lbTabPeriod:'🧨 Blast', lbTabFriends:'🤝 Friends', lbTabVersus:'⚔️ Versus', lbSubVersus:'Versus leaderboard — titles, win/loss/draw rates.', vsLbEmpty:'No data yet',
-    gpcardUpgrade:'Upgrade', gpcardTabRewards:'Rewards', gpcardTabQuests:'Quests', gpcardTabRedeem:'Redeem', gpcardTabLeaderboard:'Leaderboard',
+    gpcardUpgrade:'Upgrade', gpcardTabRewards:'Journey', gpcardTabQuests:'Quests', gpcardTabRedeem:'Redeem', gpcardTabLeaderboard:'Leaderboard',
     lbScopeWorld:'🌍 World', lbScopeContinent:'🗺️ Continent', lbScopeCountry:'🏳️ Country', lbScopeFriends:'🤝 Friends',
     lbSubFriends:'Friends leaderboard (best score)', lbRegion:'Your country',
     lbRewardTitle:'Top rewards (previous period)', lbPrevRank:'Previous rank', lbPrevNoRank:'Not ranked last period',
@@ -1614,62 +1614,92 @@ function MILESTONE_MSG(tier){
     vi:{
       gpcardUpgrade:'Nâng cấp',
       gpcardLevelPrefix:'Lv.',
-      gpcardTabRewards:'Phần thưởng',
+      gpcardTabRewards:'Hành trình',
       gpcardTabQuests:'Nhiệm vụ',
       gpcardTabRedeem:'Đi đổi',
       gpcardTabLeaderboard:'Bảng xếp hạng',
       gpcardQuestGo:'Đi ngay',
-      gpcardQuestDone:'Hoàn thành'
+      gpcardQuestDone:'Hoàn thành',
+      gpcardJourneyStatus:'Khởi đầu hành trình',
+      gpcardJourneyStatusEnd:'Kết thúc hành trình',
+      gpcardJourneyFree:'Hành trình miễn phí',
+      gpcardJourneyPremium:'Nâng cấp hành trình',
+      gpcardJourneyClaimAll:'Nhận hết'
     },
     en:{
       gpcardUpgrade:'Upgrade',
       gpcardLevelPrefix:'Lv.',
-      gpcardTabRewards:'Rewards',
+      gpcardTabRewards:'Journey',
       gpcardTabQuests:'Quests',
       gpcardTabRedeem:'Redeem',
       gpcardTabLeaderboard:'Leaderboard',
       gpcardQuestGo:'Play now',
-      gpcardQuestDone:'Done'
+      gpcardQuestDone:'Done',
+      gpcardJourneyStatus:'Journey start',
+      gpcardJourneyStatusEnd:'Journey end',
+      gpcardJourneyFree:'Free journey',
+      gpcardJourneyPremium:'Upgrade journey',
+      gpcardJourneyClaimAll:'Claim all'
     },
     ko:{
       gpcardUpgrade:'업그레이드',
       gpcardLevelPrefix:'Lv.',
-      gpcardTabRewards:'보상',
+      gpcardTabRewards:'여정',
       gpcardTabQuests:'퀘스트',
       gpcardTabRedeem:'교환',
       gpcardTabLeaderboard:'순위표',
       gpcardQuestGo:'지금 하기',
-      gpcardQuestDone:'완료'
+      gpcardQuestDone:'완료',
+      gpcardJourneyStatus:'여정 시작',
+      gpcardJourneyStatusEnd:'여정 종료',
+      gpcardJourneyFree:'무료 여정',
+      gpcardJourneyPremium:'여정 업그레이드',
+      gpcardJourneyClaimAll:'모두 받기'
     },
     ja:{
       gpcardUpgrade:'アップグレード',
       gpcardLevelPrefix:'Lv.',
-      gpcardTabRewards:'報酬',
+      gpcardTabRewards:'旅',
       gpcardTabQuests:'クエスト',
       gpcardTabRedeem:'交換',
       gpcardTabLeaderboard:'ランキング',
       gpcardQuestGo:'今すぐ',
-      gpcardQuestDone:'完了'
+      gpcardQuestDone:'完了',
+      gpcardJourneyStatus:'旅の始まり',
+      gpcardJourneyStatusEnd:'旅の終わり',
+      gpcardJourneyFree:'無料の旅',
+      gpcardJourneyPremium:'旅のアップグレード',
+      gpcardJourneyClaimAll:'すべて受け取る'
     },
     zh:{
       gpcardUpgrade:'升级',
       gpcardLevelPrefix:'Lv.',
-      gpcardTabRewards:'奖励',
+      gpcardTabRewards:'旅程',
       gpcardTabQuests:'任务',
       gpcardTabRedeem:'兑换',
       gpcardTabLeaderboard:'排行榜',
       gpcardQuestGo:'立即前往',
-      gpcardQuestDone:'已完成'
+      gpcardQuestDone:'已完成',
+      gpcardJourneyStatus:'旅程开始',
+      gpcardJourneyStatusEnd:'旅程结束',
+      gpcardJourneyFree:'免费旅程',
+      gpcardJourneyPremium:'升级旅程',
+      gpcardJourneyClaimAll:'全部领取'
     },
     es:{
       gpcardUpgrade:'Mejorar',
       gpcardLevelPrefix:'Nv.',
-      gpcardTabRewards:'Recompensas',
+      gpcardTabRewards:'Viaje',
       gpcardTabQuests:'Misiones',
       gpcardTabRedeem:'Canjear',
       gpcardTabLeaderboard:'Clasificación',
       gpcardQuestGo:'Jugar ahora',
-      gpcardQuestDone:'Completado'
+      gpcardQuestDone:'Completado',
+      gpcardJourneyStatus:'Inicio del viaje',
+      gpcardJourneyStatusEnd:'Fin del viaje',
+      gpcardJourneyFree:'Viaje gratis',
+      gpcardJourneyPremium:'Mejorar viaje',
+      gpcardJourneyClaimAll:'Reclamar todo'
     }
   };
   Object.keys(fill).forEach(l=>{ if(typeof I18N!=='undefined' && I18N[l]) Object.assign(I18N[l], fill[l]); });
