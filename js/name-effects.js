@@ -37,12 +37,20 @@
     return { ok:true };
   }
 
-  function buyNameEffect(id, diaCost){
+  async function buyNameEffect(id, diaCost){
     if(isNameEffectOwned(id)) return { ok:false, reason:'owned' };
-    if(typeof spendDiamonds !== 'function' || !spendDiamonds(diaCost)) return { ok:false, reason:'diamond' };
+    if(typeof _getOnlineFunctions !== 'function') return { ok:false, reason:'offline' };
+    const fns = _getOnlineFunctions();
+    if(!fns) return { ok:false, reason:'offline' };
+    try{
+      await fns.httpsCallable('spendCurrency')({ cost: { diamonds: diaCost } });
+    }catch(e){
+      return { ok:false, reason:'diamond' };
+    }
     const list = ownedNameEffectIds();
     list.push(id);
     if(typeof savePlayerProfile === 'function') savePlayerProfile({ ownedNameEffects: list });
+    try{ if(typeof syncWalletFromServer === 'function') await syncWalletFromServer(); }catch(e){}
     return { ok:true };
   }
 

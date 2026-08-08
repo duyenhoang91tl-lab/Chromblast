@@ -187,7 +187,7 @@
     box.addEventListener("shop-qty-change", syncLabels);
     syncLabels();
 
-    document.getElementById("shop-ex-to-gold-btn")?.addEventListener("click", function () {
+    document.getElementById("shop-ex-to-gold-btn")?.addEventListener("click", async function () {
       try {
         sfxClick();
       } catch (e) {}
@@ -198,10 +198,13 @@
           : typeof Inventory !== "undefined" && Inventory.exchangeDiamondsForGold
             ? Inventory.exchangeDiamondsForGold
             : null;
-      const r = fn ? fn(n) : { ok: false };
+      this.disabled = true;
+      const r = fn ? await fn(n) : { ok: false };
       if (!r.ok) {
         try {
-          showComboFlash(0, false, tt("shopNotEnoughDiamond", "Không đủ kim cương"));
+          showComboFlash(0, false, r.reason === "offline"
+            ? tt("errNetwork", "Lỗi kết nối mạng — vui lòng thử lại.")
+            : tt("shopNotEnoughDiamond", "Không đủ kim cương"));
         } catch (e) {}
       }
       renderShop("diamond");
@@ -382,12 +385,13 @@
         "</span>" +
         "</button>";
       body.appendChild(box);
-      document.getElementById("shop-buy-heart")?.addEventListener("click", function () {
+      document.getElementById("shop-buy-heart")?.addEventListener("click", async function () {
         try {
           sfxClick();
         } catch (e) {}
         if (typeof buyHeartWithGold !== "function") return;
-        const r = buyHeartWithGold(HEART_PACK, HEART_GOLD_PRICE);
+        this.disabled = true;
+        const r = await buyHeartWithGold(HEART_PACK, HEART_GOLD_PRICE);
         if (!r || !r.ok) {
           try {
             showComboFlash(0, false, r && r.reason === 'max'
@@ -743,9 +747,10 @@
         bDia.className = "shop-buy-btn shop-buy-dia";
         bDia.textContent = tt("shopBuyDia", "KC");
         bDia.title = tt("shopBuyWithDia", "Mua bằng kim cương");
-        bDia.addEventListener("click", function () {
+        bDia.addEventListener("click", async function () {
           try { sfxClick(); } catch (e) {}
-          const r = buyNameEffect(fx.id, diaCost);
+          bDia.disabled = true;
+          const r = await buyNameEffect(fx.id, diaCost);
           flashBuy(r, fx, diaCost, true);
           renderShop("nameeffects");
         });

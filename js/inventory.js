@@ -311,21 +311,35 @@ function spendDiamonds(n){
   if(typeof logGameEvent === 'function') logGameEvent('spend_virtual_currency', { virtual_currency_name:'diamond', value:n });
   return true;
 }
-/** Đổi vàng → kim cương: 100 vàng = 1 kim cương */
-function exchangeGoldForDiamonds(count){
+/** Đổi vàng → kim cương: 100 vàng = 1 kim cương — tỉ giá do server quyết định
+ * (Cloud Function exchangeCurrency), không tự trừ/cộng cục bộ. */
+async function exchangeGoldForDiamonds(count){
   count = Math.max(1, count|0);
-  const cost = count * GOLD_PER_DIAMOND;
-  if(!spendGold(cost)) return { ok:false, reason:'gold' };
-  grantDiamonds(count, typeof t==='function'?t('shopDiamondExchange'):'Đổi vàng');
-  return { ok:true, diamonds:count, gold:cost };
+  if(typeof _getOnlineFunctions !== 'function') return { ok:false, reason:'offline' };
+  const fns = _getOnlineFunctions();
+  if(!fns) return { ok:false, reason:'offline' };
+  try{
+    await fns.httpsCallable('exchangeCurrency')({ direction:'goldToDiamond', count });
+  }catch(e){
+    return { ok:false, reason:'gold' };
+  }
+  try{ if(typeof syncWalletFromServer === 'function') await syncWalletFromServer(); }catch(e){}
+  return { ok:true, diamonds:count, gold:count*GOLD_PER_DIAMOND };
 }
-/** Đổi kim cương → vàng: 1 kim cương = 100 vàng */
-function exchangeDiamondsForGold(count){
+/** Đổi kim cương → vàng: 1 kim cương = 100 vàng — tỉ giá do server quyết định
+ * (Cloud Function exchangeCurrency), không tự trừ/cộng cục bộ. */
+async function exchangeDiamondsForGold(count){
   count = Math.max(1, count|0);
-  const gain = count * GOLD_PER_DIAMOND;
-  if(!spendDiamonds(count)) return { ok:false, reason:'diamond' };
-  grantGold(gain, typeof t==='function'?t('shopGoldExchange'):'Đổi kim cương');
-  return { ok:true, diamonds:count, gold:gain };
+  if(typeof _getOnlineFunctions !== 'function') return { ok:false, reason:'offline' };
+  const fns = _getOnlineFunctions();
+  if(!fns) return { ok:false, reason:'offline' };
+  try{
+    await fns.httpsCallable('exchangeCurrency')({ direction:'diamondToGold', count });
+  }catch(e){
+    return { ok:false, reason:'diamond' };
+  }
+  try{ if(typeof syncWalletFromServer === 'function') await syncWalletFromServer(); }catch(e){}
+  return { ok:true, diamonds:count, gold:count*GOLD_PER_DIAMOND };
 }
 function diamondPriceForGold(goldPrice){
   const p = Math.max(0, goldPrice|0);
@@ -428,7 +442,7 @@ function nextAdGoldReward(){
   return AD_GOLD_REWARDS[i];
 }
 
-function buyHeartWithGold(n, priceEach){
+async function buyHeartWithGold(n, priceEach){
   n = Math.max(1, n|0);
   // Chặn mua khi tim đã đầy — trước đây không kiểm tra, khiến người chơi mất vàng
   // oan mà tim vẫn vượt quá MAX_HEARTS (VD 5/5 mua vẫn lên 6, sai luật giới hạn tim).
@@ -436,8 +450,16 @@ function buyHeartWithGold(n, priceEach){
   if(!heartsBelowMax()) return { ok:false, reason:'max' };
   const price = Math.max(1, (priceEach|0) || (typeof HEART_GOLD_PRICE==='number'?HEART_GOLD_PRICE:8));
   const total = price * n;
-  if(!spendGold(total)) return { ok:false, reason:'gold' };
+  if(typeof _getOnlineFunctions !== 'function') return { ok:false, reason:'offline' };
+  const fns = _getOnlineFunctions();
+  if(!fns) return { ok:false, reason:'offline' };
+  try{
+    await fns.httpsCallable('spendCurrency')({ cost: { gold: total } });
+  }catch(e){
+    return { ok:false, reason:'gold' };
+  }
   grantHearts(n, typeof t==='function'?t('shopHeartBought'):'Mua bằng vàng');
+  try{ if(typeof syncWalletFromServer === 'function') await syncWalletFromServer(); }catch(e){}
   return { ok:true };
 }
 
