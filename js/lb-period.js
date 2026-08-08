@@ -373,6 +373,7 @@
       logGameEvent("claim_reward", { kind: kind, rank: res.rank, gold: res.gold, diamond: res.diamond });
     }
     return { ok: true, periodId: periodId, rank: res.rank, gold: res.gold, diamond: res.diamond };
+
   }
 
   function rewardPreviewRows(kind) {

@@ -88,6 +88,12 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    /* Sổ dedupe webhook IAP (functions/index.js: revenuecatWebhook) — chỉ Admin SDK
+       đụng vào, chặn client đọc/ghi để không dò được lịch sử giao dịch của người khác. */
+    match /iapEvents/{eventId} {
+      allow read, write: if false;
+    }
+
     /* BXH kỳ (ngày/tuần/tháng) — client chỉ đọc, ghi qua Cloud Function */
     match /periodScores/{periodId} {
       allow read: if signedIn();

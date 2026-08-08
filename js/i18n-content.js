@@ -1527,3 +1527,69 @@ function MILESTONE_MSG(tier){
   Object.keys(social).forEach(l=>{ if(typeof I18N!=='undefined' && I18N[l]) Object.assign(I18N[l], social[l]); });
 })();
 
+// ── Rà soát bổ sung: các key dùng qua t()/tt()/data-i18n nhưng thiếu hẳn khỏi
+// bảng dịch (không lỗi cú pháp, chỉ luôn rơi về chuỗi fallback tiếng Việt hard-code
+// dù người chơi chọn ngôn ngữ khác — vd toàn bộ Shop luôn hiện tiếng Việt bất kể
+// ngôn ngữ). Gộp theo nhóm tính năng cho dễ theo dõi. ──
+(function(){
+  const fill = {
+    vi:{
+      // Shop (kim cương/vàng/IAP)
+      shopBestValue:'Hời nhất', shopDiaSmall:'60 kim cương', shopDiaMedium:'330 kim cương',
+      shopDiaLarge:'700 kim cương', shopFilterAll:'Tất cả', shopFilterGold:'Vàng', shopFilterDia:'Kim cương',
+      shopLoading:'Đang tải...', shopIapEmpty:'Chưa có gói nào — thử lại sau nhé.',
+      shopIapUnavailable:'Nạp thêm chỉ khả dụng trên app Android.',
+      shopPurchaseOk:'Cảm ơn bạn đã ủng hộ! 🎉', shopPurchaseFail:'Giao dịch không thành công',
+      shopRemoveAds:'Bỏ quảng cáo vĩnh viễn', shopRestore:'Khôi phục giao dịch đã mua',
+      shopRestoreOk:'Đã khôi phục', shopRestoreFail:'Không tìm thấy giao dịch nào',
+      shopStarterPack:'Gói khởi đầu', shopStarterDesc:'200 💎 + Bỏ quảng cáo vĩnh viễn — chỉ 1 lần',
+      shopHeartBought:'Mua bằng vàng', iapUnavailable:'Mua hàng chỉ khả dụng trên app Android',
+      boardSkinBuyShop:'Mua trong Shop', brickSkinBuyShop:'Mua trong Shop',
+      // Xem QC nhận vàng/tim
+      invAdHeartCap:'Hết lượt QC tim hôm nay (5/5)', invAdGoldCap:'Hết lượt QC vàng hôm nay (5/5)',
+      invAdGoldGrant:'Xem quảng cáo',
+      // Chat: báo cáo / chặn
+      gchatReport:'Báo cáo', gchatReportWhy:'Báo cáo vì sao?', gchatReportSent:'Đã gửi báo cáo — cảm ơn bạn',
+      gchatReportFail:'Không gửi được báo cáo', gchatBlock:'Chặn',
+      gchatBlockConfirm:'Chặn người này? Bạn sẽ không thấy tin nhắn hay lời mời của họ nữa.',
+      gchatBlocked:'Đã chặn', gchatBlockFail:'Không chặn được', gchatUnblock:'Bỏ chặn',
+      gchatBlockedToggle:'🚫 Người bị chặn', gchatNoBlocked:'Chưa chặn ai',
+      gchatFriendAlready:'Đã gửi / đã là bạn', gchatFriendFail:'Không gửi được lời mời',
+      // Đăng nhập Facebook / Play Games
+      onlineAuthFbNativeSetup:'Thiếu cấu hình Facebook Login trên app — cần FACEBOOK_APP_ID + facebook_client_token (strings.xml)',
+      onlineAuthFbFail:'Đăng nhập Facebook chưa lấy được access token — thử lại',
+      onlineAuthDiffCred:'Email này đã đăng ký bằng cách khác (VD: Google) — hãy đăng nhập lại đúng cách đã dùng lần đầu',
+      onlineAuthPgWebOnly:'Đăng nhập Play Games chỉ dùng được trên app Android, không có trên web',
+      onlineAuthPgNativeSetup:'Thiếu plugin Play Games Services trên app — xem docs/ONLINE_MULTIPLAYER.md để cài',
+      onlineAuthPgFail:'Đăng nhập Play Games chưa lấy được mã xác thực — thử lại'
+    },
+    en:{
+      shopBestValue:'Best value', shopDiaSmall:'60 diamonds', shopDiaMedium:'330 diamonds',
+      shopDiaLarge:'700 diamonds', shopFilterAll:'All', shopFilterGold:'Gold', shopFilterDia:'Diamonds',
+      shopLoading:'Loading...', shopIapEmpty:'No packs yet — try again later.',
+      shopIapUnavailable:'Top-ups are only available on the Android app.',
+      shopPurchaseOk:'Thanks for your support! 🎉', shopPurchaseFail:'Transaction failed',
+      shopRemoveAds:'Remove ads forever', shopRestore:'Restore purchases',
+      shopRestoreOk:'Restored', shopRestoreFail:'No purchases found',
+      shopStarterPack:'Starter pack', shopStarterDesc:'200 💎 + Remove ads forever — one time only',
+      shopHeartBought:'Bought with gold', iapUnavailable:'Purchases are only available on the Android app',
+      boardSkinBuyShop:'Buy in Shop', brickSkinBuyShop:'Buy in Shop',
+      invAdHeartCap:'Out of heart ad views today (5/5)', invAdGoldCap:'Out of gold ad views today (5/5)',
+      invAdGoldGrant:'Watched an ad',
+      gchatReport:'Report', gchatReportWhy:'Report for what reason?', gchatReportSent:'Report sent — thank you',
+      gchatReportFail:'Could not send report', gchatBlock:'Block',
+      gchatBlockConfirm:'Block this person? You will no longer see their messages or invites.',
+      gchatBlocked:'Blocked', gchatBlockFail:'Could not block', gchatUnblock:'Unblock',
+      gchatBlockedToggle:'🚫 Blocked users', gchatNoBlocked:'No one blocked yet',
+      gchatFriendAlready:'Already sent / already friends', gchatFriendFail:'Could not send invite',
+      onlineAuthFbNativeSetup:'Facebook Login is not configured on the app — needs FACEBOOK_APP_ID + facebook_client_token (strings.xml)',
+      onlineAuthFbFail:'Facebook sign-in did not return an access token — try again',
+      onlineAuthDiffCred:'This email is already registered a different way (e.g. Google) — sign in the way you first used',
+      onlineAuthPgWebOnly:'Play Games sign-in only works on the Android app, not on web',
+      onlineAuthPgNativeSetup:'Play Games Services plugin is missing on the app — see docs/ONLINE_MULTIPLAYER.md to set up',
+      onlineAuthPgFail:'Play Games sign-in did not return an auth code — try again'
+    }
+  };
+  Object.keys(fill).forEach(l=>{ if(typeof I18N!=='undefined' && I18N[l]) Object.assign(I18N[l], fill[l]); });
+})();
+
