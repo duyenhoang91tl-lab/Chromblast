@@ -635,4 +635,20 @@
   g.questsHandleBack = questsHandleBack;
   g.initQuestsUI = initQuestsUI;
   g.updateQuestsBadge = updateQuestsBadge;
+
+  // Lối vào riêng cho bản trình bày lại giao diện ở tab "Nhiệm vụ" của Thẻ trò
+  // chơi (js/gpcard-quests.js) — chỉ đọc/ghi đúng state và hàm tính điểm/tiến
+  // độ/nhận thưởng đã có ở trên, không có logic tính toán nào mới. Đặt tên có
+  // tiền tố "quests" để tránh trùng với loadState/saveState riêng của các
+  // module khác (brick-skins.js, map-boards.js) cũng đang dùng tên đó cho state
+  // của module đó.
+  g.QUEST_DEFS = QUEST_DEFS;
+  g.questsLoadState = loadState;
+  g.questsSaveState = saveState;
+  g.questsSyncCheckin = syncCheckinFromDaily;
+  g.questsProgressOf = progressOf;
+  g.questsIsClaimed = isClaimed;
+  g.questsClaim = claimQuest;
+  g.questsTitleOf = questTitle;
+  g.questsRewardText = rewardText;
 })(typeof window !== "undefined" ? window : globalThis);

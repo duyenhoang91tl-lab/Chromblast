@@ -1617,7 +1617,9 @@ function MILESTONE_MSG(tier){
       gpcardTabRewards:'Phần thưởng',
       gpcardTabQuests:'Nhiệm vụ',
       gpcardTabRedeem:'Đi đổi',
-      gpcardTabLeaderboard:'Bảng xếp hạng'
+      gpcardTabLeaderboard:'Bảng xếp hạng',
+      gpcardQuestGo:'Đi ngay',
+      gpcardQuestDone:'Hoàn thành'
     },
     en:{
       gpcardUpgrade:'Upgrade',
@@ -1625,7 +1627,9 @@ function MILESTONE_MSG(tier){
       gpcardTabRewards:'Rewards',
       gpcardTabQuests:'Quests',
       gpcardTabRedeem:'Redeem',
-      gpcardTabLeaderboard:'Leaderboard'
+      gpcardTabLeaderboard:'Leaderboard',
+      gpcardQuestGo:'Play now',
+      gpcardQuestDone:'Done'
     },
     ko:{
       gpcardUpgrade:'업그레이드',
@@ -1633,7 +1637,9 @@ function MILESTONE_MSG(tier){
       gpcardTabRewards:'보상',
       gpcardTabQuests:'퀘스트',
       gpcardTabRedeem:'교환',
-      gpcardTabLeaderboard:'순위표'
+      gpcardTabLeaderboard:'순위표',
+      gpcardQuestGo:'지금 하기',
+      gpcardQuestDone:'완료'
     },
     ja:{
       gpcardUpgrade:'アップグレード',
@@ -1641,7 +1647,9 @@ function MILESTONE_MSG(tier){
       gpcardTabRewards:'報酬',
       gpcardTabQuests:'クエスト',
       gpcardTabRedeem:'交換',
-      gpcardTabLeaderboard:'ランキング'
+      gpcardTabLeaderboard:'ランキング',
+      gpcardQuestGo:'今すぐ',
+      gpcardQuestDone:'完了'
     },
     zh:{
       gpcardUpgrade:'升级',
@@ -1649,7 +1657,9 @@ function MILESTONE_MSG(tier){
       gpcardTabRewards:'奖励',
       gpcardTabQuests:'任务',
       gpcardTabRedeem:'兑换',
-      gpcardTabLeaderboard:'排行榜'
+      gpcardTabLeaderboard:'排行榜',
+      gpcardQuestGo:'立即前往',
+      gpcardQuestDone:'已完成'
     },
     es:{
       gpcardUpgrade:'Mejorar',
@@ -1657,7 +1667,9 @@ function MILESTONE_MSG(tier){
       gpcardTabRewards:'Recompensas',
       gpcardTabQuests:'Misiones',
       gpcardTabRedeem:'Canjear',
-      gpcardTabLeaderboard:'Clasificación'
+      gpcardTabLeaderboard:'Clasificación',
+      gpcardQuestGo:'Jugar ahora',
+      gpcardQuestDone:'Completado'
     }
   };
   Object.keys(fill).forEach(l=>{ if(typeof I18N!=='undefined' && I18N[l]) Object.assign(I18N[l], fill[l]); });
