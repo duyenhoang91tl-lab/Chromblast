@@ -1589,6 +1589,11 @@ body.gchat-open .gchat-fab { display: none !important; }
 
 /* ══ Global chat panel ══ */
 #gchat-panel { z-index: 10080; padding:0; }
+/* Khi mở Chat: bỏ scale co giãn của #game-root (nếu đang bị thu nhỏ để vừa màn hình
+   ngang) — để lớp chat full-màn-hình chạm đúng cạnh màn hình thật, không bị kẹt
+   trong khung đã bị scale nhỏ lại. Chat phủ kín toàn màn hình nên việc bỏ scale ở
+   phần bên dưới không lộ ra ngoài. */
+body.gchat-open #game-root { transform: none !important; }
 .gchat-card {
   width:100%; height:100%; max-width:none; max-height:none; border-radius:0;
   display:flex; flex-direction:column;
