@@ -1684,11 +1684,19 @@ function MILESTONE_MSG(tier){
   const fill = {
     vi:{
       acstLevel:'Cấp độ {0}', acstMapNormal:'Map thường', acstMapSecret:'Map ẩn',
-      acstRankCaro:'Rank Caro', acstRankVersus:'Rank Versus'
+      acstRankCaro:'Rank Caro', acstRankVersus:'Rank Versus',
+      acachMapNormal:'Map thường đã qua', acachMapSecret:'Map ẩn đã qua',
+      acachLevel:'Cấp độ hiện tại', acachRankCaro:'Rank Caro',
+      acachRankVersus:'Rank Versus', acachWins:'trận thắng',
+      acachStreak:'Chuỗi điểm danh', acachStreakSub:'Chuỗi hiện tại'
     },
     en:{
       acstLevel:'Level {0}', acstMapNormal:'Normal maps', acstMapSecret:'Hidden maps',
-      acstRankCaro:'Caro rank', acstRankVersus:'Versus rank'
+      acstRankCaro:'Caro rank', acstRankVersus:'Versus rank',
+      acachMapNormal:'Normal maps cleared', acachMapSecret:'Hidden maps cleared',
+      acachLevel:'Current level', acachRankCaro:'Caro rank',
+      acachRankVersus:'Versus rank', acachWins:'wins',
+      acachStreak:'Check-in streak', acachStreakSub:'Current streak'
     }
   };
   Object.keys(fill).forEach(l=>{ if(typeof I18N!=='undefined' && I18N[l]) Object.assign(I18N[l], fill[l]); });

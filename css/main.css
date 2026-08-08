@@ -6106,4 +6106,26 @@ body:has(#secret-stage.active) .streak-dot.lit{
 .acst-couple-ring{ font-size:18px; }
 .acst-couple-text{ font-size:13px; font-weight:800; color:#7a3d5a; }
 
+.acach-list{ display:flex; flex-direction:column; gap:10px; padding:14px 0; }
+.acach-card{
+  display:flex; align-items:center; gap:12px;
+  background:#fff; border-radius:16px; padding:12px 14px;
+  box-shadow:0 4px 14px rgba(60,40,100,0.12);
+}
+.acach-card-icon{
+  flex-shrink:0; width:44px; height:44px; border-radius:50%;
+  background:linear-gradient(135deg,#e8e0ff,#d6e4ff);
+  display:flex; align-items:center; justify-content:center; font-size:22px;
+}
+.acach-card-text{ flex:1; min-width:0; }
+.acach-card-label{
+  font-size:13px; font-weight:800; color:#2b2340;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.acach-card-sub{ font-size:11px; font-weight:700; color:rgba(43,35,64,0.55); margin-top:2px; }
+.acach-card-value{
+  flex-shrink:0; font-size:20px; font-weight:900; color:#8a6fd0;
+  font-variant-numeric:tabular-nums;
+}
+
 /* deploy-trigger: kich hoat lai GitHub Pages deploy sau khi doi Source sang GitHub Actions */
