@@ -149,25 +149,9 @@
     if (!body) return;
     const rate = typeof GOLD_PER_DIAMOND === "number" ? GOLD_PER_DIAMOND : 100;
     const box = document.createElement("div");
-    box.className = "shop-exchange-box";
+    box.className = "shop-exchange-box shop-exchange-box-single";
     box.innerHTML =
       '<div class="shop-exchange-grid">' +
-      '<div class="shop-exchange-card" id="shop-ex-to-dia">' +
-      '<div class="shop-ex-top"><span class="shop-ex-ico">💎</span><span class="shop-ex-amt" data-ex-gain>×1</span></div>' +
-      '<div class="shop-ex-arrow">↓</div>' +
-      '<div class="shop-ex-bot"><span class="shop-ex-ico">🪙</span><span class="shop-ex-amt" data-ex-cost>' +
-      rate +
-      " " +
-      tt("shopGoldUnit", "vàng") +
-      "</span></div>" +
-      '<div class="shop-ex-label">' +
-      tt("shopExGoldToDia", "Đổi vàng → KC") +
-      "</div>" +
-      '<div class="shop-ex-qty-host" data-qty-host="to-dia"></div>' +
-      '<button type="button" class="auth-submit-btn shop-ex-go" id="shop-ex-to-dia-btn">' +
-      tt("shopExchange", "Đổi") +
-      "</button>" +
-      "</div>" +
       '<div class="shop-exchange-card" id="shop-ex-to-gold">' +
       '<div class="shop-ex-top"><span class="shop-ex-ico">🪙</span><span class="shop-ex-amt" data-ex-gain>' +
       rate +
@@ -187,21 +171,12 @@
       "</div>";
     body.appendChild(box);
 
-    const qtyToDia = makeQtyRow("shop-ex-to-dia", 1);
     const qtyToGold = makeQtyRow("shop-ex-to-gold", 1);
-    box.querySelector('[data-qty-host="to-dia"]').appendChild(qtyToDia);
     box.querySelector('[data-qty-host="to-gold"]').appendChild(qtyToGold);
 
     function syncLabels() {
-      const n1 = qtyToDia.getQty();
       const n2 = qtyToGold.getQty();
-      const card1 = box.querySelector("#shop-ex-to-dia");
       const card2 = box.querySelector("#shop-ex-to-gold");
-      if (card1) {
-        card1.querySelector("[data-ex-gain]").textContent = "×" + n1;
-        card1.querySelector("[data-ex-cost]").textContent =
-          n1 * rate + " " + tt("shopGoldUnit", "vàng");
-      }
       if (card2) {
         card2.querySelector("[data-ex-gain]").textContent =
           n2 * rate + " " + tt("shopGoldUnit", "vàng");
@@ -211,22 +186,6 @@
     box.addEventListener("shop-qty-change", syncLabels);
     syncLabels();
 
-    document.getElementById("shop-ex-to-dia-btn")?.addEventListener("click", function () {
-      try {
-        sfxClick();
-      } catch (e) {}
-      const n = qtyToDia.getQty();
-      const r =
-        typeof exchangeGoldForDiamonds === "function"
-          ? exchangeGoldForDiamonds(n)
-          : { ok: false };
-      if (!r.ok) {
-        try {
-          showComboFlash(0, false, tt("shopNotEnoughGold", "Không đủ vàng"));
-        } catch (e) {}
-      }
-      renderShop("diamond");
-    });
     document.getElementById("shop-ex-to-gold-btn")?.addEventListener("click", function () {
       try {
         sfxClick();

@@ -5514,6 +5514,8 @@ body:has(#secret-stage.active) .streak-dot.lit{
 }
 .shop-exchange-box{ display:flex; flex-direction:column; gap:10px; }
 .shop-exchange-grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+.shop-exchange-box-single .shop-exchange-grid{ grid-template-columns:minmax(0,1fr); justify-items:center; }
+.shop-exchange-box-single .shop-exchange-card{ width:100%; max-width:220px; }
 .shop-exchange-card{
   display:flex; flex-direction:column; align-items:center; gap:6px;
   border:1px solid rgba(255,255,255,0.14); background:rgba(255,255,255,0.06);
