@@ -75,6 +75,28 @@ function updateDailyBadge(){
   btn.classList.toggle('has-reward', getDailyStatus().canClaim);
 }
 
+const DAILY_AUTOSHOW_KEY_PREFIX = 'chromablast_daily_autoshow_';
+
+function dailyAutoShowKey(){
+  const who = (typeof currentUser !== 'undefined' && currentUser && currentUser.username) ? currentUser.username : '_guest';
+  return DAILY_AUTOSHOW_KEY_PREFIX + who;
+}
+
+/** Tự động mở panel điểm danh đúng 1 lần cho lần đầu vào game trong ngày —
+ *  kể cả khi người chơi đóng panel mà chưa bấm nhận, các lần mở app tiếp
+ *  theo TRONG CÙNG NGÀY sẽ không tự bật lại nữa (chỉ mở tay qua daily-btn
+ *  như bình thường). Gọi từ ui-gates.js ngay sau khi start-screen hiện thật. */
+function maybeAutoShowDailyPanel(){
+  try{
+    const today = todayStr();
+    if(safeGet(dailyAutoShowKey()) === today) return; // đã tự hiện hôm nay rồi
+    safeSet(dailyAutoShowKey(), today);
+    if(!getDailyStatus().canClaim) return; // đã điểm danh hôm nay rồi thì khỏi làm phiền
+    const btn = document.getElementById('daily-btn');
+    if(btn) btn.click(); // tái dùng đúng luồng openPanel() đã có (sfx, render, show)
+  }catch(e){}
+}
+
 function renderDailyPanel(){
   const status = getDailyStatus();
   const list = document.getElementById('daily-reward-list');

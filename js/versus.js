@@ -265,6 +265,11 @@ function _vsPlaceAt(P,R,C,fromNetwork){
 // không thể ăn thêm điểm nữa) → xử thua, kết thúc trận luôn thay vì chờ hết giờ.
 function _vsMarkDoneIfStuck(P){
   if(!_vs) return false;
+  // Online: trạng thái hết chỗ của đối thủ suy luận trên máy mình có thể lệch do độ
+  // trễ đồng bộ mạng — chỉ tự kết thúc sớm dựa vào việc CHÍNH MÌNH (P.idx===0) hết
+  // chỗ, tránh 1 phía tự ý kết thúc trận dựa trên suy luận có thể sai về phía đối
+  // thủ. Đối thủ thật sự hết chỗ sẽ tự phát hiện trên máy họ và kết thúc từ đó.
+  if(_vs.online && P.idx!==0) return false;
   if(_vsAnyMove(P)){
     if(P.done){ P.done=false; if(P.el&&P.el.note) P.el.note.classList.remove('show'); }
     return false;

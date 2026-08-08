@@ -162,6 +162,7 @@ function maybeShowPreGameGates(){
   hideTutorialGate();
   setStartScreenVisible(true);
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
+  setTimeout(()=>{ if(typeof maybeAutoShowDailyPanel==='function') maybeAutoShowDailyPanel(); }, 600);
 }
 
 async function requestBrowserNotifications(){
