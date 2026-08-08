@@ -1599,6 +1599,7 @@ function MILESTONE_MSG(tier){
   const fill = {
     vi:{
       gpcardUpgrade:'Nâng cấp',
+      gpcardLevelPrefix:'Lv.',
       gpcardTabRewards:'Phần thưởng',
       gpcardTabQuests:'Nhiệm vụ',
       gpcardTabRedeem:'Đi đổi',
@@ -1606,6 +1607,7 @@ function MILESTONE_MSG(tier){
     },
     en:{
       gpcardUpgrade:'Upgrade',
+      gpcardLevelPrefix:'Lv.',
       gpcardTabRewards:'Rewards',
       gpcardTabQuests:'Quests',
       gpcardTabRedeem:'Redeem',
@@ -1613,6 +1615,7 @@ function MILESTONE_MSG(tier){
     },
     ko:{
       gpcardUpgrade:'업그레이드',
+      gpcardLevelPrefix:'Lv.',
       gpcardTabRewards:'보상',
       gpcardTabQuests:'퀘스트',
       gpcardTabRedeem:'교환',
@@ -1620,6 +1623,7 @@ function MILESTONE_MSG(tier){
     },
     ja:{
       gpcardUpgrade:'アップグレード',
+      gpcardLevelPrefix:'Lv.',
       gpcardTabRewards:'報酬',
       gpcardTabQuests:'クエスト',
       gpcardTabRedeem:'交換',
@@ -1627,6 +1631,7 @@ function MILESTONE_MSG(tier){
     },
     zh:{
       gpcardUpgrade:'升级',
+      gpcardLevelPrefix:'Lv.',
       gpcardTabRewards:'奖励',
       gpcardTabQuests:'任务',
       gpcardTabRedeem:'兑换',
@@ -1634,6 +1639,7 @@ function MILESTONE_MSG(tier){
     },
     es:{
       gpcardUpgrade:'Mejorar',
+      gpcardLevelPrefix:'Nv.',
       gpcardTabRewards:'Recompensas',
       gpcardTabQuests:'Misiones',
       gpcardTabRedeem:'Canjear',
