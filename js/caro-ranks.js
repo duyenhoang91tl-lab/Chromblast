@@ -10,7 +10,7 @@ const CARO_LOSS_PTS = -25; // đối xứng với thắng — điểm không xu�
 
 /** Bậc danh hiệu theo tổng điểm Caro */
 const CARO_RANKS = [
-  { id:'novice',    min:0,    icon:'❌⭕', vi:'Tân thủ',    en:'Novice' },
+  { id:'novice',    min:0,    icon:'🔰', vi:'Tân thủ',    en:'Novice' },
   { id:'beginner',  min:50,   icon:'📘', vi:'Nhập môn',   en:'Beginner' },
   { id:'skilled',   min:150,  icon:'♟️', vi:'Thạo cờ',    en:'Skilled' },
   { id:'expert',    min:350,  icon:'⚔️', vi:'Cao thủ',    en:'Expert' },
