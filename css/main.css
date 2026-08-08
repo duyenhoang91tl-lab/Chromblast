@@ -6165,6 +6165,21 @@ body:has(#secret-stage.active) .streak-dot.lit{
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
 }
 .acbag-check{ font-size:11px; font-weight:800; color:#2ba86a; margin-top:4px; }
+
+/* ══════════════════════════════════════════
+   TÀI KHOẢN → "Hội nhóm" (#account-groups) — trạng thái sắp ra mắt.
+══════════════════════════════════════════ */
+.acgrp-empty{
+  display:flex; flex-direction:column; align-items:center; text-align:center;
+  gap:10px; padding:56px 20px 40px;
+}
+.acgrp-empty-icon{
+  width:84px; height:84px; border-radius:50%; background:#fff;
+  display:flex; align-items:center; justify-content:center; font-size:38px;
+  box-shadow:0 4px 14px rgba(60,40,100,0.14); opacity:0.55;
+}
+.acgrp-empty-title{ font-size:16px; font-weight:900; color:#2b2340; }
+.acgrp-empty-sub{ font-size:13px; font-weight:700; color:rgba(43,35,64,0.55); max-width:260px; line-height:1.5; }
 .acbag-use-btn{
   margin-top:6px; border:none; border-radius:10px; padding:5px 10px;
   background:linear-gradient(135deg,#c9b6f0,#a7b8f0); color:#2b2340;

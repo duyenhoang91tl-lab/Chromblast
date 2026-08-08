@@ -1690,7 +1690,9 @@ function MILESTONE_MSG(tier){
       acachRankVersus:'Rank Versus', acachWins:'trận thắng',
       acachStreak:'Chuỗi điểm danh', acachStreakSub:'Chuỗi hiện tại',
       acbagTabBoards:'Nền bàn', acbagTabBricks:'Mẫu gạch',
-      acbagUse:'Dùng', acbagInUse:'Đang dùng'
+      acbagUse:'Dùng', acbagInUse:'Đang dùng',
+      acgrpSoonTitle:'Tính năng Hội nhóm sẽ sớm ra mắt',
+      acgrpSoonSub:'Bạn có thể kết bạn và ghép đôi ngay bây giờ ở mục Bạn bè.'
     },
     en:{
       acstLevel:'Level {0}', acstMapNormal:'Normal maps', acstMapSecret:'Hidden maps',
@@ -1700,7 +1702,9 @@ function MILESTONE_MSG(tier){
       acachRankVersus:'Versus rank', acachWins:'wins',
       acachStreak:'Check-in streak', acachStreakSub:'Current streak',
       acbagTabBoards:'Boards', acbagTabBricks:'Brick skins',
-      acbagUse:'Use', acbagInUse:'In use'
+      acbagUse:'Use', acbagInUse:'In use',
+      acgrpSoonTitle:'Groups feature is coming soon',
+      acgrpSoonSub:'You can already add friends and pair up in the Friends section.'
     }
   };
   Object.keys(fill).forEach(l=>{ if(typeof I18N!=='undefined' && I18N[l]) Object.assign(I18N[l], fill[l]); });
