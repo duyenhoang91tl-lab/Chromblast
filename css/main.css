@@ -5996,6 +5996,76 @@ body:has(#secret-stage.active) .streak-dot.lit{
 .gpcard-quest-act.go{ background:#ffb454; color:#5a3400; }
 .gpcard-quest-act.claim{ background:linear-gradient(135deg,#ff6600,#ffaa00); color:#3a1a00; }
 .gpcard-quest-act.done{ background:#e2ddf5; color:#9a8fc0; cursor:default; }
+
+/* Tab "Hành trình" (#gpcard-rewards) — mốc thưởng theo map ẩn */
+.gpcard-jr-status{ text-align:center; font-size:13px; font-weight:800; color:#5a4f8a; padding:10px 16px; }
+.gpcard-jr-status b{ color:#ff6600; }
+.gpcard-jr-card{ padding:10px; }
+.gpcard-jr-head{ display:flex; margin-bottom:8px; }
+.gpcard-jr-head-col{
+  flex:1 1 0; text-align:center; font-size:12px; font-weight:900; color:#fff;
+  padding:7px 4px; border-radius:12px 12px 0 0;
+}
+.gpcard-jr-head-col.free{ background:linear-gradient(135deg,#a7b8f0,#8fa3ea); }
+.gpcard-jr-head-col.premium{ background:linear-gradient(135deg,#c9b6f0,#b48af0); }
+.gpcard-jr-ladder{ display:flex; flex-direction:column; }
+.gpcard-jr-row{
+  display:flex; align-items:center; gap:6px; padding:8px 2px;
+  border-bottom:1px dashed #e7e2f7; position:relative;
+}
+.gpcard-jr-row:last-child{ border-bottom:none; }
+.gpcard-jr-row.final{
+  background:linear-gradient(135deg,#fff2d9,#ffe6bd); border-radius:14px;
+  margin-top:4px; padding:12px 6px; border-bottom:none;
+}
+.gpcard-jr-node{
+  flex:0 0 30px; width:30px; height:30px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  background:#e7e2f7; color:#9a8fc0; font-weight:900; font-size:12px;
+  position:relative; z-index:1;
+}
+.gpcard-jr-node.passed{ background:linear-gradient(135deg,#ff9900,#ffcc55); color:#4a2a00; box-shadow:0 0 0 3px rgba(255,170,0,0.25); }
+.gpcard-jr-row:not(:last-child) .gpcard-jr-node::after{
+  content:''; position:absolute; top:100%; left:50%; width:2px; height:16px;
+  transform:translateX(-50%); background:#e7e2f7; z-index:0;
+}
+.gpcard-jr-row.passed:not(:last-child) .gpcard-jr-node::after,
+.gpcard-jr-row .gpcard-jr-node.passed::after{ background:#ffcc55; }
+.gpcard-jr-slot{
+  flex:1 1 0; min-width:0; border:1.5px solid #e7e2f7; background:#fff;
+  border-radius:12px; padding:6px 4px; position:relative; cursor:default;
+  display:flex; align-items:center; justify-content:center; min-height:46px;
+}
+.gpcard-jr-slot.free{ background:#f4f6ff; }
+.gpcard-jr-slot.premium{ background:#f8f3ff; }
+.gpcard-jr-slot.ready{
+  border-color:#ff9900; box-shadow:0 0 0 2px rgba(255,153,0,0.25); cursor:pointer;
+  animation:gpcardJrPulse 1.6s ease-in-out infinite;
+}
+.gpcard-jr-slot.claimed{ opacity:0.5; }
+.gpcard-jr-slot.need-premium{ opacity:0.75; }
+.gpcard-jr-slot:disabled{ cursor:default; }
+@keyframes gpcardJrPulse{ 0%,100%{ box-shadow:0 0 0 2px rgba(255,153,0,0.25);} 50%{ box-shadow:0 0 0 5px rgba(255,153,0,0.12);} }
+.gpcard-jr-items{ display:flex; flex-wrap:wrap; gap:3px; justify-content:center; }
+.gpcard-jr-item{
+  display:flex; flex-direction:column; align-items:center; gap:1px;
+  font-size:16px; line-height:1; min-width:26px;
+}
+.gpcard-jr-item b{ font-size:9px; font-weight:900; color:#5a4f8a; }
+.gpcard-jr-badge{
+  position:absolute; top:-6px; right:-6px; width:18px; height:18px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center; font-size:10px;
+  background:#fff; box-shadow:0 2px 4px rgba(0,0,0,0.2);
+}
+.gpcard-jr-badge.done{ background:#7ed957; color:#fff; }
+.gpcard-jr-badge.lock{ background:#e2ddf5; }
+.gpcard-jr-claimall-wrap{ padding:6px 4px 4px; }
+.gpcard-jr-claimall-btn{
+  display:block; width:100%; border:none; border-radius:999px; padding:13px;
+  font-weight:900; font-size:14px; color:#3a1a00; cursor:pointer;
+  background:linear-gradient(135deg,#ff6600,#ffaa00); box-shadow:0 4px 12px rgba(255,102,0,0.35);
+}
+.gpcard-jr-claimall-btn:disabled{ background:#e2ddf5; color:#9a8fc0; box-shadow:none; cursor:default; }
 /* ══════════════════════════════════════════
    TÀI KHOẢN (account-hub) — điểm vào duy nhất hồ sơ/cài đặt/xã hội.
    Nền pastel tím/xanh dương nhạt, card bo góc lớn — cùng gia đình màu với các
