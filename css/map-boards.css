@@ -16,6 +16,19 @@
   animation:boardModalIn .32s ease;
 }
 @keyframes boardModalIn{ from{opacity:0;transform:scale(.94) translateY(10px)} to{opacity:1;transform:none} }
+
+/* ── Hiệu ứng huyền ảo nhẹ dùng chung cho 5 nền cao cấp (mua bằng kim cương) ──
+   Nhẹ nhàng, chậm rãi, chỉ đổi box-shadow (không đụng layout/grid) + trôi nhẹ
+   1 lớp "orb" sáng qua background-position (không đổi định nghĩa gradient nên
+   luôn nội suy mượt) — an toàn tuyệt đối với lưới ô thật của bàn cờ. */
+@keyframes boardEtherealGlow{
+  0%, 100% { box-shadow: inset 0 0 20px var(--eth-a, rgba(255,255,255,0.12)), 0 0 16px var(--eth-b, rgba(255,255,255,0.2)); }
+  50% { box-shadow: inset 0 0 32px var(--eth-a, rgba(255,255,255,0.22)), 0 0 28px var(--eth-b, rgba(255,255,255,0.38)); }
+}
+@keyframes boardEtherealDrift{
+  0%, 100% { background-position: 20% 20%, 0% 0%; }
+  50% { background-position: 80% 55%, 0% 0%; }
+}
 .board-skin-x{
   position:absolute; top:10px; right:10px; width:32px; height:32px;
   border:none; border-radius:50%; background:rgba(255,255,255,.2);
@@ -460,6 +473,127 @@ html[data-board-skin="violet"] .piece-slot:not(.selected):not(.used) {
   border-color: #9A60D0 !important;
 }
 
+/* ══ 5 nền CAO CẤP — chỉ mua bằng 💎 1 kim cương/mẫu, có hiệu ứng huyền ảo nhẹ ══ */
+.board-swatch[data-board-skin="mystic"]{
+  background:
+    radial-gradient(circle at 30% 30%, rgba(150,170,255,0.55) 0%, transparent 42%),
+    linear-gradient(160deg, #12102A 0%, #241C50 50%, #0A0820 100%);
+  background-size: 200% 200%, 100% 100%;
+  border-color:#8A98F0;
+}
+html[data-board-skin="mystic"] #grid {
+  background:
+    radial-gradient(circle at 30% 30%, rgba(150,170,255,0.55) 0%, transparent 42%),
+    linear-gradient(160deg, #12102A 0%, #241C50 50%, #0A0820 100%) !important;
+  background-size: 200% 200%, 100% 100% !important;
+  border-color: #8A98F0 !important;
+  --eth-a: rgba(140,160,255,0.16); --eth-b: rgba(150,170,255,0.3);
+  animation: boardEtherealDrift 7s ease-in-out infinite, boardEtherealGlow 4.2s ease-in-out infinite;
+}
+html[data-board-skin="mystic"] #grid .cell:not(.filled):not(.preview-ok) {
+  background: rgba(14,10,40,0.35) !important;
+}
+html[data-board-skin="mystic"] .piece-slot:not(.selected):not(.used) {
+  background: linear-gradient(165deg, #241C50 0%, #140E34 100%) !important;
+  border-color: #8A98F0 !important;
+}
+
+.board-swatch[data-board-skin="nebula"]{
+  background:
+    radial-gradient(circle at 32% 28%, rgba(255,110,210,0.5) 0%, transparent 42%),
+    linear-gradient(155deg, #0A1030 0%, #2A1050 45%, #0A2838 100%);
+  background-size: 200% 200%, 100% 100%;
+  border-color:#E080D8;
+}
+html[data-board-skin="nebula"] #grid {
+  background:
+    radial-gradient(circle at 32% 28%, rgba(255,110,210,0.5) 0%, transparent 42%),
+    linear-gradient(155deg, #0A1030 0%, #2A1050 45%, #0A2838 100%) !important;
+  background-size: 200% 200%, 100% 100% !important;
+  border-color: #E080D8 !important;
+  --eth-a: rgba(255,110,210,0.14); --eth-b: rgba(120,220,220,0.26);
+  animation: boardEtherealDrift 8s ease-in-out infinite, boardEtherealGlow 4.6s ease-in-out infinite;
+}
+html[data-board-skin="nebula"] #grid .cell:not(.filled):not(.preview-ok) {
+  background: rgba(10,10,35,0.35) !important;
+}
+html[data-board-skin="nebula"] .piece-slot:not(.selected):not(.used) {
+  background: linear-gradient(165deg, #2A1050 0%, #12081E 100%) !important;
+  border-color: #E080D8 !important;
+}
+
+.board-swatch[data-board-skin="phoenix"]{
+  background:
+    radial-gradient(circle at 30% 32%, rgba(255,150,70,0.55) 0%, transparent 42%),
+    linear-gradient(160deg, #3A0A08 0%, #6A1A10 45%, #200402 100%);
+  background-size: 200% 200%, 100% 100%;
+  border-color:#FF9A50;
+}
+html[data-board-skin="phoenix"] #grid {
+  background:
+    radial-gradient(circle at 30% 32%, rgba(255,150,70,0.55) 0%, transparent 42%),
+    linear-gradient(160deg, #3A0A08 0%, #6A1A10 45%, #200402 100%) !important;
+  background-size: 200% 200%, 100% 100% !important;
+  border-color: #FF9A50 !important;
+  --eth-a: rgba(255,140,60,0.18); --eth-b: rgba(255,150,70,0.32);
+  animation: boardEtherealDrift 6.4s ease-in-out infinite, boardEtherealGlow 3.6s ease-in-out infinite;
+}
+html[data-board-skin="phoenix"] #grid .cell:not(.filled):not(.preview-ok) {
+  background: rgba(40,8,4,0.35) !important;
+}
+html[data-board-skin="phoenix"] .piece-slot:not(.selected):not(.used) {
+  background: linear-gradient(165deg, #6A1A10 0%, #300806 100%) !important;
+  border-color: #FF9A50 !important;
+}
+
+.board-swatch[data-board-skin="celestia"]{
+  background:
+    radial-gradient(circle at 35% 25%, rgba(255,235,180,0.6) 0%, transparent 45%),
+    linear-gradient(160deg, #2A2010 0%, #4A3818 50%, #181008 100%);
+  background-size: 200% 200%, 100% 100%;
+  border-color:#FFE6A0;
+}
+html[data-board-skin="celestia"] #grid {
+  background:
+    radial-gradient(circle at 35% 25%, rgba(255,235,180,0.6) 0%, transparent 45%),
+    linear-gradient(160deg, #2A2010 0%, #4A3818 50%, #181008 100%) !important;
+  background-size: 200% 200%, 100% 100% !important;
+  border-color: #FFE6A0 !important;
+  --eth-a: rgba(255,230,160,0.2); --eth-b: rgba(255,235,180,0.35);
+  animation: boardEtherealDrift 7.6s ease-in-out infinite, boardEtherealGlow 4s ease-in-out infinite;
+}
+html[data-board-skin="celestia"] #grid .cell:not(.filled):not(.preview-ok) {
+  background: rgba(45,32,10,0.32) !important;
+}
+html[data-board-skin="celestia"] .piece-slot:not(.selected):not(.used) {
+  background: linear-gradient(165deg, #4A3818 0%, #241A0C 100%) !important;
+  border-color: #FFE6A0 !important;
+}
+
+.board-swatch[data-board-skin="eclipse"]{
+  background:
+    radial-gradient(circle at 50% 30%, rgba(210,214,255,0.4) 0%, transparent 46%),
+    linear-gradient(165deg, #060608 0%, #101018 55%, #000000 100%);
+  background-size: 200% 200%, 100% 100%;
+  border-color:#B0B0E8;
+}
+html[data-board-skin="eclipse"] #grid {
+  background:
+    radial-gradient(circle at 50% 30%, rgba(210,214,255,0.4) 0%, transparent 46%),
+    linear-gradient(165deg, #060608 0%, #101018 55%, #000000 100%) !important;
+  background-size: 200% 200%, 100% 100% !important;
+  border-color: #B0B0E8 !important;
+  --eth-a: rgba(210,214,255,0.15); --eth-b: rgba(220,222,255,0.28);
+  animation: boardEtherealDrift 9s ease-in-out infinite, boardEtherealGlow 5s ease-in-out infinite;
+}
+html[data-board-skin="eclipse"] #grid .cell:not(.filled):not(.preview-ok) {
+  background: rgba(0,0,0,0.4) !important;
+}
+html[data-board-skin="eclipse"] .piece-slot:not(.selected):not(.used) {
+  background: linear-gradient(165deg, #101018 0%, #030304 100%) !important;
+  border-color: #B0B0E8 !important;
+}
+
 /* ── Bản dành riêng cho arena 1v1 (mỗi nửa dùng nền của người chơi đó) ── */
 .vs-half[data-board-skin="classic"] .vs-grid {
   background: linear-gradient(180deg, #2a2a3a 0%, #1e1e2c 100%) !important;
@@ -720,4 +854,70 @@ html[data-board-skin="violet"] .piece-slot:not(.selected):not(.used) {
 }
 .vs-half[data-board-skin="violet"] .vs-cell:not(.vs-filled) {
   background: rgba(20,0,40,0.35) !important;
+}
+
+/* ══ 5 nền CAO CẤP (Versus) — cùng hiệu ứng huyền ảo với bản bàn chính ══ */
+.vs-half[data-board-skin="mystic"] .vs-grid {
+  background:
+    radial-gradient(circle at 30% 30%, rgba(150,170,255,0.55) 0%, transparent 42%),
+    linear-gradient(160deg, #12102A 0%, #241C50 50%, #0A0820 100%) !important;
+  background-size: 200% 200%, 100% 100% !important;
+  border-color: #8A98F0 !important;
+  --eth-a: rgba(140,160,255,0.16); --eth-b: rgba(150,170,255,0.3);
+  animation: boardEtherealDrift 7s ease-in-out infinite, boardEtherealGlow 4.2s ease-in-out infinite;
+}
+.vs-half[data-board-skin="mystic"] .vs-cell:not(.vs-filled) {
+  background: rgba(14,10,40,0.35) !important;
+}
+
+.vs-half[data-board-skin="nebula"] .vs-grid {
+  background:
+    radial-gradient(circle at 32% 28%, rgba(255,110,210,0.5) 0%, transparent 42%),
+    linear-gradient(155deg, #0A1030 0%, #2A1050 45%, #0A2838 100%) !important;
+  background-size: 200% 200%, 100% 100% !important;
+  border-color: #E080D8 !important;
+  --eth-a: rgba(255,110,210,0.14); --eth-b: rgba(120,220,220,0.26);
+  animation: boardEtherealDrift 8s ease-in-out infinite, boardEtherealGlow 4.6s ease-in-out infinite;
+}
+.vs-half[data-board-skin="nebula"] .vs-cell:not(.vs-filled) {
+  background: rgba(10,10,35,0.35) !important;
+}
+
+.vs-half[data-board-skin="phoenix"] .vs-grid {
+  background:
+    radial-gradient(circle at 30% 32%, rgba(255,150,70,0.55) 0%, transparent 42%),
+    linear-gradient(160deg, #3A0A08 0%, #6A1A10 45%, #200402 100%) !important;
+  background-size: 200% 200%, 100% 100% !important;
+  border-color: #FF9A50 !important;
+  --eth-a: rgba(255,140,60,0.18); --eth-b: rgba(255,150,70,0.32);
+  animation: boardEtherealDrift 6.4s ease-in-out infinite, boardEtherealGlow 3.6s ease-in-out infinite;
+}
+.vs-half[data-board-skin="phoenix"] .vs-cell:not(.vs-filled) {
+  background: rgba(40,8,4,0.35) !important;
+}
+
+.vs-half[data-board-skin="celestia"] .vs-grid {
+  background:
+    radial-gradient(circle at 35% 25%, rgba(255,235,180,0.6) 0%, transparent 45%),
+    linear-gradient(160deg, #2A2010 0%, #4A3818 50%, #181008 100%) !important;
+  background-size: 200% 200%, 100% 100% !important;
+  border-color: #FFE6A0 !important;
+  --eth-a: rgba(255,230,160,0.2); --eth-b: rgba(255,235,180,0.35);
+  animation: boardEtherealDrift 7.6s ease-in-out infinite, boardEtherealGlow 4s ease-in-out infinite;
+}
+.vs-half[data-board-skin="celestia"] .vs-cell:not(.vs-filled) {
+  background: rgba(45,32,10,0.32) !important;
+}
+
+.vs-half[data-board-skin="eclipse"] .vs-grid {
+  background:
+    radial-gradient(circle at 50% 30%, rgba(210,214,255,0.4) 0%, transparent 46%),
+    linear-gradient(165deg, #060608 0%, #101018 55%, #000000 100%) !important;
+  background-size: 200% 200%, 100% 100% !important;
+  border-color: #B0B0E8 !important;
+  --eth-a: rgba(210,214,255,0.15); --eth-b: rgba(220,222,255,0.28);
+  animation: boardEtherealDrift 9s ease-in-out infinite, boardEtherealGlow 5s ease-in-out infinite;
+}
+.vs-half[data-board-skin="eclipse"] .vs-cell:not(.vs-filled) {
+  background: rgba(0,0,0,0.4) !important;
 }

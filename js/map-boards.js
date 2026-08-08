@@ -25,34 +25,40 @@
   const BOARD_SKINS = [
     { id: "classic", name: "Classic", desc: { vi: 'Nền tối phẳng cổ điển', en: 'Flat classic dark board' }, starter: true  },
     { id: "slate", name: "Slate", desc: { vi: 'Nền xám tím hiện tại', en: 'Current slate purple board' }, starter: true  },
-    { id: "garden", name: "Garden", desc: { vi: 'Vườn xanh', en: 'Green garden' }, price: 30 },
-    { id: "ice", name: "Ice", desc: { vi: 'Băng giá', en: 'Icy frost' }, price: 60 },
-    { id: "paper", name: "Paper", desc: { vi: 'Giấy kraft', en: 'Kraft paper' }, price: 60 },
-    { id: "sand", name: "Sand", desc: { vi: 'Cát vàng', en: 'Golden sand' }, price: 75 },
-    { id: "pixel", name: "Pixel", desc: { vi: 'Pixel grid', en: 'Pixel grid' }, price: 75 },
-    { id: "ink", name: "Ink", desc: { vi: 'Mực đen', en: 'Black ink' }, price: 75 },
-    { id: "night", name: "Night", desc: { vi: 'Đêm sao', en: 'Starry night' }, price: 90 },
-    { id: "lava", name: "Lava", desc: { vi: 'Nham thạch', en: 'Molten lava' }, price: 90 },
-    { id: "neon", name: "Neon", desc: { vi: 'Neon city', en: 'Neon city' }, price: 90 },
-    { id: "forest", name: "Forest", desc: { vi: 'Rừng sâu', en: 'Deep forest' }, price: 90 },
-    { id: "retro", name: "Retro", desc: { vi: 'Retro arcade', en: 'Retro arcade' }, price: 90 },
-    { id: "cloud", name: "Cloud", desc: { vi: 'Mây trời', en: 'Sky clouds' }, price: 90 },
-    { id: "mint", name: "Mint", desc: { vi: 'Bạc hà', en: 'Fresh mint' }, price: 90 },
-    { id: "storm", name: "Storm", desc: { vi: 'Bão tố', en: 'Stormy skies' }, price: 90 },
-    { id: "sweet", name: "Sweet", desc: { vi: 'Nền ngọt pastel', en: 'Pastel sweet board' }, price: 105 },
-    { id: "metal", name: "Metal", desc: { vi: 'Kim loại', en: 'Brushed metal' }, price: 105 },
-    { id: "desert", name: "Desert", desc: { vi: 'Sa mạc', en: 'Desert dunes' }, price: 120 },
-    { id: "berry", name: "Berry", desc: { vi: 'Quả mọng', en: 'Berry tones' }, price: 135 },
-    { id: "honey", name: "Honey", desc: { vi: 'Mật ong', en: 'Honey amber' }, price: 135 },
-    { id: "ocean", name: "Ocean", desc: { vi: 'Đại dương', en: 'Ocean depths' }, price: 150 },
-    { id: "marble", name: "Marble", desc: { vi: 'Cẩm thạch', en: 'Marble stone' }, price: 150 },
-    { id: "sakura", name: "Sakura", desc: { vi: 'Hoa anh đào', en: 'Cherry blossoms' }, price: 165 },
-    { id: "sunset", name: "Sunset", desc: { vi: 'Hoàng hôn', en: 'Sunset glow' }, price: 180 },
-    { id: "wood", name: "Wood", desc: { vi: 'Ván gỗ ấm', en: 'Warm wood planks' }, price: 225 },
-    { id: "aurora", name: "Aurora", desc: { vi: 'Cực quang', en: 'Northern lights' }, price: 225 },
-    { id: "violet", name: "Violet", desc: { vi: 'Tím huyền', en: 'Mystic violet' }, price: 240 },
-    { id: "coral", name: "Coral", desc: { vi: 'San hô', en: 'Coral reef' }, price: 270 },
-    { id: "gold", name: "Gold", desc: { vi: 'Hoàng kim', en: 'Royal gold' }, price: 300 },
+    { id: "garden", name: "Garden", desc: { vi: 'Vườn xanh', en: 'Green garden' }, price: 10 },
+    { id: "ice", name: "Ice", desc: { vi: 'Băng giá', en: 'Icy frost' }, price: 20 },
+    { id: "paper", name: "Paper", desc: { vi: 'Giấy kraft', en: 'Kraft paper' }, price: 20 },
+    { id: "sand", name: "Sand", desc: { vi: 'Cát vàng', en: 'Golden sand' }, price: 25 },
+    { id: "pixel", name: "Pixel", desc: { vi: 'Pixel grid', en: 'Pixel grid' }, price: 25 },
+    { id: "ink", name: "Ink", desc: { vi: 'Mực đen', en: 'Black ink' }, price: 25 },
+    { id: "night", name: "Night", desc: { vi: 'Đêm sao', en: 'Starry night' }, price: 30 },
+    { id: "lava", name: "Lava", desc: { vi: 'Nham thạch', en: 'Molten lava' }, price: 30 },
+    { id: "neon", name: "Neon", desc: { vi: 'Neon city', en: 'Neon city' }, price: 30 },
+    { id: "forest", name: "Forest", desc: { vi: 'Rừng sâu', en: 'Deep forest' }, price: 30 },
+    { id: "retro", name: "Retro", desc: { vi: 'Retro arcade', en: 'Retro arcade' }, price: 30 },
+    { id: "cloud", name: "Cloud", desc: { vi: 'Mây trời', en: 'Sky clouds' }, price: 30 },
+    { id: "mint", name: "Mint", desc: { vi: 'Bạc hà', en: 'Fresh mint' }, price: 30 },
+    { id: "storm", name: "Storm", desc: { vi: 'Bão tố', en: 'Stormy skies' }, price: 30 },
+    { id: "sweet", name: "Sweet", desc: { vi: 'Nền ngọt pastel', en: 'Pastel sweet board' }, price: 35 },
+    { id: "metal", name: "Metal", desc: { vi: 'Kim loại', en: 'Brushed metal' }, price: 35 },
+    { id: "desert", name: "Desert", desc: { vi: 'Sa mạc', en: 'Desert dunes' }, price: 40 },
+    { id: "berry", name: "Berry", desc: { vi: 'Quả mọng', en: 'Berry tones' }, price: 45 },
+    { id: "honey", name: "Honey", desc: { vi: 'Mật ong', en: 'Honey amber' }, price: 45 },
+    { id: "ocean", name: "Ocean", desc: { vi: 'Đại dương', en: 'Ocean depths' }, price: 50 },
+    { id: "marble", name: "Marble", desc: { vi: 'Cẩm thạch', en: 'Marble stone' }, price: 50 },
+    { id: "sakura", name: "Sakura", desc: { vi: 'Hoa anh đào', en: 'Cherry blossoms' }, price: 55 },
+    { id: "sunset", name: "Sunset", desc: { vi: 'Hoàng hôn', en: 'Sunset glow' }, price: 60 },
+    { id: "wood", name: "Wood", desc: { vi: 'Ván gỗ ấm', en: 'Warm wood planks' }, price: 75 },
+    { id: "aurora", name: "Aurora", desc: { vi: 'Cực quang', en: 'Northern lights' }, price: 75 },
+    { id: "violet", name: "Violet", desc: { vi: 'Tím huyền', en: 'Mystic violet' }, price: 80 },
+    { id: "coral", name: "Coral", desc: { vi: 'San hô', en: 'Coral reef' }, price: 90 },
+    { id: "gold", name: "Gold", desc: { vi: 'Hoàng kim', en: 'Royal gold' }, price: 100 },
+    // ── Cao cấp: chỉ mua bằng kim cương (không bán bằng vàng), có hiệu ứng huyền ảo nhẹ ──
+    { id: "mystic", name: "Mystic", desc: { vi: 'Sương mù huyền bí, ánh sáng lam-tím trôi nhẹ', en: 'Mystic mist with a slow drifting indigo glow' }, diaPrice: 1 },
+    { id: "nebula", name: "Nebula", desc: { vi: 'Tinh vân hồng-lam, tỏa sáng huyền ảo', en: 'Pink-teal nebula with an ethereal shimmer' }, diaPrice: 1 },
+    { id: "phoenix", name: "Phoenix", desc: { vi: 'Lửa phượng hoàng, ánh cam ấm lung linh', en: 'Phoenix embers with a warm flickering glow' }, diaPrice: 1 },
+    { id: "celestia", name: "Celestia", desc: { vi: 'Ánh sáng thiên giới, vàng nhạt huyền ảo', en: 'Heavenly light with a soft golden shimmer' }, diaPrice: 1 },
+    { id: "eclipse", name: "Eclipse", desc: { vi: 'Nhật thực đen huyền bí, quầng sáng lam nhạt', en: 'Mystic dark eclipse with a pale blue corona' }, diaPrice: 1 },
   ];
 
   const STARTER_IDS = BOARD_SKINS.filter(function (s) {
@@ -61,7 +67,7 @@
     return s.id;
   });
   const UNLOCK_ORDER = BOARD_SKINS.filter(function (s) {
-    return !s.starter;
+    return !s.starter && !s.diaPrice;
   }).map(function (s) {
     return s.id;
   });
@@ -155,7 +161,7 @@
     const card = document.createElement("button");
     card.type = "button";
     const price = skin.price | 0;
-    const shopLocked = !!(opts.locked && price > 0);
+    const shopLocked = !!(opts.locked && (price > 0 || skin.diaPrice));
     card.className =
       "board-skin-card" +
       (opts.locked ? " locked" : "") +
@@ -176,7 +182,9 @@
 
     const desc = document.createElement("div");
     desc.className = "board-skin-desc";
-    if (opts.locked && price > 0) {
+    if (opts.locked && skin.diaPrice) {
+      desc.textContent = "💎 " + (skin.diaPrice | 0) + " · " + tt("boardSkinBuyShop", "Mua trong Shop");
+    } else if (opts.locked && price > 0) {
       desc.textContent = "🪙 " + price + " · " + tt("boardSkinBuyShop", "Mua trong Shop");
     } else {
       desc.textContent = opts.locked ? tt("boardSkinLocked") : skinDesc(skin);
