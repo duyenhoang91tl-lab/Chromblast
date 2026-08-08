@@ -768,10 +768,18 @@ async function openPlayerCard(opts){
     }catch(e){}
     return;
   }
-  if(!uid || typeof fetchPlayerPublicProfile !== 'function') return;
+  if(!uid || typeof fetchPlayerPublicProfile !== 'function'){
+    document.getElementById('pc-stats').textContent = (typeof t==='function'?t('caroNoProfileAvailable'):null)
+      || 'Không có hồ sơ để hiển thị (đối thủ máy hoặc chưa vào phòng online)';
+    return;
+  }
   try{
     const prof = await fetchPlayerPublicProfile(uid);
-    if(!prof) return;
+    if(!prof){
+      document.getElementById('pc-stats').textContent = (typeof t==='function'?t('caroNoProfileAvailable'):null)
+        || 'Chưa có hồ sơ (người chơi mới hoặc chưa đồng bộ)';
+      return;
+    }
     document.getElementById('pc-avatar').textContent = prof.avatar || fallbackAv;
     const s = prof.stats || {};
     const rate = s.winRate != null ? s.winRate : 0;
@@ -817,7 +825,12 @@ async function openPlayerCard(opts){
       friendBtn.dataset.name = prof.displayName || fallbackName;
       friendBtn.dataset.avatar = prof.avatar || fallbackAv;
     }
-  }catch(e){}
+  }catch(e){
+    console.warn('[openPlayerCard] loi khi tai ho so doi thu:', e);
+    const statsEl = document.getElementById('pc-stats');
+    if(statsEl) statsEl.textContent = (typeof t==='function'?t('caroProfileLoadError'):null)
+      || 'Không tải được hồ sơ, thử lại sau';
+  }
 }
 
 function closePlayerCard(){
