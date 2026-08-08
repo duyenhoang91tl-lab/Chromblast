@@ -1688,7 +1688,9 @@ function MILESTONE_MSG(tier){
       acachMapNormal:'Map thường đã qua', acachMapSecret:'Map ẩn đã qua',
       acachLevel:'Cấp độ hiện tại', acachRankCaro:'Rank Caro',
       acachRankVersus:'Rank Versus', acachWins:'trận thắng',
-      acachStreak:'Chuỗi điểm danh', acachStreakSub:'Chuỗi hiện tại'
+      acachStreak:'Chuỗi điểm danh', acachStreakSub:'Chuỗi hiện tại',
+      acbagTabBoards:'Nền bàn', acbagTabBricks:'Mẫu gạch',
+      acbagUse:'Dùng', acbagInUse:'Đang dùng'
     },
     en:{
       acstLevel:'Level {0}', acstMapNormal:'Normal maps', acstMapSecret:'Hidden maps',
@@ -1696,7 +1698,9 @@ function MILESTONE_MSG(tier){
       acachMapNormal:'Normal maps cleared', acachMapSecret:'Hidden maps cleared',
       acachLevel:'Current level', acachRankCaro:'Caro rank',
       acachRankVersus:'Versus rank', acachWins:'wins',
-      acachStreak:'Check-in streak', acachStreakSub:'Current streak'
+      acachStreak:'Check-in streak', acachStreakSub:'Current streak',
+      acbagTabBoards:'Boards', acbagTabBricks:'Brick skins',
+      acbagUse:'Use', acbagInUse:'In use'
     }
   };
   Object.keys(fill).forEach(l=>{ if(typeof I18N!=='undefined' && I18N[l]) Object.assign(I18N[l], fill[l]); });
