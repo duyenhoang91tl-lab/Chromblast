@@ -5835,6 +5835,18 @@ body:has(#secret-stage.active) .streak-dot.lit{
   cursor:pointer; box-shadow:0 3px 10px rgba(0,0,0,0.18);
 }
 .gpcard-upgrade-btn:active{ transform:scale(0.96); }
+.gpcard-tabs{
+  display:flex; flex-shrink:0; gap:2px;
+  padding:0 10px; border-bottom:1px solid rgba(255,255,255,0.18);
+}
+.gpcard-tab{
+  flex:1; min-width:0; border:none; background:none; cursor:pointer;
+  color:rgba(255,255,255,0.7); font-weight:800; font-size:12px;
+  padding:8px 2px 9px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  border-bottom:3px solid transparent; margin-bottom:-1px;
+}
+.gpcard-tab.active{ color:#fff; border-bottom-color:#fff; }
+.gpcard-tab:active{ opacity:0.8; }
 
 @media (orientation: landscape){
   .gpcard-shell{ max-width:720px; }
@@ -5842,6 +5854,7 @@ body:has(#secret-stage.active) .streak-dot.lit{
   .gpcard-header-icon{ font-size:20px; }
   .gpcard-header-level{ font-size:14px; }
   .gpcard-header-pill{ height:12px; }
+  .gpcard-tab{ font-size:11px; padding:6px 2px 7px; }
 }
 
 /* deploy-trigger: kich hoat lai GitHub Pages deploy sau khi doi Source sang GitHub Actions */

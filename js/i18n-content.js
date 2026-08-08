@@ -1598,10 +1598,46 @@ function MILESTONE_MSG(tier){
 (function(){
   const fill = {
     vi:{
-      gpcardUpgrade:'Nâng cấp'
+      gpcardUpgrade:'Nâng cấp',
+      gpcardTabRewards:'Phần thưởng',
+      gpcardTabQuests:'Nhiệm vụ',
+      gpcardTabRedeem:'Đi đổi',
+      gpcardTabLeaderboard:'Bảng xếp hạng'
     },
     en:{
-      gpcardUpgrade:'Upgrade'
+      gpcardUpgrade:'Upgrade',
+      gpcardTabRewards:'Rewards',
+      gpcardTabQuests:'Quests',
+      gpcardTabRedeem:'Redeem',
+      gpcardTabLeaderboard:'Leaderboard'
+    },
+    ko:{
+      gpcardUpgrade:'업그레이드',
+      gpcardTabRewards:'보상',
+      gpcardTabQuests:'퀘스트',
+      gpcardTabRedeem:'교환',
+      gpcardTabLeaderboard:'순위표'
+    },
+    ja:{
+      gpcardUpgrade:'アップグレード',
+      gpcardTabRewards:'報酬',
+      gpcardTabQuests:'クエスト',
+      gpcardTabRedeem:'交換',
+      gpcardTabLeaderboard:'ランキング'
+    },
+    zh:{
+      gpcardUpgrade:'升级',
+      gpcardTabRewards:'奖励',
+      gpcardTabQuests:'任务',
+      gpcardTabRedeem:'兑换',
+      gpcardTabLeaderboard:'排行榜'
+    },
+    es:{
+      gpcardUpgrade:'Mejorar',
+      gpcardTabRewards:'Recompensas',
+      gpcardTabQuests:'Misiones',
+      gpcardTabRedeem:'Canjear',
+      gpcardTabLeaderboard:'Clasificación'
     }
   };
   Object.keys(fill).forEach(l=>{ if(typeof I18N!=='undefined' && I18N[l]) Object.assign(I18N[l], fill[l]); });
