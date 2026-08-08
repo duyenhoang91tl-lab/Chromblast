@@ -800,45 +800,6 @@
     </div>
   </div>
 
-  <div id="game-pass-card" class="gpcard-panel">
-    <div class="gpcard-shell">
-      <div class="gpcard-header">
-        <button type="button" class="gpcard-close" id="gpcard-close-btn" aria-label="Close">✕</button>
-        <div class="gpcard-header-row">
-          <span class="gpcard-header-icon">🎫</span>
-          <span class="gpcard-header-level"><span data-i18n="gpcardLevelPrefix">Lv.</span><span id="gpcard-level-num">1</span></span>
-          <div class="gpcard-header-pill">
-            <div class="gpcard-header-pill-fill" id="gpcard-xp-fill"></div>
-          </div>
-          <span class="gpcard-header-xp" id="gpcard-xp-num">0/100</span>
-          <button type="button" class="gpcard-upgrade-btn" id="gpcard-upgrade-btn" data-i18n="gpcardUpgrade">Nâng cấp</button>
-        </div>
-      </div>
-      <div class="gpcard-tabs" role="tablist">
-        <button type="button" class="gpcard-tab" id="gpcard-tab-rewards" data-tab="rewards" role="tab" data-i18n="gpcardTabRewards">Phần thưởng</button>
-        <button type="button" class="gpcard-tab" id="gpcard-tab-quests" data-tab="quests" role="tab" data-i18n="gpcardTabQuests">Nhiệm vụ</button>
-        <button type="button" class="gpcard-tab" id="gpcard-tab-redeem" data-tab="redeem" role="tab" data-i18n="gpcardTabRedeem">Đi đổi</button>
-        <button type="button" class="gpcard-tab" id="gpcard-tab-leaderboard" data-tab="leaderboard" role="tab" data-i18n="gpcardTabLeaderboard">Bảng xếp hạng</button>
-      </div>
-    </div>
-    <div class="gpcard-subpanel" data-panel="rewards" role="tabpanel" aria-labelledby="gpcard-tab-rewards">
-      <button type="button" class="gpcard-back" data-panel-back="rewards" aria-label="Back">←</button>
-      <div class="gpcard-subpanel-body" id="gpcard-rewards"></div>
-    </div>
-    <div class="gpcard-subpanel" data-panel="quests" role="tabpanel" aria-labelledby="gpcard-tab-quests">
-      <button type="button" class="gpcard-back" data-panel-back="quests" aria-label="Back">←</button>
-      <div class="gpcard-subpanel-body" id="gpcard-quests"></div>
-    </div>
-    <div class="gpcard-subpanel" data-panel="redeem" role="tabpanel" aria-labelledby="gpcard-tab-redeem">
-      <button type="button" class="gpcard-back" data-panel-back="redeem" aria-label="Back">←</button>
-      <div class="gpcard-subpanel-body" id="gpcard-redeem"></div>
-    </div>
-    <div class="gpcard-subpanel" data-panel="leaderboard" role="tabpanel" aria-labelledby="gpcard-tab-leaderboard">
-      <button type="button" class="gpcard-back" data-panel-back="leaderboard" aria-label="Back">←</button>
-      <div class="gpcard-subpanel-body" id="gpcard-leaderboard"></div>
-    </div>
-  </div>
-
   <div id="leaderboard-panel" class="admin-panel-like">
     <div class="admin-card lb-card-wide">
       <div class="admin-title"><span data-i18n="leaderboardTitle">🏆 Bảng xếp hạng</span><button class="admin-close" id="leaderboard-close-btn">✕</button></div>
@@ -1484,11 +1445,11 @@
 <script src="js/chat-bubble-skins.js"></script>
 <script src="js/mech-config.js"></script>
 <script src="js/progression.js"></script>
-<script src="js/game-pass-card.js"></script>
 <script src="js/inventory.js"></script>
 <script src="js/quests.js"></script>
 <script src="js/lb-period.js"></script>
 <script src="js/leaderboard.js"></script>
+<script src="js/gpcard-leaderboard.js"></script>
 <script src="js/gpcard.js"></script>
 <script src="js/lb-notify.js"></script>
 <script src="js/economy-shop.js"></script>

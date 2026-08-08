@@ -5908,132 +5908,6 @@ body:has(#secret-stage.active) .streak-dot.lit{
   .rank-fx-marquee-text{ animation:none; position:static; }
   .rank-fx-marquee-box{ overflow:visible; max-width:none; white-space:normal; }
 }
-/* ══════════════════════════════════════════
-   THẺ TRÒ CHƠI (game-pass-card) — giai đoạn 1: chỉ phần header cố định.
-   Bảng màu riêng cho khung này (pastel tím/xanh dương), không đụng biến
-   màu/font chung của toàn app — font vẫn kế thừa từ body (Nunito).
-══════════════════════════════════════════ */
-.gpcard-panel{
-  display:none; position:fixed; inset:0; z-index:10071;
-  background:linear-gradient(165deg,#a7b8f0 0%,#c9b6f0 100%);
-  overflow:hidden;
-}
-.gpcard-panel.show{ display:flex; flex-direction:column; }
-.gpcard-shell{
-  flex:1; min-height:0; display:flex; flex-direction:column;
-  width:100%; max-width:560px; margin:0 auto;
-}
-.gpcard-header{
-  position:relative; flex-shrink:0;
-  padding:calc(env(safe-area-inset-top,0px) + 14px) max(16px, env(safe-area-inset-right,0px)) 14px max(16px, env(safe-area-inset-left,0px));
-  color:#fff;
-}
-.gpcard-close{
-  position:absolute; top:calc(env(safe-area-inset-top,0px) + 10px); right:max(12px, env(safe-area-inset-right,0px));
-  width:32px; height:32px; border:none; border-radius:50%;
-  background:rgba(255,255,255,0.22); color:#fff; font-size:16px; font-weight:900;
-  cursor:pointer; display:flex; align-items:center; justify-content:center;
-}
-.gpcard-header-row{
-  display:flex; align-items:center; gap:8px; padding-right:40px;
-}
-.gpcard-header-icon{ font-size:24px; flex-shrink:0; }
-.gpcard-header-level{ font-size:16px; font-weight:900; flex-shrink:0; white-space:nowrap; }
-.gpcard-header-pill{
-  flex:1; min-width:40px; height:14px; border-radius:999px;
-  background:rgba(255,255,255,0.35); overflow:hidden;
-  box-shadow:inset 0 1px 3px rgba(0,0,0,0.15);
-}
-.gpcard-header-pill-fill{
-  height:100%; width:0%; border-radius:999px;
-  background:linear-gradient(90deg,#ffd166,#ff9900);
-  transition:width .3s ease;
-}
-.gpcard-header-xp{
-  font-size:11px; font-weight:800; flex-shrink:0; white-space:nowrap;
-  color:rgba(255,255,255,0.9);
-}
-.gpcard-upgrade-btn{
-  flex-shrink:0; border:none; border-radius:999px; padding:7px 14px;
-  background:#ffe9a8; color:#7a4a00; font-weight:900; font-size:12px;
-  cursor:pointer; box-shadow:0 3px 10px rgba(0,0,0,0.18);
-}
-.gpcard-upgrade-btn:active{ transform:scale(0.96); }
-.gpcard-tabs{
-  display:flex; flex-shrink:0; gap:2px;
-  padding:0 max(10px, env(safe-area-inset-right,0px)) 0 max(10px, env(safe-area-inset-left,0px));
-  border-bottom:1px solid rgba(255,255,255,0.18);
-}
-.gpcard-tab{
-  flex:1; min-width:0; border:none; background:none; cursor:pointer;
-  color:rgba(255,255,255,0.7); font-weight:800; font-size:12px;
-  padding:8px 2px 9px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-  border-bottom:3px solid transparent; margin-bottom:-1px;
-}
-.gpcard-tab.active{ color:#fff; border-bottom-color:#fff; }
-.gpcard-tab:active{ opacity:0.8; }
-
-@media (orientation: landscape){
-  .gpcard-shell{ max-width:720px; }
-  .gpcard-header{ padding-top:calc(env(safe-area-inset-top,0px) + 8px); padding-bottom:8px; }
-  .gpcard-header-icon{ font-size:20px; }
-  .gpcard-header-level{ font-size:14px; }
-  .gpcard-header-pill{ height:12px; }
-  .gpcard-tab{ font-size:11px; padding:6px 2px 7px; }
-}
-@media (orientation: landscape) and (max-height: 420px){
-  /* Điện thoại xoay ngang màn thấp: header+tab vốn cố định chiều cao, cần
-     thu gọn thêm để nhường chỗ cho nội dung — bàn cờ các panel khác đã tự
-     co theo flex/aspect-ratio, ở đây chỉ có chữ/icon nên chỉnh trực tiếp size. */
-  .gpcard-header{ padding-top:calc(env(safe-area-inset-top,0px) + 4px); padding-bottom:4px; }
-  .gpcard-header-row{ gap:6px; }
-  .gpcard-header-icon{ font-size:16px; }
-  .gpcard-header-level{ font-size:12px; }
-  .gpcard-header-pill{ height:10px; }
-  .gpcard-header-xp{ font-size:10px; }
-  .gpcard-upgrade-btn{ padding:5px 10px; font-size:11px; }
-  .gpcard-close,.gpcard-back{ width:26px; height:26px; font-size:13px; }
-  .gpcard-tab{ font-size:10px; padding:4px 2px 5px; }
-}
-
-/* Giai đoạn 3: 4 panel trượt toàn màn hình cho từng tab — đè lên toàn bộ game,
-   trượt vào từ bên phải khi mở, nút "<" ở góc trên trái chỉ đóng riêng panel đó
-   (không đóng cả Thẻ trò chơi). Nội dung mỗi panel đổ vào .gpcard-subpanel-body
-   (id #gpcard-rewards/quests/redeem/leaderboard) ở bước sau — div đó luôn để
-   rỗng, nút back nằm ngoài để không bị ghi đè khi nội dung được nạp vào. */
-.gpcard-subpanel{
-  position:fixed; inset:0; z-index:10072;
-  background:linear-gradient(165deg,#a7b8f0 0%,#c9b6f0 100%);
-  transform:translateX(100%);
-  transition:transform .25s ease;
-  overflow:hidden;
-}
-.gpcard-subpanel.show{ transform:translateX(0); }
-.gpcard-back{
-  position:absolute; top:calc(env(safe-area-inset-top,0px) + 10px); left:max(12px, env(safe-area-inset-left,0px)); z-index:1;
-  width:32px; height:32px; border:none; border-radius:50%;
-  background:rgba(255,255,255,0.22); color:#fff; font-size:16px; font-weight:900;
-  cursor:pointer; display:flex; align-items:center; justify-content:center;
-}
-.gpcard-back:active{ opacity:0.8; }
-.gpcard-subpanel-body{
-  width:100%; max-width:560px; height:100%; margin:0 auto;
-  padding:calc(env(safe-area-inset-top,0px) + 54px) max(0px, env(safe-area-inset-right,0px)) env(safe-area-inset-bottom,0px) max(0px, env(safe-area-inset-left,0px));
-  overflow-y:auto; -webkit-overflow-scrolling:touch;
-  box-sizing:border-box;
-}
-@media (prefers-reduced-motion: reduce){
-  .gpcard-subpanel{ transition:none; }
-}
-@media (orientation: landscape){
-  .gpcard-subpanel-body{ max-width:720px; padding-top:calc(env(safe-area-inset-top,0px) + 46px); }
-  .gpcard-back{ top:calc(env(safe-area-inset-top,0px) + 8px); }
-}
-@media (orientation: landscape) and (max-height: 420px){
-  .gpcard-subpanel-body{ padding-top:calc(env(safe-area-inset-top,0px) + 36px); }
-  .gpcard-back{ top:calc(env(safe-area-inset-top,0px) + 5px); width:26px; height:26px; font-size:13px; }
-}
-
 /* Giai đoạn 4: bảng màu dùng chung cho nội dung bên trong panel — nền
    sáng, chữ tối, bo góc lớn, bóng đổ mềm, cùng tông pastel tím/xanh
    dương với khung ngoài. Phần 2–5 chỉ cần gắn class này cho từng khối
@@ -6045,5 +5919,52 @@ body:has(#secret-stage.active) .streak-dot.lit{
   padding:16px; margin:0 0 12px;
 }
 .gpcard-card:last-child{ margin-bottom:0; }
+
+/* Tab "Bảng xếp hạng" (#gpcard-leaderboard) */
+.gpcard-lb-loading{ text-align:center; color:#8a80b0; font-weight:700; }
+.gpcard-lb-period-row{ display:flex; gap:8px; padding:8px; }
+.gpcard-lb-period-btn{
+  flex:1; border:none; border-radius:12px; padding:9px 4px;
+  background:#eee9ff; color:#5a4f8a; font-weight:800; font-size:13px; cursor:pointer;
+}
+.gpcard-lb-period-btn.active{ background:linear-gradient(135deg,#a7b8f0,#c9b6f0); color:#fff; }
+.gpcard-lb-banner-top{
+  display:flex; align-items:center; justify-content:space-between;
+  background:linear-gradient(135deg,#ffe1a8,#ffc266); border-radius:14px;
+  padding:12px 16px; margin-bottom:8px; color:#6a3d00;
+}
+.gpcard-lb-banner-top-rank{ font-size:16px; font-weight:900; }
+.gpcard-lb-banner-top-reward{ font-size:15px; font-weight:900; }
+.gpcard-lb-banner-row{ display:flex; flex-wrap:wrap; gap:6px; }
+.gpcard-lb-banner-chip{
+  background:#eee9ff; color:#5a4f8a; border-radius:999px;
+  padding:5px 10px; font-size:11px; font-weight:800; white-space:nowrap;
+}
+.gpcard-lb-claim-wrap{ padding:12px; text-align:center; }
+.gpcard-lb-claim-btn{
+  border:none; border-radius:999px; padding:11px 20px; width:100%;
+  background:linear-gradient(135deg,#ff6600,#ffaa00,#ffdd00); color:#1a0a00;
+  font-weight:900; font-size:14px; cursor:pointer;
+}
+.gpcard-lb-claim-btn:disabled{ background:#e2ddf5; color:#9a8fc0; }
+.gpcard-lb-list-card{ padding:10px 8px; }
+.gpcard-lb-my-rank{ font-size:12px; font-weight:800; color:#7a6fae; padding:2px 8px 10px; }
+.gpcard-lb-list{ display:flex; flex-direction:column; gap:2px; max-height:44vh; overflow-y:auto; }
+.gpcard-lb-empty{ text-align:center; color:#9a8fc0; font-weight:700; padding:20px; }
+.gpcard-lb-row{
+  display:flex; align-items:center; gap:10px; padding:8px 8px; border-radius:10px;
+}
+.gpcard-lb-row.me{ background:#eee4ff; }
+.gpcard-lb-rank{ width:26px; flex-shrink:0; text-align:center; font-weight:900; font-size:13px; color:#7a6fae; }
+.gpcard-lb-rank-top{
+  width:24px; height:24px; line-height:24px; border-radius:50%; font-size:14px;
+  box-shadow:0 0 0 2px rgba(0,0,0,0.06) inset;
+}
+.gpcard-lb-rank-1{ background:#fff2cc; }
+.gpcard-lb-rank-2{ background:#eef0f4; }
+.gpcard-lb-rank-3{ background:#f7e2cf; }
+.gpcard-lb-avatar{ font-size:18px; flex-shrink:0; }
+.gpcard-lb-name{ flex:1; min-width:0; font-weight:700; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.gpcard-lb-score{ font-weight:900; font-size:13px; color:#5a4f8a; flex-shrink:0; }
 
 /* deploy-trigger: kich hoat lai GitHub Pages deploy sau khi doi Source sang GitHub Actions */
