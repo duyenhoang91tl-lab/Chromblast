@@ -5051,8 +5051,16 @@ body:has(#secret-stage.active) .streak-dot.lit{
 .settings-overlay.show{ display:flex; }
 .settings-overlay.menu-fullscreen{
   padding:0;
-  /* Trong suốt — lộ nền bầu trời sao #sky-atmosphere giống màn start / các mục khác */
-  background: rgba(8, 10, 28, 0.42);
+  background:linear-gradient(165deg,#ffffff 0%,#ffeaf1 45%,#ffd7e4 100%);
+}
+/* Nền sáng nên "Menu" + nút đóng/quay lại đổi từ trắng-trên-tối sang tối-trên-sáng */
+.settings-overlay.menu-fullscreen .menu-head{
+  color:#5a3345; text-shadow:none;
+}
+.settings-overlay.menu-fullscreen .settings-x,
+.settings-overlay.menu-fullscreen .settings-back{
+  background:rgba(255,150,180,0.28); color:#7a3d5a;
+  box-shadow:0 2px 8px rgba(180,80,120,0.18);
 }
 .settings-modal{
   width:min(360px,94vw); max-height:min(88vh,640px);
