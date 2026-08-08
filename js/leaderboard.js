@@ -184,11 +184,16 @@ async function _updateClaimButton(){
   // giới thực tế #50 vẫn đủ điều kiện nhận thưởng).
   const world = _lbScope === 'world' ? mine : await findMyPeriodRank(_lbPeriod, 'world', { previous: true });
   const claimed = typeof hasClaimedPeriod === 'function' && hasClaimedPeriod(world.periodId, 'world');
-  if(!world.rank || world.rank > 100 || claimed){
+  if(!world.rank || world.rank > 100){
+    // Chưa vào top 100 kỳ trước — ẩn hẳn nút (không hiện nút mờ kèm chữ
+    // "chưa đủ điều kiện"), dòng hạng kỳ trước ở trên vẫn còn để tham khảo.
+    btn.style.display = 'none';
+    return;
+  }
+  btn.style.display = '';
+  if(claimed){
     btn.disabled = true;
-    btn.textContent = claimed
-      ? (typeof t==='function'?t('lbClaimed'):'✅ Đã nhận thưởng kỳ trước')
-      : (typeof t==='function'?t('lbClaimUnavailable'):'Chưa đủ điều kiện nhận thưởng');
+    btn.textContent = (typeof t==='function'?t('lbClaimed'):'✅ Đã nhận thưởng kỳ trước');
     return;
   }
   const reward = typeof rewardForRank === 'function' ? rewardForRank(_lbPeriod, world.rank) : null;
