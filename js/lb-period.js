@@ -180,6 +180,7 @@
     const avatar =
       typeof getPlayerAvatar === "function" ? getPlayerAvatar() : "🐶";
     const uid = localPlayerId();
+    const level = typeof playerLevel !== "undefined" ? playerLevel : 1;
     const kinds = ["day", "week", "month"];
     const store = loadLocalPeriodStore();
     kinds.forEach(function (kind) {
@@ -192,6 +193,7 @@
           name: name,
           avatar: avatar,
           score: score | 0,
+          level: level,
           country: region.country,
           continent: region.continent,
           at: Date.now(),
@@ -223,6 +225,7 @@
           rank: i + 1,
           name: e.name || "Player",
           score: e.score | 0,
+          level: e.level || 1,
           playerId: e.uid,
           avatar: e.avatar || "🐶",
           country: e.country,

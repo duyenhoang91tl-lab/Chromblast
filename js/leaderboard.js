@@ -87,44 +87,71 @@ function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
-function _renderLbRows(list, top, myName){
+/** Danh sách khung hạng (band) theo REWARD_TABLE của 1 kỳ — [{from,to,gold,diamond}]. */
+function _lbBandsFor(kind){
+  const table = (typeof REWARD_TABLE !== 'undefined' && REWARD_TABLE[kind]) || [];
+  let from = 1;
+  return table.map(row=>{
+    const band = { from, to: row.max, gold: row.gold, diamond: row.diamond };
+    from = row.max + 1;
+    return band;
+  });
+}
+
+function _renderLbFramedRows(list, top, myName, kind){
   list.innerHTML = '';
   if(!top.length){
     list.innerHTML = '<div class="lb-empty">'+(typeof t==='function'?t('lbEmpty'):'Trống')+'</div>';
     return;
   }
-  top.forEach((e,i) => {
-    const row = document.createElement('div');
-    const rank = e.rank || (i+1);
-    const isMe = e.name === myName;
-    row.className = 'lb-row' + (isMe ? ' me' : '');
-    const medal = rank===1 ? '🥇' : rank===2 ? '🥈' : rank===3 ? '🥉' : String(rank);
-    const geo = e.country ? (' <span class="lb-geo">'+escapeHtml(e.country)+'</span>') : '';
-    row.innerHTML = '<span class="lb-rank">'+medal+'</span>'
-      + '<span class="lb-name">'+escapeHtml(e.name)+geo+'</span>'
-      + '<span class="lb-score">'+(e.score|0).toLocaleString()+'</span>';
-    // Bấm vào tên/avatar để mở hồ sơ người chơi (xem info, kết bạn) — giống
-    // hệt cách bấm avatar trong chat mở openPlayerCard. Chỉ áp dụng cho hàng
-    // có playerId (BXH online theo bạn bè/kỳ) — BXH local không có uid.
-    if(e.playerId){
-      const nameEl = row.querySelector('.lb-name');
-      if(nameEl){
-        nameEl.classList.add('lb-name-tappable');
-        nameEl.setAttribute('role', 'button');
-        nameEl.setAttribute('tabindex', '0');
-        const openThisCard = ()=>{
-          try{ sfxClick(); }catch(e){}
-          const opts = { uid: e.playerId, name: e.name, self: isMe };
-          if(typeof openPlayerCard === 'function'){ openPlayerCard(opts); return; }
-          if(typeof window.ensureCaroLoaded === 'function'){
-            window.ensureCaroLoaded().then(()=>{ if(typeof openPlayerCard === 'function') openPlayerCard(opts); }).catch(()=>{});
-          }
-        };
-        nameEl.addEventListener('click', ev=>{ ev.stopPropagation(); openThisCard(); });
-        nameEl.addEventListener('keydown', ev=>{ if(ev.key==='Enter'||ev.key===' '){ ev.preventDefault(); openThisCard(); } });
+  const bands = _lbBandsFor(kind);
+  bands.forEach(band=>{
+    const rowsInBand = top.filter(e=>{
+      const rank = e.rank || 0;
+      return rank >= band.from && rank <= band.to;
+    });
+    if(!rowsInBand.length) return;
+
+    const frame = document.createElement('div');
+    frame.className = 'lb-frame';
+    const titleTxt = band.from === band.to
+      ? ('#'+band.from)
+      : ('#'+band.from+' – #'+band.to);
+    const giftTxt = '🪙'+band.gold + (band.diamond>0 ? (' · 💎'+band.diamond) : '');
+    frame.innerHTML = '<div class="lb-frame-title"><span>'+titleTxt+'</span><span class="lb-frame-gift">'+giftTxt+'</span></div>';
+
+    rowsInBand.forEach(e=>{
+      const row = document.createElement('div');
+      const rank = e.rank || 0;
+      const isMe = e.name === myName;
+      row.className = 'lb-row' + (isMe ? ' me' : '');
+      const medal = rank===1 ? '🥇' : rank===2 ? '🥈' : rank===3 ? '🥉' : '';
+      const geo = e.country ? (' <span class="lb-geo">'+escapeHtml(e.country)+'</span>') : '';
+      row.innerHTML = '<span class="lb-rank">'+(medal?medal+' ':'')+'#'+rank+'</span>'
+        + '<span class="lb-name">'+escapeHtml(e.name)+geo+'</span>'
+        + '<span class="lb-level">Lv.'+(e.level||1)+'</span>'
+        + '<span class="lb-gift">'+giftTxt+'</span>';
+      if(e.playerId){
+        const nameEl = row.querySelector('.lb-name');
+        if(nameEl){
+          nameEl.classList.add('lb-name-tappable');
+          nameEl.setAttribute('role', 'button');
+          nameEl.setAttribute('tabindex', '0');
+          const openThisCard = ()=>{
+            try{ sfxClick(); }catch(e){}
+            const opts = { uid: e.playerId, name: e.name, self: isMe };
+            if(typeof openPlayerCard === 'function'){ openPlayerCard(opts); return; }
+            if(typeof window.ensureCaroLoaded === 'function'){
+              window.ensureCaroLoaded().then(()=>{ if(typeof openPlayerCard === 'function') openPlayerCard(opts); }).catch(()=>{});
+            }
+          };
+          nameEl.addEventListener('click', ev=>{ ev.stopPropagation(); openThisCard(); });
+          nameEl.addEventListener('keydown', ev=>{ if(ev.key==='Enter'||ev.key===' '){ ev.preventDefault(); openThisCard(); } });
+        }
       }
-    }
-    list.appendChild(row);
+      frame.appendChild(row);
+    });
+    list.appendChild(frame);
   });
 }
 
@@ -268,7 +295,7 @@ async function renderLeaderboardPanel(){
 
   if(_lbMode === 'period' && typeof fetchPeriodLeaderboard === 'function'){
     const board = await fetchPeriodLeaderboard(_lbPeriod, _lbScope, { previous: false });
-    _renderLbRows(list, board.entries.slice(0, 100), myName);
+    _renderLbFramedRows(list, board.entries.slice(0, 100), myName, _lbPeriod);
     const mine = board.entries.find(e => e.name === myName || (typeof getOnlineUid==='function' && e.playerId===getOnlineUid()));
     if(myRankBox){
       myRankBox.textContent = mine

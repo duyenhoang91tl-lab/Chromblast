@@ -2577,6 +2577,7 @@ async function fetchPeriodLeaderboardOnline(periodId, limit){
         rank: i + 1,
         name: d.name || 'Player',
         score: d.score || 0,
+        level: d.level || 1,
         playerId: doc.id,
         avatar: d.avatar || '🐶',
         country: d.country,
