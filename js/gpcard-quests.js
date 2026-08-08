@@ -132,6 +132,9 @@ function renderGpcardQuests(){
     // openGpcardPanel('quests') (không qua click tab ở trên) — lắng cả nút đó
     // để nội dung không bị trống khi vào theo lối này.
     document.getElementById('acchub-btn-quests')?.addEventListener('click', renderGpcardQuests);
+    // js/quests.js: nút "Nhiệm vụ" trong Menu chính giờ cũng mở thẳng
+    // openGpcardPanel('quests') — cùng lý do, cần lắng riêng để có nội dung.
+    document.getElementById('set-btn-quests')?.addEventListener('click', renderGpcardQuests);
   }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
   else bind();

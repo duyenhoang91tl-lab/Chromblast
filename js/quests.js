@@ -572,11 +572,16 @@
   }
 
   function initQuestsUI() {
+    // Nút "Nhiệm vụ" trong Menu giờ mở đúng tab Nhiệm vụ của Thẻ trò chơi —
+    // giống hệt nút "Nhiệm vụ" trong Tài khoản (xem js/account-hub.js:
+    // acchub-btn-quests) — thay vì mở màn quests-screen cũ riêng biệt.
     document.getElementById("set-btn-quests")?.addEventListener("click", function () {
       try {
         if (typeof sfxClick === "function") sfxClick();
       } catch (e) {}
-      openQuestsScreen();
+      document.getElementById('settings-panel')?.classList.remove('show');
+      if (typeof openGpcardPanel === "function") openGpcardPanel('quests');
+      else openQuestsScreen();
     });
     document.getElementById("quests-close-btn")?.addEventListener("click", function () {
       try {
