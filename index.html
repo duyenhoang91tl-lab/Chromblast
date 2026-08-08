@@ -669,6 +669,114 @@
     </div>
   </div>
 
+  <div id="account-hub" class="acchub-panel">
+    <div class="acchub-shell">
+      <div class="acchub-head">
+        <button type="button" class="acchub-close" id="acchub-close-btn" aria-label="Close">✕</button>
+        <div class="acchub-profile">
+          <div class="acchub-avatar" id="acchub-avatar"></div>
+          <div class="acchub-profile-text">
+            <div class="acchub-name" id="acchub-name">—</div>
+            <div class="acchub-id" id="acchub-id">ID: —</div>
+          </div>
+        </div>
+      </div>
+      <div class="acchub-body">
+        <div class="acchub-icons">
+          <button type="button" class="acchub-icon-btn" id="acchub-btn-membership">
+            <span class="acchub-icon-circle">👑</span>
+            <span class="acchub-icon-label" data-i18n="acchubMembership">Hội viên</span>
+          </button>
+          <button type="button" class="acchub-icon-btn" id="acchub-btn-shop">
+            <span class="acchub-icon-circle">🛒</span>
+            <span class="acchub-icon-label" data-i18n="acchubShop">Cửa hàng</span>
+          </button>
+          <button type="button" class="acchub-icon-btn" id="acchub-btn-quests">
+            <span class="acchub-icon-circle">📋</span>
+            <span class="acchub-icon-label" data-i18n="acchubQuests">Nhiệm vụ</span>
+          </button>
+        </div>
+        <div class="acchub-list">
+          <button type="button" class="acchub-row" id="acchub-row-status">
+            <span class="acchub-row-ico">📊</span>
+            <span class="acchub-row-label" data-i18n="acchubStatus">Trạng thái của tôi</span>
+            <span class="acchub-row-arrow">›</span>
+          </button>
+          <button type="button" class="acchub-row" id="acchub-row-achievements">
+            <span class="acchub-row-ico">🏅</span>
+            <span class="acchub-row-label" data-i18n="acchubAchievements">Thành tích của tôi</span>
+            <span class="acchub-row-arrow">›</span>
+          </button>
+          <button type="button" class="acchub-row" id="acchub-row-bag">
+            <span class="acchub-row-ico">🎒</span>
+            <span class="acchub-row-label" data-i18n="acchubBag">Túi của tôi</span>
+            <span class="acchub-row-arrow">›</span>
+          </button>
+          <button type="button" class="acchub-row" id="acchub-row-groups">
+            <span class="acchub-row-ico">👥</span>
+            <span class="acchub-row-label" data-i18n="acchubGroups">Hội nhóm</span>
+            <span class="acchub-row-arrow">›</span>
+          </button>
+          <button type="button" class="acchub-row" id="acchub-row-rename">
+            <span class="acchub-row-ico">✏️</span>
+            <span class="acchub-row-label" data-i18n="acchubRename">Đổi tên</span>
+            <span class="acchub-row-arrow">›</span>
+          </button>
+          <button type="button" class="acchub-row" id="acchub-row-settings">
+            <span class="acchub-row-ico">⚙️</span>
+            <span class="acchub-row-label" data-i18n="acchubSettings">Cài đặt</span>
+            <span class="acchub-row-arrow">›</span>
+          </button>
+          <button type="button" class="acchub-row" id="acchub-row-friends">
+            <span class="acchub-row-ico">🤝</span>
+            <span class="acchub-row-label" data-i18n="acchubFriends">Bạn bè</span>
+            <span class="acchub-row-arrow">›</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="account-status-panel" class="acchub-sub">
+    <div class="acchub-sub-head">
+      <button type="button" class="acchub-back" id="account-status-back" aria-label="Back">‹</button>
+      <span data-i18n="acchubStatus">Trạng thái của tôi</span>
+    </div>
+    <div class="acchub-sub-shell"><div id="account-status"></div></div>
+  </div>
+
+  <div id="account-achievements-panel" class="acchub-sub">
+    <div class="acchub-sub-head">
+      <button type="button" class="acchub-back" id="account-achievements-back" aria-label="Back">‹</button>
+      <span data-i18n="acchubAchievements">Thành tích của tôi</span>
+    </div>
+    <div class="acchub-sub-shell"><div id="account-achievements"></div></div>
+  </div>
+
+  <div id="account-bag-panel" class="acchub-sub">
+    <div class="acchub-sub-head">
+      <button type="button" class="acchub-back" id="account-bag-back" aria-label="Back">‹</button>
+      <span data-i18n="acchubBag">Túi của tôi</span>
+    </div>
+    <div class="acchub-sub-shell"><div id="account-bag"></div></div>
+  </div>
+
+  <div id="account-groups-panel" class="acchub-sub">
+    <div class="acchub-sub-head">
+      <button type="button" class="acchub-back" id="account-groups-back" aria-label="Back">‹</button>
+      <span data-i18n="acchubGroups">Hội nhóm</span>
+    </div>
+    <div class="acchub-sub-shell"><div id="account-groups"></div></div>
+  </div>
+
+  <div id="account-membership-panel" class="acchub-sub">
+    <div class="acchub-sub-head">
+      <button type="button" class="acchub-back" id="account-membership-back" aria-label="Back">‹</button>
+      <span data-i18n="acchubMembership">Hội viên</span>
+    </div>
+    <div class="acchub-sub-shell"><div id="account-membership"></div></div>
+  </div>
+
   <div id="account-panel">
     <div class="admin-card">
       <div class="admin-title"><span data-i18n="accountTitle">🔑 Đổi mật khẩu</span><button class="admin-close" id="account-close-btn">✕</button></div>
@@ -1442,6 +1550,7 @@
 <script src="js/caro-ranks.js"></script>
 <script src="js/versus-ranks.js"></script>
 <script src="js/player-profile.js"></script>
+<script src="js/account-hub.js"></script>
 <script src="js/chat-bubble-skins.js"></script>
 <script src="js/mech-config.js"></script>
 <script src="js/progression.js"></script>

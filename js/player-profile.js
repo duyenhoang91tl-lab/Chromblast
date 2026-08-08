@@ -689,7 +689,10 @@ function initPlayerProfileUI(){
     }
   });
 
-  document.getElementById('settings-player-edit')?.addEventListener('click', openPlayerProfilePanel);
+  document.getElementById('settings-player-edit')?.addEventListener('click', ()=>{
+    if(typeof openAccountHub === 'function') openAccountHub();
+    else openPlayerProfilePanel();
+  });
   document.getElementById('account-edit-profile')?.addEventListener('click', openPlayerProfilePanel);
 
   [['pp-vis-maps','maps'], ['pp-vis-caro','caroRank'], ['pp-vis-versus','versusRank']].forEach(([id, field])=>{

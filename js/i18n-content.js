@@ -1661,3 +1661,21 @@ function MILESTONE_MSG(tier){
   Object.keys(fill).forEach(l=>{ if(typeof I18N!=='undefined' && I18N[l]) Object.assign(I18N[l], fill[l]); });
 })();
 
+
+(function(){
+  const fill = {
+    vi:{
+      acchubMembership:'Hội viên', acchubShop:'Cửa hàng', acchubQuests:'Nhiệm vụ',
+      acchubStatus:'Trạng thái của tôi', acchubAchievements:'Thành tích của tôi',
+      acchubBag:'Túi của tôi', acchubGroups:'Hội nhóm', acchubRename:'Đổi tên',
+      acchubSettings:'Cài đặt', acchubFriends:'Bạn bè', acchubIdPrefix:'ID:'
+    },
+    en:{
+      acchubMembership:'Membership', acchubShop:'Shop', acchubQuests:'Quests',
+      acchubStatus:'My Status', acchubAchievements:'My Achievements',
+      acchubBag:'My Bag', acchubGroups:'Groups', acchubRename:'Rename',
+      acchubSettings:'Settings', acchubFriends:'Friends', acchubIdPrefix:'ID:'
+    }
+  };
+  Object.keys(fill).forEach(l=>{ if(typeof I18N!=='undefined' && I18N[l]) Object.assign(I18N[l], fill[l]); });
+})();
