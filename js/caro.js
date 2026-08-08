@@ -2093,6 +2093,9 @@ function _caroOpenLobby(roomId, code, role, roomData){
       return;
     }
     const prevGuestId = _caroLobby && _caroLobby.roomData ? _caroLobby.roomData.guestId : null;
+    // Chủ phòng cũ rời phòng chờ, mình (đang là khách) được tự động thăng làm chủ phòng
+    // mới (xem leaveOnlineRoom) — cập nhật lại role + nhịp tim + báo cho mình biết.
+    const becameHost = _caroLobby && _caroLobby.role === 'guest' && myUid && d.hostId === myUid;
     _caroLobby.roomData = d;
     _caroSyncRoomPrefsFromData(d);
     _caroRenderLobby(d);
@@ -2101,6 +2104,11 @@ function _caroOpenLobby(roomId, code, role, roomData){
     if(d.status !== 'playing'){
       if(!prevGuestId && d.guestId){ try{ if(typeof sfxRoomJoin==='function') sfxRoomJoin(); }catch(e){} }
       else if(prevGuestId && !d.guestId){ try{ if(typeof sfxRoomLeave==='function') sfxRoomLeave(); }catch(e){} }
+    }
+    if(becameHost){
+      _caroLobby.role = 'host';
+      if(typeof startRoomHeartbeat === 'function') startRoomHeartbeat(roomId);
+      try{ showHint((typeof t==='function'?t('becameHostMsg'):null) || '👑 Bạn đã trở thành chủ phòng!', { hold: 2600 }); }catch(e){}
     }
     if(d.status==='playing' && !caroMode) _caroEnterGame({ roomId, ...d });
   });

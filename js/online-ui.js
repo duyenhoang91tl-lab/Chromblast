@@ -198,6 +198,9 @@ function openOnlineLobby(roomId, code, role, roomData){
       return;
     }
     const prevGuestId = _onlineLobby && _onlineLobby.roomData ? _onlineLobby.roomData.guestId : null;
+    // Chủ phòng cũ rời phòng chờ, mình (đang là khách) được tự động thăng làm chủ phòng
+    // mới (xem leaveOnlineRoom) — cập nhật lại role + báo cho mình biết.
+    const becameHost = _onlineLobby && _onlineLobby.role === 'guest' && myUid && d.hostId === myUid;
     _onlineLobby.roomData=d;
     _renderLobby(d);
     // Tiếng báo có người vào/rời phòng chờ — chỉ khi còn ở sảnh (chưa vào trận); lúc đang
@@ -205,6 +208,10 @@ function openOnlineLobby(roomId, code, role, roomData){
     if(d.status !== 'playing'){
       if(!prevGuestId && d.guestId){ try{ if(typeof sfxRoomJoin==='function') sfxRoomJoin(); }catch(e){} }
       else if(prevGuestId && !d.guestId){ try{ if(typeof sfxRoomLeave==='function') sfxRoomLeave(); }catch(e){} }
+    }
+    if(becameHost){
+      _onlineLobby.role = 'host';
+      try{ _onlineStatus((typeof t==='function'?t('becameHostMsg'):null) || '👑 Bạn đã trở thành chủ phòng!'); }catch(e){}
     }
     if(d.status==='playing' && d.seed!=null && !versusMode){
       enterOnlineVersusMatch(roomId, d);

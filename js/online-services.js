@@ -1733,10 +1733,24 @@ async function leaveOnlineRoom(roomId){
   const d = snap.data();
   const uid = _onlineUid;
   if(d.hostId === uid){
-    // Chủ phòng thoát (đóng tab / bấm thoát / mất kết nối) → luôn xoá phòng ngay lập tức,
-    // kể cả khi đang có khách trong phòng. Khách sẽ nhận sự kiện 'deleted' qua listenOnlineRoom
-    // và được báo "Chủ phòng đã rời phòng" rồi tự động về danh sách phòng (xem caro.js).
-    await _deleteRoomDoc(roomId);
+    // Đang chơi dở (status 'playing') → GIỮ NGUYÊN hành vi cũ: xoá phòng ngay lập tức.
+    // Khách còn lại nhận sự kiện 'deleted' qua listenOnlineRoom và được xử lý thắng do
+    // đối thủ bỏ cuộc (finalizeCaroMatch/finalizeOnlineMatch chỉ trigger khi phòng bị
+    // xoá) — không được đổi, nếu không người bỏ cuộc giữa trận sẽ không bị xử thua.
+    //
+    // Chưa vào trận (status 'open'/'ready', đang ở phòng chờ) và còn khách trong phòng
+    // → nhường quyền chủ phòng cho khách thay vì xoá phòng, để họ không bị văng ra
+    // ngoài/mất công chờ vô ích. Phòng quay lại 'open' chờ khách mới ghép vào.
+    if(d.status !== 'playing' && d.guestId){
+      await ref.update({
+        hostId: d.guestId, hostName: d.guestName, hostAvatar: d.guestAvatar,
+        guestId: null, guestName: null, guestAvatar: null, guestReady: false,
+        status: 'open', hostChangedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    } else {
+      await _deleteRoomDoc(roomId);
+    }
   } else if(d.guestId === uid){
     await ref.update({
       guestId: null, guestName: null, guestAvatar: null, guestReady: false, status: 'open',

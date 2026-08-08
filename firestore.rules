@@ -227,17 +227,28 @@ service cloud.firestore {
         // createdAt phải là mốc server thật (không tự đặt lùi về quá khứ được) — đây là
         // "đồng hồ" mà roomFinishOk() dựa vào để chặn báo thắng khống tức thời.
         && request.resource.data.createdAt == request.time;
-      // hostId bất biến sau khi tạo; guestId không bao giờ được trùng hostId (chặn tự đấu
-      // với chính mình); winnerId khi báo thắng chỉ được là chính hostId/guestId của room đó
-      // (chặn gán thắng khống cho 1 uid bất kỳ) — applyMatchResult (functions/index.js) chỉ
-      // cộng điểm dựa trên các field này nên phải khoá chặt ở đây.
+      // hostId bất biến sau khi tạo — NGOẠI LỆ DUY NHẤT: chính chủ phòng hiện tại tự
+      // chuyển quyền chủ phòng sang đúng khách đang có trong phòng trước khi rời (xem
+      // leaveOnlineRoom, js/online-services.js) — không ai khác được kích hoạt nhánh
+      // này, và hostId mới chỉ được set đúng bằng guestId hiện tại (không gán tuỳ ý cho
+      // uid khác). guestId không bao giờ được trùng hostId (chặn tự đấu với chính mình);
+      // winnerId khi báo thắng chỉ được là chính hostId/guestId của room đó (chặn gán
+      // thắng khống cho 1 uid bất kỳ) — applyMatchResult (functions/index.js) chỉ cộng
+      // điểm dựa trên các field này nên phải khoá chặt ở đây.
       allow update: if signedIn() && (
         resource.data.hostId == request.auth.uid ||
         resource.data.guestId == request.auth.uid ||
         !resource.data.keys().hasAny(['guestId']) ||
         request.resource.data.guestId == request.auth.uid
       )
-        && request.resource.data.hostId == resource.data.hostId
+        && (
+          request.resource.data.hostId == resource.data.hostId
+          || (
+            resource.data.hostId == request.auth.uid
+            && resource.data.guestId is string
+            && request.resource.data.hostId == resource.data.guestId
+          )
+        )
         && (!('guestId' in request.resource.data)
             || request.resource.data.guestId == null
             || request.resource.data.guestId != request.resource.data.hostId)
