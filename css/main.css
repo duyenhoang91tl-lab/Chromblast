@@ -6075,4 +6075,35 @@ body:has(#secret-stage.active) .streak-dot.lit{
   .acchub-sub-head{ padding-top:calc(env(safe-area-inset-top,0px) + 12px); }
 }
 
+/* ══════════════════════════════════════════
+   TÀI KHOẢN → "Trạng thái của tôi" (#account-status) — cùng gia đình pastel
+   với khung account-hub, card trắng nổi trên nền gradient nhạt.
+══════════════════════════════════════════ */
+.acst-top{ display:flex; align-items:center; gap:14px; padding:16px 4px 14px; }
+.acst-top-avatar{
+  flex-shrink:0; width:56px; height:56px; border-radius:50%;
+  background:#fff; box-shadow:0 4px 14px rgba(60,40,100,0.22);
+  display:flex; align-items:center; justify-content:center; font-size:28px;
+  border:3px solid rgba(255,255,255,0.85);
+}
+.acst-top-name{ font-size:18px; font-weight:900; color:#2b2340; }
+.acst-top-level{ font-size:13px; font-weight:800; color:rgba(43,35,64,0.6); margin-top:2px; }
+.acst-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.acst-card{
+  background:#fff; border-radius:16px; padding:14px 12px;
+  box-shadow:0 4px 14px rgba(60,40,100,0.12); text-align:center;
+}
+.acst-card-icon{ font-size:22px; margin-bottom:4px; }
+.acst-card-label{ font-size:11px; font-weight:800; color:rgba(43,35,64,0.55); }
+.acst-card-value{ font-size:15px; font-weight:900; color:#2b2340; margin-top:2px; }
+.acst-card-sub{ font-size:11px; font-weight:700; color:#8a6fd0; margin-top:3px; }
+.acst-couple{
+  display:flex; align-items:center; gap:8px; justify-content:center;
+  margin-top:14px; padding:12px; border-radius:16px;
+  background:linear-gradient(135deg,#ffd9ec,#ffe9c9);
+  box-shadow:0 4px 14px rgba(60,40,100,0.12);
+}
+.acst-couple-ring{ font-size:18px; }
+.acst-couple-text{ font-size:13px; font-weight:800; color:#7a3d5a; }
+
 /* deploy-trigger: kich hoat lai GitHub Pages deploy sau khi doi Source sang GitHub Actions */

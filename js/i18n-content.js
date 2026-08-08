@@ -1679,3 +1679,17 @@ function MILESTONE_MSG(tier){
   };
   Object.keys(fill).forEach(l=>{ if(typeof I18N!=='undefined' && I18N[l]) Object.assign(I18N[l], fill[l]); });
 })();
+
+(function(){
+  const fill = {
+    vi:{
+      acstLevel:'Cấp độ {0}', acstMapNormal:'Map thường', acstMapSecret:'Map ẩn',
+      acstRankCaro:'Rank Caro', acstRankVersus:'Rank Versus'
+    },
+    en:{
+      acstLevel:'Level {0}', acstMapNormal:'Normal maps', acstMapSecret:'Hidden maps',
+      acstRankCaro:'Caro rank', acstRankVersus:'Versus rank'
+    }
+  };
+  Object.keys(fill).forEach(l=>{ if(typeof I18N!=='undefined' && I18N[l]) Object.assign(I18N[l], fill[l]); });
+})();
