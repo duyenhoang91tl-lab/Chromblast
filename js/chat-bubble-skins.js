@@ -44,17 +44,35 @@
     if(typeof savePlayerProfile === 'function') savePlayerProfile({ unlockedBubbles: list });
   }
 
-  function buyBubbleSkinWithGold(id, price){
+  /** Mọi lần trừ tiền đều qua Cloud Function spendCurrency — server tự kiểm tra
+   * số dư thật, không tin client (giống hệt js/gpcard-redeem.js). */
+  async function _bubbleSpendCurrency(cost){
+    if(typeof _getOnlineFunctions !== 'function') return { ok:false, reason:'offline' };
+    const fns = _getOnlineFunctions();
+    if(!fns) return { ok:false, reason:'offline' };
+    try{
+      await fns.httpsCallable('spendCurrency')({ cost });
+      return { ok:true };
+    }catch(e){
+      return { ok:false, reason: (e && e.message) || 'error' };
+    }
+  }
+
+  async function buyBubbleSkinWithGold(id, price){
     if(isBubbleSkinUnlocked(id)) return { ok:false, reason:'owned' };
-    if(typeof spendGold !== 'function' || !spendGold(price)) return { ok:false, reason:'gold' };
+    const r = await _bubbleSpendCurrency({ gold: price });
+    if(!r.ok) return { ok:false, reason: r.reason === 'offline' ? 'offline' : 'gold' };
     unlockBubbleSkin(id);
+    try{ if(typeof syncWalletFromServer === 'function') await syncWalletFromServer(); }catch(e){}
     return { ok:true };
   }
 
-  function buyBubbleSkinWithDiamond(id, diaCost){
+  async function buyBubbleSkinWithDiamond(id, diaCost){
     if(isBubbleSkinUnlocked(id)) return { ok:false, reason:'owned' };
-    if(typeof spendDiamonds !== 'function' || !spendDiamonds(diaCost)) return { ok:false, reason:'diamond' };
+    const r = await _bubbleSpendCurrency({ diamonds: diaCost });
+    if(!r.ok) return { ok:false, reason: r.reason === 'offline' ? 'offline' : 'diamond' };
     unlockBubbleSkin(id);
+    try{ if(typeof syncWalletFromServer === 'function') await syncWalletFromServer(); }catch(e){}
     return { ok:true };
   }
 

@@ -517,13 +517,14 @@
           bGold.className = "shop-buy-btn";
           bGold.textContent = tt("shopBuy", "Mua");
           bGold.title = tt("shopBuyGold", "Mua bằng vàng");
-          bGold.addEventListener("click", function () {
+          bGold.addEventListener("click", async function () {
             try {
               sfxClick();
             } catch (e) {}
+            bGold.disabled = true;
             const r = isBoard
-              ? buyBoardWithGold(skin.id, goldPrice)
-              : buyBrickWithGold(skin.id, goldPrice);
+              ? await buyBoardWithGold(skin.id, goldPrice)
+              : await buyBrickWithGold(skin.id, goldPrice);
             flashBuy(r, skin, goldPrice, false);
             renderShop(tab);
           });
@@ -535,13 +536,14 @@
           bDia.className = "shop-buy-btn shop-buy-dia";
           bDia.textContent = tt("shopBuyDia", "KC");
           bDia.title = tt("shopBuyWithDia", "Mua bằng kim cương");
-          bDia.addEventListener("click", function () {
+          bDia.addEventListener("click", async function () {
             try {
               sfxClick();
             } catch (e) {}
+            bDia.disabled = true;
             const r = isBoard
-              ? buyBoardWithDiamond(skin.id, diaCost)
-              : buyBrickWithDiamond(skin.id, diaCost);
+              ? await buyBoardWithDiamond(skin.id, diaCost)
+              : await buyBrickWithDiamond(skin.id, diaCost);
             flashBuy(r, skin, diaCost, true);
             renderShop(tab);
           });
@@ -554,6 +556,21 @@
     body.appendChild(grid);
   }
 
+  /** Mọi lần trừ tiền đều qua Cloud Function spendCurrency — server tự kiểm tra
+   * số dư thật, không tin client (giống hệt cách js/gpcard-redeem.js đang làm).
+   * cost: {gold:n} hoặc {diamonds:n}. */
+  async function _shopSpendCurrency(cost) {
+    if (typeof _getOnlineFunctions !== "function") return { ok: false, reason: "offline" };
+    const fns = _getOnlineFunctions();
+    if (!fns) return { ok: false, reason: "offline" };
+    try {
+      await fns.httpsCallable("spendCurrency")({ cost });
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, reason: (e && e.message) || "error" };
+    }
+  }
+
   function flashBuy(r, skin, cost, isDia) {
     if (!r || !r.ok) {
       try {
@@ -562,9 +579,11 @@
           false,
           r && r.reason === "owned"
             ? tt("shopOwned", "Đã sở hữu")
-            : isDia
-              ? tt("shopNotEnoughDiamond", "Không đủ kim cương")
-              : tt("shopNotEnoughGold", "Không đủ vàng")
+            : r && (r.reason === "offline" || r.reason === "error")
+              ? tt("errNetwork", "Lỗi kết nối mạng — vui lòng thử lại.")
+              : isDia
+                ? tt("shopNotEnoughDiamond", "Không đủ kim cương")
+                : tt("shopNotEnoughGold", "Không đủ vàng")
         );
       } catch (e) {}
       return;
@@ -648,9 +667,10 @@
           bGold.className = "shop-buy-btn";
           bGold.textContent = tt("shopBuy", "Mua");
           bGold.title = tt("shopBuyGold", "Mua bằng vàng");
-          bGold.addEventListener("click", function () {
+          bGold.addEventListener("click", async function () {
             try { sfxClick(); } catch (e) {}
-            const r = buyBubbleSkinWithGold(skin.id, goldPrice);
+            bGold.disabled = true;
+            const r = await buyBubbleSkinWithGold(skin.id, goldPrice);
             flashBuy(r, skin, goldPrice, false);
             renderShop("bubbles");
           });
@@ -662,9 +682,10 @@
           bDia.className = "shop-buy-btn shop-buy-dia";
           bDia.textContent = tt("shopBuyDia", "KC");
           bDia.title = tt("shopBuyWithDia", "Mua bằng kim cương");
-          bDia.addEventListener("click", function () {
+          bDia.addEventListener("click", async function () {
             try { sfxClick(); } catch (e) {}
-            const r = buyBubbleSkinWithDiamond(skin.id, diaCost);
+            bDia.disabled = true;
+            const r = await buyBubbleSkinWithDiamond(skin.id, diaCost);
             flashBuy(r, skin, diaCost, true);
             renderShop("bubbles");
           });
@@ -747,39 +768,43 @@
     });
     body.appendChild(grid);
   }
-  function buyBoardWithGold(id, price) {
+  async function buyBoardWithGold(id, price) {
     if (typeof isBoardSkinUnlocked === "function" && isBoardSkinUnlocked(id))
       return { ok: false, reason: "owned" };
-    if (typeof spendGold !== "function" || !spendGold(price))
-      return { ok: false, reason: "gold" };
+    const r = await _shopSpendCurrency({ gold: price });
+    if (!r.ok) return { ok: false, reason: r.reason === "offline" ? "offline" : "gold" };
     if (typeof unlockBoardSkin === "function") unlockBoardSkin(id);
+    try { if (typeof syncWalletFromServer === "function") await syncWalletFromServer(); } catch (e) {}
     return { ok: true };
   }
 
-  function buyBrickWithGold(id, price) {
+  async function buyBrickWithGold(id, price) {
     if (typeof isBrickSkinUnlocked === "function" && isBrickSkinUnlocked(id))
       return { ok: false, reason: "owned" };
-    if (typeof spendGold !== "function" || !spendGold(price))
-      return { ok: false, reason: "gold" };
+    const r = await _shopSpendCurrency({ gold: price });
+    if (!r.ok) return { ok: false, reason: r.reason === "offline" ? "offline" : "gold" };
     if (typeof unlockBrickSkin === "function") unlockBrickSkin(id);
+    try { if (typeof syncWalletFromServer === "function") await syncWalletFromServer(); } catch (e) {}
     return { ok: true };
   }
 
-  function buyBoardWithDiamond(id, diaCost) {
+  async function buyBoardWithDiamond(id, diaCost) {
     if (typeof isBoardSkinUnlocked === "function" && isBoardSkinUnlocked(id))
       return { ok: false, reason: "owned" };
-    if (typeof spendDiamonds !== "function" || !spendDiamonds(diaCost))
-      return { ok: false, reason: "diamond" };
+    const r = await _shopSpendCurrency({ diamonds: diaCost });
+    if (!r.ok) return { ok: false, reason: r.reason === "offline" ? "offline" : "diamond" };
     if (typeof unlockBoardSkin === "function") unlockBoardSkin(id);
+    try { if (typeof syncWalletFromServer === "function") await syncWalletFromServer(); } catch (e) {}
     return { ok: true };
   }
 
-  function buyBrickWithDiamond(id, diaCost) {
+  async function buyBrickWithDiamond(id, diaCost) {
     if (typeof isBrickSkinUnlocked === "function" && isBrickSkinUnlocked(id))
       return { ok: false, reason: "owned" };
-    if (typeof spendDiamonds !== "function" || !spendDiamonds(diaCost))
-      return { ok: false, reason: "diamond" };
+    const r = await _shopSpendCurrency({ diamonds: diaCost });
+    if (!r.ok) return { ok: false, reason: r.reason === "offline" ? "offline" : "diamond" };
     if (typeof unlockBrickSkin === "function") unlockBrickSkin(id);
+    try { if (typeof syncWalletFromServer === "function") await syncWalletFromServer(); } catch (e) {}
     return { ok: true };
   }
 
