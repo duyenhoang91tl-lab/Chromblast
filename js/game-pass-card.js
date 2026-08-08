@@ -3,8 +3,10 @@
    Giai đoạn 1: header cố định trên cùng (icon thẻ, cấp độ, thanh tiến trình
    dạng viên thuốc, số điểm, nút Nâng cấp).
    Giai đoạn 2: thanh 4 tab ngang dưới header (Phần thưởng/Nhiệm vụ/Đi đổi/
-   Bảng xếp hạng) — mới chỉ đổi trạng thái active khi bấm, CHƯA mở panel nội
-   dung (nối ở bước sau).
+   Bảng xếp hạng).
+   Giai đoạn 3: bấm tab mở panel trượt toàn màn hình tương ứng (.gpcard-subpanel),
+   nút back ở góc trên trái mỗi panel chỉ đóng riêng panel đó. Nội dung từng
+   panel (đổ vào #gpcard-rewards/quests/redeem/leaderboard) nối ở bước sau.
    Dùng nguyên field playerLevel/playerXP/xpNeeded() đã có sẵn ở
    js/progression.js — không tạo field cấp độ/điểm riêng cho thẻ này.
 ══════════════════════════════════════════ */
@@ -30,15 +32,22 @@ function closeGamePassCard(){
   document.getElementById('game-pass-card')?.classList.remove('show');
 }
 
-// Giai đoạn 2: thanh 4 tab dưới header — chỉ đổi trạng thái active (chữ trắng +
-// gạch chân) khi bấm. Panel trượt tương ứng từng tab sẽ nối vào bước sau.
+// Giai đoạn 3: bấm 1 trong 4 tab → mở panel trượt toàn màn hình tương ứng
+// (.gpcard-subpanel[data-panel=...]), các panel khác tự đóng lại. Nút back
+// trên mỗi panel chỉ đóng riêng panel đó, không đóng cả Thẻ trò chơi.
 const GPCARD_TABS = ['rewards','quests','redeem','leaderboard'];
 function setGamePassTab(tabName){
   if(GPCARD_TABS.indexOf(tabName) < 0) return;
   GPCARD_TABS.forEach(name=>{
     const btn = document.getElementById('gpcard-tab-' + name);
     if(btn) btn.classList.toggle('active', name === tabName);
+    const panel = document.querySelector('.gpcard-subpanel[data-panel="' + name + '"]');
+    if(panel) panel.classList.toggle('show', name === tabName);
   });
+}
+function closeGamePassSubpanel(tabName){
+  const panel = document.querySelector('.gpcard-subpanel[data-panel="' + tabName + '"]');
+  if(panel) panel.classList.remove('show');
 }
 
 (function initGamePassCard(){
@@ -51,6 +60,10 @@ function setGamePassTab(tabName){
       document.getElementById('gpcard-tab-' + name)?.addEventListener('click', ()=>{
         try{ sfxClick(); }catch(e){}
         setGamePassTab(name);
+      });
+      document.querySelector('.gpcard-back[data-panel-back="' + name + '"]')?.addEventListener('click', ()=>{
+        try{ sfxClick(); }catch(e){}
+        closeGamePassSubpanel(name);
       });
     });
     setGamePassTab('leaderboard');

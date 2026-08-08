@@ -5857,4 +5857,37 @@ body:has(#secret-stage.active) .streak-dot.lit{
   .gpcard-tab{ font-size:11px; padding:6px 2px 7px; }
 }
 
+/* Giai đoạn 3: 4 panel trượt toàn màn hình cho từng tab — đè lên toàn bộ game,
+   trượt vào từ bên phải khi mở, nút "<" ở góc trên trái chỉ đóng riêng panel đó
+   (không đóng cả Thẻ trò chơi). Nội dung mỗi panel đổ vào .gpcard-subpanel-body
+   (id #gpcard-rewards/quests/redeem/leaderboard) ở bước sau — div đó luôn để
+   rỗng, nút back nằm ngoài để không bị ghi đè khi nội dung được nạp vào. */
+.gpcard-subpanel{
+  position:fixed; inset:0; z-index:10072;
+  background:linear-gradient(165deg,#a7b8f0 0%,#c9b6f0 100%);
+  transform:translateX(100%);
+  transition:transform .25s ease;
+  overflow:hidden;
+}
+.gpcard-subpanel.show{ transform:translateX(0); }
+.gpcard-back{
+  position:absolute; top:calc(env(safe-area-inset-top,0px) + 10px); left:12px; z-index:1;
+  width:32px; height:32px; border:none; border-radius:50%;
+  background:rgba(255,255,255,0.22); color:#fff; font-size:16px; font-weight:900;
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+}
+.gpcard-back:active{ opacity:0.8; }
+.gpcard-subpanel-body{
+  width:100%; max-width:560px; height:100%; margin:0 auto;
+  padding-top:calc(env(safe-area-inset-top,0px) + 54px);
+  overflow-y:auto; -webkit-overflow-scrolling:touch;
+}
+@media (prefers-reduced-motion: reduce){
+  .gpcard-subpanel{ transition:none; }
+}
+@media (orientation: landscape){
+  .gpcard-subpanel-body{ max-width:720px; padding-top:calc(env(safe-area-inset-top,0px) + 46px); }
+  .gpcard-back{ top:calc(env(safe-area-inset-top,0px) + 8px); }
+}
+
 /* deploy-trigger: kich hoat lai GitHub Pages deploy sau khi doi Source sang GitHub Actions */
