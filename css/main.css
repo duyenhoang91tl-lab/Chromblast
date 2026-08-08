@@ -1627,7 +1627,7 @@ body.gchat-open #game-root { transform: none !important; }
 .gchat-row { display:flex; flex-direction:column; gap:2px; align-items:flex-start; }
 .gchat-row.mine { align-items:flex-end; }
 .gchat-who { font-size:10px; color:rgba(23,48,73,0.6); font-weight:700; }
-.gchat-msg-avatar { cursor:pointer; border-radius:50%; padding:1px 2px; display:inline-block; }
+.gchat-msg-avatar { cursor:pointer; border-radius:50%; padding:1px 2px; display:inline-block; font-size:16px; line-height:1; vertical-align:-3px; }
 .gchat-msg-avatar:hover, .gchat-msg-avatar:focus-visible { background:rgba(255,213,74,0.35); outline:none; }
 .gchat-msg-avatar:active { transform:scale(0.9); }
 .gchat-rank-badge { color:#b8860b; font-weight:700; margin-left:2px; }
