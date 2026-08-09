@@ -445,7 +445,7 @@ function enterOnlineVersusMatch(roomId, roomData){
       if(!_vs || !_vs.online || _vs.online.roomId !== roomId) return; // đã thoát trận trước khi escrow xong
       if(!res.ok){
         try{ showHint((typeof t==='function'?t('vsWagerFail','Không đủ tiền cược — huỷ trận'):'Không đủ tiền cược — huỷ trận'), { hold: 3200 }); }catch(e){}
-        _vsAbort();
+        _vsAbort({ noForfeit: true });
         try{ if(typeof openVersusSetup === 'function') openVersusSetup(); }catch(e){}
       }
     });
@@ -466,6 +466,7 @@ function enterOnlineVersusMatch(roomId, roomData){
       if(ev.type === 'deleted'){ _vsHandleOpponentLeft(); return; }
       const d = ev.data;
       if(d.status === 'finished' && d.endReason === 'forfeit'){ _vsHandleOpponentLeft(); return; }
+      if(d.status === 'cancelled'){ _vsHandleMatchCancelled(); return; }
       if(isHost && !d.guestId && d.status !== 'finished'){ _vsHandleOpponentLeft(); return; }
     });
   }

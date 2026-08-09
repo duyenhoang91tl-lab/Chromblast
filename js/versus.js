@@ -157,16 +157,28 @@ function _vsNewPlayer(idx,seed){
 // Nút trợ giúp ❓ nổi (z-index cao hơn đấu trường) đè lên điểm người chơi trên
 // thanh HUD chung → ẩn đi trong suốt trận đấu, trả lại khi trận kết thúc.
 
-function _vsAbort(){
+function _vsAbort(opts){
+  const noForfeit = !!(opts && opts.noForfeit);
   if(_vs && _vs.timer) clearInterval(_vs.timer);
   try{ if(typeof _vsAiStop==='function') _vsAiStop(); }catch(e){}
   // Thoát trận online giữa chừng → mặc định xử thua ngay cho mình (đối thủ mặc định
   // thắng), báo thẳng lên Firestore không so điểm — giống lúc 1 ván kết thúc bình
   // thường. Không xoá/định lại phòng nữa (forfeitOnlineMatch đã đưa phòng về trạng
   // thái 'finished' với kết quả đã ghi, giữ nguyên như vậy).
+  // NGOẠI LỆ (noForfeit=true): huỷ trận trước khi có gameplay thật (VD: cược server
+  // từ chối trừ tiền ngay lúc vào trận) — KHÔNG được gọi forfeitOnlineMatch, vì đó là
+  // ghi status:'finished'+winnerId (có người thắng-thua thật). 2 lý do: (1) không công
+  // bằng khi tuyên bố thắng/thua cho 1 lỗi setup không do người chơi gây ra; (2)
+  // roomFinishOk() (firestore.rules) chặn set status:'finished' trong 8s đầu sau khi
+  // tạo phòng (chống báo thắng khống tức thời) — ghi kiểu này ở đây LUÔN bị từ chối
+  // "Missing or insufficient permissions" vì cược thường fail rất sớm, dưới 8s.
   try{
-    if(_vs && _vs.online && _vs.online.roomId && typeof forfeitOnlineMatch === 'function'){
-      forfeitOnlineMatch(_vs.online.roomId, !!_vs.online.isHost).catch(()=>{});
+    if(_vs && _vs.online && _vs.online.roomId){
+      if(noForfeit && typeof cancelOnlineMatchNoWinner === 'function'){
+        cancelOnlineMatchNoWinner(_vs.online.roomId).catch(()=>{});
+      } else if(!noForfeit && typeof forfeitOnlineMatch === 'function'){
+        forfeitOnlineMatch(_vs.online.roomId, !!_vs.online.isHost).catch(()=>{});
+      }
     }
     if(_vs && _vs.online && typeof stopListeningRoom === 'function') stopListeningRoom();
     else if(typeof stopListeningChat === 'function') stopListeningChat();
@@ -193,6 +205,18 @@ function _vsHandleOpponentLeft(){
   }catch(e){}
   try{ showHint((typeof t==='function'?t('vsOpponentLeft'):null) || 'Đối thủ đã rời trận', { hold: 2600 }); }catch(e){}
   _vsAbort();
+  try{ if(typeof openVersusSetup === 'function') openVersusSetup(); }catch(e){}
+}
+
+/** Trận bị HUỶ (status:'cancelled', KHÔNG phải forfeit) — VD: cược của đối thủ bị
+ * server từ chối ngay lúc vào trận. Không ai thắng/thua, chỉ thoát êm — không gọi
+ * forfeitOnlineMatch (đã ghi 'cancelled' rồi, gọi lại cũng vô ích vì roomFinishOk()
+ * không cho set 'finished' đè lên nữa nếu chưa đủ 8s, mà bản chất cũng không nên có
+ * người thắng ở đây). */
+function _vsHandleMatchCancelled(){
+  if(!_vs || !_vs.online) return;
+  try{ showHint((typeof t==='function'?t('vsMatchCancelled'):null) || 'Trận đấu đã bị huỷ', { hold: 2600 }); }catch(e){}
+  _vsAbort({ noForfeit: true });
   try{ if(typeof openVersusSetup === 'function') openVersusSetup(); }catch(e){}
 }
 
