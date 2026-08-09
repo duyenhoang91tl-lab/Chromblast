@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════
-   TÀI KHOẢN → "Trạng thái của tôi" (#account-status).
+   TÀI KHOẢN → "Thông tin thăng hạng" (#account-status).
    Chỉ HIỂN THỊ — dùng nguyên các nguồn dữ liệu/hàm rank đã có sẵn, không tính
    lại hay tạo số liệu mới:
    - Cấp độ/map: playerLevel, normalMapStage, unlockGateStageIndex (js/progression.js)

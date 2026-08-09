@@ -1884,37 +1884,37 @@ function MILESTONE_MSG(tier){
   const fill = {
     vi:{
       acchubMembership:'Hội viên', acchubShop:'Cửa hàng', acchubQuests:'Nhiệm vụ',
-      acchubStatus:'Trạng thái của tôi', acchubAchievements:'Thành tích của tôi',
+      acchubStatus:'Thông tin thăng hạng', acchubAchievements:'Thành tích của tôi',
       acchubBag:'Túi của tôi', acchubGroups:'Hội nhóm', acchubRename:'Đổi tên',
       acchubSettings:'Cài đặt', acchubFriends:'Bạn bè', acchubIdPrefix:'ID:'
     },
     en:{
       acchubMembership:'Membership', acchubShop:'Shop', acchubQuests:'Quests',
-      acchubStatus:'My Status', acchubAchievements:'My Achievements',
+      acchubStatus:'Rank-up Info', acchubAchievements:'My Achievements',
       acchubBag:'My Bag', acchubGroups:'Groups', acchubRename:'Rename',
       acchubSettings:'Settings', acchubFriends:'Friends', acchubIdPrefix:'ID:'
     },
     ko:{
       acchubMembership:'멤버십', acchubShop:'상점', acchubQuests:'퀘스트',
-      acchubStatus:'내 상태', acchubAchievements:'내 업적',
+      acchubStatus:'승급 정보', acchubAchievements:'내 업적',
       acchubBag:'내 가방', acchubGroups:'그룹', acchubRename:'이름 변경',
       acchubSettings:'설정', acchubFriends:'친구', acchubIdPrefix:'ID:'
     },
     ja:{
       acchubMembership:'メンバーシップ', acchubShop:'ショップ', acchubQuests:'クエスト',
-      acchubStatus:'自分のステータス', acchubAchievements:'実績',
+      acchubStatus:'昇格情報', acchubAchievements:'実績',
       acchubBag:'持ち物', acchubGroups:'グループ', acchubRename:'名前変更',
       acchubSettings:'設定', acchubFriends:'フレンド', acchubIdPrefix:'ID:'
     },
     zh:{
       acchubMembership:'会员', acchubShop:'商店', acchubQuests:'任务',
-      acchubStatus:'我的状态', acchubAchievements:'我的成就',
+      acchubStatus:'升级信息', acchubAchievements:'我的成就',
       acchubBag:'我的背包', acchubGroups:'群组', acchubRename:'改名',
       acchubSettings:'设置', acchubFriends:'好友', acchubIdPrefix:'ID:'
     },
     es:{
       acchubMembership:'Membresía', acchubShop:'Tienda', acchubQuests:'Misiones',
-      acchubStatus:'Mi estado', acchubAchievements:'Mis logros',
+      acchubStatus:'Info. de ascenso', acchubAchievements:'Mis logros',
       acchubBag:'Mi bolsa', acchubGroups:'Grupos', acchubRename:'Cambiar nombre',
       acchubSettings:'Configuración', acchubFriends:'Amigos', acchubIdPrefix:'ID:'
     }
