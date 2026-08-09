@@ -5990,8 +5990,8 @@ body:has(#secret-stage.active) .streak-dot.lit{
 /* ══════════════════ FRIENDS FULLSCREEN (trên menu) ══════════════════ */
 .friends-screen{
   display:none; position:fixed; inset:0; z-index:12110;
-  background:linear-gradient(165deg,#1a1040 0%,#0e1a38 45%,#14284a 100%);
-  color:#fff; font-family:'Nunito',system-ui,sans-serif;
+  background:linear-gradient(165deg,#ffffff 0%,#ffeaf1 45%,#ffd7e4 100%);
+  color:#5a3345; font-family:'Nunito',system-ui,sans-serif;
   overflow:hidden;
 }
 .friends-screen.show{ display:flex; flex-direction:column; }
@@ -6001,37 +6001,41 @@ body:has(#secret-stage.active) .streak-dot.lit{
 }
 .friends-head{
   position:relative; display:flex; align-items:center; justify-content:center;
-  padding:16px 52px 12px; font-weight:900; font-size:20px; flex-shrink:0;
-  letter-spacing:0.3px;
+  padding:calc(env(safe-area-inset-top,0px) + 16px) 52px 12px; font-weight:900; font-size:20px; flex-shrink:0;
+  letter-spacing:0.3px; color:#5a3345;
 }
 .friends-x{
-  position:absolute; top:10px; right:12px; width:36px; height:36px; border:none; border-radius:50%;
-  background:rgba(255,255,255,0.14); color:#fff; font-size:20px; font-weight:900;
+  position:absolute; top:calc(env(safe-area-inset-top,0px) + 10px); right:calc(env(safe-area-inset-right,0px) + 12px);
+  width:36px; height:36px; border:none; border-radius:50%;
+  background:rgba(255,150,180,0.28); color:#7a3d5a; font-size:20px; font-weight:900;
   cursor:pointer; display:flex; align-items:center; justify-content:center;
+  box-shadow:0 2px 8px rgba(180,80,120,0.18);
 }
 .friends-body{
-  flex:1; min-height:0; overflow:auto; padding:8px 14px 24px;
+  flex:1; min-height:0; overflow:auto; padding:8px 14px calc(env(safe-area-inset-bottom,0px) + 24px);
 }
 .friends-search-row{ display:flex; gap:8px; margin:8px 0 6px; }
 .friends-search-input{
-  flex:1; min-width:0; border-radius:12px; border:1px solid rgba(255,255,255,0.22);
-  background:rgba(0,0,0,0.22); color:#fff; padding:10px 12px; font-size:14px; font-weight:700;
+  flex:1; min-width:0; border-radius:12px; border:1px solid rgba(200,90,130,0.22);
+  background:rgba(255,255,255,0.75); color:#5a3345; padding:10px 12px; font-size:14px; font-weight:700;
 }
-.friends-search-input::placeholder{ color:rgba(255,255,255,0.45); }
+.friends-search-input::placeholder{ color:rgba(90,51,69,0.45); }
 .friends-search-btn{
   border:none; border-radius:12px; padding:0 14px; cursor:pointer; font-weight:900; color:#fff;
-  background:linear-gradient(135deg,#42A5F5,#1E88E5);
+  background:linear-gradient(135deg,#ff9ac1,#ff7ab0);
+  box-shadow:0 3px 10px rgba(200,90,130,0.22);
 }
 .friends-search-result{ display:flex; flex-direction:column; gap:6px; margin-bottom:8px; }
 .friends-section-title{
-  margin:10px 0 6px; font-size:13px; font-weight:900; color:rgba(255,236,180,0.95);
+  margin:10px 0 6px; font-size:13px; font-weight:900; color:#c8478c;
   letter-spacing:0.2px;
 }
 .friends-panel-list,
 .friends-suggest-list{ display:flex; flex-direction:column; gap:6px; max-height:min(36vh,320px); overflow:auto; }
 .friends-panel-row{
   display:flex; align-items:center; gap:8px; padding:8px;
-  border-radius:12px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1);
+  border-radius:12px; background:rgba(255,255,255,0.7); border:1px solid rgba(200,90,130,0.14);
+  box-shadow:0 2px 8px rgba(200,90,130,0.1);
 }
 .friends-panel-meta{ flex:1; min-width:0; display:flex; flex-direction:column; gap:1px; }
 .friends-panel-chat,
@@ -6039,32 +6043,33 @@ body:has(#secret-stage.active) .streak-dot.lit{
   border:none; border-radius:10px; cursor:pointer; font-weight:800;
 }
 .friends-panel-chat{
-  width:36px; height:36px; background:rgba(66,165,245,0.3); font-size:16px;
+  width:36px; height:36px; background:rgba(255,150,180,0.28); font-size:16px;
 }
 .friends-panel-add{
-  padding:8px 10px; background:rgba(102,187,106,0.28); color:#E8F5E9; font-size:12px;
+  padding:8px 10px; background:rgba(102,187,106,0.22); color:#2e6b32; font-size:12px;
 }
 .friends-panel-add.sent, .friends-panel-add:disabled{
-  background:rgba(255,255,255,0.08); color:rgba(255,255,255,0.5); cursor:default;
+  background:rgba(90,51,69,0.08); color:rgba(90,51,69,0.4); cursor:default;
 }
 .friends-suggest-check{
-  display:flex; align-items:center; gap:6px; cursor:pointer;
+  display:flex; align-items:center; gap:6px; cursor:pointer; color:#5a3345;
 }
 .friends-suggest-check input{ width:16px; height:16px; accent-color:#66BB6A; }
 .friends-suggest-actions{ display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
 .friends-suggest-actions .auth-submit-btn{ flex:1 1 140px; margin:0; }
 .friends-status{
   min-height:18px; margin-top:8px; font-size:12px; font-weight:800;
-  color:rgba(255,236,180,0.9); text-align:center;
+  color:#c8478c; text-align:center;
 }
-.friends-status.err{ color:#FFAB91; }
+.friends-status.err{ color:#e05252; }
 .friends-invite-card{
   margin:4px 0 12px; padding:12px; border-radius:14px;
-  background:linear-gradient(135deg, rgba(255,213,74,0.16), rgba(255,255,255,0.06));
-  border:1px solid rgba(255,213,74,0.35);
+  background:linear-gradient(135deg, rgba(255,213,74,0.22), rgba(255,255,255,0.6));
+  border:1px solid rgba(255,180,74,0.4);
+  box-shadow:0 3px 10px rgba(200,90,130,0.1);
 }
-.friends-invite-title{ font-size:14px; font-weight:900; color:#FFD54A; margin-bottom:4px; }
-.friends-invite-desc{ font-size:12px; font-weight:700; color:rgba(255,255,255,0.8); line-height:1.4; margin-bottom:10px; }
+.friends-invite-title{ font-size:14px; font-weight:900; color:#a6650a; margin-bottom:4px; }
+.friends-invite-desc{ font-size:12px; font-weight:700; color:rgba(90,51,69,0.75); line-height:1.4; margin-bottom:10px; }
 .friends-invite-code-row{ margin-bottom:10px; }
 .friends-invite-share-btn{
   display:flex; align-items:center; justify-content:center; gap:8px;
@@ -6072,8 +6077,8 @@ body:has(#secret-stage.active) .streak-dot.lit{
 }
 .friends-invite-code{
   padding:3px 10px; border-radius:12px;
-  background:rgba(0,0,0,0.28); border:1px dashed rgba(26,10,0,0.4);
-  font-size:14px; font-weight:900; letter-spacing:2px; color:#1a0a00;
+  background:rgba(255,255,255,0.65); border:1px dashed rgba(166,101,10,0.45);
+  font-size:14px; font-weight:900; letter-spacing:2px; color:#5a3345;
 }
 .friends-invite-claim-row{ display:flex; gap:8px; }
 .friends-invite-claim-row .friends-search-input{ text-transform:uppercase; }
