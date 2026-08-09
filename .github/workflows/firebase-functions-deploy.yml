@@ -1,0 +1,55 @@
+name: Deploy Firebase Functions + Firestore Rules
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'functions/**'
+      - 'firestore.rules'
+      - 'firebase.json'
+      - '.firebaserc'
+      - '.github/workflows/firebase-functions-deploy.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: firebase-functions
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: functions/package-lock.json
+
+      - name: Install functions dependencies
+        working-directory: functions
+        run: npm install
+
+      - name: Write service account key
+        run: echo "$FIREBASE_SERVICE_ACCOUNT" > /tmp/gcp-sa.json
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_CHROMBLAST_5CF77 }}
+
+      - name: Deploy Cloud Functions + Firestore rules
+        run: |
+          npx firebase-tools deploy --only functions,firestore:rules \
+            --project chromblast-5cf77 --non-interactive
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: /tmp/gcp-sa.json
+
+      - name: Clean up credentials
+        if: always()
+        run: rm -f /tmp/gcp-sa.json
