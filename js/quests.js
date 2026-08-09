@@ -205,22 +205,48 @@
     return !!(st[cat] && st[cat].claimed && st[cat].claimed[id]);
   }
 
-  function grantReward(reward) {
-    reward = reward || {};
-    if (reward.xp && typeof addPlayerXP === "function") addPlayerXP(reward.xp | 0);
-    if (reward.gold && typeof grantGold === "function")
-      grantGold(reward.gold | 0, tt("questsReward", "Nhiệm vụ"));
-    if (reward.hearts) {
-      try {
-        if (typeof grantDailyQuestHearts === "function")
-          grantDailyQuestHearts(reward.hearts | 0, tt("questsReward", "Nhiệm vụ"));
-        else if (typeof grantHearts === "function")
-          grantHearts(reward.hearts | 0, tt("questsReward", "Nhiệm vụ"));
-      } catch (e) {}
-    }
+  function periodKeyFor(cat) {
+    if (cat === "day") return todayStr();
+    if (cat === "week") { const b = weekBounds(); return new Date(b.start).toISOString().slice(0, 10); }
+    if (cat === "month") { const b = monthBounds(); return new Date(b.start).toISOString().slice(0, 7); }
+    return todayStr();
   }
 
-  function claimQuest(cat, id) {
+  /** Phần vàng/tim đi qua Cloud Function claimGpcardReward (server tự tính lại đúng
+   * số theo QUEST_DEFS — không tin số reward client gửi lên), rồi mới cộng cục bộ
+   * đúng số server trả về; XP vẫn cộng cục bộ như cũ (không phải tiền tệ, không cần
+   * khoá server). Trả về false nếu server từ chối (mất mạng, hoặc đã nhận trước đó
+   * ở phiên/thiết bị khác) — khi đó KHÔNG đánh dấu đã nhận cục bộ, để người chơi
+   * còn thấy nút và thử lại thay vì bị kẹt "coi như đã nhận" mà ví không có tiền.
+   */
+  async function grantReward(reward, cat, id) {
+    reward = reward || {};
+    if (reward.xp && typeof addPlayerXP === "function") addPlayerXP(reward.xp | 0);
+    if (!((reward.gold | 0) > 0 || (reward.hearts | 0) > 0)) return true;
+    if (typeof _getOnlineFunctions !== "function") return false;
+    const fns = _getOnlineFunctions();
+    if (!fns) return false;
+    let walletRes = null;
+    try {
+      const res = await fns.httpsCallable("claimGpcardReward")({ kind: "quest", period: cat, id, periodKey: periodKeyFor(cat) });
+      walletRes = (res && res.data) || null;
+    } catch (e) {
+      if (e && e.message === "Đã nhận thưởng này rồi.") return true; // đã nhận từ trước — không chặn UI
+      return false;
+    }
+    if (!walletRes) return false;
+    if (walletRes.gold > 0 && typeof grantGold === "function") grantGold(walletRes.gold, tt("questsReward", "Nhiệm vụ"));
+    if (walletRes.hearts > 0) {
+      try {
+        if (typeof grantDailyQuestHearts === "function") grantDailyQuestHearts(walletRes.hearts, tt("questsReward", "Nhiệm vụ"));
+        else if (typeof grantHearts === "function") grantHearts(walletRes.hearts, tt("questsReward", "Nhiệm vụ"));
+      } catch (e) {}
+    }
+    try { if (typeof syncWalletFromServer === "function") await syncWalletFromServer(); } catch (e) {}
+    return true;
+  }
+
+  async function claimQuest(cat, id) {
     const st = loadState();
     const def = (QUEST_DEFS[cat] || []).find(function (q) {
       return q.id === id;
@@ -243,9 +269,10 @@
 
     const prog = progressOf(st, cat, def);
     if (prog < def.target) return { ok: false, reason: "progress" };
+    const granted = await grantReward(def.reward, cat, id);
+    if (!granted) return { ok: false, reason: "network" };
     st[cat].claimed[id] = 1;
     saveState(st);
-    grantReward(def.reward);
     try {
       if (typeof logGameEvent === "function") logGameEvent("quest_complete", { category: cat, quest_id: id });
     } catch (e) {}

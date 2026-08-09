@@ -95,9 +95,10 @@ function renderGpcardQuests(){
     });
   });
   root.querySelectorAll('[data-gpcard-quest-claim]').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       try{ sfxClick(); }catch(e){}
-      const r = typeof questsClaim === 'function' ? questsClaim(btn.dataset.cat, btn.dataset.id) : null;
+      btn.disabled = true;
+      const r = typeof questsClaim === 'function' ? await questsClaim(btn.dataset.cat, btn.dataset.id) : null;
       if(r && r.ok){
         try{ if(typeof sfxUnlock === 'function') sfxUnlock(); }catch(e){}
         const rw = r.reward || {};
@@ -110,6 +111,8 @@ function renderGpcardQuests(){
               + (rw.hearts ? ' · ❤️ +' + rw.hearts : ''));
         }catch(e){}
         try{ if(typeof updateQuestsBadge === 'function') updateQuestsBadge(); }catch(e){}
+      } else if(r && r.reason === 'network'){
+        try{ if(typeof showComboFlash === 'function') showComboFlash(0, false, typeof t==='function'?t('errNetwork'):'Lỗi kết nối mạng — vui lòng thử lại.'); }catch(e){}
       }
       renderGpcardQuests();
     });

@@ -91,17 +91,39 @@ function _gpcardJourneyRewardLabel(rw){
   if(rw.type === 'power') return rw.icon + ' x' + rw.amount;
   return rw.icon || '🎁';
 }
-function _gpcardJourneyGrant(rw, reason){
+/** Gọi Cloud Function claimGpcardReward cho phần vàng/kim cương/tim — server tự
+ * tính lại đúng số tiền (không tin rw client tính), rồi mới cộng cục bộ đúng số
+ * server trả về. power/xp trong rw vẫn cộng cục bộ như cũ (không phải tiền tệ). */
+async function _gpcardJourneyGrant(rw, tier, track, reason){
   const list = Array.isArray(rw) ? rw : [rw];
+  let walletRes = null;
+  if(typeof _getOnlineFunctions === 'function'){
+    const fns = _getOnlineFunctions();
+    if(fns){
+      try{
+        const res = await fns.httpsCallable('claimGpcardReward')({ kind:'journey', tier, track });
+        walletRes = (res && res.data) || null;
+      }catch(e){
+        // already-exists: đã nhận rồi (vd bấm 2 lần liên tiếp) — coi như xong, không
+        // cộng cục bộ nữa để tránh nhân đôi. Lỗi khác (mất mạng...): không cộng gì cả,
+        // để người chơi thử lại sau thay vì cộng "chui" không có server xác nhận.
+        if(e && e.message === 'Đã nhận thưởng này rồi.') return { ok:true };
+        return { ok:false };
+      }
+    }
+  }
+  if(!walletRes) return { ok:false };
+  try{ if(walletRes.gold > 0 && typeof grantGold === 'function') grantGold(walletRes.gold, reason); }catch(e){}
+  try{ if(walletRes.diamonds > 0 && typeof grantDiamonds === 'function') grantDiamonds(walletRes.diamonds, reason); }catch(e){}
+  try{ if(walletRes.hearts > 0 && typeof grantHearts === 'function') grantHearts(walletRes.hearts, reason); }catch(e){}
+  try{ if(typeof syncWalletFromServer === 'function') await syncWalletFromServer(); }catch(e){}
   list.forEach(r=>{
     try{
-      if(r.type === 'gold' && typeof grantGold === 'function') grantGold(r.amount, reason);
-      else if(r.type === 'diamond' && typeof grantDiamonds === 'function') grantDiamonds(r.amount, reason);
-      else if(r.type === 'hearts' && typeof grantHearts === 'function') grantHearts(r.amount, reason);
-      else if(r.type === 'power' && typeof grantPower === 'function') grantPower(r.power, r.amount, reason);
+      if(r.type === 'power' && typeof grantPower === 'function') grantPower(r.power, r.amount, reason);
       else if(r.type === 'xp' && typeof addPlayerXP === 'function') addPlayerXP(r.amount);
     }catch(e){}
   });
+  return { ok:true };
 }
 
 function _gpcardJourneySlotHtml(tierNum, track, rw, reached, claimedList){
@@ -181,7 +203,7 @@ function renderGpcardRewards(){
   });
 }
 
-function _gpcardJourneyClaimOne(tier, track){
+async function _gpcardJourneyClaimOne(tier, track){
   const total = _gpcardJourneyTierCount();
   const reached = _gpcardJourneyReached();
   if(reached < tier) return;
@@ -195,14 +217,15 @@ function _gpcardJourneyClaimOne(tier, track){
   if(list.indexOf(tier) >= 0) return;
   const rw = _gpcardJourneyRewardFor(tier, track, total);
   try{ sfxClick(); }catch(e){}
-  _gpcardJourneyGrant(rw, (typeof t === 'function' ? t('gpcardTabRewards') : 'Hành trình') + ' #' + tier);
+  const res = await _gpcardJourneyGrant(rw, tier, track, (typeof t === 'function' ? t('gpcardTabRewards') : 'Hành trình') + ' #' + tier);
+  if(!res.ok) return;
   list.push(tier);
   _gpcardJourneySaveState(st);
   try{ if(typeof sfxUnlock === 'function') sfxUnlock(); }catch(e){}
   renderGpcardRewards();
 }
 
-function _gpcardJourneyClaimAll(){
+async function _gpcardJourneyClaimAll(){
   const total = _gpcardJourneyTierCount();
   const reached = _gpcardJourneyReached();
   const hasPremium = _gpcardJourneyHasPremium();
@@ -210,12 +233,12 @@ function _gpcardJourneyClaimAll(){
   let any = false;
   for(let i = 1; i <= reached && i <= total; i++){
     if(st.free.indexOf(i) < 0){
-      _gpcardJourneyGrant(_gpcardJourneyRewardFor(i, 'free', total), (typeof t === 'function' ? t('gpcardTabRewards') : 'Hành trình') + ' #' + i);
-      st.free.push(i); any = true;
+      const res = await _gpcardJourneyGrant(_gpcardJourneyRewardFor(i, 'free', total), i, 'free', (typeof t === 'function' ? t('gpcardTabRewards') : 'Hành trình') + ' #' + i);
+      if(res.ok){ st.free.push(i); any = true; }
     }
     if(hasPremium && st.premium.indexOf(i) < 0){
-      _gpcardJourneyGrant(_gpcardJourneyRewardFor(i, 'premium', total), (typeof t === 'function' ? t('gpcardTabRewards') : 'Hành trình') + ' #' + i);
-      st.premium.push(i); any = true;
+      const res = await _gpcardJourneyGrant(_gpcardJourneyRewardFor(i, 'premium', total), i, 'premium', (typeof t === 'function' ? t('gpcardTabRewards') : 'Hành trình') + ' #' + i);
+      if(res.ok){ st.premium.push(i); any = true; }
     }
   }
   if(any){
