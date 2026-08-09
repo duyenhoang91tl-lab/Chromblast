@@ -1850,9 +1850,11 @@ function listenOnlineMoves(roomId, cb){
     .orderBy('seq', 'asc')
     .onSnapshot(snap => {
       snap.docChanges().forEach(chg => {
-        if(chg.type === 'added') cb(chg.doc.data());
+        if(chg.type !== 'added') return;
+        try{ cb(chg.doc.data()); }
+        catch(e){ console.error('[online] listenOnlineMoves callback threw —', chg.doc.data(), e); }
       });
-    }, err => console.warn('[online] moves listen', err));
+    }, err => console.error('[online] moves listen FAILED —', err));
 }
 
 /** Chỉ hủy listener document phòng — KHÔNG hủy moves (tránh mất sync nước đi). */
@@ -2382,6 +2384,29 @@ async function forfeitOnlineMatch(roomId, loserIsHost){
       });
     });
   }catch(e){ console.warn('[online] forfeitOnlineMatch', e); }
+}
+
+/** Huỷ trận KHÔNG có người thắng/thua (VD: cược server từ chối trừ tiền ngay lúc vào
+ * trận, trước khi có gameplay thật) — dùng status:'cancelled' thay vì 'finished' vì
+ * roomFinishOk() (firestore.rules) chỉ khoá 8 giây đầu cho status:'finished', không
+ * áp dụng cho 'cancelled' nên ghi được ngay dù trận vừa mới tạo. applyMatchResult
+ * (Cloud Function) cũng chỉ chạy khi status==='finished' nên tự động bỏ qua, không
+ * cộng/trừ điểm hay giải quyết cược cho trận bị huỷ kiểu này. */
+async function cancelOnlineMatchNoWinner(roomId){
+  if(!_onlineDb || !roomId) return;
+  const ref = _onlineDb.collection('rooms').doc(roomId);
+  try{
+    await _onlineDb.runTransaction(async tx => {
+      const snap = await tx.get(ref);
+      if(!snap.exists) return;
+      const d = snap.data();
+      if(d.status === 'finished' || d.status === 'cancelled') return;
+      tx.update(ref, {
+        status: 'cancelled',
+        endedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    });
+  }catch(e){ console.warn('[online] cancelOnlineMatchNoWinner', e); }
 }
 
 async function fetchGlobalLeaderboard(limit, mode){

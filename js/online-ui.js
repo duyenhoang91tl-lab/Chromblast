@@ -256,7 +256,7 @@ function _renderLobby(d){
   if(wagerEl){
     if(Number(d.wagerAmount) > 0 && (d.wagerCurrency==='gold' || d.wagerCurrency==='diamond')){
       const label = typeof t==='function' ? t('onlineLobbyWager') : 'Cược:';
-      wagerEl.textContent = label + ' ' + (d.wagerCurrency==='gold' ? '🪙 ' : '💎 ') + d.wagerAmount + ' (' + (typeof t==='function'?t('onlineLobbyWagerPot','thắng ăn x2'):'thắng ăn x2') + ')';
+      wagerEl.textContent = label + ' ' + (d.wagerCurrency==='gold' ? '🪙 ' : '💎 ') + d.wagerAmount + ' (' + (typeof t==='function'?t('onlineLobbyWagerPot','thắng +95%'):'thắng +95%') + ')';
       wagerEl.style.display = '';
     } else {
       wagerEl.style.display = 'none';
@@ -445,7 +445,7 @@ function enterOnlineVersusMatch(roomId, roomData){
       if(!_vs || !_vs.online || _vs.online.roomId !== roomId) return; // đã thoát trận trước khi escrow xong
       if(!res.ok){
         try{ showHint((typeof t==='function'?t('vsWagerFail','Không đủ tiền cược — huỷ trận'):'Không đủ tiền cược — huỷ trận'), { hold: 3200 }); }catch(e){}
-        _vsAbort();
+        _vsAbort({ noForfeit: true });
         try{ if(typeof openVersusSetup === 'function') openVersusSetup(); }catch(e){}
       }
     });
@@ -466,6 +466,7 @@ function enterOnlineVersusMatch(roomId, roomData){
       if(ev.type === 'deleted'){ _vsHandleOpponentLeft(); return; }
       const d = ev.data;
       if(d.status === 'finished' && d.endReason === 'forfeit'){ _vsHandleOpponentLeft(); return; }
+      if(d.status === 'cancelled'){ _vsHandleMatchCancelled(); return; }
       if(isHost && !d.guestId && d.status !== 'finished'){ _vsHandleOpponentLeft(); return; }
     });
   }
@@ -539,7 +540,8 @@ function _vsEndMatchOnline(){
 
 function _vsBroadcastMove(type, payload){
   if(!_vs || !_vs.online || !_vs.online.roomId) return;
-  sendOnlineMove(_vs.online.roomId, { type, slot:_vs.online.mySlot, ...payload }).catch(()=>{});
+  sendOnlineMove(_vs.online.roomId, { type, slot:_vs.online.mySlot, ...payload })
+    .catch(e => console.error('[versus] _vsBroadcastMove FAILED —', type, payload, e));
 }
 
 function _vsApplyNetworkMove(move){
@@ -562,13 +564,13 @@ function _vsApplyRemotePlace(P, move){
     // day), dung thang du lieu tu mang (shape+color duoc gui kem) de tu phuc
     // hoi thay vi phu thuoc trang thai cuc bo co the da sai.
     if(!move.shape) return;
-    const fresh = { shape: move.shape.map(([r,c])=>[r,c]), color: move.color || VS_COLORS[0], used:false, rot:0 };
+    const fresh = { shape: move.shape.map(p=>[p.r,p.c]), color: move.color || VS_COLORS[0], used:false, rot:0 };
     const freeIdx = P.pieces.findIndex(p=>p && !p.used);
     if(freeIdx>=0){ P.pieces[freeIdx]=fresh; idx=freeIdx; }
     else { P.pieces.push(fresh); idx=P.pieces.length-1; }
     pc=fresh;
   } else if(move.shape){
-    pc.shape=move.shape.map(([r,c])=>[r,c]);
+    pc.shape=move.shape.map(p=>[p.r,p.c]);
   }
   P.selected=idx;
   _vsPlaceAt(P, move.R, move.C, true);
@@ -630,7 +632,7 @@ function onLeaveLobbyToHub(){
         if(typeof syncWalletFromServer === 'function'){
           syncWalletFromServer().then(function(w){
             if(!w || !balEl.isConnected) return;
-            const label = typeof t==='function' ? t('onlineWagerBalance','Số dư thật của bạn') : 'Số dư thật của bạn';
+            const label = typeof t==='function' ? t('onlineWagerBalance','Số dư') : 'Số dư';
             balEl.textContent = label + ': 🪙 ' + (w.gold|0) + ' · 💎 ' + (w.diamonds|0);
           });
         }

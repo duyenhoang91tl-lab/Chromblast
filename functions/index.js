@@ -707,6 +707,68 @@ exports.giftHeart = onCall({ region: 'asia-southeast1' }, async (request) => {
 });
 
 /**
+ * Mở 1 trong 3 "rương tiền tệ" (Bạc/Vàng/Kim cương — khớp js/loot-crates.js:
+ * LOOT_CRATES, kind currency-gold/currency-diamond) TOÀN BỘ ở server trong 1
+ * transaction — trừ giá + random phần thưởng + cộng thưởng CÙNG LÚC. Trước
+ * đây client tự trừ qua spendCurrency rồi tự cộng thưởng cục bộ — lần
+ * syncWalletFromServer() kế tiếp ghi đè mất phần cộng cục bộ đó (lỗi đã biết,
+ * xem docs/SERVER_WALLET_PROGRESS.md). Rương Bạc/Vàng có thêm lượt mở MIỄN
+ * PHÍ 1 lần/ngày/rương (doc claims, không dựa localStorage nên không xoá
+ * cache để mở lại được). Định nghĩa rương dưới đây PHẢI khớp đúng
+ * LOOT_CRATES phía client (giá/khoảng thưởng) — đổi 1 bên nhớ đổi bên kia.
+ * Rương vật phẩm (bong bóng/kỹ năng/gạch/map/hiệu ứng) KHÔNG qua đây — chúng
+ * chỉ mở khoá cosmetic cục bộ (không có gì để đồng bộ ngược nên không có lỗi
+ * tương tự), vẫn dùng spendCurrency + unlock cục bộ như cũ.
+ */
+const CURRENCY_CRATES = {
+  silver:  { price: 25, priceType: 'gold',    freeDaily: true,  rewardType: 'gold',    min: 15, max: 40  },
+  gold:    { price: 8,  priceType: 'diamond', freeDaily: true,  rewardType: 'gold',    min: 60, max: 150 },
+  diamond: { price: 20, priceType: 'diamond', freeDaily: false, rewardType: 'diamond', min: 2,  max: 8   },
+};
+exports.openCurrencyCrate = onCall({ region: 'asia-southeast1' }, async (request) => {
+  const uid = request.auth && request.auth.uid;
+  if (!uid) throw new HttpsError('unauthenticated', 'Cần đăng nhập.');
+  const crateId = request.data && request.data.crateId;
+  const useFree = !!(request.data && request.data.useFree);
+  const crate = CURRENCY_CRATES[crateId];
+  if (!crate) throw new HttpsError('invalid-argument', 'Rương không hợp lệ.');
+  if (useFree && !crate.freeDaily) throw new HttpsError('invalid-argument', 'Rương này không có lượt miễn phí.');
+
+  const ref = db.collection('players').doc(uid);
+  const dayKey = periodKey('day');
+  const claimRef = db.collection('players').doc(uid).collection('claims').doc('crateFree_' + crateId + '_' + dayKey);
+
+  return db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    if (!snap.exists) throw new HttpsError('failed-precondition', 'Chưa có ví.');
+    const w = walletOf(snap.data());
+
+    if (useFree) {
+      const claimSnap = await tx.get(claimRef);
+      if (claimSnap.exists) throw new HttpsError('already-exists', 'Đã mở miễn phí hôm nay.');
+    } else {
+      if (crate.priceType === 'gold' && w.gold < crate.price) throw new HttpsError('failed-precondition', 'Không đủ vàng.');
+      if (crate.priceType === 'diamond' && w.diamonds < crate.price) throw new HttpsError('failed-precondition', 'Không đủ kim cương.');
+    }
+
+    const rewardAmount = crate.min + Math.floor(Math.random() * (crate.max - crate.min + 1));
+    let goldDelta = 0, diaDelta = 0;
+    if (!useFree) {
+      if (crate.priceType === 'gold') goldDelta -= crate.price; else diaDelta -= crate.price;
+    }
+    if (crate.rewardType === 'gold') goldDelta += rewardAmount; else diaDelta += rewardAmount;
+
+    if (useFree) tx.set(claimRef, { ts: FieldValue.serverTimestamp() });
+    tx.set(ref, {
+      gold: FieldValue.increment(goldDelta),
+      diamonds: FieldValue.increment(diaDelta)
+    }, { merge: true });
+
+    return { ok: true, rewardType: crate.rewardType, rewardAmount };
+  });
+});
+
+/**
  * Webhook RevenueCat (IAP thật) — CHỈ nguồn duy nhất cộng kim cương cho giao dịch mua
  * bằng tiền thật; không tin bất kỳ callable nào client tự gọi báo "đã mua". Cần cấu
  * hình URL function này vào RevenueCat Dashboard → Project → Integrations → Webhooks,
@@ -853,11 +915,11 @@ exports.applyMatchResult = onDocumentUpdated(
     const hostId = after.hostId, guestId = after.guestId;
     if (!hostId || !guestId) return null;
 
-    // Cược vàng/kim cương (nếu phòng có đặt cược, xem escrowWager) — thắng thật ăn
-    // trọn 2 phần cược, hoà/không xác định được thắng thua thật thì hoàn lại đúng
-    // phần mỗi bên đã đặt (không ai mất tiền oan). Chỉ chạy 1 lần (wagerSettled),
-    // và chỉ hoàn/trả cho bên ĐÃ escrow thật (tránh phát sinh tiền từ hư không nếu
-    // 1 bên chưa kịp đặt cược mà trận đã kết thúc vì lý do khác).
+    // Cược vàng/kim cương (nếu phòng có đặt cược, xem escrowWager). Thắng thật: được
+    // hoàn cược của mình + 95% cược của đối thủ (net +95% so với mức đã cược, 5%
+    // giữ lại làm phí sàn). Thua thật: chỉ được hoàn 5% cược (net -95%). Hoà hoặc
+    // không xác định được thắng thua thật thì hoàn lại đúng 100% phần mỗi bên đã
+    // đặt (net 0%) — không ai mất tiền oan. Chỉ chạy 1 lần (wagerSettled).
     const settleWager = async (finalWinnerId) => {
       if (after.wagerSettled) return;
       const amount = Math.floor(Number(after.wagerAmount) || 0);
@@ -867,9 +929,17 @@ exports.applyMatchResult = onDocumentUpdated(
       const hostIn = !!after.hostEscrowed;
       const guestIn = !!after.guestEscrowed;
       if (hostIn && guestIn && (finalWinnerId === hostId || finalWinnerId === guestId)) {
+        const loserId = finalWinnerId === hostId ? guestId : hostId;
+        const winPayout = Math.round(amount * 1.95);
+        const loseRefund = Math.round(amount * 0.05);
         await db.collection('players').doc(finalWinnerId).set(
-          { [field]: FieldValue.increment(amount * 2) }, { merge: true }
+          { [field]: FieldValue.increment(winPayout) }, { merge: true }
         );
+        if (loseRefund > 0) {
+          await db.collection('players').doc(loserId).set(
+            { [field]: FieldValue.increment(loseRefund) }, { merge: true }
+          );
+        }
       } else {
         // Hoà, hoặc không xác định được thắng thua thật, hoặc chỉ 1 bên đặt cược
         // thành công (bên kia lỗi/mất mạng giữa chừng) → hoàn đúng phần đã trừ.

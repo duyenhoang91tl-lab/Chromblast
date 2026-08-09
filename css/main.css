@@ -813,6 +813,62 @@ body.tutorial-open #start-screen{
 @media (orientation: landscape){
   #versus-setup-panel .admin-card{ max-width:640px; margin:0 auto; }
 }
+
+/* ── Màn vào Đấu 1-1 Online (#online-hub-panel) — cùng cách làm với
+   #caro-hub-panel/#versus-setup-panel ở trên: toàn màn hình, nền pastel
+   hồng tím nhạt thay vì modal căn giữa mặc định của .admin-panel-like. ── */
+#online-hub-panel.admin-panel-like{
+  padding:0; align-items:stretch; justify-content:stretch; background:transparent;
+}
+#online-hub-panel .admin-card{
+  width:100%; max-width:none; height:100%; max-height:none;
+  margin:0; border:none; border-radius:0; box-shadow:none;
+  background:linear-gradient(165deg,#f6d9ee 0%,#e9d3f3 50%,#dcd8f6 100%);
+  color:#2b2340;
+  padding:max(20px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+}
+#online-hub-panel .admin-title{ color:#2b2340; }
+#online-hub-panel .admin-close{ color:#6b5f8a; }
+#online-hub-panel .admin-sub,
+#online-hub-panel .caro-waiting-head,
+#online-hub-panel .caro-room-count,
+#online-hub-panel .caro-hub-divider,
+#online-hub-panel .auth-field label { color:#6b5f8a; }
+#online-hub-panel .online-note{ color:#a5730a; }
+#online-hub-panel .online-status{ color:#3d8f5c; }
+#online-hub-panel .online-status.err{ color:#c0396a; }
+#online-hub-panel .online-status.warn{ color:#a5730a; }
+#online-hub-panel .auth-field input{
+  background:#fff; border-color:rgba(90,70,140,0.25); color:#2b2340;
+}
+#online-hub-panel .auth-submit-btn.btn-ghost{
+  color:#4a3f6b !important; text-shadow:none !important;
+  background:#fff !important; border:1px solid rgba(90,70,140,0.28) !important;
+}
+#online-hub-panel .caro-room-row{
+  background:#fff; border-color:rgba(90,70,140,0.18); color:#2b2340;
+}
+#online-hub-panel .caro-room-row.mine{ background:rgba(255,213,74,0.18); border-color:rgba(200,150,20,0.4); }
+#online-hub-panel .caro-room-info small{ color:#6b5f8a; }
+#online-hub-panel .vs-local-block{ border-top-color:rgba(90,70,140,0.2); }
+/* Cược — giữ tông vàng nhưng đổi sang đậm để đọc được trên nền sáng */
+#online-hub-panel .online-wager-toggle{
+  border-color:rgba(180,130,0,0.35); background:rgba(255,213,74,0.18); color:#8a6d00;
+}
+#online-hub-panel .online-wager-toggle.active{ background:rgba(255,213,74,0.34); }
+#online-hub-panel .online-wager-picker{
+  border-color:rgba(180,130,0,0.25); background:rgba(255,213,74,0.1);
+}
+#online-hub-panel .online-wager-cur-btn,
+#online-hub-panel .online-wager-amt-btn{
+  border-color:rgba(90,70,140,0.22); background:#fff; color:#2b2340;
+}
+#online-hub-panel .online-wager-cur-btn.active{ border-color:#c9950a; background:rgba(255,213,74,0.32); color:#8a6d00; }
+#online-hub-panel .online-wager-amt-btn.active{ border-color:#c9950a; background:rgba(255,213,74,0.4); color:#8a6d00; }
+#online-hub-panel #online-wager-balance{ color:#6b5f8a; }
+@media (orientation: landscape){
+  #online-hub-panel .admin-card{ max-width:640px; margin:0 auto; }
+}
 .admin-map-btn.locked:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); }
 .admin-card {
   width:100%; max-width: 380px; max-height: 82vh; overflow-y:auto;
@@ -1297,7 +1353,9 @@ body.tutorial-open #start-screen{
   /* Luôn hiện được dù #game-root đang visibility:hidden (ẩn game gạch) */
   visibility: visible;
 }
-#caro-stage.active { display: flex !important; visibility: visible !important; }
+/* #caro-stage.active không còn rule riêng ở đây — đã gộp vào rule
+   "body.mode-caro #caro-stage.active" (đầu file) để tránh đè lên Versus
+   khi class "active" còn sót lại (z-index Caro > Versus). */
 .caro-topbar {
   width: min(96vw, 460px); display: flex; justify-content: space-between; align-items: flex-start;
   color: #f2f2f7; font-weight: 800; font-size: 14px; gap: 8px;
