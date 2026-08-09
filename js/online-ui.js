@@ -563,13 +563,13 @@ function _vsApplyRemotePlace(P, move){
     // day), dung thang du lieu tu mang (shape+color duoc gui kem) de tu phuc
     // hoi thay vi phu thuoc trang thai cuc bo co the da sai.
     if(!move.shape) return;
-    const fresh = { shape: move.shape.map(([r,c])=>[r,c]), color: move.color || VS_COLORS[0], used:false, rot:0 };
+    const fresh = { shape: move.shape.map(p=>[p.r,p.c]), color: move.color || VS_COLORS[0], used:false, rot:0 };
     const freeIdx = P.pieces.findIndex(p=>p && !p.used);
     if(freeIdx>=0){ P.pieces[freeIdx]=fresh; idx=freeIdx; }
     else { P.pieces.push(fresh); idx=P.pieces.length-1; }
     pc=fresh;
   } else if(move.shape){
-    pc.shape=move.shape.map(([r,c])=>[r,c]);
+    pc.shape=move.shape.map(p=>[p.r,p.c]);
   }
   P.selected=idx;
   _vsPlaceAt(P, move.R, move.C, true);

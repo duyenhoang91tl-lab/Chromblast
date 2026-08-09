@@ -224,7 +224,10 @@ function _vsPlaceAt(P,R,C,fromNetwork){
     if(!_vsCanPlace(P,pc.shape,R,C)){ try{ sfxInvalid(); }catch(e){} return; }
   }
   const pieceIndex=P.selected;
-  const shapeSnap=pc.shape.map(([r,c])=>[r,c]);
+  // FIX: Firestore từ chối "mảng lồng mảng" ([[r,c],[r,c],...]) khi ghi transaction
+  // (lỗi "Nested arrays are not supported") — mọi nước đi online từng bị chặn ngay tại
+  // đây, không tới được đối thủ. Đổi sang mảng object {r,c} (Firestore chấp nhận được).
+  const shapeSnap=pc.shape.map(([r,c])=>({r,c}));
   pc.shape.forEach(([dr,dc])=>{
     const rr=R+dr, cc=C+dc;
     if(rr<0||rr>=VS_N||cc<0||cc>=VS_N) return;
