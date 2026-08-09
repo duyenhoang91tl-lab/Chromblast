@@ -1125,6 +1125,79 @@
   <div id="versus-timer" style="display:none;position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:9000;background:rgba(20,20,40,0.92);border:1px solid #ffd54a;border-radius:20px;padding:6px 16px;font-weight:800;color:#ffd54a;font-size:14px;box-shadow:0 2px 12px rgba(255,213,74,0.35);pointer-events:none;"></div>
 
   <!-- ══ CỜ CARO (online không giới hạn cấp · đấu máy luôn được) ══ -->
+  <!-- ══ Màn vào Caro — menu chính (6 ô icon + 5 nút lớn) ══ -->
+  <div id="caro-menu-panel" class="caro-menu-screen" aria-hidden="true">
+    <div class="caro-menu-head">
+      <button type="button" class="caro-menu-back" id="caro-menu-back-btn" aria-label="Back">‹</button>
+      <span class="caro-menu-title" data-i18n="caroMenuTitle">❌⭕ Caro</span>
+      <span class="caro-menu-head-spacer"></span>
+    </div>
+    <div class="caro-menu-body">
+      <div class="caro-menu-icons">
+        <button type="button" class="caro-menu-ico-btn" id="caro-menu-rank-btn">
+          <span class="caro-menu-ico">🏆</span><span data-i18n="caroMenuRank">Xếp hạng</span>
+        </button>
+        <button type="button" class="caro-menu-ico-btn" id="caro-menu-friends-btn">
+          <span class="caro-menu-ico">🤝</span><span data-i18n="caroMenuFriends">Bạn bè</span>
+        </button>
+        <button type="button" class="caro-menu-ico-btn" id="caro-menu-switch-btn">
+          <span class="caro-menu-ico">🎮</span><span data-i18n="caroMenuSwitch">Trò chơi</span>
+        </button>
+        <button type="button" class="caro-menu-ico-btn" id="caro-menu-daily-btn">
+          <span class="caro-menu-ico">🎁</span><span data-i18n="caroMenuDaily">Điểm danh</span>
+          <span class="caro-menu-badge" id="caro-menu-daily-badge" hidden>1</span>
+        </button>
+        <button type="button" class="caro-menu-ico-btn" id="caro-menu-ads-btn">
+          <span class="caro-menu-ico">▶️</span><span data-i18n="caroMenuAds">Xem QC</span>
+        </button>
+        <button type="button" class="caro-menu-ico-btn" id="caro-menu-skin-btn">
+          <span class="caro-menu-ico">🎨</span><span data-i18n="caroMenuSkin">Chọn nền</span>
+        </button>
+      </div>
+
+      <div class="caro-menu-actions">
+        <button type="button" class="caro-menu-action caro-menu-action-quick" id="caro-menu-quick-btn">
+          <span data-i18n="caroMenuQuick">⚡ Chơi nhanh</span>
+        </button>
+        <button type="button" class="caro-menu-action" id="caro-menu-withfriend-btn">
+          <span data-i18n="caroMenuWithFriend">🤝 Chơi với bạn</span>
+        </button>
+        <button type="button" class="caro-menu-action" id="caro-menu-table-btn">
+          <span data-i18n="caroMenuTable">🀄 Chọn bàn</span>
+        </button>
+        <button type="button" class="caro-menu-action" id="caro-menu-rankbtn2">
+          <span data-i18n="caroMenuRankBtn">🏆 Xếp hạng</span>
+        </button>
+        <button type="button" class="caro-menu-action caro-menu-action-tour" id="caro-menu-tour-btn">
+          <span data-i18n="caroMenuTour">🏅 Giải đấu</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="caro-menu-switch-pop" id="caro-menu-switch-pop" hidden>
+      <button type="button" id="caro-menu-switch-chroma">🧊 Chroma Blast</button>
+      <button type="button" id="caro-menu-switch-versus">⚔️ Versus</button>
+    </div>
+  </div>
+
+  <!-- ══ Điểm danh riêng Caro ══ -->
+  <div id="caro-daily-panel" class="admin-panel-like">
+    <div class="admin-card">
+      <div class="admin-title"><span data-i18n="caroDailyTitle">🎁 Điểm danh Caro</span><button class="admin-close" id="caro-daily-close-btn">✕</button></div>
+      <div class="admin-sub" data-i18n="caroDailySub">Điểm danh mỗi ngày khi chơi Caro: XP + vàng riêng. Bỏ lỡ 1 ngày sẽ mất chuỗi.</div>
+      <div id="caro-daily-list" class="daily-grid"></div>
+      <button id="caro-daily-claim-btn" class="auth-submit-btn" style="margin-top:14px;">🎁 Nhận quà</button>
+    </div>
+  </div>
+
+  <!-- ══ Giải đấu Caro (đang chuẩn bị) ══ -->
+  <div id="caro-tour-panel" class="admin-panel-like">
+    <div class="admin-card">
+      <div class="admin-title"><span data-i18n="caroTourTitle">🏅 Giải đấu</span><button class="admin-close" id="caro-tour-close-btn">✕</button></div>
+      <div class="admin-sub" data-i18n="caroTourSub">Chế độ giải đấu đang được chuẩn bị — quay lại sau nhé!</div>
+    </div>
+  </div>
+
   <div id="caro-hub-panel" class="admin-panel-like">
     <div class="admin-card">
       <div class="admin-title"><span data-i18n="caroTitle">❌⭕ Caro</span><button class="admin-close" id="caro-hub-close">✕</button></div>
@@ -1617,6 +1690,8 @@
 <script src="js/online-ui.js"></script>
 <script src="js/chat.js"></script>
 <script src="js/account-hub.js"></script>
+<script src="js/caro-daily.js"></script>
+<script src="js/caro-menu.js"></script>
 <!-- js/caro.js + js/caro-social.js: nạp trễ (lazy-load) qua js/caro-loader.js
      khi người chơi bấm #caro-btn hoặc nhận lời mời Caro qua chat, để
      giảm dung lượng tải ban đầu (~104KB) cho người chưa vào chế độ này. -->

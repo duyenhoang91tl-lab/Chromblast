@@ -44,6 +44,9 @@
     var btn = document.getElementById('caro-btn');
     if (!btn) return;
     btn.addEventListener('click', function onFirstCaroClick(){
+      // Màn vào Caro giờ là js/caro-menu.js (nạp eager, không cần đợi
+      // caro.js) — chỉ những hành động sâu bên trong mới gọi ensureCaroLoaded().
+      if (typeof openCaroMenu === 'function') { openCaroMenu(); return; }
       if (typeof openCaroHub === 'function') { openCaroHub(); return; }
       window.ensureCaroLoaded().then(function(){
         if (typeof openCaroHub === 'function') openCaroHub();
