@@ -702,7 +702,7 @@ function onLeaveLobbyToHub(){
   });
   document.getElementById('online-delete-account-btn')?.addEventListener('click', async ()=>{
     const btn = document.getElementById('online-delete-account-btn');
-    const msgEl = document.getElementById('pp-msg');
+    const msgEl = document.getElementById('acchub-msg') || document.getElementById('pp-msg');
     const setMsg = (text, isErr) => { if(msgEl){ msgEl.textContent = text; msgEl.className = 'account-msg' + (isErr ? ' err' : ' ok'); } };
     const label = typeof t === 'function' ? t('onlineDeleteConfirm') : null;
     const confirmMsg = label || 'Xoá vĩnh viễn tài khoản online: hồ sơ, bạn bè, chặn, điểm BXH gần đây, tin nhắn đã gửi vẫn còn ở phía người nhận. Không thể hoàn tác. Tiếp tục?';
