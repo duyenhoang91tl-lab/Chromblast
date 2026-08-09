@@ -79,8 +79,6 @@ function refreshVersusButton(){
     btn.setAttribute('aria-hidden', 'false');
     btn.title = (typeof t==='function' ? t('ttVersus') : 'Đấu 1-1');
   }
-  const setBtn=document.getElementById('set-btn-versus');
-  if(setBtn) setBtn.style.display = '';
 }
 
 // ── Sinh khối: mỗi người 1 PRNG cùng seed → cùng chuỗi khối ──
