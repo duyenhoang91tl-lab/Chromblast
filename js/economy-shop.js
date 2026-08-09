@@ -126,7 +126,7 @@
     panel.innerHTML =
       '<div class="shop2-hub" id="shop2-hub">' +
       '<div class="shop2-hub-top">' +
-      '<div class="shop2-hub-title">🛒 <span data-i18n="shopTitle">Cửa hàng</span></div>' +
+      '<div class="shop2-hub-title"><span data-i18n="shopTitle">🛒 Cửa hàng</span></div>' +
       '<button type="button" class="shop2-close" id="shop-close-btn">✕</button>' +
       "</div>" +
       '<div class="shop2-balance-row">' +
