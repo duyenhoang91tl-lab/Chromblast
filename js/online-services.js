@@ -1926,6 +1926,9 @@ function _chatMsgPayload(text){
       payload.nameEffect = st.effect || '';
     }
   }catch(e){}
+  try{
+    payload.textEffect = (typeof equippedTextEffect === 'function') ? (equippedTextEffect() || '') : '';
+  }catch(e){}
   return payload;
 }
 

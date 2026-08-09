@@ -6472,6 +6472,43 @@ body:has(#secret-stage.active) .streak-dot.lit{
   .name-fx-wave .name-fx-letter{ animation:none; }
 }
 
+/* ══════════════════════════════════════════════════════════════
+   Hiệu ứng chữ mua trong Shop bằng kim cương (xem js/text-effects.js), áp lên
+   NỘI DUNG tin nhắn chat (.gchat-text) — cùng kỹ thuật với hiệu ứng tên ở
+   trên (glow/goldsweep/platinum dùng chung @keyframes nameFxGlow/nameFxSweep,
+   không định nghĩa lại). "Hoa bay ra nhẹ" là hiệu ứng riêng, không đụng vào
+   name-effects.
+══════════════════════════════════════════════════════════════ */
+.text-fx-glow{ animation:nameFxGlow 2s ease-in-out infinite; }
+.text-fx-goldsweep,.text-fx-platinum{
+  background-size:250% 100%; -webkit-background-clip:text; background-clip:text; color:transparent;
+  animation:nameFxSweep 3.2s linear infinite;
+}
+.text-fx-goldsweep{
+  background-image:linear-gradient(100deg,#b8860b 0%,#b8860b 40%,#fff7c0 50%,#b8860b 60%,#b8860b 100%);
+  text-shadow:0 0 5px rgba(184,134,11,0.4);
+}
+.text-fx-platinum{
+  background-image:linear-gradient(100deg,#9aa3ad 0%,#9aa3ad 35%,#ffffff 50%,#d8dee5 55%,#9aa3ad 65%,#9aa3ad 100%);
+  text-shadow:0 0 6px rgba(255,255,255,0.5);
+}
+.text-fx-flowers-wrap{ position:relative; display:inline-block; width:0; height:0; }
+.text-fx-flower{
+  position:absolute; left:2px; bottom:2px; font-size:12px; opacity:0;
+  animation:textFxFlowerFloat 2.6s ease-in infinite;
+}
+.text-fx-flower.f2{ left:12px; animation-delay:0.6s; }
+.text-fx-flower.f3{ left:-8px; animation-delay:1.3s; }
+@keyframes textFxFlowerFloat{
+  0%{ opacity:0; transform:translate(0,0) scale(0.7) rotate(0deg); }
+  15%{ opacity:1; }
+  100%{ opacity:0; transform:translate(6px,-26px) scale(1) rotate(50deg); }
+}
+@media (prefers-reduced-motion: reduce){
+  .text-fx-glow,.text-fx-goldsweep,.text-fx-platinum{ animation:none; }
+  .text-fx-flower{ animation:none; opacity:0; }
+}
+
 /* Giai đoạn 4: bảng màu dùng chung cho nội dung bên trong panel — nền
    sáng, chữ tối, bo góc lớn, bóng đổ mềm, cùng tông pastel tím/xanh
    dương với khung ngoài. Phần 2–5 chỉ cần gắn class này cho từng khối

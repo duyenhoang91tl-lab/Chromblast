@@ -385,10 +385,17 @@
     row.appendChild(head);
 
     const body = document.createElement('span');
-    body.className = 'gchat-text';
+    body.className = 'gchat-text' + (typeof textFxClass === 'function' ? textFxClass(msg.textEffect) : '');
     body.dataset.orig = msg.text || '';
     body.textContent = msg.text || '';
     row.appendChild(body);
+    if(msg.textEffect === 'flowers' && typeof textFxDecoHtml === 'function'){
+      const deco = document.createElement('span');
+      deco.className = 'text-fx-flowers-wrap';
+      deco.setAttribute('aria-hidden', 'true');
+      deco.innerHTML = textFxDecoHtml('flowers');
+      row.appendChild(deco);
+    }
 
     const isInvite = msg.kind === 'room_invite' && msg.roomId;
     if(isInvite){
