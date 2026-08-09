@@ -811,6 +811,76 @@ function _vsOfferCards(P){
   if(!aiOwnsThis) P.el.cards.classList.add('show');
 }
 
+function _vsRenderPostMatchReady(d){
+  if(!_vs || !_vs.online) return;
+  document.getElementById('vs-again-btn').style.display = 'none';
+  document.getElementById('vs-close-btn').style.display = 'none';
+  const block = document.getElementById('vs-postmatch-block');
+  if(block) block.style.display = '';
+
+  const isHost = !!_vs.online.isHost;
+  const hostReady = !!d.hostReadyRematch, guestReady = !!d.guestReadyRematch;
+  const meReady = isHost ? hostReady : guestReady;
+  const hostIcon = hostReady ? '✅' : '⏳';
+  const guestIcon = d.guestId ? (guestReady ? '✅' : '⏳') : '';
+  const guestLabel = d.guestId ? escapeHtml(d.guestName || '') + ' ' + guestIcon : ('<span class="online-wait">' + escapeHtml(typeof t==='function'?t('onlineWaiting'):'Đang chờ...') + '</span>');
+  const kickBtnHtml = (isHost && d.guestId)
+    ? '<button type="button" class="caro-kick-btn" id="vs-postmatch-kick-btn" data-name="'+escapeHtml(d.guestName||'')+'">'+escapeHtml(t('roomKickBtn'))+'</button>'
+    : '';
+  const playersEl = document.getElementById('vs-postmatch-players');
+  if(playersEl){
+    playersEl.innerHTML =
+      '<div class="online-player"><span>👑</span> '+escapeHtml(d.hostName||'')+' '+hostIcon+'</div>'+
+      '<div class="online-player"><span>⚔️</span> '+guestLabel+kickBtnHtml+'</div>';
+    document.getElementById('vs-postmatch-kick-btn')?.addEventListener('click', (e)=>{
+      e.preventDefault(); e.stopPropagation();
+      const gName = e.currentTarget.dataset.name || '?';
+      if(!confirm(t('roomKickConfirm', gName))) return;
+      if(typeof kickRoomGuest === 'function' && _vs && _vs.online){
+        kickRoomGuest(_vs.online.roomId).catch(()=>{});
+      }
+    });
+  }
+
+  const readyBtn = document.getElementById('vs-postmatch-ready-btn');
+  if(readyBtn){
+    readyBtn.textContent = meReady ? ('✅ ' + t('vsReadyOn')) : ('☐ ' + t('vsReady'));
+    readyBtn.classList.toggle('btn-ghost', meReady);
+  }
+
+  const startBtn = document.getElementById('vs-postmatch-start-btn');
+  const waitNote = document.getElementById('vs-postmatch-wait-note');
+  const bothReady = hostReady && guestReady && !!d.guestId;
+  if(isHost){
+    if(startBtn) startBtn.style.display = bothReady ? '' : 'none';
+    if(waitNote) waitNote.style.display = (!bothReady && d.guestId) ? '' : 'none';
+    if(waitNote && d.guestId) waitNote.textContent = t('vsPostmatchWaitGuest');
+  } else {
+    if(startBtn) startBtn.style.display = 'none';
+    if(waitNote) waitNote.style.display = meReady ? '' : 'none';
+    if(waitNote) waitNote.textContent = t('vsPostmatchWaitHost');
+  }
+}
+
+/** Đối thủ rời phòng trong lúc mình đang đứng ở màn kết quả chờ đấu lại. */
+function _vsPostMatchOpponentLeft(){
+  if(!_vs || !_vs.online || _vs.online.isHost) return; // host tự xử qua nút Kick/logic riêng, không cần thoát
+  try{ showHint((typeof t==='function'?t('onlineHostLeftMsg'):null) || 'Chủ phòng đã rời phòng', { hold: 2600 }); }catch(e){}
+  _vsLeaveRoomFully();
+}
+
+function _vsLeaveRoomFully(){
+  if(_vs && _vs.online && _vs.online.roomId){
+    try{ leaveOnlineRoom(_vs.online.roomId); }catch(e){}
+  }
+  try{ if(typeof stopListeningRoom === 'function') stopListeningRoom(); }catch(e){}
+  document.getElementById('vs-again-btn').style.display = '';
+  document.getElementById('vs-close-btn').style.display = '';
+  document.getElementById('vs-postmatch-block').style.display = 'none';
+  _vsHide('versus-result-panel');
+  _vs = null;
+}
+
 function _vsCloseResult(rematch){
   _vsHide('versus-result-panel');
   if(rematch){
@@ -822,4 +892,30 @@ function _vsCloseResult(rematch){
   }
   _vs=null;
 }
+
+(function _vsBindPostMatchButtons(){
+  function bind(){
+    document.getElementById('vs-postmatch-ready-btn')?.addEventListener('click', ()=>{
+      try{ sfxClick(); }catch(e){}
+      if(!_vs || !_vs.online) return;
+      const isHost = !!_vs.online.isHost;
+      // Trạng thái hiện tại đọc lại từ chính chữ nút (đã render theo d.hostReadyRematch/
+      // guestReadyRematch lần cập nhật gần nhất) để không cần giữ thêm biến state riêng.
+      const btn = document.getElementById('vs-postmatch-ready-btn');
+      const currentlyReady = !!(btn && btn.classList.contains('btn-ghost'));
+      if(typeof setVersusRematchReady === 'function') setVersusRematchReady(_vs.online.roomId, !currentlyReady);
+    });
+    document.getElementById('vs-postmatch-start-btn')?.addEventListener('click', ()=>{
+      try{ sfxClick(); }catch(e){}
+      if(!_vs || !_vs.online || !_vs.online.isHost) return;
+      if(typeof startOnlineRoomMatch === 'function') startOnlineRoomMatch(_vs.online.roomId).catch(()=>{});
+    });
+    document.getElementById('vs-postmatch-leave-btn')?.addEventListener('click', ()=>{
+      try{ sfxClick(); }catch(e){}
+      _vsLeaveRoomFully();
+    });
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
+  else bind();
+})();
 

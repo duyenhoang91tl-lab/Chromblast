@@ -504,7 +504,9 @@ function _vsEndMatch(){
   try{ if(typeof lockPortraitOrientation==='function') lockPortraitOrientation(); }catch(e){}
   if(_vs.timer){ clearInterval(_vs.timer); _vs.timer=null; }
   if(_vs.online){
-    try{ if(typeof stopListeningRoom === 'function') stopListeningRoom(); }catch(e){}
+    // KHÔNG stopListeningRoom() ở đây nữa — muốn giữ phòng sống để 2 người có
+    // thể ở lại bấm "Sẵn sàng" đấu tiếp (xem _vsRenderPostMatchReady trong
+    // online-ui.js). Chỉ thật sự rời phòng khi bấm nút rời tường minh.
     try{ if(typeof _onlineLobby !== 'undefined') _onlineLobby=null; }catch(e){}
   } else {
     try{ if(typeof stopListeningChat === 'function') stopListeningChat(); }catch(e){}

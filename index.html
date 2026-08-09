@@ -1096,7 +1096,7 @@
       <button type="button" id="online-lobby-invite" class="auth-submit-btn btn-ghost" style="background:rgba(66,165,245,0.25);margin-top:8px;" data-i18n="gchatInviteFriend">🤝 Mời bạn bè</button>
       <div id="online-mm-auto-note" class="online-note" style="display:none" data-i18n="onlineMmAuto">Đã ghép đối thủ — chờ host bắt đầu...</div>
       <button type="button" id="online-start-btn" class="auth-submit-btn" data-i18n="onlineStart">▶ Bắt đầu trận</button>
-      <button type="button" id="online-lobby-create" class="auth-submit-btn" style="margin-top:8px;" data-i18n="onlineCreate">🏠 Tạo phòng mới</button>
+      <button type="button" id="online-lobby-ready" class="auth-submit-btn btn-on-color" style="margin-top:8px;background:linear-gradient(135deg,#2e7d32,#66bb6a);" data-i18n="vsReady">✅ Sẵn sàng</button>
       <div class="caro-waiting-block" style="margin-top:12px;">
         <div class="caro-waiting-head"><span data-i18n="onlineWaitingRooms">📋 Phòng chờ</span></div>
         <div id="online-lobby-room-list" class="caro-room-list caro-room-list-compact"></div>
@@ -1119,6 +1119,16 @@
       <div id="vs-result-body"></div>
       <button id="vs-again-btn" class="auth-submit-btn" data-i18n="vsAgain" style="margin-top:12px;">🔁 Đấu lại</button>
       <button id="vs-close-btn" class="auth-submit-btn btn-ghost" data-i18n="vsClose" style="background:rgba(255,255,255,0.12);margin-top:8px;">✕ Đóng</button>
+
+      <!-- Chỉ hiện cho trận ONLINE — ở lại phòng, sẵn sàng đấu tiếp thay vì
+           tự thoát về sảnh. Ẩn/hiện qua JS (_vsRenderPostMatchReady). -->
+      <div id="vs-postmatch-block" style="display:none;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.14);">
+        <div id="vs-postmatch-players" class="online-players"></div>
+        <button type="button" id="vs-postmatch-ready-btn" class="auth-submit-btn btn-on-color" style="margin-top:10px;background:linear-gradient(135deg,#2e7d32,#66bb6a);" data-i18n="vsReady">✅ Sẵn sàng</button>
+        <button type="button" id="vs-postmatch-start-btn" class="auth-submit-btn" style="margin-top:8px;display:none;" data-i18n="onlineStart">▶ Bắt đầu trận</button>
+        <div id="vs-postmatch-wait-note" class="online-note" style="display:none;" data-i18n="vsPostmatchWaitHost">Chờ chủ phòng bắt đầu trận tiếp theo...</div>
+        <button type="button" id="vs-postmatch-leave-btn" class="auth-submit-btn btn-ghost" style="background:rgba(255,255,255,0.12);margin-top:8px;" data-i18n="onlineLeave">✕ Rời phòng</button>
+      </div>
     </div>
   </div>
 

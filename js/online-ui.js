@@ -249,9 +249,11 @@ function _renderLobby(d){
   const kickBtnHtml = (isHost && d.guestName)
     ? '<button type="button" class="caro-kick-btn" id="online-kick-guest-btn" data-name="'+escapeHtml(d.guestName)+'">'+escapeHtml(t('roomKickBtn'))+'</button>'
     : '';
+  const hostReadyIcon = d.hostReady!==false ? '✅' : '⏳';
+  const guestReadyIcon = d.guestName ? (d.guestReady ? '✅' : '⏳') : '';
   document.getElementById('online-lobby-players').innerHTML=
-    '<div class="online-player">'+hostRankHtml+'<span>👑</span> '+hostNameHtml+'</div>'+
-    '<div class="online-player">'+guestRankHtml+'<span>⚔️</span> '+guest+kickBtnHtml+'</div>';
+    '<div class="online-player">'+hostRankHtml+'<span>👑</span> '+hostNameHtml+' '+hostReadyIcon+'</div>'+
+    '<div class="online-player">'+guestRankHtml+'<span>⚔️</span> '+guest+' '+guestReadyIcon+kickBtnHtml+'</div>';
   const wagerEl = document.getElementById('online-lobby-wager');
   if(wagerEl){
     if(Number(d.wagerAmount) > 0 && (d.wagerCurrency==='gold' || d.wagerCurrency==='diamond')){
@@ -273,7 +275,15 @@ function _renderLobby(d){
   });
   const startBtn=document.getElementById('online-start-btn');
   if(startBtn){
-    startBtn.style.display = (isHost && d.status==='ready' && d.guestId) ? 'block' : 'none';
+    startBtn.style.display = (isHost && d.guestId && d.hostReady!==false && d.guestReady) ? 'block' : 'none';
+  }
+  const readyBtn=document.getElementById('online-lobby-ready');
+  if(readyBtn){
+    const myUid = getOnlineUid();
+    const meReady = d.hostId===myUid ? d.hostReady!==false : d.guestId===myUid ? !!d.guestReady : true;
+    readyBtn.textContent = meReady ? ('✅ ' + t('vsReadyOn')) : ('☐ ' + t('vsReady'));
+    readyBtn.classList.toggle('btn-ghost', meReady);
+    readyBtn.dataset.ready = meReady ? '0' : '1'; // gia tri se chuyen sang khi bam
   }
   const mmNote=document.getElementById('online-mm-auto-note');
   if(mmNote) mmNote.style.display = d.matchmaking ? 'block' : 'none';
@@ -416,6 +426,7 @@ function enterOnlineVersusMatch(roomId, roomData){
         timeLeft:VERSUS_TIME, timer:null,
         players:[_vsNewPlayer(0,roomData.seed), _vsNewPlayer(1,roomData.seed)],
         online:{ roomId, mySlot, appliedSeq:0, isHost, startedAtMs,
+          matchSeq: roomData.matchSeq || 1,
           oppUid: isHost ? roomData.guestId : roomData.hostId,
           oppVersusPoints: isHost ? roomData.guestVersusPoints : roomData.hostVersusPoints,
           oppSkins: {
@@ -453,6 +464,10 @@ function enterOnlineVersusMatch(roomId, roomData){
 
   listenOnlineMoves(roomId, move => {
     if(!_vs || !_vs.online) return;
+    // Phòng dùng lại cho nhiều trận (đấu lại không rời phòng) — moves cũ của
+    // trận trước vẫn còn trong subcollection, lọc bỏ theo matchSeq để không
+    // áp lại nước đi/trạng thái của ván đã kết thúc vào ván mới.
+    if(move.matchSeq != null && _vs.online.matchSeq != null && move.matchSeq !== _vs.online.matchSeq) return;
     if(move.seq <= _vs.online.appliedSeq) return;
     _vs.online.appliedSeq = move.seq;
     _vsApplyNetworkMove(move);
@@ -468,6 +483,28 @@ function enterOnlineVersusMatch(roomId, roomData){
       if(d.status === 'finished' && d.endReason === 'forfeit'){ _vsHandleOpponentLeft(); return; }
       if(d.status === 'cancelled'){ _vsHandleMatchCancelled(); return; }
       if(isHost && !d.guestId && d.status !== 'finished'){ _vsHandleOpponentLeft(); return; }
+      if(d.status === 'finished' && d.endReason !== 'forfeit'){ _vsRenderPostMatchReady(d); return; }
+      if(d.status === 'open' && document.getElementById('versus-result-panel')?.classList.contains('show')){
+        // Chủ phòng vừa kích khách ngay ở màn chờ đấu lại — quay lại sảnh phòng
+        // chờ khách mới, KHÔNG rời/xoá phòng.
+        document.getElementById('vs-again-btn').style.display = '';
+        document.getElementById('vs-close-btn').style.display = '';
+        document.getElementById('vs-postmatch-block').style.display = 'none';
+        _vsHide('versus-result-panel');
+        try{ if(typeof openOnlineLobby === 'function') openOnlineLobby(roomId, d.code, 'host', d); }catch(e){}
+        _vs = null;
+        return;
+      }
+      if(d.status === 'playing' && d.matchSeq && d.matchSeq !== _vs.online.matchSeq && d.seed != null && !versusMode){
+        // Chủ phòng vừa bắt đầu trận tiếp theo trong cùng phòng — vào lại
+        // enterOnlineVersusMatch() để dựng đấu trường mới (versusMode đã về
+        // false từ _vsEndMatch nên hàm này chạy được bình thường).
+        enterOnlineVersusMatch(roomId, d);
+      }
+      if(!d.guestId && document.getElementById('versus-result-panel')?.classList.contains('show')){
+        // Đối thủ đã rời phòng trong lúc chờ ở màn kết quả.
+        _vsPostMatchOpponentLeft();
+      }
     });
   }
 
@@ -533,14 +570,13 @@ function _vsEndMatchOnline(){
       });
     }, 2500);
   }
-  stopListeningRoom();
-  _onlineLobby=null;
+  stopListeningMoves();
   _vsEndMatch();
 }
 
 function _vsBroadcastMove(type, payload){
   if(!_vs || !_vs.online || !_vs.online.roomId) return;
-  sendOnlineMove(_vs.online.roomId, { type, slot:_vs.online.mySlot, ...payload })
+  sendOnlineMove(_vs.online.roomId, { type, slot:_vs.online.mySlot, matchSeq:_vs.online.matchSeq, ...payload })
     .catch(e => console.error('[versus] _vsBroadcastMove FAILED —', type, payload, e));
 }
 
@@ -649,7 +685,12 @@ function onLeaveLobbyToHub(){
     });
   });
   document.getElementById('online-create-btn')?.addEventListener('click', onCreateRoom);
-  document.getElementById('online-lobby-create')?.addEventListener('click', onCreateRoom);
+  document.getElementById('online-lobby-ready')?.addEventListener('click', (e)=>{
+    try{ sfxClick(); }catch(err){}
+    if(!_onlineLobby || !_onlineLobby.roomId) return;
+    const goingReady = e.currentTarget.dataset.ready !== '0';
+    if(typeof setLobbyReady === 'function') setLobbyReady(_onlineLobby.roomId, goingReady);
+  });
   document.getElementById('online-join-btn')?.addEventListener('click', onJoinRoom);
   document.getElementById('online-find-btn')?.addEventListener('click', onFindOpponent);
   document.getElementById('online-mm-cancel')?.addEventListener('click', onCancelMatchmaking);
