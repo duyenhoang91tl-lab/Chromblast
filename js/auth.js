@@ -58,23 +58,29 @@ async function _syncAccountIdentity(token){
     }
     const uid = firebase.auth().currentUser ? firebase.auth().currentUser.uid : null;
     if(typeof _onlineUid !== 'undefined') _onlineUid = uid;
-    // Đẩy tiến trình hiện có (cấp độ/XP/avatar/tên...) lên đúng players/{uid} của
-    // tài khoản vừa đăng nhập, rồi đọc lại để đối chiếu.
-    if(typeof _upsertPlayerProfile === 'function') await _upsertPlayerProfile();
+    // Đọc tiến trình đã lưu của TÀI KHOẢN (players/{uid}) trước, so sánh và giữ lại
+    // cấp độ/XP cao hơn giữa 2 bên — rồi mới đẩy kết quả cuối cùng lên server. Nếu
+    // đẩy lên trước rồi mới đọc lại (như trước đây) thì lúc đọc, server đã bị ghi
+    // đè bằng đúng dữ liệu vừa đẩy lên, so sánh không còn tác dụng gì nữa.
     if(typeof _onlineDb !== 'undefined' && _onlineDb && uid){
-      const snap = await _onlineDb.collection('players').doc(uid).get();
-      if(snap.exists){
-        const d = snap.data();
-        const curLevel = (typeof playerLevel === 'number') ? playerLevel : 1;
-        if(typeof d.level === 'number' && d.level > curLevel){
-          playerLevel = d.level;
-          playerXP = (typeof d.xp === 'number') ? d.xp : 0;
-          try{ if(typeof savePlayerXP === 'function') savePlayerXP(); }catch(e){}
-          try{ if(typeof renderPlayerXP === 'function') renderPlayerXP(); }catch(e){}
-          try{ if(typeof refreshArcadeHud === 'function') refreshArcadeHud(); }catch(e){}
+      try{
+        const snap = await _onlineDb.collection('players').doc(uid).get();
+        if(snap.exists){
+          const d = snap.data();
+          const curLevel = (typeof playerLevel === 'number') ? playerLevel : 1;
+          if(typeof d.level === 'number' && d.level > curLevel){
+            playerLevel = d.level;
+            playerXP = (typeof d.xp === 'number') ? d.xp : 0;
+            try{ if(typeof savePlayerXP === 'function') savePlayerXP(); }catch(e){}
+            try{ if(typeof renderPlayerXP === 'function') renderPlayerXP(); }catch(e){}
+            try{ if(typeof refreshArcadeHud === 'function') refreshArcadeHud(); }catch(e){}
+          }
         }
-      }
+      }catch(e){ console.warn('[auth] doc restore failed', e); }
     }
+    // Đẩy tiến trình CUỐI CÙNG (đã hợp nhất — cao hơn giữa local và tài khoản) lên
+    // đúng players/{uid} của tài khoản vừa đăng nhập.
+    if(typeof _upsertPlayerProfile === 'function') await _upsertPlayerProfile();
   }catch(e){ console.warn('[auth] _syncAccountIdentity failed', e); }
 }
 
