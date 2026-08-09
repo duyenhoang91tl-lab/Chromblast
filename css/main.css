@@ -879,6 +879,46 @@ body.tutorial-open #start-screen{
 .admin-card input, .admin-card textarea, .admin-card select {
   color: #fff;
 }
+
+/* "Đổi tên" (#player-profile-panel) — full-screen pastel trắng-hồng, đồng bộ
+   Tài khoản/Bạn bè (chính là 1 trong 7 mục mở từ Tài khoản). Chỉ đổi CSS —
+   giữ nguyên HTML/logic avatar-upload, style chữ, toggle hiển thị đã có. */
+#player-profile-panel{
+  background:linear-gradient(165deg,#ffffff 0%,#ffeaf1 45%,#ffd7e4 100%);
+  align-items:flex-start; justify-content:center; padding:0; overflow-y:auto;
+}
+#player-profile-panel .admin-card{
+  width:100%; max-width:560px; max-height:none; margin:0 auto;
+  background:transparent; border:none; box-shadow:none; border-radius:0;
+  padding:calc(env(safe-area-inset-top,0px) + 20px) 16px calc(env(safe-area-inset-bottom,0px) + 24px);
+  color:#5a3345;
+}
+#player-profile-panel .admin-title{ color:#5a3345; }
+#player-profile-panel .admin-close{ color:#7a3d5a; }
+#player-profile-panel .admin-sub{ color:rgba(90,51,69,0.62); }
+#player-profile-panel .pp-id-row,
+#player-profile-panel .pp-preview-wrap{ color:#5a3345; }
+
+/* "Điểm danh" (#daily-panel) — full-screen pastel vàng-cam ấm, khác tông với
+   Đổi tên để có chút phân biệt giữa các mục, vẫn cùng họ pastel nhạt dần. */
+#daily-panel{
+  background:linear-gradient(165deg,#fffdf0 0%,#fff2c9 45%,#ffe3a3 100%);
+  align-items:flex-start; justify-content:center; padding:0; overflow-y:auto;
+}
+#daily-panel .admin-card{
+  width:100%; max-width:560px; max-height:none; margin:0 auto;
+  background:transparent; border:none; box-shadow:none; border-radius:0;
+  padding:calc(env(safe-area-inset-top,0px) + 20px) 16px calc(env(safe-area-inset-bottom,0px) + 24px);
+  color:#5a4013;
+}
+#daily-panel .admin-title{ color:#5a4013; }
+#daily-panel .admin-close{ color:#8a6420; }
+#daily-panel .admin-sub{ color:rgba(90,64,19,0.65); }
+#daily-panel .daily-day{
+  border-color:rgba(154,110,20,0.18); background:rgba(255,255,255,0.5); color:rgba(90,64,19,0.6);
+}
+#daily-panel .daily-day.claimed{ border-color:rgba(46,160,80,0.5); background:rgba(76,175,80,0.18); color:#256029; }
+#daily-panel .daily-day.today{ border-color:#e6960f; background:rgba(255,180,20,0.22); color:#8a5600; box-shadow:0 0 10px rgba(230,150,15,0.3); }
 .admin-title {
   font-size: 17px; font-weight: 900; color:#f7c948; margin-bottom: 4px;
   display:flex; justify-content:space-between; align-items:center;
@@ -5553,7 +5593,12 @@ body:has(#secret-stage.active) .streak-dot.lit{
 
 .set-c-spin{ background:linear-gradient(180deg,#FF9F43,#E67E22); color:#2a1200; }
 
-.spin-overlay{ z-index:10030; }
+/* Bánh xe hoa lá đã có màu sắc riêng, chỉ đổi phông nền phía sau (backdrop) từ
+   tối sang pastel cam-hồng nhẹ (đồng bộ họ pastel), giữ nguyên bánh xe. */
+.spin-overlay{
+  z-index:10030;
+  background:linear-gradient(165deg,#fff4ec 0%,#ffe3d6 50%,#ffd6c4 100%);
+}
 /* Lucky Spin — khu vườn đáng yêu: màu đa dạng + dây hoa + kim lá */
 .spin-modal,
 .spin-modal-floral{
