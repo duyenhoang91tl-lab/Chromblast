@@ -46,9 +46,12 @@ function _pickUnownedSkin(list, isUnlockedFn){
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
-/** Mọi lần trừ tiền đều qua Cloud Function spendCurrency — server tự kiểm tra
- *  số dư thật, không tin client. Giống hệt cách _gpcardRedeemSpend đang dùng
- *  ở luồng mua skin trực tiếp (nếu còn) — cost: {gold:n} hoặc {diamonds:n}. */
+/** Mọi lần trừ tiền RƯƠNG VẬT PHẨM (không phải tiền tệ) đều qua Cloud Function
+ *  spendCurrency — server tự kiểm tra số dư thật, không tin client. Rương
+ *  tiền tệ (Bạc/Vàng/Kim cương) KHÔNG dùng hàm này nữa — xem openLootCrate,
+ *  chúng gọi thẳng openCurrencyCrate (functions/index.js), server tự trừ +
+ *  random + cộng thưởng trong CÙNG 1 transaction, đóng hoàn toàn lỗ hổng
+ *  "trừ qua server rồi cộng thưởng cục bộ, bị đồng bộ ghi đè mất". */
 async function _crateSpend(cost){
   if(typeof _getOnlineFunctions !== 'function') return { ok:false, reason:'offline' };
   const fns = _getOnlineFunctions();
@@ -61,12 +64,48 @@ async function _crateSpend(cost){
   }
 }
 
+/** Rương tiền tệ (Bạc/Vàng/Kim cương) — gọi thẳng Cloud Function
+ *  openCurrencyCrate: trừ giá + random + cộng thưởng trong 1 transaction duy
+ *  nhất ở server, không còn bước cộng cục bộ nào — sync ví ngay sau đó là đủ
+ *  để hiển thị đúng, không có gì để "mất". */
+async function _openCurrencyCrateServer(id, useFree){
+  if(typeof _getOnlineFunctions !== 'function') return { ok:false, reason:'offline' };
+  const fns = _getOnlineFunctions();
+  if(!fns) return { ok:false, reason:'offline' };
+  try{
+    const res = await fns.httpsCallable('openCurrencyCrate')({ crateId:id, useFree:!!useFree });
+    return { ok:true, data: res.data };
+  }catch(e){
+    return { ok:false, reason: (e && e.code) || 'error' };
+  }
+}
+
 /** Mở rương — trừ tiền (trừ khi useFree=true, đã kiểm tra hạn mức free ở nơi
  *  gọi), random phần thưởng theo đúng "kind", tự cộng vào đúng kho tương ứng.
  *  Trả về { ok, reward:{label,...} } hoặc { ok:false, reason }. */
 async function openLootCrate(id, useFree){
   const crate = getCrate(id);
   if(!crate) return { ok:false, reason:'not-found' };
+
+  const isCurrencyCrate = crate.kind === 'currency-gold' || crate.kind === 'currency-diamond';
+
+  if(isCurrencyCrate){
+    if(useFree && !crateFreeAvailable(id)) return { ok:false, reason:'free-used' };
+    const res = await _openCurrencyCrateServer(id, useFree);
+    if(!res.ok){
+      const reason = res.reason === 'failed-precondition' ? (crate.priceType === 'gold' ? 'gold' : 'diamond')
+        : res.reason === 'already-exists' ? 'free-used'
+        : res.reason;
+      return { ok:false, reason };
+    }
+    try{ if(typeof syncWalletFromServer === 'function') await syncWalletFromServer(); }catch(e){}
+    if(useFree) _markCrateFreeUsed(id);
+    const data = res.data || {};
+    const icon = data.rewardType === 'diamond' ? '💎' : '🪙';
+    const reward = { type: data.rewardType, amount: data.rewardAmount, label: icon + ' +' + data.rewardAmount };
+    try{ if(typeof logGameEvent === 'function') logGameEvent('crate_open', { crate_id:id, free:!!useFree, reward_type: reward.type }); }catch(e){}
+    return { ok:true, reward };
+  }
 
   if(useFree){
     if(!crateFreeAvailable(id)) return { ok:false, reason:'free-used' };
@@ -80,24 +119,7 @@ async function openLootCrate(id, useFree){
   let reward = null;
   const reasonText = crate.name;
 
-  // ⚠️ GIỚI HẠN ĐÃ BIẾT: 2 nhánh currency-gold/currency-diamond dưới đây cộng
-  // thưởng CỤC BỘ (grantGold/grantDiamonds) — không có Cloud Function "cộng
-  // tiền ngẫu nhiên theo rương" nào tồn tại để làm việc này an toàn ở server
-  // (khác các nhánh item-* bên dưới, vốn chỉ mở khoá cosmetic cục bộ vẫn ổn
-  // vì không có gì để đồng bộ ngược). Hệ quả: lần syncWalletFromServer() kế
-  // tiếp (mở rương khác, đăng nhập lại...) sẽ ghi đè inv.gold/diamonds bằng
-  // đúng số server đang có — KHÔNG bao gồm phần thưởng cục bộ này — coi như
-  // mất. Cần 1 Cloud Function mới (kiểu grantCrateReward, random+cộng thẳng
-  // trên server) để đóng nốt lỗ hổng này; ngoài phạm vi việc đang làm.
-  if(crate.kind === 'currency-gold'){
-    const n = _randInt(crate.min, crate.max);
-    if(typeof grantGold === 'function') grantGold(n, reasonText);
-    reward = { type:'gold', amount:n, label:'🪙 +' + n };
-  } else if(crate.kind === 'currency-diamond'){
-    const n = _randInt(crate.min, crate.max);
-    if(typeof grantDiamonds === 'function') grantDiamonds(n, reasonText);
-    reward = { type:'diamond', amount:n, label:'💎 +' + n };
-  } else if(crate.kind === 'item-brick'){
+  if(crate.kind === 'item-brick'){
     const skin = typeof BRICK_SKINS !== 'undefined' ? _pickUnownedSkin(BRICK_SKINS, isBrickSkinUnlocked) : null;
     if(skin){
       unlockBrickSkin(skin.id);
