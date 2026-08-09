@@ -265,6 +265,18 @@ function powerName(type){
   return info.nameKey;
 }
 
+/** Cộng thêm N lượt kỹ năng (fire/bubble/wind) — dùng cho rương/quà, khớp
+ *  đúng field inv.fires/bubbles/winds đã có (xem POWER_INFO ở trên). */
+function grantSkillCharge(type, n, reason){
+  const info = POWER_INFO[type];
+  n = Math.floor(Number(n) || 0);
+  if(!info || !(n > 0)) return;
+  inv[info.field] = (inv[info.field] | 0) + n;
+  saveInventory();
+  renderInventoryHud();
+  try{ if(reason) showComboFlash(0, false, info.icon + ' +' + n + (reason ? (' · ' + reason) : '')); }catch(e){}
+}
+
 function getGold(){ return Math.max(0, inv.gold|0); }
 
 function grantGold(n, reason){

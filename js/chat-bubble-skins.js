@@ -78,6 +78,7 @@
 
   g.CHAT_BUBBLE_SKINS = CHAT_BUBBLE_SKINS;
   g.isBubbleSkinUnlocked = isBubbleSkinUnlocked;
+  g.unlockBubbleSkin = unlockBubbleSkin;
   g.buyBubbleSkinWithGold = buyBubbleSkinWithGold;
   g.buyBubbleSkinWithDiamond = buyBubbleSkinWithDiamond;
 })(typeof window !== 'undefined' ? window : this);

@@ -6516,6 +6516,59 @@ body:has(#secret-stage.active) .streak-dot.lit{
 }
 .gpcard-redeem-btn.gpcard-redeem-btn-dia{ background:linear-gradient(135deg, #9c7bf0 0%, #6f5bd0 100%); }
 .gpcard-redeem-btn.disabled{ background:#e2ddf5; color:#9a8fc0; }
+
+/* Tab "Đổi quà" (#gpcard-redeem) — thay cho lưới thẻ ở trên, js/loot-crates.js
+   + js/gpcard-redeem.js — 8 rương, mua bằng vàng/kim cương hoặc mở miễn phí. */
+.gpcard-crate-grid{
+  display:grid; grid-template-columns:repeat(2, 1fr); gap:10px;
+}
+.gpcard-crate-card{
+  background:#eee9ff; border-radius:14px; padding:14px 10px;
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+  text-align:center;
+}
+.gpcard-crate-icon{ font-size:34px; }
+.gpcard-crate-name{ font-weight:800; font-size:13px; color:#3a3358; }
+.gpcard-crate-buy-btn{
+  width:100%; border:none; border-radius:999px; padding:8px 6px;
+  background:linear-gradient(135deg,#a7b8f0,#c9b6f0); color:#fff;
+  font-weight:900; font-size:12.5px; cursor:pointer;
+}
+.gpcard-crate-free-btn{
+  width:100%; border:none; border-radius:999px; padding:7px 6px;
+  background:linear-gradient(135deg,#7fe3a0,#5bcf8a); color:#0f3d22;
+  font-weight:900; font-size:12px; cursor:pointer;
+}
+.gpcard-crate-free-btn.disabled,
+.gpcard-crate-free-btn:disabled{ background:#ddd8ee; color:#9a8fc0; cursor:default; }
+
+/* Hiệu ứng tên MUA/MỞ RƯƠNG (js/name-effect-skins.js) — độc lập với rank-fx
+   (không tự động theo hạng, người chơi tự chọn sau khi sở hữu). Áp qua
+   data-name-fx="<id>" trên phần tử hiển thị tên. */
+[data-name-fx="mint"]{ color:#7fe3d0; font-weight:700; }
+[data-name-fx="coral"]{ color:#ff9e80; font-weight:700; }
+[data-name-fx="sunset"]{ color:#ffb04a; font-weight:800; text-shadow:0 0 4px rgba(255,150,60,0.4); }
+[data-name-fx="ocean"]{ color:#5bc8ff; font-weight:800; text-shadow:0 0 4px rgba(70,170,255,0.4); }
+[data-name-fx="violet"]{ color:#c58cff; font-weight:800; text-shadow:0 0 5px rgba(180,130,255,0.5); }
+[data-name-fx="gold"]{ color:#ffd54a; font-weight:900; text-shadow:0 0 6px rgba(255,213,74,0.55); }
+[data-name-fx="aurora"]{
+  font-weight:800; background:linear-gradient(90deg,#7fe3d0,#a7b8f0,#c9b6f0,#7fe3d0);
+  background-size:300% 100%; -webkit-background-clip:text; background-clip:text; color:transparent;
+  animation:rankFxShift 3s linear infinite;
+}
+[data-name-fx="starlight"]{
+  font-weight:900; background:linear-gradient(90deg,#fff6d8,#ffd54a,#fff6d8);
+  background-size:300% 100%; -webkit-background-clip:text; background-clip:text; color:transparent;
+  text-shadow:0 0 8px rgba(255,213,74,0.6);
+  animation:rankFxShift 2.2s linear infinite, rankFxPulse 1.6s ease-in-out infinite;
+}
+[data-name-fx="legend"]{
+  font-weight:900; letter-spacing:.4px;
+  background:linear-gradient(90deg,#ff3b30,#ff9500,#ffd60a,#ff3b30);
+  background-size:300% 100%; -webkit-background-clip:text; background-clip:text; color:transparent;
+  text-shadow:0 0 12px rgba(255,149,0,0.7), 0 0 4px rgba(255,59,48,0.5);
+  animation:rankFxShift 2s linear infinite, rankFxPulse 1.6s ease-in-out infinite;
+}
 /* ══════════════════════════════════════════
    TÀI KHOẢN (account-hub) — điểm vào duy nhất hồ sơ/cài đặt/xã hội.
    Nền pastel tím/xanh dương nhạt, card bo góc lớn — cùng gia đình màu với các
