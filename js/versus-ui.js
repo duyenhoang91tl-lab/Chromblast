@@ -777,8 +777,15 @@ document.addEventListener('pointercancel',ev=>{
 
 function _vsOfferCards(P){
   if(_vs && _vs.online && P.idx!==0) return;
-  const picks=[]; const pool=VS_OBSTACLES.slice();
-  while(picks.length<3&&pool.length) picks.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]);
+  // P.idx===0 luôn là "phía mình" (dù Cùng máy hay Online) → dùng đúng bộ thẻ
+  // đã mở khoá của mình. P.idx===1 ở chế độ Cùng máy là AI — AI chỉ rút thẻ
+  // miễn phí, không "thừa hưởng" thẻ mình đã bỏ tiền mua.
+  const isMySide = (P.idx===0);
+  const pool = VS_OBSTACLES.filter(function(ob){
+    return ob.free || (isMySide && typeof isVsCardUnlocked==='function' && isVsCardUnlocked(ob.id));
+  });
+  const picks=[]; const poolCopy=pool.slice();
+  while(picks.length<3&&poolCopy.length) picks.push(poolCopy.splice(Math.floor(Math.random()*poolCopy.length),1)[0]);
   P.el.cards.innerHTML='<div class="vs-cards-title">'+t('vsPickCard')+'</div>'+
     '<div class="vs-cards-row"></div>';
   const row=P.el.cards.querySelector('.vs-cards-row');

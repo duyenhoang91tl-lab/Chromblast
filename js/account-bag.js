@@ -10,8 +10,10 @@
    Nguồn dữ liệu từng hạng mục (dùng nguyên, không tạo field trùng lặp):
    - Số dư: syncWalletFromServer() (js/online-services.js) rồi đọc qua
      getGold()/getDiamonds() (js/inventory.js) và Inventory.hearts.
-   - Skill: inv.fires/inv.bubbles/inv.winds qua POWER_INFO (js/inventory.js) — đúng
-     3 loại skill dùng trong ván (lửa/bong bóng/gió), không phải khái niệm khác.
+   - Skill: VS_OBSTACLES + isVsCardUnlocked (js/versus.js) — bộ thẻ chướng ngại
+     rút được khi chơi Đấu 1-1 (Versus) rồi ném sang bàn đối thủ, KHÔNG phải
+     fires/bubbles/winds của chế độ 1 người chơi (nhầm lẫn ở bản trước, đã sửa).
+     3 thẻ mặc định miễn phí, số còn lại mua mở khoá ở Shop (tab "Thẻ đấu").
    - Nền bàn / Mẫu gạch: BOARD_SKINS/BRICK_SKINS + isXSkinUnlocked/getActiveXSkin/
      applyXSkin (js/map-boards.js, js/brick-skins.js) — như bản cũ.
    - Bong bóng chat: CHAT_BUBBLE_SKINS + isBubbleSkinUnlocked (js/chat-bubble-skins.js),
@@ -30,7 +32,7 @@
 
 const ACBAG_BRICK_PREVIEW_COLORS = ["#E24B4A", "#378ADD", "#1D9E75", "#EF9F27"];
 const ACBAG_CATEGORIES = ['skills', 'boards', 'bricks', 'bubbles', 'maps', 'chests', 'fonts', 'nametags'];
-const ACBAG_CAT_ICON = { skills:'🔥', boards:'🖼️', bricks:'🧱', bubbles:'💬', maps:'🗺️', chests:'📦', fonts:'🔤', nametags:'🏷️' };
+const ACBAG_CAT_ICON = { skills:'⚔️', boards:'🖼️', bricks:'🧱', bubbles:'💬', maps:'🗺️', chests:'📦', fonts:'🔤', nametags:'🏷️' };
 const ACBAG_CAT_KEY  = { skills:'acbagCatSkills', boards:'acbagCatBoards', bricks:'acbagCatBricks', bubbles:'acbagCatBubbles', maps:'acbagCatMaps', chests:'acbagCatChests', fonts:'acbagCatFonts', nametags:'acbagCatNameTags' };
 // 3 hạng mục dưới đây CHƯA có hệ thống dữ liệu thật trong dự án (không có field/
 // list nào lưu rương/mẫu chữ/mẫu tên hiển thị đã sở hữu) — đang được xây ở luồng
@@ -48,8 +50,9 @@ function _acbagEsc(s){ return (typeof escapeHtml === 'function') ? escapeHtml(s)
 function _acbagCatCount(cat){
   if(ACBAG_CAT_SOON[cat]) return { owned:null, total:null, soon:true };
   if(cat === 'skills'){
-    const n = (typeof inv === 'object' && inv) ? ((inv.fires|0)+(inv.bubbles|0)+(inv.winds|0)) : 0;
-    return { owned:n, total:null }; // skill là số lượng dùng dần, không có "tổng" cố định
+    const list = (typeof VS_OBSTACLES !== 'undefined') ? VS_OBSTACLES : [];
+    const owned = list.filter(function(ob){ return typeof isVsCardUnlocked==='function' && isVsCardUnlocked(ob.id); }).length;
+    return { owned, total:list.length };
   }
   if(cat === 'boards'){
     const list = (typeof BOARD_SKINS !== 'undefined') ? BOARD_SKINS : [];
@@ -176,24 +179,63 @@ function _acbagSkinCardEl(item, kind){
   return card;
 }
 
-/* ── Skill: chỉ là số lượng đang có (lửa/bong bóng/gió), không khoá/mở/dùng ── */
+/* ── Skill: đúng nghĩa là bộ thẻ chướng ngại dùng khi chơi Versus (Đấu 1-1) —
+   rút được trong trận rồi ném sang bàn đối thủ. 3 thẻ mặc định miễn phí (xem
+   VS_OBSTACLES.free trong js/versus.js), số còn lại phải mua mở khoá ở Shop
+   (tab "Thẻ đấu") mới xuất hiện trong bộ bài rút của mình. KHÔNG liên quan tới
+   fires/bubbles/winds (đó là vật phẩm dùng trong chế độ 1 người chơi, đã bỏ
+   nhầm ở đây trước đó). ── */
 function _acbagRenderSkills(grid){
-  grid.className = 'acach-list';
-  const rows = [
-    ['fire', (typeof inv==='object'&&inv)?(inv.fires|0):0],
-    ['bubble', (typeof inv==='object'&&inv)?(inv.bubbles|0):0],
-    ['wind', (typeof inv==='object'&&inv)?(inv.winds|0):0],
-  ];
-  grid.innerHTML = rows.map(([type,n])=>{
-    const info = (typeof POWER_INFO!=='undefined') ? POWER_INFO[type] : null;
-    const icon = info ? info.icon : '🔥';
-    const label = (typeof powerName==='function') ? powerName(type) : type;
-    return '<div class="acach-card">'
-      + '<div class="acach-card-icon">'+icon+'</div>'
-      + '<div class="acach-card-text"><div class="acach-card-label">'+_acbagEsc(label)+'</div></div>'
-      + '<div class="acach-card-value">'+n+'</div>'
-      + '</div>';
-  }).join('');
+  grid.className = 'acbag-grid';
+  grid.innerHTML = '';
+  const list = (typeof VS_OBSTACLES !== 'undefined') ? VS_OBSTACLES : [];
+  list.forEach(function(ob){
+    const unlocked = typeof isVsCardUnlocked==='function' && isVsCardUnlocked(ob.id);
+    const card = document.createElement('div');
+    card.className = 'acbag-card' + (unlocked ? '' : ' locked');
+
+    const previewWrap = document.createElement('div');
+    previewWrap.className = 'acbag-card-preview';
+    const emo = document.createElement('div');
+    emo.className = 'acbag-map-emo';
+    emo.textContent = ob.emoji;
+    previewWrap.appendChild(emo);
+    if(!unlocked){
+      const lock = document.createElement('div');
+      lock.className = 'acbag-lock';
+      lock.textContent = '🔒';
+      previewWrap.appendChild(lock);
+    }
+    card.appendChild(previewWrap);
+
+    const name = document.createElement('div');
+    name.className = 'acbag-card-name';
+    name.textContent = (typeof MECH_NAME==='function' ? MECH_NAME(ob.nameIdx) : ob.id).replace(/^\S+\s/, '');
+    card.appendChild(name);
+
+    if(ob.free){
+      const check = document.createElement('div');
+      check.className = 'acbag-check';
+      check.textContent = _acbagT('acbagVsCardFree');
+      card.appendChild(check);
+    }else if(unlocked){
+      const check = document.createElement('div');
+      check.className = 'acbag-check';
+      check.textContent = '✓ ' + _acbagT('acbagInUse');
+      card.appendChild(check);
+    }else{
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'acbag-use-btn';
+      btn.textContent = _acbagT('acbagVsCardBuy');
+      btn.addEventListener('click', ()=>{
+        try{ sfxClick(); }catch(e){}
+        if(typeof openShop==='function') openShop('vscards');
+      });
+      card.appendChild(btn);
+    }
+    grid.appendChild(card);
+  });
 }
 
 /* Kiểm tra map đã qua chưa — bản port y hệt isHiddenMapCleared (js/brick-skins.js,

@@ -36,19 +36,71 @@ const VS_COLORS = COLORS.slice(0, 5);
 const VS_GROUP_MIN = 8;        // cụm cùng màu >= 8 ô mới nổ (5 quá dễ — vừa đặt vào đã phá)
 
 const VS_CARD_EVERY = 3;       // cứ 3 lần ăn (không cần liên tiếp) → rút thẻ
-// Bộ chướng ngại: id ↔ chỉ số tên trong MECH_NAME (i18n sẵn có)
-
+// Bộ chướng ngại: id ↔ chỉ số tên trong MECH_NAME (i18n sẵn có). "free:true" là
+// thẻ mặc định ai cũng rút được ngay; còn lại phải mua mở khoá trong Shop (tab
+// "vscards") mới xuất hiện trong bộ bài rút của MÌNH — không ảnh hưởng gì tới
+// việc mở khoá cơ chế đó ở chế độ 1 người chơi (2 hệ độc lập, dùng chung emoji/
+// tên hiển thị qua MECH_NAME nhưng khác nhau về "sở hữu").
 const VS_OBSTACLES = [
-  { id:'mountain', nameIdx:2,  emoji:'⛰️' },
-  { id:'tornado',  nameIdx:7,  emoji:'🌪️' },
-  { id:'ice',      nameIdx:4,  emoji:'🧊' },
-  { id:'fog',      nameIdx:5,  emoji:'🌫️' },
-  { id:'squirrel', nameIdx:3,  emoji:'🐿️' },
-  { id:'bomb',     nameIdx:6,  emoji:'💣' },
-  { id:'blackhole',nameIdx:12, emoji:'🕳️' },
-  { id:'wall',     nameIdx:15, emoji:'🧱' },
-  { id:'lightning',nameIdx:16, emoji:'⚡' },
+  { id:'mountain', nameIdx:2,  emoji:'⛰️', free:false, price:80,  diaPrice:0 },
+  { id:'tornado',  nameIdx:7,  emoji:'🌪️', free:true },
+  { id:'ice',      nameIdx:4,  emoji:'🧊', free:false, price:80,  diaPrice:0 },
+  { id:'fog',      nameIdx:5,  emoji:'🌫️', free:false, price:60,  diaPrice:0 },
+  { id:'squirrel', nameIdx:3,  emoji:'🐿️', free:true },
+  { id:'bomb',     nameIdx:6,  emoji:'💣', free:true },
+  { id:'blackhole',nameIdx:12, emoji:'🕳️', free:false, price:0,   diaPrice:15 },
+  { id:'wall',     nameIdx:15, emoji:'🧱', free:false, price:100, diaPrice:0 },
+  { id:'lightning',nameIdx:16, emoji:'⚡', free:false, price:0,   diaPrice:15 },
 ];
+
+const VS_CARD_UNLOCK_KEY = 'unlockedVsCards';
+
+/** Thẻ này đã dùng được chưa (miễn phí sẵn hoặc đã mua mở khoá)? */
+function isVsCardUnlocked(id){
+  const ob = VS_OBSTACLES.find(o=>o.id===id);
+  if(!ob) return false;
+  if(ob.free) return true;
+  const p = (typeof getPlayerProfile==='function') ? getPlayerProfile() : {};
+  const list = Array.isArray(p[VS_CARD_UNLOCK_KEY]) ? p[VS_CARD_UNLOCK_KEY] : [];
+  return list.indexOf(id) >= 0;
+}
+function _vsUnlockCard(id){
+  const p = (typeof getPlayerProfile==='function') ? getPlayerProfile() : {};
+  const list = Array.isArray(p[VS_CARD_UNLOCK_KEY]) ? p[VS_CARD_UNLOCK_KEY].slice() : [];
+  if(list.indexOf(id) < 0){
+    list.push(id);
+    if(typeof savePlayerProfile==='function') savePlayerProfile({ [VS_CARD_UNLOCK_KEY]: list });
+  }
+}
+/** Trừ tiền qua Cloud Function spendCurrency dùng chung — giống hệt
+    _bubbleSpendCurrency (js/chat-bubble-skins.js), server xác thực số dư. */
+async function _vsCardSpendCurrency(cost){
+  if(typeof _getOnlineFunctions !== 'function') return { ok:false, reason:'offline' };
+  const fns = _getOnlineFunctions();
+  if(!fns) return { ok:false, reason:'offline' };
+  try{
+    await fns.httpsCallable('spendCurrency')({ cost });
+    return { ok:true };
+  }catch(e){
+    return { ok:false, reason: (e && e.message) || 'error' };
+  }
+}
+async function buyVsCardWithGold(id, price){
+  if(isVsCardUnlocked(id)) return { ok:false, reason:'owned' };
+  const r = await _vsCardSpendCurrency({ gold: price });
+  if(!r.ok) return { ok:false, reason: r.reason === 'offline' ? 'offline' : 'gold' };
+  _vsUnlockCard(id);
+  try{ if(typeof syncWalletFromServer === 'function') await syncWalletFromServer(); }catch(e){}
+  return { ok:true };
+}
+async function buyVsCardWithDiamond(id, diaCost){
+  if(isVsCardUnlocked(id)) return { ok:false, reason:'owned' };
+  const r = await _vsCardSpendCurrency({ diamonds: diaCost });
+  if(!r.ok) return { ok:false, reason: r.reason === 'offline' ? 'offline' : 'diamond' };
+  _vsUnlockCard(id);
+  try{ if(typeof syncWalletFromServer === 'function') await syncWalletFromServer(); }catch(e){}
+  return { ok:true };
+}
 
 let versusMode = false;
 

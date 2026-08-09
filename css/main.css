@@ -5983,6 +5983,11 @@ body:has(#secret-stage.active) .streak-dot.lit{
   50% { box-shadow:0 0 14px rgba(180,150,255,0.35); }
 }
 .shop-item-preview{ display:flex; justify-content:center; margin:0 auto 6px; }
+.shop-vscard-preview{ font-size:34px; line-height:1; height:44px; align-items:center; }
+.shop-vscard-note{
+  font-size:12px; font-weight:700; color:rgba(43,35,64,0.6); text-align:center;
+  padding:0 12px 10px; line-height:1.5;
+}
 .shop-board-preview .board-swatch{ width:100%; max-width:120px; height:56px; border-radius:10px; }
 .shop-brick-preview{
   display:flex; gap:3px; justify-content:center; flex-wrap:nowrap;
