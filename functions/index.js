@@ -509,6 +509,142 @@ function periodRewardForRank(kind, rank) {
  * nhờ doc players/{uid}/claims/{periodId} tạo bằng transaction (rules đã khoá
  * claims: client không tự tạo/xoá được để nhận lại). Hiện chỉ hỗ trợ scope 'world'.
  */
+/**
+ * Nhận thưởng "Thẻ trò chơi" (tab Hành trình + tab Nhiệm vụ) — CHỈ phần vàng/kim
+ * cương/tim (3 trường ví thật players/{uid}.gold|diamonds|hearts). Sức mạnh (power)
+ * và XP vẫn cộng cục bộ ở client như cũ (không phải tiền tệ, không cần khoá server).
+ *
+ * Vì sao cần hàm này: trước đây gpcard-rewards.js/quests.js gọi thẳng
+ * grantGold/grantDiamonds/grantHearts cục bộ — số tiền chỉ nằm ở localStorage,
+ * KHÔNG được ghi vào players/{uid} nên: (1) biến mất sau lần syncWalletFromServer()
+ * kế tiếp, (2) không tiêu được ở tab "Đi đổi" vì spendCurrency kiểm tra đúng số dư
+ * thật trên server. Hàm này khắc phục bằng cách: server tự tính lại đúng số tiền
+ * theo bảng thưởng cố định bên dưới (KHÔNG tin số tiền client gửi lên) rồi cộng
+ * thẳng vào players/{uid}, dùng ledger players/{uid}/claims/{claimId} để chống
+ * nhận lại nhiều lần (giống hệt claimPeriodReward ở trên).
+ *
+ * ⚠️ Bảng thưởng dưới đây PHẢI khớp với 2 nơi client:
+ *   - Hành trình: js/gpcard-rewards.js hàm _gpcardJourneyRewardFor (chỉ phần
+ *     gold/diamond/hearts — power/xp không nằm ở đây).
+ *   - Nhiệm vụ: js/quests.js QUEST_DEFS (trường reward.gold/reward.hearts).
+ *   Sửa 1 bên nhớ sửa cả 2 bên, không thì UI hiện 1 số nhưng ví thật nhận số khác.
+ *
+ * data: { kind: 'journey', tier, track: 'free'|'premium' }
+ *    hoặc { kind: 'quest', period: 'day'|'week'|'month', id, periodKey }
+ *       periodKey: chuỗi định danh chu kỳ hiện tại (vd '2026-08-09' cho day,
+ *       do CLIENT tự tính bằng đúng logic todayStr()/weekBounds()/monthBounds()
+ *       đã có ở js/quests.js) — ghép vào claimId nên nhiệm vụ tự "mở lại" được
+ *       ở chu kỳ mới mà không cần dọn ledger cũ.
+ */
+const GPCARD_JOURNEY_TOTAL_TIERS = 21; // khớp UNLOCK_STAGE_ORDER.length (js/progression.js) hiện tại
+
+function journeyWalletReward(tierNum, track) {
+  const big = (tierNum % 5 === 0);
+  const last = (tierNum === GPCARD_JOURNEY_TOTAL_TIERS);
+  const cyclePos = (tierNum - 1) % 4;
+  if (track === 'free') {
+    if (last) return { gold: 300, diamonds: 20, hearts: 0 };
+    if (big) return { gold: 0, diamonds: 4 + Math.floor(tierNum / 5) * 2, hearts: 0 };
+    if (cyclePos === 0) return { gold: 30 + tierNum * 4, diamonds: 0, hearts: 0 };
+    if (cyclePos === 1) return { gold: 0, diamonds: 0, hearts: 1 };
+    return { gold: 0, diamonds: 0, hearts: 0 }; // cyclePos 2/3 = power/xp, không thuộc ví
+  }
+  // premium — hiện CHƯA có gói mua thật nào gắn với việc mở khoá nhánh này
+  // (xem js/gpcard-rewards.js: hasGamePassPremium chưa tồn tại) nên nhánh này
+  // chỉ có tác dụng khi tính năng đó được bật sau này, và requirePremium bên
+  // dưới sẽ luôn từ chối cho tới lúc đó.
+  if (last) return { gold: 800, diamonds: 60, hearts: 3 };
+  if (big) return { gold: 150 + tierNum * 8, diamonds: 12 + Math.floor(tierNum / 5) * 4, hearts: 0 };
+  if (cyclePos === 0) return { gold: 100 + tierNum * 10, diamonds: 0, hearts: 0 };
+  if (cyclePos === 1) return { gold: 0, diamonds: 0, hearts: 2 };
+  if (cyclePos === 3) return { gold: 0, diamonds: 3 + Math.floor(tierNum / 3), hearts: 0 };
+  return { gold: 0, diamonds: 0, hearts: 0 }; // cyclePos 2 = power
+}
+
+// Chỉ phần gold/hearts (quests.js không có nhiệm vụ nào thưởng kim cương).
+const GPCARD_QUEST_WALLET_REWARDS = {
+  day: {
+    checkin: { gold: 0, hearts: 0 },
+    play1: { gold: 1, hearts: 0 },
+    clear3: { gold: 1, hearts: 0 },
+    score300: { gold: 1, hearts: 0 },
+    spin1: { gold: 1, hearts: 0 }
+  },
+  week: {
+    play5: { gold: 3, hearts: 1 },
+    clear30: { gold: 4, hearts: 1 },
+    login3: { gold: 3, hearts: 1 },
+    combo5: { gold: 3, hearts: 0 }
+  },
+  month: {
+    login15: { gold: 10, hearts: 2 },
+    play20: { gold: 8, hearts: 2 },
+    clear100: { gold: 12, hearts: 2 },
+    combo8: { gold: 6, hearts: 1 }
+  }
+};
+
+exports.claimGpcardReward = onCall({ region: 'asia-southeast1' }, async (request) => {
+  const uid = request.auth && request.auth.uid;
+  if (!uid) throw new HttpsError('unauthenticated', 'Cần đăng nhập.');
+  const data = request.data || {};
+  const kind = data.kind;
+
+  let claimId, reward;
+  if (kind === 'journey') {
+    const tier = Math.floor(Number(data.tier));
+    const track = data.track;
+    if (!(tier >= 1 && tier <= GPCARD_JOURNEY_TOTAL_TIERS) || (track !== 'free' && track !== 'premium')) {
+      throw new HttpsError('invalid-argument', 'Mốc hành trình không hợp lệ.');
+    }
+    claimId = 'journey_' + track + '_' + tier;
+    reward = journeyWalletReward(tier, track);
+  } else if (kind === 'quest') {
+    const period = data.period;
+    const id = String(data.id || '');
+    const periodKey = String(data.periodKey || '').slice(0, 20);
+    if (!['day', 'week', 'month'].includes(period) || !periodKey) {
+      throw new HttpsError('invalid-argument', 'Nhiệm vụ không hợp lệ.');
+    }
+    const table = GPCARD_QUEST_WALLET_REWARDS[period] || {};
+    if (!Object.prototype.hasOwnProperty.call(table, id)) {
+      throw new HttpsError('invalid-argument', 'Nhiệm vụ không tồn tại.');
+    }
+    claimId = 'quest_' + period + '_' + id + '_' + periodKey;
+    reward = table[id];
+  } else {
+    throw new HttpsError('invalid-argument', 'Loại thưởng không hợp lệ.');
+  }
+
+  if (!reward || ((reward.gold || 0) <= 0 && (reward.diamonds || 0) <= 0 && (reward.hearts || 0) <= 0)) {
+    // Mốc/nhiệm vụ hợp lệ nhưng không có phần ví (vd chỉ có power/xp) — không
+    // cần ghi ledger, trả về 0 để client biết không phải gọi grantGold gì thêm.
+    return { gold: 0, diamonds: 0, hearts: 0 };
+  }
+
+  const claimRef = db.collection('players').doc(uid).collection('claims').doc(claimId);
+  const playerRef = db.collection('players').doc(uid);
+  return db.runTransaction(async (tx) => {
+    const claimSnap = await tx.get(claimRef);
+    if (claimSnap.exists) throw new HttpsError('already-exists', 'Đã nhận thưởng này rồi.');
+    // Tim bị chặn trần MAX_HEARTS (khớp grantHearts cục bộ js/inventory.js) — vàng/kim
+    // cương thì cộng thoải mái, không có trần.
+    const playerSnap = await tx.get(playerRef);
+    const w = walletOf(playerSnap.exists ? playerSnap.data() : {});
+    const heartsGain = Math.max(0, Math.min(reward.hearts || 0, MAX_HEARTS - w.hearts));
+    tx.set(claimRef, {
+      kind, gold: reward.gold || 0, diamonds: reward.diamonds || 0, hearts: heartsGain,
+      claimedAt: FieldValue.serverTimestamp()
+    });
+    tx.set(playerRef, {
+      gold: FieldValue.increment(reward.gold || 0),
+      diamonds: FieldValue.increment(reward.diamonds || 0),
+      hearts: FieldValue.increment(heartsGain)
+    }, { merge: true });
+    return { gold: reward.gold || 0, diamonds: reward.diamonds || 0, hearts: heartsGain };
+  });
+});
+
 exports.claimPeriodReward = onCall({ region: 'asia-southeast1' }, async (request) => {
   const uid = request.auth && request.auth.uid;
   if (!uid) throw new HttpsError('unauthenticated', 'Cần đăng nhập.');
