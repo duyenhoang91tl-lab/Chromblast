@@ -3,7 +3,7 @@
 // phải sang. Nội dung bên trong mỗi tab (#gpcard-rewards/quests/redeem/
 // leaderboard) do các phần việc riêng đổ vào — file này KHÔNG render nội dung đó.
 
-const GPCARD_TABS = ['rewards', 'quests', 'redeem', 'leaderboard'];
+const GPCARD_TABS = ['leaderboard'];
 
 function _gpcardRenderHeader(){
   const lvEl = document.getElementById('gpcard-lv');

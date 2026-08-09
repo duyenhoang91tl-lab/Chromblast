@@ -1236,7 +1236,7 @@ function MILESTONE_MSG(tier){
     dailyFlash:'🎁 +{0} XP · 🪙 +1 · ❤️ +{2} (ngày {1}/7)',
     dailyGold:'Điểm danh', dailyHeart:'Điểm danh',
     lbTabPeriod:'🧨 Blast', lbTabFriends:'🤝 Bạn bè', lbTabVersus:'⚔️ Versus', lbSubVersus:'BXH Đấu 1-1 — danh hiệu, tỷ lệ thắng/thua/hòa.', vsLbEmpty:'Chưa có dữ liệu',
-    gpcardUpgrade:'Nâng cấp', gpcardTabRewards:'Hành trình', gpcardTabQuests:'Nhiệm vụ', gpcardTabRedeem:'Đổi quà', gpcardTabLeaderboard:'Bảng xếp hạng',
+    gpcardUpgrade:'Nâng cấp', gpcardTabRewards:'Hành trình', gpcardTabRedeem:'Đổi quà', gpcardTabLeaderboard:'Bảng xếp hạng',
     lbScopeWorld:'🌍 Thế giới', lbScopeContinent:'🗺️ Châu lục', lbScopeCountry:'🏳️ Đất nước', lbScopeFriends:'🤝 Bạn bè',
     lbSubFriends:'BXH bạn bè (điểm cao nhất)', lbRegion:'Quốc gia của bạn',
     lbRewardTitle:'Quà top (kỳ trước)', lbPrevRank:'Hạng kỳ trước', lbPrevNoRank:'Kỳ trước chưa vào top',
@@ -1296,7 +1296,7 @@ function MILESTONE_MSG(tier){
     dailyFlash:'🎁 +{0} XP · 🪙 +1 · ❤️ +{2} (day {1}/7)',
     dailyGold:'Check-in', dailyHeart:'Check-in',
     lbTabPeriod:'🧨 Blast', lbTabFriends:'🤝 Friends', lbTabVersus:'⚔️ Versus', lbSubVersus:'Versus leaderboard — titles, win/loss/draw rates.', vsLbEmpty:'No data yet',
-    gpcardUpgrade:'Upgrade', gpcardTabRewards:'Journey', gpcardTabQuests:'Quests', gpcardTabRedeem:'Redeem', gpcardTabLeaderboard:'Leaderboard',
+    gpcardUpgrade:'Upgrade', gpcardTabRewards:'Journey', gpcardTabRedeem:'Redeem', gpcardTabLeaderboard:'Leaderboard',
     lbScopeWorld:'🌍 World', lbScopeContinent:'🗺️ Continent', lbScopeCountry:'🏳️ Country', lbScopeFriends:'🤝 Friends',
     lbSubFriends:'Friends leaderboard (best score)', lbRegion:'Your country',
     lbRewardTitle:'Top rewards (previous period)', lbPrevRank:'Previous rank', lbPrevNoRank:'Not ranked last period',
@@ -1767,9 +1767,7 @@ function MILESTONE_MSG(tier){
   const fill = {
     vi:{
       gpcardUpgrade:'Nâng cấp',
-      gpcardLevelPrefix:'Lv.',
       gpcardTabRewards:'Hành trình',
-      gpcardTabQuests:'Nhiệm vụ',
       gpcardTabRedeem:'Đổi quà',
       gpcardTabLeaderboard:'Bảng xếp hạng',
       gpcardQuestGo:'Đi ngay',
@@ -1786,9 +1784,7 @@ function MILESTONE_MSG(tier){
     },
     en:{
       gpcardUpgrade:'Upgrade',
-      gpcardLevelPrefix:'Lv.',
       gpcardTabRewards:'Journey',
-      gpcardTabQuests:'Quests',
       gpcardTabRedeem:'Redeem',
       gpcardTabLeaderboard:'Leaderboard',
       gpcardQuestGo:'Play now',
@@ -1805,9 +1801,7 @@ function MILESTONE_MSG(tier){
     },
     ko:{
       gpcardUpgrade:'업그레이드',
-      gpcardLevelPrefix:'Lv.',
       gpcardTabRewards:'여정',
-      gpcardTabQuests:'퀘스트',
       gpcardTabRedeem:'교환',
       gpcardTabLeaderboard:'순위표',
       gpcardQuestGo:'지금 하기',
@@ -1824,9 +1818,7 @@ function MILESTONE_MSG(tier){
     },
     ja:{
       gpcardUpgrade:'アップグレード',
-      gpcardLevelPrefix:'Lv.',
       gpcardTabRewards:'旅',
-      gpcardTabQuests:'クエスト',
       gpcardTabRedeem:'交換',
       gpcardTabLeaderboard:'ランキング',
       gpcardQuestGo:'今すぐ',
@@ -1843,9 +1835,7 @@ function MILESTONE_MSG(tier){
     },
     zh:{
       gpcardUpgrade:'升级',
-      gpcardLevelPrefix:'Lv.',
       gpcardTabRewards:'旅程',
-      gpcardTabQuests:'任务',
       gpcardTabRedeem:'兑换',
       gpcardTabLeaderboard:'排行榜',
       gpcardQuestGo:'立即前往',
@@ -1862,9 +1852,7 @@ function MILESTONE_MSG(tier){
     },
     es:{
       gpcardUpgrade:'Mejorar',
-      gpcardLevelPrefix:'Nv.',
       gpcardTabRewards:'Viaje',
-      gpcardTabQuests:'Misiones',
       gpcardTabRedeem:'Canjear',
       gpcardTabLeaderboard:'Clasificación',
       gpcardQuestGo:'Jugar ahora',

@@ -532,11 +532,10 @@
       "leaderboard-panel",
       "settings-panel",
       "settings-more-panel",
-      "gpcard-sub-rewards",
-      "gpcard-sub-quests",
-      "gpcard-sub-redeem",
       "gpcard-sub-leaderboard",
       "gpcard-panel",
+      "gpcard-rewards-screen",
+      "gpcard-redeem-screen",
     ].forEach(function (id) {
       document.getElementById(id)?.classList.remove("show");
     });
@@ -599,16 +598,14 @@
   }
 
   function initQuestsUI() {
-    // Nút "Nhiệm vụ" trong Menu giờ mở đúng tab Nhiệm vụ của Thẻ trò chơi —
-    // giống hệt nút "Nhiệm vụ" trong Tài khoản (xem js/account-hub.js:
-    // acchub-btn-quests) — thay vì mở màn quests-screen cũ riêng biệt.
+    // Nút "Nhiệm vụ" trong Menu mở thẳng màn Nhiệm vụ riêng này — Thẻ trò chơi
+    // không còn tab Nhiệm vụ nữa (đã bỏ, dùng lại đúng màn này cho cả 2 lối vào).
     document.getElementById("set-btn-quests")?.addEventListener("click", function () {
       try {
         if (typeof sfxClick === "function") sfxClick();
       } catch (e) {}
       document.getElementById('settings-panel')?.classList.remove('show');
-      if (typeof openGpcardPanel === "function") openGpcardPanel('quests');
-      else openQuestsScreen();
+      openQuestsScreen();
     });
     document.getElementById("quests-close-btn")?.addEventListener("click", function () {
       try {

@@ -248,12 +248,27 @@ async function _gpcardJourneyClaimAll(){
   renderGpcardRewards();
 }
 
-// Nạp nội dung mỗi lần bấm tab "Hành trình" — không sửa js/gpcard.js, chỉ gắn
-// thêm 1 listener độc lập lên đúng nút tab đã có sẵn trong khung sườn.
-(function bindGpcardRewardsTab(){
+// Trước đây là tab "Hành trình" trong Thẻ trò chơi, giờ tách thành màn hình
+// riêng vào thẳng từ menu chính (set-btn-journey) — dùng lại nguyên nội dung/
+// dữ liệu, chỉ đổi nơi mở.
+function openGpcardRewardsScreen(){
+  try{ if(typeof sfxClick === 'function') sfxClick(); }catch(e){}
+  renderGpcardRewards();
+  document.getElementById('gpcard-rewards-screen')?.classList.add('show');
+}
+function closeGpcardRewardsScreen(){
+  document.getElementById('gpcard-rewards-screen')?.classList.remove('show');
+}
+(function bindGpcardRewardsScreen(){
   function bind(){
-    const tabBtn = document.querySelector('.gpcard-tab[data-gpcard-tab="rewards"]');
-    if(tabBtn) tabBtn.addEventListener('click', renderGpcardRewards);
+    document.getElementById('set-btn-journey')?.addEventListener('click', ()=>{
+      document.getElementById('settings-panel')?.classList.remove('show');
+      openGpcardRewardsScreen();
+    });
+    document.getElementById('gpcard-rewards-screen-back')?.addEventListener('click', ()=>{
+      try{ if(typeof sfxClick === 'function') sfxClick(); }catch(e){}
+      closeGpcardRewardsScreen();
+    });
   }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
   else bind();
