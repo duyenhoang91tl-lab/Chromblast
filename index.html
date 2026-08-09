@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>ChromaBlast</title>
-<link rel="stylesheet" href="css/main.css?v=20260808i">
+<link rel="stylesheet" href="css/main.css?v=20260808j">
 <link rel="stylesheet" href="css/saga-map.css?v=20260801b">
 <link rel="stylesheet" href="css/sky-atmosphere.css?v=20260801b">
 <link rel="stylesheet" href="css/nick-fonts.css?v=20260801b">
@@ -1234,7 +1234,20 @@
         <div class="online-wager-block">
           <button type="button" id="caro-wager-toggle" class="online-wager-toggle" data-i18n="onlineWagerToggle">🎲 Đặt cược</button>
           <div id="caro-wager-picker" class="online-wager-picker" hidden>
-            <div id="caro-wager-amounts" class="online-wager-amounts"></div>
+            <div class="caro-wager-stepper">
+              <div class="caro-wager-row">
+                <span data-i18n="onlineWagerBetLabel">Cược</span>
+                <span id="caro-wager-bet-val">— 🪙</span>
+              </div>
+              <div class="caro-wager-row caro-wager-row-win">
+                <span data-i18n="onlineWagerWinLabel">Thắng nhận về</span>
+                <span id="caro-wager-win-val">— 🪙</span>
+              </div>
+              <div class="caro-wager-stepper-btns">
+                <button type="button" id="caro-wager-minus" class="caro-wager-step-btn">−</button>
+                <button type="button" id="caro-wager-plus" class="caro-wager-step-btn">+</button>
+              </div>
+            </div>
             <div id="caro-wager-balance" class="admin-sub"></div>
             <div class="admin-sub" data-i18n="onlineWagerHint">Thắng: +95%　·　Hoà: 0　·　Thua: −95%</div>
           </div>

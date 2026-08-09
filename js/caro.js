@@ -2273,26 +2273,34 @@ let _caroWagerOn = false;
 let _caroWagerAmount = 0;
 const CARO_WAGER_PRESETS = [5, 10, 15, 20, 30];
 
+/** Khớp đúng công thức thật ở Cloud Function settleWager (functions/index.js):
+ *  thắng = hoàn cược của mình + 95% cược đối thủ (giữ 5% phí sàn). */
+function _caroWagerPayout(bet){
+  return Math.round(bet * 1.95);
+}
+
 function _caroRenderWagerAmounts(){
-  const box = document.getElementById('caro-wager-amounts');
-  if(!box) return;
   if(CARO_WAGER_PRESETS.indexOf(_caroWagerAmount) < 0) _caroWagerAmount = CARO_WAGER_PRESETS[0];
-  box.innerHTML = '';
-  CARO_WAGER_PRESETS.forEach(function(n){
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'online-wager-amt-btn' + (n === _caroWagerAmount ? ' active' : '');
-    b.textContent = '🪙 ' + n;
-    b.addEventListener('click', function(){
-      try{ sfxClick(); }catch(e){}
-      _caroWagerAmount = n;
-      _caroRenderWagerAmounts();
-    });
-    box.appendChild(b);
-  });
+  const betEl = document.getElementById('caro-wager-bet-val');
+  const winEl = document.getElementById('caro-wager-win-val');
+  if(betEl) betEl.textContent = _caroWagerAmount + ' 🪙';
+  if(winEl) winEl.textContent = _caroWagerPayout(_caroWagerAmount) + ' 🪙';
+  const idx = CARO_WAGER_PRESETS.indexOf(_caroWagerAmount);
+  const minusBtn = document.getElementById('caro-wager-minus');
+  const plusBtn = document.getElementById('caro-wager-plus');
+  if(minusBtn) minusBtn.disabled = idx <= 0;
+  if(plusBtn) plusBtn.disabled = idx >= CARO_WAGER_PRESETS.length - 1;
 }
 
 function bindCaroWagerUI(){
+  document.getElementById('caro-wager-minus')?.addEventListener('click', function(){
+    const idx = CARO_WAGER_PRESETS.indexOf(_caroWagerAmount);
+    if(idx > 0){ try{ sfxClick(); }catch(e){} _caroWagerAmount = CARO_WAGER_PRESETS[idx - 1]; _caroRenderWagerAmounts(); }
+  });
+  document.getElementById('caro-wager-plus')?.addEventListener('click', function(){
+    const idx = CARO_WAGER_PRESETS.indexOf(_caroWagerAmount);
+    if(idx < CARO_WAGER_PRESETS.length - 1){ try{ sfxClick(); }catch(e){} _caroWagerAmount = CARO_WAGER_PRESETS[idx + 1]; _caroRenderWagerAmounts(); }
+  });
   document.getElementById('caro-wager-toggle')?.addEventListener('click', function(){
     try{ sfxClick(); }catch(e){}
     _caroWagerOn = !_caroWagerOn;
