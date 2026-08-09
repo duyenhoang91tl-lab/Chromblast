@@ -30,7 +30,7 @@
 
 const ACBAG_BRICK_PREVIEW_COLORS = ["#E24B4A", "#378ADD", "#1D9E75", "#EF9F27"];
 const ACBAG_CATEGORIES = ['skills', 'boards', 'bricks', 'bubbles', 'maps', 'chests', 'fonts', 'nametags'];
-const ACBAG_CAT_ICON = { skills:'🔥', boards:'🖼️', bricks:'🧱', bubbles:'💬', maps:'🗺️', chests:'🎁', fonts:'🔤', nametags:'🏷️' };
+const ACBAG_CAT_ICON = { skills:'🔥', boards:'🖼️', bricks:'🧱', bubbles:'💬', maps:'🗺️', chests:'📦', fonts:'🔤', nametags:'🏷️' };
 const ACBAG_CAT_KEY  = { skills:'acbagCatSkills', boards:'acbagCatBoards', bricks:'acbagCatBricks', bubbles:'acbagCatBubbles', maps:'acbagCatMaps', chests:'acbagCatChests', fonts:'acbagCatFonts', nametags:'acbagCatNameTags' };
 // 3 hạng mục dưới đây CHƯA có hệ thống dữ liệu thật trong dự án (không có field/
 // list nào lưu rương/mẫu chữ/mẫu tên hiển thị đã sở hữu) — đang được xây ở luồng
@@ -367,6 +367,11 @@ function renderAccountBag(){
 (function initAccountBag(){
   function bind(){
     document.getElementById('acchub-row-bag')?.addEventListener('click', renderAccountBag);
+    document.getElementById('header-bag-btn')?.addEventListener('click', ()=>{
+      try{ sfxClick(); }catch(e){}
+      renderAccountBag();
+      document.getElementById('account-bag-panel')?.classList.add('show');
+    });
   }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
   else bind();

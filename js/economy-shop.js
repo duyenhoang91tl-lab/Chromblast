@@ -58,13 +58,13 @@
   // mắt" chờ có dữ liệu thật.
   const SHOP2_TILES = [
     { tab: "topup", ico: "💳", key: "shopTabTopup", fb: "Nạp" },
-    { tab: "boards", ico: "🗺️", key: "shopTabBoards", fb: "Nền" },
+    { tab: "boards", ico: "🖼️", key: "shopTabBoards", fb: "Nền" },
     { tab: "bricks", ico: "🧱", key: "shopTabBricks", fb: "Gạch" },
     { tab: "bubbles", ico: "💬", key: "shopTabBubbles", fb: "Bong bóng" },
     { tab: "hearts", ico: "❤️", key: "shopTabHearts", fb: "Tim" },
     { tab: "diamond", ico: "💎", key: "shopTabDiamond", fb: "Kim cương" },
     { tab: "nameeffects", ico: "✨", key: "shopTabNameeffects", fb: "Hiệu ứng tên" },
-    { tab: "chests", ico: "🎁", key: "shopTabChests", fb: "Rương", locked: true },
+    { tab: "chests", ico: "📦", key: "shopTabChests", fb: "Rương", locked: true },
     { tab: "skills", ico: "🌀", key: "shopTabSkills", fb: "Kỹ năng", locked: true },
     { tab: "textfx", ico: "💫", key: "shopTabTextfx", fb: "Hiệu ứng chữ", locked: true },
     { tab: "cards", ico: "🃏", key: "shopTabCards", fb: "Thẻ", locked: true },
