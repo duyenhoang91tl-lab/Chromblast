@@ -2074,3 +2074,17 @@ function MILESTONE_MSG(tier){
   };
   Object.keys(fill).forEach(l=>{ if(typeof I18N!=='undefined' && I18N[l]) Object.assign(I18N[l], fill[l]); });
 })();
+
+(function(){
+  const fill = {
+    vi:{
+      crbTabAll:'Tất cả', crbTabOpen:'Còn trống', crbTabNotStarted:'Chưa bắt đầu',
+      crbVsAi:'Chơi với máy', crbWatchAd:'Xem QC', crbOpenBrowser:'📋 Xem danh sách phòng'
+    },
+    en:{
+      crbTabAll:'All', crbTabOpen:'Open', crbTabNotStarted:'Not started',
+      crbVsAi:'Play vs AI', crbWatchAd:'Watch ad', crbOpenBrowser:'📋 View room list'
+    }
+  };
+  Object.keys(fill).forEach(l=>{ if(typeof I18N!=='undefined' && I18N[l]) Object.assign(I18N[l], fill[l]); });
+})();

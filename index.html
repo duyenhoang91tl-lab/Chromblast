@@ -1233,6 +1233,8 @@
         <div id="caro-hub-stats" class="caro-hub-stats"></div>
         <button type="button" id="caro-rank-btn" class="auth-submit-btn btn-ghost" style="background:rgba(255,255,255,0.12);margin-bottom:10px;" data-i18n="caroRankBoard">🏆 BXH</button>
 
+        <button type="button" id="caro-open-room-browser-btn" class="auth-submit-btn btn-on-color" style="margin-bottom:10px;background:linear-gradient(135deg,#a7b8f0,#c9b6f0);" data-i18n="crbOpenBrowser">📋 Xem danh sách phòng</button>
+
         <div class="caro-waiting-block">
           <div class="caro-waiting-head">
             <span data-i18n="caroWaitingRooms">📋 Phòng chờ</span>
@@ -1283,6 +1285,44 @@
       </div>
     </div>
   </div>
+  <div id="caro-room-browser" class="crb-panel">
+    <div class="crb-topbar">
+      <button type="button" class="crb-exit" id="crb-exit-btn" aria-label="Back">‹</button>
+      <div class="crb-avatar" id="crb-avatar"></div>
+      <div class="crb-stat"><span>❤️</span><span id="crb-hearts">0</span></div>
+      <div class="crb-stat"><span>🪙</span><span id="crb-gold">0</span></div>
+      <button type="button" class="crb-icon-btn" id="crb-chat-btn" aria-label="Chat">💬</button>
+      <button type="button" class="crb-icon-btn" id="crb-settings-btn" aria-label="Settings">⚙️</button>
+    </div>
+    <div class="crb-shell">
+      <div class="crb-actions">
+        <button type="button" class="crb-action-btn" id="crb-find-btn" data-i18n="onlineFind">🔍 Tìm đối thủ</button>
+        <button type="button" class="crb-action-btn" id="crb-create-btn" data-i18n="onlineCreate">🏠 Tạo phòng</button>
+      </div>
+      <div class="crb-list" id="crb-room-list"></div>
+      <div class="crb-empty" id="crb-room-list-empty" data-i18n="caroWaitingEmpty">Chưa có phòng — tạo phòng hoặc bấm Tìm đối thủ</div>
+      <div class="crb-tabs">
+        <button type="button" class="crb-tab active" id="crb-tab-all" data-crb-tab="all" data-i18n="crbTabAll">Tất cả</button>
+        <button type="button" class="crb-tab" id="crb-tab-open" data-crb-tab="open" data-i18n="crbTabOpen">Còn trống</button>
+        <button type="button" class="crb-tab" id="crb-tab-notstarted" data-crb-tab="notstarted" data-i18n="crbTabNotStarted">Chưa bắt đầu</button>
+      </div>
+      <div class="crb-bottom-icons">
+        <button type="button" class="crb-bicon" id="crb-vs-ai-btn">
+          <span class="crb-bicon-circle">🤖</span><span data-i18n="crbVsAi">Chơi với máy</span>
+        </button>
+        <button type="button" class="crb-bicon" id="crb-friends-btn">
+          <span class="crb-bicon-circle">🤝</span><span data-i18n="acchubFriends">Bạn bè</span>
+        </button>
+        <button type="button" class="crb-bicon" id="crb-rank-btn">
+          <span class="crb-bicon-circle">🏆</span><span data-i18n="caroRankBoard">Xếp hạng</span>
+        </button>
+        <button type="button" class="crb-bicon" id="crb-watch-ad-btn">
+          <span class="crb-bicon-circle">🎬</span><span data-i18n="crbWatchAd">Xem QC</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <div id="caro-lobby-panel" class="admin-panel-like">
     <div class="admin-card">
       <div class="admin-title"><span data-i18n="caroLobby">❌⭕ Phòng Caro</span> <small id="caro-lobby-room-no" class="caro-lobby-no"></small></div>
@@ -1657,6 +1697,7 @@
 <script src="js/profanity-filter.js"></script>
 <script src="js/online-services.js"></script>
 <script src="js/caro-ranks.js"></script>
+<script src="js/caro-room-browser.js"></script>
 <script src="js/versus-ranks.js"></script>
 <script src="js/player-profile.js"></script>
 <script src="js/account-status.js"></script>
