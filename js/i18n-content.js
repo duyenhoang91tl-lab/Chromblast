@@ -2088,3 +2088,33 @@ function MILESTONE_MSG(tier){
   };
   Object.keys(fill).forEach(l=>{ if(typeof I18N!=='undefined' && I18N[l]) Object.assign(I18N[l], fill[l]); });
 })();
+
+// ── Màn menu chính Caro (js/caro-menu.js) — chưa có key dịch nào, đang hiện
+// thẳng tên key thô trên màn hình bất kể ngôn ngữ đã chọn. ──
+(function(){
+  const fill = {
+    vi:{
+      caroMenuTitle:'❌⭕ Caro', caroMenuRank:'Xếp hạng', caroMenuFriends:'Bạn bè',
+      caroMenuDaily:'Điểm danh', caroMenuAds:'Xem QC', caroMenuSkin:'Chọn nền',
+      caroMenuQuick:'⚡ Chơi nhanh', caroMenuWithFriend:'🤝 Chơi với bạn',
+      caroMenuTable:'🚪 Chọn phòng', caroMenuRankBtn:'🏆 Xếp hạng', caroMenuTour:'🏅 Giải đấu',
+      caroDailyTitle:'🎁 Điểm danh Caro',
+      caroDailySub:'Điểm danh mỗi ngày khi chơi Caro: XP + vàng riêng. Bỏ lỡ 1 ngày sẽ mất chuỗi.',
+      caroTourTitle:'🏅 Giải đấu',
+      caroTourSub:'Chế độ giải đấu đang được chuẩn bị — quay lại sau nhé!',
+      caroRankNeedsOnline:'Cần bật Online để đấu xếp hạng'
+    },
+    en:{
+      caroMenuTitle:'❌⭕ Caro', caroMenuRank:'Rank', caroMenuFriends:'Friends',
+      caroMenuDaily:'Check-in', caroMenuAds:'Watch ad', caroMenuSkin:'Board skin',
+      caroMenuQuick:'⚡ Quick play', caroMenuWithFriend:'🤝 Play with friend',
+      caroMenuTable:'🚪 Choose room', caroMenuRankBtn:'🏆 Ranked', caroMenuTour:'🏅 Tournament',
+      caroDailyTitle:'🎁 Caro check-in',
+      caroDailySub:'Check in daily while playing Caro for separate XP + gold. Missing a day resets your streak.',
+      caroTourTitle:'🏅 Tournament',
+      caroTourSub:'Tournament mode is being prepared — check back later!',
+      caroRankNeedsOnline:'Turn on Online to play ranked matches'
+    }
+  };
+  Object.keys(fill).forEach(l=>{ if(typeof I18N!=='undefined' && I18N[l]) Object.assign(I18N[l], fill[l]); });
+})();

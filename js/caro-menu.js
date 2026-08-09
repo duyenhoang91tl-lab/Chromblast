@@ -33,25 +33,28 @@ function initCaroMenu(){
     document.getElementById('caro-rank-btn')?.click();
   });
   document.getElementById('caro-menu-rankbtn2')?.addEventListener('click', ()=>{
-    document.getElementById('caro-rank-btn')?.click();
+    _caroMenuAfterLoad(()=>{
+      const locked = (typeof canPlayCaro === 'function') && !canPlayCaro();
+      const onlineOn = typeof isOnlineServicesEnabled === 'function' && isOnlineServicesEnabled();
+      if(locked || !onlineOn || typeof caroFindOpponent !== 'function'){
+        try{ showComboFlash(0, false, (typeof t==='function'?t('caroRankNeedsOnline'):null) || 'Cần bật Online để đấu xếp hạng'); }catch(e){}
+        return;
+      }
+      if(typeof openCaroHub === 'function') openCaroHub();
+      setTimeout(()=>{ document.getElementById('caro-find-btn')?.click(); }, 150);
+    });
   });
 
   document.getElementById('caro-menu-friends-btn')?.addEventListener('click', ()=>{
     if(typeof window.openFriendsPanel === 'function') window.openFriendsPanel();
   });
 
-  document.getElementById('caro-menu-switch-btn')?.addEventListener('click', ()=>{
-    const pop = document.getElementById('caro-menu-switch-pop');
-    if(pop) pop.hidden = !pop.hidden;
-  });
   document.getElementById('caro-menu-switch-chroma')?.addEventListener('click', ()=>{
-    const pop = document.getElementById('caro-menu-switch-pop');
-    if(pop) pop.hidden = true;
+    try{ sfxClick(); }catch(e){}
     closeCaroMenu();
   });
   document.getElementById('caro-menu-switch-versus')?.addEventListener('click', ()=>{
-    const pop = document.getElementById('caro-menu-switch-pop');
-    if(pop) pop.hidden = true;
+    try{ sfxClick(); }catch(e){}
     if(typeof window.openVersusSetup === 'function') window.openVersusSetup();
   });
 
@@ -92,7 +95,7 @@ function initCaroMenu(){
   });
 
   document.getElementById('caro-menu-table-btn')?.addEventListener('click', ()=>{
-    _caroMenuAfterLoad(()=>{ if(typeof openCaroHub === 'function') openCaroHub(); });
+    _caroMenuAfterLoad(()=>{ if(typeof openCaroRoomBrowser === 'function') openCaroRoomBrowser(); });
   });
 
   document.getElementById('caro-menu-daily-btn')?.addEventListener('click', ()=>{
@@ -109,11 +112,6 @@ function initCaroMenu(){
 
   panel.addEventListener('click', (e)=>{
     if(e.target === panel) closeCaroMenu();
-    const pop = document.getElementById('caro-menu-switch-pop');
-    const switchBtn = document.getElementById('caro-menu-switch-btn');
-    if(pop && !pop.hidden && e.target !== switchBtn && !pop.contains(e.target)){
-      pop.hidden = true;
-    }
   });
 
   if(typeof window.updateCaroDailyBadge === 'function') window.updateCaroDailyBadge();
