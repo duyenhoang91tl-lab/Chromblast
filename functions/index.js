@@ -915,11 +915,11 @@ exports.applyMatchResult = onDocumentUpdated(
     const hostId = after.hostId, guestId = after.guestId;
     if (!hostId || !guestId) return null;
 
-    // Cược vàng/kim cương (nếu phòng có đặt cược, xem escrowWager) — thắng thật ăn
-    // trọn 2 phần cược, hoà/không xác định được thắng thua thật thì hoàn lại đúng
-    // phần mỗi bên đã đặt (không ai mất tiền oan). Chỉ chạy 1 lần (wagerSettled),
-    // và chỉ hoàn/trả cho bên ĐÃ escrow thật (tránh phát sinh tiền từ hư không nếu
-    // 1 bên chưa kịp đặt cược mà trận đã kết thúc vì lý do khác).
+    // Cược vàng/kim cương (nếu phòng có đặt cược, xem escrowWager). Thắng thật: được
+    // hoàn cược của mình + 95% cược của đối thủ (net +95% so với mức đã cược, 5%
+    // giữ lại làm phí sàn). Thua thật: chỉ được hoàn 5% cược (net -95%). Hoà hoặc
+    // không xác định được thắng thua thật thì hoàn lại đúng 100% phần mỗi bên đã
+    // đặt (net 0%) — không ai mất tiền oan. Chỉ chạy 1 lần (wagerSettled).
     const settleWager = async (finalWinnerId) => {
       if (after.wagerSettled) return;
       const amount = Math.floor(Number(after.wagerAmount) || 0);
@@ -929,9 +929,17 @@ exports.applyMatchResult = onDocumentUpdated(
       const hostIn = !!after.hostEscrowed;
       const guestIn = !!after.guestEscrowed;
       if (hostIn && guestIn && (finalWinnerId === hostId || finalWinnerId === guestId)) {
+        const loserId = finalWinnerId === hostId ? guestId : hostId;
+        const winPayout = Math.round(amount * 1.95);
+        const loseRefund = Math.round(amount * 0.05);
         await db.collection('players').doc(finalWinnerId).set(
-          { [field]: FieldValue.increment(amount * 2) }, { merge: true }
+          { [field]: FieldValue.increment(winPayout) }, { merge: true }
         );
+        if (loseRefund > 0) {
+          await db.collection('players').doc(loserId).set(
+            { [field]: FieldValue.increment(loseRefund) }, { merge: true }
+          );
+        }
       } else {
         // Hoà, hoặc không xác định được thắng thua thật, hoặc chỉ 1 bên đặt cược
         // thành công (bên kia lỗi/mất mạng giữa chừng) → hoàn đúng phần đã trừ.

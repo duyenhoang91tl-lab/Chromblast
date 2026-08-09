@@ -256,7 +256,7 @@ function _renderLobby(d){
   if(wagerEl){
     if(Number(d.wagerAmount) > 0 && (d.wagerCurrency==='gold' || d.wagerCurrency==='diamond')){
       const label = typeof t==='function' ? t('onlineLobbyWager') : 'Cược:';
-      wagerEl.textContent = label + ' ' + (d.wagerCurrency==='gold' ? '🪙 ' : '💎 ') + d.wagerAmount + ' (' + (typeof t==='function'?t('onlineLobbyWagerPot','thắng ăn x2'):'thắng ăn x2') + ')';
+      wagerEl.textContent = label + ' ' + (d.wagerCurrency==='gold' ? '🪙 ' : '💎 ') + d.wagerAmount + ' (' + (typeof t==='function'?t('onlineLobbyWagerPot','thắng +95%'):'thắng +95%') + ')';
       wagerEl.style.display = '';
     } else {
       wagerEl.style.display = 'none';
@@ -632,7 +632,7 @@ function onLeaveLobbyToHub(){
         if(typeof syncWalletFromServer === 'function'){
           syncWalletFromServer().then(function(w){
             if(!w || !balEl.isConnected) return;
-            const label = typeof t==='function' ? t('onlineWagerBalance','Số dư thật của bạn') : 'Số dư thật của bạn';
+            const label = typeof t==='function' ? t('onlineWagerBalance','Số dư') : 'Số dư';
             balEl.textContent = label + ': 🪙 ' + (w.gold|0) + ' · 💎 ' + (w.diamonds|0);
           });
         }
