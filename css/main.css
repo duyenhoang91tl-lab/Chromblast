@@ -771,6 +771,41 @@ body.tutorial-open #start-screen{
 }
 
 .admin-map-btn.locked { opacity:0.4; cursor:not-allowed; }
+
+/* ── Màn vào Đấu 1-1 (#versus-setup-panel) — cùng cách làm với
+   #caro-hub-panel ở trên: toàn màn hình, nền pastel hồng tím nhạt thay vì
+   modal căn giữa mặc định của .admin-panel-like. ── */
+#versus-setup-panel.admin-panel-like{
+  padding:0; align-items:stretch; justify-content:stretch; background:transparent;
+}
+#versus-setup-panel .admin-card{
+  width:100%; max-width:none; height:100%; max-height:none;
+  margin:0; border:none; border-radius:0; box-shadow:none;
+  background:linear-gradient(165deg,#f6d9ee 0%,#e9d3f3 50%,#dcd8f6 100%);
+  color:#2b2340; overflow-y:auto;
+  padding:max(20px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+}
+#versus-setup-panel .admin-title{ color:#2b2340; }
+#versus-setup-panel .admin-close{ color:#6b5f8a; }
+#versus-setup-panel .admin-sub,
+#versus-setup-panel .auth-field label { color:#6b5f8a; }
+#versus-setup-panel .online-status{ color:#3d8f5c; }
+#versus-setup-panel .online-status.warn{ color:#a5730a; }
+#versus-setup-panel .vs-local-block{ border-top-color:rgba(90,70,140,0.2); }
+#versus-setup-panel .vs-local-label{ color:#a5730a; }
+#versus-setup-panel .auth-field input{
+  background:#fff; border-color:rgba(90,70,140,0.25); color:#2b2340;
+}
+#versus-setup-panel .vs-setup-player,
+#versus-setup-panel .vs-layout-toggle{
+  background:#fff; border:1px solid rgba(90,70,140,0.18);
+}
+#versus-setup-panel .vs-setup-player-label{ color:#4a3f6b; }
+#versus-setup-panel .vs-layout-toggle{ color:#4a3f6b; }
+#versus-setup-panel .vs-skin-row-label{ color:#6b5f8a; }
+@media (orientation: landscape){
+  #versus-setup-panel .admin-card{ max-width:640px; margin:0 auto; }
+}
 .admin-map-btn.locked:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); }
 .admin-card {
   width:100%; max-width: 380px; max-height: 82vh; overflow-y:auto;
