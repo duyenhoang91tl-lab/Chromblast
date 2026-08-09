@@ -6534,7 +6534,7 @@ body:has(#secret-stage.active) .streak-dot.lit{
   display:flex; flex-direction:column; align-items:center; gap:6px;
   text-align:center;
 }
-.gpcard-crate-icon{ font-size:34px; }
+.gpcard-crate-icon{ display:flex; align-items:center; justify-content:center; filter:drop-shadow(0 2px 3px rgba(0,0,0,0.18)); }
 .gpcard-crate-name{ font-weight:800; font-size:13px; color:#3a3358; }
 .gpcard-crate-buy-btn{
   width:100%; border:none; border-radius:999px; padding:8px 6px;

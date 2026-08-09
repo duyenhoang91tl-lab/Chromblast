@@ -13,14 +13,14 @@
 // ═══════════════════════════════════════════════════════════════
 
 const LOOT_CRATES = [
-  { id:'silver',  name:'Rương Bạc',       icon:'📦', price:25, priceType:'gold',    freeDaily:true,  kind:'currency-gold',    min:15, max:40  },
-  { id:'gold',    name:'Rương Vàng',      icon:'🎁', price:8,  priceType:'diamond', freeDaily:true,  kind:'currency-gold',    min:60, max:150 },
-  { id:'diamond', name:'Rương Kim Cương', icon:'💎', price:20, priceType:'diamond', freeDaily:false, kind:'currency-diamond', min:2,  max:8   },
-  { id:'bubble',  name:'Rương Bong Bóng', icon:'💬', price:15, priceType:'diamond', freeDaily:false, kind:'item-bubble' },
-  { id:'skill',   name:'Rương Kỹ Năng',   icon:'⚡', price:10, priceType:'diamond', freeDaily:false, kind:'item-skill'  },
-  { id:'brick',   name:'Rương Gạch',      icon:'🧱', price:12, priceType:'diamond', freeDaily:true,  kind:'item-brick'  },
-  { id:'map',     name:'Rương Map',       icon:'🗺️', price:12, priceType:'diamond', freeDaily:true,  kind:'item-map'    },
-  { id:'effect',  name:'Rương Hiệu Ứng',  icon:'✨', price:15, priceType:'diamond', freeDaily:false, kind:'item-effect' },
+  { id:'silver',  name:'Rương Bạc',       icon:'📦', tint:'#c9ced6', price:25, priceType:'gold',    freeDaily:true,  kind:'currency-gold',    min:15, max:40  },
+  { id:'gold',    name:'Rương Vàng',      icon:'🎁', tint:'#ffd54a', price:8,  priceType:'diamond', freeDaily:true,  kind:'currency-gold',    min:60, max:150 },
+  { id:'diamond', name:'Rương Kim Cương', icon:'💎', tint:'#7ee8fa', price:20, priceType:'diamond', freeDaily:false, kind:'currency-diamond', min:2,  max:8   },
+  { id:'bubble',  name:'Rương Bong Bóng', icon:'💬', tint:'#8ecae6', price:15, priceType:'diamond', freeDaily:false, kind:'item-bubble' },
+  { id:'skill',   name:'Rương Kỹ Năng',   icon:'⚡', tint:'#ffb703', price:10, priceType:'diamond', freeDaily:false, kind:'item-skill'  },
+  { id:'brick',   name:'Rương Gạch',      icon:'🧱', tint:'#e2725b', price:12, priceType:'diamond', freeDaily:true,  kind:'item-brick'  },
+  { id:'map',     name:'Rương Map',       icon:'🗺️', tint:'#8fd694', price:12, priceType:'diamond', freeDaily:true,  kind:'item-map'    },
+  { id:'effect',  name:'Rương Hiệu Ứng',  icon:'✨', tint:'#e0aaff', price:15, priceType:'diamond', freeDaily:false, kind:'item-effect' },
 ];
 
 function getCrate(id){ return LOOT_CRATES.find(c => c.id === id); }
