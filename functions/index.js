@@ -377,8 +377,7 @@ exports.spendCurrency = onCall({ region: 'asia-southeast1' }, async (request) =>
   const ref = db.collection('players').doc(uid);
   return db.runTransaction(async (tx) => {
     const snap = await tx.get(ref);
-    if (!snap.exists) throw new HttpsError('failed-precondition', 'Chưa có ví.');
-    const w = walletOf(snap.data());
+    const w = walletOf(snap.exists ? snap.data() : {});
     if (w.gold < g || w.diamonds < d || w.hearts < h) {
       throw new HttpsError('failed-precondition', 'Không đủ số dư.');
     }
@@ -410,8 +409,7 @@ exports.exchangeCurrency = onCall({ region: 'asia-southeast1' }, async (request)
   const ref = db.collection('players').doc(uid);
   return db.runTransaction(async (tx) => {
     const snap = await tx.get(ref);
-    if (!snap.exists) throw new HttpsError('failed-precondition', 'Chưa có ví.');
-    const w = walletOf(snap.data());
+    const w = walletOf(snap.exists ? snap.data() : {});
     const goldCost = count * GOLD_PER_DIAMOND;
     if (w.gold < goldCost) throw new HttpsError('failed-precondition', 'Không đủ vàng.');
     tx.set(ref, { gold: FieldValue.increment(-goldCost), diamonds: FieldValue.increment(count) }, { merge: true });
@@ -456,9 +454,14 @@ exports.escrowWager = onCall({ region: 'asia-southeast1' }, async (request) => {
     const escrowKey = isHost ? 'hostEscrowed' : 'guestEscrowed';
     if (room[escrowKey]) return { ok: true, already: true };
 
+    // FIX: tài liệu players/{uid} chỉ được tạo khi chơi solo (startSoloRun) — một tài
+    // khoản mới vào thẳng đấu online có cược mà CHƯA từng chơi solo sẽ không có tài
+    // liệu này, khiến escrow LUÔN báo lỗi "Chưa có ví" dù họ có thể có đủ tiền (ví dụ
+    // tiền thưởng mặc định) — thay vì chặn cứng, coi ví trống (0) như bất kỳ người chơi
+    // nào khác; nếu thật sự không đủ tiền thì check "Không đủ vàng/kim cương" bên dưới
+    // đã tự xử lý đúng rồi.
     const playerSnap = await tx.get(playerRef);
-    if (!playerSnap.exists) throw new HttpsError('failed-precondition', 'Chưa có ví.');
-    const w = walletOf(playerSnap.data());
+    const w = walletOf(playerSnap.exists ? playerSnap.data() : {});
     const balance = currency === 'gold' ? w.gold : w.diamonds;
     if (balance < amount) {
       throw new HttpsError(
@@ -740,8 +743,7 @@ exports.openCurrencyCrate = onCall({ region: 'asia-southeast1' }, async (request
 
   return db.runTransaction(async (tx) => {
     const snap = await tx.get(ref);
-    if (!snap.exists) throw new HttpsError('failed-precondition', 'Chưa có ví.');
-    const w = walletOf(snap.data());
+    const w = walletOf(snap.exists ? snap.data() : {});
 
     if (useFree) {
       const claimSnap = await tx.get(claimRef);
