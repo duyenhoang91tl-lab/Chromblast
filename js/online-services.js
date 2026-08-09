@@ -1850,9 +1850,11 @@ function listenOnlineMoves(roomId, cb){
     .orderBy('seq', 'asc')
     .onSnapshot(snap => {
       snap.docChanges().forEach(chg => {
-        if(chg.type === 'added') cb(chg.doc.data());
+        if(chg.type !== 'added') return;
+        try{ cb(chg.doc.data()); }
+        catch(e){ console.error('[online] listenOnlineMoves callback threw —', chg.doc.data(), e); }
       });
-    }, err => console.warn('[online] moves listen', err));
+    }, err => console.error('[online] moves listen FAILED —', err));
 }
 
 /** Chỉ hủy listener document phòng — KHÔNG hủy moves (tránh mất sync nước đi). */

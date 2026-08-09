@@ -1297,7 +1297,9 @@ body.tutorial-open #start-screen{
   /* Luôn hiện được dù #game-root đang visibility:hidden (ẩn game gạch) */
   visibility: visible;
 }
-#caro-stage.active { display: flex !important; visibility: visible !important; }
+/* #caro-stage.active không còn rule riêng ở đây — đã gộp vào rule
+   "body.mode-caro #caro-stage.active" (đầu file) để tránh đè lên Versus
+   khi class "active" còn sót lại (z-index Caro > Versus). */
 .caro-topbar {
   width: min(96vw, 460px); display: flex; justify-content: space-between; align-items: flex-start;
   color: #f2f2f7; font-weight: 800; font-size: 14px; gap: 8px;

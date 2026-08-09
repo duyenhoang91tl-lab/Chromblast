@@ -539,7 +539,8 @@ function _vsEndMatchOnline(){
 
 function _vsBroadcastMove(type, payload){
   if(!_vs || !_vs.online || !_vs.online.roomId) return;
-  sendOnlineMove(_vs.online.roomId, { type, slot:_vs.online.mySlot, ...payload }).catch(()=>{});
+  sendOnlineMove(_vs.online.roomId, { type, slot:_vs.online.mySlot, ...payload })
+    .catch(e => console.error('[versus] _vsBroadcastMove FAILED —', type, payload, e));
 }
 
 function _vsApplyNetworkMove(move){

@@ -129,6 +129,12 @@ function _vsToggleGlobalUI(hide){
 function _vsBuildArena(){
   let arena=document.getElementById('versus-arena');
   if(arena) arena.remove();
+  // FIX: dọn sạch bàn Caro nếu còn sót "active" từ ván trước (quên gọi _caroQuit()) —
+  // tránh #caro-stage (z-index cao hơn) đè/che lên màn Versus. Xem css/main.css.
+  try{
+    const cs = document.getElementById('caro-stage');
+    if(cs){ cs.classList.remove('active'); cs.style.display='none'; cs.style.zIndex=''; }
+  }catch(e){}
   _vsToggleGlobalUI(true);
   try{ if(typeof setExclusivePlayMode === 'function') setExclusivePlayMode('versus'); }catch(e){}
   arena=document.createElement('div'); arena.id='versus-arena';
