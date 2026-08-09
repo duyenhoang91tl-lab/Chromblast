@@ -391,31 +391,31 @@ exports.spendCurrency = onCall({ region: 'asia-southeast1' }, async (request) =>
   });
 });
 
-/** Đổi vàng <-> kim cương theo tỉ giá CỐ ĐỊNH trên server (không tin tỉ giá client
- * gửi lên). data: { direction: 'goldToDiamond'|'diamondToGold', count } */
+/** Đổi vàng -> kim cương theo tỉ giá CỐ ĐỊNH trên server (không tin tỉ giá client
+ * gửi lên). data: { direction: 'goldToDiamond', count }
+ * LƯU Ý: chiều 'diamondToGold' đã bị BỎ có chủ đích (không còn nhận) — kim cương
+ * mua bằng tiền thật (IAP) không được phép quy đổi ngược thành vàng, vì vàng có
+ * thể dùng để đặt cược 1-1 (escrowWager/applyMatchResult) — nếu vẫn cho đổi
+ * kim cương→vàng thì coi như mở đường tiền thật → vàng → cược ăn thua giữa 2
+ * người chơi, rủi ro pháp lý (cờ bạc trá hình). Vàng chỉ được nạp qua chơi
+ * game/nhiệm vụ/xem QC/thắng cược — không mua được bằng tiền thật. */
 exports.exchangeCurrency = onCall({ region: 'asia-southeast1' }, async (request) => {
   const uid = request.auth && request.auth.uid;
   if (!uid) throw new HttpsError('unauthenticated', 'Cần đăng nhập.');
   const direction = request.data && request.data.direction;
   const count = Math.max(1, Math.floor((request.data && request.data.count) || 1));
-  if (direction !== 'goldToDiamond' && direction !== 'diamondToGold') {
-    throw new HttpsError('invalid-argument', 'Hướng đổi không hợp lệ.');
+  if (direction !== 'goldToDiamond') {
+    throw new HttpsError('invalid-argument', 'Hướng đổi không hợp lệ hoặc không còn hỗ trợ.');
   }
   const ref = db.collection('players').doc(uid);
   return db.runTransaction(async (tx) => {
     const snap = await tx.get(ref);
     if (!snap.exists) throw new HttpsError('failed-precondition', 'Chưa có ví.');
     const w = walletOf(snap.data());
-    if (direction === 'goldToDiamond') {
-      const goldCost = count * GOLD_PER_DIAMOND;
-      if (w.gold < goldCost) throw new HttpsError('failed-precondition', 'Không đủ vàng.');
-      tx.set(ref, { gold: FieldValue.increment(-goldCost), diamonds: FieldValue.increment(count) }, { merge: true });
-      return { gold: w.gold - goldCost, diamonds: w.diamonds + count };
-    }
-    if (w.diamonds < count) throw new HttpsError('failed-precondition', 'Không đủ kim cương.');
-    const goldGain = count * GOLD_PER_DIAMOND;
-    tx.set(ref, { diamonds: FieldValue.increment(-count), gold: FieldValue.increment(goldGain) }, { merge: true });
-    return { gold: w.gold + goldGain, diamonds: w.diamonds - count };
+    const goldCost = count * GOLD_PER_DIAMOND;
+    if (w.gold < goldCost) throw new HttpsError('failed-precondition', 'Không đủ vàng.');
+    tx.set(ref, { gold: FieldValue.increment(-goldCost), diamonds: FieldValue.increment(count) }, { merge: true });
+    return { gold: w.gold - goldCost, diamonds: w.diamonds + count };
   });
 });
 

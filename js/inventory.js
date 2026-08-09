@@ -338,21 +338,12 @@ async function exchangeGoldForDiamonds(count){
   try{ if(typeof syncWalletFromServer === 'function') await syncWalletFromServer(); }catch(e){}
   return { ok:true, diamonds:count, gold:count*GOLD_PER_DIAMOND };
 }
-/** Đổi kim cương → vàng: 1 kim cương = 100 vàng — tỉ giá do server quyết định
- * (Cloud Function exchangeCurrency), không tự trừ/cộng cục bộ. */
-async function exchangeDiamondsForGold(count){
-  count = Math.max(1, count|0);
-  if(typeof _getOnlineFunctions !== 'function') return { ok:false, reason:'offline' };
-  const fns = _getOnlineFunctions();
-  if(!fns) return { ok:false, reason:'offline' };
-  try{
-    await fns.httpsCallable('exchangeCurrency')({ direction:'diamondToGold', count });
-  }catch(e){
-    return { ok:false, reason:'diamond' };
-  }
-  try{ if(typeof syncWalletFromServer === 'function') await syncWalletFromServer(); }catch(e){}
-  return { ok:true, diamonds:count, gold:count*GOLD_PER_DIAMOND };
-}
+// Đổi kim cương → vàng: ĐÃ BỎ có chủ đích (không còn hàm/nút nào gọi chiều này).
+// Kim cương mua bằng tiền thật (IAP) không được quy đổi ngược thành vàng, vì vàng
+// dùng để đặt cược 1-1 với người chơi khác (xem js/caro.js escrowMyWager) — chặn
+// đường tiền thật → vàng → cược ăn thua. Server (functions/index.js exchangeCurrency)
+// cũng đã từ chối direction 'diamondToGold' ở tầng Cloud Function, đây chỉ là bỏ
+// luôn lối gọi phía client cho nhất quán.
 function diamondPriceForGold(goldPrice){
   const p = Math.max(0, goldPrice|0);
   if(p < GOLD_PER_DIAMOND) return 0;
@@ -701,7 +692,6 @@ window.Inventory = {
   spendDiamonds: spendDiamonds,
   getDiamonds: getDiamonds,
   exchangeGoldForDiamonds: exchangeGoldForDiamonds,
-  exchangeDiamondsForGold: exchangeDiamondsForGold,
   diamondPriceForGold: diamondPriceForGold,
   GOLD_PER_DIAMOND: GOLD_PER_DIAMOND,
   addFires: function(n, reason){ grantPower('fire', n, reason||''); },

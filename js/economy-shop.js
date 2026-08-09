@@ -220,70 +220,25 @@
     return row;
   }
 
-  function renderDiamondExchange() {
+  // renderDiamondExchange (đổi kim cương → vàng) đã BỎ có chủ đích: kim cương mua
+  // bằng tiền thật (IAP) không còn được quy đổi ngược thành vàng, vì vàng dùng để
+  // đặt cược 1-1 với người chơi khác (js/caro.js escrowMyWager) — chặn đường tiền
+  // thật → vàng → cược ăn thua giữa 2 tài khoản. Chiều vàng → kim cương vẫn giữ
+  // nguyên (exchangeGoldForDiamonds, js/inventory.js), chỉ không có màn hình riêng
+  // vì hiện chưa nơi nào trong UI gọi tới.
+  function renderDiamondInfo() {
     const body = document.getElementById("shop-body");
     if (!body) return;
-    const rate = typeof GOLD_PER_DIAMOND === "number" ? GOLD_PER_DIAMOND : 100;
     const box = document.createElement("div");
     box.className = "shop-exchange-box shop-exchange-box-single";
     box.innerHTML =
-      '<div class="shop-exchange-grid">' +
-      '<div class="shop-exchange-card" id="shop-ex-to-gold">' +
-      '<div class="shop-ex-top"><span class="shop-ex-ico">🪙</span><span class="shop-ex-amt" data-ex-gain>' +
-      rate +
-      " " +
-      tt("shopGoldUnit", "vàng") +
-      "</span></div>" +
-      '<div class="shop-ex-arrow">↓</div>' +
-      '<div class="shop-ex-bot"><span class="shop-ex-ico">💎</span><span class="shop-ex-amt" data-ex-cost>×1</span></div>' +
-      '<div class="shop-ex-label">' +
-      tt("shopExDiaToGold", "Đổi KC → vàng") +
-      "</div>" +
-      '<div class="shop-ex-qty-host" data-qty-host="to-gold"></div>' +
-      '<button type="button" class="auth-submit-btn shop-ex-go" id="shop-ex-to-gold-btn">' +
-      tt("shopExchange", "Đổi") +
-      "</button>" +
+      '<div class="shop-diamond-info">' +
+      '<div class="shop-ex-top" style="justify-content:center;"><span class="shop-ex-ico">💎</span></div>' +
+      '<div class="admin-sub" style="text-align:center;margin-top:8px;">' +
+      tt("shopDiamondUseInfo", "Kim cương dùng để mua nền, gạch, hiệu ứng và vật phẩm trong Cửa hàng — xem các tab Nền / Gạch / Bong bóng...") +
       "</div>" +
       "</div>";
     body.appendChild(box);
-
-    const qtyToGold = makeQtyRow("shop-ex-to-gold", 1);
-    box.querySelector('[data-qty-host="to-gold"]').appendChild(qtyToGold);
-
-    function syncLabels() {
-      const n2 = qtyToGold.getQty();
-      const card2 = box.querySelector("#shop-ex-to-gold");
-      if (card2) {
-        card2.querySelector("[data-ex-gain]").textContent =
-          n2 * rate + " " + tt("shopGoldUnit", "vàng");
-        card2.querySelector("[data-ex-cost]").textContent = "×" + n2;
-      }
-    }
-    box.addEventListener("shop-qty-change", syncLabels);
-    syncLabels();
-
-    document.getElementById("shop-ex-to-gold-btn")?.addEventListener("click", async function () {
-      try {
-        sfxClick();
-      } catch (e) {}
-      const n = qtyToGold.getQty();
-      const fn =
-        typeof exchangeDiamondsForGold === "function"
-          ? exchangeDiamondsForGold
-          : typeof Inventory !== "undefined" && Inventory.exchangeDiamondsForGold
-            ? Inventory.exchangeDiamondsForGold
-            : null;
-      this.disabled = true;
-      const r = fn ? await fn(n) : { ok: false };
-      if (!r.ok) {
-        try {
-          showComboFlash(0, false, r.reason === "offline"
-            ? tt("errNetwork", "Lỗi kết nối mạng — vui lòng thử lại.")
-            : tt("shopNotEnoughDiamond", "Không đủ kim cương"));
-        } catch (e) {}
-      }
-      renderShop("diamond");
-    });
   }
 
   function renderTopUp() {
@@ -386,7 +341,7 @@
     body.innerHTML = "";
 
     if (tab === "diamond") {
-      renderDiamondExchange();
+      renderDiamondInfo();
       return;
     }
 
@@ -937,10 +892,8 @@
   g.closeShop = closeShop;
   g.buyBoardWithGold = buyBoardWithGold;
   g.buyBrickWithGold = buyBrickWithGold;
-  g.exchangeDiamondsForGold = function (n) {
-    if (typeof exchangeDiamondsForGold === "function") return exchangeDiamondsForGold(n);
-    return { ok: false };
-  };
+  // g.exchangeDiamondsForGold: ĐÃ BỎ có chủ đích cùng với chiều đổi kim cương→vàng
+  // (xem renderDiamondInfo phía trên + functions/index.js exchangeCurrency).
   g.HEART_GOLD_PRICE = HEART_GOLD_PRICE;
 
   if (document.readyState === "loading")

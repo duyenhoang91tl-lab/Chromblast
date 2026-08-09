@@ -1230,6 +1230,16 @@
         </div>
 
         <button type="button" id="caro-find-btn" class="auth-submit-btn btn-on-color" style="margin-top:10px;background:linear-gradient(135deg,#2e7d32,#66bb6a);" data-i18n="onlineFind">🔍 Tìm đối thủ (tự ghép)</button>
+
+        <div class="online-wager-block">
+          <button type="button" id="caro-wager-toggle" class="online-wager-toggle" data-i18n="onlineWagerToggle">🎲 Đặt cược</button>
+          <div id="caro-wager-picker" class="online-wager-picker" hidden>
+            <div id="caro-wager-amounts" class="online-wager-amounts"></div>
+            <div id="caro-wager-balance" class="admin-sub"></div>
+            <div class="admin-sub" data-i18n="onlineWagerHint">Thắng: +95%　·　Hoà: 0　·　Thua: −95%</div>
+          </div>
+        </div>
+
         <button type="button" id="caro-create-btn" class="auth-submit-btn" style="margin-top:10px;" data-i18n="onlineCreate">🏠 Tạo phòng</button>
         <div class="auth-field" style="margin-top:12px;"><label data-i18n="onlineJoinLabel">Vào phòng bằng mã</label><input type="text" id="caro-join-code" maxlength="6" placeholder="ABC123" style="text-transform:uppercase;letter-spacing:2px;text-align:center;font-weight:700;"></div>
         <button type="button" id="caro-join-btn" class="auth-submit-btn btn-ghost" style="background:rgba(255,255,255,0.15);" data-i18n="onlineJoin">🚪 Vào phòng</button>
@@ -1254,6 +1264,7 @@
       <div class="admin-sub" id="caro-lobby-hint" data-i18n="caroLobbyHint">Đang chờ đối thủ — có thể vào từ danh sách phòng chờ hoặc mã phòng</div>
       <div class="online-room-code-wrap"><span data-i18n="onlineCode">Mã phòng</span>: <strong id="caro-room-code">------</strong></div>
       <div id="caro-lobby-players" class="online-players"></div>
+      <div id="caro-lobby-wager" class="online-lobby-wager" style="display:none;"></div>
       <button type="button" id="caro-lobby-invite" class="auth-submit-btn btn-ghost" style="background:rgba(66,165,245,0.25);margin:8px 0;" data-i18n="gchatInviteFriend">🤝 Mời bạn bè</button>
       <div class="caro-prefs-row" style="margin:10px 0;">
         <span data-i18n="caroTurnTime">Thời gian lượt</span>

@@ -1594,6 +1594,28 @@ function _caroEnterGame(roomData){
   // chủ phòng đã thoát/mất kết nối gần như ngay lập tức thay vì bị treo màn hình chờ.
   if(isHost && typeof startRoomHeartbeat === 'function') startRoomHeartbeat(roomId);
 
+  // Đặt cược (nếu phòng có) — chạy nền, KHÔNG chặn vào trận. Server (escrowWager)
+  // tự kiểm tra số dư thật, không tin gì từ client. Nếu trừ được → hiện mức cược lên
+  // HUD; nếu KHÔNG trừ được (hết vàng/đổi ví giữa chừng) → huỷ trận ngay cho công
+  // bằng bằng cancelOnlineMatchNoWinner (KHÔNG xử thua/thắng thật cho ai) — đối thủ
+  // (nếu đã trừ được phần của họ) sẽ tự được hoàn lại qua applyMatchResult/
+  // refundAbandonedWager (xem functions/index.js). Giống hệt cơ chế bên Versus
+  // (js/online-ui.js, _vs.online.wager + escrowMyWager).
+  if(Number(roomData.wagerAmount) > 0 && roomData.wagerCurrency === 'gold'){
+    const wAmount = Math.floor(roomData.wagerAmount);
+    try{ showHint('🪙 ' + wAmount + ' · ' + (typeof t==='function'?t('vsWagerLive','Đang cược'):'Đang cược'), { hold: 2200 }); }catch(e){}
+    if(typeof escrowMyWager === 'function'){
+      escrowMyWager(roomId).then(res=>{
+        if(!_caro || _caro.roomId !== roomId) return; // đã thoát trận trước khi escrow xong
+        if(!res.ok){
+          try{ showHint((typeof t==='function'?t('vsWagerFail','Không đủ tiền cược — huỷ trận'):'Không đủ tiền cược — huỷ trận'), { hold: 3200 }); }catch(e){}
+          _caroQuit({ noForfeit: true });
+          try{ openCaroHub(); }catch(e){}
+        }
+      });
+    }
+  }
+
   // Đăng ký room TRƯỚC — stopListeningRoomDoc không được hủy moves
   listenOnlineRoom(roomId, ev=>{
     if(ev.type==='deleted'){
@@ -1859,11 +1881,20 @@ async function _caroSendChat(e){
   }
 }
 
-function _caroQuit(){
+function _caroQuit(opts){
+  const noForfeit = !!(opts && opts.noForfeit);
   try{ if(typeof lockPortraitOrientation==='function') lockPortraitOrientation(); }catch(e){}
   // Việc báo thắng/thua (nếu có) đã được xử lý riêng ở nơi gọi hàm này (bấm nút Thoát
   // hoặc phát hiện đối thủ rời trận — xem finalizeCaroMatch ở 2 chỗ đó), nên ở đây chỉ
   // còn việc dọn màn hình cục bộ, không đụng gì thêm vào phòng trên Firestore nữa.
+  // NGOẠI LỆ (noForfeit=true): huỷ trận trước khi có gameplay thật (cược server từ
+  // chối trừ tiền lúc vào trận) — dùng cancelOnlineMatchNoWinner thay vì coi là
+  // thắng/thua thật, giống hệt cơ chế noForfeit ở _vsAbort (js/versus.js).
+  try{
+    if(noForfeit && _caro && _caro.online && _caro.roomId && typeof cancelOnlineMatchNoWinner === 'function'){
+      cancelOnlineMatchNoWinner(_caro.roomId).catch(()=>{});
+    }
+  }catch(e){}
   try{ if(typeof stopRoomHeartbeat === 'function') stopRoomHeartbeat(); }catch(e){}
   caroMode = false;
   _caroStopTimer();
@@ -2022,9 +2053,12 @@ function _caroRenderRoomListTo(listId, emptyId, rooms){
     const mine = uid && r.hostId === uid;
     const name = escapeHtml(r.hostName || 'Host');
     const joinLabel = mine ? t('caroRoomMine') : t('caroRoomJoin');
+    const wagerBadge = (Number(r.wagerAmount) > 0 && r.wagerCurrency === 'gold')
+      ? ' <span class="online-room-wager-badge">🪙 '+r.wagerAmount+'</span>'
+      : '';
     return '<button type="button" class="caro-room-row'+(mine?' mine':'')+'" data-room="'+r.roomId+'">'+
       '<span class="caro-room-no">#'+no+'</span>'+
-      '<span class="caro-room-info"><b>'+name+'</b><small>'+turn+(r.code ? ' · '+escapeHtml(r.code) : '')+'</small></span>'+
+      '<span class="caro-room-info"><b>'+name+'</b>'+wagerBadge+'<small>'+turn+(r.code ? ' · '+escapeHtml(r.code) : '')+'</small></span>'+
       '<span class="caro-room-action">'+joinLabel+'</span></button>';
   }).join('');
   list.querySelectorAll('.caro-room-row').forEach(btn=>{
@@ -2205,6 +2239,17 @@ function _caroRenderLobby(d){
     here.textContent = typeof t==='function' ? t('caroJoinedRoom') : '✓ Đã vào phòng';
   }
 
+  const wagerEl = document.getElementById('caro-lobby-wager');
+  if(wagerEl){
+    if(Number(d.wagerAmount) > 0 && d.wagerCurrency === 'gold'){
+      const label = typeof t==='function' ? t('onlineLobbyWager') : 'Cược:';
+      wagerEl.textContent = label + ' 🪙 ' + d.wagerAmount + ' (' + (typeof t==='function'?t('onlineLobbyWagerPot','thắng +95%'):'thắng +95%') + ')';
+      wagerEl.style.display = '';
+    } else {
+      wagerEl.style.display = 'none';
+    }
+  }
+
   const startBtn = document.getElementById('caro-start-btn');
   const isHost = _caroLobby && _caroLobby.role==='host';
   if(startBtn) startBtn.style.display = (isHost && d.status==='ready' && d.guestId) ? 'block' : 'none';
@@ -2214,6 +2259,61 @@ function _caroRenderLobby(d){
   }
   _caroSyncPrefUI(getCaroPrefs());
   _caroRenderOpenRoomLists(_caroLastOpenRooms || []);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Đặt cược VÀNG khi tạo phòng caro (2 người chơi cược vàng, ai thắng nhận lại
+// cược của mình + 95% cược đối thủ — xem functions/index.js: escrowWager/
+// applyMatchResult). CHỈ VÀNG, không hỗ trợ kim cương ở caro có chủ đích: kim
+// cương mua bằng tiền thật (IAP) không được đưa vào cược 1-1 ăn-thua giữa 2
+// tài khoản, để tránh mở đường tiền thật → cược — xem quyết định trong
+// docs/ONLINE_MULTIPLAYER.md và trao đổi khi thêm tính năng này.
+// ═══════════════════════════════════════════════════════════════
+let _caroWagerOn = false;
+let _caroWagerAmount = 0;
+const CARO_WAGER_PRESETS = [5, 10, 15, 20, 30];
+
+function _caroRenderWagerAmounts(){
+  const box = document.getElementById('caro-wager-amounts');
+  if(!box) return;
+  if(CARO_WAGER_PRESETS.indexOf(_caroWagerAmount) < 0) _caroWagerAmount = CARO_WAGER_PRESETS[0];
+  box.innerHTML = '';
+  CARO_WAGER_PRESETS.forEach(function(n){
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'online-wager-amt-btn' + (n === _caroWagerAmount ? ' active' : '');
+    b.textContent = '🪙 ' + n;
+    b.addEventListener('click', function(){
+      try{ sfxClick(); }catch(e){}
+      _caroWagerAmount = n;
+      _caroRenderWagerAmounts();
+    });
+    box.appendChild(b);
+  });
+}
+
+function bindCaroWagerUI(){
+  document.getElementById('caro-wager-toggle')?.addEventListener('click', function(){
+    try{ sfxClick(); }catch(e){}
+    _caroWagerOn = !_caroWagerOn;
+    this.classList.toggle('active', _caroWagerOn);
+    const picker = document.getElementById('caro-wager-picker');
+    if(picker) picker.hidden = !_caroWagerOn;
+    if(_caroWagerOn){
+      _caroRenderWagerAmounts();
+      const balEl = document.getElementById('caro-wager-balance');
+      if(balEl){
+        balEl.textContent = typeof t==='function' ? t('onlineWagerBalanceLoading','Đang kiểm tra số dư...') : '...';
+        if(typeof syncWalletFromServer === 'function'){
+          syncWalletFromServer().then(function(w){
+            if(!w || !balEl.isConnected) return;
+            const label = typeof t==='function' ? t('onlineWagerBalance','Số dư') : 'Số dư';
+            balEl.textContent = label + ': 🪙 ' + (w.gold|0);
+          });
+        }
+      }
+    }
+  });
 }
 
 async function caroCreateRoom(){
@@ -2230,9 +2330,12 @@ async function caroCreateRoom(){
       if(!wasHost) await leaveOnlineRoom(prev);
     }
     const prefs = getCaroPrefs();
-    const created = await createOnlineRoom({
+    const wagerOpts = (_caroWagerOn && _caroWagerAmount > 0)
+      ? { wagerCurrency: 'gold', wagerAmount: _caroWagerAmount }
+      : {};
+    const created = await createOnlineRoom(Object.assign({
       gameType:'caro', turnSec: prefs.turnSec, boardSkin: prefs.skin
-    });
+    }, wagerOpts));
     const room = created.room || {
       status:'open', hostName:getOnlineDisplayName(), hostAvatar:getOnlineAvatar(),
       hostId: getOnlineUid(), gameType:'caro',
@@ -2491,6 +2594,7 @@ function applyCaroSettings(){
     bindAiButtons();
     bindPrefs();
 
+    bindCaroWagerUI();
     document.getElementById('caro-create-btn')?.addEventListener('click', caroCreateRoom);
     document.getElementById('caro-join-btn')?.addEventListener('click', caroJoinRoom);
     document.getElementById('caro-find-btn')?.addEventListener('click', caroFindOpponent);
