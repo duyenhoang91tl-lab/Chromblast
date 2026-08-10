@@ -2623,7 +2623,11 @@ function applyCaroSettings(){
   }
 
   function bind(){
-    document.getElementById('caro-btn')?.addEventListener('click', openCaroHub);
+    // KHÔNG gắn listener 'click' cho #caro-btn ở đây nữa — js/caro-loader.js đã
+    // gắn sẵn đúng 1 listener {once:true} mở js/caro-menu.js (màn Caro Menu) cho
+    // LẦN BẤM ĐẦU TIÊN. Gắn thêm listener 'openCaroHub' trực tiếp ở đây (như
+    // trước) khiến những lần bấm SAU nhảy thẳng vào Caro Hub cũ, bỏ qua Caro
+    // Menu — vì listener {once:true} kia đã tự gỡ sau lần dùng đầu tiên.
     document.getElementById('caro-hub-close')?.addEventListener('click', closeCaroHub);
     bindAiButtons();
     bindPrefs();

@@ -76,6 +76,15 @@ function openCaroRoomBrowser(){
   // gốc chưa có, hoặc tệ hơn là ép nạp caro.js sớm cho MỌI người chơi kể cả ai
   // chưa từng mở Caro.
   _crbInstallRoomListHook();
+  // Bộ lắng nghe danh sách phòng (_caroStartRoomListListen) trước đây chỉ được
+  // bật bên trong openCaroHub() — giờ "Chọn phòng" ở Caro Menu vào thẳng màn
+  // này, bỏ qua Caro Hub cũ, nên phải tự gọi openCaroHub() để chạy đúng phần
+  // thiết lập/bật lắng nghe đó, rồi ẩn ngay Caro Hub đi (không cho hiện ra) —
+  // không viết lại logic thiết lập, chỉ mượn tác dụng phụ của hàm gốc.
+  if(typeof openCaroHub === 'function'){
+    openCaroHub();
+    document.getElementById('caro-hub-panel')?.classList.remove('show');
+  }
   renderCrbTopbar();
   renderCrbRoomList();
   document.getElementById('caro-room-browser')?.classList.add('show');
@@ -124,7 +133,7 @@ function closeCaroRoomBrowser(){
     document.getElementById('crb-vs-ai-btn')?.addEventListener('click', ()=>{
       try{ sfxClick(); }catch(e){}
       closeCaroRoomBrowser();
-      if(typeof window.caroStartAI === 'function') window.caroStartAI('medium');
+      if(typeof window.caroStartAI === 'function') window.caroStartAI('extreme');
     });
     document.getElementById('crb-friends-btn')?.addEventListener('click', ()=>{
       closeCaroRoomBrowser();

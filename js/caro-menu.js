@@ -81,7 +81,7 @@ function initCaroMenu(){
         if(!locked && onlineOn && typeof caroFindOpponent === 'function'){
           document.getElementById('caro-find-btn')?.click();
         } else if(typeof caroStartAI === 'function'){
-          caroStartAI('medium');
+          caroStartAI('extreme');
         }
       }, 150);
     });
