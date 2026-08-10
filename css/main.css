@@ -7039,6 +7039,8 @@ body:has(#secret-stage.active) .streak-dot.lit{
 }
 .caro-menu-ico-btn:active{ background: rgba(255,255,255,0.8); }
 .caro-menu-ico{ font-size: 26px; line-height: 1; }
+.caro-menu-ico-only{ justify-content: center; min-height: 54px; }
+.caro-menu-ico-only .caro-menu-ico{ font-size: 30px; }
 .caro-menu-badge{
   position: absolute; top: 4px; right: 14px; background: #ff5252; color: #fff;
   border-radius: 10px; font-size: 10px; font-weight: 800; padding: 1px 6px;

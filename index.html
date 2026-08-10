@@ -1180,6 +1180,58 @@
     </div>
   </div>
 
+  <div id="versus-menu-panel" class="caro-menu-screen" aria-hidden="true">
+    <div class="caro-menu-head">
+      <button type="button" class="caro-menu-back" id="versus-menu-back-btn" aria-label="Back">‹</button>
+      <span class="caro-menu-title" data-i18n="versusMenuTitle">⚔️ Versus</span>
+      <span class="caro-menu-head-spacer"></span>
+    </div>
+    <div class="caro-menu-body">
+      <div class="caro-menu-icons">
+        <button type="button" class="caro-menu-ico-btn caro-menu-ico-only" id="versus-menu-rank-btn" data-i18n-title="versusMenuRank" data-i18n-aria-label="versusMenuRank" title="Xếp hạng" aria-label="Xếp hạng">
+          <span class="caro-menu-ico">🏆</span>
+        </button>
+        <button type="button" class="caro-menu-ico-btn caro-menu-ico-only" id="versus-menu-friends-btn" data-i18n-title="versusMenuFriends" data-i18n-aria-label="versusMenuFriends" title="Bạn bè" aria-label="Bạn bè">
+          <span class="caro-menu-ico">🤝</span>
+        </button>
+        <button type="button" class="caro-menu-ico-btn caro-menu-ico-only" id="versus-menu-chroma-btn" data-i18n-title="versusMenuChroma" data-i18n-aria-label="versusMenuChroma" title="Chroma Blast" aria-label="Chroma Blast">
+          <span class="caro-menu-ico">🧊</span>
+        </button>
+        <button type="button" class="caro-menu-ico-btn caro-menu-ico-only" id="versus-menu-daily-btn" data-i18n-title="versusMenuDaily" data-i18n-aria-label="versusMenuDaily" title="Điểm danh" aria-label="Điểm danh">
+          <span class="caro-menu-ico">🎁</span>
+          <span class="caro-menu-badge" id="versus-menu-daily-badge" hidden>1</span>
+        </button>
+        <button type="button" class="caro-menu-ico-btn caro-menu-ico-only" id="versus-menu-caro-btn" data-i18n-title="versusMenuCaro" data-i18n-aria-label="versusMenuCaro" title="Caro" aria-label="Caro">
+          <span class="caro-menu-ico">❌⭕</span>
+        </button>
+        <button type="button" class="caro-menu-ico-btn caro-menu-ico-only" id="versus-menu-skin-btn" data-i18n-title="versusMenuSkin" data-i18n-aria-label="versusMenuSkin" title="Chọn nền" aria-label="Chọn nền">
+          <span class="caro-menu-ico">🎨</span>
+        </button>
+      </div>
+
+      <div class="caro-menu-actions">
+        <button type="button" class="caro-menu-action caro-menu-action-quick" id="versus-menu-quick-btn">
+          <span data-i18n="versusMenuQuick">⚡ Chơi nhanh</span>
+        </button>
+        <button type="button" class="caro-menu-action" id="versus-menu-withfriend-btn">
+          <span data-i18n="versusMenuWithFriend">🤝 Chơi với bạn</span>
+        </button>
+        <button type="button" class="caro-menu-action" id="versus-menu-join-btn">
+          <span data-i18n="versusMenuJoin">🚪 Vào phòng</span>
+        </button>
+        <button type="button" class="caro-menu-action" id="versus-menu-ranked-btn">
+          <span data-i18n="versusMenuRanked">🏆 Đấu hạng</span>
+        </button>
+        <button type="button" class="caro-menu-action caro-menu-action-tour" id="versus-menu-tour-btn">
+          <span data-i18n="versusMenuTour">🏅 Giải đấu</span>
+        </button>
+        <button type="button" class="caro-menu-action" id="versus-menu-ai-btn">
+          <span data-i18n="versusMenuAI">🤖 Đấu với máy</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- ══ Điểm danh riêng Caro ══ -->
   <div id="caro-daily-panel" class="admin-panel-like">
     <div class="admin-card">
@@ -1716,6 +1768,7 @@
 <script src="js/account-hub.js"></script>
 <script src="js/caro-daily.js"></script>
 <script src="js/caro-menu.js"></script>
+<script src="js/versus-menu.js"></script>
 <!-- js/caro.js + js/caro-social.js: nạp trễ (lazy-load) qua js/caro-loader.js
      khi người chơi bấm #caro-btn hoặc nhận lời mời Caro qua chat, để
      giảm dung lượng tải ban đầu (~104KB) cho người chưa vào chế độ này. -->

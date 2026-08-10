@@ -580,7 +580,10 @@ function _vsEndMatch(){
 (function(){
   function bind(){
     const btn=document.getElementById('versus-btn');
-    if(btn) btn.addEventListener('click', ()=>openVersusSetup());
+    if(btn) btn.addEventListener('click', ()=>{
+      if(typeof window.openVersusMenu === 'function'){ window.openVersusMenu(); return; }
+      openVersusSetup();
+    });
     const start=document.getElementById('vs-start-btn');
     if(start) start.addEventListener('click', startVersusMatch);
     const cancel=document.getElementById('vs-cancel-btn');
