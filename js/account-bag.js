@@ -28,23 +28,31 @@
      qua isNameEffectOwned/equippedNameEffect/equipNameEffect và
      isTextEffectOwned/equippedTextEffect/equipTextEffect, mua thêm mở thẳng
      đúng tab Cửa hàng (openShop('nameeffects')/openShop('textfx')).
-   LƯU Ý: "Rương" vẫn KHÔNG có trong yêu cầu hạng mục ở đây vì dự án hiện chưa có
-   hệ thống nào lưu vật phẩm dạng đó — thêm danh mục này cần xây tính năng mới từ
-   đầu (định nghĩa vật phẩm, nơi mở khoá/mua...), không phải việc sắp xếp lại màn
-   hình sẵn có nên chưa đưa vào đây.
+   - Rương: LOOT_CRATES (js/loot-crates.js) qua renderCrateGridInto() dùng CHUNG
+     với màn "Rương bảo vật" (menu chính) và tab Rương trong Cửa hàng — mua/mở
+     ngay tại đây, không phải danh sách "đã mua" riêng (rương mở ra ngay khi mua,
+     không có trạng thái "chưa mở" để tồn kho).
+   Không còn hạng mục nào cần "sắp ra mắt" nữa — cả 8 hạng mục đều đã có dữ liệu
+   thật.
 ══════════════════════════════════════════ */
 
 const ACBAG_BRICK_PREVIEW_COLORS = ["#E24B4A", "#378ADD", "#1D9E75", "#EF9F27"];
 const ACBAG_CATEGORIES = ['skills', 'boards', 'bricks', 'bubbles', 'maps', 'chests', 'fonts', 'nametags'];
-const ACBAG_CAT_ICON = { skills:'⚔️', boards:'🖼️', bricks:'🧱', bubbles:'💬', maps:'🗺️', chests:'📦', fonts:'💫', nametags:'✨' };
+const ACBAG_CAT_ICON = { skills:'⚔️', boards:'🖼️', bricks:'🧱', bubbles:'💬', maps:'🗺️', chests:'', fonts:'💫', nametags:'✨' };
+// Icon rương là SVG lấy từ _chestIconHtml() (js/gpcard-redeem.js, nạp SAU file
+// này) — không tính sẵn trong object trên lúc parse vì lúc đó hàm chưa tồn
+// tại, phải tính động lúc render (_acbagCatIconHtml) để luôn khớp với icon
+// dùng ở tab Rương trong Cửa hàng và màn Rương bảo vật.
+function _acbagCatIconHtml(cat){
+  if(cat === 'chests' && typeof _chestIconHtml === 'function') return _chestIconHtml('#ffd54a');
+  return ACBAG_CAT_ICON[cat] || '';
+}
 const ACBAG_CAT_KEY  = { skills:'acbagCatSkills', boards:'acbagCatBoards', bricks:'acbagCatBricks', bubbles:'acbagCatBubbles', maps:'acbagCatMaps', chests:'acbagCatChests', fonts:'acbagCatFonts', nametags:'acbagCatNameTags' };
-// "Rương" CHƯA có hệ thống dữ liệu thật trong dự án (không có field/list nào
-// lưu rương đã sở hữu) — đang được xây ở luồng khác. Giữ trước lối vào +
-// trạng thái "sắp ra mắt" (đúng mẫu account-groups.js đã dùng cho Hội nhóm) để
-// có chỗ đứng sẵn trong danh sách hạng mục; không tự bịa số liệu/danh sách vật
-// phẩm ở đây khi chưa có quyết định thiết kế.
-const ACBAG_CAT_SOON = { chests:true };
-let _acbagView = 'categories'; // 'categories' | 'skills' | 'boards' | 'bricks' | 'bubbles' | 'maps' | 'nametags' | 'fonts'
+// Không còn hạng mục "sắp ra mắt" nào nữa (Rương + Mẫu chữ + Mẫu tên hiển thị
+// đều đã có dữ liệu thật) — giữ object rỗng thay vì xoá hẳn để không phải sửa
+// lại các chỗ đang kiểm tra ACBAG_CAT_SOON[cat].
+const ACBAG_CAT_SOON = {};
+let _acbagView = 'categories'; // 'categories' | 'skills' | 'boards' | 'bricks' | 'bubbles' | 'maps' | 'chests' | 'nametags' | 'fonts'
 
 function _acbagT(k, ...args){ return (typeof t === 'function') ? t(k, ...args) : k; }
 function _acbagEsc(s){ return (typeof escapeHtml === 'function') ? escapeHtml(s) : String(s||''); }
@@ -83,6 +91,10 @@ function _acbagCatCount(cat){
     const list = (typeof TEXT_EFFECTS !== 'undefined') ? TEXT_EFFECTS : [];
     return { owned:list.filter(fx=>fx && typeof isTextEffectOwned==='function' && isTextEffectOwned(fx.id)).length, total:list.length };
   }
+  if(cat === 'chests'){
+    const list = (typeof LOOT_CRATES !== 'undefined') ? LOOT_CRATES : [];
+    return { owned:list.length, total:null };
+  }
   return { owned:0, total:null };
 }
 
@@ -94,7 +106,7 @@ function _acbagRenderCategories(){
     const c = _acbagCatCount(cat);
     const countTxt = c.soon ? _acbagT('acbagSoonBadge') : (c.total===null ? String(c.owned) : (c.owned+'/'+c.total));
     return '<button type="button" class="acbag-cat-row' + (c.soon ? ' soon' : '') + '" data-cat="'+cat+'">'
-      + '<span class="acbag-cat-ico">'+ACBAG_CAT_ICON[cat]+'</span>'
+      + '<span class="acbag-cat-ico">'+_acbagCatIconHtml(cat)+'</span>'
       + '<span class="acbag-cat-label">'+_acbagEsc(_acbagT(ACBAG_CAT_KEY[cat]))+'</span>'
       + '<span class="acbag-cat-count' + (c.soon ? ' soon' : '') + '">'+_acbagEsc(countTxt)+'</span>'
       + '<span class="acbag-cat-arrow">›</span>'
@@ -418,7 +430,7 @@ function _acbagRenderSoon(grid, cat){
   grid.className = 'acbag-soon-wrap';
   grid.innerHTML =
     '<div class="acbag-empty">'
-    + '<div class="acbag-empty-icon">'+ACBAG_CAT_ICON[cat]+'</div>'
+    + '<div class="acbag-empty-icon">'+_acbagCatIconHtml(cat)+'</div>'
     + '<div class="acbag-empty-title">'+_acbagEsc(_acbagT('acbagSoonTitle'))+'</div>'
     + '<div class="acbag-empty-sub">'+_acbagEsc(_acbagT('acbagSoonSub'))+'</div>'
     + '</div>';
@@ -435,6 +447,13 @@ function _acbagRenderDetail(){
   if(_acbagView === 'maps'){ _acbagRenderMaps(grid); return; }
   if(_acbagView === 'nametags'){ _acbagRenderNameEffects(grid); return; }
   if(_acbagView === 'fonts'){ _acbagRenderTextEffects(grid); return; }
+  if(_acbagView === 'chests'){
+    // Dùng chung đúng hàm vẽ lưới rương với màn "Rương bảo vật" (menu chính)
+    // và tab Rương trong Cửa hàng (js/gpcard-redeem.js) — icon/dữ liệu/hành
+    // vi mua-mở luôn khớp tuyệt đối ở cả 3 nơi, không có bản copy riêng.
+    if(typeof renderCrateGridInto === 'function') renderCrateGridInto(grid);
+    return;
+  }
 
   grid.className = 'acbag-grid';
   grid.innerHTML = '';
