@@ -715,17 +715,16 @@ exports.giftHeart = onCall({ region: 'asia-southeast1' }, async (request) => {
  * transaction — trừ giá + random phần thưởng + cộng thưởng CÙNG LÚC. Trước
  * đây client tự trừ qua spendCurrency rồi tự cộng thưởng cục bộ — lần
  * syncWalletFromServer() kế tiếp ghi đè mất phần cộng cục bộ đó (lỗi đã biết,
- * xem docs/SERVER_WALLET_PROGRESS.md). Rương Bạc/Vàng có thêm lượt mở MIỄN
- * PHÍ 1 lần/ngày/rương (doc claims, không dựa localStorage nên không xoá
- * cache để mở lại được). Định nghĩa rương dưới đây PHẢI khớp đúng
- * LOOT_CRATES phía client (giá/khoảng thưởng) — đổi 1 bên nhớ đổi bên kia.
+ * xem docs/SERVER_WALLET_PROGRESS.md). Định nghĩa rương dưới đây PHẢI khớp
+ * đúng LOOT_CRATES phía client (giá/khoảng thưởng) — đổi 1 bên nhớ đổi bên kia.
  * Rương vật phẩm (bong bóng/kỹ năng/gạch/map/hiệu ứng) KHÔNG qua đây — chúng
  * chỉ mở khoá cosmetic cục bộ (không có gì để đồng bộ ngược nên không có lỗi
  * tương tự), vẫn dùng spendCurrency + unlock cục bộ như cũ.
  */
 const CURRENCY_CRATES = {
-  silver:  { price: 25, priceType: 'gold',    freeDaily: true,  rewardType: 'gold',    min: 15, max: 40  },
-  gold:    { price: 8,  priceType: 'diamond', freeDaily: true,  rewardType: 'gold',    min: 60, max: 150 },
+  wood:    { price: 5,  priceType: 'gold',    freeDaily: false, rewardType: 'gold',    min: 8,  max: 20  },
+  silver:  { price: 25, priceType: 'gold',    freeDaily: false, rewardType: 'gold',    min: 15, max: 40  },
+  gold:    { price: 8,  priceType: 'diamond', freeDaily: false, rewardType: 'gold',    min: 60, max: 150 },
   diamond: { price: 20, priceType: 'diamond', freeDaily: false, rewardType: 'diamond', min: 2,  max: 8   },
 };
 /**

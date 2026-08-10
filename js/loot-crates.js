@@ -1,25 +1,24 @@
 // ═══════════════════════════════════════════════════════════════
-// js/loot-crates.js — Hệ thống rương (Thẻ trò chơi → tab "Đổi quà").
-// 8 loại rương: 3 rương tiền tệ (Bạc/Vàng/Kim cương) + 5 rương vật phẩm
+// js/loot-crates.js — Hệ thống rương (menu chính → "Rương bảo vật").
+// 9 loại rương: 4 rương tiền tệ (Gỗ/Bạc/Vàng/Kim cương) + 5 rương vật phẩm
 // (Bong bóng chat/Kỹ năng/Gạch/Map/Hiệu ứng tên) — mỗi rương vật phẩm random
 // 1 món CHƯA SỞ HỮU trong đúng kho có sẵn (brick-skins.js/map-boards.js/
 // chat-bubble-skins.js/name-effect-skins.js/inventory.js POWER_INFO), không
 // tạo vật phẩm mới ngoài các hệ đã có.
-// Trừ Rương Bạc, tất cả bán bằng kim cương. Rương Bạc/Vàng/Gạch/Map có thêm
-// lượt MỞ MIỄN PHÍ 1 lần/ngày (xem QC) — 4 rương còn lại (Kim cương/Bong
-// bóng/Kỹ năng/Hiệu ứng) chỉ mua bằng kim cương, không có lượt free.
+// Trừ Rương Gỗ/Bạc, tất cả bán bằng kim cương. Không còn lượt mở miễn phí.
 // Nạp SAU inventory.js, brick-skins.js, map-boards.js, chat-bubble-skins.js,
 // name-effect-skins.js.
 // ═══════════════════════════════════════════════════════════════
 
 const LOOT_CRATES = [
-  { id:'silver',  name:'Rương Bạc',       icon:'📦', tint:'#c9ced6', price:25, priceType:'gold',    freeDaily:true,  kind:'currency-gold',    min:15, max:40  },
-  { id:'gold',    name:'Rương Vàng',      icon:'🎁', tint:'#ffd54a', price:8,  priceType:'diamond', freeDaily:true,  kind:'currency-gold',    min:60, max:150 },
+  { id:'wood',    name:'Rương Gỗ',        icon:'🪵', tint:'#8a5a30', price:5,  priceType:'gold',    freeDaily:false, kind:'currency-gold',    min:8,  max:20  },
+  { id:'silver',  name:'Rương Bạc',       icon:'📦', tint:'#c9ced6', price:25, priceType:'gold',    freeDaily:false, kind:'currency-gold',    min:15, max:40  },
+  { id:'gold',    name:'Rương Vàng',      icon:'🎁', tint:'#ffd54a', price:8,  priceType:'diamond', freeDaily:false, kind:'currency-gold',    min:60, max:150 },
   { id:'diamond', name:'Rương Kim Cương', icon:'💎', tint:'#7ee8fa', price:20, priceType:'diamond', freeDaily:false, kind:'currency-diamond', min:2,  max:8   },
   { id:'bubble',  name:'Rương Bong Bóng', icon:'💬', tint:'#8ecae6', price:15, priceType:'diamond', freeDaily:false, kind:'item-bubble' },
   { id:'skill',   name:'Rương Kỹ Năng',   icon:'⚡', tint:'#ffb703', price:10, priceType:'diamond', freeDaily:false, kind:'item-skill'  },
-  { id:'brick',   name:'Rương Gạch',      icon:'🧱', tint:'#e2725b', price:12, priceType:'diamond', freeDaily:true,  kind:'item-brick'  },
-  { id:'map',     name:'Rương Map',       icon:'🗺️', tint:'#8fd694', price:12, priceType:'diamond', freeDaily:true,  kind:'item-map'    },
+  { id:'brick',   name:'Rương Gạch',      icon:'🧱', tint:'#e2725b', price:12, priceType:'diamond', freeDaily:false, kind:'item-brick'  },
+  { id:'map',     name:'Rương Map',       icon:'🗺️', tint:'#8fd694', price:12, priceType:'diamond', freeDaily:false, kind:'item-map'    },
   { id:'effect',  name:'Rương Hiệu Ứng',  icon:'✨', tint:'#e0aaff', price:15, priceType:'diamond', freeDaily:false, kind:'item-effect' },
 ];
 
