@@ -142,8 +142,8 @@ function _vsBuildArena(){
   if(!online) arena.classList.add('vs-ai-mode');
   if(_vs && typeof _vs.layoutBoost !== 'boolean') _vs.layoutBoost = _vsGetLayoutBoost();
   if(_vs && _vs.layoutBoost) arena.classList.add('vs-boost');
-  const nTop = escapeHtml(_vs.names[0] || 'P1');
-  const nBot = escapeHtml(_vs.names[1] || 'P2');
+  const nTopPlain = escapeHtml(_vs.names[0] || 'P1');
+  const nBotPlain = escapeHtml(_vs.names[1] || 'P2');
   const avTop = escapeHtml((_vs.avatars && _vs.avatars[0]) || '🐶');
   const avBot = escapeHtml((_vs.avatars && _vs.avatars[1]) || '🐱');
   const quitLbl = (typeof t === 'function' ? t('vsQuit') : null) || 'Thoát';
@@ -153,6 +153,19 @@ function _vsBuildArena(){
   const myVsRank = (typeof getVersusRank==='function') ? getVersusRank(myVsPoints) : null;
   const oppVsPoints = (_vs.online && _vs.online.oppVersusPoints!=null) ? _vs.online.oppVersusPoints : null;
   const oppVsRank = (online && oppVsPoints!=null && typeof getVersusRank==='function') ? getVersusRank(oppVsPoints) : null;
+
+  // Tên hiển thị theo đúng kiểu style/hiệu ứng đã dùng ở chat/Caro: của mình
+  // dùng style tự chọn (getPlayerNameStyle) + hiệu ứng theo bậc rank Versus
+  // (10 bậc, xem js/versus-ranks.js); của đối thủ dùng style trung tính vì
+  // không biết style họ chọn — chỉ tự động thêm hiệu ứng rank nếu biết bậc.
+  const _vsNeutralStyle = { color:'#ffffff', bold:false, italic:false, fontId:'nunito', effect:'' };
+  const myNameStyle = (typeof getPlayerNameStyle==='function') ? getPlayerNameStyle() : _vsNeutralStyle;
+  const nTop = (myVsRank && myVsRank.tier > 0 && typeof rankNameFxHtml==='function')
+    ? rankNameFxHtml(_vs.names[0] || 'P1', myVsRank.tier, 10, myNameStyle)
+    : (typeof formatPlayerNameStyledHtml==='function' ? formatPlayerNameStyledHtml(_vs.names[0] || 'P1', myNameStyle) : escapeHtml(_vs.names[0] || 'P1'));
+  const nBot = (oppVsRank && oppVsRank.tier > 0 && typeof rankNameFxHtml==='function')
+    ? rankNameFxHtml(_vs.names[1] || 'P2', oppVsRank.tier, 10, _vsNeutralStyle)
+    : (typeof formatPlayerNameStyledHtml==='function' ? formatPlayerNameStyledHtml(_vs.names[1] || 'P2', _vsNeutralStyle) : escapeHtml(_vs.names[1] || 'P2'));
   const rankTopHtml = myVsRank ? ('<span class="vs-chip-rank" id="vs-chip-rank0">'+escapeHtml(myVsRank.icon+' '+myVsRank.name)+'</span>') : '';
   const rankBotHtml = oppVsRank ? ('<span class="vs-chip-rank" id="vs-chip-rank1">'+escapeHtml(oppVsRank.icon+' '+oppVsRank.name)+'</span>') : '';
 
@@ -171,7 +184,7 @@ function _vsBuildArena(){
   // Chip kiểu Caro: avatar + tên + điểm — giờ được chèn NGAY TRONG mỗi bàn (.vs-half)
   // thay vì nổi riêng theo cả màn hình, xem vòng lặp half bên dưới.
   const chipHtml0 =
-    '<div id="vs-top-chip" class="vs-player-chip vs-chip-top" aria-label="'+nTop+'">'+
+    '<div id="vs-top-chip" class="vs-player-chip vs-chip-top" aria-label="'+nTopPlain+'">'+
       '<span class="vs-chip-avatar caro-me-avatar" id="vs-chip-avatar0">'+avTop+'</span>'+
       '<div class="vs-chip-meta">'+
         '<span class="vs-chip-name" id="vs-chip-name0">'+nTop+'</span>'+
@@ -182,7 +195,7 @@ function _vsBuildArena(){
       '</div>'+
     '</div>';
   const chipHtml1 =
-    '<div id="vs-bottom-chip" class="vs-player-chip vs-chip-bottom" aria-label="'+nBot+'">'+
+    '<div id="vs-bottom-chip" class="vs-player-chip vs-chip-bottom" aria-label="'+nBotPlain+'">'+
       '<span class="vs-chip-avatar caro-opp-avatar" id="vs-chip-avatar1">'+avBot+'</span>'+
       '<div class="vs-chip-meta">'+
         '<span class="vs-chip-name" id="vs-chip-name1">'+nBot+'</span>'+
