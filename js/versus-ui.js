@@ -458,6 +458,8 @@ function _vsRenderHud(P){
 
 function _vsRenderGrid(P){
   const fog = Date.now()<P.fogUntil;
+  const eggRow = (P.egg && P.egg.row!=null) ? P.egg.row : -1;
+  const eggMidCol = Math.floor(VS_N/2);
   for(let r=0;r<VS_N;r++)for(let c=0;c<VS_N;c++){
     const d=P.el.cells[r][c], k=r+','+c, v=P.board[r][c];
     let cls='vs-cell', txt='', cc='';
@@ -473,6 +475,10 @@ function _vsRenderGrid(P){
     }
     const isBomb = !!(P.bomb && P.bomb.r===r && P.bomb.c===c);
     if(isBomb) cls+=' vs-bomb';
+    const isEggRow = (r===eggRow);
+    if(isEggRow) cls+=' vs-egg-row';
+    const isEggBadge = isEggRow && (c===eggMidCol);
+    if(isEggBadge) cls+=' vs-egg-badge';
 
     // So sánh trước khi ghi — trước đây ghi lại cả 49 ô mỗi lần dù phần lớn
     // không đổi (className/style/dataset), gây recalc style thừa mỗi lượt đặt khối.
@@ -491,6 +497,11 @@ function _vsRenderGrid(P){
       const bv=String(P.bomb.left);
       if(d.dataset.bomb!==bv) d.dataset.bomb=bv;
     } else if(d.dataset.bomb) delete d.dataset.bomb;
+
+    if(isEggBadge){
+      const ev=String(P.egg.left);
+      if(d.dataset.egg!==ev) d.dataset.egg=ev;
+    } else if(d.dataset.egg) delete d.dataset.egg;
   }
 }
 

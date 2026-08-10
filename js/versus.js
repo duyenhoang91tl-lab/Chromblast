@@ -51,6 +51,10 @@ const VS_OBSTACLES = [
   { id:'blackhole',nameIdx:12, emoji:'🕳️', free:false, price:0,   diaPrice:15 },
   { id:'wall',     nameIdx:15, emoji:'🧱', free:false, price:100, diaPrice:0 },
   { id:'lightning',nameIdx:16, emoji:'⚡', free:false, price:0,   diaPrice:15 },
+  { id:'egg',      nameIdx:8,  emoji:'🥚', free:false, price:90,  diaPrice:0 },
+  { id:'ghost',    nameIdx:13, emoji:'👻', free:false, price:70,  diaPrice:0 },
+  { id:'raincloud',nameIdx:10, emoji:'🌧️', free:false, price:0,  diaPrice:12 },
+  { id:'portal',   nameIdx:19, emoji:'🌀', free:false, price:50,  diaPrice:0 },
 ];
 
 const VS_CARD_UNLOCK_KEY = 'unlockedVsCards';
@@ -203,7 +207,7 @@ function startVersusMatch(){
 function _vsNewPlayer(idx,seed){
   return { idx, prng:_mulberry32(seed), board:Array.from({length:VS_N},()=>Array(VS_N).fill(null)),
     pieces:[], selected:-1, score:0, combo:0, clears:0, nextCardAt:VS_CARD_EVERY,
-    rocks:new Set(), ice:new Map(), bomb:null, fogUntil:0, done:false, el:{} };
+    rocks:new Set(), ice:new Map(), bomb:null, egg:null, fogUntil:0, done:false, el:{} };
 }
 
 // Nút trợ giúp ❓ nổi (z-index cao hơn đấu trường) đè lên điểm người chơi trên
@@ -503,6 +507,64 @@ function _vsApplyObstacle(F,ob){
         const r=r0+dr, c=c0+dc, k=r+','+c;
         F.board[r][c]=null; F.ice.delete(k);
       }
+    }
+  } else if(ob.id==='egg'){
+    // 🥚 Trứng rồng: đặt 1 quả trứng vào 1 hàng, báo trước 3s (giống bom có đếm
+    // ngược) rồi "nở" đốt sạch NGUYÊN CẢ HÀNG đó — nặng hơn bom (1 điểm) nhưng
+    // có báo trước để đối thủ kịp dọn bớt hàng đó nếu muốn, giống luật map thường.
+    const row = Math.floor(Math.random()*VS_N);
+    F.egg = { row, left:3 };
+    const tick=()=>{
+      if(!F.egg||!_vs||!versusMode) return;
+      F.egg.left--;
+      if(F.egg.left<=0){
+        const r=F.egg.row;
+        for(let c=0;c<VS_N;c++){
+          const k=r+','+c;
+          if(F.rocks.has(k)) continue;
+          F.board[r][c]=null; F.ice.delete(k);
+        }
+        F.egg=null;
+        _vsRenderGrid(F);
+        return;
+      }
+      _vsRenderGrid(F);
+      setTimeout(tick,1000);
+    };
+    setTimeout(tick,1000);
+  } else if(ob.id==='ghost'){
+    // 👻 Bóng ma: đổi màu 3 ô đã lấp sang màu KHÁC ngay lập tức — phá vỡ cụm màu
+    // đối thủ đang gom dở, không xoá ô (khác lửa/sét), chỉ đánh lừa/phá kế hoạch.
+    const targets = take(filledCells,3);
+    targets.forEach(k=>{
+      const [r,c]=k.split(',').map(Number);
+      const cur=F.board[r][c];
+      const others=(typeof COLORS!=='undefined'?COLORS:[cur]).filter(cc=>cc!==cur);
+      if(others.length) F.board[r][c]=others[Math.floor(Math.random()*others.length)];
+    });
+  } else if(ob.id==='raincloud'){
+    // 🌧️ Mây mưa: rửa trôi 3 ô đã lấp trong CÙNG 1 CỘT thành ô chắn tạm 8s (mượn
+    // lại F.rocks như núi đá/tường) — nhắm vào 1 cột nên cản đúng kiểu dựng cột
+    // của đối thủ, khác núi đá (rải ngẫu nhiên khắp bàn).
+    const col = Math.floor(Math.random()*VS_N);
+    const colFilled = filledCells.filter(k=>Number(k.split(',')[1])===col);
+    const washed = take(colFilled,3);
+    washed.forEach(k=>{ const [r,c]=k.split(',').map(Number); F.board[r][c]=null; F.ice.delete(k); F.rocks.add(k); });
+    if(washed.length) setTimeout(()=>{
+      if(_vs&&versusMode){ washed.forEach(k=>F.rocks.delete(k)); _vsRenderGrid(F); }
+    },8000);
+  } else if(ob.id==='portal'){
+    // 🌀 Cổng dịch chuyển: hoán đổi 2 ô đã lấp với 2 ô trống ngẫu nhiên — xáo trộn
+    // cục bộ, quy mô NHỎ hơn lốc xoáy (lốc đảo toàn bộ màu trên cả bàn).
+    const pairs = Math.min(2, filledCells.length, emptyCells.length);
+    for(let i=0;i<pairs;i++){
+      const fk = filledCells.splice(Math.floor(Math.random()*filledCells.length),1)[0];
+      const ek = emptyCells.splice(Math.floor(Math.random()*emptyCells.length),1)[0];
+      const [fr,fc]=fk.split(',').map(Number);
+      const [er,ec]=ek.split(',').map(Number);
+      const col=F.board[fr][fc];
+      F.board[fr][fc]=null; F.ice.delete(fk);
+      F.board[er][ec]=col;
     }
   }
   // báo cho nạn nhân — chỉ rung màn, KHÔNG hiện chữ thông báo (gây rối/che bàn cờ

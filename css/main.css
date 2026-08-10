@@ -4310,6 +4310,18 @@ body:has(#secret-stage.active) .streak-dot.lit{
   from { transform: scale(1);    filter: drop-shadow(0 0 2px rgba(255,60,60,0.5)); }
   to   { transform: scale(1.1);  filter: drop-shadow(0 0 6px rgba(255,60,60,0.95)); }
 }
+/* 🥚 Trứng rồng (Versus) — cả hàng nhuốm cam cảnh báo, giữa hàng hiện quả trứng +
+   số đếm ngược, giống tinh thần "báo trước rồi mới đốt cả hàng" ở map thường. */
+.vs-cell.vs-egg-row{ box-shadow: inset 0 0 0 999px rgba(255,150,40,0.22); }
+.vs-cell.vs-egg-badge::after{
+  content:'🥚'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-size:65%; pointer-events:none; z-index:3;
+  animation: vsBombPulse 0.9s ease-in-out infinite alternate;
+}
+.vs-cell.vs-egg-badge::before{
+  content: attr(data-egg); position:absolute; top:1px; right:2px;
+  font-size:60%; font-weight:800; color:#ff9628; text-shadow:0 0 4px #000; z-index:4;
+}
 .vs-cell.vs-prev{ opacity:0.55; transform:scale(0.92); } /* ô mờ xem trước chỗ đáp — giống map thường */
 .vs-tray{ display:flex; gap:10px; align-items:center; justify-content:center; min-height:44px; }
 .vs-piece{
