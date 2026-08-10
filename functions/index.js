@@ -1,3 +1,4 @@
+// Cloud Functions cho ChromaBlast — kiem duyet chat, dong bo tien te, doi tra online.
 const { setGlobalOptions } = require('firebase-functions/v2');
 const { onDocumentCreated, onDocumentUpdated, onDocumentDeleted } = require('firebase-functions/v2/firestore');
 const { onCall, onRequest, HttpsError } = require('firebase-functions/v2/https');
