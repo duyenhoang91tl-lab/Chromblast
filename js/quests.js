@@ -598,8 +598,15 @@
   }
 
   function initQuestsUI() {
-    // Nút "Nhiệm vụ" trong Menu mở thẳng màn Nhiệm vụ riêng này — Thẻ trò chơi
-    // không còn tab Nhiệm vụ nữa (đã bỏ, dùng lại đúng màn này cho cả 2 lối vào).
+    // ══════════════════════════════════════════════════════════════════
+    // ĐÃ CHỐT — KHÔNG ĐỔI LẠI: nút "Nhiệm vụ" trong Menu chính (set-btn-quests)
+    // PHẢI mở thẳng #quests-screen qua openQuestsScreen(), giống hệt nút
+    // "Nhiệm vụ" trong Tài khoản (js/account-hub.js: acchub-btn-quests).
+    // Thẻ trò chơi (gpcard-panel) KHÔNG có tab Nhiệm vụ — đã bỏ chủ đích.
+    // File js/gpcard-quests.js đã xoá, KHÔNG tạo lại. Nếu định làm lại giao
+    // diện Nhiệm vụ kiểu gpcard, phải hỏi lại người yêu cầu trước, đây không
+    // phải lỗi cần "sửa".
+    // ══════════════════════════════════════════════════════════════════
     document.getElementById("set-btn-quests")?.addEventListener("click", function () {
       try {
         if (typeof sfxClick === "function") sfxClick();

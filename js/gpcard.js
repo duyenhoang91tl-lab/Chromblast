@@ -1,8 +1,14 @@
 // "Thẻ trò chơi" (game-pass-card) — khung sườn điểm vào mới cho mục Xếp hạng.
-// Chỉ lo phần khung: header cấp/XP, 4 tab, mở/đóng panel toàn màn hình trượt từ
-// phải sang. Nội dung bên trong mỗi tab (#gpcard-rewards/quests/redeem/
-// leaderboard) do các phần việc riêng đổ vào — file này KHÔNG render nội dung đó.
-
+// Chỉ lo phần khung: header cấp/XP, tab, mở/đóng panel toàn màn hình trượt từ
+// phải sang. Nội dung bên trong tab (#gpcard-leaderboard) do phần việc riêng
+// đổ vào — file này KHÔNG render nội dung đó.
+//
+// ĐÃ CHỐT — KHÔNG ĐỔI LẠI: chỉ còn ĐÚNG 1 tab "leaderboard". "Hành trình" và
+// "Đổi quà" đã tách thành 2 màn hình riêng mở từ Menu chính (set-btn-journey/
+// set-btn-redeem — xem js/gpcard-rewards.js, js/gpcard-redeem.js). "Nhiệm vụ"
+// dùng lại #quests-screen có sẵn (xem js/quests.js, js/account-hub.js), KHÔNG
+// có mặt ở đây. KHÔNG thêm lại 'rewards'/'quests'/'redeem' vào GPCARD_TABS —
+// đây là quyết định chủ đích của người yêu cầu, không phải thiếu sót.
 const GPCARD_TABS = ['leaderboard'];
 
 function _gpcardRenderHeader(){

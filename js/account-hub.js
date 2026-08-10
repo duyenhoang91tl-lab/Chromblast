@@ -66,6 +66,9 @@ function _acchubCloseSub(panelId){
       closeAccountHub();
       if(typeof openFriendsPanel === 'function') openFriendsPanel();
     });
+    // ĐÃ CHỐT — KHÔNG ĐỔI LẠI (xem js/quests.js: set-btn-quests để biết đầy
+    // đủ lý do). Nút này PHẢI mở thẳng #quests-screen qua openQuestsScreen(),
+    // giống hệt nút "Nhiệm vụ" trong Menu chính.
     document.getElementById('acchub-btn-quests')?.addEventListener('click', ()=>{
       try{ sfxClick(); }catch(e){}
       if(typeof openQuestsScreen === 'function') openQuestsScreen();
