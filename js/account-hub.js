@@ -71,6 +71,7 @@ function _acchubCloseSub(panelId){
     // giống hệt nút "Nhiệm vụ" trong Menu chính.
     document.getElementById('acchub-btn-quests')?.addEventListener('click', ()=>{
       try{ sfxClick(); }catch(e){}
+      closeAccountHub();
       if(typeof openQuestsScreen === 'function') openQuestsScreen();
     });
 
