@@ -54,13 +54,13 @@ jobs:
             echo "::group::Toan bo log deploy (de doc thu cong neu can)"
             cat /tmp/deploy.log
             echo "::endgroup::"
-            MSG=$(tail -n 50 /tmp/deploy.log | sed 's/%/%25/g' | sed ':a;N;$!ba;s/\r/%0D/g;s/\n/%0A/g')
+            MSG=$(tail -n 150 /tmp/deploy.log | sed 's/%/%25/g' | sed ':a;N;$!ba;s/\r/%0D/g;s/\n/%0A/g')
             echo "::error title=Firebase deploy that bai (50 dong cuoi)::$MSG"
             if [ -f firebase-debug.log ]; then
               echo "::group::firebase-debug.log (chi tiet ky thuat)"
               cat firebase-debug.log
               echo "::endgroup::"
-              MSG2=$(tail -n 40 firebase-debug.log | sed 's/%/%25/g' | sed ':a;N;$!ba;s/\r/%0D/g;s/\n/%0A/g')
+              MSG2=$(tail -n 120 firebase-debug.log | sed 's/%/%25/g' | sed ':a;N;$!ba;s/\r/%0D/g;s/\n/%0A/g')
               echo "::error title=firebase-debug.log (40 dong cuoi)::$MSG2"
             fi
           fi
