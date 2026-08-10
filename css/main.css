@@ -2136,7 +2136,8 @@ body.gchat-open #game-root { transform: none !important; }
 .gchat-card {
   width:100%; height:100%; max-width:none; max-height:none; border-radius:0;
   display:flex; flex-direction:column;
-  background: #eaf6ff; color:#173049; border-color: rgba(20,80,140,0.15);
+  background: linear-gradient(165deg,#f5fbff 0%,#eaf6ff 55%,#dcf0ff 100%);
+  color:#173049; border-color: rgba(20,80,140,0.15);
 }
 .gchat-card input, .gchat-card textarea, .gchat-card select { color:#173049; }
 .gchat-tabs {
