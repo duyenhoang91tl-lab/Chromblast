@@ -64,7 +64,7 @@
     { tab: "hearts", ico: "❤️", key: "shopTabHearts", fb: "Tim" },
     { tab: "diamond", ico: "💎", key: "shopTabDiamond", fb: "Kim cương" },
     { tab: "nameeffects", ico: "✨", key: "shopTabNameeffects", fb: "Hiệu ứng tên" },
-    { tab: "chests", ico: '<svg viewBox="0 0 48 48" width="60" height="60" aria-hidden="true"><path d="M6 21 Q6 8 24 8 Q42 8 42 21 L42 25 L6 25 Z" fill="#8a5a30"/><path d="M6 21 Q6 8 24 8 Q42 8 42 21" fill="none" stroke="#ffd54a" stroke-width="2"/><rect x="6" y="25" width="36" height="17" rx="3" fill="#a5713e"/><rect x="6" y="25" width="36" height="17" rx="3" fill="none" stroke="#6b4423" stroke-width="1"/><line x1="6" y1="33.5" x2="42" y2="33.5" stroke="#6b4423" stroke-width="1.4"/><rect x="9" y="8" width="4.5" height="34" fill="#ffd54a" opacity="0.9"/><rect x="34.5" y="8" width="4.5" height="34" fill="#ffd54a" opacity="0.9"/><rect x="19.5" y="26" width="9" height="10" rx="2" fill="#ffd54a"/><circle cx="24" cy="30.5" r="1.7" fill="#4a2f14"/></svg>', key: "shopTabChests", fb: "Rương", locked: true },
+    { tab: "chests", ico: '<svg viewBox="0 0 48 48" width="60" height="60" aria-hidden="true"><path d="M6 21 Q6 8 24 8 Q42 8 42 21 L42 25 L6 25 Z" fill="#8a5a30"/><path d="M6 21 Q6 8 24 8 Q42 8 42 21" fill="none" stroke="#ffd54a" stroke-width="2"/><rect x="6" y="25" width="36" height="17" rx="3" fill="#a5713e"/><rect x="6" y="25" width="36" height="17" rx="3" fill="none" stroke="#6b4423" stroke-width="1"/><line x1="6" y1="33.5" x2="42" y2="33.5" stroke="#6b4423" stroke-width="1.4"/><rect x="9" y="8" width="4.5" height="34" fill="#ffd54a" opacity="0.9"/><rect x="34.5" y="8" width="4.5" height="34" fill="#ffd54a" opacity="0.9"/><rect x="19.5" y="26" width="9" height="10" rx="2" fill="#ffd54a"/><circle cx="24" cy="30.5" r="1.7" fill="#4a2f14"/></svg>', key: "shopTabChests", fb: "Rương" },
     { tab: "skills", ico: "🌀", key: "shopTabSkills", fb: "Kỹ năng", locked: true },
     { tab: "textfx", ico: "💫", key: "shopTabTextfx", fb: "Hiệu ứng chữ" },
     { tab: "vscards", ico: "⚔️", key: "shopTabVsCards", fb: "Thẻ đấu" },
@@ -347,6 +347,11 @@
 
     if (tab === "topup") {
       renderTopUp();
+      return;
+    }
+
+    if (tab === "chests") {
+      if (typeof renderCrateGridInto === "function") renderCrateGridInto(body);
       return;
     }
 
