@@ -65,7 +65,7 @@
     { tab: "diamond", ico: "💎", key: "shopTabDiamond", fb: "Kim cương" },
     { tab: "nameeffects", ico: "✨", key: "shopTabNameeffects", fb: "Hiệu ứng tên" },
     { tab: "chests", ico: '<svg viewBox="0 0 48 48" width="60" height="60" aria-hidden="true"><path d="M6 21 Q6 8 24 8 Q42 8 42 21 L42 25 L6 25 Z" fill="#8a5a30"/><path d="M6 21 Q6 8 24 8 Q42 8 42 21" fill="none" stroke="#ffd54a" stroke-width="2"/><rect x="6" y="25" width="36" height="17" rx="3" fill="#a5713e"/><rect x="6" y="25" width="36" height="17" rx="3" fill="none" stroke="#6b4423" stroke-width="1"/><line x1="6" y1="33.5" x2="42" y2="33.5" stroke="#6b4423" stroke-width="1.4"/><rect x="9" y="8" width="4.5" height="34" fill="#ffd54a" opacity="0.9"/><rect x="34.5" y="8" width="4.5" height="34" fill="#ffd54a" opacity="0.9"/><rect x="19.5" y="26" width="9" height="10" rx="2" fill="#ffd54a"/><circle cx="24" cy="30.5" r="1.7" fill="#4a2f14"/></svg>', key: "shopTabChests", fb: "Rương" },
-    { tab: "skills", ico: "🌀", key: "shopTabSkills", fb: "Kỹ năng", locked: true },
+    { tab: "skills", ico: "🌀", key: "shopTabSkills", fb: "Kỹ năng" },
     { tab: "textfx", ico: "💫", key: "shopTabTextfx", fb: "Hiệu ứng chữ" },
     { tab: "vscards", ico: "⚔️", key: "shopTabVsCards", fb: "Thẻ đấu" },
   ];
@@ -357,6 +357,11 @@
 
     if (tab === "vscards") {
       renderVsCardShopTab(body);
+      return;
+    }
+
+    if (tab === "skills") {
+      renderSkillsShopTab(body);
       return;
     }
 
@@ -741,6 +746,89 @@
         }
         card.appendChild(row);
       }
+      grid.appendChild(card);
+    });
+    body.appendChild(grid);
+  }
+
+  const SKILL_SHOP_ITEMS = [
+    { type: "lightning", goldPrice: 40, diaPrice: 0, pack: 3 },
+    { type: "rainbow",   goldPrice: 50, diaPrice: 0, pack: 3 },
+    { type: "cleanse",   goldPrice: 35, diaPrice: 0, pack: 3 },
+    { type: "megabomb",  goldPrice: 0,  diaPrice: 8, pack: 3 },
+    { type: "firework",  goldPrice: 45, diaPrice: 0, pack: 3 },
+    { type: "tornado",   goldPrice: 45, diaPrice: 0, pack: 3 },
+    { type: "frostzone", goldPrice: 30, diaPrice: 0, pack: 3 },
+    { type: "smallpts",  goldPrice: 20, diaPrice: 0, pack: 3 },
+    { type: "bigpts",    goldPrice: 0,  diaPrice: 5, pack: 3 },
+    { type: "doublepts", goldPrice: 0,  diaPrice: 6, pack: 3 },
+  ];
+
+  function renderSkillsShopTab(body) {
+    const note = document.createElement("div");
+    note.className = "shop-vscard-note";
+    note.textContent = tt(
+      "shopSkillsNote",
+      "Kỹ năng dùng để phá bàn cờ khi chơi bàn chính. 🔥 Lửa/🫧 Bóng/💨 Gió vẫn nhận miễn phí trong lúc chơi — 10 kỹ năng dưới đây mua thêm để dùng. Vào ván chọn tối đa 5 kỹ năng mang theo (nút ⚙️ cạnh thanh kỹ năng)."
+    );
+    body.appendChild(note);
+
+    const loadoutBtn = document.createElement("button");
+    loadoutBtn.type = "button";
+    loadoutBtn.className = "auth-submit-btn shop-skill-loadout-btn";
+    loadoutBtn.textContent = tt("invLoadoutTitle", "🎒 Chọn kỹ năng mang theo (tối đa 5)");
+    loadoutBtn.addEventListener("click", function () {
+      try { sfxClick(); } catch (e) {}
+      if (typeof openSkillLoadoutPanel === "function") openSkillLoadoutPanel();
+    });
+    body.appendChild(loadoutBtn);
+
+    const grid = document.createElement("div");
+    grid.className = "shop-grid";
+    SKILL_SHOP_ITEMS.forEach(function (item) {
+      const info = (typeof POWER_INFO !== "undefined") ? POWER_INFO[item.type] : null;
+      if (!info) return;
+      const owned = (typeof inv !== "undefined") ? (inv[info.field] | 0) : 0;
+      const card = document.createElement("div");
+      card.className = "shop-item";
+
+      const preview = document.createElement("div");
+      preview.className = "shop-item-preview shop-vscard-preview";
+      preview.textContent = info.icon;
+      card.appendChild(preview);
+
+      const nameEl = document.createElement("div");
+      nameEl.className = "shop-item-name";
+      nameEl.textContent = (typeof powerName === "function" ? powerName(item.type) : item.type) + " ×" + owned;
+      card.appendChild(nameEl);
+
+      const priceEl = document.createElement("div");
+      priceEl.className = "shop-item-price";
+      priceEl.textContent = "+" + item.pack + " · " + (item.goldPrice ? "🪙 " + item.goldPrice : "💎 " + item.diaPrice);
+      card.appendChild(priceEl);
+
+      const row = document.createElement("div");
+      row.className = "shop-item-actions";
+      const buyBtn = document.createElement("button");
+      buyBtn.type = "button";
+      buyBtn.className = "shop-buy-btn" + (item.diaPrice ? " shop-buy-dia" : "");
+      buyBtn.textContent = tt("shopBuy", "Mua");
+      buyBtn.addEventListener("click", function () {
+        try { sfxClick(); } catch (e) {}
+        const useGold = !!item.goldPrice;
+        const cost = useGold ? item.goldPrice : item.diaPrice;
+        const have = useGold ? gold() : diamonds();
+        if (have < cost) {
+          try { showComboFlash(0, false, tt("shopNotEnough", "Không đủ tiền")); } catch (e) {}
+          return;
+        }
+        if (useGold) { if (typeof spendGold === "function") spendGold(cost); }
+        else { if (typeof spendDiamonds === "function") spendDiamonds(cost); }
+        if (typeof grantPower === "function") grantPower(item.type, item.pack, tt("shopBuy", "Mua"));
+        renderShop("skills");
+      });
+      row.appendChild(buyBtn);
+      card.appendChild(row);
       grid.appendChild(card);
     });
     body.appendChild(grid);

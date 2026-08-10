@@ -271,7 +271,12 @@ function processClears(opts){
   }
   // Quy tắc: phá 1 ô = 1 điểm. Phá liên tiếp (combo) từ lần thứ 3 → x2 điểm, từ lần thứ 6 → x3 điểm.
   const scoreMult=comboScoreMultiplier(combo);
-  const pts=totalKeys.size*scoreMult;
+  let pts=totalKeys.size*scoreMult;
+  if(typeof pendingScoreMultiplier!=='undefined' && pendingScoreMultiplier>1){
+    pts*=pendingScoreMultiplier;
+    pendingScoreMultiplier=1;
+    try{ showComboFlash(0,false,'🎯 x2!'); }catch(e){}
+  }
   sfxMatch(colorKeys.size); if(combo>1) sfxComboUp(combo, pIdx(consecutiveBursts));
   score+=pts; if(score>best) best=score;
   try{ if(typeof checkRunCups==='function') checkRunCups(); }catch(e){}

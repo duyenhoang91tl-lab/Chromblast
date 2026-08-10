@@ -257,7 +257,43 @@ const POWER_INFO = {
   fire:   { field:'fires',   icon:'🔥', nameKey:'invFire' },
   bubble: { field:'bubbles', icon:'🫧', nameKey:'invBubble' },
   wind:   { field:'winds',   icon:'💨', nameKey:'invWind' },
+  // 10 ky nang moi ban o cua hang — 7 ky nang can nham (cham 1 o de kich
+  // hoat, dung chung powerTargets/activatePower voi fire/bubble/wind) + 3 ky
+  // nang tuc thi (khong can nham, cong diem/nhan doi ngay khi bam).
+  lightning: { field:'lightnings', icon:'⚡', nameKey:'invLightning', targeted:true },
+  rainbow:   { field:'rainbows',   icon:'🌈', nameKey:'invRainbow',   targeted:true },
+  cleanse:   { field:'cleanses',   icon:'🧹', nameKey:'invCleanse',   targeted:true },
+  megabomb:  { field:'megabombs',  icon:'💣', nameKey:'invMegabomb',  targeted:true },
+  firework:  { field:'fireworks2', icon:'🎆', nameKey:'invFirework',  targeted:true },
+  tornado:   { field:'tornados',   icon:'🌀', nameKey:'invTornado',   targeted:true },
+  frostzone: { field:'frostzones', icon:'🧊', nameKey:'invFrostzone', targeted:true },
+  smallpts:  { field:'smallptss',  icon:'💎', nameKey:'invSmallPts',  targeted:false },
+  bigpts:    { field:'bigptss',    icon:'💰', nameKey:'invBigPts',    targeted:false },
+  doublepts: { field:'doubleptss', icon:'🎯', nameKey:'invDoublePts', targeted:false },
 };
+const NEW_SKILL_TYPES = ['lightning','rainbow','cleanse','megabomb','firework','tornado','frostzone','smallpts','bigpts','doublepts'];
+
+const SKILL_LOADOUT_KEY = 'chromablast_skill_loadout';
+const MAX_SKILL_LOADOUT = 5;
+const DEFAULT_SKILL_LOADOUT = ['fire','bubble','wind'];
+const ALL_SKILL_TYPES = ['fire','bubble','wind', ...NEW_SKILL_TYPES];
+
+function getSkillLoadout(){
+  try{
+    const raw = safeGet(SKILL_LOADOUT_KEY);
+    if(!raw) return DEFAULT_SKILL_LOADOUT.slice();
+    const arr = JSON.parse(raw);
+    if(!Array.isArray(arr) || !arr.length) return DEFAULT_SKILL_LOADOUT.slice();
+    const cleaned = arr.filter(t=>POWER_INFO[t]).slice(0, MAX_SKILL_LOADOUT);
+    return cleaned.length ? cleaned : DEFAULT_SKILL_LOADOUT.slice();
+  }catch(e){ return DEFAULT_SKILL_LOADOUT.slice(); }
+}
+
+function setSkillLoadout(arr){
+  const cleaned = (arr||[]).filter(t=>POWER_INFO[t]).slice(0, MAX_SKILL_LOADOUT);
+  safeSet(SKILL_LOADOUT_KEY, JSON.stringify(cleaned.length ? cleaned : DEFAULT_SKILL_LOADOUT));
+  if(typeof renderInventoryHud==='function') renderInventoryHud();
+}
 function powerName(type){
   const info = POWER_INFO[type];
   if(!info) return type;
@@ -532,22 +568,19 @@ function renderInventoryHud(){
   const sk = document.getElementById('skill-bar');
   if(sk){
     sk.style.display = 'flex';
-    const btns = [
-      ['skill-btn-fire',   'fire'],
-      ['skill-btn-bubble', 'bubble'],
-      ['skill-btn-wind',   'wind'],
-    ];
-    btns.forEach(([id, type])=>{
-      const b = document.getElementById(id);
-      if(!b) return;
+    const loadout = getSkillLoadout();
+    let html = '';
+    loadout.forEach(type=>{
       const info = POWER_INFO[type];
+      if(!info) return;
       const cnt = inv[info.field]|0;
-      b.disabled = false;
-      b.classList.toggle('no-res', cnt<1);
-      b.classList.toggle('aiming', typeof pendingSkill!=='undefined' && pendingSkill===type);
-      const lab = b.querySelector('.skill-lab');
-      if(lab) lab.textContent = powerName(type).split(' ')[0]+' ×'+cnt;
+      const aiming = typeof pendingSkill!=='undefined' && pendingSkill===type;
+      html += '<button type="button" class="skill-btn pw-'+type+(cnt<1?' no-res':'')+(aiming?' aiming':'')+'" data-skill-type="'+type+'" title="'+escapeHtml(powerName(type))+'">'
+        + info.icon + ' <span class="skill-lab">'+escapeHtml(powerName(type).split(' ')[0])+' ×'+cnt+'</span></button>';
     });
+    html += '<button type="button" id="skill-loadout-btn" class="skill-btn skill-loadout-gear" title="'+escapeHtml(typeof t==='function'?t('invLoadoutEdit'):'Chọn kỹ năng mang theo')+'">⚙️</button>';
+    html += '<button type="button" id="inv-ad-heart-btn" class="skill-btn skill-ad" style="display:none;">📺 +❤️</button>';
+    sk.innerHTML = html;
     const adBtn = document.getElementById('inv-ad-heart-btn');
     if(adBtn){
       const left = adHeartViewsLeft();
@@ -562,9 +595,48 @@ function renderInventoryHud(){
   try{ if(typeof positionChatFab === 'function') positionChatFab(); }catch(e){}
 }
 
+let pendingScoreMultiplier = 1; // do "Nhân đôi" đặt — tiêu ngay lần cộng điểm kế tiếp
+
+function useInstantSkillItem(type){
+  const info = POWER_INFO[type];
+  if(!info) return;
+  const inHidden = (typeof secretMode!=='undefined' && secretMode) ||
+                   (typeof activeHiddenMapKey!=='undefined' && activeHiddenMapKey) ||
+                   (typeof versusMode!=='undefined' && versusMode);
+  if(inHidden){ try{ showComboFlash(0,false, typeof t==='function'?t('invMainOnly'):'Chỉ dùng ở bàn chính'); }catch(e){} return; }
+  if((inv[info.field]|0) < 1){
+    try{ showComboFlash(0,false, typeof t==='function'?t('invMissing', info.icon):('Thiếu '+info.icon)); }catch(e){}
+    return;
+  }
+  if(type==='doublepts' && pendingScoreMultiplier>1){
+    try{ showHint(typeof t==='function'?t('invDoubleActive'):'Nhân đôi đang chờ áp dụng rồi'); }catch(e){}
+    return;
+  }
+  if(!spendPower(type,1)) return;
+  try{ sfxPowerUp(); }catch(e){}
+  if(type==='smallpts'){
+    const pts=50;
+    score+=pts; if(score>best) best=score; updateScoreUI();
+    try{ showComboFlash(0,false,'💎 +'+pts); }catch(e){}
+  } else if(type==='bigpts'){
+    const pts=150;
+    score+=pts; if(score>best) best=score; updateScoreUI();
+    try{ showComboFlash(0,false,'💰 +'+pts); }catch(e){}
+  } else if(type==='doublepts'){
+    pendingScoreMultiplier=2;
+    try{ showHint(typeof t==='function'?t('invDoubleReady'):'🎯 Lần phá tiếp theo được nhân đôi điểm!', { hold:2400 }); }catch(e){}
+  }
+  if(typeof renderInventoryHud==='function') renderInventoryHud();
+}
+
 function usePowerItem(type){
   const info = POWER_INFO[type];
   if(!info) return;
+  // 3 ky nang tuc thi (khong nham o): cong diem / nhan doi diem lan pha tiep
+  // theo — dung ngay khi bam, khong vao che do "aiming" nhu fire/bubble/wind.
+  if(info.targeted===false){
+    return useInstantSkillItem(type);
+  }
   // Map 9 xếp tháp: dùng skill để cứu tháp / canh lại khi trượt hết
   if(typeof stackMode!=='undefined' && stackMode){
     if((inv[info.field]|0) < 1){
@@ -667,10 +739,12 @@ function initInventoryUI(){
       }
     }catch(e){}
   }, 1000);
-  document.getElementById('skill-btn-fire')?.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} usePowerItem('fire'); });
-  document.getElementById('skill-btn-bubble')?.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} usePowerItem('bubble'); });
-  document.getElementById('skill-btn-wind')?.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} usePowerItem('wind'); });
-  document.getElementById('inv-ad-heart-btn')?.addEventListener('click', ()=>{ try{sfxClick();}catch(e){} watchAdForHeart(); });
+  document.getElementById('skill-bar')?.addEventListener('click', (e)=>{
+    const btn = e.target.closest('[data-skill-type]');
+    if(btn){ try{sfxClick();}catch(err){} usePowerItem(btn.dataset.skillType); return; }
+    if(e.target.closest('#skill-loadout-btn')){ try{sfxClick();}catch(err){} if(typeof openSkillLoadoutPanel==='function') openSkillLoadoutPanel(); return; }
+    if(e.target.closest('#inv-ad-heart-btn')){ try{sfxClick();}catch(err){} watchAdForHeart(); return; }
+  });
 }
 
 /** API cho lucky-spin.js và script khác */
@@ -723,3 +797,53 @@ window.Inventory = {
   MAX_HEART_GIFT_PEOPLE: MAX_HEART_GIFT_PEOPLE
 };
 try{ window.GOLD_PER_DIAMOND = GOLD_PER_DIAMOND; }catch(e){}
+
+// ═══ Panel chọn kỹ năng mang vào ván đấu (tối đa 5, trong tổng 13) ═══
+function openSkillLoadoutPanel(){
+  const grid = document.getElementById('skill-loadout-grid');
+  if(!grid) return;
+  const current = getSkillLoadout();
+  grid.innerHTML = ALL_SKILL_TYPES.map(type=>{
+    const info = POWER_INFO[type];
+    const owned = inv[info.field]|0;
+    const picked = current.includes(type);
+    return '<button type="button" class="skill-loadout-item'+(picked?' picked':'')+'" data-skill-type="'+type+'">'
+      + '<span class="sli-icon">'+info.icon+'</span>'
+      + '<span class="sli-name">'+escapeHtml(powerName(type))+'</span>'
+      + '<span class="sli-owned">×'+owned+'</span>'
+      + (picked ? '<span class="sli-check">✅</span>' : '')
+      + '</button>';
+  }).join('');
+  _updateSkillLoadoutCount(current.length);
+  document.getElementById('skill-loadout-panel')?.classList.add('show');
+}
+
+function _updateSkillLoadoutCount(n){
+  const el = document.getElementById('skill-loadout-count');
+  if(el) el.textContent = n+'/'+MAX_SKILL_LOADOUT+' ('+(typeof t==='function'?t('invLoadoutPicked'):'đã chọn')+')';
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  document.getElementById('skill-loadout-close-btn')?.addEventListener('click', ()=>{
+    try{ sfxClick(); }catch(e){}
+    document.getElementById('skill-loadout-panel')?.classList.remove('show');
+  });
+  document.getElementById('skill-loadout-grid')?.addEventListener('click', (e)=>{
+    const btn = e.target.closest('[data-skill-type]');
+    if(!btn) return;
+    try{ sfxClick(); }catch(err){}
+    const type = btn.dataset.skillType;
+    let current = getSkillLoadout();
+    if(current.includes(type)){
+      current = current.filter(x=>x!==type);
+    } else {
+      if(current.length >= MAX_SKILL_LOADOUT){
+        try{ showComboFlash(0,false, typeof t==='function'?t('invLoadoutFull'):'Chỉ được chọn tối đa 5 kỹ năng — bỏ bớt 1 cái đã chọn trước'); }catch(err){}
+        return;
+      }
+      current.push(type);
+    }
+    setSkillLoadout(current);
+    openSkillLoadoutPanel(); // ve lai grid + dem so luong
+  });
+});

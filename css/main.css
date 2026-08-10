@@ -5704,6 +5704,33 @@ body:has(#secret-stage.active) .streak-dot.lit{
 .pw-fire{ background:linear-gradient(180deg,#ff8a50,#e8481f); color:#fff; }
 .pw-bubble{ background:linear-gradient(180deg,#6fd8ff,#2a8fd8); color:#fff; }
 .pw-wind{ background:linear-gradient(180deg,#8ef0c8,#2ab88a); color:#fff; }
+.pw-lightning{ background:linear-gradient(180deg,#fff176,#e8b400); color:#4a3900; }
+.pw-rainbow{ background:linear-gradient(135deg,#ff8ac8,#8ab4ff,#8affc8); color:#3a2a55; }
+.pw-cleanse{ background:linear-gradient(180deg,#c9f27a,#7ab83a); color:#233a0e; }
+.pw-megabomb{ background:linear-gradient(180deg,#ff6b6b,#b3241f); color:#fff; }
+.pw-firework{ background:linear-gradient(180deg,#ffb3f0,#d43fb8); color:#fff; }
+.pw-tornado{ background:linear-gradient(180deg,#b3c6ff,#5a70d4); color:#fff; }
+.pw-frostzone{ background:linear-gradient(180deg,#aef0ff,#3aa8d8); color:#0a3a4a; }
+.pw-smallpts{ background:linear-gradient(180deg,#9be8ff,#3aa0d8); color:#04303f; }
+.pw-bigpts{ background:linear-gradient(180deg,#ffe08a,#e0a020); color:#4a3400; }
+.pw-doublepts{ background:linear-gradient(180deg,#ffb0b0,#d84a4a); color:#fff; }
+.skill-loadout-gear{
+  min-width:40px; padding:8px 10px 7px; font-size:18px;
+  background:linear-gradient(180deg,#c9c9d8,#8a8aa0);
+}
+.skill-loadout-item{
+  display:flex; align-items:center; gap:8px; width:100%;
+  background:rgba(255,255,255,0.06); border:1.5px solid rgba(255,255,255,0.16);
+  border-radius:12px; padding:9px 12px; cursor:pointer; text-align:left;
+  color:#fff; font-weight:800; font-size:13px;
+}
+.skill-loadout-item.picked{ border-color:#ffd54a; background:rgba(255,213,74,0.14); }
+.skill-loadout-item .sli-icon{ font-size:20px; flex-shrink:0; }
+.skill-loadout-item .sli-name{ flex:1; }
+.skill-loadout-item .sli-owned{ font-size:11px; color:rgba(255,255,255,0.6); }
+.skill-loadout-item .sli-check{ font-size:14px; }
+.skill-loadout-grid{ display:flex; flex-direction:column; gap:6px; max-height:55vh; overflow:auto; margin-top:8px; }
+.skill-loadout-count{ text-align:center; font-size:12px; font-weight:800; color:rgba(255,255,255,0.75); margin-top:10px; }
 .skill-ad{ background:linear-gradient(180deg,#ff6b8a,#d63a5c) !important; flex-direction:row; gap:4px; min-width:auto; padding:10px 14px; font-size:13px; color:#fff; }
 .skill-lab{
   font-size:10.5px; font-weight:900; letter-spacing:0.6px;

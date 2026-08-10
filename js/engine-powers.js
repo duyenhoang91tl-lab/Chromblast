@@ -29,7 +29,14 @@ function beginSkillAim(type){
   if(typeof renderInventoryHud==='function') renderInventoryHud();
   const msg = type==='fire' ? '🔥 Chạm 1 ô để đốt 3×3'
             : type==='bubble' ? '🫧 Chạm ô màu để nổ cùng màu'
-            : '💨 Chạm 1 ô để thổi hàng/cột';
+            : type==='wind' ? '💨 Chạm 1 ô để thổi hàng/cột'
+            : type==='lightning' ? '⚡ Chạm 1 ô để đánh cả hàng lẫn cột'
+            : type==='rainbow' ? '🌈 Chạm ô màu để nổ 2 màu cùng lúc'
+            : type==='cleanse' ? '🧹 Chạm ô có gai/băng/nhớt để gỡ hiệu ứng'
+            : type==='megabomb' ? '💣 Chạm 1 ô để nổ tung 5×5'
+            : type==='firework' ? '🎆 Chạm 1 ô để nổ 2 hàng liền kề'
+            : type==='tornado' ? '🌀 Chạm 1 ô để cuốn bay 2 cột liền kề'
+            : '🧊 Chạm vùng có băng để phá tan';
   try{ showHint(msg, { sticky:true, aim:true }); }catch(e){}
 }
 
@@ -51,7 +58,7 @@ function castPlayerSkill(r, c){
   if(!pendingSkill || secretMode || powerBusy) return;
   const type = pendingSkill;
   if(r<0||r>=ROWS||c<0||c>=COLS) return;
-  if(type==='bubble'){
+  if(type==='bubble' || type==='rainbow'){
     if(board[r][c]==null){
       try{ showHint('🫧 Chạm ô có màu'); }catch(e){}
       return;
@@ -104,12 +111,47 @@ function powerTargets(p){
   } else if(p.type==='bubble'){
     if(p.color) for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++)
       if(board[r][c]===p.color) keys.add(`${r},${c}`);
-  } else { // wind — hàng ngang vs cột dọc: chọn bên nhiều ô hơn
+  } else if(p.type==='wind'){ // wind — hàng ngang vs cột dọc: chọn bên nhiều ô hơn
     let rowN=0, colN=0;
     for(let c=0;c<COLS;c++) if(board[p.r][c]!=null) rowN++;
     for(let r=0;r<ROWS;r++) if(board[r][p.c]!=null) colN++;
     if(rowN>=colN){ for(let c=0;c<COLS;c++) keys.add(`${p.r},${c}`); }
     else { for(let r=0;r<ROWS;r++) keys.add(`${r},${p.c}`); }
+  } else if(p.type==='lightning'){ // Sét: cả hàng NGANG và cột DỌC cùng lúc (mạnh hơn Gió)
+    for(let c=0;c<COLS;c++) keys.add(`${p.r},${c}`);
+    for(let r=0;r<ROWS;r++) keys.add(`${r},${p.c}`);
+  } else if(p.type==='rainbow'){ // Cầu vồng: màu chạm vào + 1 màu khác đang có nhiều ô nhất trên bàn
+    if(p.color) for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++)
+      if(board[r][c]===p.color) keys.add(`${r},${c}`);
+    const counts={};
+    for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
+      const v=board[r][c];
+      if(v && v!==p.color) counts[v]=(counts[v]|0)+1;
+    }
+    let secondColor=null, best=0;
+    for(const cKey in counts){ if(counts[cKey]>best){ best=counts[cKey]; secondColor=cKey; } }
+    if(secondColor) for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++)
+      if(board[r][c]===secondColor) keys.add(`${r},${c}`);
+  } else if(p.type==='cleanse'){ // Phá hiệu ứng: đúng 1 ô chạm vào — gỡ gai/băng/nhớt/dấu sóc cắn tại đó
+    keys.add(`${p.r},${p.c}`);
+  } else if(p.type==='megabomb'){ // Bom lớn: 5×5 quanh điểm chạm (mạnh hơn Lửa 3×3)
+    for(let dr=-2;dr<=2;dr++) for(let dc=-2;dc<=2;dc++){
+      const r=p.r+dr, c=p.c+dc;
+      if(r>=0&&r<ROWS&&c>=0&&c<COLS) keys.add(`${r},${c}`);
+    }
+  } else if(p.type==='firework'){ // Pháo hoa: hàng chạm vào + 1 hàng liền kề
+    for(let c=0;c<COLS;c++) keys.add(`${p.r},${c}`);
+    const r2 = p.r+1<ROWS ? p.r+1 : p.r-1;
+    if(r2>=0&&r2<ROWS) for(let c=0;c<COLS;c++) keys.add(`${r2},${c}`);
+  } else if(p.type==='tornado'){ // Lốc xoáy: cột chạm vào + 1 cột liền kề
+    for(let r=0;r<ROWS;r++) keys.add(`${r},${p.c}`);
+    const c2 = p.c+1<COLS ? p.c+1 : p.c-1;
+    if(c2>=0&&c2<COLS) for(let r=0;r<ROWS;r++) keys.add(`${r},${c2}`);
+  } else if(p.type==='frostzone'){ // Phá băng diện rộng: 3×3 quanh điểm chạm, chỉ tính hiệu quả trên ô có băng
+    for(let dr=-1;dr<=1;dr++) for(let dc=-1;dc<=1;dc++){
+      const r=p.r+dr, c=p.c+dc;
+      if(r>=0&&r<ROWS&&c>=0&&c<COLS) keys.add(`${r},${c}`);
+    }
   }
   return keys;
 }
@@ -127,6 +169,9 @@ function activatePower(p, queue){
   const clearedCells=[];
   keys.forEach(k=>{
     const [r,c]=k.split(',').map(Number);
+    // 🧊 Phá băng diện rộng: chỉ có tác dụng lên ô ĐANG có băng trong vùng —
+    // không đụng ô thường (khác Lửa/Bom lớn là dọn sạch cả vùng bất kể gì).
+    if(p.type==='frostzone' && !iceCells.has(k)) return;
     // dây chuyền: quét trúng logo khác → kích hoạt tiếp sau
     if(powerCells.has(k) && !(r===p.r && c===p.c)){
       queue.push({ type:powerCells.get(k), r, c, color:board[r][c] });
@@ -180,18 +225,32 @@ function activatePower(p, queue){
   try{ if(typeof onComboSkillMilestone==='function') onComboSkillMilestone(combo); }catch(e){}
   const pts=cleared*comboScoreMultiplier(combo);
   score+=pts; if(score>best) best=score;
+  let ptsFinal=pts;
+  if(typeof pendingScoreMultiplier!=='undefined' && pendingScoreMultiplier>1){
+    score+=pts*(pendingScoreMultiplier-1); if(score>best) best=score;
+    ptsFinal=pts*pendingScoreMultiplier;
+    pendingScoreMultiplier=1;
+    try{ showComboFlash(0,false,'🎯 x2!'); }catch(e){}
+  }
   updateScoreUI(); updateComboUI();
   try{ sfxMatch(cleared); if(combo>1) sfxComboUp(combo, pIdx(consecutiveBursts)); }catch(e){}
   const ctr=clearCentroid(clearedCells, getCell);
-  showScorePop(cleared, pts, ctr.x, ctr.y, consecutiveBursts);
+  showScorePop(cleared, ptsFinal, ctr.x, ctr.y, consecutiveBursts);
   showShockwave(ctr.x, ctr.y, consecutiveBursts);
   showComboCountFlash(combo);
   updateComboBorderGlow(consecutiveBursts);
   try{ mainBurstFX(clearedCells, consecutiveBursts); }catch(e){}
   const label = p.type==='fire' ? '🔥 Lửa cháy 3×3!'
               : p.type==='bubble' ? '🫧 Nổ sạch một màu!'
-              : '💨 Gió thổi bay cả hàng!';
-  try{ showComboFlash(0,false,label+' +'+pts); }catch(e){}
+              : p.type==='wind' ? '💨 Gió thổi bay cả hàng!'
+              : p.type==='lightning' ? '⚡ Sét đánh trúng!'
+              : p.type==='rainbow' ? '🌈 Cầu vồng quét 2 màu!'
+              : p.type==='cleanse' ? '🧹 Đã phá hiệu ứng!'
+              : p.type==='megabomb' ? '💣 Nổ tung 5×5!'
+              : p.type==='firework' ? '🎆 Pháo hoa rực sáng!'
+              : p.type==='tornado' ? '🌀 Lốc xoáy cuốn bay!'
+              : '🧊 Băng tan chảy!';
+  try{ showComboFlash(0,false,label+' +'+ptsFinal); }catch(e){}
   return true;
 }
 
