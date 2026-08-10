@@ -1,8 +1,10 @@
 /* ══════════════════════════════════════════
-   Thẻ trò chơi — tab "Đổi quà" (#gpcard-redeem).
-   Hiển thị 8 rương (js/loot-crates.js) — mua bằng vàng/kim cương hoặc mở
-   miễn phí 1 lần/ngày (rương Bạc/Vàng/Gạch/Map). Toàn bộ logic random/trừ
-   tiền/cộng vật phẩm nằm ở loot-crates.js, file này chỉ vẽ giao diện + gọi.
+   Màn "Rương bảo vật" (#gpcard-redeem, vào từ menu chính) — hiển thị 9 rương
+   (js/loot-crates.js), mua bằng vàng/kim cương. Hàm renderCrateGridInto() ở
+   đây dùng CHUNG cho cả tab Rương trong Cửa hàng (js/economy-shop.js) và tab
+   Rương trong Túi của tôi (js/account-bag.js) — đảm bảo icon/dữ liệu khớp
+   tuyệt đối ở cả 3 nơi. Toàn bộ logic random/trừ tiền/cộng vật phẩm nằm ở
+   loot-crates.js, file này chỉ vẽ giao diện + gọi.
    Nạp SAU js/loot-crates.js.
 ══════════════════════════════════════════ */
 
@@ -30,21 +32,19 @@ function _chestIconHtml(tint){
 }
 
 function _gpcardCrateCardHtml(crate){
-  const freeNow = typeof crateFreeAvailable === 'function' && crateFreeAvailable(crate.id);
-  const freeBtn = crate.freeDaily
-    ? ('<button type="button" class="gpcard-crate-free-btn' + (freeNow ? '' : ' disabled') + '" data-gpcard-crate="' + crate.id + '" data-gpcard-free="1"' + (freeNow ? '' : ' disabled') + '>'
-        + (freeNow ? '🎁 Miễn phí' : '✅ Đã dùng hôm nay') + '</button>')
-    : '';
   return '<div class="gpcard-crate-card">'
     + '<div class="gpcard-crate-icon">' + _chestIconHtml(crate.tint) + '</div>'
     + '<div class="gpcard-crate-name">' + crate.name + '</div>'
     + '<button type="button" class="gpcard-crate-buy-btn" data-gpcard-crate="' + crate.id + '">' + _gpcardCratePriceHtml(crate) + ' · Mở</button>'
-    + freeBtn
     + '</div>';
 }
 
-function renderGpcardRedeem(){
-  const root = document.getElementById('gpcard-redeem');
+/** Vẽ lưới rương + gán sự kiện mua/mở vào 1 khung chứa bất kỳ — dùng chung cho
+ * cả 3 nơi hiển thị rương (màn "Rương bảo vật" riêng, tab Rương trong Cửa
+ * hàng, tab Rương trong Túi của tôi) để icon/dữ liệu/hành vi luôn khớp tuyệt
+ * đối, không có 3 bản copy dễ lệch nhau. Gọi lại đúng root đó sau khi mở
+ * xong để cập nhật trạng thái (vd giá/số dư đổi). */
+function renderCrateGridInto(root){
   if(!root) return;
   if(typeof LOOT_CRATES === 'undefined'){
     root.innerHTML = '<div class="gpcard-card">…</div>';
@@ -56,25 +56,27 @@ function renderGpcardRedeem(){
 
   root.querySelectorAll('[data-gpcard-crate]').forEach(btn => {
     btn.addEventListener('click', async () => {
-      const id = btn.dataset.gpcardCrate;
-      const useFree = btn.dataset.gpcardFree === '1';
       if(btn.disabled) return;
       try{ sfxClick(); }catch(e){}
       btn.disabled = true;
-      const res = typeof openLootCrate === 'function' ? await openLootCrate(id, useFree) : { ok:false };
+      const id = btn.dataset.gpcardCrate;
+      const res = typeof openLootCrate === 'function' ? await openLootCrate(id, false) : { ok:false };
       if(res.ok){
         try{ showComboFlash(0, false, res.reward ? res.reward.label : '🎉'); }catch(e){}
         try{ if(typeof sfxUnlock === 'function') sfxUnlock(); }catch(e){}
       } else {
         const msg = res.reason === 'gold' ? (typeof t === 'function' ? t('shopNotEnoughGold') : 'Không đủ vàng')
           : res.reason === 'diamond' ? (typeof t === 'function' ? t('shopNotEnoughDiamond') : 'Không đủ kim cương')
-          : res.reason === 'free-used' ? 'Đã dùng lượt miễn phí hôm nay'
           : 'Không mở được';
         try{ showComboFlash(0, false, msg); }catch(e){}
       }
-      renderGpcardRedeem();
+      renderCrateGridInto(root);
     });
   });
+}
+
+function renderGpcardRedeem(){
+  renderCrateGridInto(document.getElementById('gpcard-redeem'));
 }
 
 // Trước đây là tab "Đi đổi" trong Thẻ trò chơi, giờ tách thành màn hình riêng
