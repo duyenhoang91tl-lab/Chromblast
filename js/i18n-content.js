@@ -578,55 +578,47 @@ function MILESTONE_MSG(tier){
 (function(){
   const vs = {
   vi:{ ttVersus:'Đấu 1-1', vsTitle:'⚔️ Đấu 1-1', vsSub:'Hai người chơi thi đấu trên máy này — cùng bộ khối, 90 giây mỗi lượt, điểm cao hơn thắng.',
-       vsP1:'Tên của bạn', vsP2:'Máy', vsStart:'⚔️ BẮT ĐẦU TRẬN ĐẤU', vsReady:'▶ SẴN SÀNG!', vsAgain:'🔁 Đấu lại', vsClose:'✕ Đóng', vsQuit:'Thoát',
+       vsP1:'Tên của bạn', vsP2:'Máy', vsStart:'⚔️ BẮT ĐẦU TRẬN ĐẤU', vsReady:'▶ SẴN SÀNG!', vsAgain:'🔁 Đấu lại', vsReadyOn:'Đã sẵn sàng', vsPostmatchWaitGuest:'Chờ khách sẵn sàng...', vsPostmatchWaitHost:'Chờ chủ phòng bắt đầu trận tiếp theo...', vsClose:'✕ Đóng', vsQuit:'Thoát',
        vsNeedLevel:'⚔️ Đạt Cấp {0} để mở phòng đấu 1-1!', vsOnlineLocked:'🔒 Online cần Cấp 3. Đấu Cùng máy vẫn chơi được.', vsHandoffTitle:'⚔️ Đến lượt {0}',
        vsHandoffFirst:'Bạn có {0} giây — ghi điểm cao nhất có thể! Bấm khi đã cầm máy.',
        vsHandoffSecond:'{0} đạt {1} điểm. Đưa máy cho đối thủ — cùng bộ khối, vượt qua đi!',
        vsWin:'🏆 {0} THẮNG!', vsDraw:'🤝 HÒA!', vsXpNote:'Người thắng +{0} XP · điểm thắng được ghi vào bảng xếp hạng',
-       caroMenuTitle:'❌⭕ Caro', caroMenuRank:'Xếp hạng', caroMenuFriends:'Bạn bè', caroMenuSwitch:'Trò chơi',
-       caroMenuDaily:'Điểm danh', caroMenuAds:'Xem QC', caroMenuSkin:'Chọn nền',
-       caroMenuQuick:'⚡ Chơi nhanh', caroMenuWithFriend:'🤝 Chơi với bạn', caroMenuTable:'🀄 Chọn bàn',
-       caroMenuRankBtn:'🏆 Xếp hạng', caroMenuTour:'🏅 Giải đấu',
        versusMenuTitle:'⚔️ Versus', versusMenuRank:'Xếp hạng', versusMenuFriends:'Bạn bè',
        versusMenuChroma:'Chroma Blast', versusMenuDaily:'Điểm danh', versusMenuCaro:'Caro', versusMenuSkin:'Chọn nền',
        versusMenuQuick:'⚡ Chơi nhanh', versusMenuWithFriend:'🤝 Chơi với bạn', versusMenuJoin:'🚪 Vào phòng',
        versusMenuRanked:'🏆 Đấu hạng', versusMenuTour:'🏅 Giải đấu', versusMenuAI:'🤖 Đấu với máy',
        comingSoon:'Sắp ra mắt — đang phát triển!' },
   en:{ ttVersus:'1v1 Duel', vsTitle:'⚔️ 1v1 Duel', vsSub:'Two players compete on this device — same pieces, 90 seconds each, higher score wins.',
-       vsP1:'Your name', vsP2:'AI', vsStart:'⚔️ START MATCH', vsReady:'▶ READY!', vsAgain:'🔁 Rematch', vsClose:'✕ Close', vsQuit:'Exit',
+       vsP1:'Your name', vsP2:'AI', vsStart:'⚔️ START MATCH', vsReady:'▶ READY!', vsAgain:'🔁 Rematch', vsReadyOn:'Ready', vsPostmatchWaitGuest:'Waiting for guest to ready up...', vsPostmatchWaitHost:'Waiting for host to start the next match...', vsClose:'✕ Close', vsQuit:'Exit',
        vsNeedLevel:'⚔️ Reach Level {0} to host a 1v1 duel!', vsOnlineLocked:'🔒 Online needs Level 3. Same-device play still works.', vsHandoffTitle:'⚔️ {0}\'s turn',
        vsHandoffFirst:'You have {0} seconds — score as high as you can! Tap when you have the device.',
        vsHandoffSecond:'{0} scored {1} points. Hand the device over — same pieces, beat it!',
        vsWin:'🏆 {0} WINS!', vsDraw:'🤝 DRAW!', vsXpNote:'Winner gets +{0} XP · winning score goes to the leaderboard',
-       caroMenuTitle:'❌⭕ Caro', caroMenuRank:'Leaderboard', caroMenuFriends:'Friends', caroMenuSwitch:'Games',
-       caroMenuDaily:'Check-in', caroMenuAds:'Watch Ad', caroMenuSkin:'Choose Skin',
-       caroMenuQuick:'⚡ Quick Play', caroMenuWithFriend:'🤝 Play with Friend', caroMenuTable:'🀄 Choose Board',
-       caroMenuRankBtn:'🏆 Leaderboard', caroMenuTour:'🏅 Tournament',
        versusMenuTitle:'⚔️ Versus', versusMenuRank:'Leaderboard', versusMenuFriends:'Friends',
        versusMenuChroma:'Chroma Blast', versusMenuDaily:'Check-in', versusMenuCaro:'Caro', versusMenuSkin:'Choose Skin',
        versusMenuQuick:'⚡ Quick Play', versusMenuWithFriend:'🤝 Play with Friend', versusMenuJoin:'🚪 Join Room',
        versusMenuRanked:'🏆 Ranked Match', versusMenuTour:'🏅 Tournament', versusMenuAI:'🤖 Play vs AI',
        comingSoon:'Coming soon — in development!' },
   ko:{ ttVersus:'1대1 대결', vsTitle:'⚔️ 1대1 대결', vsSub:'이 기기에서 두 명이 대결 — 같은 블록, 각 90초, 높은 점수가 승리.',
-       vsP1:'플레이어 1', vsP2:'플레이어 2', vsStart:'⚔️ 대결 시작', vsReady:'▶ 준비 완료!', vsAgain:'🔁 재대결', vsClose:'✕ 닫기',
+       vsP1:'플레이어 1', vsP2:'플레이어 2', vsStart:'⚔️ 대결 시작', vsReady:'▶ 준비 완료!', vsAgain:'🔁 재대결', vsReadyOn:'준비 완료', vsPostmatchWaitGuest:'게스트 준비 대기 중...', vsPostmatchWaitHost:'방장이 다음 경기를 시작할 때까지 대기...', vsClose:'✕ 닫기',
        vsNeedLevel:'⚔️ 레벨 {0} 달성 시 1대1 방을 만들 수 있어요!', vsOnlineLocked:'🔒 온라인은 레벨 3 필요. 같은 기기 대결은 가능합니다.', vsHandoffTitle:'⚔️ {0} 차례',
        vsHandoffFirst:'{0}초 동안 최대한 높은 점수를! 기기를 들었으면 탭하세요.',
        vsHandoffSecond:'{0}님이 {1}점 기록. 기기를 넘겨주세요 — 같은 블록으로 넘어서 보세요!',
        vsWin:'🏆 {0} 승리!', vsDraw:'🤝 무승부!', vsXpNote:'승자 +{0} XP · 승리 점수는 리더보드에 기록' },
   ja:{ ttVersus:'1対1バトル', vsTitle:'⚔️ 1対1バトル', vsSub:'この端末で2人対戦 — 同じブロック、各90秒、高得点が勝ち。',
-       vsP1:'プレイヤー1', vsP2:'プレイヤー2', vsStart:'⚔️ 対戦開始', vsReady:'▶ 準備OK！', vsAgain:'🔁 再戦', vsClose:'✕ 閉じる',
+       vsP1:'プレイヤー1', vsP2:'プレイヤー2', vsStart:'⚔️ 対戦開始', vsReady:'▶ 準備OK！', vsAgain:'🔁 再戦', vsReadyOn:'準備完了', vsPostmatchWaitGuest:'ゲストの準備を待っています...', vsPostmatchWaitHost:'ホストが次の試合を開始するのを待っています...', vsClose:'✕ 閉じる',
        vsNeedLevel:'⚔️ レベル{0}で1対1ルームを作成できます！', vsOnlineLocked:'🔒 オンラインはレベル3必要。同じ端末での対戦は可能です。', vsHandoffTitle:'⚔️ {0}の番',
        vsHandoffFirst:'{0}秒間で最高得点を狙え！端末を持ったらタップ。',
        vsHandoffSecond:'{0}は{1}点。端末を渡して — 同じブロックで超えろ！',
        vsWin:'🏆 {0}の勝ち！', vsDraw:'🤝 引き分け！', vsXpNote:'勝者+{0} XP · 勝利スコアはランキングに記録' },
   zh:{ ttVersus:'1对1对战', vsTitle:'⚔️ 1对1对战', vsSub:'两名玩家在本机对战 — 相同方块，各90秒，分高者胜。',
-       vsP1:'玩家1', vsP2:'玩家2', vsStart:'⚔️ 开始对战', vsReady:'▶ 准备好了！', vsAgain:'🔁 再来一局', vsClose:'✕ 关闭',
+       vsP1:'玩家1', vsP2:'玩家2', vsStart:'⚔️ 开始对战', vsReady:'▶ 准备好了！', vsAgain:'🔁 再来一局', vsReadyOn:'已准备', vsPostmatchWaitGuest:'等待客人准备...', vsPostmatchWaitHost:'等待房主开始下一局...', vsClose:'✕ 关闭',
        vsNeedLevel:'⚔️ 达到{0}级即可创建1对1房间！', vsOnlineLocked:'🔒 线上需要3级。同设备对战仍可玩。', vsHandoffTitle:'⚔️ 轮到{0}',
        vsHandoffFirst:'你有{0}秒 — 尽量拿高分！拿到手机后点击。',
        vsHandoffSecond:'{0}拿到{1}分。把手机交给对手 — 同样的方块，超过它！',
        vsWin:'🏆 {0}获胜！', vsDraw:'🤝 平局！', vsXpNote:'胜者+{0} XP · 获胜分数计入排行榜' },
   es:{ ttVersus:'Duelo 1v1', vsTitle:'⚔️ Duelo 1v1', vsSub:'Dos jugadores compiten en este dispositivo — mismas piezas, 90 segundos cada uno, gana la mayor puntuación.',
-       vsP1:'Jugador 1', vsP2:'Jugador 2', vsStart:'⚔️ EMPEZAR DUELO', vsReady:'▶ ¡LISTO!', vsAgain:'🔁 Revancha', vsClose:'✕ Cerrar',
+       vsP1:'Jugador 1', vsP2:'Jugador 2', vsStart:'⚔️ EMPEZAR DUELO', vsReady:'▶ ¡LISTO!', vsAgain:'🔁 Revancha', vsReadyOn:'Listo', vsPostmatchWaitGuest:'Esperando a que el invitado esté listo...', vsPostmatchWaitHost:'Esperando a que el anfitrión empiece la siguiente partida...', vsClose:'✕ Cerrar',
        vsNeedLevel:'⚔️ ¡Llega al Nivel {0} para crear un duelo 1v1!', vsOnlineLocked:'🔒 Online requiere Nivel 3. Jugar en el mismo dispositivo sigue disponible.', vsHandoffTitle:'⚔️ Turno de {0}',
        vsHandoffFirst:'Tienes {0} segundos — ¡puntúa lo máximo! Toca cuando tengas el dispositivo.',
        vsHandoffSecond:'{0} logró {1} puntos. Pasa el dispositivo — ¡mismas piezas, supéralo!',
@@ -676,9 +668,9 @@ function MILESTONE_MSG(tier){
        onlineFind:'🔍 Tìm đối thủ', onlineLobby:'🏠 Phòng chờ', onlineCode:'Mã phòng', onlineWaiting:'Đang chờ...',
        onlineWagerToggle:'🎲 Đặt cược', onlineWagerGold:'🪙 Vàng', onlineWagerDiamond:'💎 Kim cương',
        onlineWagerBetLabel:'Cược', onlineWagerWinLabel:'Thắng nhận về',
-       onlineWagerHint:'Thắng: +95%　·　Hoà: 0　·　Thua: −95%',
+       onlineWagerHint:'Thắng ăn trọn cược 2 bên (x2) — không thu phí sàn. Thua mất đúng phần đã cược. Hoà hoặc trận huỷ giữa chừng được hoàn lại đầy đủ.',
        onlineWagerBalanceLoading:'Đang kiểm tra số dư...', onlineWagerBalance:'Số dư',
-       onlineLobbyWager:'Cược:', onlineLobbyWagerPot:'thắng +95%',
+       onlineLobbyWager:'Cược:', onlineLobbyWagerPot:'thắng ăn x2',
        vsWagerLive:'Đang cược', vsWagerFail:'Không đủ tiền cược — huỷ trận',
        onlineMmAuto:'Đã ghép đối thủ — chờ host bắt đầu...', onlineStart:'▶ Bắt đầu trận', onlineLeave:'✕ Rời phòng',
        onlineSearchingTitle:'🔍 Đang tìm đối thủ', onlineSearching:'Đang tìm người chơi phù hợp...', onlineCancel:'✕ Hủy',
@@ -700,9 +692,9 @@ function MILESTONE_MSG(tier){
        onlineFind:'🔍 Find opponent', onlineLobby:'🏠 Lobby', onlineCode:'Room code', onlineWaiting:'Waiting...',
        onlineWagerToggle:'🎲 Wager', onlineWagerGold:'🪙 Gold', onlineWagerDiamond:'💎 Diamonds',
        onlineWagerBetLabel:'Bet', onlineWagerWinLabel:'Win payout',
-       onlineWagerHint:'Win: +95%　·　Draw: 0　·　Loss: −95%',
+       onlineWagerHint:'Winner takes both stakes (x2) — no platform cut. Loser loses their stake. Draws or matches cancelled mid-way are fully refunded.',
        onlineWagerBalanceLoading:'Checking your balance...', onlineWagerBalance:'Balance',
-       onlineLobbyWager:'Wager:', onlineLobbyWagerPot:'winner gets +95%',
+       onlineLobbyWager:'Wager:', onlineLobbyWagerPot:'winner takes x2',
        vsWagerLive:'Wager active', vsWagerFail:'Not enough to cover the wager — match cancelled',
        onlineMmAuto:'Matched — waiting for host to start...', onlineStart:'▶ Start match', onlineLeave:'✕ Leave room',
        onlineSearchingTitle:'🔍 Finding opponent', onlineSearching:'Searching for a player...', onlineCancel:'✕ Cancel',
@@ -1239,7 +1231,8 @@ function MILESTONE_MSG(tier){
     gchatHeartCap:'Tối đa 10 người/ngày', gchatHeartFail:'Không gửi được',
     gchatHeartReceived:'Tim từ bạn', gchatHeartGiftText:'Gửi bạn một trái tim',
     shopTitle:'🛒 Cửa hàng', setShop:'Cửa hàng', ttShop:'Cửa hàng vàng', ttBag:'Túi của tôi',
-    shopOwned:'Đã sở hữu', shopNotEnoughGold:'Không đủ vàng',
+    shopOwned:'Đã sở hữu', shopNotEnoughGold:'Không đủ vàng', shopFree:'Miễn phí',
+    shopVsCardNote:'Thẻ mở khoá sẽ xuất hiện trong bộ bài rút khi chơi Đấu 1-1 (Versus).',
     shopBuy:'Mua', shopBuyGold:'Mua bằng vàng', shopBuyDia:'KC', shopBuyWithDia:'Mua bằng kim cương',
     shopExchange:'Đổi', shopGoldUnit:'vàng', shopExGoldToDia:'Đổi vàng → KC', shopExDiaToGold:'Đổi KC → vàng',
     shopGoldExchange:'Đổi kim cương',
@@ -1253,7 +1246,7 @@ function MILESTONE_MSG(tier){
     dailyFlash:'🎁 +{0} XP · 🪙 +1 · ❤️ +{2} (ngày {1}/7)',
     dailyGold:'Điểm danh', dailyHeart:'Điểm danh',
     lbTabPeriod:'🧨 Blast', lbTabFriends:'🤝 Bạn bè', lbTabVersus:'⚔️ Versus', lbSubVersus:'BXH Đấu 1-1 — danh hiệu, tỷ lệ thắng/thua/hòa.', vsLbEmpty:'Chưa có dữ liệu',
-    gpcardUpgrade:'Nâng cấp', gpcardTabRewards:'Hành trình', gpcardTabQuests:'Nhiệm vụ', gpcardTabRedeem:'Đổi quà', gpcardTabLeaderboard:'Bảng xếp hạng',
+    gpcardUpgrade:'Nâng cấp', gpcardTabRewards:'Hành trình', gpcardTabRedeem:'Đổi quà', gpcardTabLeaderboard:'Bảng xếp hạng',
     lbScopeWorld:'🌍 Thế giới', lbScopeContinent:'🗺️ Châu lục', lbScopeCountry:'🏳️ Đất nước', lbScopeFriends:'🤝 Bạn bè',
     lbSubFriends:'BXH bạn bè (điểm cao nhất)', lbRegion:'Quốc gia của bạn',
     lbRewardTitle:'Quà top (kỳ trước)', lbPrevRank:'Hạng kỳ trước', lbPrevNoRank:'Kỳ trước chưa vào top',
@@ -1298,7 +1291,8 @@ function MILESTONE_MSG(tier){
     gchatHeartCap:'Max 10 people/day', gchatHeartFail:'Could not send',
     gchatHeartReceived:'Heart from a friend', gchatHeartGiftText:'Sent you a heart',
     shopTitle:'🛒 Shop', setShop:'Shop', ttShop:'Gold shop', ttBag:'My Bag',
-    shopOwned:'Owned', shopNotEnoughGold:'Not enough gold',
+    shopOwned:'Owned', shopNotEnoughGold:'Not enough gold', shopFree:'Free',
+    shopVsCardNote:'Unlocked cards appear in your draw pool when playing Versus.',
     shopBuy:'Buy', shopBuyGold:'Buy with gold', shopBuyDia:'💎', shopBuyWithDia:'Buy with diamonds',
     shopExchange:'Exchange', shopGoldUnit:'gold', shopExGoldToDia:'Gold → diamonds', shopExDiaToGold:'Diamonds → gold',
     shopGoldExchange:'Diamond exchange',
@@ -1312,7 +1306,7 @@ function MILESTONE_MSG(tier){
     dailyFlash:'🎁 +{0} XP · 🪙 +1 · ❤️ +{2} (day {1}/7)',
     dailyGold:'Check-in', dailyHeart:'Check-in',
     lbTabPeriod:'🧨 Blast', lbTabFriends:'🤝 Friends', lbTabVersus:'⚔️ Versus', lbSubVersus:'Versus leaderboard — titles, win/loss/draw rates.', vsLbEmpty:'No data yet',
-    gpcardUpgrade:'Upgrade', gpcardTabRewards:'Journey', gpcardTabQuests:'Quests', gpcardTabRedeem:'Redeem', gpcardTabLeaderboard:'Leaderboard',
+    gpcardUpgrade:'Upgrade', gpcardTabRewards:'Journey', gpcardTabRedeem:'Redeem', gpcardTabLeaderboard:'Leaderboard',
     lbScopeWorld:'🌍 World', lbScopeContinent:'🗺️ Continent', lbScopeCountry:'🏳️ Country', lbScopeFriends:'🤝 Friends',
     lbSubFriends:'Friends leaderboard (best score)', lbRegion:'Your country',
     lbRewardTitle:'Top rewards (previous period)', lbPrevRank:'Previous rank', lbPrevNoRank:'Not ranked last period',
@@ -1783,9 +1777,7 @@ function MILESTONE_MSG(tier){
   const fill = {
     vi:{
       gpcardUpgrade:'Nâng cấp',
-      gpcardLevelPrefix:'Lv.',
       gpcardTabRewards:'Hành trình',
-      gpcardTabQuests:'Nhiệm vụ',
       gpcardTabRedeem:'Đổi quà',
       gpcardTabLeaderboard:'Bảng xếp hạng',
       gpcardQuestGo:'Đi ngay',
@@ -1802,9 +1794,7 @@ function MILESTONE_MSG(tier){
     },
     en:{
       gpcardUpgrade:'Upgrade',
-      gpcardLevelPrefix:'Lv.',
       gpcardTabRewards:'Journey',
-      gpcardTabQuests:'Quests',
       gpcardTabRedeem:'Redeem',
       gpcardTabLeaderboard:'Leaderboard',
       gpcardQuestGo:'Play now',
@@ -1821,9 +1811,7 @@ function MILESTONE_MSG(tier){
     },
     ko:{
       gpcardUpgrade:'업그레이드',
-      gpcardLevelPrefix:'Lv.',
       gpcardTabRewards:'여정',
-      gpcardTabQuests:'퀘스트',
       gpcardTabRedeem:'교환',
       gpcardTabLeaderboard:'순위표',
       gpcardQuestGo:'지금 하기',
@@ -1840,9 +1828,7 @@ function MILESTONE_MSG(tier){
     },
     ja:{
       gpcardUpgrade:'アップグレード',
-      gpcardLevelPrefix:'Lv.',
       gpcardTabRewards:'旅',
-      gpcardTabQuests:'クエスト',
       gpcardTabRedeem:'交換',
       gpcardTabLeaderboard:'ランキング',
       gpcardQuestGo:'今すぐ',
@@ -1859,9 +1845,7 @@ function MILESTONE_MSG(tier){
     },
     zh:{
       gpcardUpgrade:'升级',
-      gpcardLevelPrefix:'Lv.',
       gpcardTabRewards:'旅程',
-      gpcardTabQuests:'任务',
       gpcardTabRedeem:'兑换',
       gpcardTabLeaderboard:'排行榜',
       gpcardQuestGo:'立即前往',
@@ -1878,9 +1862,7 @@ function MILESTONE_MSG(tier){
     },
     es:{
       gpcardUpgrade:'Mejorar',
-      gpcardLevelPrefix:'Nv.',
       gpcardTabRewards:'Viaje',
-      gpcardTabQuests:'Misiones',
       gpcardTabRedeem:'Canjear',
       gpcardTabLeaderboard:'Clasificación',
       gpcardQuestGo:'Jugar ahora',
@@ -1956,8 +1938,9 @@ function MILESTONE_MSG(tier){
       acbagCatSkills:'Skill', acbagCatBoards:'Nền bàn', acbagCatBricks:'Mẫu gạch',
       acbagCatBubbles:'Bong bóng chat', acbagCatMaps:'Map ẩn', acbagBackToCats:'Hạng mục',
       acbagBubbleClassic:'Cổ điển', acbagReplay:'Chơi lại',
-      acbagCatChests:'Rương', acbagCatFonts:'Mẫu chữ', acbagCatNameTags:'Mẫu tên hiển thị',
+      acbagCatChests:'Rương', acbagCatFonts:'Hiệu ứng chữ', acbagCatNameTags:'Hiệu ứng tên',
       acbagSoonBadge:'Sắp ra mắt',
+      acbagVsCardFree:'✓ Miễn phí', acbagVsCardBuy:'Mua',
       acbagSoonTitle:'Tính năng này sẽ sớm ra mắt',
       acbagSoonSub:'Bạn sẽ sớm thấy các vật phẩm đã sở hữu ở đây khi tính năng hoàn tất.',
       acgrpSoonTitle:'Tính năng Hội nhóm sẽ sớm ra mắt',
@@ -1977,8 +1960,9 @@ function MILESTONE_MSG(tier){
       acbagCatSkills:'Skills', acbagCatBoards:'Boards', acbagCatBricks:'Brick skins',
       acbagCatBubbles:'Chat bubbles', acbagCatMaps:'Hidden maps', acbagBackToCats:'Categories',
       acbagBubbleClassic:'Classic', acbagReplay:'Replay',
-      acbagCatChests:'Chests', acbagCatFonts:'Fonts', acbagCatNameTags:'Name tags',
+      acbagCatChests:'Chests', acbagCatFonts:'Text effects', acbagCatNameTags:'Name effects',
       acbagSoonBadge:'Coming soon',
+      acbagVsCardFree:'✓ Free', acbagVsCardBuy:'Buy',
       acbagSoonTitle:'This feature is coming soon',
       acbagSoonSub:"You'll see your owned items here once this feature is ready.",
       acgrpSoonTitle:'Groups feature is coming soon',
@@ -1998,8 +1982,9 @@ function MILESTONE_MSG(tier){
       acbagCatSkills:'스킬', acbagCatBoards:'보드', acbagCatBricks:'블록 스킨',
       acbagCatBubbles:'채팅 말풍선', acbagCatMaps:'히든 맵', acbagBackToCats:'카테고리',
       acbagBubbleClassic:'클래식', acbagReplay:'다시 하기',
-      acbagCatChests:'상자', acbagCatFonts:'글꼴', acbagCatNameTags:'이름 태그',
+      acbagCatChests:'상자', acbagCatFonts:'텍스트 효과', acbagCatNameTags:'이름 효과',
       acbagSoonBadge:'출시 예정',
+      acbagVsCardFree:'✓ 무료', acbagVsCardBuy:'구매',
       acbagSoonTitle:'이 기능은 곧 출시됩니다',
       acbagSoonSub:'기능이 준비되면 이곳에서 보유한 아이템을 볼 수 있습니다.',
       acgrpSoonTitle:'그룹 기능이 곧 출시됩니다',
@@ -2019,8 +2004,9 @@ function MILESTONE_MSG(tier){
       acbagCatSkills:'スキル', acbagCatBoards:'ボード', acbagCatBricks:'ブロックスキン',
       acbagCatBubbles:'チャット吹き出し', acbagCatMaps:'隠しマップ', acbagBackToCats:'カテゴリー',
       acbagBubbleClassic:'クラシック', acbagReplay:'もう一度プレイ',
-      acbagCatChests:'宝箱', acbagCatFonts:'フォント', acbagCatNameTags:'ネームタグ',
+      acbagCatChests:'宝箱', acbagCatFonts:'テキスト効果', acbagCatNameTags:'名前エフェクト',
       acbagSoonBadge:'近日公開',
+      acbagVsCardFree:'✓ 無料', acbagVsCardBuy:'購入',
       acbagSoonTitle:'この機能は近日公開予定です',
       acbagSoonSub:'準備が整うと、ここで所有アイテムを確認できます。',
       acgrpSoonTitle:'グループ機能は近日公開',
@@ -2040,8 +2026,9 @@ function MILESTONE_MSG(tier){
       acbagCatSkills:'技能', acbagCatBoards:'棋盘', acbagCatBricks:'方块皮肤',
       acbagCatBubbles:'聊天气泡', acbagCatMaps:'隐藏关卡', acbagBackToCats:'分类',
       acbagBubbleClassic:'经典', acbagReplay:'重玩',
-      acbagCatChests:'宝箱', acbagCatFonts:'字体', acbagCatNameTags:'名称标签',
+      acbagCatChests:'宝箱', acbagCatFonts:'文字特效', acbagCatNameTags:'名称特效',
       acbagSoonBadge:'即将推出',
+      acbagVsCardFree:'✓ 免费', acbagVsCardBuy:'购买',
       acbagSoonTitle:'该功能即将推出',
       acbagSoonSub:'功能上线后，您已拥有的物品将显示在这里。',
       acgrpSoonTitle:'群组功能即将推出',
@@ -2061,8 +2048,9 @@ function MILESTONE_MSG(tier){
       acbagCatSkills:'Habilidades', acbagCatBoards:'Tableros', acbagCatBricks:'Ladrillos',
       acbagCatBubbles:'Burbujas de chat', acbagCatMaps:'Mapas ocultos', acbagBackToCats:'Categorías',
       acbagBubbleClassic:'Clásico', acbagReplay:'Rejugar',
-      acbagCatChests:'Cofres', acbagCatFonts:'Fuentes', acbagCatNameTags:'Etiquetas de nombre',
+      acbagCatChests:'Cofres', acbagCatFonts:'Efectos de texto', acbagCatNameTags:'Efectos de nombre',
       acbagSoonBadge:'Próximamente',
+      acbagVsCardFree:'✓ Gratis', acbagVsCardBuy:'Comprar',
       acbagSoonTitle:'Esta función estará disponible pronto',
       acbagSoonSub:'Verás aquí tus artículos una vez que esta función esté lista.',
       acgrpSoonTitle:'La función de grupos llegará pronto',
@@ -2092,6 +2080,127 @@ function MILESTONE_MSG(tier){
       gpcardJourneyStatus:'Cleared', gpcardJourneyStatusEnd:'hidden maps',
       gpcardJourneyFree:'Free track', gpcardJourneyPremium:'Premium track',
       gpcardJourneyClaimAll:'Claim all'
+    }
+  };
+  Object.keys(fill).forEach(l=>{ if(typeof I18N!=='undefined' && I18N[l]) Object.assign(I18N[l], fill[l]); });
+})();
+
+(function(){
+  const fill = {
+    vi:{
+      crbTabAll:'Tất cả', crbTabOpen:'Còn trống', crbTabNotStarted:'Chưa bắt đầu',
+      crbVsAi:'Chơi với máy', crbWatchAd:'Xem QC', crbOpenBrowser:'📋 Xem danh sách phòng'
+    },
+    en:{
+      crbTabAll:'All', crbTabOpen:'Open', crbTabNotStarted:'Not started',
+      crbVsAi:'Play vs AI', crbWatchAd:'Watch ad', crbOpenBrowser:'📋 View room list'
+    }
+  };
+  Object.keys(fill).forEach(l=>{ if(typeof I18N!=='undefined' && I18N[l]) Object.assign(I18N[l], fill[l]); });
+})();
+
+// ── Màn menu chính Caro (js/caro-menu.js) — chưa có key dịch nào, đang hiện
+// thẳng tên key thô trên màn hình bất kể ngôn ngữ đã chọn. ──
+(function(){
+  const fill = {
+    vi:{
+      caroMenuTitle:'❌⭕ Caro', caroMenuRank:'Xếp hạng', caroMenuFriends:'Bạn bè',
+      caroMenuDaily:'Điểm danh', caroMenuAds:'Xem QC', caroMenuSkin:'Chọn nền',
+      caroMenuQuick:'⚡ Chơi nhanh', caroMenuWithFriend:'🤝 Chơi với bạn',
+      caroMenuTable:'🚪 Chọn phòng', caroMenuRankBtn:'🏆 Xếp hạng', caroMenuTour:'🏅 Giải đấu',
+      caroDailyTitle:'🎁 Điểm danh Caro',
+      caroDailySub:'Điểm danh mỗi ngày khi chơi Caro: XP + vàng riêng. Bỏ lỡ 1 ngày sẽ mất chuỗi.',
+      caroTourTitle:'🏅 Giải đấu',
+      caroTourSub:'Chế độ giải đấu đang được chuẩn bị — quay lại sau nhé!',
+      caroRankNeedsOnline:'Cần bật Online để đấu xếp hạng',
+      versusMenuTitle:'⚔️ Versus', versusMenuRank:'Xếp hạng', versusMenuFriends:'Bạn bè',
+      versusMenuChroma:'Chroma Blast', versusMenuDaily:'Điểm danh', versusMenuCaro:'Caro', versusMenuSkin:'Chọn nền',
+      versusMenuQuick:'⚡ Chơi nhanh', versusMenuWithFriend:'🤝 Chơi với bạn', versusMenuJoin:'🚪 Vào phòng',
+      versusMenuRanked:'🏆 Đấu hạng', versusMenuTour:'🏅 Giải đấu', versusMenuAI:'🤖 Đấu với máy'
+    },
+    en:{
+      caroMenuTitle:'❌⭕ Caro', caroMenuRank:'Rank', caroMenuFriends:'Friends',
+      caroMenuDaily:'Check-in', caroMenuAds:'Watch ad', caroMenuSkin:'Board skin',
+      caroMenuQuick:'⚡ Quick play', caroMenuWithFriend:'🤝 Play with friend',
+      caroMenuTable:'🚪 Choose room', caroMenuRankBtn:'🏆 Ranked', caroMenuTour:'🏅 Tournament',
+      caroDailyTitle:'🎁 Caro check-in',
+      caroDailySub:'Check in daily while playing Caro for separate XP + gold. Missing a day resets your streak.',
+      caroTourTitle:'🏅 Tournament',
+      caroTourSub:'Tournament mode is being prepared — check back later!',
+      caroRankNeedsOnline:'Turn on Online to play ranked matches',
+      versusMenuTitle:'⚔️ Versus', versusMenuRank:'Leaderboard', versusMenuFriends:'Friends',
+      versusMenuChroma:'Chroma Blast', versusMenuDaily:'Check-in', versusMenuCaro:'Caro', versusMenuSkin:'Choose Skin',
+      versusMenuQuick:'⚡ Quick Play', versusMenuWithFriend:'🤝 Play with Friend', versusMenuJoin:'🚪 Join Room',
+      versusMenuRanked:'🏆 Ranked Match', versusMenuTour:'🏅 Tournament', versusMenuAI:'🤖 Play vs AI'
+    }
+  };
+  Object.keys(fill).forEach(l=>{ if(typeof I18N!=='undefined' && I18N[l]) Object.assign(I18N[l], fill[l]); });
+})();
+
+// ── Bổ sung 4 ngôn ngữ còn thiếu (ko/ja/zh/es) cho đúng bộ key ở trên —
+// vi/en đã có, 4 ngôn ngữ này trước đó tự fallback về tiếng Anh (chấp nhận
+// được nhưng chưa dịch đúng ngôn ngữ người chơi chọn). ──
+(function(){
+  const fill = {
+    ko:{
+      caroMenuTitle:'❌⭕ 오목', caroMenuRank:'랭킹', caroMenuFriends:'친구',
+      caroMenuDaily:'출석체크', caroMenuAds:'광고 보기', caroMenuSkin:'보드 스킨',
+      caroMenuQuick:'⚡ 빠른 대전', caroMenuWithFriend:'🤝 친구와 대전',
+      caroMenuTable:'🚪 방 선택', caroMenuRankBtn:'🏆 랭킹', caroMenuTour:'🏅 토너먼트',
+      caroDailyTitle:'🎁 오목 출석체크',
+      caroDailySub:'오목 플레이 중 매일 출석하면 XP + 골드 지급. 하루라도 놓치면 연속 기록이 초기화됩니다.',
+      caroTourTitle:'🏅 토너먼트',
+      caroTourSub:'토너먼트 모드 준비 중입니다 — 나중에 다시 확인해주세요!',
+      caroRankNeedsOnline:'랭크 대전을 하려면 온라인을 켜주세요',
+      versusMenuTitle:'⚔️ 버서스', versusMenuRank:'랭킹', versusMenuFriends:'친구',
+      versusMenuChroma:'크로마 블래스트', versusMenuDaily:'출석체크', versusMenuCaro:'오목', versusMenuSkin:'스킨 선택',
+      versusMenuQuick:'⚡ 빠른 대전', versusMenuWithFriend:'🤝 친구와 대전', versusMenuJoin:'🚪 방 입장',
+      versusMenuRanked:'🏆 랭크전', versusMenuTour:'🏅 토너먼트', versusMenuAI:'🤖 AI와 대전'
+    },
+    ja:{
+      caroMenuTitle:'❌⭕ 五目並べ', caroMenuRank:'ランキング', caroMenuFriends:'フレンド',
+      caroMenuDaily:'デイリー', caroMenuAds:'広告視聴', caroMenuSkin:'ボードスキン',
+      caroMenuQuick:'⚡ クイックプレイ', caroMenuWithFriend:'🤝 フレンドと対戦',
+      caroMenuTable:'🚪 ルーム選択', caroMenuRankBtn:'🏆 ランキング', caroMenuTour:'🏅 トーナメント',
+      caroDailyTitle:'🎁 五目並べ デイリー',
+      caroDailySub:'五目並べプレイ中に毎日チェックインでXP＋ゴールド。1日でも逃すと連続記録がリセットされます。',
+      caroTourTitle:'🏅 トーナメント',
+      caroTourSub:'トーナメントモードは準備中です — また後で確認してください！',
+      caroRankNeedsOnline:'ランク戦を行うにはオンラインをオンにしてください',
+      versusMenuTitle:'⚔️ バーサス', versusMenuRank:'ランキング', versusMenuFriends:'フレンド',
+      versusMenuChroma:'クロマブラスト', versusMenuDaily:'デイリー', versusMenuCaro:'五目並べ', versusMenuSkin:'スキン選択',
+      versusMenuQuick:'⚡ クイックプレイ', versusMenuWithFriend:'🤝 フレンドと対戦', versusMenuJoin:'🚪 ルーム参加',
+      versusMenuRanked:'🏆 ランク戦', versusMenuTour:'🏅 トーナメント', versusMenuAI:'🤖 AIと対戦'
+    },
+    zh:{
+      caroMenuTitle:'❌⭕ 五子棋', caroMenuRank:'排行榜', caroMenuFriends:'好友',
+      caroMenuDaily:'签到', caroMenuAds:'观看广告', caroMenuSkin:'选择棋盘',
+      caroMenuQuick:'⚡ 快速对战', caroMenuWithFriend:'🤝 与好友对战',
+      caroMenuTable:'🚪 选择房间', caroMenuRankBtn:'🏆 排行榜', caroMenuTour:'🏅 锦标赛',
+      caroDailyTitle:'🎁 五子棋签到',
+      caroDailySub:'玩五子棋期间每日签到可获得经验值+金币。错过一天连续记录将重置。',
+      caroTourTitle:'🏅 锦标赛',
+      caroTourSub:'锦标赛模式正在准备中 — 请稍后再来看看！',
+      caroRankNeedsOnline:'需要开启在线才能进行排位赛',
+      versusMenuTitle:'⚔️ 对战', versusMenuRank:'排行榜', versusMenuFriends:'好友',
+      versusMenuChroma:'Chroma Blast', versusMenuDaily:'签到', versusMenuCaro:'五子棋', versusMenuSkin:'选择皮肤',
+      versusMenuQuick:'⚡ 快速对战', versusMenuWithFriend:'🤝 与好友对战', versusMenuJoin:'🚪 加入房间',
+      versusMenuRanked:'🏆 排位赛', versusMenuTour:'🏅 锦标赛', versusMenuAI:'🤖 与AI对战'
+    },
+    es:{
+      caroMenuTitle:'❌⭕ Caro', caroMenuRank:'Clasificación', caroMenuFriends:'Amigos',
+      caroMenuDaily:'Check-in', caroMenuAds:'Ver anuncio', caroMenuSkin:'Tablero',
+      caroMenuQuick:'⚡ Partida rápida', caroMenuWithFriend:'🤝 Jugar con amigo',
+      caroMenuTable:'🚪 Elegir sala', caroMenuRankBtn:'🏆 Clasificación', caroMenuTour:'🏅 Torneo',
+      caroDailyTitle:'🎁 Check-in de Caro',
+      caroDailySub:'Haz check-in diario jugando Caro para ganar XP + oro. Si te saltas un día, se reinicia tu racha.',
+      caroTourTitle:'🏅 Torneo',
+      caroTourSub:'El modo torneo se está preparando — ¡vuelve más tarde!',
+      caroRankNeedsOnline:'Activa Online para jugar partidas clasificatorias',
+      versusMenuTitle:'⚔️ Versus', versusMenuRank:'Clasificación', versusMenuFriends:'Amigos',
+      versusMenuChroma:'Chroma Blast', versusMenuDaily:'Check-in', versusMenuCaro:'Caro', versusMenuSkin:'Elegir skin',
+      versusMenuQuick:'⚡ Partida rápida', versusMenuWithFriend:'🤝 Jugar con amigo', versusMenuJoin:'🚪 Unirse a sala',
+      versusMenuRanked:'🏆 Partida clasificatoria', versusMenuTour:'🏅 Torneo', versusMenuAI:'🤖 Jugar contra la IA'
     }
   };
   Object.keys(fill).forEach(l=>{ if(typeof I18N!=='undefined' && I18N[l]) Object.assign(I18N[l], fill[l]); });

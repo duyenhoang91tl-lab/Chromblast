@@ -68,7 +68,7 @@ function _acchubCloseSub(panelId){
     });
     document.getElementById('acchub-btn-quests')?.addEventListener('click', ()=>{
       try{ sfxClick(); }catch(e){}
-      if(typeof openGpcardPanel === 'function') openGpcardPanel('quests');
+      if(typeof openQuestsScreen === 'function') openQuestsScreen();
     });
 
     // Danh sách 7 dòng

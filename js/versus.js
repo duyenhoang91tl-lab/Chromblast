@@ -36,19 +36,75 @@ const VS_COLORS = COLORS.slice(0, 5);
 const VS_GROUP_MIN = 8;        // cụm cùng màu >= 8 ô mới nổ (5 quá dễ — vừa đặt vào đã phá)
 
 const VS_CARD_EVERY = 3;       // cứ 3 lần ăn (không cần liên tiếp) → rút thẻ
-// Bộ chướng ngại: id ↔ chỉ số tên trong MECH_NAME (i18n sẵn có)
-
+// Bộ chướng ngại: id ↔ chỉ số tên trong MECH_NAME (i18n sẵn có). "free:true" là
+// thẻ mặc định ai cũng rút được ngay; còn lại phải mua mở khoá trong Shop (tab
+// "vscards") mới xuất hiện trong bộ bài rút của MÌNH — không ảnh hưởng gì tới
+// việc mở khoá cơ chế đó ở chế độ 1 người chơi (2 hệ độc lập, dùng chung emoji/
+// tên hiển thị qua MECH_NAME nhưng khác nhau về "sở hữu").
 const VS_OBSTACLES = [
-  { id:'mountain', nameIdx:2,  emoji:'⛰️' },
-  { id:'tornado',  nameIdx:7,  emoji:'🌪️' },
-  { id:'ice',      nameIdx:4,  emoji:'🧊' },
-  { id:'fog',      nameIdx:5,  emoji:'🌫️' },
-  { id:'squirrel', nameIdx:3,  emoji:'🐿️' },
-  { id:'bomb',     nameIdx:6,  emoji:'💣' },
-  { id:'blackhole',nameIdx:12, emoji:'🕳️' },
-  { id:'wall',     nameIdx:15, emoji:'🧱' },
-  { id:'lightning',nameIdx:16, emoji:'⚡' },
+  { id:'mountain', nameIdx:2,  emoji:'⛰️', free:false, price:80,  diaPrice:0 },
+  { id:'tornado',  nameIdx:7,  emoji:'🌪️', free:true },
+  { id:'ice',      nameIdx:4,  emoji:'🧊', free:false, price:80,  diaPrice:0 },
+  { id:'fog',      nameIdx:5,  emoji:'🌫️', free:false, price:60,  diaPrice:0 },
+  { id:'squirrel', nameIdx:3,  emoji:'🐿️', free:true },
+  { id:'bomb',     nameIdx:6,  emoji:'💣', free:true },
+  { id:'blackhole',nameIdx:12, emoji:'🕳️', free:false, price:0,   diaPrice:15 },
+  { id:'wall',     nameIdx:15, emoji:'🧱', free:false, price:100, diaPrice:0 },
+  { id:'lightning',nameIdx:16, emoji:'⚡', free:false, price:0,   diaPrice:15 },
+  { id:'egg',      nameIdx:8,  emoji:'🥚', free:false, price:90,  diaPrice:0 },
+  { id:'ghost',    nameIdx:13, emoji:'👻', free:false, price:70,  diaPrice:0 },
+  { id:'raincloud',nameIdx:10, emoji:'🌧️', free:false, price:0,  diaPrice:12 },
+  { id:'portal',   nameIdx:19, emoji:'🌀', free:false, price:50,  diaPrice:0 },
 ];
+
+const VS_CARD_UNLOCK_KEY = 'unlockedVsCards';
+
+/** Thẻ này đã dùng được chưa (miễn phí sẵn hoặc đã mua mở khoá)? */
+function isVsCardUnlocked(id){
+  const ob = VS_OBSTACLES.find(o=>o.id===id);
+  if(!ob) return false;
+  if(ob.free) return true;
+  const p = (typeof getPlayerProfile==='function') ? getPlayerProfile() : {};
+  const list = Array.isArray(p[VS_CARD_UNLOCK_KEY]) ? p[VS_CARD_UNLOCK_KEY] : [];
+  return list.indexOf(id) >= 0;
+}
+function _vsUnlockCard(id){
+  const p = (typeof getPlayerProfile==='function') ? getPlayerProfile() : {};
+  const list = Array.isArray(p[VS_CARD_UNLOCK_KEY]) ? p[VS_CARD_UNLOCK_KEY].slice() : [];
+  if(list.indexOf(id) < 0){
+    list.push(id);
+    if(typeof savePlayerProfile==='function') savePlayerProfile({ [VS_CARD_UNLOCK_KEY]: list });
+  }
+}
+/** Trừ tiền qua Cloud Function spendCurrency dùng chung — giống hệt
+    _bubbleSpendCurrency (js/chat-bubble-skins.js), server xác thực số dư. */
+async function _vsCardSpendCurrency(cost){
+  if(typeof _getOnlineFunctions !== 'function') return { ok:false, reason:'offline' };
+  const fns = _getOnlineFunctions();
+  if(!fns) return { ok:false, reason:'offline' };
+  try{
+    await fns.httpsCallable('spendCurrency')({ cost });
+    return { ok:true };
+  }catch(e){
+    return { ok:false, reason: (e && e.message) || 'error' };
+  }
+}
+async function buyVsCardWithGold(id, price){
+  if(isVsCardUnlocked(id)) return { ok:false, reason:'owned' };
+  const r = await _vsCardSpendCurrency({ gold: price });
+  if(!r.ok) return { ok:false, reason: r.reason === 'offline' ? 'offline' : 'gold' };
+  _vsUnlockCard(id);
+  try{ if(typeof syncWalletFromServer === 'function') await syncWalletFromServer(); }catch(e){}
+  return { ok:true };
+}
+async function buyVsCardWithDiamond(id, diaCost){
+  if(isVsCardUnlocked(id)) return { ok:false, reason:'owned' };
+  const r = await _vsCardSpendCurrency({ diamonds: diaCost });
+  if(!r.ok) return { ok:false, reason: r.reason === 'offline' ? 'offline' : 'diamond' };
+  _vsUnlockCard(id);
+  try{ if(typeof syncWalletFromServer === 'function') await syncWalletFromServer(); }catch(e){}
+  return { ok:true };
+}
 
 let versusMode = false;
 
@@ -151,7 +207,7 @@ function startVersusMatch(){
 function _vsNewPlayer(idx,seed){
   return { idx, prng:_mulberry32(seed), board:Array.from({length:VS_N},()=>Array(VS_N).fill(null)),
     pieces:[], selected:-1, score:0, combo:0, clears:0, nextCardAt:VS_CARD_EVERY,
-    rocks:new Set(), ice:new Map(), bomb:null, fogUntil:0, done:false, el:{} };
+    rocks:new Set(), ice:new Map(), bomb:null, egg:null, fogUntil:0, done:false, el:{} };
 }
 
 // Nút trợ giúp ❓ nổi (z-index cao hơn đấu trường) đè lên điểm người chơi trên
@@ -452,6 +508,64 @@ function _vsApplyObstacle(F,ob){
         F.board[r][c]=null; F.ice.delete(k);
       }
     }
+  } else if(ob.id==='egg'){
+    // 🥚 Trứng rồng: đặt 1 quả trứng vào 1 hàng, báo trước 3s (giống bom có đếm
+    // ngược) rồi "nở" đốt sạch NGUYÊN CẢ HÀNG đó — nặng hơn bom (1 điểm) nhưng
+    // có báo trước để đối thủ kịp dọn bớt hàng đó nếu muốn, giống luật map thường.
+    const row = Math.floor(Math.random()*VS_N);
+    F.egg = { row, left:3 };
+    const tick=()=>{
+      if(!F.egg||!_vs||!versusMode) return;
+      F.egg.left--;
+      if(F.egg.left<=0){
+        const r=F.egg.row;
+        for(let c=0;c<VS_N;c++){
+          const k=r+','+c;
+          if(F.rocks.has(k)) continue;
+          F.board[r][c]=null; F.ice.delete(k);
+        }
+        F.egg=null;
+        _vsRenderGrid(F);
+        return;
+      }
+      _vsRenderGrid(F);
+      setTimeout(tick,1000);
+    };
+    setTimeout(tick,1000);
+  } else if(ob.id==='ghost'){
+    // 👻 Bóng ma: đổi màu 3 ô đã lấp sang màu KHÁC ngay lập tức — phá vỡ cụm màu
+    // đối thủ đang gom dở, không xoá ô (khác lửa/sét), chỉ đánh lừa/phá kế hoạch.
+    const targets = take(filledCells,3);
+    targets.forEach(k=>{
+      const [r,c]=k.split(',').map(Number);
+      const cur=F.board[r][c];
+      const others=(typeof COLORS!=='undefined'?COLORS:[cur]).filter(cc=>cc!==cur);
+      if(others.length) F.board[r][c]=others[Math.floor(Math.random()*others.length)];
+    });
+  } else if(ob.id==='raincloud'){
+    // 🌧️ Mây mưa: rửa trôi 3 ô đã lấp trong CÙNG 1 CỘT thành ô chắn tạm 8s (mượn
+    // lại F.rocks như núi đá/tường) — nhắm vào 1 cột nên cản đúng kiểu dựng cột
+    // của đối thủ, khác núi đá (rải ngẫu nhiên khắp bàn).
+    const col = Math.floor(Math.random()*VS_N);
+    const colFilled = filledCells.filter(k=>Number(k.split(',')[1])===col);
+    const washed = take(colFilled,3);
+    washed.forEach(k=>{ const [r,c]=k.split(',').map(Number); F.board[r][c]=null; F.ice.delete(k); F.rocks.add(k); });
+    if(washed.length) setTimeout(()=>{
+      if(_vs&&versusMode){ washed.forEach(k=>F.rocks.delete(k)); _vsRenderGrid(F); }
+    },8000);
+  } else if(ob.id==='portal'){
+    // 🌀 Cổng dịch chuyển: hoán đổi 2 ô đã lấp với 2 ô trống ngẫu nhiên — xáo trộn
+    // cục bộ, quy mô NHỎ hơn lốc xoáy (lốc đảo toàn bộ màu trên cả bàn).
+    const pairs = Math.min(2, filledCells.length, emptyCells.length);
+    for(let i=0;i<pairs;i++){
+      const fk = filledCells.splice(Math.floor(Math.random()*filledCells.length),1)[0];
+      const ek = emptyCells.splice(Math.floor(Math.random()*emptyCells.length),1)[0];
+      const [fr,fc]=fk.split(',').map(Number);
+      const [er,ec]=ek.split(',').map(Number);
+      const col=F.board[fr][fc];
+      F.board[fr][fc]=null; F.ice.delete(fk);
+      F.board[er][ec]=col;
+    }
   }
   // báo cho nạn nhân — chỉ rung màn, KHÔNG hiện chữ thông báo (gây rối/che bàn cờ
   // lúc đang thao tác); rung là đủ để người chơi biết vừa bị đối thủ đánh úp.
@@ -504,7 +618,9 @@ function _vsEndMatch(){
   try{ if(typeof lockPortraitOrientation==='function') lockPortraitOrientation(); }catch(e){}
   if(_vs.timer){ clearInterval(_vs.timer); _vs.timer=null; }
   if(_vs.online){
-    try{ if(typeof stopListeningRoom === 'function') stopListeningRoom(); }catch(e){}
+    // KHÔNG stopListeningRoom() ở đây nữa — muốn giữ phòng sống để 2 người có
+    // thể ở lại bấm "Sẵn sàng" đấu tiếp (xem _vsRenderPostMatchReady trong
+    // online-ui.js). Chỉ thật sự rời phòng khi bấm nút rời tường minh.
     try{ if(typeof _onlineLobby !== 'undefined') _onlineLobby=null; }catch(e){}
   } else {
     try{ if(typeof stopListeningChat === 'function') stopListeningChat(); }catch(e){}

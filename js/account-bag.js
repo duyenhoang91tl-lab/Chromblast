@@ -10,8 +10,10 @@
    Nguồn dữ liệu từng hạng mục (dùng nguyên, không tạo field trùng lặp):
    - Số dư: syncWalletFromServer() (js/online-services.js) rồi đọc qua
      getGold()/getDiamonds() (js/inventory.js) và Inventory.hearts.
-   - Skill: inv.fires/inv.bubbles/inv.winds qua POWER_INFO (js/inventory.js) — đúng
-     3 loại skill dùng trong ván (lửa/bong bóng/gió), không phải khái niệm khác.
+   - Skill: VS_OBSTACLES + isVsCardUnlocked (js/versus.js) — bộ thẻ chướng ngại
+     rút được khi chơi Đấu 1-1 (Versus) rồi ném sang bàn đối thủ, KHÔNG phải
+     fires/bubbles/winds của chế độ 1 người chơi (nhầm lẫn ở bản trước, đã sửa).
+     3 thẻ mặc định miễn phí, số còn lại mua mở khoá ở Shop (tab "Thẻ đấu").
    - Nền bàn / Mẫu gạch: BOARD_SKINS/BRICK_SKINS + isXSkinUnlocked/getActiveXSkin/
      applyXSkin (js/map-boards.js, js/brick-skins.js) — như bản cũ.
    - Bong bóng chat: CHAT_BUBBLE_SKINS + isBubbleSkinUnlocked (js/chat-bubble-skins.js),
@@ -21,25 +23,28 @@
    - Map ẩn: HIDDEN_MAP_LIST (js/main.js) + clearedHiddenMaps (Set, js/main.js) —
      bấm vào ô map đã qua sẽ chơi lại đúng map đó qua hàm run() có sẵn trong từng
      phần tử danh sách; map chưa qua chỉ hiện khoá, không bấm được.
-   LƯU Ý: "Rương", "Mẫu chữ", "Mẫu tên hiển thị" KHÔNG có trong yêu cầu hạng mục ở
-   đây vì dự án hiện chưa có hệ thống nào lưu vật phẩm dạng đó (đã rà toàn bộ code,
-   không thấy field/list liên quan) — thêm 3 danh mục này cần xây tính năng mới từ
+   - Mẫu tên hiển thị (Hiệu ứng tên) / Mẫu chữ (Hiệu ứng chữ): NAME_EFFECTS
+     (js/name-effects.js) + TEXT_EFFECTS (js/text-effects.js) — sở hữu/trang bị
+     qua isNameEffectOwned/equippedNameEffect/equipNameEffect và
+     isTextEffectOwned/equippedTextEffect/equipTextEffect, mua thêm mở thẳng
+     đúng tab Cửa hàng (openShop('nameeffects')/openShop('textfx')).
+   LƯU Ý: "Rương" vẫn KHÔNG có trong yêu cầu hạng mục ở đây vì dự án hiện chưa có
+   hệ thống nào lưu vật phẩm dạng đó — thêm danh mục này cần xây tính năng mới từ
    đầu (định nghĩa vật phẩm, nơi mở khoá/mua...), không phải việc sắp xếp lại màn
    hình sẵn có nên chưa đưa vào đây.
 ══════════════════════════════════════════ */
 
 const ACBAG_BRICK_PREVIEW_COLORS = ["#E24B4A", "#378ADD", "#1D9E75", "#EF9F27"];
 const ACBAG_CATEGORIES = ['skills', 'boards', 'bricks', 'bubbles', 'maps', 'chests', 'fonts', 'nametags'];
-const ACBAG_CAT_ICON = { skills:'🔥', boards:'🖼️', bricks:'🧱', bubbles:'💬', maps:'🗺️', chests:'📦', fonts:'🔤', nametags:'🏷️' };
+const ACBAG_CAT_ICON = { skills:'⚔️', boards:'🖼️', bricks:'🧱', bubbles:'💬', maps:'🗺️', chests:'📦', fonts:'💫', nametags:'✨' };
 const ACBAG_CAT_KEY  = { skills:'acbagCatSkills', boards:'acbagCatBoards', bricks:'acbagCatBricks', bubbles:'acbagCatBubbles', maps:'acbagCatMaps', chests:'acbagCatChests', fonts:'acbagCatFonts', nametags:'acbagCatNameTags' };
-// 3 hạng mục dưới đây CHƯA có hệ thống dữ liệu thật trong dự án (không có field/
-// list nào lưu rương/mẫu chữ/mẫu tên hiển thị đã sở hữu) — đang được xây ở luồng
-// khác. Thêm trước lối vào + trạng thái "sắp ra mắt" (đúng mẫu account-groups.js
-// đã dùng cho Hội nhóm) để có chỗ đứng sẵn trong danh sách hạng mục; PHẦN DỮ LIỆU
-// THẬT sẽ do luồng đang xây kia đổ vào _acbagRenderDetail() sau, không tự bịa số
-// liệu/danh sách vật phẩm ở đây.
-const ACBAG_CAT_SOON = { chests:true, fonts:true, nametags:true };
-let _acbagView = 'categories'; // 'categories' | 'skills' | 'boards' | 'bricks' | 'bubbles' | 'maps'
+// "Rương" CHƯA có hệ thống dữ liệu thật trong dự án (không có field/list nào
+// lưu rương đã sở hữu) — đang được xây ở luồng khác. Giữ trước lối vào +
+// trạng thái "sắp ra mắt" (đúng mẫu account-groups.js đã dùng cho Hội nhóm) để
+// có chỗ đứng sẵn trong danh sách hạng mục; không tự bịa số liệu/danh sách vật
+// phẩm ở đây khi chưa có quyết định thiết kế.
+const ACBAG_CAT_SOON = { chests:true };
+let _acbagView = 'categories'; // 'categories' | 'skills' | 'boards' | 'bricks' | 'bubbles' | 'maps' | 'nametags' | 'fonts'
 
 function _acbagT(k, ...args){ return (typeof t === 'function') ? t(k, ...args) : k; }
 function _acbagEsc(s){ return (typeof escapeHtml === 'function') ? escapeHtml(s) : String(s||''); }
@@ -48,8 +53,9 @@ function _acbagEsc(s){ return (typeof escapeHtml === 'function') ? escapeHtml(s)
 function _acbagCatCount(cat){
   if(ACBAG_CAT_SOON[cat]) return { owned:null, total:null, soon:true };
   if(cat === 'skills'){
-    const n = (typeof inv === 'object' && inv) ? ((inv.fires|0)+(inv.bubbles|0)+(inv.winds|0)) : 0;
-    return { owned:n, total:null }; // skill là số lượng dùng dần, không có "tổng" cố định
+    const list = (typeof VS_OBSTACLES !== 'undefined') ? VS_OBSTACLES : [];
+    const owned = list.filter(function(ob){ return typeof isVsCardUnlocked==='function' && isVsCardUnlocked(ob.id); }).length;
+    return { owned, total:list.length };
   }
   if(cat === 'boards'){
     const list = (typeof BOARD_SKINS !== 'undefined') ? BOARD_SKINS : [];
@@ -68,6 +74,14 @@ function _acbagCatCount(cat){
     const list = (typeof HIDDEN_MAP_LIST !== 'undefined') ? HIDDEN_MAP_LIST : [];
     const cleared = (typeof clearedHiddenMaps !== 'undefined' && clearedHiddenMaps) ? clearedHiddenMaps.size : 0;
     return { owned:cleared, total:list.length };
+  }
+  if(cat === 'nametags'){
+    const list = (typeof NAME_EFFECTS !== 'undefined') ? NAME_EFFECTS : [];
+    return { owned:list.filter(fx=>fx && typeof isNameEffectOwned==='function' && isNameEffectOwned(fx.id)).length, total:list.length };
+  }
+  if(cat === 'fonts'){
+    const list = (typeof TEXT_EFFECTS !== 'undefined') ? TEXT_EFFECTS : [];
+    return { owned:list.filter(fx=>fx && typeof isTextEffectOwned==='function' && isTextEffectOwned(fx.id)).length, total:list.length };
   }
   return { owned:0, total:null };
 }
@@ -176,24 +190,63 @@ function _acbagSkinCardEl(item, kind){
   return card;
 }
 
-/* ── Skill: chỉ là số lượng đang có (lửa/bong bóng/gió), không khoá/mở/dùng ── */
+/* ── Skill: đúng nghĩa là bộ thẻ chướng ngại dùng khi chơi Versus (Đấu 1-1) —
+   rút được trong trận rồi ném sang bàn đối thủ. 3 thẻ mặc định miễn phí (xem
+   VS_OBSTACLES.free trong js/versus.js), số còn lại phải mua mở khoá ở Shop
+   (tab "Thẻ đấu") mới xuất hiện trong bộ bài rút của mình. KHÔNG liên quan tới
+   fires/bubbles/winds (đó là vật phẩm dùng trong chế độ 1 người chơi, đã bỏ
+   nhầm ở đây trước đó). ── */
 function _acbagRenderSkills(grid){
-  grid.className = 'acach-list';
-  const rows = [
-    ['fire', (typeof inv==='object'&&inv)?(inv.fires|0):0],
-    ['bubble', (typeof inv==='object'&&inv)?(inv.bubbles|0):0],
-    ['wind', (typeof inv==='object'&&inv)?(inv.winds|0):0],
-  ];
-  grid.innerHTML = rows.map(([type,n])=>{
-    const info = (typeof POWER_INFO!=='undefined') ? POWER_INFO[type] : null;
-    const icon = info ? info.icon : '🔥';
-    const label = (typeof powerName==='function') ? powerName(type) : type;
-    return '<div class="acach-card">'
-      + '<div class="acach-card-icon">'+icon+'</div>'
-      + '<div class="acach-card-text"><div class="acach-card-label">'+_acbagEsc(label)+'</div></div>'
-      + '<div class="acach-card-value">'+n+'</div>'
-      + '</div>';
-  }).join('');
+  grid.className = 'acbag-grid';
+  grid.innerHTML = '';
+  const list = (typeof VS_OBSTACLES !== 'undefined') ? VS_OBSTACLES : [];
+  list.forEach(function(ob){
+    const unlocked = typeof isVsCardUnlocked==='function' && isVsCardUnlocked(ob.id);
+    const card = document.createElement('div');
+    card.className = 'acbag-card' + (unlocked ? '' : ' locked');
+
+    const previewWrap = document.createElement('div');
+    previewWrap.className = 'acbag-card-preview';
+    const emo = document.createElement('div');
+    emo.className = 'acbag-map-emo';
+    emo.textContent = ob.emoji;
+    previewWrap.appendChild(emo);
+    if(!unlocked){
+      const lock = document.createElement('div');
+      lock.className = 'acbag-lock';
+      lock.textContent = '🔒';
+      previewWrap.appendChild(lock);
+    }
+    card.appendChild(previewWrap);
+
+    const name = document.createElement('div');
+    name.className = 'acbag-card-name';
+    name.textContent = (typeof MECH_NAME==='function' ? MECH_NAME(ob.nameIdx) : ob.id).replace(/^\S+\s/, '');
+    card.appendChild(name);
+
+    if(ob.free){
+      const check = document.createElement('div');
+      check.className = 'acbag-check';
+      check.textContent = _acbagT('acbagVsCardFree');
+      card.appendChild(check);
+    }else if(unlocked){
+      const check = document.createElement('div');
+      check.className = 'acbag-check';
+      check.textContent = '✓ ' + _acbagT('acbagInUse');
+      card.appendChild(check);
+    }else{
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'acbag-use-btn';
+      btn.textContent = _acbagT('acbagVsCardBuy');
+      btn.addEventListener('click', ()=>{
+        try{ sfxClick(); }catch(e){}
+        if(typeof openShop==='function') openShop('vscards');
+      });
+      card.appendChild(btn);
+    }
+    grid.appendChild(card);
+  });
 }
 
 /* Kiểm tra map đã qua chưa — bản port y hệt isHiddenMapCleared (js/brick-skins.js,
@@ -259,10 +312,108 @@ function _acbagRenderMaps(grid){
   });
 }
 
+/* ── Mẫu tên hiển thị / Mẫu chữ → đổi tên hiển thị thành "Hiệu ứng tên" /
+   "Hiệu ứng chữ" cho khớp tên dùng ở Cửa hàng, và nối dữ liệu thật
+   (NAME_EFFECTS/js/name-effects.js, TEXT_EFFECTS/js/text-effects.js) — không
+   còn là "sắp ra mắt" nữa. Thẻ chưa sở hữu bấm vào mở thẳng đúng tab Cửa hàng
+   tương ứng, giống hệt cách hạng mục Skill đang làm với 'vscards'. ── */
+function _acbagFxPreviewEl(fx, kind){
+  const wrap = document.createElement('div');
+  if(kind === 'name'){
+    const nick = 'Người chơi';
+    const style = Object.assign({}, (typeof getPlayerNameStyle === 'function' ? getPlayerNameStyle() : {}), { effect: fx.id });
+    wrap.innerHTML = (typeof formatPlayerNameStyledHtml === 'function') ? formatPlayerNameStyledHtml(nick, style) : nick;
+  }else{
+    const span = document.createElement('span');
+    span.className = 'gchat-text' + (typeof textFxClass === 'function' ? textFxClass(fx.id) : '');
+    span.textContent = 'Chào mừng bạn!';
+    wrap.appendChild(span);
+    if(fx.id === 'flowers' && typeof textFxDecoHtml === 'function'){
+      const deco = document.createElement('span');
+      deco.className = 'text-fx-flowers-wrap';
+      deco.setAttribute('aria-hidden', 'true');
+      deco.innerHTML = textFxDecoHtml('flowers');
+      wrap.appendChild(deco);
+    }
+  }
+  return wrap;
+}
+
+function _acbagFxCardEl(fx, kind){
+  const ownedFn = kind === 'name' ? (typeof isNameEffectOwned==='function' ? isNameEffectOwned : null) : (typeof isTextEffectOwned==='function' ? isTextEffectOwned : null);
+  const equippedFn = kind === 'name' ? (typeof equippedNameEffect==='function' ? equippedNameEffect : null) : (typeof equippedTextEffect==='function' ? equippedTextEffect : null);
+  const equipFn = kind === 'name' ? equipNameEffect : equipTextEffect;
+  const owned = !!(ownedFn && ownedFn(fx.id));
+  const active = owned && equippedFn && equippedFn() === fx.id;
+
+  const card = document.createElement('div');
+  card.className = 'acbag-card' + (owned ? '' : ' locked') + (active ? ' active' : '');
+
+  const previewWrap = document.createElement('div');
+  previewWrap.className = 'acbag-card-preview';
+  previewWrap.appendChild(_acbagFxPreviewEl(fx, kind));
+  if(!owned){
+    const lock = document.createElement('div');
+    lock.className = 'acbag-lock';
+    lock.textContent = '🔒';
+    previewWrap.appendChild(lock);
+  }
+  card.appendChild(previewWrap);
+
+  const name = document.createElement('div');
+  name.className = 'acbag-card-name';
+  name.textContent = fx.name || fx.id;
+  card.appendChild(name);
+
+  if(owned){
+    if(active){
+      const check = document.createElement('div');
+      check.className = 'acbag-check';
+      check.textContent = '✓ ' + _acbagT('acbagInUse');
+      card.appendChild(check);
+    }else{
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'acbag-use-btn';
+      btn.textContent = _acbagT('acbagUse');
+      btn.addEventListener('click', ()=>{
+        try{ sfxClick(); }catch(e){}
+        if(typeof equipFn === 'function') equipFn(fx.id);
+        _acbagRenderDetail();
+      });
+      card.appendChild(btn);
+    }
+  }else{
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'acbag-use-btn';
+    btn.textContent = _acbagT('acbagVsCardBuy');
+    btn.addEventListener('click', ()=>{
+      try{ sfxClick(); }catch(e){}
+      if(typeof openShop==='function') openShop(kind==='name' ? 'nameeffects' : 'textfx');
+    });
+    card.appendChild(btn);
+  }
+  return card;
+}
+
+function _acbagRenderNameEffects(grid){
+  grid.className = 'acbag-grid';
+  grid.innerHTML = '';
+  const list = (typeof NAME_EFFECTS !== 'undefined') ? NAME_EFFECTS : [];
+  list.forEach(fx=>{ if(fx) grid.appendChild(_acbagFxCardEl(fx, 'name')); });
+}
+function _acbagRenderTextEffects(grid){
+  grid.className = 'acbag-grid';
+  grid.innerHTML = '';
+  const list = (typeof TEXT_EFFECTS !== 'undefined') ? TEXT_EFFECTS : [];
+  list.forEach(fx=>{ if(fx) grid.appendChild(_acbagFxCardEl(fx, 'text')); });
+}
+
 /* ── Bước 2: chi tiết 1 hạng mục ── */
-/* ── Rương / Mẫu chữ / Mẫu tên hiển thị: chưa có hệ thống dữ liệu thật, hiện
-   trạng thái "sắp ra mắt" đúng mẫu account-groups.js (Hội nhóm) đang dùng —
-   không tự bịa vật phẩm/số lượng khi chưa có quyết định thiết kế dữ liệu. ── */
+/* ── Rương: chưa có hệ thống dữ liệu thật, hiện trạng thái "sắp ra mắt" đúng
+   mẫu account-groups.js (Hội nhóm) đang dùng — không tự bịa vật phẩm/số lượng
+   khi chưa có quyết định thiết kế dữ liệu. ── */
 function _acbagRenderSoon(grid, cat){
   grid.className = 'acbag-soon-wrap';
   grid.innerHTML =
@@ -282,6 +433,8 @@ function _acbagRenderDetail(){
   if(ACBAG_CAT_SOON[_acbagView]){ _acbagRenderSoon(grid, _acbagView); return; }
   if(_acbagView === 'skills'){ _acbagRenderSkills(grid); return; }
   if(_acbagView === 'maps'){ _acbagRenderMaps(grid); return; }
+  if(_acbagView === 'nametags'){ _acbagRenderNameEffects(grid); return; }
+  if(_acbagView === 'fonts'){ _acbagRenderTextEffects(grid); return; }
 
   grid.className = 'acbag-grid';
   grid.innerHTML = '';

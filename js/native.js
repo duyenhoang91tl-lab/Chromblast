@@ -222,7 +222,7 @@
     'gpcard-sub-rewards','gpcard-sub-quests','gpcard-sub-redeem','gpcard-sub-leaderboard','gpcard-panel',
     'versus-setup-panel','versus-result-panel','online-hub-panel','online-lobby-panel','online-matchmaking-panel',
     'caro-hub-panel','caro-lobby-panel','caro-mm-panel','caro-result-panel','caro-rank-panel','caro-settings-panel',
-    'caro-menu-panel','versus-menu-panel',
+    'caro-menu-panel','versus-menu-panel','caro-room-browser',
     'player-profile-panel','player-card-panel',
     'friends-panel','shop-panel','quests-screen',
     'account-hub','account-status-panel','account-achievements-panel','account-bag-panel','account-groups-panel','account-membership-panel',

@@ -66,8 +66,8 @@
     { tab: "nameeffects", ico: "✨", key: "shopTabNameeffects", fb: "Hiệu ứng tên" },
     { tab: "chests", ico: '<svg viewBox="0 0 48 48" width="60" height="60" aria-hidden="true"><path d="M6 21 Q6 8 24 8 Q42 8 42 21 L42 25 L6 25 Z" fill="#8a5a30"/><path d="M6 21 Q6 8 24 8 Q42 8 42 21" fill="none" stroke="#ffd54a" stroke-width="2"/><rect x="6" y="25" width="36" height="17" rx="3" fill="#a5713e"/><rect x="6" y="25" width="36" height="17" rx="3" fill="none" stroke="#6b4423" stroke-width="1"/><line x1="6" y1="33.5" x2="42" y2="33.5" stroke="#6b4423" stroke-width="1.4"/><rect x="9" y="8" width="4.5" height="34" fill="#ffd54a" opacity="0.9"/><rect x="34.5" y="8" width="4.5" height="34" fill="#ffd54a" opacity="0.9"/><rect x="19.5" y="26" width="9" height="10" rx="2" fill="#ffd54a"/><circle cx="24" cy="30.5" r="1.7" fill="#4a2f14"/></svg>', key: "shopTabChests", fb: "Rương", locked: true },
     { tab: "skills", ico: "🌀", key: "shopTabSkills", fb: "Kỹ năng", locked: true },
-    { tab: "textfx", ico: "💫", key: "shopTabTextfx", fb: "Hiệu ứng chữ", locked: true },
-    { tab: "cards", ico: "🃏", key: "shopTabCards", fb: "Thẻ", locked: true },
+    { tab: "textfx", ico: "💫", key: "shopTabTextfx", fb: "Hiệu ứng chữ" },
+    { tab: "vscards", ico: "⚔️", key: "shopTabVsCards", fb: "Thẻ đấu" },
   ];
 
   function refreshShopBalance() {
@@ -350,6 +350,11 @@
       return;
     }
 
+    if (tab === "vscards") {
+      renderVsCardShopTab(body);
+      return;
+    }
+
     if (tab === "hearts") {
       const box = document.createElement("div");
       box.className = "shop-hearts-box";
@@ -458,6 +463,11 @@
 
     if (tab === "nameeffects") {
       renderNameEffectShopTab(body);
+      return;
+    }
+
+    if (tab === "textfx") {
+      renderTextEffectShopTab(body);
       return;
     }
 
@@ -731,6 +741,86 @@
     body.appendChild(grid);
   }
 
+  function renderVsCardShopTab(body) {
+    const list = typeof VS_OBSTACLES !== "undefined" ? VS_OBSTACLES : [];
+    const unlockedFn = typeof isVsCardUnlocked === "function" ? isVsCardUnlocked : function () { return true; };
+
+    const note = document.createElement("div");
+    note.className = "shop-vscard-note";
+    note.textContent = tt("shopVsCardNote", "Thẻ mở khoá sẽ xuất hiện trong bộ bài rút khi chơi Đấu 1-1 (Versus).");
+    body.appendChild(note);
+
+    const grid = document.createElement("div");
+    grid.className = "shop-grid";
+    list.forEach(function (ob) {
+      const owned = unlockedFn(ob.id);
+      const goldPrice = ob.price | 0;
+      const diaCost = ob.diaPrice | 0;
+      const card = document.createElement("div");
+      card.className = "shop-item" + (owned ? " owned" : "") + (goldPrice <= 0 && diaCost > 0 ? " shop-item-premium" : "");
+
+      const preview = document.createElement("div");
+      preview.className = "shop-item-preview shop-vscard-preview";
+      preview.textContent = ob.emoji;
+      card.appendChild(preview);
+
+      const nameEl = document.createElement("div");
+      nameEl.className = "shop-item-name";
+      nameEl.textContent = (typeof MECH_NAME === "function" ? MECH_NAME(ob.nameIdx) : ob.id).replace(/^\S+\s/, "");
+      card.appendChild(nameEl);
+
+      const priceEl = document.createElement("div");
+      priceEl.className = "shop-item-price";
+      priceEl.textContent = ob.free
+        ? tt("shopFree", "Miễn phí")
+        : owned
+          ? tt("shopOwned", "Đã sở hữu")
+          : goldPrice
+            ? "🪙 " + goldPrice
+            : "💎 " + diaCost;
+      card.appendChild(priceEl);
+
+      const displayName = (typeof MECH_NAME === "function" ? MECH_NAME(ob.nameIdx) : ob.id).replace(/^\S+\s/, "");
+      if (!owned && !ob.free) {
+        const row = document.createElement("div");
+        row.className = "shop-item-actions";
+        if (goldPrice > 0) {
+          const bGold = document.createElement("button");
+          bGold.type = "button";
+          bGold.className = "shop-buy-btn";
+          bGold.textContent = tt("shopBuy", "Mua");
+          bGold.title = tt("shopBuyGold", "Mua bằng vàng");
+          bGold.addEventListener("click", async function () {
+            try { sfxClick(); } catch (e) {}
+            bGold.disabled = true;
+            const r = await buyVsCardWithGold(ob.id, goldPrice);
+            flashBuy(r, { name: displayName }, goldPrice, false);
+            renderShop("vscards");
+          });
+          row.appendChild(bGold);
+        }
+        if (diaCost > 0) {
+          const bDia = document.createElement("button");
+          bDia.type = "button";
+          bDia.className = "shop-buy-btn shop-buy-dia";
+          bDia.textContent = tt("shopBuyDia", "KC");
+          bDia.title = tt("shopBuyWithDia", "Mua bằng kim cương");
+          bDia.addEventListener("click", async function () {
+            try { sfxClick(); } catch (e) {}
+            bDia.disabled = true;
+            const r = await buyVsCardWithDiamond(ob.id, diaCost);
+            flashBuy(r, { name: displayName }, diaCost, true);
+            renderShop("vscards");
+          });
+          row.appendChild(bDia);
+        }
+        card.appendChild(row);
+      }
+      grid.appendChild(card);
+    });
+    body.appendChild(grid);
+  }
+
   function makeNameEffectPreviewEl(id) {
     const wrap = document.createElement("div");
     wrap.className = "shop-item-preview shop-nameeffect-preview";
@@ -794,6 +884,84 @@
           equipNameEffect(isEquipped ? "" : fx.id);
           try { if (typeof refreshArcadeHud === "function") refreshArcadeHud(); } catch (e) {}
           renderShop("nameeffects");
+        });
+        row.appendChild(bEquip);
+      }
+      card.appendChild(row);
+      grid.appendChild(card);
+    });
+    body.appendChild(grid);
+  }
+
+  function makeTextEffectPreviewEl(id) {
+    const wrap = document.createElement("div");
+    wrap.className = "shop-item-preview shop-nameeffect-preview";
+    const sample = tt("shopTextEffectPreviewText", "Chào mừng bạn!");
+    const span = document.createElement("span");
+    span.className = "gchat-text" + (typeof textFxClass === "function" ? textFxClass(id) : "");
+    span.textContent = sample;
+    wrap.appendChild(span);
+    if (id === "flowers" && typeof textFxDecoHtml === "function") {
+      const deco = document.createElement("span");
+      deco.className = "text-fx-flowers-wrap";
+      deco.setAttribute("aria-hidden", "true");
+      deco.innerHTML = textFxDecoHtml("flowers");
+      wrap.appendChild(deco);
+    }
+    return wrap;
+  }
+
+  function renderTextEffectShopTab(body) {
+    const list = typeof TEXT_EFFECTS !== "undefined" ? TEXT_EFFECTS : [];
+    const ownedFn = typeof isTextEffectOwned === "function" ? isTextEffectOwned : function () { return false; };
+    const equipped = typeof equippedTextEffect === "function" ? equippedTextEffect() : "";
+
+    const grid = document.createElement("div");
+    grid.className = "shop-grid";
+    list.forEach(function (fx) {
+      const owned = ownedFn(fx.id);
+      const isEquipped = owned && equipped === fx.id;
+      const diaCost = fx.diaPrice | 0;
+
+      const card = document.createElement("div");
+      card.className = "shop-item shop-item-premium" + (isEquipped ? " equipped" : "");
+      card.appendChild(makeTextEffectPreviewEl(fx.id));
+
+      const nameEl = document.createElement("div");
+      nameEl.className = "shop-item-name";
+      nameEl.textContent = fx.name || fx.id;
+      card.appendChild(nameEl);
+
+      const priceEl = document.createElement("div");
+      priceEl.className = "shop-item-price";
+      priceEl.textContent = owned ? tt("shopOwned", "Đã sở hữu") : "💎 " + diaCost;
+      card.appendChild(priceEl);
+
+      const row = document.createElement("div");
+      row.className = "shop-item-actions";
+      if (!owned) {
+        const bDia = document.createElement("button");
+        bDia.type = "button";
+        bDia.className = "shop-buy-btn shop-buy-dia";
+        bDia.textContent = tt("shopBuyDia", "KC");
+        bDia.title = tt("shopBuyWithDia", "Mua bằng kim cương");
+        bDia.addEventListener("click", async function () {
+          try { sfxClick(); } catch (e) {}
+          bDia.disabled = true;
+          const r = await buyTextEffect(fx.id, diaCost);
+          flashBuy(r, fx, diaCost, true);
+          renderShop("textfx");
+        });
+        row.appendChild(bDia);
+      } else {
+        const bEquip = document.createElement("button");
+        bEquip.type = "button";
+        bEquip.className = "shop-buy-btn" + (isEquipped ? " shop-equipped-btn" : "");
+        bEquip.textContent = isEquipped ? tt("shopUnequip", "Tháo ra") : tt("shopEquip", "Trang bị");
+        bEquip.addEventListener("click", function () {
+          try { sfxClick(); } catch (e) {}
+          equipTextEffect(isEquipped ? "" : fx.id);
+          renderShop("textfx");
         });
         row.appendChild(bEquip);
       }

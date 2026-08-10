@@ -142,8 +142,8 @@ function _vsBuildArena(){
   if(!online) arena.classList.add('vs-ai-mode');
   if(_vs && typeof _vs.layoutBoost !== 'boolean') _vs.layoutBoost = _vsGetLayoutBoost();
   if(_vs && _vs.layoutBoost) arena.classList.add('vs-boost');
-  const nTop = escapeHtml(_vs.names[0] || 'P1');
-  const nBot = escapeHtml(_vs.names[1] || 'P2');
+  const nTopPlain = escapeHtml(_vs.names[0] || 'P1');
+  const nBotPlain = escapeHtml(_vs.names[1] || 'P2');
   const avTop = escapeHtml((_vs.avatars && _vs.avatars[0]) || '🐶');
   const avBot = escapeHtml((_vs.avatars && _vs.avatars[1]) || '🐱');
   const quitLbl = (typeof t === 'function' ? t('vsQuit') : null) || 'Thoát';
@@ -153,6 +153,19 @@ function _vsBuildArena(){
   const myVsRank = (typeof getVersusRank==='function') ? getVersusRank(myVsPoints) : null;
   const oppVsPoints = (_vs.online && _vs.online.oppVersusPoints!=null) ? _vs.online.oppVersusPoints : null;
   const oppVsRank = (online && oppVsPoints!=null && typeof getVersusRank==='function') ? getVersusRank(oppVsPoints) : null;
+
+  // Tên hiển thị theo đúng kiểu style/hiệu ứng đã dùng ở chat/Caro: của mình
+  // dùng style tự chọn (getPlayerNameStyle) + hiệu ứng theo bậc rank Versus
+  // (10 bậc, xem js/versus-ranks.js); của đối thủ dùng style trung tính vì
+  // không biết style họ chọn — chỉ tự động thêm hiệu ứng rank nếu biết bậc.
+  const _vsNeutralStyle = { color:'#ffffff', bold:false, italic:false, fontId:'nunito', effect:'' };
+  const myNameStyle = (typeof getPlayerNameStyle==='function') ? getPlayerNameStyle() : _vsNeutralStyle;
+  const nTop = (myVsRank && myVsRank.tier > 0 && typeof rankNameFxHtml==='function')
+    ? rankNameFxHtml(_vs.names[0] || 'P1', myVsRank.tier, 10, myNameStyle)
+    : (typeof formatPlayerNameStyledHtml==='function' ? formatPlayerNameStyledHtml(_vs.names[0] || 'P1', myNameStyle) : escapeHtml(_vs.names[0] || 'P1'));
+  const nBot = (oppVsRank && oppVsRank.tier > 0 && typeof rankNameFxHtml==='function')
+    ? rankNameFxHtml(_vs.names[1] || 'P2', oppVsRank.tier, 10, _vsNeutralStyle)
+    : (typeof formatPlayerNameStyledHtml==='function' ? formatPlayerNameStyledHtml(_vs.names[1] || 'P2', _vsNeutralStyle) : escapeHtml(_vs.names[1] || 'P2'));
   const rankTopHtml = myVsRank ? ('<span class="vs-chip-rank" id="vs-chip-rank0">'+escapeHtml(myVsRank.icon+' '+myVsRank.name)+'</span>') : '';
   const rankBotHtml = oppVsRank ? ('<span class="vs-chip-rank" id="vs-chip-rank1">'+escapeHtml(oppVsRank.icon+' '+oppVsRank.name)+'</span>') : '';
 
@@ -171,7 +184,7 @@ function _vsBuildArena(){
   // Chip kiểu Caro: avatar + tên + điểm — giờ được chèn NGAY TRONG mỗi bàn (.vs-half)
   // thay vì nổi riêng theo cả màn hình, xem vòng lặp half bên dưới.
   const chipHtml0 =
-    '<div id="vs-top-chip" class="vs-player-chip vs-chip-top" aria-label="'+nTop+'">'+
+    '<div id="vs-top-chip" class="vs-player-chip vs-chip-top" aria-label="'+nTopPlain+'">'+
       '<span class="vs-chip-avatar caro-me-avatar" id="vs-chip-avatar0">'+avTop+'</span>'+
       '<div class="vs-chip-meta">'+
         '<span class="vs-chip-name" id="vs-chip-name0">'+nTop+'</span>'+
@@ -182,7 +195,7 @@ function _vsBuildArena(){
       '</div>'+
     '</div>';
   const chipHtml1 =
-    '<div id="vs-bottom-chip" class="vs-player-chip vs-chip-bottom" aria-label="'+nBot+'">'+
+    '<div id="vs-bottom-chip" class="vs-player-chip vs-chip-bottom" aria-label="'+nBotPlain+'">'+
       '<span class="vs-chip-avatar caro-opp-avatar" id="vs-chip-avatar1">'+avBot+'</span>'+
       '<div class="vs-chip-meta">'+
         '<span class="vs-chip-name" id="vs-chip-name1">'+nBot+'</span>'+
@@ -445,6 +458,8 @@ function _vsRenderHud(P){
 
 function _vsRenderGrid(P){
   const fog = Date.now()<P.fogUntil;
+  const eggRow = (P.egg && P.egg.row!=null) ? P.egg.row : -1;
+  const eggMidCol = Math.floor(VS_N/2);
   for(let r=0;r<VS_N;r++)for(let c=0;c<VS_N;c++){
     const d=P.el.cells[r][c], k=r+','+c, v=P.board[r][c];
     let cls='vs-cell', txt='', cc='';
@@ -460,6 +475,10 @@ function _vsRenderGrid(P){
     }
     const isBomb = !!(P.bomb && P.bomb.r===r && P.bomb.c===c);
     if(isBomb) cls+=' vs-bomb';
+    const isEggRow = (r===eggRow);
+    if(isEggRow) cls+=' vs-egg-row';
+    const isEggBadge = isEggRow && (c===eggMidCol);
+    if(isEggBadge) cls+=' vs-egg-badge';
 
     // So sánh trước khi ghi — trước đây ghi lại cả 49 ô mỗi lần dù phần lớn
     // không đổi (className/style/dataset), gây recalc style thừa mỗi lượt đặt khối.
@@ -478,6 +497,11 @@ function _vsRenderGrid(P){
       const bv=String(P.bomb.left);
       if(d.dataset.bomb!==bv) d.dataset.bomb=bv;
     } else if(d.dataset.bomb) delete d.dataset.bomb;
+
+    if(isEggBadge){
+      const ev=String(P.egg.left);
+      if(d.dataset.egg!==ev) d.dataset.egg=ev;
+    } else if(d.dataset.egg) delete d.dataset.egg;
   }
 }
 
@@ -777,8 +801,15 @@ document.addEventListener('pointercancel',ev=>{
 
 function _vsOfferCards(P){
   if(_vs && _vs.online && P.idx!==0) return;
-  const picks=[]; const pool=VS_OBSTACLES.slice();
-  while(picks.length<3&&pool.length) picks.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]);
+  // P.idx===0 luôn là "phía mình" (dù Cùng máy hay Online) → dùng đúng bộ thẻ
+  // đã mở khoá của mình. P.idx===1 ở chế độ Cùng máy là AI — AI chỉ rút thẻ
+  // miễn phí, không "thừa hưởng" thẻ mình đã bỏ tiền mua.
+  const isMySide = (P.idx===0);
+  const pool = VS_OBSTACLES.filter(function(ob){
+    return ob.free || (isMySide && typeof isVsCardUnlocked==='function' && isVsCardUnlocked(ob.id));
+  });
+  const picks=[]; const poolCopy=pool.slice();
+  while(picks.length<3&&poolCopy.length) picks.push(poolCopy.splice(Math.floor(Math.random()*poolCopy.length),1)[0]);
   P.el.cards.innerHTML='<div class="vs-cards-title">'+t('vsPickCard')+'</div>'+
     '<div class="vs-cards-row"></div>';
   const row=P.el.cards.querySelector('.vs-cards-row');
@@ -811,6 +842,76 @@ function _vsOfferCards(P){
   if(!aiOwnsThis) P.el.cards.classList.add('show');
 }
 
+function _vsRenderPostMatchReady(d){
+  if(!_vs || !_vs.online) return;
+  document.getElementById('vs-again-btn').style.display = 'none';
+  document.getElementById('vs-close-btn').style.display = 'none';
+  const block = document.getElementById('vs-postmatch-block');
+  if(block) block.style.display = '';
+
+  const isHost = !!_vs.online.isHost;
+  const hostReady = !!d.hostReadyRematch, guestReady = !!d.guestReadyRematch;
+  const meReady = isHost ? hostReady : guestReady;
+  const hostIcon = hostReady ? '✅' : '⏳';
+  const guestIcon = d.guestId ? (guestReady ? '✅' : '⏳') : '';
+  const guestLabel = d.guestId ? escapeHtml(d.guestName || '') + ' ' + guestIcon : ('<span class="online-wait">' + escapeHtml(typeof t==='function'?t('onlineWaiting'):'Đang chờ...') + '</span>');
+  const kickBtnHtml = (isHost && d.guestId)
+    ? '<button type="button" class="caro-kick-btn" id="vs-postmatch-kick-btn" data-name="'+escapeHtml(d.guestName||'')+'">'+escapeHtml(t('roomKickBtn'))+'</button>'
+    : '';
+  const playersEl = document.getElementById('vs-postmatch-players');
+  if(playersEl){
+    playersEl.innerHTML =
+      '<div class="online-player"><span>👑</span> '+escapeHtml(d.hostName||'')+' '+hostIcon+'</div>'+
+      '<div class="online-player"><span>⚔️</span> '+guestLabel+kickBtnHtml+'</div>';
+    document.getElementById('vs-postmatch-kick-btn')?.addEventListener('click', (e)=>{
+      e.preventDefault(); e.stopPropagation();
+      const gName = e.currentTarget.dataset.name || '?';
+      if(!confirm(t('roomKickConfirm', gName))) return;
+      if(typeof kickRoomGuest === 'function' && _vs && _vs.online){
+        kickRoomGuest(_vs.online.roomId).catch(()=>{});
+      }
+    });
+  }
+
+  const readyBtn = document.getElementById('vs-postmatch-ready-btn');
+  if(readyBtn){
+    readyBtn.textContent = meReady ? ('✅ ' + t('vsReadyOn')) : ('☐ ' + t('vsReady'));
+    readyBtn.classList.toggle('btn-ghost', meReady);
+  }
+
+  const startBtn = document.getElementById('vs-postmatch-start-btn');
+  const waitNote = document.getElementById('vs-postmatch-wait-note');
+  const bothReady = hostReady && guestReady && !!d.guestId;
+  if(isHost){
+    if(startBtn) startBtn.style.display = bothReady ? '' : 'none';
+    if(waitNote) waitNote.style.display = (!bothReady && d.guestId) ? '' : 'none';
+    if(waitNote && d.guestId) waitNote.textContent = t('vsPostmatchWaitGuest');
+  } else {
+    if(startBtn) startBtn.style.display = 'none';
+    if(waitNote) waitNote.style.display = meReady ? '' : 'none';
+    if(waitNote) waitNote.textContent = t('vsPostmatchWaitHost');
+  }
+}
+
+/** Đối thủ rời phòng trong lúc mình đang đứng ở màn kết quả chờ đấu lại. */
+function _vsPostMatchOpponentLeft(){
+  if(!_vs || !_vs.online || _vs.online.isHost) return; // host tự xử qua nút Kick/logic riêng, không cần thoát
+  try{ showHint((typeof t==='function'?t('onlineHostLeftMsg'):null) || 'Chủ phòng đã rời phòng', { hold: 2600 }); }catch(e){}
+  _vsLeaveRoomFully();
+}
+
+function _vsLeaveRoomFully(){
+  if(_vs && _vs.online && _vs.online.roomId){
+    try{ leaveOnlineRoom(_vs.online.roomId); }catch(e){}
+  }
+  try{ if(typeof stopListeningRoom === 'function') stopListeningRoom(); }catch(e){}
+  document.getElementById('vs-again-btn').style.display = '';
+  document.getElementById('vs-close-btn').style.display = '';
+  document.getElementById('vs-postmatch-block').style.display = 'none';
+  _vsHide('versus-result-panel');
+  _vs = null;
+}
+
 function _vsCloseResult(rematch){
   _vsHide('versus-result-panel');
   if(rematch){
@@ -822,4 +923,30 @@ function _vsCloseResult(rematch){
   }
   _vs=null;
 }
+
+(function _vsBindPostMatchButtons(){
+  function bind(){
+    document.getElementById('vs-postmatch-ready-btn')?.addEventListener('click', ()=>{
+      try{ sfxClick(); }catch(e){}
+      if(!_vs || !_vs.online) return;
+      const isHost = !!_vs.online.isHost;
+      // Trạng thái hiện tại đọc lại từ chính chữ nút (đã render theo d.hostReadyRematch/
+      // guestReadyRematch lần cập nhật gần nhất) để không cần giữ thêm biến state riêng.
+      const btn = document.getElementById('vs-postmatch-ready-btn');
+      const currentlyReady = !!(btn && btn.classList.contains('btn-ghost'));
+      if(typeof setVersusRematchReady === 'function') setVersusRematchReady(_vs.online.roomId, !currentlyReady);
+    });
+    document.getElementById('vs-postmatch-start-btn')?.addEventListener('click', ()=>{
+      try{ sfxClick(); }catch(e){}
+      if(!_vs || !_vs.online || !_vs.online.isHost) return;
+      if(typeof startOnlineRoomMatch === 'function') startOnlineRoomMatch(_vs.online.roomId).catch(()=>{});
+    });
+    document.getElementById('vs-postmatch-leave-btn')?.addEventListener('click', ()=>{
+      try{ sfxClick(); }catch(e){}
+      _vsLeaveRoomFully();
+    });
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
+  else bind();
+})();
 

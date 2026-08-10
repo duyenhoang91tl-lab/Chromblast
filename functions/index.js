@@ -377,8 +377,7 @@ exports.spendCurrency = onCall({ region: 'asia-southeast1' }, async (request) =>
   const ref = db.collection('players').doc(uid);
   return db.runTransaction(async (tx) => {
     const snap = await tx.get(ref);
-    if (!snap.exists) throw new HttpsError('failed-precondition', 'Chưa có ví.');
-    const w = walletOf(snap.data());
+    const w = walletOf(snap.exists ? snap.data() : {});
     if (w.gold < g || w.diamonds < d || w.hearts < h) {
       throw new HttpsError('failed-precondition', 'Không đủ số dư.');
     }
@@ -410,8 +409,7 @@ exports.exchangeCurrency = onCall({ region: 'asia-southeast1' }, async (request)
   const ref = db.collection('players').doc(uid);
   return db.runTransaction(async (tx) => {
     const snap = await tx.get(ref);
-    if (!snap.exists) throw new HttpsError('failed-precondition', 'Chưa có ví.');
-    const w = walletOf(snap.data());
+    const w = walletOf(snap.exists ? snap.data() : {});
     const goldCost = count * GOLD_PER_DIAMOND;
     if (w.gold < goldCost) throw new HttpsError('failed-precondition', 'Không đủ vàng.');
     tx.set(ref, { gold: FieldValue.increment(-goldCost), diamonds: FieldValue.increment(count) }, { merge: true });
@@ -456,9 +454,14 @@ exports.escrowWager = onCall({ region: 'asia-southeast1' }, async (request) => {
     const escrowKey = isHost ? 'hostEscrowed' : 'guestEscrowed';
     if (room[escrowKey]) return { ok: true, already: true };
 
+    // FIX: tài liệu players/{uid} chỉ được tạo khi chơi solo (startSoloRun) — một tài
+    // khoản mới vào thẳng đấu online có cược mà CHƯA từng chơi solo sẽ không có tài
+    // liệu này, khiến escrow LUÔN báo lỗi "Chưa có ví" dù họ có thể có đủ tiền (ví dụ
+    // tiền thưởng mặc định) — thay vì chặn cứng, coi ví trống (0) như bất kỳ người chơi
+    // nào khác; nếu thật sự không đủ tiền thì check "Không đủ vàng/kim cương" bên dưới
+    // đã tự xử lý đúng rồi.
     const playerSnap = await tx.get(playerRef);
-    if (!playerSnap.exists) throw new HttpsError('failed-precondition', 'Chưa có ví.');
-    const w = walletOf(playerSnap.data());
+    const w = walletOf(playerSnap.exists ? playerSnap.data() : {});
     const balance = currency === 'gold' ? w.gold : w.diamonds;
     if (balance < amount) {
       throw new HttpsError(
@@ -725,6 +728,120 @@ const CURRENCY_CRATES = {
   gold:    { price: 8,  priceType: 'diamond', freeDaily: true,  rewardType: 'gold',    min: 60, max: 150 },
   diamond: { price: 20, priceType: 'diamond', freeDaily: false, rewardType: 'diamond', min: 2,  max: 8   },
 };
+/**
+ * 5 rương "bậc" (Gỗ/Bạc/Vàng/Bạch Kim/Kim Cương — khớp js/loot-crates.js:
+ * LOOT_CRATES, kind 'tier') trộn nhiều loại thưởng trong 1 rương thay vì
+ * mỗi rương 1 loại cố định như trước. Toàn bộ random + trừ giá + cộng thưởng
+ * (phần tiền tệ) chạy chung 1 transaction ở server — cùng lý do như
+ * openCurrencyCrate bên trên (tránh "trừ qua server, cộng cục bộ, mất khi
+ * đồng bộ"). Phần cosmetic (gạch/nền/hiệu ứng tên) KHÔNG cộng ở đây — chỉ trả
+ * về category, client tự chọn 1 skin CHƯA sở hữu trong đúng kho tương ứng rồi
+ * mở khoá cục bộ, giống hệt cách rương Gạch/Map/Hiệu Ứng cũ đã làm (cosmetic
+ * trong app này luôn lưu cục bộ, không đồng bộ server — xem player-profile.js).
+ *
+ * Bậc thấp (Gỗ/Bạc/Vàng) CHỈ ra vàng/tim/gạch-nền RẺ — không có kim cương,
+ * không có hiệu ứng tên, không có vật phẩm cao cấp. Từ Bạch Kim trở lên mới
+ * mở khoá kim cương + hiệu ứng tên + gạch/nền CAO CẤP (diaPrice) theo đúng
+ * yêu cầu. "Rẻ" = skin có field price (mua bằng vàng), "cao cấp" = skin có
+ * field diaPrice (chỉ mua bằng kim cương) — khớp đúng cách phân loại đã có
+ * sẵn ở BOARD_SKINS/BRICK_SKINS/NAME_EFFECT_SKINS phía client.
+ */
+const TIER_CRATES = {
+  wood:     { price: 10, priceType: 'gold',    freeDaily: true,  pool: [
+    { cat: 'gold',   w: 55, min: 5,  max: 15 },
+    { cat: 'hearts', w: 30, min: 1,  max: 1  },
+    { cat: 'brick-cheap', w: 8 },
+    { cat: 'board-cheap', w: 7 }
+  ]},
+  silver:   { price: 25, priceType: 'gold',    freeDaily: true,  pool: [
+    { cat: 'gold',   w: 50, min: 15, max: 40 },
+    { cat: 'hearts', w: 25, min: 1,  max: 1  },
+    { cat: 'brick-cheap', w: 13 },
+    { cat: 'board-cheap', w: 12 }
+  ]},
+  gold:     { price: 8,  priceType: 'diamond', freeDaily: true,  pool: [
+    { cat: 'gold',   w: 45, min: 60, max: 150 },
+    { cat: 'hearts', w: 20, min: 1,  max: 2   },
+    { cat: 'brick-cheap', w: 18 },
+    { cat: 'board-cheap', w: 17 }
+  ]},
+  platinum: { price: 15, priceType: 'diamond', freeDaily: false, pool: [
+    { cat: 'gold',     w: 10, min: 80, max: 180 },
+    { cat: 'diamonds', w: 20, min: 3,  max: 6   },
+    { cat: 'brick-cheap', w: 15 },
+    { cat: 'board-cheap', w: 15 },
+    { cat: 'nameeffect-cheap', w: 15 },
+    { cat: 'brick-expensive', w: 10 },
+    { cat: 'board-expensive', w: 10 },
+    { cat: 'nameeffect-expensive', w: 5 }
+  ]},
+  diamond:  { price: 20, priceType: 'diamond', freeDaily: false, pool: [
+    { cat: 'diamonds', w: 35, min: 2, max: 8 },
+    { cat: 'nameeffect-expensive', w: 20 },
+    { cat: 'board-expensive', w: 15 },
+    { cat: 'brick-expensive', w: 15 },
+    { cat: 'nameeffect-cheap', w: 10 },
+    { cat: 'gold', w: 5, min: 100, max: 200 }
+  ]}
+};
+
+function pickWeighted(pool) {
+  const total = pool.reduce((s, p) => s + p.w, 0);
+  let r = Math.random() * total;
+  for (const p of pool) { r -= p.w; if (r <= 0) return p; }
+  return pool[pool.length - 1];
+}
+
+exports.openTierCrate = onCall({ region: 'asia-southeast1' }, async (request) => {
+  const uid = request.auth && request.auth.uid;
+  if (!uid) throw new HttpsError('unauthenticated', 'Cần đăng nhập.');
+  const crateId = request.data && request.data.crateId;
+  const useFree = !!(request.data && request.data.useFree);
+  const crate = TIER_CRATES[crateId];
+  if (!crate) throw new HttpsError('invalid-argument', 'Rương không hợp lệ.');
+  if (useFree && !crate.freeDaily) throw new HttpsError('invalid-argument', 'Rương này không có lượt miễn phí.');
+
+  const ref = db.collection('players').doc(uid);
+  const dayKey = periodKey('day');
+  const claimRef = db.collection('players').doc(uid).collection('claims').doc('tierCrateFree_' + crateId + '_' + dayKey);
+
+  return db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    const w = walletOf(snap.exists ? snap.data() : {});
+
+    if (useFree) {
+      const claimSnap = await tx.get(claimRef);
+      if (claimSnap.exists) throw new HttpsError('already-exists', 'Đã mở miễn phí hôm nay.');
+    } else {
+      if (crate.priceType === 'gold' && w.gold < crate.price) throw new HttpsError('failed-precondition', 'Không đủ vàng.');
+      if (crate.priceType === 'diamond' && w.diamonds < crate.price) throw new HttpsError('failed-precondition', 'Không đủ kim cương.');
+    }
+
+    const picked = pickWeighted(crate.pool);
+    let goldDelta = 0, diaDelta = 0, heartsDelta = 0;
+    if (!useFree) {
+      if (crate.priceType === 'gold') goldDelta -= crate.price; else diaDelta -= crate.price;
+    }
+
+    let rewardAmount = 0;
+    if (picked.cat === 'gold' || picked.cat === 'diamonds' || picked.cat === 'hearts') {
+      rewardAmount = picked.min + Math.floor(Math.random() * (picked.max - picked.min + 1));
+      if (picked.cat === 'gold') goldDelta += rewardAmount;
+      else if (picked.cat === 'diamonds') diaDelta += rewardAmount;
+      else { heartsDelta = Math.max(0, Math.min(rewardAmount, MAX_HEARTS - w.hearts)); rewardAmount = heartsDelta; }
+    }
+
+    if (useFree) tx.set(claimRef, { ts: FieldValue.serverTimestamp() });
+    tx.set(ref, {
+      gold: FieldValue.increment(goldDelta),
+      diamonds: FieldValue.increment(diaDelta),
+      hearts: FieldValue.increment(heartsDelta)
+    }, { merge: true });
+
+    return { ok: true, category: picked.cat, amount: rewardAmount };
+  });
+});
+
 exports.openCurrencyCrate = onCall({ region: 'asia-southeast1' }, async (request) => {
   const uid = request.auth && request.auth.uid;
   if (!uid) throw new HttpsError('unauthenticated', 'Cần đăng nhập.');
@@ -740,8 +857,7 @@ exports.openCurrencyCrate = onCall({ region: 'asia-southeast1' }, async (request
 
   return db.runTransaction(async (tx) => {
     const snap = await tx.get(ref);
-    if (!snap.exists) throw new HttpsError('failed-precondition', 'Chưa có ví.');
-    const w = walletOf(snap.data());
+    const w = walletOf(snap.exists ? snap.data() : {});
 
     if (useFree) {
       const claimSnap = await tx.get(claimRef);
@@ -915,11 +1031,13 @@ exports.applyMatchResult = onDocumentUpdated(
     const hostId = after.hostId, guestId = after.guestId;
     if (!hostId || !guestId) return null;
 
-    // Cược vàng/kim cương (nếu phòng có đặt cược, xem escrowWager). Thắng thật: được
-    // hoàn cược của mình + 95% cược của đối thủ (net +95% so với mức đã cược, 5%
-    // giữ lại làm phí sàn). Thua thật: chỉ được hoàn 5% cược (net -95%). Hoà hoặc
-    // không xác định được thắng thua thật thì hoàn lại đúng 100% phần mỗi bên đã
-    // đặt (net 0%) — không ai mất tiền oan. Chỉ chạy 1 lần (wagerSettled).
+    // Cược vàng/kim cương (nếu phòng có đặt cược, xem escrowWager). Thắng thật ăn TRỌN
+    // cược của cả 2 bên (x2 — không giữ lại phần nào, không thu phí sàn). Thua thật mất
+    // trọn phần đã cược. Hoà hoặc không xác định được thắng thua thật thì hoàn lại đúng
+    // 100% phần mỗi bên đã đặt (net 0%) — không ai mất tiền oan. Chỉ chạy 1 lần
+    // (wagerSettled). CHỦ Ý không thu phí sàn: hệ thống chỉ chuyển tiền cược GIỮA 2
+    // NGƯỜI CHƠI với nhau, không có phần nào chảy vào/qua tài khoản vận hành — tránh
+    // rủi ro bị coi là "gá bạc thu tiền hồ" (Điều 322 BLHS).
     const settleWager = async (finalWinnerId) => {
       if (after.wagerSettled) return;
       const amount = Math.floor(Number(after.wagerAmount) || 0);
@@ -929,17 +1047,9 @@ exports.applyMatchResult = onDocumentUpdated(
       const hostIn = !!after.hostEscrowed;
       const guestIn = !!after.guestEscrowed;
       if (hostIn && guestIn && (finalWinnerId === hostId || finalWinnerId === guestId)) {
-        const loserId = finalWinnerId === hostId ? guestId : hostId;
-        const winPayout = Math.round(amount * 1.95);
-        const loseRefund = Math.round(amount * 0.05);
         await db.collection('players').doc(finalWinnerId).set(
-          { [field]: FieldValue.increment(winPayout) }, { merge: true }
+          { [field]: FieldValue.increment(amount * 2) }, { merge: true }
         );
-        if (loseRefund > 0) {
-          await db.collection('players').doc(loserId).set(
-            { [field]: FieldValue.increment(loseRefund) }, { merge: true }
-          );
-        }
       } else {
         // Hoà, hoặc không xác định được thắng thua thật, hoặc chỉ 1 bên đặt cược
         // thành công (bên kia lỗi/mất mạng giữa chừng) → hoàn đúng phần đã trừ.

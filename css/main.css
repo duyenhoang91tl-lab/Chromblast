@@ -798,6 +798,97 @@ body.tutorial-open #start-screen{
 #versus-setup-panel .auth-field label { color:#6b5f8a; }
 #versus-setup-panel .online-status{ color:#3d8f5c; }
 #versus-setup-panel .online-status.warn{ color:#a5730a; }
+
+/* ── 8 màn còn lại trong luồng Caro / Đấu 1-1 online (phòng chờ, tìm trận, kết
+   quả, BXH, điểm danh Caro) — cùng khuôn kỹ thuật + cùng họ màu pastel hồng-
+   tím-xanh nhạt với caro-hub-panel/online-hub-panel/versus-setup-panel ở trên,
+   để cả luồng (hub → tìm trận → phòng chờ → trận đấu → kết quả) liền mạch 1
+   phong cách, không đổi tông giữa chừng. Chỉ đổi CSS, giữ nguyên HTML/logic. */
+#caro-lobby-panel.admin-panel-like,
+#caro-mm-panel.admin-panel-like,
+#caro-result-panel.admin-panel-like,
+#caro-rank-panel.admin-panel-like,
+#caro-daily-panel.admin-panel-like,
+#online-lobby-panel.admin-panel-like,
+#online-matchmaking-panel.admin-panel-like,
+#versus-result-panel.admin-panel-like,
+#hiddenmap-menu-panel.admin-panel-like{
+  padding:0; align-items:stretch; justify-content:stretch; background:transparent;
+}
+#caro-lobby-panel .admin-card,
+#caro-mm-panel .admin-card,
+#caro-result-panel .admin-card,
+#caro-rank-panel .admin-card,
+#caro-daily-panel .admin-card,
+#online-lobby-panel .admin-card,
+#online-matchmaking-panel .admin-card,
+#versus-result-panel .admin-card,
+#hiddenmap-menu-panel .admin-card{
+  width:100%; max-width:none; height:100%; max-height:none;
+  margin:0; border:none; border-radius:0; box-shadow:none; overflow-y:auto;
+  background:linear-gradient(165deg,#f6d9ee 0%,#e9d3f3 50%,#dcd8f6 100%);
+  color:#2b2340;
+  padding:max(20px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+}
+#caro-lobby-panel .admin-title, #caro-mm-panel .admin-title, #caro-result-panel .admin-title,
+#caro-rank-panel .admin-title, #caro-daily-panel .admin-title, #online-lobby-panel .admin-title,
+#online-matchmaking-panel .admin-title, #versus-result-panel .admin-title, #hiddenmap-menu-panel .admin-title{
+  color:#2b2340;
+}
+#caro-lobby-panel .admin-close, #caro-mm-panel .admin-close, #caro-result-panel .admin-close,
+#caro-rank-panel .admin-close, #caro-daily-panel .admin-close, #online-lobby-panel .admin-close,
+#online-matchmaking-panel .admin-close, #versus-result-panel .admin-close, #hiddenmap-menu-panel .admin-close{
+  color:#6b5f8a;
+}
+#caro-lobby-panel .admin-sub, #caro-mm-panel .admin-sub, #caro-result-panel .admin-sub,
+#caro-rank-panel .admin-sub, #caro-daily-panel .admin-sub, #online-lobby-panel .admin-sub,
+#online-matchmaking-panel .admin-sub, #versus-result-panel .admin-sub, #hiddenmap-menu-panel .admin-sub{
+  color:#6b5f8a;
+}
+/* .btn-ghost vốn ép nền/chữ trắng (!important, thiết kế cho nền tối) — ghi đè lại
+   y hệt khuôn đã dùng cho caro-hub-panel/online-hub-panel ở trên, cho các nút bên
+   trong 9 panel vừa chuyển sang nền sáng, kẻo chữ trắng chìm mất. */
+#caro-lobby-panel .auth-submit-btn.btn-ghost, #caro-mm-panel .auth-submit-btn.btn-ghost,
+#caro-result-panel .auth-submit-btn.btn-ghost, #caro-rank-panel .auth-submit-btn.btn-ghost,
+#caro-daily-panel .auth-submit-btn.btn-ghost, #online-lobby-panel .auth-submit-btn.btn-ghost,
+#online-matchmaking-panel .auth-submit-btn.btn-ghost, #versus-result-panel .auth-submit-btn.btn-ghost,
+#hiddenmap-menu-panel .auth-submit-btn.btn-ghost{
+  color:#4a3f6b !important; text-shadow:none !important;
+  background:#fff !important; border:1px solid rgba(90,70,140,0.28) !important;
+}
+/* caro-lobby-panel/online-lobby-panel dùng lại nguyên các khối "phòng chờ"/cược/
+   seg-button giống hệt caro-hub-panel/online-hub-panel — nối thêm vào đúng các
+   rule đã có sẵn ở trên thay vì viết lại, để chắc chắn "y đúc" 100%. */
+#caro-lobby-panel .caro-prefs-row, #caro-lobby-panel .caro-hub-divider, #caro-lobby-panel .caro-room-count,
+#online-lobby-panel .caro-waiting-head, #online-lobby-panel .caro-room-count, #online-lobby-panel .caro-hub-divider{
+  color:#6b5f8a;
+}
+#caro-lobby-panel .caro-seg-btn, #online-lobby-panel .caro-seg-btn{
+  background:rgba(90,70,140,0.08); color:#4a3f6b; border-color:rgba(90,70,140,0.2);
+}
+#caro-lobby-panel .caro-seg-btn.active, #online-lobby-panel .caro-seg-btn.active{
+  background:#fff; color:#2b2340; border-color:rgba(90,70,140,0.4);
+}
+#caro-lobby-panel .caro-room-row, #online-lobby-panel .caro-room-row{
+  background:#fff; border-color:rgba(90,70,140,0.18); color:#2b2340;
+}
+#caro-lobby-panel .caro-room-row.mine, #online-lobby-panel .caro-room-row.mine{
+  background:rgba(255,213,74,0.18); border-color:rgba(200,150,20,0.4);
+}
+#caro-lobby-panel .caro-room-info small, #online-lobby-panel .caro-room-info small{ color:#6b5f8a; }
+#online-lobby-panel .online-wager-toggle{
+  border-color:rgba(180,130,0,0.35); background:rgba(255,213,74,0.18); color:#8a6d00;
+}
+#online-lobby-panel .online-wager-toggle.active{ background:rgba(255,213,74,0.34); }
+#online-lobby-panel .online-wager-picker{ border-color:rgba(180,130,0,0.25); background:rgba(255,213,74,0.1); }
+#online-lobby-panel .online-wager-cur-btn, #online-lobby-panel .online-wager-amt-btn{
+  border-color:rgba(90,70,140,0.22); background:#fff; color:#2b2340;
+}
+#online-lobby-panel .online-wager-cur-btn.active{ border-color:#c9950a; background:rgba(255,213,74,0.32); color:#8a6d00; }
+#online-lobby-panel .online-wager-amt-btn.active{ border-color:#c9950a; background:rgba(255,213,74,0.4); color:#8a6d00; }
+#caro-lobby-panel .vs-local-block, #online-lobby-panel .vs-local-block{ border-top-color:rgba(90,70,140,0.2); }
+#online-lobby-panel #vs-postmatch-block, #online-matchmaking-panel #vs-postmatch-block,
+#versus-result-panel #vs-postmatch-block{ border-top-color:rgba(90,70,140,0.2) !important; }
 #versus-setup-panel .vs-local-block{ border-top-color:rgba(90,70,140,0.2); }
 #versus-setup-panel .vs-local-label{ color:#a5730a; }
 #versus-setup-panel .auth-field input{
@@ -881,35 +972,58 @@ body.tutorial-open #start-screen{
 }
 
 /* "Đổi tên" (#player-profile-panel) — full-screen pastel trắng-hồng, đồng bộ
-   Tài khoản/Bạn bè (chính là 1 trong 7 mục mở từ Tài khoản). Chỉ đổi CSS —
+   Tài khoản/Bạn bè (chính là 1 trong 7 mục mở từ Tài khoản). Dùng đúng khuôn kỹ
+   thuật của caro-hub-panel/online-hub-panel/versus-setup-panel: khung ngoài
+   trong suốt + .admin-card phủ full 100% mới mang nền gradient. Chỉ đổi CSS —
    giữ nguyên HTML/logic avatar-upload, style chữ, toggle hiển thị đã có. */
-#player-profile-panel{
-  background:linear-gradient(165deg,#ffffff 0%,#ffeaf1 45%,#ffd7e4 100%);
-  align-items:flex-start; justify-content:center; padding:0; overflow-y:auto;
+#player-profile-panel.admin-panel-like{
+  padding:0; align-items:stretch; justify-content:stretch; background:transparent;
 }
 #player-profile-panel .admin-card{
-  width:100%; max-width:560px; max-height:none; margin:0 auto;
-  background:transparent; border:none; box-shadow:none; border-radius:0;
-  padding:calc(env(safe-area-inset-top,0px) + 20px) 16px calc(env(safe-area-inset-bottom,0px) + 24px);
+  width:100%; max-width:none; height:100%; max-height:none;
+  margin:0; border:none; border-radius:0; box-shadow:none; overflow-y:auto;
+  background:linear-gradient(165deg,#ffffff 0%,#ffeaf1 45%,#ffd7e4 100%);
   color:#5a3345;
+  padding:max(20px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
 }
 #player-profile-panel .admin-title{ color:#5a3345; }
 #player-profile-panel .admin-close{ color:#7a3d5a; }
 #player-profile-panel .admin-sub{ color:rgba(90,51,69,0.62); }
 #player-profile-panel .pp-id-row,
 #player-profile-panel .pp-preview-wrap{ color:#5a3345; }
+#player-profile-panel .auth-field label{ color:rgba(90,51,69,0.6); }
+#player-profile-panel .auth-field input{
+  background:rgba(255,255,255,0.7); border-color:rgba(90,51,69,0.18); color:#5a3345;
+}
+#player-profile-panel .auth-field input:focus{ background:#fff; border-color:#e991b3; }
+#player-profile-panel .pp-copy-id{ background:rgba(200,90,130,0.2); color:#7a3d5a; }
+#player-profile-panel .pp-avatar-upload-btn,
+#player-profile-panel .pp-avatar-clear-btn{
+  background:rgba(255,255,255,0.7) !important; color:#7a3d5a !important; text-shadow:none !important;
+  border:1px solid rgba(90,51,69,0.15);
+}
+#player-profile-panel .pp-avatar-btn{ border-color:rgba(90,51,69,0.15); background:rgba(255,255,255,0.55); }
+#player-profile-panel .pp-style-row,
+#player-profile-panel .pp-style-row label,
+#player-profile-panel .pp-vis-label{ color:#5a3345; }
+#player-profile-panel .pp-style-btn{ border-color:rgba(90,51,69,0.18); background:rgba(255,255,255,0.55); color:#5a3345; }
+#player-profile-panel .pp-vis-toggle{ border-color:rgba(90,51,69,0.2); background:rgba(255,255,255,0.55); color:rgba(90,51,69,0.55); }
+#player-profile-panel .pp-font-label{ color:rgba(90,51,69,0.75); }
+#player-profile-panel .pp-font-btn{ border-color:rgba(90,51,69,0.15); background:rgba(255,255,255,0.55); color:#5a3345; }
+#player-profile-panel .account-msg.err{ color:#c62828; }
+#player-profile-panel .account-msg.ok{ color:#2e8b4f; }
 
-/* "Điểm danh" (#daily-panel) — full-screen pastel vàng-cam ấm, khác tông với
-   Đổi tên để có chút phân biệt giữa các mục, vẫn cùng họ pastel nhạt dần. */
-#daily-panel{
-  background:linear-gradient(165deg,#fffdf0 0%,#fff2c9 45%,#ffe3a3 100%);
-  align-items:flex-start; justify-content:center; padding:0; overflow-y:auto;
+/* "Điểm danh" (#daily-panel) — cùng khuôn kỹ thuật trên, tông vàng-cam ấm để
+   phân biệt với Đổi tên, vẫn cùng họ pastel nhạt dần. */
+#daily-panel.admin-panel-like{
+  padding:0; align-items:stretch; justify-content:stretch; background:transparent;
 }
 #daily-panel .admin-card{
-  width:100%; max-width:560px; max-height:none; margin:0 auto;
-  background:transparent; border:none; box-shadow:none; border-radius:0;
-  padding:calc(env(safe-area-inset-top,0px) + 20px) 16px calc(env(safe-area-inset-bottom,0px) + 24px);
+  width:100%; max-width:none; height:100%; max-height:none;
+  margin:0; border:none; border-radius:0; box-shadow:none; overflow-y:auto;
+  background:linear-gradient(165deg,#fffdf0 0%,#fff2c9 45%,#ffe3a3 100%);
   color:#5a4013;
+  padding:max(20px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
 }
 #daily-panel .admin-title{ color:#5a4013; }
 #daily-panel .admin-close{ color:#8a6420; }
@@ -1291,7 +1405,7 @@ body.tutorial-open #start-screen{
   background:rgba(255,213,74,0.2); color:#ffd54a; font-size:10px; font-weight:800;
 }
 .online-lobby-no { font-size:12px; color:#ffd54a; font-weight:800; margin-left:6px; }
-.online-mm-pulse { font-size:14px; color:#c4b5ff; padding:20px 0; animation: onlinePulse 1.2s ease-in-out infinite; }
+.online-mm-pulse { font-size:14px; color:#6b5f8a; padding:20px 0; animation: onlinePulse 1.2s ease-in-out infinite; }
 @keyframes onlinePulse { 0%,100%{opacity:0.5} 50%{opacity:1} }
 
 /* ══════════════════ CỜ CARO 15×15 ══════════════════ */
@@ -1483,18 +1597,18 @@ body.tutorial-open #start-screen{
 .caro-joined-banner {
   display: block; text-align: center; margin: 6px 0 8px;
   padding: 8px 12px; border-radius: 12px; font-size: 13px; font-weight: 800;
-  color: #7ee08e; background: rgba(126,224,142,0.12);
-  border: 1px solid rgba(126,224,142,0.35);
+  color: #2e7d32; background: rgba(76,175,80,0.16);
+  border: 1px solid rgba(76,175,80,0.4);
 }
 .caro-seat-av {
   width: 34px; height: 34px; border-radius: 10px; border: none; cursor: pointer;
-  background: rgba(255,255,255,0.1); font-size: 18px; margin-right: 6px;
+  background: rgba(43,35,64,0.08); font-size: 18px; margin-right: 6px;
   display: inline-flex; align-items: center; justify-content: center; vertical-align: middle;
 }
 .caro-seat-av:disabled { opacity: 0.55; cursor: default; }
 .caro-lobby-seat { display: flex; align-items: center; }
 .caro-seat-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
-.caro-seat-rank { font-size: 10px; font-weight: 700; color: #ffd700; }
+.caro-seat-rank { font-size: 10px; font-weight: 700; color: #c9720f; }
 .caro-kick-btn{
   margin-left:auto; padding:5px 10px; border-radius:10px; font-size:11px; font-weight:800;
   background:rgba(229,57,53,0.18); border:1px solid rgba(229,57,53,0.55); color:#FF8A80;
@@ -2022,7 +2136,8 @@ body.gchat-open #game-root { transform: none !important; }
 .gchat-card {
   width:100%; height:100%; max-width:none; max-height:none; border-radius:0;
   display:flex; flex-direction:column;
-  background: #eaf6ff; color:#173049; border-color: rgba(20,80,140,0.15);
+  background: linear-gradient(165deg,#f5fbff 0%,#eaf6ff 55%,#dcf0ff 100%);
+  color:#173049; border-color: rgba(20,80,140,0.15);
 }
 .gchat-card input, .gchat-card textarea, .gchat-card select { color:#173049; }
 .gchat-tabs {
@@ -2294,7 +2409,7 @@ body.gchat-open #game-root { transform: none !important; }
   padding: 6px 10px; border-radius: 999px; background: rgba(126,224,142,0.12);
 }
 .caro-room-row.mine .caro-room-action { color: #ffd54a; background: rgba(255,213,74,0.12); }
-.caro-lobby-no { font-size: 12px; color: #ffd54a; font-weight: 800; }
+.caro-lobby-no { font-size: 12px; color: #c9720f; font-weight: 800; }
 
 /* ── Caro danh hiệu & BXH ── */
 .caro-hub-stats { margin-bottom: 12px; }
@@ -2317,15 +2432,15 @@ body.gchat-open #game-root { transform: none !important; }
 .caro-rank-next { font-size: 10px; color: #b8b8c0; margin-top: 4px; }
 .caro-lb-head {
   display: grid; grid-template-columns: 1fr auto auto; gap: 8px;
-  font-size: 10px; color: #b8b8c0; text-transform: uppercase; letter-spacing: 0.5px;
-  padding: 0 10px 6px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 6px;
+  font-size: 10px; color: #6b5f8a; text-transform: uppercase; letter-spacing: 0.5px;
+  padding: 0 10px 6px; border-bottom: 1px solid rgba(43,35,64,0.12); margin-bottom: 6px;
 }
 .caro-lb-row { display: grid !important; grid-template-columns: 28px 1fr auto auto; align-items: center; }
 .caro-lb-row .lb-name { display: flex; flex-direction: column; gap: 2px; }
-.caro-lb-title { font-size: 10px; color: #ffd700; font-weight: 600; }
-.caro-lb-wld { font-size: 11px !important; color: #ccc !important; text-align: right; }
-.caro-lb-wld small { color: #6ee08e; }
-.caro-lb-pts { font-size: 12px; font-weight: 800; color: #ffd700; min-width: 36px; text-align: right; }
+.caro-lb-title { font-size: 10px; color: #c9720f; font-weight: 600; }
+.caro-lb-wld { font-size: 11px !important; color: #6b5f8a !important; text-align: right; }
+.caro-lb-wld small { color: #2e7d32; }
+.caro-lb-pts { font-size: 12px; font-weight: 800; color: #c9720f; min-width: 36px; text-align: right; }
 .caro-result-rank { font-size: 14px; color: #ffd700; margin: 8px 0; }
 .vs-result-rank { font-size: 14px; color: #ffd700; margin: 8px 0; }
 .caro-result-wld { font-size: 11px; color: #c0c0c8; }
@@ -4289,6 +4404,18 @@ body:has(#secret-stage.active) .streak-dot.lit{
   from { transform: scale(1);    filter: drop-shadow(0 0 2px rgba(255,60,60,0.5)); }
   to   { transform: scale(1.1);  filter: drop-shadow(0 0 6px rgba(255,60,60,0.95)); }
 }
+/* 🥚 Trứng rồng (Versus) — cả hàng nhuốm cam cảnh báo, giữa hàng hiện quả trứng +
+   số đếm ngược, giống tinh thần "báo trước rồi mới đốt cả hàng" ở map thường. */
+.vs-cell.vs-egg-row{ box-shadow: inset 0 0 0 999px rgba(255,150,40,0.22); }
+.vs-cell.vs-egg-badge::after{
+  content:'🥚'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-size:65%; pointer-events:none; z-index:3;
+  animation: vsBombPulse 0.9s ease-in-out infinite alternate;
+}
+.vs-cell.vs-egg-badge::before{
+  content: attr(data-egg); position:absolute; top:1px; right:2px;
+  font-size:60%; font-weight:800; color:#ff9628; text-shadow:0 0 4px #000; z-index:4;
+}
 .vs-cell.vs-prev{ opacity:0.55; transform:scale(0.92); } /* ô mờ xem trước chỗ đáp — giống map thường */
 .vs-tray{ display:flex; gap:10px; align-items:center; justify-content:center; min-height:44px; }
 .vs-piece{
@@ -5983,6 +6110,11 @@ body:has(#secret-stage.active) .streak-dot.lit{
   50% { box-shadow:0 0 14px rgba(180,150,255,0.35); }
 }
 .shop-item-preview{ display:flex; justify-content:center; margin:0 auto 6px; }
+.shop-vscard-preview{ font-size:34px; line-height:1; height:44px; align-items:center; }
+.shop-vscard-note{
+  font-size:12px; font-weight:700; color:rgba(43,35,64,0.6); text-align:center;
+  padding:0 12px 10px; line-height:1.5;
+}
 .shop-board-preview .board-swatch{ width:100%; max-width:120px; height:56px; border-radius:10px; }
 .shop-brick-preview{
   display:flex; gap:3px; justify-content:center; flex-wrap:nowrap;
@@ -6446,6 +6578,43 @@ body:has(#secret-stage.active) .streak-dot.lit{
   .name-fx-wave .name-fx-letter{ animation:none; }
 }
 
+/* ══════════════════════════════════════════════════════════════
+   Hiệu ứng chữ mua trong Shop bằng kim cương (xem js/text-effects.js), áp lên
+   NỘI DUNG tin nhắn chat (.gchat-text) — cùng kỹ thuật với hiệu ứng tên ở
+   trên (glow/goldsweep/platinum dùng chung @keyframes nameFxGlow/nameFxSweep,
+   không định nghĩa lại). "Hoa bay ra nhẹ" là hiệu ứng riêng, không đụng vào
+   name-effects.
+══════════════════════════════════════════════════════════════ */
+.text-fx-glow{ animation:nameFxGlow 2s ease-in-out infinite; }
+.text-fx-goldsweep,.text-fx-platinum{
+  background-size:250% 100%; -webkit-background-clip:text; background-clip:text; color:transparent;
+  animation:nameFxSweep 3.2s linear infinite;
+}
+.text-fx-goldsweep{
+  background-image:linear-gradient(100deg,#b8860b 0%,#b8860b 40%,#fff7c0 50%,#b8860b 60%,#b8860b 100%);
+  text-shadow:0 0 5px rgba(184,134,11,0.4);
+}
+.text-fx-platinum{
+  background-image:linear-gradient(100deg,#9aa3ad 0%,#9aa3ad 35%,#ffffff 50%,#d8dee5 55%,#9aa3ad 65%,#9aa3ad 100%);
+  text-shadow:0 0 6px rgba(255,255,255,0.5);
+}
+.text-fx-flowers-wrap{ position:relative; display:inline-block; width:0; height:0; }
+.text-fx-flower{
+  position:absolute; left:2px; bottom:2px; font-size:12px; opacity:0;
+  animation:textFxFlowerFloat 2.6s ease-in infinite;
+}
+.text-fx-flower.f2{ left:12px; animation-delay:0.6s; }
+.text-fx-flower.f3{ left:-8px; animation-delay:1.3s; }
+@keyframes textFxFlowerFloat{
+  0%{ opacity:0; transform:translate(0,0) scale(0.7) rotate(0deg); }
+  15%{ opacity:1; }
+  100%{ opacity:0; transform:translate(6px,-26px) scale(1) rotate(50deg); }
+}
+@media (prefers-reduced-motion: reduce){
+  .text-fx-glow,.text-fx-goldsweep,.text-fx-platinum{ animation:none; }
+  .text-fx-flower{ animation:none; opacity:0; }
+}
+
 /* Giai đoạn 4: bảng màu dùng chung cho nội dung bên trong panel — nền
    sáng, chữ tối, bo góc lớn, bóng đổ mềm, cùng tông pastel tím/xanh
    dương với khung ngoài. Phần 2–5 chỉ cần gắn class này cho từng khối
@@ -6770,6 +6939,11 @@ body:has(#secret-stage.active) .streak-dot.lit{
 .acchub-row-ico{ font-size:18px; flex-shrink:0; width:24px; text-align:center; }
 .acchub-row-label{ flex:1; font-size:14.5px; font-weight:800; }
 .acchub-row-arrow{ font-size:20px; font-weight:900; color:rgba(90,51,69,0.35); }
+.acchub-row-danger .acchub-row-label{ color:#c62828; }
+.acchub-row-danger:active{ background:rgba(198,40,40,0.08); }
+#acchub-msg{ padding:0 4px; }
+#acchub-msg.err{ color:#c62828; }
+#acchub-msg.ok{ color:#2e8b4f; }
 
 /* 5 panel con rỗng — chờ nội dung ở các lượt sau, cùng khung sườn back/tông màu */
 .acchub-sub{
@@ -7056,13 +7230,121 @@ body:has(#secret-stage.active) .streak-dot.lit{
 .caro-menu-action:active{ transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.15); }
 .caro-menu-action-quick{ background: linear-gradient(135deg, #2e7d32, #66bb6a); }
 .caro-menu-action-tour{ background: linear-gradient(135deg, #ff9900, #ffc966); color: #3d2b00; }
-.caro-menu-switch-pop{
-  position: fixed; z-index: 10002; top: 130px; left: 50%; transform: translateX(-50%);
-  background: #2b2340; border-radius: 14px; padding: 10px; display: flex;
-  flex-direction: column; gap: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+.caro-menu-switch-row{
+  display: flex; gap: 10px;
+  padding: 6px; border-radius: 18px;
+  background: rgba(255,255,255,0.4);
+  box-shadow: 0 4px 0 rgba(0,0,0,0.1);
 }
-.caro-menu-switch-pop button{
-  padding: 10px 20px; border-radius: 10px; border: none; background: rgba(255,255,255,0.12);
-  color: #fff; font-weight: 700; cursor: pointer; white-space: nowrap;
+.caro-menu-switch-half{
+  flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 12px 4px; border-radius: 14px; border: none; cursor: pointer;
+  background: rgba(255,255,255,0.75); color: #2b2340; font-size: 13px; font-weight: 800;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.caro-menu-switch-pop button:active{ background: rgba(255,255,255,0.25); }
+.caro-menu-switch-half:active{ transform: translateY(2px); }
+.caro-menu-switch-half.active{
+  background: linear-gradient(135deg, #7c6bd8, #a78bfa); color: #fff;
+}
+.caro-menu-switch-ico{ font-size: 22px; line-height: 1; }
+
+/* ══════════════════════════════════════════
+   PHÒNG (caro-room-browser) — màn toàn màn hình xem/vào danh sách phòng
+   Caro online. Cùng tông pastel trắng-hồng nhạt với Tài khoản/Menu.
+══════════════════════════════════════════ */
+.crb-panel{
+  display:none; position:fixed; inset:0; z-index:10050;
+  background:linear-gradient(165deg,#ffffff 0%,#ffeaf1 45%,#ffd7e4 100%);
+  color:#5a3345; font-family:'Nunito',system-ui,sans-serif;
+  flex-direction:column; overflow:hidden;
+}
+.crb-panel.show{ display:flex; }
+.crb-topbar{
+  flex-shrink:0; display:flex; align-items:center; gap:8px;
+  padding:calc(env(safe-area-inset-top,0px) + 12px) calc(env(safe-area-inset-right,0px) + 12px) 10px calc(env(safe-area-inset-left,0px) + 12px);
+}
+.crb-exit{
+  flex-shrink:0; width:34px; height:34px; border:none; border-radius:50%;
+  background:rgba(255,150,180,0.28); color:#7a3d5a; font-size:22px; font-weight:900;
+  cursor:pointer; display:flex; align-items:center; justify-content:center; padding-bottom:2px;
+  box-shadow:0 2px 8px rgba(180,80,120,0.18);
+}
+.crb-avatar{
+  flex-shrink:0; width:36px; height:36px; border-radius:50%;
+  background:#fff; box-shadow:0 3px 10px rgba(200,90,130,0.25);
+  display:flex; align-items:center; justify-content:center; font-size:18px;
+  border:2px solid rgba(255,255,255,0.9);
+}
+.crb-stat{
+  flex-shrink:0; display:flex; align-items:center; gap:4px;
+  background:rgba(255,255,255,0.6); border-radius:999px; padding:6px 10px;
+  font-size:12.5px; font-weight:900; box-shadow:0 2px 8px rgba(200,90,130,0.12);
+}
+.crb-icon-btn{
+  margin-left:auto; flex-shrink:0; width:34px; height:34px; border:none; border-radius:50%;
+  background:rgba(255,150,180,0.28); color:#7a3d5a; font-size:16px;
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+  box-shadow:0 2px 8px rgba(180,80,120,0.18);
+}
+.crb-icon-btn + .crb-icon-btn{ margin-left:0; }
+.crb-shell{
+  flex:1; min-height:0; display:flex; flex-direction:column;
+  width:100%; max-width:560px; margin:0 auto; padding:4px 16px calc(env(safe-area-inset-bottom,0px) + 16px);
+  overflow:hidden;
+}
+.crb-actions{ display:flex; gap:8px; margin-bottom:10px; flex-shrink:0; }
+.crb-action-btn{
+  flex:1; border:none; border-radius:999px; padding:10px 8px;
+  background:linear-gradient(135deg,#a7b8f0,#c9b6f0); color:#fff;
+  font-weight:900; font-size:12.5px; cursor:pointer;
+  box-shadow:0 3px 10px rgba(150,120,220,0.25);
+}
+.crb-action-btn:active{ transform:scale(0.97); }
+.crb-list{
+  flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:8px;
+  padding-right:2px; margin-bottom:8px;
+}
+.crb-list .caro-room-row{
+  background:#fff; border:1px solid rgba(200,90,130,0.16); color:#5a3345;
+  box-shadow:0 3px 10px rgba(200,90,130,0.1);
+}
+.crb-list .caro-room-row.mine{ border-color:rgba(255,180,74,0.55); background:rgba(255,213,74,0.14); }
+.crb-list .caro-room-info small{ color:rgba(90,51,69,0.55); }
+.crb-list .caro-room-no{ color:#e0759d; }
+.crb-list .caro-room-action{ color:#3d9a52; background:rgba(61,154,82,0.12); }
+.crb-list .caro-room-row.mine .caro-room-action{ color:#c4841a; background:rgba(255,180,74,0.18); }
+.crb-list .online-room-wager-badge{ color:#c4841a; background:rgba(255,180,74,0.18); }
+.crb-empty{
+  text-align:center; font-size:12.5px; font-weight:700; color:rgba(90,51,69,0.55);
+  padding:20px 8px; flex-shrink:0;
+}
+.crb-tabs{
+  flex-shrink:0; display:flex; background:rgba(255,255,255,0.55); border-radius:14px;
+  padding:4px; margin-bottom:10px; gap:4px;
+}
+.crb-tab{
+  flex:1; border:none; background:none; border-radius:11px; padding:9px 4px;
+  font-weight:800; font-size:12px; color:rgba(90,51,69,0.6); cursor:pointer;
+}
+.crb-tab.active{ background:#fff; color:#5a3345; box-shadow:0 2px 8px rgba(200,90,130,0.16); }
+.crb-bottom-icons{
+  flex-shrink:0; display:flex; justify-content:space-around; gap:4px;
+  background:rgba(255,255,255,0.5); border-radius:18px; padding:12px 6px;
+}
+.crb-bicon{
+  background:none; border:none; cursor:pointer; display:flex; flex-direction:column;
+  align-items:center; gap:5px; color:#7a3d5a; flex:1;
+}
+.crb-bicon-circle{
+  width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  font-size:19px; background:linear-gradient(160deg,#fff 0%,#ffe0ec 100%);
+  box-shadow:0 3px 10px rgba(200,90,130,0.2); margin:0 auto;
+}
+.crb-bicon:active .crb-bicon-circle{ transform:scale(0.94); }
+.crb-bicon span:last-child{ font-size:10px; font-weight:800; }
+
+@media (orientation: landscape){
+  .crb-shell{ max-width:720px; }
+  .crb-topbar{ padding-top:calc(env(safe-area-inset-top,0px) + 8px); padding-bottom:8px; }
+  .crb-bicon-circle{ width:36px; height:36px; font-size:16px; }
+}

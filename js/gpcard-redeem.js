@@ -77,10 +77,27 @@ function renderGpcardRedeem(){
   });
 }
 
-(function bindGpcardRedeemTab(){
+// Trước đây là tab "Đi đổi" trong Thẻ trò chơi, giờ tách thành màn hình riêng
+// "Đổi quà" vào thẳng từ menu chính (set-btn-redeem) — dùng lại nguyên nội
+// dung/dữ liệu, chỉ đổi nơi mở.
+function openGpcardRedeemScreen(){
+  try{ if(typeof sfxClick === 'function') sfxClick(); }catch(e){}
+  renderGpcardRedeem();
+  document.getElementById('gpcard-redeem-screen')?.classList.add('show');
+}
+function closeGpcardRedeemScreen(){
+  document.getElementById('gpcard-redeem-screen')?.classList.remove('show');
+}
+(function bindGpcardRedeemScreen(){
   function bind(){
-    const tabBtn = document.querySelector('.gpcard-tab[data-gpcard-tab="redeem"]');
-    if(tabBtn) tabBtn.addEventListener('click', renderGpcardRedeem);
+    document.getElementById('set-btn-redeem')?.addEventListener('click', ()=>{
+      document.getElementById('settings-panel')?.classList.remove('show');
+      openGpcardRedeemScreen();
+    });
+    document.getElementById('gpcard-redeem-screen-back')?.addEventListener('click', ()=>{
+      try{ if(typeof sfxClick === 'function') sfxClick(); }catch(e){}
+      closeGpcardRedeemScreen();
+    });
   }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
   else bind();

@@ -85,6 +85,9 @@ function _ppDefault(){
     styleUnlocked: false,
     nameEffect: '',
     ownedNameEffects: [],
+    /** Thẻ chướng ngại Versus đã mua mở khoá (xem VS_OBSTACLES/isVsCardUnlocked
+     *  trong js/versus.js) — 3 thẻ free không cần liệt kê ở đây. */
+    unlockedVsCards: [],
     /** ID công khai ngắn — chỉ hiện trong hồ sơ, dùng để tìm bạn */
     publicId: ''
   };
@@ -242,6 +245,7 @@ function getPlayerProfile(){
         p.styleUnlocked = !!j.styleUnlocked;
         if(typeof j.nameEffect === 'string' && (!j.nameEffect || (typeof NAME_EFFECTS!=='undefined' && NAME_EFFECTS.some(e=>e.id===j.nameEffect)))) p.nameEffect = j.nameEffect;
         if(Array.isArray(j.ownedNameEffects)) p.ownedNameEffects = j.ownedNameEffects.filter(x=>typeof x==='string').slice(0, 20);
+        if(Array.isArray(j.unlockedVsCards)) p.unlockedVsCards = j.unlockedVsCards.filter(x=>typeof x==='string').slice(0, 40);
         if(typeof j.publicId === 'string' && /^CB[A-Z0-9]{6}$/.test(j.publicId)) p.publicId = j.publicId;
       }
     }

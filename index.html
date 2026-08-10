@@ -340,6 +340,8 @@
           <button type="button" class="set-action set-c-purple" id="set-btn-friends"><span class="set-act-ico">🤝</span><span data-i18n="setFriends">Bạn bè</span></button>
           <button type="button" class="set-action set-c-purple" id="set-btn-cup"><span class="set-act-ico">🏆</span><span data-i18n="setCup">Cúp</span></button>
           <button type="button" class="set-action set-c-purple" id="set-btn-leaderboard"><span class="set-act-ico">📊</span><span data-i18n="setLeaderboard">Xếp hạng</span></button>
+          <button type="button" class="set-action set-c-purple" id="set-btn-journey"><span class="set-act-ico">🧭</span><span data-i18n="gpcardTabRewards">Hành trình</span></button>
+          <button type="button" class="set-action set-c-purple" id="set-btn-redeem"><span class="set-act-ico">🎁</span><span data-i18n="gpcardTabRedeem">Đổi quà</span></button>
           <button type="button" class="set-action set-c-purple" id="set-btn-bricks"><span class="set-act-ico">🧱</span><span data-i18n="setBricks">Gạch</span></button>
           <button type="button" class="set-action set-c-purple" id="set-btn-boards"><span class="set-act-ico set-act-ico-wood" aria-hidden="true"></span><span data-i18n="setBoards">Nền bàn</span></button>
           <button type="button" class="set-action set-c-purple" id="set-btn-spin"><span class="set-act-ico">🎡</span><span data-i18n="setSpin">Vòng quay</span></button>
@@ -728,7 +730,18 @@
             <span class="acchub-row-label" data-i18n="acchubSettings">Cài đặt</span>
             <span class="acchub-row-arrow">›</span>
           </button>
+          <button type="button" class="acchub-row acchub-row-danger" id="logout-btn">
+            <span class="acchub-row-ico">🚪</span>
+            <span class="acchub-row-label" data-i18n="logoutBtn">Đăng xuất</span>
+            <span class="acchub-row-arrow">›</span>
+          </button>
+          <button type="button" class="acchub-row acchub-row-danger" id="online-delete-account-btn">
+            <span class="acchub-row-ico">🗑️</span>
+            <span class="acchub-row-label" data-i18n="onlineDeleteAccount">Xóa tài khoản</span>
+            <span class="acchub-row-arrow">›</span>
+          </button>
         </div>
+        <div class="account-msg" id="acchub-msg"></div>
       </div>
     </div>
   </div>
@@ -850,9 +863,6 @@
         <button type="button" class="pp-vis-toggle active" id="pp-vis-versus"></button>
       </div>
 
-      <button class="logout-btn" id="logout-btn" data-i18n="logoutBtn" style="margin-top:14px;">🚪 Đăng xuất</button>
-      <button type="button" id="online-delete-account-btn" class="online-delete-account-btn" data-i18n="onlineDeleteAccount">Xóa tài khoản</button>
-
       <div class="account-msg" id="pp-msg"></div>
     </div>
   </div>
@@ -954,28 +964,29 @@
         <button type="button" class="gpcard-close" id="gpcard-close-btn">✕</button>
       </div>
       <div class="gpcard-tabs">
-        <button type="button" class="gpcard-tab" data-gpcard-tab="rewards" data-i18n="gpcardTabRewards">Hành trình</button>
-        <button type="button" class="gpcard-tab" data-gpcard-tab="quests" data-i18n="gpcardTabQuests">Nhiệm vụ</button>
-        <button type="button" class="gpcard-tab" data-gpcard-tab="redeem" data-i18n="gpcardTabRedeem">Đổi quà</button>
-        <button type="button" class="gpcard-tab" data-gpcard-tab="leaderboard" data-i18n="gpcardTabLeaderboard">Bảng xếp hạng</button>
+        <button type="button" class="gpcard-tab active" data-gpcard-tab="leaderboard" data-i18n="gpcardTabLeaderboard">Bảng xếp hạng</button>
       </div>
-    </div>
-    <div id="gpcard-sub-rewards" class="gpcard-sub">
-      <button type="button" class="gpcard-back-btn" data-gpcard-back>‹</button>
-      <div id="gpcard-rewards" class="gpcard-sub-body"></div>
-    </div>
-    <div id="gpcard-sub-quests" class="gpcard-sub">
-      <button type="button" class="gpcard-back-btn" data-gpcard-back>‹</button>
-      <div id="gpcard-quests" class="gpcard-sub-body"></div>
-    </div>
-    <div id="gpcard-sub-redeem" class="gpcard-sub">
-      <button type="button" class="gpcard-back-btn" data-gpcard-back>‹</button>
-      <div id="gpcard-redeem" class="gpcard-sub-body"></div>
     </div>
     <div id="gpcard-sub-leaderboard" class="gpcard-sub">
       <button type="button" class="gpcard-back-btn" data-gpcard-back>‹</button>
       <div id="gpcard-leaderboard" class="gpcard-sub-body"></div>
     </div>
+  </div>
+
+  <!-- "Hành trình" — tách riêng khỏi Thẻ trò chơi thành màn hình độc lập vào
+       thẳng từ menu chính, dùng lại đúng nội dung/hàm renderGpcardRewards()
+       (js/gpcard-rewards.js) và bảng màu pastel chung (--gpcard-bg1/2). -->
+  <div id="gpcard-rewards-screen" class="gpcard-sub" style="--gpcard-bg1:#a7b8f0; --gpcard-bg2:#c9b6f0;">
+    <button type="button" class="gpcard-back-btn" id="gpcard-rewards-screen-back">‹</button>
+    <div id="gpcard-rewards" class="gpcard-sub-body"></div>
+  </div>
+
+  <!-- "Đổi quà" — tách riêng khỏi Thẻ trò chơi thành màn hình độc lập vào
+       thẳng từ menu chính, dùng lại đúng nội dung/hàm renderGpcardRedeem()
+       (js/gpcard-redeem.js) và bảng màu pastel chung (--gpcard-bg1/2). -->
+  <div id="gpcard-redeem-screen" class="gpcard-sub" style="--gpcard-bg1:#a7b8f0; --gpcard-bg2:#c9b6f0;">
+    <button type="button" class="gpcard-back-btn" id="gpcard-redeem-screen-back">‹</button>
+    <div id="gpcard-redeem" class="gpcard-sub-body"></div>
   </div>
 
   <div id="friends-panel" class="friends-screen" aria-hidden="true">
@@ -1096,7 +1107,7 @@
       <button type="button" id="online-lobby-invite" class="auth-submit-btn btn-ghost" style="background:rgba(66,165,245,0.25);margin-top:8px;" data-i18n="gchatInviteFriend">🤝 Mời bạn bè</button>
       <div id="online-mm-auto-note" class="online-note" style="display:none" data-i18n="onlineMmAuto">Đã ghép đối thủ — chờ host bắt đầu...</div>
       <button type="button" id="online-start-btn" class="auth-submit-btn" data-i18n="onlineStart">▶ Bắt đầu trận</button>
-      <button type="button" id="online-lobby-create" class="auth-submit-btn" style="margin-top:8px;" data-i18n="onlineCreate">🏠 Tạo phòng mới</button>
+      <button type="button" id="online-lobby-ready" class="auth-submit-btn btn-on-color" style="margin-top:8px;background:linear-gradient(135deg,#2e7d32,#66bb6a);" data-i18n="vsReady">✅ Sẵn sàng</button>
       <div class="caro-waiting-block" style="margin-top:12px;">
         <div class="caro-waiting-head"><span data-i18n="onlineWaitingRooms">📋 Phòng chờ</span></div>
         <div id="online-lobby-room-list" class="caro-room-list caro-room-list-compact"></div>
@@ -1119,6 +1130,16 @@
       <div id="vs-result-body"></div>
       <button id="vs-again-btn" class="auth-submit-btn" data-i18n="vsAgain" style="margin-top:12px;">🔁 Đấu lại</button>
       <button id="vs-close-btn" class="auth-submit-btn btn-ghost" data-i18n="vsClose" style="background:rgba(255,255,255,0.12);margin-top:8px;">✕ Đóng</button>
+
+      <!-- Chỉ hiện cho trận ONLINE — ở lại phòng, sẵn sàng đấu tiếp thay vì
+           tự thoát về sảnh. Ẩn/hiện qua JS (_vsRenderPostMatchReady). -->
+      <div id="vs-postmatch-block" style="display:none;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.14);">
+        <div id="vs-postmatch-players" class="online-players"></div>
+        <button type="button" id="vs-postmatch-ready-btn" class="auth-submit-btn btn-on-color" style="margin-top:10px;background:linear-gradient(135deg,#2e7d32,#66bb6a);" data-i18n="vsReady">✅ Sẵn sàng</button>
+        <button type="button" id="vs-postmatch-start-btn" class="auth-submit-btn" style="margin-top:8px;display:none;" data-i18n="onlineStart">▶ Bắt đầu trận</button>
+        <div id="vs-postmatch-wait-note" class="online-note" style="display:none;" data-i18n="vsPostmatchWaitHost">Chờ chủ phòng bắt đầu trận tiếp theo...</div>
+        <button type="button" id="vs-postmatch-leave-btn" class="auth-submit-btn btn-ghost" style="background:rgba(255,255,255,0.12);margin-top:8px;" data-i18n="onlineLeave">✕ Rời phòng</button>
+      </div>
     </div>
   </div>
 
@@ -1134,24 +1155,30 @@
     </div>
     <div class="caro-menu-body">
       <div class="caro-menu-icons">
-        <button type="button" class="caro-menu-ico-btn" id="caro-menu-rank-btn">
-          <span class="caro-menu-ico">🏆</span><span data-i18n="caroMenuRank">Xếp hạng</span>
+        <button type="button" class="caro-menu-ico-btn" id="caro-menu-rank-btn" title="Xếp hạng" data-i18n-title="caroMenuRank">
+          <span class="caro-menu-ico">🏆</span>
         </button>
-        <button type="button" class="caro-menu-ico-btn" id="caro-menu-friends-btn">
-          <span class="caro-menu-ico">🤝</span><span data-i18n="caroMenuFriends">Bạn bè</span>
+        <button type="button" class="caro-menu-ico-btn" id="caro-menu-friends-btn" title="Bạn bè" data-i18n-title="caroMenuFriends">
+          <span class="caro-menu-ico">🤝</span>
         </button>
-        <button type="button" class="caro-menu-ico-btn" id="caro-menu-switch-btn">
-          <span class="caro-menu-ico">🎮</span><span data-i18n="caroMenuSwitch">Trò chơi</span>
-        </button>
-        <button type="button" class="caro-menu-ico-btn" id="caro-menu-daily-btn">
-          <span class="caro-menu-ico">🎁</span><span data-i18n="caroMenuDaily">Điểm danh</span>
+        <button type="button" class="caro-menu-ico-btn" id="caro-menu-daily-btn" title="Điểm danh" data-i18n-title="caroMenuDaily">
+          <span class="caro-menu-ico">🎁</span>
           <span class="caro-menu-badge" id="caro-menu-daily-badge" hidden>1</span>
         </button>
-        <button type="button" class="caro-menu-ico-btn" id="caro-menu-ads-btn">
-          <span class="caro-menu-ico">▶️</span><span data-i18n="caroMenuAds">Xem QC</span>
+        <button type="button" class="caro-menu-ico-btn" id="caro-menu-ads-btn" title="Xem QC" data-i18n-title="caroMenuAds">
+          <span class="caro-menu-ico">▶️</span>
         </button>
-        <button type="button" class="caro-menu-ico-btn" id="caro-menu-skin-btn">
-          <span class="caro-menu-ico">🎨</span><span data-i18n="caroMenuSkin">Chọn nền</span>
+        <button type="button" class="caro-menu-ico-btn" id="caro-menu-skin-btn" title="Chọn nền" data-i18n-title="caroMenuSkin">
+          <span class="caro-menu-ico">🎨</span>
+        </button>
+      </div>
+
+      <div class="caro-menu-switch-row" id="caro-menu-switch-row">
+        <button type="button" class="caro-menu-switch-half" id="caro-menu-switch-chroma">
+          <span class="caro-menu-switch-ico">🧊</span><span>Chroma Blast</span>
+        </button>
+        <button type="button" class="caro-menu-switch-half" id="caro-menu-switch-versus">
+          <span class="caro-menu-switch-ico">⚔️</span><span data-i18n="ttVersus">Versus</span>
         </button>
       </div>
 
@@ -1163,7 +1190,7 @@
           <span data-i18n="caroMenuWithFriend">🤝 Chơi với bạn</span>
         </button>
         <button type="button" class="caro-menu-action" id="caro-menu-table-btn">
-          <span data-i18n="caroMenuTable">🀄 Chọn bàn</span>
+          <span data-i18n="caroMenuTable">🚪 Chọn phòng</span>
         </button>
         <button type="button" class="caro-menu-action" id="caro-menu-rankbtn2">
           <span data-i18n="caroMenuRankBtn">🏆 Xếp hạng</span>
@@ -1172,11 +1199,6 @@
           <span data-i18n="caroMenuTour">🏅 Giải đấu</span>
         </button>
       </div>
-    </div>
-
-    <div class="caro-menu-switch-pop" id="caro-menu-switch-pop" hidden>
-      <button type="button" id="caro-menu-switch-chroma">🧊 Chroma Blast</button>
-      <button type="button" id="caro-menu-switch-versus">⚔️ Versus</button>
     </div>
   </div>
 
@@ -1272,6 +1294,8 @@
         <div id="caro-hub-stats" class="caro-hub-stats"></div>
         <button type="button" id="caro-rank-btn" class="auth-submit-btn btn-ghost" style="background:rgba(255,255,255,0.12);margin-bottom:10px;" data-i18n="caroRankBoard">🏆 BXH</button>
 
+        <button type="button" id="caro-open-room-browser-btn" class="auth-submit-btn btn-on-color" style="margin-bottom:10px;background:linear-gradient(135deg,#a7b8f0,#c9b6f0);" data-i18n="crbOpenBrowser">📋 Xem danh sách phòng</button>
+
         <div class="caro-waiting-block">
           <div class="caro-waiting-head">
             <span data-i18n="caroWaitingRooms">📋 Phòng chờ</span>
@@ -1322,6 +1346,44 @@
       </div>
     </div>
   </div>
+  <div id="caro-room-browser" class="crb-panel">
+    <div class="crb-topbar">
+      <button type="button" class="crb-exit" id="crb-exit-btn" aria-label="Back">‹</button>
+      <div class="crb-avatar" id="crb-avatar"></div>
+      <div class="crb-stat"><span>❤️</span><span id="crb-hearts">0</span></div>
+      <div class="crb-stat"><span>🪙</span><span id="crb-gold">0</span></div>
+      <button type="button" class="crb-icon-btn" id="crb-chat-btn" aria-label="Chat">💬</button>
+      <button type="button" class="crb-icon-btn" id="crb-settings-btn" aria-label="Settings">⚙️</button>
+    </div>
+    <div class="crb-shell">
+      <div class="crb-actions">
+        <button type="button" class="crb-action-btn" id="crb-find-btn" data-i18n="onlineFind">🔍 Tìm đối thủ</button>
+        <button type="button" class="crb-action-btn" id="crb-create-btn" data-i18n="onlineCreate">🏠 Tạo phòng</button>
+      </div>
+      <div class="crb-list" id="crb-room-list"></div>
+      <div class="crb-empty" id="crb-room-list-empty" data-i18n="caroWaitingEmpty">Chưa có phòng — tạo phòng hoặc bấm Tìm đối thủ</div>
+      <div class="crb-tabs">
+        <button type="button" class="crb-tab active" id="crb-tab-all" data-crb-tab="all" data-i18n="crbTabAll">Tất cả</button>
+        <button type="button" class="crb-tab" id="crb-tab-open" data-crb-tab="open" data-i18n="crbTabOpen">Còn trống</button>
+        <button type="button" class="crb-tab" id="crb-tab-notstarted" data-crb-tab="notstarted" data-i18n="crbTabNotStarted">Chưa bắt đầu</button>
+      </div>
+      <div class="crb-bottom-icons">
+        <button type="button" class="crb-bicon" id="crb-vs-ai-btn">
+          <span class="crb-bicon-circle">🤖</span><span data-i18n="crbVsAi">Chơi với máy</span>
+        </button>
+        <button type="button" class="crb-bicon" id="crb-friends-btn">
+          <span class="crb-bicon-circle">🤝</span><span data-i18n="acchubFriends">Bạn bè</span>
+        </button>
+        <button type="button" class="crb-bicon" id="crb-rank-btn">
+          <span class="crb-bicon-circle">🏆</span><span data-i18n="caroRankBoard">Xếp hạng</span>
+        </button>
+        <button type="button" class="crb-bicon" id="crb-watch-ad-btn">
+          <span class="crb-bicon-circle">🎬</span><span data-i18n="crbWatchAd">Xem QC</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <div id="caro-lobby-panel" class="admin-panel-like">
     <div class="admin-card">
       <div class="admin-title"><span data-i18n="caroLobby">❌⭕ Phòng Caro</span> <small id="caro-lobby-room-no" class="caro-lobby-no"></small></div>
@@ -1417,6 +1479,7 @@
           <span id="caro-me-name" class="caro-me-name">Bạn</span>
           <span id="caro-marks" class="caro-marks">Bạn <b class="caro-x">X</b> · Đối thủ <b class="caro-o">O</b></span>
           <div id="caro-me-couple-line" class="caro-couple-line" hidden></div>
+          <div id="caro-me-rank-line" class="caro-rank-line" hidden></div>
         </div>
       </div>
       <div id="caro-quick-fx" class="caro-quick-fx" aria-label="Ném tương tác"></div>
@@ -1696,6 +1759,7 @@
 <script src="js/profanity-filter.js"></script>
 <script src="js/online-services.js"></script>
 <script src="js/caro-ranks.js"></script>
+<script src="js/caro-room-browser.js"></script>
 <script src="js/versus-ranks.js"></script>
 <script src="js/player-profile.js"></script>
 <script src="js/account-status.js"></script>
@@ -1708,11 +1772,11 @@
 <script src="js/progression.js"></script>
 <script src="js/inventory.js"></script>
 <script src="js/name-effects.js"></script>
+<script src="js/text-effects.js"></script>
 <script src="js/quests.js"></script>
 <script src="js/lb-period.js"></script>
 <script src="js/leaderboard.js"></script>
 <script src="js/gpcard-leaderboard.js"></script>
-<script src="js/gpcard-quests.js"></script>
 <script src="js/gpcard-rewards.js"></script>
 <script src="js/gpcard.js"></script>
 <script src="js/lb-notify.js"></script>

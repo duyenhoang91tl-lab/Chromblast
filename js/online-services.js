@@ -1823,9 +1823,18 @@ async function startOnlineRoomMatch(roomId, opts){
     return null;
   }
   const seed = (Date.now() ^ (Math.random()*0xFFFFFFF))>>>0;
+  const nextMatchSeq = (Number(d.matchSeq) || 0) + 1;
   await ref.update({
     status: 'playing',
     seed,
+    matchSeq: nextMatchSeq,
+    hostScore: 0,
+    guestScore: 0,
+    winnerId: null,
+    endReason: null,
+    statsApplied: false,
+    hostReadyRematch: false,
+    guestReadyRematch: false,
     hostBrickSkin: (typeof getActiveBrickSkin === 'function') ? getActiveBrickSkin() : (d.hostBrickSkin || null),
     hostBoardSkin: (typeof getActiveBoardSkin === 'function') ? getActiveBoardSkin() : (d.hostBoardSkin || null),
     startedAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -1916,6 +1925,9 @@ function _chatMsgPayload(text){
       payload.nameFontId = st.fontId || 'nunito';
       payload.nameEffect = st.effect || '';
     }
+  }catch(e){}
+  try{
+    payload.textEffect = (typeof equippedTextEffect === 'function') ? (equippedTextEffect() || '') : '';
   }catch(e){}
   return payload;
 }
@@ -2334,6 +2346,21 @@ async function finalizeCaroMatch(roomId, winnerSlot){
   // (kích hoạt tự động khi status của phòng chuyển sang 'finished').
 }
 
+/** Bấm "Sẵn sàng" (hoặc bỏ chọn) ở PHÒNG CHỜ trước trận đầu tiên — cùng field
+ * hostReady/guestReady đã có sẵn (host mặc định true lúc tạo phòng, khách mặc
+ * định true lúc vào phòng nhưng vẫn cho tự tắt lại nếu muốn chỉnh đồ trước). */
+async function setLobbyReady(roomId, ready){
+  if(!_onlineDb || !roomId) return;
+  const uid = getOnlineUid();
+  const ref = _onlineDb.collection('rooms').doc(roomId);
+  const snap = await ref.get();
+  if(!snap.exists) return;
+  const d = snap.data();
+  const field = d.hostId === uid ? 'hostReady' : d.guestId === uid ? 'guestReady' : null;
+  if(!field) return;
+  await ref.update({ [field]: !!ready });
+}
+
 async function finalizeOnlineMatch(roomId, hostScore, guestScore){
   if(!_onlineDb || !roomId) return;
   const ref = _onlineDb.collection('rooms').doc(roomId);
@@ -2352,11 +2379,28 @@ async function finalizeOnlineMatch(roomId, hostScore, guestScore){
     guestScore,
     winnerId,
     endReason: 'normal',
-    endedAt: firebase.firestore.FieldValue.serverTimestamp()
+    endedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    hostReadyRematch: false,
+    guestReadyRematch: false
   });
 
   // Cộng điểm thắng/thua giờ do Cloud Function applyMatchResult xử lý
   // (kích hoạt tự động khi status của phòng chuyển sang 'finished').
+}
+
+/** Bấm "Sẵn sàng" (hoặc bỏ chọn) cho trận tiếp theo TRONG CÙNG phòng, sau khi
+ * 1 trận vừa kết thúc — không tạo phòng mới, không rời phòng. Field ghi đúng
+ * theo vai trò (host/guest) của người gọi trong CHÍNH room đó. */
+async function setVersusRematchReady(roomId, ready){
+  if(!_onlineDb || !roomId) return;
+  const uid = getOnlineUid();
+  const ref = _onlineDb.collection('rooms').doc(roomId);
+  const snap = await ref.get();
+  if(!snap.exists) return;
+  const d = snap.data();
+  const field = d.hostId === uid ? 'hostReadyRematch' : d.guestId === uid ? 'guestReadyRematch' : null;
+  if(!field) return;
+  await ref.update({ [field]: !!ready });
 }
 
 /** Xử thua trực tiếp cho 1 bên (không so điểm) khi họ rời trận Versus online giữa

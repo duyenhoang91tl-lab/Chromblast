@@ -579,11 +579,9 @@ async function _caroLoadOppExtras(uid){
     const curUid = (_caro.ids && _caro.ids[curIdx]) || null;
     if(curUid !== uid) return; // đổi đối thủ trong lúc đang tải — bỏ kết quả cũ
     const s = prof.stats || {};
-    const vs = prof.versusStats || {};
     _caroOppExtraCache = {
       uid, loaded: true,
-      caroRank: s.rank || null,
-      vsRank: (typeof getVersusRank === 'function') ? getVersusRank(vs.points || 0) : null
+      caroRank: s.rank || null
     };
   }catch(e){
     _caroOppExtraCache = { uid: null, loaded: false };
@@ -596,18 +594,32 @@ function _caroRenderOppRankLine(){
   const el = document.getElementById('caro-rank-line');
   if(!el) return;
   const c = _caroOppExtraCache;
-  if(!c || !c.loaded || (!c.caroRank && !c.vsRank)){ el.hidden = true; el.innerHTML = ''; return; }
-  const parts = [];
-  if(c.caroRank){
-    parts.push('<span class="caro-rank-mini">❌⭕ '+
-      (typeof escapeHtml==='function'?escapeHtml(c.caroRank.name):c.caroRank.name)+'</span>');
-  }
-  if(c.vsRank){
-    parts.push('<span class="caro-rank-mini">⚔️ '+
-      (typeof escapeHtml==='function'?escapeHtml(c.vsRank.name):c.vsRank.name)+'</span>');
-  }
+  if(!c || !c.loaded || !c.caroRank){ el.hidden = true; el.innerHTML = ''; return; }
   el.hidden = false;
-  el.innerHTML = parts.join('');
+  el.innerHTML = '<span class="caro-rank-mini">'+
+    (typeof escapeHtml==='function'?escapeHtml(c.caroRank.icon+' '+c.caroRank.name):c.caroRank.icon+' '+c.caroRank.name)+'</span>';
+  // Tên đối thủ vừa hiện lúc chip dựng (chưa biết bậc rank) — giờ đã biết,
+  // vẽ lại kèm hiệu ứng theo bậc rank (giống bảng xếp hạng/thẻ người chơi).
+  const nameEl = document.getElementById('caro-opp-name');
+  if(nameEl && c.caroRank.tier != null){
+    const oppName = (_caro && _caro.names && _caro.names[_caroOppSlot()==='host'?0:1]) || '—';
+    nameEl.innerHTML = (typeof rankNameFxHtml==='function')
+      ? rankNameFxHtml(oppName, c.caroRank.tier, 12)
+      : (typeof escapeHtml==='function'?escapeHtml(oppName):oppName);
+  }
+}
+
+/** Rank Caro của chính mình — hiện cạnh tên trong khay dưới, giống hệt cách
+ * hiện rank đối thủ (chỉ hiện rank Caro vì đang ở màn Caro). */
+function _caroRenderMeRankLine(){
+  const el = document.getElementById('caro-me-rank-line');
+  if(!el) return;
+  const rank = (typeof getLocalCaroStats === 'function') ? getLocalCaroStats().rank : null;
+  if(!rank){ el.hidden = true; el.innerHTML = ''; return; }
+  el.hidden = false;
+  el.innerHTML = '<span class="caro-rank-mini">'+
+    (typeof escapeHtml==='function'?escapeHtml(rank.icon+' '+rank.name):rank.icon+' '+rank.name)+'</span>';
+  return rank;
 }
 
 function _caroUpdateOppChip(){
@@ -628,7 +640,15 @@ function _caroUpdateOppChip(){
     avBtn.dataset.avatar = isCustomPlayerAvatar && isCustomPlayerAvatar(av) ? '📷' : av;
     avBtn.disabled = !!_caro.ai || !uid;
   }
-  if(nameEl) nameEl.textContent = name;
+  if(nameEl){
+    try{
+      // formatPlayerNameStyledHtml không truyền style sẽ tự lấy style của
+      // CHÍNH MÌNH (getPlayerNameStyle) — với tên đối thủ phải tự truyền
+      // style trung tính, không thì bị gán nhầm màu/hiệu ứng của mình.
+      const neutralStyle = { color:'#f2f2f7', bold:false, italic:false, fontId:'nunito', effect:'' };
+      nameEl.innerHTML = (typeof formatPlayerNameStyledHtml==='function') ? formatPlayerNameStyledHtml(name, neutralStyle) : name;
+    }catch(e){ nameEl.textContent = name; }
+  }
   if(chip) chip.classList.toggle('tappable', !_caro.ai && !!uid);
   const rankLineEl = document.getElementById('caro-rank-line');
   if(uid && !_caro.ai) _caroLoadOppExtras(uid);
@@ -649,9 +669,14 @@ function _caroUpdateMeChip(){
     : (typeof getPlayerAvatar === 'function' ? getPlayerAvatar() : '🐶'));
   if(nameEl){
     try{
-      nameEl.innerHTML = (typeof formatPlayerNameStyledHtml==='function') ? formatPlayerNameStyledHtml(nick) : nick;
+      const myStyle = (typeof getPlayerNameStyle === 'function') ? getPlayerNameStyle() : null;
+      const myRank = (typeof getLocalCaroStats === 'function') ? getLocalCaroStats().rank : null;
+      nameEl.innerHTML = (myRank && myRank.tier > 0 && typeof rankNameFxHtml === 'function')
+        ? rankNameFxHtml(nick, myRank.tier, 12, myStyle)
+        : (typeof formatPlayerNameStyledHtml === 'function' ? formatPlayerNameStyledHtml(nick, myStyle) : nick);
     }catch(e){ nameEl.textContent = nick; }
   }
+  _caroRenderMeRankLine();
   if(avBtn){
     if(typeof applyAvatarElement === 'function') applyAvatarElement(avBtn, av);
     else avBtn.textContent = (typeof getPlayerAvatar === 'function' ? getPlayerAvatar() : '🐶');
@@ -2243,7 +2268,7 @@ function _caroRenderLobby(d){
   if(wagerEl){
     if(Number(d.wagerAmount) > 0 && d.wagerCurrency === 'gold'){
       const label = typeof t==='function' ? t('onlineLobbyWager') : 'Cược:';
-      wagerEl.textContent = label + ' 🪙 ' + d.wagerAmount + ' (' + (typeof t==='function'?t('onlineLobbyWagerPot','thắng +95%'):'thắng +95%') + ')';
+      wagerEl.textContent = label + ' 🪙 ' + d.wagerAmount + ' (' + (typeof t==='function'?t('onlineLobbyWagerPot','thắng ăn x2'):'thắng ăn x2') + ')';
       wagerEl.style.display = '';
     } else {
       wagerEl.style.display = 'none';
@@ -2262,21 +2287,22 @@ function _caroRenderLobby(d){
 }
 
 // ═══════════════════════════════════════════════════════════════
-// Đặt cược VÀNG khi tạo phòng caro (2 người chơi cược vàng, ai thắng nhận lại
-// cược của mình + 95% cược đối thủ — xem functions/index.js: escrowWager/
-// applyMatchResult). CHỈ VÀNG, không hỗ trợ kim cương ở caro có chủ đích: kim
-// cương mua bằng tiền thật (IAP) không được đưa vào cược 1-1 ăn-thua giữa 2
-// tài khoản, để tránh mở đường tiền thật → cược — xem quyết định trong
-// docs/ONLINE_MULTIPLAYER.md và trao đổi khi thêm tính năng này.
+// Đặt cược VÀNG khi tạo phòng caro (2 người chơi cược vàng, ai thắng ăn TRỌN cược
+// của cả 2 bên (x2) — không thu phí sàn, tránh rủi ro bị coi là "gá bạc thu tiền
+// hồ" theo Điều 322 BLHS — xem functions/index.js: escrowWager/applyMatchResult).
+// CHỈ VÀNG, không hỗ trợ kim cương ở caro có chủ đích: kim cương mua bằng tiền
+// thật (IAP) không được đưa vào cược 1-1 ăn-thua giữa 2 tài khoản, để tránh mở
+// đường tiền thật → cược — xem quyết định trong docs/ONLINE_MULTIPLAYER.md và
+// trao đổi khi thêm tính năng này.
 // ═══════════════════════════════════════════════════════════════
 let _caroWagerOn = false;
 let _caroWagerAmount = 0;
 const CARO_WAGER_PRESETS = [5, 10, 15, 20, 30];
 
 /** Khớp đúng công thức thật ở Cloud Function settleWager (functions/index.js):
- *  thắng = hoàn cược của mình + 95% cược đối thủ (giữ 5% phí sàn). */
+ *  thắng ăn TRỌN cược 2 bên (x2), không thu phí sàn. */
 function _caroWagerPayout(bet){
-  return Math.round(bet * 1.95);
+  return bet * 2;
 }
 
 function _caroRenderWagerAmounts(){
