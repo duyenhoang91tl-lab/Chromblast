@@ -1,18 +1,25 @@
 /* ══════════════════════════════════════════
-   Thẻ trò chơi — tab "Hành trình" (#gpcard-rewards).
+   Thẻ trò chơi — màn hình "Hành trình" (#gpcard-rewards).
    Mỗi mốc = 1 map ẩn trong UNLOCK_STAGE_ORDER (js/progression.js) — mốc N mở
    khi unlockGateStageIndex >= N (đã đi qua N map ẩn). Không tính lại tiến trình
    map ẩn ở đây, chỉ đọc unlockGateStageIndex đã có sẵn.
    2 nhánh thưởng mỗi mốc: Bản miễn phí (luôn nhận được khi đủ mốc) và Bản nâng
    cấp (cần sở hữu Thẻ trò chơi nâng cấp — hiện CHƯA có gói mua thật nào gắn với
    việc này, nút "Nâng cấp" mở Shop giống nút ở header, không giả lập mở khoá).
-   Thưởng dùng đúng hệ thống có sẵn: grantGold/grantDiamonds/grantHearts/
-   grantPower (js/inventory.js) + addPlayerXP (js/progression.js).
+   Mốc chia hết 5 (5/10/15/20) tặng 1 RƯƠNG (js/loot-crates.js: grantItemCrate,
+   chỉ rương VẬT PHẨM — xem comment ở _gpcardJourneyRewardFor() vì sao rương
+   TIỀN TỆ Gỗ/Bạc/Vàng/Kim Cương chưa đưa vào được) thay vì kim cương thẳng như
+   trước. Phần thưởng ví (vàng/kim cương/tim) ở các mốc còn lại đi qua Cloud
+   Function claimGpcardReward (functions/index.js: journeyWalletReward) —
+   server tự tính lại số tiền, ghi ledger chống nhận lại; power-up/XP/rương vẫn
+   cấp cục bộ vì không phải tiền tệ, không có gì để đồng bộ ngược.
    Trạng thái đã nhận lưu riêng trong localStorage (không đụng inventory/save
-   chính) — key GPCARD_JOURNEY_KEY.
-   Khung sườn (#gpcard-panel, mở/đóng, chuyển tab) do js/gpcard.js quản lý — file
-   này chỉ đổ nội dung vào đúng #gpcard-rewards đã có sẵn.
-   Nạp SAU js/progression.js + js/inventory.js.
+   chính) — key GPCARD_JOURNEY_KEY — chỉ để UI biết mốc nào đã bấm nhận trên
+   MÁY NÀY; chống-nhận-lại thật sự nằm ở ledger phía server.
+   Trước đây là tab trong #gpcard-panel, giờ là màn hình riêng vào thẳng từ
+   menu chính (set-btn-journey) — xem cuối file.
+   Nạp SAU js/progression.js + js/inventory.js + js/loot-crates.js +
+   js/online-services.js.
 ══════════════════════════════════════════ */
 
 const GPCARD_JOURNEY_KEY = 'chromablast_journey_claims_v1';
@@ -39,8 +46,15 @@ function _gpcardJourneySaveState(st){
   try{ localStorage.setItem(GPCARD_JOURNEY_KEY, JSON.stringify(st)); }catch(e){}
 }
 
-/** Thưởng theo mốc — xen kẽ vàng/kim cương/tim/vật phẩm/XP cho đa dạng, tăng dần
- * theo mốc, mốc chẵn 5 (5/10/15/20) là mốc lớn + mốc cuối cùng thưởng đậm nhất.
+/** Thưởng theo mốc — xen kẽ vàng/kim cương/tim/vật phẩm/XP/rương cho đa dạng,
+ * tăng dần theo mốc. Mốc chia hết 5 (5/10/15/20) tặng 1 RƯƠNG (js/loot-crates.js)
+ * thay vì kim cương thẳng — nhánh miễn phí cấp rương Gạch/Map, nhánh nâng cấp
+ * cấp cả rương Bong bóng/Kỹ năng/Hiệu ứng/Bạch Kim.
+ * LƯU Ý: cố tình CHƯA đưa rương TIỀN TỆ (Gỗ/Bạc/Vàng/Kim Cương) vào đây — 4
+ * rương đó bắt buộc mở qua Cloud Function openCurrencyCrate (chống lỗ hổng
+ * cộng cục bộ), và hàm đó hiện chỉ có chế độ "mua", chưa có chế độ "cấp thẳng
+ * miễn phí" an toàn để dùng cho quà mốc Hành trình. Cần thêm ở server (ngoài
+ * phạm vi sửa hôm nay) rồi mới đưa rương tiền tệ vào đây được.
  * Trả về 1 object hoặc mảng object { type, amount, power?, icon }. */
 function _gpcardJourneyRewardFor(tierNum, track, totalTiers){
   const big = (tierNum % 5 === 0);
@@ -48,13 +62,19 @@ function _gpcardJourneyRewardFor(tierNum, track, totalTiers){
   const cyclePos = (tierNum - 1) % 4;
   const powerKinds = ['fire', 'bubble', 'wind'];
   const pw = powerKinds[tierNum % powerKinds.length];
+  const FREE_CRATES = ['brick', 'map'];
+  const ALL_CRATES = ['brick', 'map', 'bubble', 'skill', 'effect', 'platinum'];
 
   if(track === 'free'){
     if(last) return [
       { type:'diamond', amount: 20, icon:'💎' },
       { type:'gold', amount: 300, icon:'🪙' }
     ];
-    if(big) return { type:'diamond', amount: 4 + Math.floor(tierNum / 5) * 2, icon:'💎' };
+    if(big){
+      const crateId = FREE_CRATES[Math.floor(tierNum / 5 - 1) % FREE_CRATES.length];
+      const crateIco = (typeof getCrate === 'function' && getCrate(crateId)) ? getCrate(crateId).icon : '🎁';
+      return { type:'chest', chestId: crateId, icon: crateIco };
+    }
     const cycle = [
       { type:'gold', amount: 30 + tierNum * 4, icon:'🪙' },
       { type:'hearts', amount: 1, icon:'❤️' },
@@ -66,14 +86,19 @@ function _gpcardJourneyRewardFor(tierNum, track, totalTiers){
 
   // premium — luôn nhỉnh hơn bản miễn phí cùng mốc
   if(last) return [
+    { type:'chest', chestId:'platinum', icon:'👑' },
     { type:'diamond', amount: 60, icon:'💎' },
     { type:'gold', amount: 800, icon:'🪙' },
     { type:'hearts', amount: 3, icon:'❤️' }
   ];
-  if(big) return [
-    { type:'diamond', amount: 12 + Math.floor(tierNum / 5) * 4, icon:'💎' },
-    { type:'gold', amount: 150 + tierNum * 8, icon:'🪙' }
-  ];
+  if(big){
+    const crateId = ALL_CRATES[Math.floor(tierNum / 5 - 1) % ALL_CRATES.length];
+    const crateIco = (typeof getCrate === 'function' && getCrate(crateId)) ? getCrate(crateId).icon : '🎁';
+    return [
+      { type:'chest', chestId: crateId, icon: crateIco },
+      { type:'gold', amount: 100 + tierNum * 6, icon:'🪙' }
+    ];
+  }
   const cycleP = [
     { type:'gold', amount: 100 + tierNum * 10, icon:'🪙' },
     { type:'hearts', amount: 2, icon:'❤️' },
@@ -83,14 +108,6 @@ function _gpcardJourneyRewardFor(tierNum, track, totalTiers){
   return cycleP[cyclePos];
 }
 
-function _gpcardJourneyRewardLabel(rw){
-  if(rw.type === 'gold') return rw.icon + ' x' + rw.amount;
-  if(rw.type === 'diamond') return rw.icon + ' x' + rw.amount;
-  if(rw.type === 'hearts') return rw.icon + ' x' + rw.amount;
-  if(rw.type === 'xp') return '⭐ ' + rw.amount + ' XP';
-  if(rw.type === 'power') return rw.icon + ' x' + rw.amount;
-  return rw.icon || '🎁';
-}
 /** Gọi Cloud Function claimGpcardReward cho phần vàng/kim cương/tim — server tự
  * tính lại đúng số tiền (không tin rw client tính), rồi mới cộng cục bộ đúng số
  * server trả về. power/xp trong rw vẫn cộng cục bộ như cũ (không phải tiền tệ). */
@@ -121,6 +138,7 @@ async function _gpcardJourneyGrant(rw, tier, track, reason){
     try{
       if(r.type === 'power' && typeof grantPower === 'function') grantPower(r.power, r.amount, reason);
       else if(r.type === 'xp' && typeof addPlayerXP === 'function') addPlayerXP(r.amount);
+      else if(r.type === 'chest' && typeof grantItemCrate === 'function') grantItemCrate(r.chestId, reason);
     }catch(e){}
   });
   return { ok:true };
@@ -132,7 +150,9 @@ function _gpcardJourneySlotHtml(tierNum, track, rw, reached, claimedList){
   const ready = (reached >= tierNum) && !claimed && !locked;
   const rewardArr = Array.isArray(rw) ? rw : [rw];
   const itemsHtml = rewardArr.map(r =>
-    '<div class="gpcard-jr-item">' + r.icon + '<b>x' + (r.amount) + '</b></div>'
+    r.type === 'chest'
+      ? '<div class="gpcard-jr-item">' + r.icon + '<b>🎁</b></div>'
+      : '<div class="gpcard-jr-item">' + r.icon + '<b>x' + (r.amount) + '</b></div>'
   ).join('');
   let badge = '';
   if(claimed) badge = '<span class="gpcard-jr-badge done">✓</span>';

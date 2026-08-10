@@ -545,9 +545,12 @@ function journeyWalletReward(tierNum, track) {
   const big = (tierNum % 5 === 0);
   const last = (tierNum === GPCARD_JOURNEY_TOTAL_TIERS);
   const cyclePos = (tierNum - 1) % 4;
+  // Mốc "big" (chia hết 5, không phải mốc cuối) giờ tặng RƯƠNG (js/loot-crates.js,
+  // cấp cục bộ bên client — xem js/gpcard-rewards.js: _gpcardJourneyRewardFor())
+  // thay vì kim cương thẳng — trả 0 ở đây để không cộng trùng 2 lần.
   if (track === 'free') {
     if (last) return { gold: 300, diamonds: 20, hearts: 0 };
-    if (big) return { gold: 0, diamonds: 4 + Math.floor(tierNum / 5) * 2, hearts: 0 };
+    if (big) return { gold: 0, diamonds: 0, hearts: 0 };
     if (cyclePos === 0) return { gold: 30 + tierNum * 4, diamonds: 0, hearts: 0 };
     if (cyclePos === 1) return { gold: 0, diamonds: 0, hearts: 1 };
     return { gold: 0, diamonds: 0, hearts: 0 }; // cyclePos 2/3 = power/xp, không thuộc ví
@@ -557,7 +560,7 @@ function journeyWalletReward(tierNum, track) {
   // chỉ có tác dụng khi tính năng đó được bật sau này, và requirePremium bên
   // dưới sẽ luôn từ chối cho tới lúc đó.
   if (last) return { gold: 800, diamonds: 60, hearts: 3 };
-  if (big) return { gold: 150 + tierNum * 8, diamonds: 12 + Math.floor(tierNum / 5) * 4, hearts: 0 };
+  if (big) return { gold: 100 + tierNum * 6, diamonds: 0, hearts: 0 };
   if (cyclePos === 0) return { gold: 100 + tierNum * 10, diamonds: 0, hearts: 0 };
   if (cyclePos === 1) return { gold: 0, diamonds: 0, hearts: 2 };
   if (cyclePos === 3) return { gold: 0, diamonds: 3 + Math.floor(tierNum / 3), hearts: 0 };

@@ -644,14 +644,19 @@
           if (typeof sfxUnlock === "function") sfxUnlock();
         } catch (e) {}
         try {
-          if (typeof showComboFlash === "function" && r.daily)
-            showComboFlash(
-              0,
-              false,
-              typeof t === "function"
-                ? t("dailyFlash", r.daily.xp, r.daily.day, r.daily.hearts | 0)
-                : "🎁 Điểm danh"
-            );
+          if (typeof showComboFlash === "function" && r.daily) {
+            let msg = typeof t === "function"
+              ? t("dailyFlash", r.daily.xp, r.daily.day, r.daily.hearts | 0)
+              : "🎁 Điểm danh";
+            if (r.daily.milestone) {
+              const m = r.daily.milestone;
+              msg += " · " + (typeof t === "function" ? t("dailyMilestoneFlash", m.day) : ("Mốc " + m.day + " ngày!"));
+              if (m.gold) msg += " 🪙+" + m.gold;
+              if (m.diamonds) msg += " 💎+" + m.diamonds;
+              if (m.crate) msg += " " + m.crate.label;
+            }
+            showComboFlash(0, false, msg);
+          }
         } catch (e) {}
         renderDetail(_view === "hub" ? "day" : _view);
         updateQuestsBadge();

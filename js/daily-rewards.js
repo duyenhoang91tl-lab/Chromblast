@@ -42,6 +42,27 @@ function getDailyStatus(){
   return { streakDay: streak, alreadyClaimedToday: false, canClaim: true };
 }
 
+// Mốc thưởng THÊM theo chuỗi điểm danh DÀI (không lặp lại mỗi 7 ngày như
+// DAILY_REWARD_XP ở trên) — 7 ngày/2 tuần/3 tuần/1 tháng, lặp lại theo chu kỳ
+// 30 ngày. Đứt chuỗi (bỏ lỡ 1 ngày) thì mốc dài này cũng reset về 0 giống
+// streak thường. Chỉ dùng vàng/kim cương (grantGold/grantDiamonds — đã dùng
+// sẵn ngay trong file này cho quà điểm danh thường) + rương VẬT PHẨM qua
+// grantItemCrate() (js/loot-crates.js) — cố tình KHÔNG dùng rương tiền tệ
+// (Gỗ/Bạc/Vàng/Kim cương) ở đây vì 4 rương đó bắt buộc phải mở qua Cloud
+// Function openCurrencyCrate (chống lỗ hổng cộng cục bộ), không có đường "cấp
+// thẳng miễn phí" an toàn nào cho chúng ngoài luồng mua ở Shop/Rương bảo vật.
+const DAILY_MILESTONE_CRATES = {
+  7:  { gold: 150, crateId: 'brick' },
+  14: { gold: 300, crateId: 'map' },
+  21: { diamonds: 10, crateId: 'bubble' },
+  30: { diamonds: 25, crateId: 'platinum' },
+};
+
+function _dailyMilestoneRewardFor(milestoneDay){
+  const day30 = ((milestoneDay - 1) % 30) + 1; // lặp lại theo chu kỳ 30 ngày
+  return DAILY_MILESTONE_CRATES[day30] || null;
+}
+
 function claimDailyReward(){
   const status = getDailyStatus();
   if(!status.canClaim) return null;
@@ -49,8 +70,16 @@ function claimDailyReward(){
   const gold = 1; // nhiệm vụ ngày: đăng nhập +1 vàng
   const heartWant = 1; // +1 tim / điểm danh (tổng nhiệm vụ ngày ≤ 5 tim)
   const st = getDailyState();
+  let continued = false;
+  if(st.lastClaim){
+    const last = new Date(st.lastClaim + 'T00:00:00');
+    const now  = new Date(todayStr() + 'T00:00:00');
+    continued = Math.round((now - last) / 86400000) === 1;
+  }
+  const milestoneDay = continued ? (st.milestoneStreak || 0) + 1 : 1;
   st.lastClaim = todayStr();
   st.streak = status.streakDay;
+  st.milestoneStreak = milestoneDay;
   saveDailyState(st);
   if(typeof addPlayerXP === 'function') addPlayerXP(xp);
   if(typeof grantGold === 'function') grantGold(gold, typeof t==='function'?t('dailyGold'):'Điểm danh');
@@ -63,10 +92,24 @@ function claimDailyReward(){
       hearts = heartWant;
     }
   }catch(e){}
+  // Mốc dài 7/14/21/30 ngày liên tục — chỉ trúng ĐÚNG ngày chạm mốc.
+  let milestone = null;
+  const mr = _dailyMilestoneRewardFor(milestoneDay);
+  if(mr){
+    const reasonText = (typeof t==='function'?t('dailyGold'):'Điểm danh') + ' ' + milestoneDay;
+    if(mr.gold && typeof grantGold === 'function') grantGold(mr.gold, reasonText);
+    if(mr.diamonds && typeof grantDiamonds === 'function') grantDiamonds(mr.diamonds, reasonText);
+    let crateReward = null;
+    if(mr.crateId && typeof grantItemCrate === 'function'){
+      const res = grantItemCrate(mr.crateId, reasonText);
+      if(res && res.ok) crateReward = res.reward;
+    }
+    milestone = { day: milestoneDay, gold: mr.gold||0, diamonds: mr.diamonds||0, crate: crateReward };
+  }
   try{ if(typeof noteCupLoginClaim==='function') noteCupLoginClaim(); }catch(e){}
   try{ if(typeof noteQuestEvent==='function') noteQuestEvent('checkin', 1); }catch(e){}
-  try{ if(typeof logGameEvent==='function') logGameEvent('daily_reward_claim', { streak_day: status.streakDay, xp, gold }); }catch(e){}
-  return { day: status.streakDay, xp, gold, hearts };
+  try{ if(typeof logGameEvent==='function') logGameEvent('daily_reward_claim', { streak_day: status.streakDay, milestone_day: milestoneDay, xp, gold }); }catch(e){}
+  return { day: status.streakDay, xp, gold, hearts, milestone };
 }
 
 function updateDailyBadge(){
@@ -148,9 +191,16 @@ function initDailyRewardPanel(){
     if(res){
       if(typeof showComboFlash === 'function'){
         const h = res.hearts|0;
-        showComboFlash(0, false, typeof t==='function'
+        let msg = typeof t==='function'
           ? t('dailyFlash', res.xp, res.day, h)
-          : ('🎁 +'+res.xp+' XP · 🪙 +'+(res.gold||1)+(h?(' · ❤️ +'+h):'')+' (ngày '+res.day+'/7)'));
+          : ('🎁 +'+res.xp+' XP · 🪙 +'+(res.gold||1)+(h?(' · ❤️ +'+h):'')+' (ngày '+res.day+'/7)');
+        if(res.milestone){
+          msg += ' · ' + (typeof t==='function'?t('dailyMilestoneFlash', res.milestone.day):('Mốc '+res.milestone.day+' ngày!'));
+          if(res.milestone.gold) msg += ' 🪙+'+res.milestone.gold;
+          if(res.milestone.diamonds) msg += ' 💎+'+res.milestone.diamonds;
+          if(res.milestone.crate) msg += ' '+res.milestone.crate.label;
+        }
+        showComboFlash(0, false, msg);
       }
       if(typeof sfxUnlock === 'function') sfxUnlock();
       renderDailyPanel();
