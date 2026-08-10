@@ -3,10 +3,9 @@
 // (6 ô icon KHÔNG chữ: Xếp hạng / Bạn bè / Chroma Blast / Điểm danh /
 // Caro / Chọn nền, và 6 nút lớn: Chơi nhanh / Chơi với bạn / Vào phòng /
 // Đấu hạng / Giải đấu / Đấu với máy). Cùng khuôn mẫu js/caro-menu.js.
+// Điểm danh dùng hệ thống riêng js/versus-daily.js (mirror js/caro-daily.js).
 //
-// GHI CHÚ VỀ 3 MỤC CHƯA CÓ HỆ THỐNG RIÊNG CHO VERSUS (dùng phương án tạm):
-//  - Điểm danh: chưa có hệ thống điểm danh riêng cho Versus (chỉ Caro có).
-//    Nút hiện disable + báo "sắp ra mắt" thay vì dùng nhầm điểm danh của Caro.
+// GHI CHÚ VỀ 2 MỤC CHƯA CÓ HỆ THỐNG RIÊNG CHO VERSUS (dùng phương án tạm):
 //  - Đấu hạng: chưa có hàng đợi ghép trận theo hạng RIÊNG (tách khỏi Chơi
 //    nhanh) — tạm dùng chung luồng Tìm đối thủ như Chơi nhanh.
 //  - Giải đấu: chưa có hệ thống giải đấu cho Versus (chỉ Caro có). Nút hiện
@@ -60,7 +59,10 @@ function initVersusMenu(){
     closeVersusMenu();
   });
 
-  document.getElementById('versus-menu-daily-btn')?.addEventListener('click', _versusMenuComingSoon);
+  document.getElementById('versus-menu-daily-btn')?.addEventListener('click', ()=>{
+    if(typeof window.openVersusDailyPanel === 'function') window.openVersusDailyPanel();
+    else _versusMenuComingSoon();
+  });
 
   document.getElementById('versus-menu-caro-btn')?.addEventListener('click', ()=>{
     closeVersusMenu();

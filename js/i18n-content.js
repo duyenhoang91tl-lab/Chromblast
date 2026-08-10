@@ -2118,7 +2118,9 @@ function MILESTONE_MSG(tier){
       versusMenuTitle:'⚔️ Versus', versusMenuRank:'Xếp hạng', versusMenuFriends:'Bạn bè',
       versusMenuChroma:'Chroma Blast', versusMenuDaily:'Điểm danh', versusMenuCaro:'Caro', versusMenuSkin:'Chọn nền',
       versusMenuQuick:'⚡ Chơi nhanh', versusMenuWithFriend:'🤝 Chơi với bạn', versusMenuJoin:'🚪 Vào phòng',
-      versusMenuRanked:'🏆 Đấu hạng', versusMenuTour:'🏅 Giải đấu', versusMenuAI:'🤖 Đấu với máy'
+      versusMenuRanked:'🏆 Đấu hạng', versusMenuTour:'🏅 Giải đấu', versusMenuAI:'🤖 Đấu với máy',
+      versusDailyTitle:'🎁 Điểm danh Versus',
+      versusDailySub:'Điểm danh mỗi ngày khi chơi Versus: XP + vàng riêng. Bỏ lỡ 1 ngày sẽ mất chuỗi.'
     },
     en:{
       caroMenuTitle:'❌⭕ Caro', caroMenuRank:'Rank', caroMenuFriends:'Friends',
@@ -2133,7 +2135,9 @@ function MILESTONE_MSG(tier){
       versusMenuTitle:'⚔️ Versus', versusMenuRank:'Leaderboard', versusMenuFriends:'Friends',
       versusMenuChroma:'Chroma Blast', versusMenuDaily:'Check-in', versusMenuCaro:'Caro', versusMenuSkin:'Choose Skin',
       versusMenuQuick:'⚡ Quick Play', versusMenuWithFriend:'🤝 Play with Friend', versusMenuJoin:'🚪 Join Room',
-      versusMenuRanked:'🏆 Ranked Match', versusMenuTour:'🏅 Tournament', versusMenuAI:'🤖 Play vs AI'
+      versusMenuRanked:'🏆 Ranked Match', versusMenuTour:'🏅 Tournament', versusMenuAI:'🤖 Play vs AI',
+      versusDailyTitle:'🎁 Versus check-in',
+      versusDailySub:'Check in daily while playing Versus for separate XP + gold. Missing a day resets your streak.'
     }
   };
   Object.keys(fill).forEach(l=>{ if(typeof I18N!=='undefined' && I18N[l]) Object.assign(I18N[l], fill[l]); });
@@ -2157,7 +2161,9 @@ function MILESTONE_MSG(tier){
       versusMenuTitle:'⚔️ 버서스', versusMenuRank:'랭킹', versusMenuFriends:'친구',
       versusMenuChroma:'크로마 블래스트', versusMenuDaily:'출석체크', versusMenuCaro:'오목', versusMenuSkin:'스킨 선택',
       versusMenuQuick:'⚡ 빠른 대전', versusMenuWithFriend:'🤝 친구와 대전', versusMenuJoin:'🚪 방 입장',
-      versusMenuRanked:'🏆 랭크전', versusMenuTour:'🏅 토너먼트', versusMenuAI:'🤖 AI와 대전'
+      versusMenuRanked:'🏆 랭크전', versusMenuTour:'🏅 토너먼트', versusMenuAI:'🤖 AI와 대전',
+      versusDailyTitle:'🎁 버서스 출석체크',
+      versusDailySub:'버서스 플레이 중 매일 출석하면 XP + 골드 지급. 하루라도 놓치면 연속 기록이 초기화됩니다.'
     },
     ja:{
       caroMenuTitle:'❌⭕ 五目並べ', caroMenuRank:'ランキング', caroMenuFriends:'フレンド',
@@ -2172,7 +2178,9 @@ function MILESTONE_MSG(tier){
       versusMenuTitle:'⚔️ バーサス', versusMenuRank:'ランキング', versusMenuFriends:'フレンド',
       versusMenuChroma:'クロマブラスト', versusMenuDaily:'デイリー', versusMenuCaro:'五目並べ', versusMenuSkin:'スキン選択',
       versusMenuQuick:'⚡ クイックプレイ', versusMenuWithFriend:'🤝 フレンドと対戦', versusMenuJoin:'🚪 ルーム参加',
-      versusMenuRanked:'🏆 ランク戦', versusMenuTour:'🏅 トーナメント', versusMenuAI:'🤖 AIと対戦'
+      versusMenuRanked:'🏆 ランク戦', versusMenuTour:'🏅 トーナメント', versusMenuAI:'🤖 AIと対戦',
+      versusDailyTitle:'🎁 バーサス デイリー',
+      versusDailySub:'バーサスプレイ中に毎日チェックインでXP＋ゴールド。1日でも逃すと連続記録がリセットされます。'
     },
     zh:{
       caroMenuTitle:'❌⭕ 五子棋', caroMenuRank:'排行榜', caroMenuFriends:'好友',
@@ -2187,7 +2195,9 @@ function MILESTONE_MSG(tier){
       versusMenuTitle:'⚔️ 对战', versusMenuRank:'排行榜', versusMenuFriends:'好友',
       versusMenuChroma:'Chroma Blast', versusMenuDaily:'签到', versusMenuCaro:'五子棋', versusMenuSkin:'选择皮肤',
       versusMenuQuick:'⚡ 快速对战', versusMenuWithFriend:'🤝 与好友对战', versusMenuJoin:'🚪 加入房间',
-      versusMenuRanked:'🏆 排位赛', versusMenuTour:'🏅 锦标赛', versusMenuAI:'🤖 与AI对战'
+      versusMenuRanked:'🏆 排位赛', versusMenuTour:'🏅 锦标赛', versusMenuAI:'🤖 与AI对战',
+      versusDailyTitle:'🎁 对战签到',
+      versusDailySub:'玩对战模式期间每日签到可获得经验值+金币。错过一天连续记录将重置。'
     },
     es:{
       caroMenuTitle:'❌⭕ Caro', caroMenuRank:'Clasificación', caroMenuFriends:'Amigos',
@@ -2202,7 +2212,9 @@ function MILESTONE_MSG(tier){
       versusMenuTitle:'⚔️ Versus', versusMenuRank:'Clasificación', versusMenuFriends:'Amigos',
       versusMenuChroma:'Chroma Blast', versusMenuDaily:'Check-in', versusMenuCaro:'Caro', versusMenuSkin:'Elegir skin',
       versusMenuQuick:'⚡ Partida rápida', versusMenuWithFriend:'🤝 Jugar con amigo', versusMenuJoin:'🚪 Unirse a sala',
-      versusMenuRanked:'🏆 Partida clasificatoria', versusMenuTour:'🏅 Torneo', versusMenuAI:'🤖 Jugar contra la IA'
+      versusMenuRanked:'🏆 Partida clasificatoria', versusMenuTour:'🏅 Torneo', versusMenuAI:'🤖 Jugar contra la IA',
+      versusDailyTitle:'🎁 Check-in de Versus',
+      versusDailySub:'Haz check-in diario jugando Versus para ganar XP + oro por separado. Si te saltas un día, se reinicia tu racha.'
     }
   };
   Object.keys(fill).forEach(l=>{ if(typeof I18N!=='undefined' && I18N[l]) Object.assign(I18N[l], fill[l]); });

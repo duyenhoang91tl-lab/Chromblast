@@ -119,7 +119,7 @@ function _mulberry32(a){
   };
 }
 
-function canHostVersus(){ return (typeof playerLevel!=='undefined' && playerLevel >= VERSUS_MIN_LEVEL); }
+function canHostVersus(){ return true; } // đã bỏ yêu cầu Cấp 3 — Online mở ngay từ đầu như Cùng máy
 
 function _vsShow(id){ const el=document.getElementById(id); if(el) el.classList.add('show'); }
 
