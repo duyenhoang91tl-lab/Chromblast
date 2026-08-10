@@ -2268,7 +2268,7 @@ function _caroRenderLobby(d){
   if(wagerEl){
     if(Number(d.wagerAmount) > 0 && d.wagerCurrency === 'gold'){
       const label = typeof t==='function' ? t('onlineLobbyWager') : 'Cược:';
-      wagerEl.textContent = label + ' 🪙 ' + d.wagerAmount + ' (' + (typeof t==='function'?t('onlineLobbyWagerPot','thắng +95%'):'thắng +95%') + ')';
+      wagerEl.textContent = label + ' 🪙 ' + d.wagerAmount + ' (' + (typeof t==='function'?t('onlineLobbyWagerPot','thắng ăn x2'):'thắng ăn x2') + ')';
       wagerEl.style.display = '';
     } else {
       wagerEl.style.display = 'none';
@@ -2287,21 +2287,22 @@ function _caroRenderLobby(d){
 }
 
 // ═══════════════════════════════════════════════════════════════
-// Đặt cược VÀNG khi tạo phòng caro (2 người chơi cược vàng, ai thắng nhận lại
-// cược của mình + 95% cược đối thủ — xem functions/index.js: escrowWager/
-// applyMatchResult). CHỈ VÀNG, không hỗ trợ kim cương ở caro có chủ đích: kim
-// cương mua bằng tiền thật (IAP) không được đưa vào cược 1-1 ăn-thua giữa 2
-// tài khoản, để tránh mở đường tiền thật → cược — xem quyết định trong
-// docs/ONLINE_MULTIPLAYER.md và trao đổi khi thêm tính năng này.
+// Đặt cược VÀNG khi tạo phòng caro (2 người chơi cược vàng, ai thắng ăn TRỌN cược
+// của cả 2 bên (x2) — không thu phí sàn, tránh rủi ro bị coi là "gá bạc thu tiền
+// hồ" theo Điều 322 BLHS — xem functions/index.js: escrowWager/applyMatchResult).
+// CHỈ VÀNG, không hỗ trợ kim cương ở caro có chủ đích: kim cương mua bằng tiền
+// thật (IAP) không được đưa vào cược 1-1 ăn-thua giữa 2 tài khoản, để tránh mở
+// đường tiền thật → cược — xem quyết định trong docs/ONLINE_MULTIPLAYER.md và
+// trao đổi khi thêm tính năng này.
 // ═══════════════════════════════════════════════════════════════
 let _caroWagerOn = false;
 let _caroWagerAmount = 0;
 const CARO_WAGER_PRESETS = [5, 10, 15, 20, 30];
 
 /** Khớp đúng công thức thật ở Cloud Function settleWager (functions/index.js):
- *  thắng = hoàn cược của mình + 95% cược đối thủ (giữ 5% phí sàn). */
+ *  thắng ăn TRỌN cược 2 bên (x2), không thu phí sàn. */
 function _caroWagerPayout(bet){
-  return Math.round(bet * 1.95);
+  return bet * 2;
 }
 
 function _caroRenderWagerAmounts(){

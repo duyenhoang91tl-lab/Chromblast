@@ -917,11 +917,13 @@ exports.applyMatchResult = onDocumentUpdated(
     const hostId = after.hostId, guestId = after.guestId;
     if (!hostId || !guestId) return null;
 
-    // Cược vàng/kim cương (nếu phòng có đặt cược, xem escrowWager). Thắng thật: được
-    // hoàn cược của mình + 95% cược của đối thủ (net +95% so với mức đã cược, 5%
-    // giữ lại làm phí sàn). Thua thật: chỉ được hoàn 5% cược (net -95%). Hoà hoặc
-    // không xác định được thắng thua thật thì hoàn lại đúng 100% phần mỗi bên đã
-    // đặt (net 0%) — không ai mất tiền oan. Chỉ chạy 1 lần (wagerSettled).
+    // Cược vàng/kim cương (nếu phòng có đặt cược, xem escrowWager). Thắng thật ăn TRỌN
+    // cược của cả 2 bên (x2 — không giữ lại phần nào, không thu phí sàn). Thua thật mất
+    // trọn phần đã cược. Hoà hoặc không xác định được thắng thua thật thì hoàn lại đúng
+    // 100% phần mỗi bên đã đặt (net 0%) — không ai mất tiền oan. Chỉ chạy 1 lần
+    // (wagerSettled). CHỦ Ý không thu phí sàn: hệ thống chỉ chuyển tiền cược GIỮA 2
+    // NGƯỜI CHƠI với nhau, không có phần nào chảy vào/qua tài khoản vận hành — tránh
+    // rủi ro bị coi là "gá bạc thu tiền hồ" (Điều 322 BLHS).
     const settleWager = async (finalWinnerId) => {
       if (after.wagerSettled) return;
       const amount = Math.floor(Number(after.wagerAmount) || 0);
@@ -931,17 +933,9 @@ exports.applyMatchResult = onDocumentUpdated(
       const hostIn = !!after.hostEscrowed;
       const guestIn = !!after.guestEscrowed;
       if (hostIn && guestIn && (finalWinnerId === hostId || finalWinnerId === guestId)) {
-        const loserId = finalWinnerId === hostId ? guestId : hostId;
-        const winPayout = Math.round(amount * 1.95);
-        const loseRefund = Math.round(amount * 0.05);
         await db.collection('players').doc(finalWinnerId).set(
-          { [field]: FieldValue.increment(winPayout) }, { merge: true }
+          { [field]: FieldValue.increment(amount * 2) }, { merge: true }
         );
-        if (loseRefund > 0) {
-          await db.collection('players').doc(loserId).set(
-            { [field]: FieldValue.increment(loseRefund) }, { merge: true }
-          );
-        }
       } else {
         // Hoà, hoặc không xác định được thắng thua thật, hoặc chỉ 1 bên đặt cược
         // thành công (bên kia lỗi/mất mạng giữa chừng) → hoàn đúng phần đã trừ.
