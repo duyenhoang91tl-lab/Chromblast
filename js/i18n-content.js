@@ -2118,3 +2118,56 @@ function MILESTONE_MSG(tier){
   };
   Object.keys(fill).forEach(l=>{ if(typeof I18N!=='undefined' && I18N[l]) Object.assign(I18N[l], fill[l]); });
 })();
+
+// ── Bổ sung 4 ngôn ngữ còn thiếu (ko/ja/zh/es) cho đúng bộ key ở trên —
+// vi/en đã có, 4 ngôn ngữ này trước đó tự fallback về tiếng Anh (chấp nhận
+// được nhưng chưa dịch đúng ngôn ngữ người chơi chọn). ──
+(function(){
+  const fill = {
+    ko:{
+      caroMenuTitle:'❌⭕ 오목', caroMenuRank:'랭킹', caroMenuFriends:'친구',
+      caroMenuDaily:'출석체크', caroMenuAds:'광고 보기', caroMenuSkin:'보드 스킨',
+      caroMenuQuick:'⚡ 빠른 대전', caroMenuWithFriend:'🤝 친구와 대전',
+      caroMenuTable:'🚪 방 선택', caroMenuRankBtn:'🏆 랭킹', caroMenuTour:'🏅 토너먼트',
+      caroDailyTitle:'🎁 오목 출석체크',
+      caroDailySub:'오목 플레이 중 매일 출석하면 XP + 골드 지급. 하루라도 놓치면 연속 기록이 초기화됩니다.',
+      caroTourTitle:'🏅 토너먼트',
+      caroTourSub:'토너먼트 모드 준비 중입니다 — 나중에 다시 확인해주세요!',
+      caroRankNeedsOnline:'랭크 대전을 하려면 온라인을 켜주세요'
+    },
+    ja:{
+      caroMenuTitle:'❌⭕ 五目並べ', caroMenuRank:'ランキング', caroMenuFriends:'フレンド',
+      caroMenuDaily:'デイリー', caroMenuAds:'広告視聴', caroMenuSkin:'ボードスキン',
+      caroMenuQuick:'⚡ クイックプレイ', caroMenuWithFriend:'🤝 フレンドと対戦',
+      caroMenuTable:'🚪 ルーム選択', caroMenuRankBtn:'🏆 ランキング', caroMenuTour:'🏅 トーナメント',
+      caroDailyTitle:'🎁 五目並べ デイリー',
+      caroDailySub:'五目並べプレイ中に毎日チェックインでXP＋ゴールド。1日でも逃すと連続記録がリセットされます。',
+      caroTourTitle:'🏅 トーナメント',
+      caroTourSub:'トーナメントモードは準備中です — また後で確認してください！',
+      caroRankNeedsOnline:'ランク戦を行うにはオンラインをオンにしてください'
+    },
+    zh:{
+      caroMenuTitle:'❌⭕ 五子棋', caroMenuRank:'排行榜', caroMenuFriends:'好友',
+      caroMenuDaily:'签到', caroMenuAds:'观看广告', caroMenuSkin:'选择棋盘',
+      caroMenuQuick:'⚡ 快速对战', caroMenuWithFriend:'🤝 与好友对战',
+      caroMenuTable:'🚪 选择房间', caroMenuRankBtn:'🏆 排行榜', caroMenuTour:'🏅 锦标赛',
+      caroDailyTitle:'🎁 五子棋签到',
+      caroDailySub:'玩五子棋期间每日签到可获得经验值+金币。错过一天连续记录将重置。',
+      caroTourTitle:'🏅 锦标赛',
+      caroTourSub:'锦标赛模式正在准备中 — 请稍后再来看看！',
+      caroRankNeedsOnline:'需要开启在线才能进行排位赛'
+    },
+    es:{
+      caroMenuTitle:'❌⭕ Caro', caroMenuRank:'Clasificación', caroMenuFriends:'Amigos',
+      caroMenuDaily:'Check-in', caroMenuAds:'Ver anuncio', caroMenuSkin:'Tablero',
+      caroMenuQuick:'⚡ Partida rápida', caroMenuWithFriend:'🤝 Jugar con amigo',
+      caroMenuTable:'🚪 Elegir sala', caroMenuRankBtn:'🏆 Clasificación', caroMenuTour:'🏅 Torneo',
+      caroDailyTitle:'🎁 Check-in de Caro',
+      caroDailySub:'Haz check-in diario jugando Caro para ganar XP + oro. Si te saltas un día, se reinicia tu racha.',
+      caroTourTitle:'🏅 Torneo',
+      caroTourSub:'El modo torneo se está preparando — ¡vuelve más tarde!',
+      caroRankNeedsOnline:'Activa Online para jugar partidas clasificatorias'
+    }
+  };
+  Object.keys(fill).forEach(l=>{ if(typeof I18N!=='undefined' && I18N[l]) Object.assign(I18N[l], fill[l]); });
+})();
