@@ -1,3 +1,6 @@
+# ========================================
+# 1. PHẦN BẠN ĐÃ CẤU HÌNH (Đã chuẩn hóa)
+# ========================================
 node_modules/
 android/.gradle/
 android/build/
@@ -6,13 +9,52 @@ android/capacitor-cordova-android-plugins/
 *.keystore
 *.jks
 key.properties
-# Cấu hình cục bộ của công cụ
+
+# Cấu hình cục bộ của công cụ AI
 .claude/
 
 # Bản clone repo lồng trong workspace (không thuộc source game)
-# Lưu ý: có dấu / ở đầu để chỉ khớp thư mục gốc, tránh trùng với
-# đường dẫn package Android android/app/src/main/java/.../chromblast/
 /Chromblast/
 /chromblast/
 /pulse/
 /www/
+
+# ========================================
+# 2. PHẦN BỔ SUNG ĐỂ HOÀN THIỆN DỰ ÁN
+# ========================================
+
+# Các file môi trường (Bảo mật: KHÔNG BAO GIỜ đẩy lên GitHub)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Các file rác của Firebase và Functions
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
+functions/node_modules/
+functions/lib/
+
+# Log lỗi của các trình quản lý gói (NPM / Yarn)
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Các file rác tự sinh của Hệ điều hành (Mac / Windows)
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Cấu hình cá nhân của Trình soạn thảo (VS Code, WebStorm, Cursor...)
+.vscode/
+.idea/
+*.suo
+*.sln
+*.sw?
