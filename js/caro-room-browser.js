@@ -1,11 +1,12 @@
 /* ══════════════════════════════════════════
    PHÒNG (caro-room-browser) — màn toàn màn hình xem/vào danh sách phòng
-   Caro online. KHÔNG viết lại logic phòng — chỉ dựng thêm 1 lớp giao diện
-   toàn màn hình, dùng lại đúng dữ liệu/hàm đã có ở js/caro.js:
-   _caroLastOpenRooms, _caroRenderRoomListTo(), caroCreateRoom(),
-   caroFindOpponent(), listenOpenCaroRooms(). Số tiền cược mỗi phòng (nếu có
-   đặt cược) tự hiện theo — _caroRenderRoomListTo đã tự vẽ badge 🪙 wagerAmount
-   sẵn, không cần thêm gì ở đây; chỉ chỉnh lại màu badge cho hợp nền sáng.
+   Caro online. KHÔNG viết lại logic vào phòng/làm chủ phòng — tái dùng đúng
+   caroJoinRoomById()/_caroOpenLobby() đã có ở js/caro.js. Chỉ phần GIAO DIỆN
+   hiển thị đổi thành lưới ô vuông (_crbRenderRoomGrid/_crbRoomTileHtml) thay
+   vì danh sách hàng ngang — KHÔNG đổi hàm dùng chung _caroRenderRoomListTo
+   (đang được Caro Hub/Lobby cũ tái sử dụng, đổi ở đó sẽ ảnh hưởng cả 2 màn đó).
+   Số tiền cược mỗi phòng (nếu có đặt cược) vẽ theo đúng field wagerAmount có
+   sẵn trên mỗi phòng, không tính lại.
    Bộ lọc 3 tab dựa đúng theo field guestId/status thật của phòng:
    - Tất cả: mọi phòng đang mở lấy được từ listenOpenCaroRooms
    - Còn trống: guestId trống (chưa ai vào)
@@ -22,11 +23,53 @@ function _crbFilterRooms(rooms){
   return list;
 }
 
+function _crbRoomTileHtml(r, uid){
+  const mine = uid && r.hostId === uid;
+  const name = escapeHtml(r.hostName || 'Host');
+  const full = !!r.guestId;
+  const turn = r.turnSec === 10 ? '10s' : '15s';
+  const wagerBadge = (Number(r.wagerAmount) > 0 && r.wagerCurrency === 'gold')
+    ? '<span class="crb-tile-badge">🪙 '+r.wagerAmount+'</span>' : '';
+  const stateBadge = mine
+    ? '<span class="crb-tile-mine-badge">'+escapeHtml(t('caroRoomMine'))+'</span>'
+    : (full ? '<span class="crb-tile-lock">🔒</span>' : '');
+  return '<button type="button" class="crb-tile'+(mine?' mine':'')+'" data-room="'+r.roomId+'">'
+    + wagerBadge + stateBadge
+    + '<div class="crb-tile-icon">⭕❌</div>'
+    + '<div class="crb-tile-name">'+name+'</div>'
+    + '<div class="crb-tile-sub">'+turn+(r.code ? ' · '+escapeHtml(r.code) : '')+'</div>'
+    + '</button>';
+}
+
+function _crbRenderRoomGrid(listId, emptyId, rooms){
+  const list = document.getElementById(listId);
+  const empty = emptyId ? document.getElementById(emptyId) : null;
+  if(!list) return;
+  if(empty) empty.style.display = rooms.length ? 'none' : 'block';
+  if(!rooms.length){ list.innerHTML = ''; return; }
+  const uid = typeof getOnlineUid === 'function' ? getOnlineUid() : null;
+  list.innerHTML = rooms.map(r => _crbRoomTileHtml(r, uid)).join('');
+  // Vào phòng/về đúng phòng của mình — tái dùng đúng logic đã có (không viết
+  // lại), giống hệt nhánh xử lý bên trong _caroRenderRoomListTo (js/caro.js).
+  list.querySelectorAll('.crb-tile').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const rid = btn.dataset.room;
+      if(!rid) return;
+      const room = rooms.find(r => r.roomId === rid);
+      if(!room) return;
+      if(uid && room.hostId === uid){
+        if(_caroLobby && _caroLobby.roomId === rid) return;
+        _caroOpenLobby(rid, room.code, 'host', room);
+        return;
+      }
+      caroJoinRoomById(rid);
+    });
+  });
+}
+
 function renderCrbRoomList(){
   const rooms = _crbFilterRooms(typeof _caroLastOpenRooms !== 'undefined' ? _caroLastOpenRooms : []);
-  if(typeof _caroRenderRoomListTo === 'function'){
-    _caroRenderRoomListTo('crb-room-list', 'crb-room-list-empty', rooms);
-  }
+  _crbRenderRoomGrid('crb-room-list', 'crb-room-list-empty', rooms);
 }
 
 // Bấm vào 1 phòng bất kỳ trong danh sách sẽ dẫn sang phòng chờ/trận đấu (panel
@@ -35,7 +78,7 @@ function renderCrbRoomList(){
 // không cần đụng/viết lại logic vào phòng gốc ở js/caro.js.
 (function _crbCloseOnRoomRowTap(){
   document.getElementById('crb-room-list')?.addEventListener('click', e=>{
-    if(e.target.closest('.caro-room-row')) closeCaroRoomBrowser();
+    if(e.target.closest('.crb-tile')) closeCaroRoomBrowser();
   }, true);
 })();
 

@@ -7328,19 +7328,36 @@ body:has(#secret-stage.active) .streak-dot.lit{
 }
 .crb-action-btn:active{ transform:scale(0.97); }
 .crb-list{
-  flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:8px;
-  padding-right:2px; margin-bottom:8px;
+  flex:1; min-height:0; overflow-y:auto;
+  display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;
+  padding-right:2px; padding-bottom:8px; align-content:start;
 }
-.crb-list .caro-room-row{
-  background:#fff; border:1px solid rgba(200,90,130,0.16); color:#5a3345;
-  box-shadow:0 3px 10px rgba(200,90,130,0.1);
+.crb-tile{
+  position:relative; display:flex; flex-direction:column; align-items:center;
+  justify-content:center; gap:2px; aspect-ratio:1/1;
+  background:#fff; border:1px solid rgba(200,90,130,0.16); border-radius:16px;
+  box-shadow:0 3px 10px rgba(200,90,130,0.1); padding:8px 4px 6px;
+  font-family:inherit; cursor:pointer;
 }
-.crb-list .caro-room-row.mine{ border-color:rgba(255,180,74,0.55); background:rgba(255,213,74,0.14); }
-.crb-list .caro-room-info small{ color:rgba(90,51,69,0.55); }
-.crb-list .caro-room-no{ color:#e0759d; }
-.crb-list .caro-room-action{ color:#3d9a52; background:rgba(61,154,82,0.12); }
-.crb-list .caro-room-row.mine .caro-room-action{ color:#c4841a; background:rgba(255,180,74,0.18); }
-.crb-list .online-room-wager-badge{ color:#c4841a; background:rgba(255,180,74,0.18); }
+.crb-tile:active{ transform:scale(0.96); }
+.crb-tile.mine{ border-color:rgba(255,180,74,0.55); background:rgba(255,213,74,0.14); }
+.crb-tile-icon{ font-size:22px; line-height:1; margin-bottom:2px; }
+.crb-tile-name{
+  font-size:12px; font-weight:800; color:#5a3345; max-width:100%;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.crb-tile-sub{ font-size:10px; font-weight:700; color:rgba(90,51,69,0.55); }
+.crb-tile-badge{
+  position:absolute; top:6px; left:6px; font-size:10px; font-weight:800;
+  color:#c4841a; background:rgba(255,180,74,0.18); border-radius:999px;
+  padding:2px 6px;
+}
+.crb-tile-lock{ position:absolute; top:6px; right:6px; font-size:12px; }
+.crb-tile-mine-badge{
+  position:absolute; top:6px; right:6px; font-size:9px; font-weight:800;
+  color:#c4841a; background:rgba(255,180,74,0.2); border-radius:999px;
+  padding:2px 6px;
+}
 .crb-empty{
   text-align:center; font-size:12.5px; font-weight:700; color:rgba(90,51,69,0.55);
   padding:20px 8px; flex-shrink:0;
@@ -7374,4 +7391,5 @@ body:has(#secret-stage.active) .streak-dot.lit{
   .crb-shell{ max-width:720px; }
   .crb-topbar{ padding-top:calc(env(safe-area-inset-top,0px) + 8px); padding-bottom:8px; }
   .crb-bicon-circle{ width:36px; height:36px; font-size:16px; }
+  .crb-list{ grid-template-columns:repeat(5, 1fr); }
 }
