@@ -51,18 +51,22 @@ jobs:
             2>&1 | tee /tmp/deploy.log
           code=${PIPESTATUS[0]}
           if [ $code -ne 0 ]; then
-            echo "::group::Toan bo log deploy (de doc thu cong neu can)"
+            echo "::group::Toan bo log deploy"
             cat /tmp/deploy.log
             echo "::endgroup::"
-            MSG=$(tail -n 150 /tmp/deploy.log | sed 's/%/%25/g' | sed ':a;N;$!ba;s/\r/%0D/g;s/\n/%0A/g')
-            echo "::error title=Firebase deploy that bai (50 dong cuoi)::$MSG"
+            ERR1=$(grep -iE 'error|failed|denied|exception' /tmp/deploy.log | grep -viE 'npm warn|deprecated' | tail -n 40)
+            MSG=$(printf '%s' "$ERR1" | sed 's/%/%25/g' | sed ':a;N;$!ba;s/\r/%0D/g;s/\n/%0A/g' | cut -c1-3800)
+            echo "::error title=Firebase deploy - dong co chu error/failed::$MSG"
             if [ -f firebase-debug.log ]; then
-              echo "::group::firebase-debug.log (chi tiet ky thuat)"
+              echo "::group::firebase-debug.log"
               cat firebase-debug.log
               echo "::endgroup::"
-              MSG2=$(tail -n 120 firebase-debug.log | sed 's/%/%25/g' | sed ':a;N;$!ba;s/\r/%0D/g;s/\n/%0A/g')
-              echo "::error title=firebase-debug.log (40 dong cuoi)::$MSG2"
+              ERR2=$(grep -iE 'error|failed|denied|exception' firebase-debug.log | tail -n 40)
+              MSG2=$(printf '%s' "$ERR2" | sed 's/%/%25/g' | sed ':a;N;$!ba;s/\r/%0D/g;s/\n/%0A/g' | cut -c1-3800)
+              echo "::error title=firebase-debug.log - dong co chu error/failed::$MSG2"
             fi
+            TAIL=$(tail -n 20 /tmp/deploy.log | sed 's/%/%25/g' | sed ':a;N;$!ba;s/\r/%0D/g;s/\n/%0A/g' | cut -c1-3800)
+            echo "::warning title=20 dong cuoi deploy.log (du phong neu khong co dong nao khop error)::$TAIL"
           fi
           exit $code
         env:
