@@ -1,15 +1,13 @@
-// "Thẻ trò chơi" (game-pass-card) — khung sườn điểm vào mới cho mục Xếp hạng.
-// Chỉ lo phần khung: header cấp/XP, tab, mở/đóng panel toàn màn hình trượt từ
-// phải sang. Nội dung bên trong tab (#gpcard-leaderboard) do phần việc riêng
-// đổ vào — file này KHÔNG render nội dung đó.
-//
-// ĐÃ CHỐT — KHÔNG ĐỔI LẠI: chỉ còn ĐÚNG 1 tab "leaderboard". "Hành trình" và
-// "Đổi quà" đã tách thành 2 màn hình riêng mở từ Menu chính (set-btn-journey/
-// set-btn-redeem — xem js/gpcard-rewards.js, js/gpcard-redeem.js). "Nhiệm vụ"
-// dùng lại #quests-screen có sẵn (xem js/quests.js, js/account-hub.js), KHÔNG
-// có mặt ở đây. KHÔNG thêm lại 'rewards'/'quests'/'redeem' vào GPCARD_TABS —
-// đây là quyết định chủ đích của người yêu cầu, không phải thiếu sót.
-const GPCARD_TABS = ['leaderboard'];
+// "Thẻ trò chơi" (game-pass-card) — điểm vào cho mục Xếp hạng.
+// Trước đây có 1 màn trung gian (header + hàng tab) rồi mới trượt sang màn
+// xếp hạng, nhưng vì chỉ còn ĐÚNG 1 tab "leaderboard" (Hành trình/Đổi quà đã
+// tách thành 2 màn hình riêng mở từ Menu chính — set-btn-journey/set-btn-redeem,
+// xem js/gpcard-rewards.js, js/gpcard-redeem.js; Nhiệm vụ dùng lại #quests-screen
+// có sẵn, xem js/quests.js, js/account-hub.js) nên màn trung gian đó thừa 1
+// bước bấm — đã bỏ. #gpcard-sub-leaderboard giờ là màn DUY NHẤT, tự chứa luôn
+// header cấp/XP ở trên cùng. File này chỉ lo phần khung: header cấp/XP, mở/
+// đóng màn toàn màn hình trượt từ phải sang. Nội dung #gpcard-leaderboard bên
+// trong do phần việc riêng đổ vào — file này KHÔNG render nội dung đó.
 
 function _gpcardRenderHeader(){
   const lvEl = document.getElementById('gpcard-lv');
@@ -24,65 +22,36 @@ function _gpcardRenderHeader(){
   textEl.textContent = xp + ' / ' + need;
 }
 
-function _gpcardCloseSub(tab){
-  const sub = document.getElementById('gpcard-sub-' + tab);
-  if(sub) sub.classList.remove('show');
-}
-
-function _gpcardOpenSub(tab){
-  if(GPCARD_TABS.indexOf(tab) < 0) return;
-  document.querySelectorAll('#gpcard-panel .gpcard-tab').forEach(b=>{
-    b.classList.toggle('active', b.dataset.gpcardTab === tab);
-  });
-  GPCARD_TABS.forEach(id=>{ if(id !== tab) _gpcardCloseSub(id); });
-  const sub = document.getElementById('gpcard-sub-' + tab);
-  if(sub) sub.classList.add('show');
-}
-
-/** Mở "Thẻ trò chơi", mặc định mở sẵn tab truyền vào (hoặc 'leaderboard' nếu
- * không truyền — giữ hành vi cũ cho người quen bấm nút Xếp hạng). */
+/** Mở thẳng màn "Bảng xếp hạng" (không còn màn trung gian). Tham số defaultTab
+ * giữ lại cho tương thích ngược (chỗ gọi cũ có thể vẫn truyền 'leaderboard'),
+ * nhưng không còn ý nghĩa gì vì chỉ có đúng 1 màn để mở. */
 function openGpcardPanel(defaultTab){
-  const panel = document.getElementById('gpcard-panel');
-  if(!panel) return;
+  const sub = document.getElementById('gpcard-sub-leaderboard');
+  if(!sub) return;
   try{ if(typeof sfxClick === 'function') sfxClick(); }catch(e){}
   _gpcardRenderHeader();
-  panel.classList.add('show');
-  _gpcardOpenSub(defaultTab || 'leaderboard');
+  sub.classList.add('show');
 }
 
 function closeGpcardPanel(){
-  const panel = document.getElementById('gpcard-panel');
-  if(!panel) return;
-  GPCARD_TABS.forEach(_gpcardCloseSub);
-  panel.classList.remove('show');
+  document.getElementById('gpcard-sub-leaderboard')?.classList.remove('show');
 }
 
 function initGpcardPanel(){
-  const panel = document.getElementById('gpcard-panel');
-  if(!panel) return;
+  const sub = document.getElementById('gpcard-sub-leaderboard');
+  if(!sub) return;
 
-  document.querySelectorAll('#gpcard-panel .gpcard-tab').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      try{ if(typeof sfxClick === 'function') sfxClick(); }catch(e){}
-      _gpcardOpenSub(btn.dataset.gpcardTab);
-    });
+  document.getElementById('gpcard-close-btn')?.addEventListener('click', ()=>{
+    try{ if(typeof sfxClick === 'function') sfxClick(); }catch(e){}
+    closeGpcardPanel();
   });
-  document.querySelectorAll('#gpcard-panel .gpcard-back-btn').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      try{ if(typeof sfxClick === 'function') sfxClick(); }catch(e){}
-      const sub = btn.closest('.gpcard-sub');
-      if(sub) sub.classList.remove('show');
-    });
-  });
-  document.getElementById('gpcard-close-btn')?.addEventListener('click', closeGpcardPanel);
   document.getElementById('gpcard-upgrade-btn')?.addEventListener('click', ()=>{
     try{ if(typeof sfxClick === 'function') sfxClick(); }catch(e){}
     try{ if(typeof openShop === 'function') openShop(); }catch(e){}
   });
 
-  // Nút Xếp hạng hiện tại của game (header chính + Settings Hub) giờ mở "Thẻ
-  // trò chơi" (mặc định tab Bảng xếp hạng) thay vì mở thẳng #leaderboard-panel
-  // như trước — giữ đúng hành vi cũ cho người dùng quen tay (yêu cầu mục 5).
+  // Nút Xếp hạng hiện tại của game (header chính + Settings Hub) mở thẳng màn
+  // "Bảng xếp hạng" này — giữ đúng hành vi cũ cho người dùng quen tay.
   document.getElementById('leaderboard-btn')?.addEventListener('click', ()=>{
     openGpcardPanel('leaderboard');
   });

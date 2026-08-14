@@ -937,28 +937,25 @@
        (Phần thưởng/Nhiệm vụ/Đi đổi/Bảng xếp hạng), mỗi tab mở 1 panel toàn màn
        hình trượt từ phải sang. Nội dung 4 tab (#gpcard-rewards/quests/redeem/
        leaderboard) do các phần việc riêng đổ vào — đây chỉ là khung sườn. -->
-  <div id="gpcard-panel" class="admin-panel-like">
-    <div class="gpcard-shell">
-      <div class="gpcard-header">
-        <div class="gpcard-header-top">
-          <span class="gpcard-header-icon">🎫</span>
-          <div class="gpcard-header-info">
-            <div class="gpcard-lv" id="gpcard-lv">Lv.1</div>
-            <div class="gpcard-xp-bar"><span id="gpcard-xp-fill" class="gpcard-xp-fill"></span></div>
-            <div class="gpcard-xp-text" id="gpcard-xp-text">0 / 100</div>
-          </div>
-          <button type="button" class="gpcard-upgrade-btn" id="gpcard-upgrade-btn" data-i18n="gpcardUpgrade">Nâng cấp</button>
+  <!-- "Thẻ trò chơi" (game-pass-card) — điểm vào cho mục Xếp hạng. Trước đây có
+       1 màn trung gian (header + hàng tab) rồi mới trượt sang màn xếp hạng —
+       nhưng vì chỉ còn ĐÚNG 1 tab "leaderboard" (Hành trình/Đổi quà đã tách
+       riêng, Nhiệm vụ dùng lại #quests-screen), màn trung gian đó thừa 1 bước
+       bấm vô ích nên đã bỏ. Header cấp/XP giờ nằm thẳng trên đầu màn xếp hạng. -->
+  <div id="gpcard-sub-leaderboard" class="gpcard-sub" style="--gpcard-bg1:#a7b8f0; --gpcard-bg2:#c9b6f0; --gpcard-accent:#ffb648; --gpcard-accent2:#ff9900;">
+    <div class="gpcard-header">
+      <div class="gpcard-header-top">
+        <span class="gpcard-header-icon">🎫</span>
+        <div class="gpcard-header-info">
+          <div class="gpcard-lv" id="gpcard-lv">Lv.1</div>
+          <div class="gpcard-xp-bar"><span id="gpcard-xp-fill" class="gpcard-xp-fill"></span></div>
+          <div class="gpcard-xp-text" id="gpcard-xp-text">0 / 100</div>
         </div>
-        <button type="button" class="gpcard-close" id="gpcard-close-btn">✕</button>
+        <button type="button" class="gpcard-upgrade-btn" id="gpcard-upgrade-btn" data-i18n="gpcardUpgrade">Nâng cấp</button>
       </div>
-      <div class="gpcard-tabs">
-        <button type="button" class="gpcard-tab active" data-gpcard-tab="leaderboard" data-i18n="gpcardTabLeaderboard">Bảng xếp hạng</button>
-      </div>
+      <button type="button" class="gpcard-close" id="gpcard-close-btn">✕</button>
     </div>
-    <div id="gpcard-sub-leaderboard" class="gpcard-sub">
-      <button type="button" class="gpcard-back-btn" data-gpcard-back>‹</button>
-      <div id="gpcard-leaderboard" class="gpcard-sub-body"></div>
-    </div>
+    <div id="gpcard-leaderboard" class="gpcard-sub-body"></div>
   </div>
 
   <!-- "Hành trình" — tách riêng khỏi Thẻ trò chơi thành màn hình độc lập vào

@@ -138,15 +138,10 @@ async function renderGpcardLeaderboard(){
   });
 }
 
-// Nạp nội dung mỗi lần bấm tab "Bảng xếp hạng" — không sửa js/gpcard.js, chỉ
-// gắn thêm 1 listener độc lập lên đúng nút tab đã có sẵn trong khung sườn.
+// Nạp nội dung mỗi lần mở "Bảng xếp hạng" — không sửa js/gpcard.js, chỉ gắn
+// thêm listener độc lập lên đúng 2 nút mở màn này đã có sẵn.
 (function bindGpcardLeaderboardTab(){
   function bind(){
-    const tabBtn = document.querySelector('.gpcard-tab[data-gpcard-tab="leaderboard"]');
-    if(tabBtn) tabBtn.addEventListener('click', renderGpcardLeaderboard);
-    // Nút Xếp hạng chính/Settings Hub mở thẳng tab này làm mặc định (xem
-    // js/gpcard.js: openGpcardPanel('leaderboard')) — lắng cả click đó để
-    // nội dung luôn mới mỗi lần mở, không chỉ khi tự bấm tab.
     document.getElementById('leaderboard-btn')?.addEventListener('click', renderGpcardLeaderboard);
     document.getElementById('set-btn-leaderboard')?.addEventListener('click', renderGpcardLeaderboard);
   }
