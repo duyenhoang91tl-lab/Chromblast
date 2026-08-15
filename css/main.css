@@ -6408,24 +6408,24 @@ body:has(#secret-stage.active) .streak-dot.lit{
 }
 .quests-back{ left:max(12px, env(safe-area-inset-left, 0px)); font-size:28px; padding-bottom:2px; }
 .quests-x{ right:max(12px, env(safe-area-inset-right, 0px)); }
+.quests-tabs{
+  display:flex; flex-shrink:0; gap:8px; padding:0 14px 10px;
+  max-width:560px; width:100%; margin:0 auto; box-sizing:border-box;
+}
+.quests-tab{
+  flex:1; border:1px solid rgba(255,255,255,0.16); border-radius:12px;
+  padding:9px 4px; background:rgba(255,255,255,0.08); color:rgba(255,255,255,0.7);
+  font-weight:800; font-size:13px; cursor:pointer;
+}
+.quests-tab.active{
+  background:linear-gradient(135deg,rgba(232,137,168,0.5),rgba(180,70,110,0.45));
+  border-color:rgba(255,213,74,0.5); color:#fff;
+}
 .quests-body{
   flex:1; min-height:0; overflow:auto; padding:8px 14px 24px;
 }
-.quests-hub{ display:flex; flex-direction:column; gap:12px; }
-.quests-cat-card{
-  display:flex; flex-direction:column; align-items:flex-start; gap:4px;
-  width:100%; text-align:left; border:1px solid rgba(255,255,255,0.16);
-  border-radius:16px; padding:16px 16px 14px; cursor:pointer; color:#fff;
-  background:linear-gradient(135deg,rgba(90,60,160,0.45),rgba(40,80,140,0.4));
-}
-.quests-cat-card:nth-child(1){ background:linear-gradient(135deg,rgba(232,137,168,0.45),rgba(180,70,110,0.4)); }
-.quests-cat-card:nth-child(2){ background:linear-gradient(135deg,rgba(232,160,90,0.45),rgba(180,110,40,0.4)); }
-.quests-cat-card:nth-child(3){ background:linear-gradient(135deg,rgba(100,170,220,0.45),rgba(50,110,170,0.4)); }
-.quests-cat-ico{ font-size:26px; line-height:1; }
-.quests-cat-name{ font-size:17px; font-weight:900; }
-.quests-cat-sub{ font-size:12px; font-weight:700; opacity:0.8; }
 .quests-detail{ display:flex; flex-direction:column; gap:14px; }
-.quests-detail[hidden],.quests-hub[hidden],.quests-checkin-wrap[hidden]{ display:none !important; }
+.quests-checkin-wrap[hidden]{ display:none !important; }
 .quests-list{ display:flex; flex-direction:column; gap:8px; }
 .quests-row{
   display:flex; align-items:center; gap:10px; padding:10px;
