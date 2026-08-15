@@ -6,7 +6,7 @@
   "use strict";
 
   const KEY_PREFIX = "chromablast_quests_";
-  let _view = "hub"; // hub | day | week | month
+  let _view = null; // null (not opened yet) | day | week | month
 
   function tt(key, fallback) {
     try {
@@ -321,7 +321,7 @@
     else if (type === "checkin") st.checkins[todayStr()] = 1;
 
     saveState(st);
-    if (_view !== "hub") renderDetail(_view);
+    if (_view) renderDetail(_view);
     updateQuestsBadge();
   }
 
@@ -402,13 +402,12 @@
 
   function renderDetail(cat) {
     _view = cat;
-    const hub = document.getElementById("quests-hub");
-    const detail = document.getElementById("quests-detail");
     const list = document.getElementById("quests-list");
     const checkWrap = document.getElementById("quests-checkin-wrap");
     const head = document.getElementById("quests-head-title");
-    if (hub) hub.hidden = true;
-    if (detail) detail.hidden = false;
+    document.querySelectorAll("[data-quest-cat]").forEach(function (btn) {
+      btn.classList.toggle("active", btn.getAttribute("data-quest-cat") === cat);
+    });
     if (head) {
       head.textContent =
         cat === "day"
@@ -506,13 +505,7 @@
   }
 
   function showHub() {
-    _view = "hub";
-    const hub = document.getElementById("quests-hub");
-    const detail = document.getElementById("quests-detail");
-    const head = document.getElementById("quests-head-title");
-    if (hub) hub.hidden = false;
-    if (detail) detail.hidden = true;
-    if (head) head.textContent = tt("questsTitle", "📋 Nhiệm vụ");
+    renderDetail("day");
   }
 
   function openQuestsScreen(cat) {
@@ -543,8 +536,7 @@
     if (!screen) return;
     screen.classList.add("show");
     screen.setAttribute("aria-hidden", "false");
-    if (cat && QUEST_DEFS[cat]) renderDetail(cat);
-    else showHub();
+    renderDetail(cat && QUEST_DEFS[cat] ? cat : "day");
     updateQuestsBadge();
   }
 
@@ -553,16 +545,11 @@
     if (!screen) return;
     screen.classList.remove("show");
     screen.setAttribute("aria-hidden", "true");
-    showHub();
   }
 
   function questsHandleBack() {
     const screen = document.getElementById("quests-screen");
     if (!screen || !screen.classList.contains("show")) return false;
-    if (_view !== "hub") {
-      showHub();
-      return true;
-    }
     closeQuestsScreen();
     return true;
   }
@@ -658,7 +645,7 @@
             showComboFlash(0, false, msg);
           }
         } catch (e) {}
-        renderDetail(_view === "hub" ? "day" : _view);
+        renderDetail(_view || "day");
         updateQuestsBadge();
       }
     });
