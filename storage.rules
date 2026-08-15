@@ -1,0 +1,32 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    /* Ảnh avatar VỪA TẢI LÊN, CHƯA DUYỆT — chỉ chủ tài khoản được ghi (đúng uid
+       của chính họ), và chỉ họ (+ Cloud Function qua Admin SDK, luôn bỏ qua rules)
+       được đọc lại. Cloud Function (moderateAvatarUpload trong functions/index.js)
+       sẽ tự xử lý: duyệt thì copy sang avatars_public/ rồi xoá file này; không
+       duyệt thì xoá thẳng, không ai khác từng thấy được ảnh chưa duyệt.
+       Giới hạn 3MB, chỉ nhận file ảnh. */
+    match /avatars_pending/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid
+        && request.resource.size < 3 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+      allow delete: if request.auth != null && request.auth.uid == uid;
+    }
+
+    /* Ảnh avatar ĐÃ DUYỆT AN TOÀN — ai đăng nhập cũng đọc được (để hiển thị khi
+       chơi online), nhưng KHÔNG client nào được tự ghi trực tiếp vào đây — chỉ
+       Cloud Function (Admin SDK, bỏ qua rules) mới được phép, sau khi đã chạy
+       Cloud Vision SafeSearch kiểm duyệt nội dung. */
+    match /avatars_public/{uid} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
+    /* Mặc định: chặn tất cả những gì không khớp 2 rule trên. */
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
