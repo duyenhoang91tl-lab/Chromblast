@@ -1983,11 +1983,12 @@ function _caroSetOnlineLocked(locked){
   if(note) note.style.display = locked ? '' : 'none';
 }
 
-function openCaroHub(){
-  try{ sfxClick(); }catch(e){}
-  try{ if(typeof unlockOrientation==='function') unlockOrientation(); }catch(e){}
-  _caroShow('caro-hub-panel');
-  _caroSyncPrefUI(getCaroPrefs());
+/** Phần "tác dụng phụ" của openCaroHub() — mở khoá xoay màn, kiểm tra khoá
+ *  cấp, làm mới thống kê, bật lắng nghe danh sách phòng — KHÔNG hiện
+ *  #caro-hub-panel (màn Hub cũ đã bỏ dùng, xem js/caro-menu.js +
+ *  js/caro-room-browser.js). Dùng ở mọi nơi cần đúng phần thiết lập này mà
+ *  không muốn hiện lại màn Hub. */
+function _caroHubSetup(){
   const locked = !canPlayCaro();
   _caroSetOnlineLocked(locked);
   if(locked) return;
@@ -2008,6 +2009,20 @@ function openCaroHub(){
       _caroStartRoomListListen();
     });
   }
+}
+
+/** ⚠️ Màn Hub cũ (#caro-hub-panel) không còn là lối vào Caro online nữa —
+ *  js/caro-menu.js (Menu Caro) + js/caro-room-browser.js (màn Phòng) đã thay
+ *  thế hoàn toàn. Hàm này CHỈ còn được gọi ở những nơi thật sự cần hiện lại
+ *  màn Hub (hiện không còn nơi nào chủ động gọi — mọi chỗ trước đây "mượn
+ *  tác dụng phụ" đã chuyển sang gọi thẳng _caroHubSetup()). Giữ lại hàm này
+ *  (không xoá hẳn) phòng khi cần debug/rollback nhanh. */
+function openCaroHub(){
+  try{ sfxClick(); }catch(e){}
+  try{ if(typeof unlockOrientation==='function') unlockOrientation(); }catch(e){}
+  _caroShow('caro-hub-panel');
+  _caroSyncPrefUI(getCaroPrefs());
+  _caroHubSetup();
 }
 
 function _caroMergeMyRoom(rooms, mine){

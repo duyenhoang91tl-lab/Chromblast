@@ -40,7 +40,7 @@ function initCaroMenu(){
         try{ showComboFlash(0, false, (typeof t==='function'?t('caroRankNeedsOnline'):null) || 'Cần bật Online để đấu xếp hạng'); }catch(e){}
         return;
       }
-      if(typeof openCaroHub === 'function') openCaroHub();
+      if(typeof _caroHubSetup === 'function') _caroHubSetup();
       setTimeout(()=>{ document.getElementById('caro-find-btn')?.click(); }, 150);
     });
   });
@@ -74,7 +74,7 @@ function initCaroMenu(){
 
   document.getElementById('caro-menu-quick-btn')?.addEventListener('click', ()=>{
     _caroMenuAfterLoad(()=>{
-      if(typeof openCaroHub === 'function') openCaroHub();
+      if(typeof _caroHubSetup === 'function') _caroHubSetup();
       setTimeout(()=>{
         const locked = (typeof canPlayCaro === 'function') && !canPlayCaro();
         const onlineOn = typeof isOnlineServicesEnabled === 'function' && isOnlineServicesEnabled();
@@ -89,7 +89,7 @@ function initCaroMenu(){
 
   document.getElementById('caro-menu-withfriend-btn')?.addEventListener('click', ()=>{
     _caroMenuAfterLoad(()=>{
-      if(typeof openCaroHub === 'function') openCaroHub();
+      if(typeof _caroHubSetup === 'function') _caroHubSetup();
       setTimeout(()=> document.getElementById('caro-create-btn')?.click(), 150);
     });
   });

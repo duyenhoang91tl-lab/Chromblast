@@ -121,13 +121,10 @@ function openCaroRoomBrowser(){
   _crbInstallRoomListHook();
   // Bộ lắng nghe danh sách phòng (_caroStartRoomListListen) trước đây chỉ được
   // bật bên trong openCaroHub() — giờ "Chọn phòng" ở Caro Menu vào thẳng màn
-  // này, bỏ qua Caro Hub cũ, nên phải tự gọi openCaroHub() để chạy đúng phần
-  // thiết lập/bật lắng nghe đó, rồi ẩn ngay Caro Hub đi (không cho hiện ra) —
-  // không viết lại logic thiết lập, chỉ mượn tác dụng phụ của hàm gốc.
-  if(typeof openCaroHub === 'function'){
-    openCaroHub();
-    document.getElementById('caro-hub-panel')?.classList.remove('show');
-  }
+  // này, bỏ qua Caro Hub cũ hẳn (không còn hiện rồi ẩn ngay nữa), gọi thẳng
+  // _caroHubSetup() (phần thiết lập tách riêng khỏi openCaroHub(), xem
+  // js/caro.js) để chạy đúng phần thiết lập/bật lắng nghe đó.
+  if(typeof _caroHubSetup === 'function') _caroHubSetup();
   renderCrbTopbar();
   renderCrbRoomList();
   document.getElementById('caro-room-browser')?.classList.add('show');
