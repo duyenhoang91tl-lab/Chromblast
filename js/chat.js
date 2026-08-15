@@ -385,17 +385,16 @@
     row.appendChild(head);
 
     const body = document.createElement('span');
-    body.className = 'gchat-text' + (typeof textFxClass === 'function' ? textFxClass(msg.textEffect) : '');
+    const fxNeedsLetters = typeof textFxNeedsLetters === 'function' && textFxNeedsLetters(msg.textEffect);
+    body.className = 'gchat-text' + (typeof textFxClass === 'function' ? textFxClass(msg.textEffect) : '')
+      + (fxNeedsLetters ? ' text-fx-'+msg.textEffect : '');
     body.dataset.orig = msg.text || '';
-    body.textContent = msg.text || '';
-    row.appendChild(body);
-    if(msg.textEffect === 'flowers' && typeof textFxDecoHtml === 'function'){
-      const deco = document.createElement('span');
-      deco.className = 'text-fx-flowers-wrap';
-      deco.setAttribute('aria-hidden', 'true');
-      deco.innerHTML = textFxDecoHtml('flowers');
-      row.appendChild(deco);
+    if(fxNeedsLetters && typeof textFxLetterHtml === 'function'){
+      body.innerHTML = textFxLetterHtml(msg.text || '', msg.textEffect);
+    } else {
+      body.textContent = msg.text || '';
     }
+    row.appendChild(body);
 
     const isInvite = msg.kind === 'room_invite' && msg.roomId;
     if(isInvite){

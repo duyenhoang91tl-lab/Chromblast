@@ -337,16 +337,15 @@ function _acbagFxPreviewEl(fx, kind){
     wrap.innerHTML = (typeof formatPlayerNameStyledHtml === 'function') ? formatPlayerNameStyledHtml(nick, style) : nick;
   }else{
     const span = document.createElement('span');
-    span.className = 'gchat-text' + (typeof textFxClass === 'function' ? textFxClass(fx.id) : '');
-    span.textContent = 'Chào mừng bạn!';
-    wrap.appendChild(span);
-    if(fx.id === 'flowers' && typeof textFxDecoHtml === 'function'){
-      const deco = document.createElement('span');
-      deco.className = 'text-fx-flowers-wrap';
-      deco.setAttribute('aria-hidden', 'true');
-      deco.innerHTML = textFxDecoHtml('flowers');
-      wrap.appendChild(deco);
+    const needsLetters = typeof textFxNeedsLetters === 'function' && textFxNeedsLetters(fx.id);
+    span.className = 'gchat-text' + (typeof textFxClass === 'function' ? textFxClass(fx.id) : '')
+      + (needsLetters ? ' text-fx-'+fx.id : '');
+    if(needsLetters && typeof textFxLetterHtml === 'function'){
+      span.innerHTML = textFxLetterHtml('Chào mừng bạn!', fx.id);
+    } else {
+      span.textContent = 'Chào mừng bạn!';
     }
+    wrap.appendChild(span);
   }
   return wrap;
 }

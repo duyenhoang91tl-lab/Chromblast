@@ -991,16 +991,15 @@
     wrap.className = "shop-item-preview shop-nameeffect-preview";
     const sample = tt("shopTextEffectPreviewText", "Chào mừng bạn!");
     const span = document.createElement("span");
-    span.className = "gchat-text" + (typeof textFxClass === "function" ? textFxClass(id) : "");
-    span.textContent = sample;
-    wrap.appendChild(span);
-    if (id === "flowers" && typeof textFxDecoHtml === "function") {
-      const deco = document.createElement("span");
-      deco.className = "text-fx-flowers-wrap";
-      deco.setAttribute("aria-hidden", "true");
-      deco.innerHTML = textFxDecoHtml("flowers");
-      wrap.appendChild(deco);
+    const needsLetters = typeof textFxNeedsLetters === "function" && textFxNeedsLetters(id);
+    span.className = "gchat-text" + (typeof textFxClass === "function" ? textFxClass(id) : "")
+      + (needsLetters ? " text-fx-" + id : "");
+    if (needsLetters && typeof textFxLetterHtml === "function") {
+      span.innerHTML = textFxLetterHtml(sample, id);
+    } else {
+      span.textContent = sample;
     }
+    wrap.appendChild(span);
     return wrap;
   }
 

@@ -6625,21 +6625,61 @@ body:has(#secret-stage.active) .streak-dot.lit{
   background-image:linear-gradient(100deg,#9aa3ad 0%,#9aa3ad 35%,#ffffff 50%,#d8dee5 55%,#9aa3ad 65%,#9aa3ad 100%);
   text-shadow:0 0 6px rgba(255,255,255,0.5);
 }
-.text-fx-flowers-wrap{ position:relative; display:inline-block; width:0; height:0; }
-.text-fx-flower{
-  position:absolute; left:2px; bottom:2px; font-size:12px; opacity:0;
-  animation:textFxFlowerFloat 2.6s ease-in infinite;
+/* Tia pháo sáng: 1 dải sáng trắng quét chéo qua chữ kèm chớp loé nhẹ định kỳ —
+   hiệu ứng đơn giản (như glow/goldsweep/platinum), không cần bọc từng ký tự. */
+.text-fx-flare{
+  position:relative; display:inline-block;
+  animation:textFxFlareFlash 2.4s ease-in-out infinite;
 }
-.text-fx-flower.f2{ left:12px; animation-delay:0.6s; }
-.text-fx-flower.f3{ left:-8px; animation-delay:1.3s; }
-@keyframes textFxFlowerFloat{
+.text-fx-flare::after{
+  content:''; position:absolute; inset:-2px -6px; pointer-events:none;
+  background:linear-gradient(100deg, transparent 0%, transparent 42%, rgba(255,255,255,0.9) 50%, transparent 58%, transparent 100%);
+  background-size:250% 100%; background-position:200% 50%;
+  animation:textFxFlareSweep 2.4s ease-in-out infinite;
+  mix-blend-mode:overlay;
+}
+@keyframes textFxFlareFlash{ 0%,100%{ text-shadow:0 0 4px rgba(255,255,255,0.35); } 50%{ text-shadow:0 0 10px rgba(255,255,255,0.85), 0 0 18px rgba(180,220,255,0.5); } }
+@keyframes textFxFlareSweep{ 0%,15%{ background-position:200% 50%; } 55%,100%{ background-position:-50% 50%; } }
+
+/* Bọc từng ký tự — dùng chung cho 'Chữ vỡ ra nhẹ' (chỉ rung/xoay, không hạt)
+   và 4 hiệu ứng hạt bay (Hoa/Bong bóng/Trái tim/Bông tuyết bay). */
+.text-fx-letter{ position:relative; display:inline-block; }
+.text-fx-letter-shatter{ animation:textFxShatterShake 2.2s ease-in-out infinite; }
+@keyframes textFxShatterShake{
+  0%,100%{ transform:translate(0,0) rotate(0deg); opacity:1; }
+  30%{ transform:translate(-1px,1px) rotate(-3deg); opacity:0.85; }
+  60%{ transform:translate(1px,-1px) rotate(3deg); opacity:0.85; }
+  80%{ transform:translate(0,0) rotate(0deg); opacity:1; }
+}
+
+/* Hạt trang trí — neo ở mép cuối (phải-dưới) của TỪNG ký tự (điểm khởi đầu bay),
+   rồi bay lên và mờ dần. 4 hiệu ứng dùng chung 1 kiểu chuyển động, chỉ khác biên
+   độ trôi ngang/kích cỡ cho đỡ đơn điệu. */
+.text-fx-particle{
+  position:absolute; right:-2px; bottom:2px; font-size:11px; opacity:0;
+  pointer-events:none; line-height:1;
+  animation:textFxParticleFloat 2.6s ease-in infinite;
+}
+.text-fx-letter-flowers .text-fx-particle{ animation-name:textFxParticleFloat; }
+.text-fx-letter-bubbles .text-fx-particle{ animation-name:textFxParticleFloatSway; font-size:10px; }
+.text-fx-letter-hearts .text-fx-particle{ animation-name:textFxParticleFloat; font-size:10px; }
+.text-fx-letter-snowflakes .text-fx-particle{ animation-name:textFxParticleFloatSway; font-size:10px; }
+@keyframes textFxParticleFloat{
   0%{ opacity:0; transform:translate(0,0) scale(0.7) rotate(0deg); }
   15%{ opacity:1; }
-  100%{ opacity:0; transform:translate(6px,-26px) scale(1) rotate(50deg); }
+  100%{ opacity:0; transform:translate(4px,-22px) scale(1) rotate(45deg); }
+}
+@keyframes textFxParticleFloatSway{
+  0%{ opacity:0; transform:translate(0,0) scale(0.6) rotate(0deg); }
+  15%{ opacity:1; }
+  50%{ transform:translate(-3px,-11px) scale(0.9) rotate(-10deg); }
+  100%{ opacity:0; transform:translate(3px,-22px) scale(1) rotate(15deg); }
 }
 @media (prefers-reduced-motion: reduce){
-  .text-fx-glow,.text-fx-goldsweep,.text-fx-platinum{ animation:none; }
-  .text-fx-flower{ animation:none; opacity:0; }
+  .text-fx-glow,.text-fx-goldsweep,.text-fx-platinum,.text-fx-flare{ animation:none; }
+  .text-fx-flare::after{ animation:none; opacity:0; }
+  .text-fx-letter-shatter{ animation:none; }
+  .text-fx-particle{ animation:none; opacity:0; }
 }
 
 /* Giai đoạn 4: bảng màu dùng chung cho nội dung bên trong panel — nền

@@ -9,11 +9,24 @@
   "use strict";
 
   const TEXT_EFFECTS = [
-    { id:'glow',      name:'Chữ sáng nhẹ',       diaPrice: 8  },
-    { id:'goldsweep', name:'Ánh vàng đi qua',     diaPrice: 15 },
-    { id:'platinum',  name:'Ánh Bạch Kim đi qua', diaPrice: 18 },
-    { id:'flowers',   name:'Hoa bay ra nhẹ',      diaPrice: 20 }
+    { id:'glow',       name:'Chữ sáng nhẹ',          diaPrice: 8  },
+    { id:'goldsweep',  name:'Ánh vàng đi qua',        diaPrice: 15 },
+    { id:'platinum',   name:'Ánh Bạch Kim đi qua',    diaPrice: 18 },
+    { id:'flare',      name:'Tia pháo sáng',          diaPrice: 16 },
+    { id:'shatter',    name:'Chữ vỡ ra nhẹ',          diaPrice: 14 },
+    { id:'flowers',    name:'Hoa bay ra nhẹ',         diaPrice: 20 },
+    { id:'bubbles',    name:'Bong bóng xà phòng bay', diaPrice: 20 },
+    { id:'hearts',     name:'Trái tim bay',           diaPrice: 20 },
+    { id:'snowflakes', name:'Bông tuyết bay',         diaPrice: 20 }
   ];
+
+  // Hiệu ứng "bay ra theo chữ" — mỗi hạt trang trí neo ở mép cuối (phải) của
+  // TỪNG ký tự, không phải 1 cụm ở cuối cả câu.
+  const TEXT_FX_PARTICLE = { flowers:'🌸', bubbles:'🫧', hearts:'💗', snowflakes:'❄️' };
+  // 'shatter' cũng cần bọc riêng từng ký tự (để lắc/xoay nhẹ so le từng chữ)
+  // nhưng KHÔNG thêm hạt trang trí — chỉ 'flowers/bubbles/hearts/snowflakes'
+  // mới cần thêm hạt.
+  const TEXT_FX_NEEDS_LETTERS = ['flowers','bubbles','hearts','snowflakes','shatter'];
 
   function ownedTextEffectIds(){
     const p = (typeof getPlayerProfile === 'function') ? getPlayerProfile() : {};
@@ -52,18 +65,31 @@
     return { ok:true };
   }
 
-  // Hầu hết hiệu ứng chỉ cần 1 class CSS (.text-fx-<id>) áp lên span nội dung
-  // tin nhắn. Riêng 'flowers' cần thêm vài span hoa trang trí ĐỨNG CẠNH (không
-  // chèn vào) nội dung gốc, để không đụng tới msg.text thật (chỗ khác còn dùng
-  // để dịch/copy nguyên văn).
+  // Hiệu ứng "đơn giản" (glow/goldsweep/platinum/flare) chỉ cần 1 class CSS áp
+  // lên span nội dung, không cần bọc riêng ký tự.
   function textFxClass(id){
-    return id ? ' text-fx-'+id : '';
+    if(!id || TEXT_FX_NEEDS_LETTERS.indexOf(id) >= 0) return '';
+    return ' text-fx-'+id;
   }
-  function textFxDecoHtml(id){
-    if(id !== 'flowers') return '';
-    return '<span class="text-fx-flower f1">🌸</span>'
-      + '<span class="text-fx-flower f2">🌸</span>'
-      + '<span class="text-fx-flower f3">🌸</span>';
+  function textFxNeedsLetters(id){
+    return TEXT_FX_NEEDS_LETTERS.indexOf(id) >= 0;
+  }
+  // Bọc riêng từng ký tự của TEXT GỐC (chưa escape) — hạt trang trí (nếu có)
+  // neo ở mép cuối (phải) của từng ký tự, so le animation-delay theo thứ tự.
+  // KHÔNG được dùng để thay thế msg.text/dataset.orig — chỉ dùng để RENDER,
+  // nơi khác vẫn giữ nguyên văn gốc để dịch/copy.
+  function textFxLetterHtml(rawText, id){
+    const particle = TEXT_FX_PARTICLE[id] || '';
+    const cls = 'text-fx-letter text-fx-letter-'+id;
+    return Array.from(String(rawText||'')).map(function(ch, i){
+      const escCh = (typeof escapeHtml==='function') ? escapeHtml(ch) : ch;
+      const shown = ch===' ' ? '&nbsp;' : escCh;
+      const delay = (i*0.12).toFixed(2)+'s';
+      const deco = particle
+        ? '<span class="text-fx-particle" aria-hidden="true" style="animation-delay:'+delay+'">'+particle+'</span>'
+        : '';
+      return '<span class="'+cls+'" style="animation-delay:'+delay+'">'+shown+deco+'</span>';
+    }).join('');
   }
 
   g.TEXT_EFFECTS = TEXT_EFFECTS;
@@ -72,5 +98,6 @@
   g.equipTextEffect = equipTextEffect;
   g.buyTextEffect = buyTextEffect;
   g.textFxClass = textFxClass;
-  g.textFxDecoHtml = textFxDecoHtml;
+  g.textFxNeedsLetters = textFxNeedsLetters;
+  g.textFxLetterHtml = textFxLetterHtml;
 })(typeof window !== 'undefined' ? window : this);
