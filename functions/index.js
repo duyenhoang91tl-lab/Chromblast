@@ -449,8 +449,10 @@ exports.escrowWager = onCall({ region: 'asia-southeast1' }, async (request) => {
 
     const amount = Math.floor(Number(room.wagerAmount) || 0);
     const currency = room.wagerCurrency;
-    if (!(amount > 0) || (currency !== 'gold' && currency !== 'diamond')) {
-      throw new HttpsError('failed-precondition', 'Phòng này không đặt cược.');
+    // Chỉ nhận cược bằng VÀNG — vàng và kim cương không liên quan nhau, không cho
+    // đặt cược bằng kim cương nữa (chặn cứng ở server, không chỉ ẩn ở giao diện).
+    if (!(amount > 0) || currency !== 'gold') {
+      throw new HttpsError('failed-precondition', 'Phòng này không đặt cược hợp lệ (chỉ nhận cược bằng vàng).');
     }
 
     const escrowKey = isHost ? 'hostEscrowed' : 'guestEscrowed';
@@ -464,16 +466,12 @@ exports.escrowWager = onCall({ region: 'asia-southeast1' }, async (request) => {
     // đã tự xử lý đúng rồi.
     const playerSnap = await tx.get(playerRef);
     const w = walletOf(playerSnap.exists ? playerSnap.data() : {});
-    const balance = currency === 'gold' ? w.gold : w.diamonds;
+    const balance = w.gold;
     if (balance < amount) {
-      throw new HttpsError(
-        'failed-precondition',
-        currency === 'gold' ? 'Không đủ vàng để đặt cược.' : 'Không đủ kim cương để đặt cược.'
-      );
+      throw new HttpsError('failed-precondition', 'Không đủ vàng để đặt cược.');
     }
 
-    const field = currency === 'gold' ? 'gold' : 'diamonds';
-    tx.set(playerRef, { [field]: FieldValue.increment(-amount) }, { merge: true });
+    tx.set(playerRef, { gold: FieldValue.increment(-amount) }, { merge: true });
     tx.set(roomRef, { [escrowKey]: true }, { merge: true });
     return { ok: true, already: false, balanceAfter: balance - amount };
   });
@@ -1046,19 +1044,19 @@ exports.applyMatchResult = onDocumentUpdated(
       if (after.wagerSettled) return;
       const amount = Math.floor(Number(after.wagerAmount) || 0);
       const currency = after.wagerCurrency;
-      if (!(amount > 0) || (currency !== 'gold' && currency !== 'diamond')) return;
-      const field = currency === 'gold' ? 'gold' : 'diamonds';
+      // Chỉ nhận cược bằng vàng — vàng/kim cương không liên quan nhau.
+      if (!(amount > 0) || currency !== 'gold') return;
       const hostIn = !!after.hostEscrowed;
       const guestIn = !!after.guestEscrowed;
       if (hostIn && guestIn && (finalWinnerId === hostId || finalWinnerId === guestId)) {
         await db.collection('players').doc(finalWinnerId).set(
-          { [field]: FieldValue.increment(amount * 2) }, { merge: true }
+          { gold: FieldValue.increment(amount * 2) }, { merge: true }
         );
       } else {
         // Hoà, hoặc không xác định được thắng thua thật, hoặc chỉ 1 bên đặt cược
         // thành công (bên kia lỗi/mất mạng giữa chừng) → hoàn đúng phần đã trừ.
-        if (hostIn) await db.collection('players').doc(hostId).set({ [field]: FieldValue.increment(amount) }, { merge: true });
-        if (guestIn) await db.collection('players').doc(guestId).set({ [field]: FieldValue.increment(amount) }, { merge: true });
+        if (hostIn) await db.collection('players').doc(hostId).set({ gold: FieldValue.increment(amount) }, { merge: true });
+        if (guestIn) await db.collection('players').doc(guestId).set({ gold: FieldValue.increment(amount) }, { merge: true });
       }
       await event.data.after.ref.set({ wagerSettled: true }, { merge: true }).catch(() => {});
     };

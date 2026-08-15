@@ -6,9 +6,9 @@
 let _onlineLobby = null; // { roomId, code, role:'host'|'guest', roomData }
 let _onlineLastOpenRooms = [];
 let _wagerOn = false;
-let _wagerCurrency = 'gold';
+const _wagerCurrency = 'gold'; // Cược chỉ dùng vàng — vàng/kim cương không liên quan nhau.
 let _wagerAmount = 0;
-const WAGER_PRESETS = { gold: [5, 10, 15, 20, 30], diamond: [1, 2, 5, 10, 20] };
+const WAGER_PRESETS = [5, 10, 15, 20, 30];
 
 function _onlineShow(id){ const el=document.getElementById(id); if(el) el.classList.add('show'); }
 function _onlineHide(id){ const el=document.getElementById(id); if(el) el.classList.remove('show'); }
@@ -638,14 +638,14 @@ function onLeaveLobbyToHub(){
   function renderWagerAmounts(){
     const box = document.getElementById('online-wager-amounts');
     if(!box) return;
-    const presets = WAGER_PRESETS[_wagerCurrency] || WAGER_PRESETS.gold;
+    const presets = WAGER_PRESETS;
     if(presets.indexOf(_wagerAmount) < 0) _wagerAmount = presets[0];
     box.innerHTML = '';
     presets.forEach(function(n){
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'online-wager-amt-btn' + (n === _wagerAmount ? ' active' : '');
-      b.textContent = (_wagerCurrency === 'gold' ? '🪙 ' : '💎 ') + n;
+      b.textContent = '🪙 ' + n;
       b.addEventListener('click', function(){
         try{ sfxClick(); }catch(e){}
         _wagerAmount = n;
@@ -669,20 +669,11 @@ function onLeaveLobbyToHub(){
           syncWalletFromServer().then(function(w){
             if(!w || !balEl.isConnected) return;
             const label = typeof t==='function' ? t('onlineWagerBalance','Số dư') : 'Số dư';
-            balEl.textContent = label + ': 🪙 ' + (w.gold|0) + ' · 💎 ' + (w.diamonds|0);
+            balEl.textContent = label + ': 🪙 ' + (w.gold|0);
           });
         }
       }
     }
-  });
-  document.querySelectorAll('.online-wager-cur-btn').forEach(function(btn){
-    btn.addEventListener('click', function(){
-      try{ sfxClick(); }catch(e){}
-      _wagerCurrency = btn.getAttribute('data-cur') === 'diamond' ? 'diamond' : 'gold';
-      _wagerAmount = 0;
-      document.querySelectorAll('.online-wager-cur-btn').forEach(function(b){ b.classList.toggle('active', b === btn); });
-      renderWagerAmounts();
-    });
   });
   document.getElementById('online-create-btn')?.addEventListener('click', onCreateRoom);
   document.getElementById('online-lobby-ready')?.addEventListener('click', (e)=>{
