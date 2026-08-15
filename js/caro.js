@@ -2239,32 +2239,25 @@ function _caroRenderLobby(d){
 
   const hostUid = d.hostId || '';
   const guestUid = d.guestId || '';
-  const kickBtnHtml = (hostIsMe && guestName)
-    ? '<button type="button" class="caro-kick-btn" id="caro-kick-guest-btn" data-uid="'+escapeHtml(guestUid)+'" data-name="'+escapeHtml(guestName)+'">'+escapeHtml(t('roomKickBtn'))+'</button>'
-    : '';
+  // "Sẵn sàng" — dùng chung field hostReady/guestReady + setLobbyReady() đã có
+  // sẵn cho Versus (js/online-services.js) — không cần thêm field/hàm mới.
+  const hostReadyIcon = d.hostReady!==false ? '✅' : '⏳';
+  const guestReadyIcon = guestName ? (d.guestReady ? '✅' : '⏳') : '';
   document.getElementById('caro-lobby-players').innerHTML =
     '<div class="online-player caro-lobby-seat" data-uid="'+escapeHtml(hostUid)+'" data-name="'+escapeHtml(host)+'" data-avatar="'+hostAv+'">'+
       '<button type="button" class="caro-seat-av" data-uid="'+escapeHtml(hostUid)+'" data-name="'+escapeHtml(host)+'" data-avatar="'+hostAv+'">'+hostAv+'</button>'+
       '<span class="caro-seat-info">'+hostRankHtml+
-        '<span class="caro-seat-name-row"><span class="caro-x">X</span> <span class="caro-seat-name">'+hostLabel+'</span></span>'+
+        '<span class="caro-seat-name-row"><span class="caro-x">X</span> <span class="caro-seat-name">'+hostLabel+'</span> '+hostReadyIcon+'</span>'+
       '</span></div>'+
     '<div class="online-player caro-lobby-seat" data-uid="'+escapeHtml(guestUid)+'" data-name="'+escapeHtml(guestName||'')+'" data-avatar="'+guestAv+'">'+
-      '<button type="button" class="caro-seat-av" data-uid="'+escapeHtml(guestUid)+'" data-name="'+escapeHtml(guestName||'')+'" data-avatar="'+guestAv+'" '+(guestName?'':'disabled')+'>'+(guestName?guestAv:'❔')+'</button>'+
+      (guestName
+        ? '<button type="button" class="caro-seat-av" data-uid="'+escapeHtml(guestUid)+'" data-name="'+escapeHtml(guestName)+'" data-avatar="'+guestAv+'">'+guestAv+'</button>'
+        : '<span class="caro-seat-av caro-seat-av-empty" aria-hidden="true" title="'+escapeHtml(t('onlineWaiting'))+'">➕</span>')+
       '<span class="caro-seat-info">'+guestRankHtml+
-        '<span class="caro-seat-name-row"><span class="caro-o">O</span> <span class="caro-seat-name">'+guestLabel+'</span></span>'+
-      '</span>'+kickBtnHtml+'</div>';
+        '<span class="caro-seat-name-row"><span class="caro-o">O</span> <span class="caro-seat-name">'+guestLabel+'</span> '+guestReadyIcon+'</span>'+
+      '</span></div>';
 
-  document.getElementById('caro-kick-guest-btn')?.addEventListener('click', (e)=>{
-    e.preventDefault(); e.stopPropagation();
-    const btn = e.currentTarget;
-    const gName = btn.dataset.name || '?';
-    if(!confirm(t('roomKickConfirm', gName))) return;
-    if(typeof kickRoomGuest === 'function' && _caroLobby && _caroLobby.roomId){
-      kickRoomGuest(_caroLobby.roomId).catch(()=>{});
-    }
-  });
-
-  document.querySelectorAll('#caro-lobby-players .caro-seat-av').forEach(btn=>{
+  document.querySelectorAll('#caro-lobby-players .caro-seat-av[data-uid]').forEach(btn=>{
     btn.addEventListener('click', (e)=>{
       e.preventDefault();
       const id = btn.dataset.uid;
@@ -2290,12 +2283,29 @@ function _caroRenderLobby(d){
     }
   }
 
-  const startBtn = document.getElementById('caro-start-btn');
+  // Hàng nút hành động: chủ phòng thấy Bắt đầu (chỉ bật khi cả 2 đều sẵn sàng)
+  // + Đuổi khách (khi đã có khách); khách thấy nút Sẵn sàng để tự bật/tắt.
   const isHost = _caroLobby && _caroLobby.role==='host';
-  if(startBtn) startBtn.style.display = (isHost && d.status==='ready' && d.guestId) ? 'block' : 'none';
+  const startBtn = document.getElementById('caro-start-btn');
+  if(startBtn) startBtn.style.display = (isHost && d.guestId && d.hostReady!==false && d.guestReady) ? 'block' : 'none';
+  const readyBtn = document.getElementById('caro-lobby-ready');
+  if(readyBtn){
+    readyBtn.style.display = isHost ? 'none' : 'block';
+    const meReady = guestIsMe ? !!d.guestReady : true;
+    readyBtn.textContent = meReady ? ('✅ ' + t('vsReadyOn')) : ('☐ ' + t('vsReady'));
+    readyBtn.classList.toggle('btn-ghost', meReady);
+    readyBtn.dataset.ready = meReady ? '0' : '1'; // giá trị sẽ chuyển sang khi bấm
+  }
+  const kickBtn = document.getElementById('caro-kick-guest-btn');
+  if(kickBtn){
+    kickBtn.style.display = (isHost && guestName) ? 'block' : 'none';
+    kickBtn.dataset.uid = guestUid;
+    kickBtn.dataset.name = guestName || '';
+  }
+
   const hint = document.getElementById('caro-lobby-hint');
   if(hint){
-    hint.style.display = (d.status==='ready' && d.guestId) ? 'none' : 'block';
+    hint.style.display = (d.hostReady!==false && d.guestReady && d.guestId) ? 'none' : 'block';
   }
   _caroSyncPrefUI(getCaroPrefs());
   _caroRenderOpenRoomLists(_caroLastOpenRooms || []);
@@ -2653,6 +2663,21 @@ function applyCaroSettings(){
     document.getElementById('caro-find-btn')?.addEventListener('click', caroFindOpponent);
     document.getElementById('caro-mm-cancel')?.addEventListener('click', caroCancelMM);
     document.getElementById('caro-start-btn')?.addEventListener('click', caroStartMatch);
+    document.getElementById('caro-lobby-ready')?.addEventListener('click', (e)=>{
+      try{ sfxClick(); }catch(err){}
+      if(!_caroLobby || !_caroLobby.roomId) return;
+      const goingReady = e.currentTarget.dataset.ready !== '0';
+      if(typeof setLobbyReady === 'function') setLobbyReady(_caroLobby.roomId, goingReady);
+    });
+    document.getElementById('caro-kick-guest-btn')?.addEventListener('click', (e)=>{
+      e.preventDefault(); e.stopPropagation();
+      const btn = e.currentTarget;
+      const gName = btn.dataset.name || '?';
+      if(!confirm(t('roomKickConfirm', gName))) return;
+      if(typeof kickRoomGuest === 'function' && _caroLobby && _caroLobby.roomId){
+        kickRoomGuest(_caroLobby.roomId).catch(()=>{});
+      }
+    });
     document.getElementById('caro-lobby-leave')?.addEventListener('click', closeCaroHub);
     document.getElementById('caro-lobby-invite')?.addEventListener('click', ()=>{
       try{ sfxClick(); }catch(e){}
