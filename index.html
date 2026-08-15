@@ -884,25 +884,13 @@
         <span id="quests-head-title" data-i18n="questsTitle">📋 Nhiệm vụ</span>
         <button type="button" class="quests-x" id="quests-close-btn" aria-label="Close">✕</button>
       </div>
+      <div class="quests-tabs">
+        <button type="button" class="quests-tab active" data-quest-cat="day" data-i18n="questsTabDay">Ngày</button>
+        <button type="button" class="quests-tab" data-quest-cat="week" data-i18n="questsTabWeek">Tuần</button>
+        <button type="button" class="quests-tab" data-quest-cat="month" data-i18n="questsTabMonth">Tháng</button>
+      </div>
       <div class="quests-body">
-        <div id="quests-hub" class="quests-hub">
-          <button type="button" class="quests-cat-card" data-quest-cat="day">
-            <span class="quests-cat-ico">📅</span>
-            <span class="quests-cat-name" data-i18n="questsDay">Nhiệm vụ ngày</span>
-            <span class="quests-cat-sub" data-i18n="questsDaySub">Danh sách ngày · điểm danh tháng</span>
-          </button>
-          <button type="button" class="quests-cat-card" data-quest-cat="week">
-            <span class="quests-cat-ico">📆</span>
-            <span class="quests-cat-name" data-i18n="questsWeek">Nhiệm vụ tuần</span>
-            <span class="quests-cat-sub" data-i18n="questsWeekSub">Mục tiêu trong tuần</span>
-          </button>
-          <button type="button" class="quests-cat-card" data-quest-cat="month">
-            <span class="quests-cat-ico">🗓️</span>
-            <span class="quests-cat-name" data-i18n="questsMonth">Nhiệm vụ tháng</span>
-            <span class="quests-cat-sub" data-i18n="questsMonthSub">Mục tiêu trong tháng</span>
-          </button>
-        </div>
-        <div id="quests-detail" class="quests-detail" hidden>
+        <div id="quests-detail" class="quests-detail">
           <div id="quests-list" class="quests-list"></div>
           <div id="quests-checkin-wrap" class="quests-checkin-wrap" hidden>
             <div class="quests-checkin-title" data-i18n="questsMonthCheckin">Ô điểm danh theo tháng</div>
