@@ -2225,3 +2225,16 @@ function MILESTONE_MSG(tier){
   };
   Object.keys(fill).forEach(l=>{ if(typeof I18N!=='undefined' && I18N[l]) Object.assign(I18N[l], fill[l]); });
 })();
+
+// ── Modal phần thưởng mở rương (js/gpcard-redeem.js: showRewardPopup) ──
+(function(){
+  const fill = {
+    vi:{ crateRewardClaim:'Nhận' },
+    en:{ crateRewardClaim:'Claim' },
+    ko:{ crateRewardClaim:'받기' },
+    ja:{ crateRewardClaim:'受け取る' },
+    zh:{ crateRewardClaim:'领取' },
+    es:{ crateRewardClaim:'Reclamar' }
+  };
+  Object.keys(fill).forEach(l=>{ if(typeof I18N!=='undefined' && I18N[l]) Object.assign(I18N[l], fill[l]); });
+})();

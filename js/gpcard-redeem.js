@@ -8,6 +8,59 @@
    Nạp SAU js/loot-crates.js.
 ══════════════════════════════════════════ */
 
+/** Icon lớn cho modal phần thưởng theo đúng reward.type mà openLootCrate()
+ * (js/loot-crates.js) trả về. */
+function _crateRewardIcon(reward){
+  if(!reward) return '🎁';
+  switch(reward.type){
+    case 'gold': return '🪙';
+    case 'diamond': return '💎';
+    case 'hearts': return '❤️';
+    case 'brick': return '🧱';
+    case 'board': return '🗺️';
+    case 'effect': return '✨';
+    case 'bubble': return '💬';
+    case 'skill': return (typeof POWER_INFO !== 'undefined' && reward.skillType && POWER_INFO[reward.skillType])
+      ? POWER_INFO[reward.skillType].icon : '⚡';
+    default: return '🎁';
+  }
+}
+
+/** Modal "mở rương" toàn màn hình — hiện icon + tên phần thưởng vừa random
+ * được, đóng lại bằng nút Nhận hoặc bấm ra ngoài overlay. Dùng chung cho mọi
+ * chỗ mở rương (renderCrateGridInto ở dưới dùng chung cho cả 3 nơi hiển thị
+ * rương như đã ghi ở trên). */
+function showRewardPopup(reward){
+  const overlay = document.getElementById('crate-reward-overlay');
+  if(!overlay || !reward) return;
+  const iconEl = document.getElementById('crate-reward-icon');
+  const labelEl = document.getElementById('crate-reward-label');
+  if(iconEl) iconEl.textContent = _crateRewardIcon(reward);
+  if(labelEl) labelEl.textContent = reward.label || '';
+  overlay.hidden = false;
+  requestAnimationFrame(()=>{ overlay.classList.add('show'); });
+}
+function closeRewardPopup(){
+  const overlay = document.getElementById('crate-reward-overlay');
+  if(!overlay) return;
+  overlay.classList.remove('show');
+  setTimeout(()=>{ overlay.hidden = true; }, 200);
+}
+(function _bindRewardPopup(){
+  function bind(){
+    document.getElementById('crate-reward-claim-btn')?.addEventListener('click', ()=>{
+      try{ sfxClick(); }catch(e){}
+      closeRewardPopup();
+    });
+    document.getElementById('crate-reward-overlay')?.addEventListener('click', (e)=>{
+      if(e.target && e.target.id === 'crate-reward-overlay') closeRewardPopup();
+    });
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
+  else bind();
+})();
+
+
 function _gpcardCratePriceHtml(crate){
   const icon = crate.priceType === 'gold' ? '🪙' : '💎';
   return icon + ' ' + crate.price;
@@ -62,7 +115,7 @@ function renderCrateGridInto(root){
       const id = btn.dataset.gpcardCrate;
       const res = typeof openLootCrate === 'function' ? await openLootCrate(id, false) : { ok:false };
       if(res.ok){
-        try{ showComboFlash(0, false, res.reward ? res.reward.label : '🎉'); }catch(e){}
+        if(res.reward) showRewardPopup(res.reward);
         try{ if(typeof sfxUnlock === 'function') sfxUnlock(); }catch(e){}
       } else {
         const msg = res.reason === 'gold' ? (typeof t === 'function' ? t('shopNotEnoughGold') : 'Không đủ vàng')
