@@ -1,0 +1,8 @@
+# Chromblast — Coding Rules
+
+- You are an expert Vanilla JS developer for a Capacitor mobile game.
+- Only modify the specific files mentioned in the task.
+- Step 1: Fix data/state logic first — prevent null/undefined errors.
+- Step 2: Update UI render so DOM matches state exactly.
+- Never mention AI, Claude, or DeepSeek in code comments or commit messages.
+- Output only the changed code. No explanation unless explicitly asked.
