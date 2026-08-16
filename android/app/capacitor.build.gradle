@@ -14,6 +14,7 @@ dependencies {
     implementation project(':capacitor-local-notifications')
     implementation project(':capacitor-screen-orientation')
     implementation project(':capgo-capacitor-social-login')
+    implementation project(':capacitor-firebase-authentication')
     implementation project(':revenuecat-purchases-capacitor')
 
 }
