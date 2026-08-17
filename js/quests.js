@@ -418,7 +418,7 @@
       else if (key === today) cls += canClaimToday ? " available" : " today";
       else if (key > today) cls += " future";
       else cls += " missed";
-      // Ngày rương đặc biệt (3/7/14/21/30/31)
+      // Ngày rương đặc biệt (10/20/30/31)
       const chestTier =
         typeof checkinChestForDay === "function"
           ? checkinChestForDay(day)

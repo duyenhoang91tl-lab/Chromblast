@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════
 // js/daily-rewards.js — ĐIỂM DANH THEO THÁNG
 // Lưới cả tháng (30/31 ngày), mỗi ngày điểm danh độc lập theo dayOfMonth.
-// Rương đặc biệt: ngày 3 = Gỗ, 7 = Bạc, 14 = Vàng, 21 = Bạch Kim,
+// Rương đặc biệt: ngày 10 = Gỗ, 20 = Vàng,
 // 30 (tháng 30 ngày) / 31 (tháng 31 ngày) = Kim Cương.
 // Nạp SAU save.js + progression.js (dùng safeGet/safeSet, addPlayerXP),
 // TRƯỚC main.js. Lưu riêng theo từng tài khoản (currentUser.username) để
@@ -27,14 +27,12 @@ const CHECKIN_CHEST_DEFS = {
 };
 
 /** dayOfMonth → loại rương. Ngày 30/31 cùng lấy rương Kim Cương. */
-const CHECKIN_CHEST_DAYS = { 3: 'wood', 7: 'silver', 14: 'gold', 21: 'platinum', 30: 'diamond', 31: 'diamond' };
+const CHECKIN_CHEST_DAYS = { 10: 'wood', 20: 'gold', 30: 'diamond', 31: 'diamond' };
 
 /** dayOfMonth → phần thưởng thêm của rương (không lặp lại, tính theo ngày trong tháng). */
 const CHECKIN_CHEST_REWARDS = {
-  3:  { gold: 30 },
-  7:  { gold: 80 },
-  14: { diamonds: 12 },
-  21: { diamonds: 18 },
+  10: { gold: 30 },
+  20: { diamonds: 12 },
   30: { diamonds: 30 },
   31: { diamonds: 30 },
 };
@@ -122,7 +120,7 @@ function claimDailyReward(){
     }
   }catch(e){}
 
-  // Rương đặc biệt của ngày (3/7/14/21/30/31).
+  // Rương đặc biệt của ngày (10/20/30/31).
   let milestone = null;
   const chest = checkinChestForDay(dom);
   if(chest){
