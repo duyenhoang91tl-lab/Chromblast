@@ -7170,8 +7170,9 @@ body:has(#secret-stage.active) .streak-dot.lit{
 }
 .acbag-card.active{ outline:2px solid #8a6fd0; }
 .acbag-card.locked{ opacity:0.55; }
-/* Ô map ẩn chưa qua — giữ đúng chiều cao như ô đã qua (không lệch trái/hàng lệch) */
-.acbag-card-placeholder{ flex:1 1 auto; min-height:30px; }
+/* Ô map ẩn chưa qua — ô đệm y hệt vệt nút "Chơi lại" (height + margin-top) của
+   ô đã qua, giữ các dòng căn giữa thẳng hàng và ô khoá luôn khít mép dưới. */
+.acbag-card-placeholder{ flex:none; min-height:30px; margin-top:6px; }
 .acbag-card-preview{ position:relative; display:flex; justify-content:center; margin-bottom:8px; }
 .acbag-preview-swatch{ width:56px; height:40px; border-radius:8px; }
 .acbag-brick-preview{ display:flex; gap:3px; }
@@ -7297,6 +7298,7 @@ body:has(#secret-stage.active) .streak-dot.lit{
   .acbag-card{ padding:10px 6px; }
   .acbag-card-name{ font-size:11px; white-space:normal; }
   .acbag-use-btn{ max-width:100%; }
+  .acbag-card-placeholder{ min-height:26px; margin-top:6px; }
 }
 
 /* deploy-trigger: kich hoat lai GitHub Pages deploy sau khi doi Source sang GitHub Actions */
