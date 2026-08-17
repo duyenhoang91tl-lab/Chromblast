@@ -72,6 +72,18 @@
     return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
   }
 
+  /** Khoá "YYYY-MM-DD" cho 1 ngày — dùng làm key trong st.checkins. */
+  function checkinDayKey(y, m, day) {
+    return y + "-" + String(m).padStart(2, "0") + "-" + String(day).padStart(2, "0");
+  }
+  function todayCheckinKey() {
+    const d = new Date();
+    return checkinDayKey(d.getFullYear(), d.getMonth() + 1, d.getDate());
+  }
+  function currentMonthKey() {
+    return monthKey();
+  }
+
   function emptyBucket() {
     return { play: 0, clears: 0, scoreMax: 0, spin: 0, comboMax: 0, claimed: {} };
   }
@@ -188,7 +200,7 @@
   function progressOf(st, cat, def) {
     const bucket = st[cat] || emptyBucket();
     if (def.metric === "checkin") {
-      return st.checkins && st.checkins[todayStr()] ? 1 : 0;
+      return st.checkins && st.checkins[todayCheckinKey()] ? 1 : 0;
     }
     if (def.metric === "weekCheckins") {
       const b = weekBounds();
@@ -258,7 +270,7 @@
       if (typeof claimDailyReward !== "function") return { ok: false };
       const res = claimDailyReward();
       if (!res) return { ok: false, reason: "claimed" };
-      st.checkins[todayStr()] = 1;
+      st.checkins[todayCheckinKey()] = 1;
       st[cat].claimed[id] = 1;
       saveState(st);
       try {
@@ -281,17 +293,32 @@
 
   function syncCheckinFromDaily(st) {
     try {
-      if (typeof getDailyStatus === "function") {
-        const s = getDailyStatus();
-        if (s && s.alreadyClaimedToday) st.checkins[todayStr()] = 1;
-      }
+      // Điểm danh theo tháng: chép các ngày đã điểm danh trong tháng hiện tại
+      // từ daily-rewards (key "YYYY-MM-DD" theo dayOfMonth) sang quests.checkins.
       const ds =
         typeof getDailyState === "function"
           ? getDailyState()
           : null;
-      if (ds && ds.lastClaim) st.checkins[ds.lastClaim] = 1;
-      // Đã điểm danh → đánh dấu quest checkin đã nhận (tránh nút Nhận kẹt)
-      if (st.checkins[todayStr()]) {
+      const now = new Date();
+      const mk = currentMonthKey();
+      if (ds && ds.months && ds.months[mk]) {
+        Object.keys(ds.months[mk]).forEach(function (day) {
+          const n = Number(day);
+          if (n >= 1 && n <= 31) {
+            st.checkins[checkinDayKey(now.getFullYear(), now.getMonth() + 1, n)] = 1;
+          }
+        });
+        // Tương thích bản cũ: bản cũ lưu theo key "YYYY-MM-DD" trong checkins
+        if (ds.lastClaim) st.checkins[ds.lastClaim] = 1;
+      } else if (ds && ds.lastClaim) {
+        st.checkins[ds.lastClaim] = 1;
+      }
+      if (typeof getDailyStatus === "function") {
+        const s = getDailyStatus();
+        if (s && s.alreadyClaimedToday) st.checkins[todayCheckinKey()] = 1;
+      }
+      // Đã điểm danh hôm nay → đánh dấu quest checkin đã nhận (tránh nút Nhận kẹt)
+      if (st.checkins[todayCheckinKey()] || st.checkins[todayStr()]) {
         if (!st.day.claimed) st.day.claimed = {};
         st.day.claimed.checkin = 1;
       }
@@ -318,7 +345,7 @@
     else if (type === "score") bump("scoreMax", amount, "max");
     else if (type === "spin") bump("spin", amount, "add");
     else if (type === "combo") bump("comboMax", amount, "max");
-    else if (type === "checkin") st.checkins[todayStr()] = 1;
+    else if (type === "checkin") st.checkins[todayCheckinKey()] = 1;
 
     saveState(st);
     if (_view) renderDetail(_view);
@@ -363,6 +390,8 @@
     const firstDow = new Date(y, m, 1).getDay(); // 0 Sun
     const startPad = (firstDow + 6) % 7; // Mon-first
     const today = todayStr();
+    const canClaimToday =
+      typeof getDailyStatus === "function" ? getDailyStatus().canClaim : !st.checkins[todayCheckinKey()];
     cal.innerHTML = "";
     const head = document.createElement("div");
     head.className = "quests-cal-head";
@@ -382,19 +411,29 @@
       grid.appendChild(blank);
     }
     for (let day = 1; day <= daysInMonth; day++) {
-      const key =
-        y +
-        "-" +
-        String(m + 1).padStart(2, "0") +
-        "-" +
-        String(day).padStart(2, "0");
+      const key = checkinDayKey(y, m + 1, day);
       const cell = document.createElement("div");
       let cls = "quests-cal-day";
       if (st.checkins[key]) cls += " claimed";
-      if (key === today) cls += " today";
-      if (key > today) cls += " future";
+      else if (key === today) cls += canClaimToday ? " available" : " today";
+      else if (key > today) cls += " future";
+      else cls += " missed";
+      // Ngày rương đặc biệt (3/7/14/21/30/31)
+      const chestTier =
+        typeof checkinChestForDay === "function"
+          ? checkinChestForDay(day)
+          : null;
       cell.className = cls;
       cell.textContent = String(day);
+      if (chestTier) {
+        cls += " chest";
+        cell.className = cls;
+        cell.style.setProperty("--chest-tint", chestTier.tier.tint);
+        const chestEl = document.createElement("div");
+        chestEl.className = "quests-cal-chest";
+        chestEl.textContent = chestTier.tier.icon;
+        cell.appendChild(chestEl);
+      }
       grid.appendChild(cell);
     }
     cal.appendChild(grid);
@@ -424,7 +463,7 @@
     (QUEST_DEFS[cat] || []).forEach(function (def) {
       const prog = Math.min(def.target, progressOf(st, cat, def));
       const claimed = isClaimed(st, cat, def.id);
-      const done = prog >= def.target || (def.useDailyClaim && !!st.checkins[todayStr()]);
+      const done = prog >= def.target || (def.useDailyClaim && !!st.checkins[todayCheckinKey()]);
       const row = document.createElement("div");
       row.className =
         "quests-row" + (claimed ? " claimed" : done ? " ready" : "");
@@ -494,7 +533,7 @@
         const btn = document.getElementById("quests-checkin-btn");
         if (btn) {
           const can =
-            typeof getDailyStatus === "function" ? getDailyStatus().canClaim : !st.checkins[todayStr()];
+            typeof getDailyStatus === "function" ? getDailyStatus().canClaim : !st.checkins[todayCheckinKey()];
           btn.disabled = !can;
           btn.textContent = can
             ? tt("questsCheckinBtn", "🎁 Điểm danh hôm nay")
@@ -563,7 +602,7 @@
         if (isClaimed(st, cat, def.id)) return;
         const prog = progressOf(st, cat, def);
         const done =
-          prog >= def.target || (def.useDailyClaim && !!st.checkins[todayStr()]);
+          prog >= def.target || (def.useDailyClaim && !!st.checkins[todayCheckinKey()]);
         // checkin claimable if daily can claim
         if (def.useDailyClaim) {
           try {
@@ -638,6 +677,7 @@
             if (r.daily.milestone) {
               const m = r.daily.milestone;
               msg += " · " + (typeof t === "function" ? t("dailyMilestoneFlash", m.day) : ("Mốc " + m.day + " ngày!"));
+              if (m.tier && m.tier.name) msg += " " + m.tier.icon + " " + m.tier.name;
               if (m.gold) msg += " 🪙+" + m.gold;
               if (m.diamonds) msg += " 💎+" + m.diamonds;
               if (m.crate) msg += " " + m.crate.label;

@@ -1,13 +1,43 @@
 // ═══════════════════════════════════════════════════════════════
-// js/daily-rewards.js — ĐIỂM DANH HÀNG NGÀY
-// Chuỗi 7 ngày, thưởng XP tăng dần, đứt chuỗi nếu bỏ lỡ 1 ngày (quay về ngày 1).
+// js/daily-rewards.js — ĐIỂM DANH THEO THÁNG
+// Lưới cả tháng (30/31 ngày), mỗi ngày điểm danh độc lập theo dayOfMonth.
+// Rương đặc biệt: ngày 3 = Gỗ, 7 = Bạc, 14 = Vàng, 21 = Bạch Kim,
+// 30 (tháng 30 ngày) / 31 (tháng 31 ngày) = Kim Cương.
 // Nạp SAU save.js + progression.js (dùng safeGet/safeSet, addPlayerXP),
 // TRƯỚC main.js. Lưu riêng theo từng tài khoản (currentUser.username) để
 // không lẫn quà giữa nhiều người chơi dùng chung máy/trình duyệt.
 // ═══════════════════════════════════════════════════════════════
 
-const DAILY_REWARD_XP = [20, 30, 40, 60, 80, 120, 200]; // thưởng ngày 1..7, lặp lại theo chu kỳ
 const DAILY_KEY_PREFIX = 'chromablast_daily_';
+
+// Thưởng XP theo ngày trong tháng (tăng dần về cuối tháng, có cao điểm cuối).
+const DAILY_REWARD_XP = (function () {
+  const base = [20, 22, 25, 28, 30, 34, 38, 42, 46, 50, 55, 60, 65, 70, 76,
+    82, 88, 95, 102, 110, 118, 126, 135, 145, 155, 166, 178, 190, 203, 218, 240];
+  return base;
+})();
+
+/** Rương đặc biệt trong tháng: loại rương → thông tin hiển thị. */
+const CHECKIN_CHEST_DEFS = {
+  wood:     { key: 'wood',     name: 'Rương Gỗ',        icon: '🪵', tint: '#b98a5c' },
+  silver:   { key: 'silver',   name: 'Rương Bạc',       icon: '📦', tint: '#c9ced6' },
+  gold:     { key: 'gold',     name: 'Rương Vàng',      icon: '🎁', tint: '#ffd54a' },
+  platinum: { key: 'platinum', name: 'Rương Bạch Kim',  icon: '🏆', tint: '#d7e6ee' },
+  diamond:  { key: 'diamond',  name: 'Rương Kim Cương', icon: '💎', tint: '#7ee8fa' },
+};
+
+/** dayOfMonth → loại rương. Ngày 30/31 cùng lấy rương Kim Cương. */
+const CHECKIN_CHEST_DAYS = { 3: 'wood', 7: 'silver', 14: 'gold', 21: 'platinum', 30: 'diamond', 31: 'diamond' };
+
+/** dayOfMonth → phần thưởng thêm của rương (không lặp lại, tính theo ngày trong tháng). */
+const CHECKIN_CHEST_REWARDS = {
+  3:  { gold: 30 },
+  7:  { gold: 80 },
+  14: { diamonds: 12 },
+  21: { diamonds: 18 },
+  30: { diamonds: 30 },
+  31: { diamonds: 30 },
+};
 
 function dailyStorageKey(){
   const who = (typeof currentUser !== 'undefined' && currentUser && currentUser.username) ? currentUser.username : '_guest';
@@ -19,68 +49,67 @@ function todayStr(){
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
 
+/** "YYYY-MM" — khoá reset an toàn mỗi tháng. */
+function monthKey(){
+  return todayStr().slice(0, 7);
+}
+
+/** dayOfMonth hôm nay. */
+function dayOfMonth(){
+  return new Date().getDate();
+}
+
+function daysInMonth(){
+  const d = new Date();
+  return new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+}
+
 function getDailyState(){
   try{ return JSON.parse(safeGet(dailyStorageKey()) || '{}'); }
   catch(e){ return {}; }
 }
 function saveDailyState(st){ safeSet(dailyStorageKey(), JSON.stringify(st)); }
 
-// { streakDay: 1-7, alreadyClaimedToday, canClaim }
+/** Kiểm tra 1 ngày (dayOfMonth) đã điểm danh trong tháng hiện tại chưa. */
+function isClaimedThisMonth(st, day){
+  const mk = monthKey();
+  return !!(st.months && st.months[mk] && st.months[mk][String(day)]);
+}
+
+/** { day, streakDay, alreadyClaimedToday, canClaim } — day = dayOfMonth hôm nay.
+ *  streakDay giữ để tương thích bản cũ (account-achievements.js hiển thị chuỗi). */
 function getDailyStatus(){
   const st = getDailyState();
-  const today = todayStr();
-  if(st.lastClaim === today){
-    return { streakDay: st.streak || 1, alreadyClaimedToday: true, canClaim: false };
-  }
-  let streak = 1;
-  if(st.lastClaim){
-    const last = new Date(st.lastClaim + 'T00:00:00');
-    const now  = new Date(today + 'T00:00:00');
-    const diffDays = Math.round((now - last) / 86400000);
-    streak = (diffDays === 1) ? (((st.streak || 0) % 7) + 1) : 1; // đúng 1 ngày sau → nối chuỗi; ngược lại → reset
-  }
-  return { streakDay: streak, alreadyClaimedToday: false, canClaim: true };
+  const today = dayOfMonth();
+  const claimed = isClaimedThisMonth(st, today);
+  return { day: today, streakDay: today, alreadyClaimedToday: claimed, canClaim: !claimed };
 }
 
-// Mốc thưởng THÊM theo chuỗi điểm danh DÀI (không lặp lại mỗi 7 ngày như
-// DAILY_REWARD_XP ở trên) — 7 ngày/2 tuần/3 tuần/1 tháng, lặp lại theo chu kỳ
-// 30 ngày. Đứt chuỗi (bỏ lỡ 1 ngày) thì mốc dài này cũng reset về 0 giống
-// streak thường. Chỉ dùng vàng/kim cương (grantGold/grantDiamonds — đã dùng
-// sẵn ngay trong file này cho quà điểm danh thường) + rương VẬT PHẨM qua
-// grantItemCrate() (js/loot-crates.js) — cố tình KHÔNG dùng rương tiền tệ
-// (Gỗ/Bạc/Vàng/Kim cương) ở đây vì 4 rương đó bắt buộc phải mở qua Cloud
-// Function openCurrencyCrate (chống lỗ hổng cộng cục bộ), không có đường "cấp
-// thẳng miễn phí" an toàn nào cho chúng ngoài luồng mua ở Shop/Rương bảo vật.
-const DAILY_MILESTONE_CRATES = {
-  7:  { gold: 150, crateId: 'brick' },
-  14: { gold: 300, crateId: 'map' },
-  21: { diamonds: 10, crateId: 'bubble' },
-  30: { diamonds: 25, crateId: 'platinum' },
-};
-
-function _dailyMilestoneRewardFor(milestoneDay){
-  const day30 = ((milestoneDay - 1) % 30) + 1; // lặp lại theo chu kỳ 30 ngày
-  return DAILY_MILESTONE_CRATES[day30] || null;
+/** Rương đặc biệt của 1 ngày trong tháng — trả về {tier, reward} hoặc null. */
+function checkinChestForDay(day){
+  const tierKey = CHECKIN_CHEST_DAYS[day];
+  if(!tierKey) return null;
+  return { tier: CHECKIN_CHEST_DEFS[tierKey], reward: CHECKIN_CHEST_REWARDS[day] || {} };
 }
+
 
 function claimDailyReward(){
   const status = getDailyStatus();
   if(!status.canClaim) return null;
-  const xp = DAILY_REWARD_XP[(status.streakDay - 1) % 7];
-  const gold = 1; // nhiệm vụ ngày: đăng nhập +1 vàng
+  const dom = dayOfMonth();
+  const xp = DAILY_REWARD_XP[(dom - 1) % DAILY_REWARD_XP.length];
+  const gold = 1; // điểm danh: +1 vàng
   const heartWant = 1; // +1 tim / điểm danh (tổng nhiệm vụ ngày ≤ 5 tim)
   const st = getDailyState();
-  let continued = false;
-  if(st.lastClaim){
-    const last = new Date(st.lastClaim + 'T00:00:00');
-    const now  = new Date(todayStr() + 'T00:00:00');
-    continued = Math.round((now - last) / 86400000) === 1;
-  }
-  const milestoneDay = continued ? (st.milestoneStreak || 0) + 1 : 1;
+
+  // Lưu theo dayOfMonth dưới khoá tháng — sang tháng mới tự reset (khoá khác).
   st.lastClaim = todayStr();
-  st.streak = status.streakDay;
-  st.milestoneStreak = milestoneDay;
+  st.streak = dom;
+  st.months = st.months || {};
+  st.months[monthKey()] = st.months[monthKey()] || {};
+  st.months[monthKey()][String(dom)] = 1;
   saveDailyState(st);
+
   if(typeof addPlayerXP === 'function') addPlayerXP(xp);
   if(typeof grantGold === 'function') grantGold(gold, typeof t==='function'?t('dailyGold'):'Điểm danh');
   let hearts = 0;
@@ -92,24 +121,21 @@ function claimDailyReward(){
       hearts = heartWant;
     }
   }catch(e){}
-  // Mốc dài 7/14/21/30 ngày liên tục — chỉ trúng ĐÚNG ngày chạm mốc.
+
+  // Rương đặc biệt của ngày (3/7/14/21/30/31).
   let milestone = null;
-  const mr = _dailyMilestoneRewardFor(milestoneDay);
-  if(mr){
-    const reasonText = (typeof t==='function'?t('dailyGold'):'Điểm danh') + ' ' + milestoneDay;
-    if(mr.gold && typeof grantGold === 'function') grantGold(mr.gold, reasonText);
-    if(mr.diamonds && typeof grantDiamonds === 'function') grantDiamonds(mr.diamonds, reasonText);
-    let crateReward = null;
-    if(mr.crateId && typeof grantItemCrate === 'function'){
-      const res = grantItemCrate(mr.crateId, reasonText);
-      if(res && res.ok) crateReward = res.reward;
-    }
-    milestone = { day: milestoneDay, gold: mr.gold||0, diamonds: mr.diamonds||0, crate: crateReward };
+  const chest = checkinChestForDay(dom);
+  if(chest){
+    const reasonText = (typeof t==='function'?t('dailyGold'):'Điểm danh') + ' ' + dom;
+    if(chest.reward.gold && typeof grantGold === 'function') grantGold(chest.reward.gold, reasonText);
+    if(chest.reward.diamonds && typeof grantDiamonds === 'function') grantDiamonds(chest.reward.diamonds, reasonText);
+    milestone = { day: dom, gold: chest.reward.gold || 0, diamonds: chest.reward.diamonds || 0, tier: chest.tier };
   }
+
   try{ if(typeof noteCupLoginClaim==='function') noteCupLoginClaim(); }catch(e){}
   try{ if(typeof noteQuestEvent==='function') noteQuestEvent('checkin', 1); }catch(e){}
-  try{ if(typeof logGameEvent==='function') logGameEvent('daily_reward_claim', { streak_day: status.streakDay, milestone_day: milestoneDay, xp, gold }); }catch(e){}
-  return { day: status.streakDay, xp, gold, hearts, milestone };
+  try{ if(typeof logGameEvent==='function') logGameEvent('daily_reward_claim', { day: dom, xp, gold }); }catch(e){}
+  return { day: dom, xp, gold, hearts, milestone };
 }
 
 function updateDailyBadge(){
@@ -140,33 +166,89 @@ function maybeAutoShowDailyPanel(){
   }catch(e){}
 }
 
+/** Vẽ 1 ngày trong lưới điểm danh tháng. */
+function _dailyDayEl(day, dom, isToday){
+  const cell = document.createElement('div');
+  let cls = 'daily-day';
+  if(day < dom) cls += ' claimed';
+  else if(day === dom) cls += (isToday ? ' available' : ' claimed');
+  else cls += ' locked';
+  if(day === dom) cls += ' today';
+  cell.className = cls;
+
+  const chest = checkinChestForDay(day);
+  let inner = '<div class="daily-day-num">' + day + '</div>';
+  inner += '<div class="daily-day-xp">+' + (DAILY_REWARD_XP[(day - 1) % DAILY_REWARD_XP.length] || 0) + ' XP</div>';
+  if(chest){
+    cls += ' chest';
+    cell.className = cls;
+    cell.style.setProperty('--chest-tint', chest.tier.tint);
+    inner += '<div class="daily-day-chest">' + chest.tier.icon + '</div>';
+  }
+  cell.innerHTML = inner;
+  return cell;
+}
+
+
 function renderDailyPanel(){
   const status = getDailyStatus();
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth();
+  const dom = status.day;
+  const dim = daysInMonth();
+  const firstDow = new Date(y, m, 1).getDay(); // 0 = CN
+  const startPad = (firstDow + 6) % 7; // bắt đầu từ Thứ 2
+
+  const monthHead = document.getElementById('daily-month-head');
+  if(monthHead){
+    monthHead.textContent = (typeof t==='function' && typeof ttf==='function')
+      ? ttf('questsCalMonth', 'Tháng {0}/{1}', m+1, y)
+      : ('Tháng '+(m+1)+'/'+y);
+  }
+
   const list = document.getElementById('daily-reward-list');
   if(list){
     list.innerHTML = '';
-    for(let i=1; i<=7; i++){
-      const xp = DAILY_REWARD_XP[i-1];
-      const div = document.createElement('div');
-      let cls = 'daily-day';
-      if(i < status.streakDay || (i === status.streakDay && status.alreadyClaimedToday)) cls += ' claimed';
-      else if(i === status.streakDay) cls += ' today';
-      else cls += ' locked';
-      div.className = cls;
-      div.innerHTML = '<div class="daily-day-num">'+(typeof t==='function'?t('dailyDay', i):('Ngày '+i))+'</div><div class="daily-day-xp">+'+xp+' XP</div>';
-      list.appendChild(div);
+    ['T2','T3','T4','T5','T6','T7','CN'].forEach(function(lab){
+      const d = document.createElement('div');
+      d.className = 'daily-day-dow';
+      d.textContent = lab;
+      list.appendChild(d);
+    });
+    for(let i = 0; i < startPad; i++){
+      const blank = document.createElement('div');
+      blank.className = 'daily-day empty';
+      list.appendChild(blank);
+    }
+    for(let day = 1; day <= dim; day++){
+      list.appendChild(_dailyDayEl(day, dom, status.canClaim));
     }
   }
+
   const btn = document.getElementById('daily-claim-btn');
   if(btn){
     if(status.alreadyClaimedToday){
-      btn.textContent = typeof t==='function' ? t('dailyClaimed') : '✅ Đã nhận hôm nay — quay lại vào ngày mai';
+      btn.textContent = typeof t==='function' ? t('dailyClaimed') : '✅ Đã điểm danh hôm nay — quay lại vào ngày mai';
       btn.disabled = true;
     } else {
-      const xp = DAILY_REWARD_XP[(status.streakDay-1)%7];
-      btn.textContent = typeof t==='function' ? t('dailyClaim', status.streakDay, xp) : ('🎁 Nhận quà ngày ' + status.streakDay + ' (+' + xp + ' XP)');
+      const xp = DAILY_REWARD_XP[(dom - 1) % DAILY_REWARD_XP.length] || 0;
+      btn.textContent = typeof t==='function' ? t('dailyClaim', dom, xp) : ('🎁 Điểm danh ngày ' + dom + ' (+' + xp + ' XP)');
       btn.disabled = false;
     }
+  }
+
+  const legend = document.getElementById('daily-chest-legend');
+  if(legend){
+    legend.innerHTML = Object.keys(CHECKIN_CHEST_DAYS).sort(function(a,b){ return a-b; }).map(function(day){
+      const tier = CHECKIN_CHEST_DEFS[CHECKIN_CHEST_DAYS[day]];
+      const r = CHECKIN_CHEST_REWARDS[day] || {};
+      const parts = [];
+      if(r.gold) parts.push('🪙' + r.gold);
+      if(r.diamonds) parts.push('💎' + r.diamonds);
+      return '<div class="daily-legend-item" style="--chest-tint:'+tier.tint+'"><span class="daily-legend-chest">'+tier.icon+'</span>'
+        + '<span class="daily-legend-text">Ngày '+day+' · '+tier.name+(parts.length ? ' · '+parts.join('+') : '')+'</span></div>';
+    }).join('');
   }
 }
 
@@ -193,12 +275,13 @@ function initDailyRewardPanel(){
         const h = res.hearts|0;
         let msg = typeof t==='function'
           ? t('dailyFlash', res.xp, res.day, h)
-          : ('🎁 +'+res.xp+' XP · 🪙 +'+(res.gold||1)+(h?(' · ❤️ +'+h):'')+' (ngày '+res.day+'/7)');
+          : ('🎁 +'+res.xp+' XP · 🪙 +'+(res.gold||1)+(h?(' · ❤️ +'+h):'')+' (ngày '+res.day+'/'+daysInMonth()+')');
         if(res.milestone){
-          msg += ' · ' + (typeof t==='function'?t('dailyMilestoneFlash', res.milestone.day):('Mốc '+res.milestone.day+' ngày!'));
+          const tier = res.milestone.tier || {};
+          msg += ' · ' + (typeof t==='function'?t('dailyMilestoneFlash', res.milestone.day):('Mốc '+res.milestone.day+' ngày!'))
+            + (tier.name ? (' '+tier.icon+' '+tier.name) : '');
           if(res.milestone.gold) msg += ' 🪙+'+res.milestone.gold;
           if(res.milestone.diamonds) msg += ' 💎+'+res.milestone.diamonds;
-          if(res.milestone.crate) msg += ' '+res.milestone.crate.label;
         }
         showComboFlash(0, false, msg);
       }

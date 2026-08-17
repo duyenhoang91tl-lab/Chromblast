@@ -1027,12 +1027,40 @@ body.tutorial-open #start-screen{
 }
 #daily-panel .admin-title{ color:#5a4013; }
 #daily-panel .admin-close{ color:#8a6420; }
-#daily-panel .admin-sub{ color:rgba(90,64,19,0.65); }
-#daily-panel .daily-day{
-  border-color:rgba(154,110,20,0.18); background:rgba(255,255,255,0.5); color:rgba(90,64,19,0.6);
+/* Tiêu đề tháng + lưới 7 cột (thứ 2 → CN) + chú thích rương */
+.daily-month-head{
+  text-align:center; font-weight:900; margin:6px 0 10px; font-size:14px; color:#8a5600;
 }
-#daily-panel .daily-day.claimed{ border-color:rgba(46,160,80,0.5); background:rgba(76,175,80,0.18); color:#256029; }
-#daily-panel .daily-day.today{ border-color:#e6960f; background:rgba(255,180,20,0.22); color:#8a5600; box-shadow:0 0 10px rgba(230,150,15,0.3); }
+#daily-panel .daily-grid{
+  display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-top:4px;
+}
+.daily-day-dow{
+  text-align:center; font-size:10px; font-weight:800; color:rgba(90,64,19,0.55); padding:2px 0;
+}
+#daily-panel .daily-day{
+  position:relative; aspect-ratio:1; border-radius:10px; padding:2px 0;
+  text-align:center; display:flex; flex-direction:column; align-items:center;
+  justify-content:center; font-size:11px; border:1px solid rgba(154,110,20,0.18);
+  background:rgba(255,255,255,0.5); color:rgba(90,64,19,0.6);
+}
+.daily-day-num { font-weight:800; line-height:1.1; }
+.daily-day-xp { font-weight:700; font-size:8px; line-height:1.1; opacity:0.8; }
+#daily-panel .daily-day.claimed { border-color: rgba(46,204,113,0.5); background: rgba(46,204,113,0.12); color:#2e8b4f; }
+#daily-panel .daily-day.available { border-color:#e6960f; background: rgba(255,180,20,0.25); color:#8a5600; box-shadow:0 0 10px rgba(230,150,15,0.3); }
+#daily-panel .daily-day.today { outline:1px solid rgba(230,150,15,0.6); outline-offset:1px; }
+#daily-panel .daily-day.locked { opacity:0.45; }
+#daily-panel .daily-day.empty { background:transparent; border:none; }
+#daily-panel .daily-day.chest { border-style:dashed; }
+.daily-chest-legend{
+  display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; justify-content:center;
+}
+.daily-legend-item{
+  display:flex; align-items:center; gap:5px; font-size:10.5px; font-weight:700;
+  color:rgba(90,64,19,0.75); background:rgba(255,255,255,0.55);
+  border:1px solid rgba(154,110,20,0.18); border-radius:999px; padding:4px 9px;
+}
+.daily-legend-chest{ font-size:13px; filter:drop-shadow(0 0 3px var(--chest-tint, #b98a5c)); }
+.daily-legend-text{ white-space:nowrap; }
 .admin-title {
   font-size: 17px; font-weight: 900; color:#f7c948; margin-bottom: 4px;
   display:flex; justify-content:space-between; align-items:center;
@@ -6475,14 +6503,21 @@ body:has(#secret-stage.active) .streak-dot.lit{
   text-align:center; font-size:10px; font-weight:800; color:#8a5b70; padding:2px 0;
 }
 .quests-cal-day{
-  aspect-ratio:1; display:flex; align-items:center; justify-content:center;
+  position:relative; aspect-ratio:1; display:flex; align-items:center; justify-content:center;
   border-radius:10px; font-size:11px; font-weight:800; color:#5a3345;
   background:rgba(255,255,255,0.6); border:1px solid rgba(200,90,130,0.12);
 }
 .quests-cal-day.empty{ background:transparent; border:none; }
 .quests-cal-day.claimed{ background:rgba(76,175,80,0.22); border-color:rgba(76,150,80,0.4); color:#2e6b32; }
+.quests-cal-day.available{ border-color:#f0a000; background:rgba(255,213,74,0.22); color:#8a5600; box-shadow:0 0 0 1px rgba(240,160,0,0.35); }
 .quests-cal-day.today{ border-color:#f0a000; box-shadow:0 0 0 1px rgba(240,160,0,0.35); }
 .quests-cal-day.future{ opacity:0.45; }
+.quests-cal-day.missed{ opacity:0.5; text-decoration:line-through; }
+.quests-cal-day.chest{ border-style:dashed; }
+.quests-cal-chest{
+  position:absolute; top:-7px; right:-5px; font-size:12px; line-height:1;
+  filter:drop-shadow(0 0 3px var(--chest-tint, #b98a5c));
+}
 .quests-checkin-btn{ width:100%; margin-top:12px !important; }
 
 /* ══════════════════════════════════════════════════════════════

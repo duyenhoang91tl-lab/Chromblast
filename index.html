@@ -869,9 +869,10 @@
 
   <div id="daily-panel" class="admin-panel-like">
     <div class="admin-card">
-      <div class="admin-title"><span data-i18n="dailyTitle">🎁 Điểm danh hàng ngày</span><button class="admin-close" id="daily-close-btn">✕</button></div>
-      <div class="admin-sub" data-i18n="dailySub">Điểm danh mỗi ngày: XP + 🪙1 vàng. Bỏ lỡ 1 ngày sẽ mất chuỗi. Cup / lên cấp cũng thưởng vàng.</div>
+      <div class="admin-title"><span data-i18n="dailyTitle">🎁 Điểm danh theo tháng</span><button class="admin-close" id="daily-close-btn">✕</button></div>
+      <div id="daily-month-head" class="daily-month-head"></div>
       <div id="daily-reward-list" class="daily-grid"></div>
+      <div id="daily-chest-legend" class="daily-chest-legend"></div>
       <button id="daily-claim-btn" class="auth-submit-btn" style="margin-top:14px;">🎁 Nhận quà</button>
     </div>
   </div>
@@ -893,7 +894,6 @@
         <div id="quests-detail" class="quests-detail">
           <div id="quests-list" class="quests-list"></div>
           <div id="quests-checkin-wrap" class="quests-checkin-wrap" hidden>
-            <div class="quests-checkin-title" data-i18n="questsMonthCheckin">Ô điểm danh theo tháng</div>
             <div id="quests-month-cal" class="quests-month-cal"></div>
             <button type="button" id="quests-checkin-btn" class="auth-submit-btn quests-checkin-btn">🎁 Điểm danh hôm nay</button>
           </div>
