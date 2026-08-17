@@ -788,7 +788,6 @@ initAccountPanel();
 initHelpPanel();
 initStartScreen();
 initAuthScreen();
-initDailyRewardPanel();
 try{ if(typeof initQuestsUI==='function') initQuestsUI(); }catch(e){}
 initLeaderboardPanel();
 try{ if(typeof initBrickSkins==='function') initBrickSkins(); }catch(e){}

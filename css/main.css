@@ -1013,54 +1013,6 @@ body.tutorial-open #start-screen{
 #player-profile-panel .account-msg.err{ color:#c62828; }
 #player-profile-panel .account-msg.ok{ color:#2e8b4f; }
 
-/* "Điểm danh" (#daily-panel) — cùng khuôn kỹ thuật trên, tông vàng-cam ấm để
-   phân biệt với Đổi tên, vẫn cùng họ pastel nhạt dần. */
-#daily-panel.admin-panel-like{
-  padding:0; align-items:stretch; justify-content:stretch; background:transparent;
-}
-#daily-panel .admin-card{
-  width:100%; max-width:none; height:100%; max-height:none;
-  margin:0; border:none; border-radius:0; box-shadow:none; overflow-y:auto;
-  background:linear-gradient(165deg,#fffdf0 0%,#fff2c9 45%,#ffe3a3 100%);
-  color:#5a4013;
-  padding:max(20px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
-}
-#daily-panel .admin-title{ color:#5a4013; }
-#daily-panel .admin-close{ color:#8a6420; }
-/* Tiêu đề tháng + lưới 7 cột (thứ 2 → CN) + chú thích rương */
-.daily-month-head{
-  text-align:center; font-weight:900; margin:6px 0 10px; font-size:14px; color:#8a5600;
-}
-#daily-panel .daily-grid{
-  display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-top:4px;
-}
-.daily-day-dow{
-  text-align:center; font-size:10px; font-weight:800; color:rgba(90,64,19,0.55); padding:2px 0;
-}
-#daily-panel .daily-day{
-  position:relative; aspect-ratio:1; border-radius:10px; padding:2px 0;
-  text-align:center; display:flex; flex-direction:column; align-items:center;
-  justify-content:center; font-size:11px; border:1px solid rgba(154,110,20,0.18);
-  background:rgba(255,255,255,0.5); color:rgba(90,64,19,0.6);
-}
-.daily-day-num { font-weight:800; line-height:1.1; }
-.daily-day-xp { font-weight:700; font-size:8px; line-height:1.1; opacity:0.8; }
-#daily-panel .daily-day.claimed { border-color: rgba(46,204,113,0.5); background: rgba(46,204,113,0.12); color:#2e8b4f; }
-#daily-panel .daily-day.available { border-color:#e6960f; background: rgba(255,180,20,0.25); color:#8a5600; box-shadow:0 0 10px rgba(230,150,15,0.3); }
-#daily-panel .daily-day.today { outline:1px solid rgba(230,150,15,0.6); outline-offset:1px; }
-#daily-panel .daily-day.locked { opacity:0.45; }
-#daily-panel .daily-day.empty { background:transparent; border:none; }
-#daily-panel .daily-day.chest { border-style:dashed; }
-.daily-chest-legend{
-  display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; justify-content:center;
-}
-.daily-legend-item{
-  display:flex; align-items:center; gap:5px; font-size:10.5px; font-weight:700;
-  color:rgba(90,64,19,0.75); background:rgba(255,255,255,0.55);
-  border:1px solid rgba(154,110,20,0.18); border-radius:999px; padding:4px 9px;
-}
-.daily-legend-chest{ font-size:13px; filter:drop-shadow(0 0 3px var(--chest-tint, #b98a5c)); }
-.daily-legend-text{ white-space:nowrap; }
 .admin-title {
   font-size: 17px; font-weight: 900; color:#f7c948; margin-bottom: 4px;
   display:flex; justify-content:space-between; align-items:center;
@@ -1265,12 +1217,8 @@ body.tutorial-open #start-screen{
 #help-ok-btn.enabled:active { transform: scale(0.98); }
 
 /* ══════════════════ DAILY REWARDS ══════════════════ */
-#daily-btn { position: relative; }
-#daily-btn.has-reward::after {
-  content:''; position:absolute; top:-2px; right:-2px; width:10px; height:10px;
-  border-radius:50%; background:#ff4757; box-shadow:0 0 0 2px #17102b;
-  animation: daily-pulse 1.4s infinite;
-}
+/* Điểm danh giờ nằm TRONG màn Nhiệm vụ (#quests-screen) — không còn panel 🎁
+   riêng. Khối .daily-grid/.daily-day bên dưới vẫn dùng cho Caro/Versus daily. */
 @keyframes daily-pulse { 0%,100%{ transform:scale(1); opacity:1; } 50%{ transform:scale(1.25); opacity:0.7; } }
 .daily-grid {
   display:grid; grid-template-columns: repeat(4, 1fr); gap:8px; margin-top:4px;
@@ -7033,6 +6981,13 @@ body:has(#secret-stage.active) .streak-dot.lit{
   box-shadow:0 3px 10px rgba(200,90,130,0.22);
 }
 .acchub-icon-btn:active .acchub-icon-circle{ transform:scale(0.94); }
+/* Badge "có thể điểm danh" trên nút Nhiệm vụ — điểm danh giờ nằm trong màn Nhiệm vụ */
+.acchub-icon-btn.has-quest{ position:relative; }
+.acchub-icon-btn.has-quest::after{
+  content:''; position:absolute; top:-2px; right:12px; width:10px; height:10px;
+  border-radius:50%; background:#ff4757; box-shadow:0 0 0 2px #fff;
+  animation: daily-pulse 1.4s infinite;
+}
 .acchub-icon-label{ font-size:11.5px; font-weight:800; }
 .acchub-list{
   background:rgba(255,255,255,0.7); border-radius:18px; overflow:hidden;

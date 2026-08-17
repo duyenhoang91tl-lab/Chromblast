@@ -139,9 +139,12 @@ function claimDailyReward(){
 }
 
 function updateDailyBadge(){
-  const btn = document.getElementById('daily-btn');
-  if(!btn) return;
-  btn.classList.toggle('has-reward', getDailyStatus().canClaim);
+  // Điểm danh giờ nằm TRONG màn Nhiệm vụ (#quests-screen, tab Ngày) — badge đỏ
+  // báo "có thể điểm danh" gắn vào nút mở màn Nhiệm vụ thay vì nút 🎁 cũ.
+  const qbtn = document.getElementById('set-btn-quests');
+  if(qbtn) qbtn.classList.toggle('has-quest', getDailyStatus().canClaim);
+  const cbtn = document.getElementById('acchub-btn-quests');
+  if(cbtn) cbtn.classList.toggle('has-quest', getDailyStatus().canClaim);
 }
 
 const DAILY_AUTOSHOW_KEY_PREFIX = 'chromablast_daily_autoshow_';
@@ -151,145 +154,14 @@ function dailyAutoShowKey(){
   return DAILY_AUTOSHOW_KEY_PREFIX + who;
 }
 
-/** Tự động mở panel điểm danh đúng 1 lần cho lần đầu vào game trong ngày —
- *  kể cả khi người chơi đóng panel mà chưa bấm nhận, các lần mở app tiếp
- *  theo TRONG CÙNG NGÀY sẽ không tự bật lại nữa (chỉ mở tay qua daily-btn
- *  như bình thường). Gọi từ ui-gates.js ngay sau khi start-screen hiện thật. */
+/** Lần đầu vào game trong ngày: nếu chưa điểm danh thì tự mở màn Nhiệm vụ ở tab
+ *  Ngày (nơi duy nhất có lịch điểm danh tháng). Mỗi ngày chỉ tự mở 1 lần. */
 function maybeAutoShowDailyPanel(){
   try{
     const today = todayStr();
     if(safeGet(dailyAutoShowKey()) === today) return; // đã tự hiện hôm nay rồi
     safeSet(dailyAutoShowKey(), today);
     if(!getDailyStatus().canClaim) return; // đã điểm danh hôm nay rồi thì khỏi làm phiền
-    const btn = document.getElementById('daily-btn');
-    if(btn) btn.click(); // tái dùng đúng luồng openPanel() đã có (sfx, render, show)
+    if(typeof openQuestsScreen === 'function') openQuestsScreen('day');
   }catch(e){}
-}
-
-/** Vẽ 1 ngày trong lưới điểm danh tháng. */
-function _dailyDayEl(day, dom, isToday){
-  const cell = document.createElement('div');
-  let cls = 'daily-day';
-  if(day < dom) cls += ' claimed';
-  else if(day === dom) cls += (isToday ? ' available' : ' claimed');
-  else cls += ' locked';
-  if(day === dom) cls += ' today';
-  cell.className = cls;
-
-  const chest = checkinChestForDay(day);
-  let inner = '<div class="daily-day-num">' + day + '</div>';
-  inner += '<div class="daily-day-xp">+' + (DAILY_REWARD_XP[(day - 1) % DAILY_REWARD_XP.length] || 0) + ' XP</div>';
-  if(chest){
-    cls += ' chest';
-    cell.className = cls;
-    cell.style.setProperty('--chest-tint', chest.tier.tint);
-    inner += '<div class="daily-day-chest">' + chest.tier.icon + '</div>';
-  }
-  cell.innerHTML = inner;
-  return cell;
-}
-
-
-function renderDailyPanel(){
-  const status = getDailyStatus();
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = now.getMonth();
-  const dom = status.day;
-  const dim = daysInMonth();
-  const firstDow = new Date(y, m, 1).getDay(); // 0 = CN
-  const startPad = (firstDow + 6) % 7; // bắt đầu từ Thứ 2
-
-  const monthHead = document.getElementById('daily-month-head');
-  if(monthHead){
-    monthHead.textContent = (typeof t==='function' && typeof ttf==='function')
-      ? ttf('questsCalMonth', 'Tháng {0}/{1}', m+1, y)
-      : ('Tháng '+(m+1)+'/'+y);
-  }
-
-  const list = document.getElementById('daily-reward-list');
-  if(list){
-    list.innerHTML = '';
-    ['T2','T3','T4','T5','T6','T7','CN'].forEach(function(lab){
-      const d = document.createElement('div');
-      d.className = 'daily-day-dow';
-      d.textContent = lab;
-      list.appendChild(d);
-    });
-    for(let i = 0; i < startPad; i++){
-      const blank = document.createElement('div');
-      blank.className = 'daily-day empty';
-      list.appendChild(blank);
-    }
-    for(let day = 1; day <= dim; day++){
-      list.appendChild(_dailyDayEl(day, dom, status.canClaim));
-    }
-  }
-
-  const btn = document.getElementById('daily-claim-btn');
-  if(btn){
-    if(status.alreadyClaimedToday){
-      btn.textContent = typeof t==='function' ? t('dailyClaimed') : '✅ Đã điểm danh hôm nay — quay lại vào ngày mai';
-      btn.disabled = true;
-    } else {
-      const xp = DAILY_REWARD_XP[(dom - 1) % DAILY_REWARD_XP.length] || 0;
-      btn.textContent = typeof t==='function' ? t('dailyClaim', dom, xp) : ('🎁 Điểm danh ngày ' + dom + ' (+' + xp + ' XP)');
-      btn.disabled = false;
-    }
-  }
-
-  const legend = document.getElementById('daily-chest-legend');
-  if(legend){
-    legend.innerHTML = Object.keys(CHECKIN_CHEST_DAYS).sort(function(a,b){ return a-b; }).map(function(day){
-      const tier = CHECKIN_CHEST_DEFS[CHECKIN_CHEST_DAYS[day]];
-      const r = CHECKIN_CHEST_REWARDS[day] || {};
-      const parts = [];
-      if(r.gold) parts.push('🪙' + r.gold);
-      if(r.diamonds) parts.push('💎' + r.diamonds);
-      return '<div class="daily-legend-item" style="--chest-tint:'+tier.tint+'"><span class="daily-legend-chest">'+tier.icon+'</span>'
-        + '<span class="daily-legend-text">Ngày '+day+' · '+tier.name+(parts.length ? ' · '+parts.join('+') : '')+'</span></div>';
-    }).join('');
-  }
-}
-
-function initDailyRewardPanel(){
-  const btn = document.getElementById('daily-btn');
-  const panel = document.getElementById('daily-panel');
-  if(!btn || !panel) return;
-
-  function openPanel(){
-    if(typeof sfxClick === 'function') sfxClick();
-    renderDailyPanel();
-    panel.classList.add('show');
-  }
-  function closePanel(){ panel.classList.remove('show'); }
-
-  btn.addEventListener('click', openPanel);
-  document.getElementById('daily-close-btn').addEventListener('click', closePanel);
-  panel.addEventListener('click', (e)=>{ if(e.target === panel) closePanel(); });
-
-  document.getElementById('daily-claim-btn').addEventListener('click', ()=>{
-    const res = claimDailyReward();
-    if(res){
-      if(typeof showComboFlash === 'function'){
-        const h = res.hearts|0;
-        let msg = typeof t==='function'
-          ? t('dailyFlash', res.xp, res.day, h)
-          : ('🎁 +'+res.xp+' XP · 🪙 +'+(res.gold||1)+(h?(' · ❤️ +'+h):'')+' (ngày '+res.day+'/'+daysInMonth()+')');
-        if(res.milestone){
-          const tier = res.milestone.tier || {};
-          msg += ' · ' + (typeof t==='function'?t('dailyMilestoneFlash', res.milestone.day):('Mốc '+res.milestone.day+' ngày!'))
-            + (tier.name ? (' '+tier.icon+' '+tier.name) : '');
-          if(res.milestone.gold) msg += ' 🪙+'+res.milestone.gold;
-          if(res.milestone.diamonds) msg += ' 💎+'+res.milestone.diamonds;
-        }
-        showComboFlash(0, false, msg);
-      }
-      if(typeof sfxUnlock === 'function') sfxUnlock();
-      renderDailyPanel();
-      updateDailyBadge();
-    }
-  });
-
-  updateDailyBadge();
 }

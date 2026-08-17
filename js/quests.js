@@ -556,7 +556,6 @@
     } catch (e) {}
     // Đóng panel modal khác để không lẫn
     [
-      "daily-panel",
       "shop-panel",
       "friends-panel",
       "account-panel",
@@ -619,8 +618,8 @@
   function updateQuestsBadge() {
     const btn = document.getElementById("set-btn-quests");
     if (btn) btn.classList.toggle("has-quest", hasClaimable());
-    const hdr = document.getElementById("daily-btn");
-    // keep daily badge via daily module
+    // Badge điểm danh (có thể nhận thưởng hôm nay) gắn cùng nút Nhiệm vụ —
+    // cập nhật qua updateDailyBadge() (js/daily-rewards.js).
   }
 
   function initQuestsUI() {
@@ -690,7 +689,8 @@
       }
     });
 
-    // Sync check-in if already claimed via old daily panel
+    // Đồng bộ trạng thái điểm danh từ daily-rewards (điểm danh giờ nằm trong
+    // lịch tháng của màn Nhiệm vụ này)
     const st = loadState();
     syncCheckinFromDaily(st);
     saveState(st);
