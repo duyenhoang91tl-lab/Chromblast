@@ -319,6 +319,12 @@ function _acbagRenderMaps(grid){
         if(typeof m.run === 'function') m.run();
       });
       card.appendChild(btn);
+    } else {
+      // Ô map chưa qua — chèn ô đệm giữ đúng chiều cao với ô đã qua, giữ lưới
+      // căn giữa đều hàng, không bị lệch trái do thiếu nút phía dưới.
+      const spacer = document.createElement('div');
+      spacer.className = 'acbag-card-placeholder';
+      card.appendChild(spacer);
     }
     grid.appendChild(card);
   });

@@ -7125,13 +7125,18 @@ body:has(#secret-stage.active) .streak-dot.lit{
 .acbag-tab.active{ background:#fff; color:#5a3fc0; box-shadow:0 4px 12px rgba(60,40,100,0.15); }
 .acbag-grid{
   display:grid; grid-template-columns:1fr 1fr; gap:10px; padding-bottom:16px;
+  align-items:stretch;
 }
 .acbag-card{
+  display:flex; flex-direction:column; align-items:center;
   background:#fff; border-radius:16px; padding:12px 10px;
   box-shadow:0 4px 14px rgba(60,40,100,0.12); text-align:center;
+  min-width:0;
 }
 .acbag-card.active{ outline:2px solid #8a6fd0; }
 .acbag-card.locked{ opacity:0.55; }
+/* Ô map ẩn chưa qua — giữ đúng chiều cao như ô đã qua (không lệch trái/hàng lệch) */
+.acbag-card-placeholder{ flex:1 1 auto; min-height:30px; }
 .acbag-card-preview{ position:relative; display:flex; justify-content:center; margin-bottom:8px; }
 .acbag-preview-swatch{ width:56px; height:40px; border-radius:8px; }
 .acbag-brick-preview{ display:flex; gap:3px; }
@@ -7249,6 +7254,15 @@ body:has(#secret-stage.active) .streak-dot.lit{
   font-weight:800; font-size:11px; cursor:pointer;
 }
 .acbag-use-btn:active{ transform:scale(0.96); }
+
+/* Lưới vật phẩm (Túi của tôi) — giữ 2 cột nhưng căn giữa nội dung ô, chống tràn
+   nút Dùng trên màn hình hẹp. */
+@media (max-width:360px){
+  .acbag-grid{ gap:8px; }
+  .acbag-card{ padding:10px 6px; }
+  .acbag-card-name{ font-size:11px; white-space:normal; }
+  .acbag-use-btn{ max-width:100%; }
+}
 
 /* deploy-trigger: kich hoat lai GitHub Pages deploy sau khi doi Source sang GitHub Actions */
 
