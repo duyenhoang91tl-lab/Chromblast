@@ -2,7 +2,8 @@
 // js/engine.js — ENGINE BÀN CỜ MAP THƯỜNG (MODE A)
 // Board/piece/kéo-thả-ghost/đặt khối/nổ hàng-cột-cụm/game-over/render.
 // Tách verbatim khỏi main.js. Nạp TRƯỚC main.js (chia sẻ global scope; tham chiếu
-// state board/pieces/score & hàm tiến trình/cơ chế của main.js + roundMechanics lúc CHẠY).
+// state board/pieces/score & hàm tiến trình/cơ chế của main.js + js/round-mechanics.js
+// lúc CHẠY).
 // ═══════════════════════════════════════════════════════════════
 
 /* ══════════════════════════════════════════

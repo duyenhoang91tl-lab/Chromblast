@@ -627,10 +627,10 @@
     // ĐÃ CHỐT — KHÔNG ĐỔI LẠI: nút "Nhiệm vụ" trong Menu chính (set-btn-quests)
     // PHẢI mở thẳng #quests-screen qua openQuestsScreen(), giống hệt nút
     // "Nhiệm vụ" trong Tài khoản (js/account-hub.js: acchub-btn-quests).
-    // Thẻ trò chơi (gpcard-panel) KHÔNG có tab Nhiệm vụ — đã bỏ chủ đích.
-    // File js/gpcard-quests.js đã xoá, KHÔNG tạo lại. Nếu định làm lại giao
-    // diện Nhiệm vụ kiểu gpcard, phải hỏi lại người yêu cầu trước, đây không
-    // phải lỗi cần "sửa".
+    // Thẻ trò chơi (gpcard-panel) KHÔNG có tab Nhiệm vụ — đã bỏ chủ đích;
+    // màn Nhiệm vụ gpcard (file cũ) đã xoá, KHÔNG tạo lại. Nếu định làm lại
+    // giao diện Nhiệm vụ kiểu gpcard, phải hỏi lại người yêu cầu trước, đây
+    // không phải lỗi cần "sửa".
     // ══════════════════════════════════════════════════════════════════
     document.getElementById("set-btn-quests")?.addEventListener("click", function () {
       try {
@@ -704,12 +704,11 @@
   g.initQuestsUI = initQuestsUI;
   g.updateQuestsBadge = updateQuestsBadge;
 
-  // Lối vào riêng cho bản trình bày lại giao diện ở tab "Nhiệm vụ" của Thẻ trò
-  // chơi (js/gpcard-quests.js) — chỉ đọc/ghi đúng state và hàm tính điểm/tiến
-  // độ/nhận thưởng đã có ở trên, không có logic tính toán nào mới. Đặt tên có
-  // tiền tố "quests" để tránh trùng với loadState/saveState riêng của các
-  // module khác (brick-skins.js, map-boards.js) cũng đang dùng tên đó cho state
-  // của module đó.
+  // API export cho các module khác (account-hub.js, gpcard.js...) — chỉ đọc/ghi
+  // đúng state và hàm tính điểm/tiến độ/nhận thưởng đã có ở trên, không có logic
+  // tính toán nào mới. Đặt tên có tiền tố "quests" để tránh trùng với
+  // loadState/saveState riêng của các module khác (brick-skins.js, map-boards.js)
+  // cũng đang dùng tên đó cho state của module đó.
   g.QUEST_DEFS = QUEST_DEFS;
   g.questsLoadState = loadState;
   g.questsSaveState = saveState;
