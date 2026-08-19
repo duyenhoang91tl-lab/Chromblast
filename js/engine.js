@@ -102,6 +102,7 @@ let gridCells = null; // ROWS x COLS cache — dựng 1 lần, tái sử dụng 
 
 function renderGrid(){
   const grid=document.getElementById('grid');
+  if(!grid) return;
   if(!gridCells){
     // Dựng DOM 1 lần duy nhất. Dùng event delegation (1 listener trên #grid)
     // thay vì gắn listener riêng cho từng ô mỗi lần render → tránh rò rỉ listener + giảm việc tạo node.
@@ -237,7 +238,7 @@ function processClears(opts){
     if(!opts.chain){
       combo=0; consecutiveBursts=0; updateComboUI(); updateBurstCount();
       const wrap=document.getElementById('grid-wrap');
-      wrap.classList.remove('combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5');
+      if(wrap) wrap.classList.remove('combo-glow-1','combo-glow-2','combo-glow-3','combo-glow-4','combo-glow-5');
     }
     afterPlace();
     return;
@@ -567,7 +568,8 @@ function checkGameOverA(){
     const goEl=document.getElementById('game-over-overlay');
     if(goEl && goEl.classList.contains('show')) return true; // đã thua — tránh trừ tim/ad lặp
     sfxGameOver();
-    document.getElementById('go-score').textContent=t('finalScore', score.toLocaleString());
+    const goScore=document.getElementById('go-score');
+    if(goScore) goScore.textContent=t('finalScore', score.toLocaleString());
     if(goEl) goEl.classList.add('show');
     if(typeof submitScoreToLeaderboard==='function') submitScoreToLeaderboard(score);
     try{ if(typeof logGameEvent==='function') logGameEvent('level_end', { map_id:'classic', result:'no_moves', score:score, level_reached:level }); }catch(e){}
@@ -590,6 +592,7 @@ function checkGameOverA(){
 
 function renderPieces(){
   const area=document.getElementById('pieces-area');
+  if(!area) return;
   area.innerHTML='';
   slotEls=[];
   pieces.forEach((piece,idx)=>{

@@ -7456,9 +7456,18 @@ body:has(#secret-stage.active) .streak-dot.lit{
   background:rgba(60,30,50,0.45);
   display:flex; align-items:center; justify-content:center;
   padding:20px; box-sizing:border-box;
-  opacity:0; transition:opacity .2s ease;
+  opacity:0; visibility:hidden; pointer-events:none;
+  transition:opacity .2s ease, visibility 0s linear .2s;
 }
-.crate-reward-overlay.show{ opacity:1; }
+.crate-reward-overlay.show{
+  opacity:1; visibility:visible; pointer-events:auto;
+  transition:opacity .2s ease, visibility 0s;
+}
+/* Khi đóng: visibility:hidden + pointer-events:none để lớp overlay trong suốt
+   KHÔNG nuốt click của toàn app — trước đây display:flex + opacity:0 phủ kín
+   màn hình (z-index 14000) chặn mọi nút/popup (kể cả màn Điểm danh): thuộc
+   tính hidden bị rule display:flex này ghi đè nên không tự ẩn được. */
+.crate-reward-overlay[hidden]{ display:none !important; }
 .crate-reward-modal{
   width:100%; max-width:320px; text-align:center;
   background:linear-gradient(165deg,#ffffff 0%,#ffeaf1 45%,#ffd7e4 100%);

@@ -358,22 +358,22 @@ function initAdminPanel(){}
 // Khởi tạo các panel dùng chung của game (menu map ẩn, hướng dẫn, adventure).
 
 function initGamePanels(){
-  document.getElementById('hiddenmap-menu-btn').addEventListener('click', ()=>{
+  document.getElementById('hiddenmap-menu-btn')?.addEventListener('click', ()=>{
     sfxClick();
     renderHiddenMapMenu();
-    document.getElementById('hiddenmap-menu-panel').classList.add('show');
+    document.getElementById('hiddenmap-menu-panel')?.classList.add('show');
   });
-  document.getElementById('hiddenmap-menu-close-btn').addEventListener('click', ()=>{
-    document.getElementById('hiddenmap-menu-panel').classList.remove('show');
+  document.getElementById('hiddenmap-menu-close-btn')?.addEventListener('click', ()=>{
+    document.getElementById('hiddenmap-menu-panel')?.classList.remove('show');
   });
   renderHiddenMapMenu();
 
-  document.getElementById('hiddenmap-help-btn').addEventListener('click', ()=>{
+  document.getElementById('hiddenmap-help-btn')?.addEventListener('click', ()=>{
     sfxClick();
     if(activeHiddenMapKey) showMapHelp(activeHiddenMapKey);
   });
-  document.getElementById('maphelp-close-btn').addEventListener('click', ()=>{
-    document.getElementById('maphelp-panel').classList.remove('show');
+  document.getElementById('maphelp-close-btn')?.addEventListener('click', ()=>{
+    document.getElementById('maphelp-panel')?.classList.remove('show');
   });
 
   const rgBtn=document.getElementById('roundguide-btn');
@@ -425,15 +425,15 @@ function initAccountPanel(){
       else panel.classList.add('show');
     });
   }
-  document.getElementById('account-close-btn').addEventListener('click', ()=>{
-    panel.classList.remove('show');
+  document.getElementById('account-close-btn')?.addEventListener('click', ()=>{
+    panel?.classList.remove('show');
   });
   document.getElementById('account-edit-profile')?.addEventListener('click', ()=>{
     try{sfxClick();}catch(e){}
-    panel.classList.remove('show');
+    panel?.classList.remove('show');
     if(typeof openPlayerProfilePanel==='function') openPlayerProfilePanel();
   });
-  document.getElementById('change-password-form').addEventListener('submit', (e)=>{
+  document.getElementById('change-password-form')?.addEventListener('submit', (e)=>{
     e.preventDefault();
     doChangePassword(
       document.getElementById('cp-old').value,
@@ -441,7 +441,7 @@ function initAccountPanel(){
       document.getElementById('cp-new2').value
     );
   });
-  document.getElementById('logout-btn').addEventListener('click', ()=>{
+  document.getElementById('logout-btn')?.addEventListener('click', ()=>{
     doLogout();
   });
   if(typeof initSettingsMenu==='function') initSettingsMenu();
