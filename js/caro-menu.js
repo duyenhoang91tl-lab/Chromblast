@@ -9,6 +9,10 @@
 
 function openCaroMenu(){
   try{ sfxClick(); }catch(e){}
+  // Đồng bộ lại nhãn tiếng Việt mỗi lần mở — nút #caro-btn giờ bấm được nhiều
+  // lần (đã bỏ {once:true} trong caro-loader.js), nên phải applyI18nDom() lại
+  // phòng trường hợp người chơi đổi ngôn ngữ giữa các lần mở menu.
+  try{ if(typeof applyI18nDom === 'function') applyI18nDom(); }catch(e){}
   document.getElementById('caro-menu-panel')?.classList.add('show');
 }
 function closeCaroMenu(){

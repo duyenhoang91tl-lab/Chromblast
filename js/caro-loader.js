@@ -43,6 +43,10 @@
   function bindLazyButton(){
     var btn = document.getElementById('caro-btn');
     if (!btn) return;
+    // KHÔNG dùng { once:true } — trước đây listener tự gỡ sau lần bấm đầu tiên,
+    // các lần bấm sau #caro-btn không làm gì → menu Caro không mở lại được.
+    // Giờ bấm bao nhiêu lần cũng được: openCaroMenu() (nạp eager qua caro-menu.js)
+    // xử lý mọi lần; ensureCaroLoaded() (nếu cần) đã tự chống nạp lại caro.js.
     btn.addEventListener('click', function onFirstCaroClick(){
       // Màn vào Caro giờ là js/caro-menu.js (nạp eager, không cần đợi
       // caro.js) — chỉ những hành động sâu bên trong mới gọi ensureCaroLoaded().
@@ -51,7 +55,7 @@
       window.ensureCaroLoaded().then(function(){
         if (typeof openCaroHub === 'function') openCaroHub();
       }).catch(function(err){ console.error('[caro-loader]', err); });
-    }, { once: true });
+    });
   }
 
   if (document.readyState === 'loading') {
