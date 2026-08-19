@@ -88,8 +88,10 @@ function initVersusMenu(){
   document.getElementById('versus-menu-join-btn')?.addEventListener('click', ()=>{
     try{ sfxClick(); }catch(e){}
     closeVersusMenu();
-    if(typeof openOnlineHub === 'function') openOnlineHub();
-    setTimeout(()=> document.getElementById('online-join-code')?.focus(), 150);
+    // Màn "Vào phòng" giờ là màn lưới phòng Versus (js/versus-room-browser.js)
+    // — cùng 3 tab lọc Tất cả/Còn trống/Chưa bắt đầu với Caro, thay vì hub cũ.
+    if(typeof openVersusRoomBrowser === 'function') openVersusRoomBrowser();
+    else if(typeof openOnlineHub === 'function') openOnlineHub();
   });
 
   // Chưa có hàng đợi ghép trận theo hạng riêng — tạm dùng chung luồng Tìm đối

@@ -161,11 +161,14 @@ function closeCaroRoomBrowser(){
       if(typeof caroCreateRoom === 'function') caroCreateRoom();
     });
 
-    document.querySelectorAll('.crb-tab').forEach(btn=>{
+    // Chỉ bắt tab của CHÍNH panel Caro — vì panel Versus (#versus-room-browser)
+    // cũng tái dùng class .crb-tab; nếu dùng querySelectorAll('.crb-tab') chung
+    // sẽ dính cả tab của panel kia (đổi nhầm trạng thái lọc/bôi active).
+    document.querySelectorAll('#caro-room-browser .crb-tab').forEach(btn=>{
       btn.addEventListener('click', ()=>{
         try{ sfxClick(); }catch(e){}
         _crbTab = btn.dataset.crbTab || 'all';
-        document.querySelectorAll('.crb-tab').forEach(b=> b.classList.toggle('active', b===btn));
+        document.querySelectorAll('#caro-room-browser .crb-tab').forEach(b=> b.classList.toggle('active', b===btn));
         renderCrbRoomList();
       });
     });

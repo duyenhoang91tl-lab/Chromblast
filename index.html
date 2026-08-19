@@ -1372,6 +1372,44 @@
     </div>
   </div>
 
+  <div id="versus-room-browser" class="crb-panel">
+    <div class="crb-topbar">
+      <button type="button" class="crb-exit" id="vsb-exit-btn" aria-label="Back">‹</button>
+      <div class="crb-avatar" id="vsb-avatar"></div>
+      <div class="crb-stat"><span>❤️</span><span id="vsb-hearts">0</span></div>
+      <div class="crb-stat"><span>🪙</span><span id="vsb-gold">0</span></div>
+      <button type="button" class="crb-icon-btn" id="vsb-chat-btn" aria-label="Chat">💬</button>
+      <button type="button" class="crb-icon-btn" id="vsb-settings-btn" aria-label="Settings">⚙️</button>
+    </div>
+    <div class="crb-shell">
+      <div class="crb-actions">
+        <button type="button" class="crb-action-btn" id="vsb-find-btn" data-i18n="onlineFind">🔍 Tìm đối thủ</button>
+        <button type="button" class="crb-action-btn" id="vsb-create-btn" data-i18n="onlineCreate">🏠 Tạo phòng</button>
+      </div>
+      <div class="crb-list" id="vsb-room-list"></div>
+      <div class="crb-empty" id="vsb-room-list-empty" data-i18n="onlineWaitingEmpty">Chưa có phòng — tạo phòng hoặc bấm Tìm đối thủ</div>
+      <div class="crb-tabs">
+        <button type="button" class="crb-tab active" id="vsb-tab-all" data-crb-tab="all" data-i18n="crbTabAll">Tất cả</button>
+        <button type="button" class="crb-tab" id="vsb-tab-open" data-crb-tab="open" data-i18n="crbTabOpen">Còn trống</button>
+        <button type="button" class="crb-tab" id="vsb-tab-notstarted" data-crb-tab="notstarted" data-i18n="crbTabNotStarted">Chưa bắt đầu</button>
+      </div>
+      <div class="crb-bottom-icons">
+        <button type="button" class="crb-bicon" id="vsb-ai-btn">
+          <span class="crb-bicon-circle">🤖</span><span data-i18n="crbVsAi">Chơi với máy</span>
+        </button>
+        <button type="button" class="crb-bicon" id="vsb-friends-btn">
+          <span class="crb-bicon-circle">🤝</span><span data-i18n="acchubFriends">Bạn bè</span>
+        </button>
+        <button type="button" class="crb-bicon" id="vsb-leaderboard-btn">
+          <span class="crb-bicon-circle">🏆</span><span data-i18n="caroRankBoard">Xếp hạng</span>
+        </button>
+        <button type="button" class="crb-bicon" id="vsb-watch-ad-btn">
+          <span class="crb-bicon-circle">🎬</span><span data-i18n="crbWatchAd">Xem QC</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <div id="caro-lobby-panel" class="admin-panel-like">
     <div class="admin-card">
       <div class="admin-title"><span data-i18n="caroLobby">❌⭕ Phòng Caro</span> <small id="caro-lobby-room-no" class="caro-lobby-no"></small></div>
@@ -1834,6 +1872,7 @@
 <script src="js/caro-menu.js"></script>
 <script src="js/versus-daily.js"></script>
 <script src="js/versus-menu.js"></script>
+<script src="js/versus-room-browser.js"></script>
 <!-- js/caro.js + js/caro-social.js: nạp trễ (lazy-load) qua js/caro-loader.js
      khi người chơi bấm #caro-btn hoặc nhận lời mời Caro qua chat, để
      giảm dung lượng tải ban đầu (~104KB) cho người chưa vào chế độ này. -->
