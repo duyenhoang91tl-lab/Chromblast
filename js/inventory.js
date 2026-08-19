@@ -273,6 +273,40 @@ const POWER_INFO = {
 };
 const NEW_SKILL_TYPES = ['lightning','rainbow','cleanse','megabomb','firework','tornado','frostzone','smallpts','bigpts','doublepts'];
 
+/** Mô tả ngắn + dòng tác dụng hiển thị trong modal chi tiết thẻ bài (màn Túi đồ /
+ *  chọn kỹ năng). Nội dung khớp đúng hiệu ứng thật của từng skill trong
+ *  engine-powers.js — chỉ để HIỂN THỊ, không đổi logic. */
+const POWER_DESC = {
+  fire: 'Thẻ công phá cơ bản — dùng để dọn gạch khi hết nước đi.',
+  bubble: 'Thẻ quét màu — nổ sạch toàn bộ ô cùng màu với ô bạn chạm.',
+  wind: 'Thẻ thổi bay — xoá cả một hàng hoặc cả một cột gạch trong 1 lần.',
+  lightning: 'Thẻ sét — đánh trúng cả hàng lẫn cột gạch đi qua ô bạn chạm.',
+  rainbow: 'Thẻ cầu vồng — quét nổ 2 màu gạch cùng lúc.',
+  cleanse: 'Thẻ phá hiệu ứng — gỡ gai, băng, nhớt khỏi ô bạn chạm.',
+  megabomb: 'Thẻ bom lớn — nổ tung vùng 5×5 quanh ô bạn chạm.',
+  firework: 'Thẻ pháo hoa — nổ 2 hàng gạch liền kề ô bạn chạm.',
+  tornado: 'Thẻ lốc xoáy — cuốn bay 2 cột gạch liền kề ô bạn chạm.',
+  frostzone: 'Thẻ băng — phá tan vùng băng đang phong toả trên bàn.',
+  smallpts: 'Thẻ điểm — cộng ngay một lượng điểm nhỏ khi bấm.',
+  bigpts: 'Thẻ điểm lớn — cộng ngay một lượng điểm lớn khi bấm.',
+  doublepts: 'Thẻ nhân đôi — toàn bộ điểm đạt được trong lượt đó ×2.'
+};
+const POWER_EFFECT = {
+  fire: '🔥 Đốt cháy vùng 3×3 quanh ô được chọn.',
+  bubble: '🫧 Nổ sạch một màu gạch trên toàn bàn.',
+  wind: '💨 Thổi bay cả hàng hoặc cả cột gạch.',
+  lightning: '⚡ Đánh trúng cả hàng lẫn cột gạch.',
+  rainbow: '🌈 Quét nổ 2 màu gạch cùng lúc.',
+  cleanse: '🧹 Gỡ gai, băng, nhớt khỏi ô bị ảnh hưởng.',
+  megabomb: '💣 Nổ tung vùng 5×5 gạch xung quanh.',
+  firework: '🎆 Nổ 2 hàng gạch liền kề.',
+  tornado: '🌀 Cuốn bay 2 cột gạch liền kề.',
+  frostzone: '🧊 Phá tan vùng băng phong toả.',
+  smallpts: '💎 Cộng điểm nhỏ ngay khi bấm.',
+  bigpts: '💰 Cộng điểm lớn ngay khi bấm.',
+  doublepts: '🎯 Nhân đôi điểm trong lượt sử dụng.'
+};
+
 const SKILL_LOADOUT_KEY = 'chromablast_skill_loadout';
 const MAX_SKILL_LOADOUT = 5;
 const DEFAULT_SKILL_LOADOUT = ['fire','bubble','wind'];
@@ -832,6 +866,14 @@ document.addEventListener('DOMContentLoaded', ()=>{
     const btn = e.target.closest('[data-skill-type]');
     if(!btn) return;
     try{ sfxClick(); }catch(err){}
+    // Bấm thẻ bài → MỞ MODAL CHI TIẾT (mô tả + tác dụng + nút Mang theo/Bỏ chọn).
+    // Chọn/bỏ chọn giờ nằm trong nút của modal (ui.js: showCardDetailModal),
+    // không còn đổi ngay khi bấm thẻ.
+    if(typeof showCardDetailModal === 'function'){
+      showCardDetailModal(btn.dataset.skillType);
+      return;
+    }
+    // Dự phòng (nếu ui.js chưa nạp kịp): giữ hành vi cũ chọn/bỏ chọn ngay.
     const type = btn.dataset.skillType;
     let current = getSkillLoadout();
     if(current.includes(type)){

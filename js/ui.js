@@ -67,6 +67,79 @@ function enableTouchScroll(el){
   else bind();
 })();
 
+/* ═══════════════════════════════════════════════════════════════
+   MODAL CHI TIẾT THẺ BÀI (màn Túi đồ / chọn kỹ năng)
+   Bấm 1 thẻ bài trong #skill-loadout-grid → hiện modal gồm: icon, tên,
+   số lượng đang sở hữu, mô tả (POWER_DESC) + dòng tác dụng (POWER_EFFECT,
+   js/inventory.js), và nút Mang theo/Bỏ chọn. Bấm nền ngoài để đóng.
+   ═══════════════════════════════════════════════════════════════ */
+let _cardDetailModal = null;
+
+function _buildCardDetailModal(){
+  const ov = document.createElement('div');
+  ov.className = 'card-detail-overlay';
+  ov.innerHTML =
+    '<div class="card-detail-modal">' +
+      '<div class="cdm-icon"></div>' +
+      '<div class="cdm-name"></div>' +
+      '<div class="cdm-owned"></div>' +
+      '<div class="cdm-desc"></div>' +
+      '<div class="cdm-effect"></div>' +
+      '<button type="button" class="cdm-toggle-btn"></button>' +
+    '</div>';
+  // Bấm ra ngoài modal → đóng
+  ov.addEventListener('click', (e)=>{ if(e.target === ov) closeCardDetailModal(); });
+  // Nút Mang theo / Bỏ chọn — giữ đúng logic chọn tối đa 5 kỹ năng cũ
+  ov.querySelector('.cdm-toggle-btn').addEventListener('click', (e)=>{
+    e.stopPropagation();
+    const type = e.currentTarget.dataset.skillType;
+    if(!type || typeof getSkillLoadout !== 'function' || typeof setSkillLoadout !== 'function') return;
+    try{ sfxClick(); }catch(err){}
+    let current = getSkillLoadout();
+    if(current.includes(type)){
+      current = current.filter(x=>x!==type);
+    } else {
+      if(typeof MAX_SKILL_LOADOUT !== 'undefined' && current.length >= MAX_SKILL_LOADOUT){
+        try{ showComboFlash(0, false, (typeof t==='function'?t('invLoadoutFull'):'Chỉ được chọn tối đa 5 kỹ năng — bỏ bớt 1 cái đã chọn trước')); }catch(err){}
+        return;
+      }
+      current.push(type);
+    }
+    setSkillLoadout(current);
+    // Cập nhật lưới trong panel (giữ nguyên số lượng) rồi làm mới nội dung modal.
+    try{ if(typeof openSkillLoadoutPanel === 'function') openSkillLoadoutPanel(); }catch(err){}
+    showCardDetailModal(type);
+  });
+  return ov;
+}
+
+function showCardDetailModal(type){
+  const info = (typeof POWER_INFO !== 'undefined' && POWER_INFO[type]) ? POWER_INFO[type] : null;
+  if(!info) return;
+  if(!_cardDetailModal) _cardDetailModal = _buildCardDetailModal();
+  const name = (typeof powerName === 'function') ? powerName(type) : type;
+  const owned = (typeof inv !== 'undefined' && inv && info.field) ? (inv[info.field]|0) : 0;
+  const desc = (typeof POWER_DESC !== 'undefined' && POWER_DESC[type]) ? POWER_DESC[type] : '';
+  const effect = (typeof POWER_EFFECT !== 'undefined' && POWER_EFFECT[type]) ? POWER_EFFECT[type] : '';
+  _cardDetailModal.querySelector('.cdm-icon').textContent = info.icon || '';
+  _cardDetailModal.querySelector('.cdm-name').textContent = name;
+  _cardDetailModal.querySelector('.cdm-owned').textContent = 'Sở hữu: ×' + owned;
+  _cardDetailModal.querySelector('.cdm-desc').textContent = desc;
+  _cardDetailModal.querySelector('.cdm-effect').textContent = effect;
+  const isPicked = (typeof getSkillLoadout === 'function') && getSkillLoadout().includes(type);
+  const btn = _cardDetailModal.querySelector('.cdm-toggle-btn');
+  btn.dataset.skillType = type;
+  btn.textContent = isPicked ? '✅ Đang mang theo — Bỏ chọn' : '➕ Mang theo khi đấu';
+  btn.classList.toggle('picked', isPicked);
+  if(!_cardDetailModal.isConnected) document.body.appendChild(_cardDetailModal);
+  _cardDetailModal.classList.add('show');
+}
+
+function closeCardDetailModal(){
+  if(_cardDetailModal) _cardDetailModal.classList.remove('show');
+}
+try{ window.showCardDetailModal = showCardDetailModal; window.closeCardDetailModal = closeCardDetailModal; }catch(e){}
+
 function showUnlockOverlay(){
   const chk=document.getElementById('unlock-autoskip-chk');
   if(chk) chk.checked=autoSkipHiddenMaps;
