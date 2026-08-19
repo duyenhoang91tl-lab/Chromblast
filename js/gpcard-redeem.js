@@ -30,13 +30,38 @@ function _crateRewardIcon(reward){
  * được, đóng lại bằng nút Nhận hoặc bấm ra ngoài overlay. Dùng chung cho mọi
  * chỗ mở rương (renderCrateGridInto ở dưới dùng chung cho cả 3 nơi hiển thị
  * rương như đã ghi ở trên). */
-function showRewardPopup(reward){
+function showRewardPopup(rewards){
   const overlay = document.getElementById('crate-reward-overlay');
-  if(!overlay || !reward) return;
+  if(!overlay || !rewards) return;
+  const list = Array.isArray(rewards) ? rewards.filter(Boolean) : [rewards];
+  if(!list.length) return;
+
+  const first = list[0];
   const iconEl = document.getElementById('crate-reward-icon');
   const labelEl = document.getElementById('crate-reward-label');
-  if(iconEl) iconEl.textContent = _crateRewardIcon(reward);
-  if(labelEl) labelEl.textContent = reward.label || '';
+  if(iconEl) iconEl.textContent = _crateRewardIcon(first);
+  if(labelEl) labelEl.textContent = first.label || '';
+
+  // Danh sách đầy đủ phần thưởng — tạo 1 lần rồi tái sử dụng cho mỗi lần mở.
+  let listEl = overlay.querySelector('.reward-list');
+  if(!listEl){
+    listEl = document.createElement('div');
+    listEl.className = 'reward-list';
+    const btn = document.getElementById('crate-reward-claim-btn');
+    const modal = overlay.querySelector('.crate-reward-modal');
+    if(btn) btn.parentNode.insertBefore(listEl, btn);
+    else if(modal) modal.appendChild(listEl);
+  }
+  listEl.innerHTML = list.map(r=>(
+    '<div class="reward-item">'
+    + '<span class="reward-item-icon">' + _crateRewardIcon(r) + '</span>'
+    + '<span class="reward-item-label">' + (r && r.label ? r.label : '') + '</span>'
+    + '</div>'
+  )).join('');
+  // Chỉ hiện danh sách khi có TỪ 2 phần thưởng trở lên — 1 phần thưởng giữ
+  // đúng giao diện icon/tên to như bản cũ.
+  listEl.style.display = list.length > 1 ? '' : 'none';
+
   overlay.hidden = false;
   requestAnimationFrame(()=>{ overlay.classList.add('show'); });
 }
@@ -115,7 +140,8 @@ function renderCrateGridInto(root){
       const id = btn.dataset.gpcardCrate;
       const res = typeof openLootCrate === 'function' ? await openLootCrate(id, false) : { ok:false };
       if(res.ok){
-        if(res.reward) showRewardPopup(res.reward);
+        const rewards = (res.rewards && res.rewards.length) ? res.rewards : (res.reward ? [res.reward] : null);
+        if(rewards && rewards.length) showRewardPopup(rewards);
         try{ if(typeof sfxUnlock === 'function') sfxUnlock(); }catch(e){}
       } else {
         const msg = res.reason === 'gold' ? (typeof t === 'function' ? t('shopNotEnoughGold') : 'Không đủ vàng')

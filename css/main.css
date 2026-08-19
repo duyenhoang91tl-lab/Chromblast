@@ -7589,3 +7589,17 @@ body:has(#secret-stage.active) .streak-dot.lit{
   box-shadow:0 4px 14px rgba(200,90,130,0.35);
 }
 .crate-reward-claim-btn:active{ transform:scale(0.96); }
+
+/* ── Danh sách phần thưởng trong modal mở rương (js/gpcard-redeem.js:
+   showRewardPopup nhận mảng — quantity stacking nhiều món trong 1 lần mở) ── */
+.reward-list{
+  display:flex; flex-direction:column; gap:6px;
+  margin-top:14px; text-align:left;
+}
+.reward-item{
+  display:flex; align-items:center; gap:10px;
+  background:rgba(255,255,255,0.7); border:1px solid rgba(200,90,130,0.18);
+  border-radius:12px; padding:8px 12px;
+}
+.reward-item-icon{ font-size:22px; line-height:1; flex-shrink:0; }
+.reward-item-label{ font-size:13px; font-weight:800; color:#5a3345; }
