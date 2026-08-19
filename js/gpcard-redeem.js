@@ -126,6 +126,11 @@ function renderCrateGridInto(root){
       renderCrateGridInto(root);
     });
   });
+
+  // Badge số lượng/tình trạng trên từng thẻ rương (rương miễn phí hôm nay, số
+  // sạc kỹ năng đang sở hữu) — hàm chung ở js/loot-crates.js, vẽ lại mỗi lần
+  // render nên không bị mất sau khi mở rương.
+  try{ if(typeof decorateCrateCards === 'function') decorateCrateCards(root); }catch(e){}
 }
 
 function renderGpcardRedeem(){

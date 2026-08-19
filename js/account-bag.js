@@ -457,6 +457,15 @@ function _acbagRenderDetail(){
     // và tab Rương trong Cửa hàng (js/gpcard-redeem.js) — icon/dữ liệu/hành
     // vi mua-mở luôn khớp tuyệt đối ở cả 3 nơi, không có bản copy riêng.
     if(typeof renderCrateGridInto === 'function') renderCrateGridInto(grid);
+    // Dòng tóm tắt số lượng (rương miễn phí hôm nay + sạc kỹ năng đang sở hữu) —
+    // hiển thị "quantity stacking" của kho rương trên màn Túi của tôi.
+    const summary = (typeof crateInventorySummaryHtml === 'function') ? crateInventorySummaryHtml() : '';
+    if(summary){
+      const note = document.createElement('div');
+      note.className = 'acbag-chest-note';
+      note.innerHTML = summary;
+      if(grid.parentNode) grid.parentNode.insertBefore(note, grid);
+    }
     return;
   }
 

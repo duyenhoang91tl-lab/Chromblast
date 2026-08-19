@@ -6976,6 +6976,24 @@ body:has(#secret-stage.active) .streak-dot.lit{
 .gpcard-crate-free-btn.disabled,
 .gpcard-crate-free-btn:disabled{ background:#ddd8ee; color:#9a8fc0; cursor:default; }
 
+/* ── Badge số lượng/tình trạng trên thẻ rương (js/loot-crates.js: decorateCrateCards) ── */
+.gpcard-crate-card{ position:relative; }
+.gpcard-crate-badge{
+  position:absolute; top:6px; right:6px; font-size:9px; font-weight:900;
+  border-radius:999px; padding:2px 7px; z-index:1;
+}
+.gpcard-crate-badge.free{ color:#0f3d22; background:rgba(127,227,160,0.85); }
+.gpcard-crate-badge.qty{ color:#7a4a00; background:rgba(255,213,74,0.9); }
+
+/* ── Dòng tóm tắt "quantity stacking" phía trên lưới rương (Túi của tôi / Cửa hàng) ── */
+.acbag-chest-note,
+.shop-chest-note{
+  margin-bottom:10px; font-size:12px; font-weight:800; color:#5a3345;
+  background:rgba(255,255,255,0.65); border:1px solid rgba(200,90,130,0.16);
+  border-radius:12px; padding:8px 12px; text-align:center;
+}
+.shop-chest-note{ background:rgba(238,233,255,0.9); color:#3a3358; }
+
 /* Hiệu ứng tên MUA/MỞ RƯƠNG (js/name-effect-skins.js) — độc lập với rank-fx
    (không tự động theo hạng, người chơi tự chọn sau khi sở hữu). Áp qua
    data-name-fx="<id>" trên phần tử hiển thị tên. */

@@ -94,6 +94,93 @@ async function _openTierCrateServer(id, useFree){
   }
 }
 
+/** Gọi Cloud Function openTierCrateRewards (functions/index.js) — bản trả về mảng
+ *  phần thưởng { rewards:[{type,amount}...] } để modal mở rương liệt kê đầy đủ. */
+async function _openTierCrateServerRewards(id, useFree){
+  if(typeof _getOnlineFunctions !== 'function') return { ok:false, reason:'offline' };
+  const fns = _getOnlineFunctions();
+  if(!fns) return { ok:false, reason:'offline' };
+  try{
+    const res = await fns.httpsCallable('openTierCrateRewards')({ crateId:id, useFree:!!useFree });
+    return { ok:true, data: res.data };
+  }catch(e){
+    return { ok:false, reason: (e && e.code) || 'error' };
+  }
+}
+
+/** Gộp các phần thưởng TRÙNG loại (quantity stacking): 2 mục cùng type(+id/skillType)
+ *  được cộng amount lại thành 1 dòng duy nhất để hiển thị gọn trong modal mở rương. */
+function _stackRewards(list){
+  const out = [];
+  const byKey = {};
+  (list||[]).forEach(r=>{
+    if(!r || !r.type) return;
+    const key = r.type + ':' + (r.id || r.skillType || '');
+    if(byKey[key]){
+      if(r.amount) byKey[key].amount = (byKey[key].amount || 0) + r.amount;
+      return;
+    }
+    byKey[key] = r;
+    out.push(r);
+  });
+  return out;
+}
+
+/** Đếm tổng sạc kỹ năng 1 người chơi đang sở hữu (lửa + bóng + gió + loại mới). */
+function _ownedSkillCharges(){
+  if(typeof inv === 'undefined' || !inv) return 0;
+  let n = 0;
+  ['fires','bubbles','winds'].forEach(f=>{ n += (inv[f]|0); });
+  if(typeof ALL_SKILL_TYPES !== 'undefined' && Array.isArray(ALL_SKILL_TYPES)){
+    ALL_SKILL_TYPES.forEach(type=>{
+      const info = (typeof POWER_INFO !== 'undefined' && POWER_INFO[type]) ? POWER_INFO[type] : null;
+      if(info && info.field && inv[info.field]) n += (inv[info.field]|0);
+    });
+  }
+  return n;
+}
+
+/** Thêm badge số lượng/tình trạng lên từng thẻ rương trong lưới đã render (màn
+ *  Túi của tôi + tab Rương trong Cửa hàng): rương miễn phí hôm nay, rương kỹ năng
+ *  hiện số sạc đang sở hữu (quantity stacking). Chỉ thêm phần HIỂN THỊ, không đổi
+ *  dữ liệu/hành vi mua-mở (gọi sau renderCrateGridInto — mỗi lần render lại tự vẽ lại). */
+function decorateCrateCards(root){
+  if(!root) return;
+  root.querySelectorAll('.gpcard-crate-card').forEach(card=>{
+    const btn = card.querySelector('[data-gpcard-crate]');
+    if(!btn) return;
+    const crate = getCrate(btn.dataset.gpcardCrate);
+    if(!crate) return;
+    if(crate.freeDaily && typeof crateFreeAvailable === 'function' && crateFreeAvailable(crate.id)){
+      const b = document.createElement('span');
+      b.className = 'gpcard-crate-badge free';
+      b.textContent = '🎁 Miễn phí hôm nay';
+      card.appendChild(b);
+    }
+    if(crate.kind === 'item-skill'){
+      const n = _ownedSkillCharges();
+      const b = document.createElement('span');
+      b.className = 'gpcard-crate-badge qty';
+      b.textContent = 'Sở hữu: ⚡×' + n;
+      card.appendChild(b);
+    }
+  });
+}
+
+/** Dòng tóm tắt \"quantity stacking\" đặt phía trên lưới rương (Túi của tôi / Cửa
+ *  hàng): số rương còn miễn phí hôm nay + tổng sạc kỹ năng đang sở hữu. */
+function crateInventorySummaryHtml(){
+  let free = 0;
+  (Array.isArray(LOOT_CRATES) ? LOOT_CRATES : []).forEach(c=>{
+    if(c.freeDaily && (typeof crateFreeAvailable !== 'function' || crateFreeAvailable(c.id))) free++;
+  });
+  const skills = _ownedSkillCharges();
+  const parts = [];
+  if(free > 0) parts.push('🎁 <b>' + free + '</b> rương miễn phí hôm nay');
+  if(skills > 0) parts.push('⚡ Sạc kỹ năng sở hữu: <b>×' + skills + '</b>');
+  return parts.join(' · ');
+}
+
 /** Mở rương — trừ tiền (trừ khi useFree=true, đã kiểm tra hạn mức free ở nơi
  *  gọi), random phần thưởng theo đúng "kind", tự cộng vào đúng kho tương ứng.
  *  Trả về { ok, reward:{label,...} } hoặc { ok:false, reason }. */
@@ -103,7 +190,7 @@ async function openLootCrate(id, useFree){
 
   if(crate.kind === 'tier'){
     if(useFree && !crateFreeAvailable(id)) return { ok:false, reason:'free-used' };
-    const res = await _openTierCrateServer(id, useFree);
+    const res = await _openTierCrateServerRewards(id, useFree);
     if(!res.ok){
       const reason = res.reason === 'failed-precondition' ? (crate.priceType === 'gold' ? 'gold' : 'diamond')
         : res.reason === 'already-exists' ? 'free-used'
@@ -115,11 +202,15 @@ async function openLootCrate(id, useFree){
 
     const data = res.data || {};
     const cat = data.category;
-    let reward;
-    if(cat === 'gold') reward = { type:'gold', amount:data.amount, label:'🪙 +' + data.amount };
-    else if(cat === 'diamonds') reward = { type:'diamond', amount:data.amount, label:'💎 +' + data.amount };
-    else if(cat === 'hearts') reward = { type:'hearts', amount:data.amount, label:'❤️ +' + data.amount };
-    else {
+    const rewards = [];
+    if(cat === 'gold' || cat === 'diamonds' || cat === 'hearts'){
+      // Server đã trừ giá + cộng ví rồi — đẩy thẳng mảng phần thưởng về để hiển thị.
+      (Array.isArray(data.rewards) ? data.rewards : []).forEach(entry=>{
+        if(entry.type === 'gold') rewards.push({ type:'gold', amount:entry.amount, label:'🪙 +' + entry.amount });
+        else if(entry.type === 'diamonds') rewards.push({ type:'diamond', amount:entry.amount, label:'💎 +' + entry.amount });
+        else if(entry.type === 'hearts') rewards.push({ type:'hearts', amount:entry.amount, label:'❤️ +' + entry.amount });
+      });
+    } else {
       // Cosmetic — server chỉ quyết định LOẠI (category), client tự chọn 1
       // skin CHƯA sở hữu trong đúng kho + đúng bậc rồi mở khoá cục bộ (cosmetic
       // trong app này luôn lưu cục bộ, không đồng bộ server — xem player-profile.js).
@@ -137,17 +228,18 @@ async function openLootCrate(id, useFree){
       }
       if(skin){
         unlockFn(skin.id);
-        reward = { type:kindLabel, id:skin.id, label:icon + ' ' + skin.name };
+        rewards.push({ type:kindLabel, id:skin.id, label:icon + ' ' + skin.name });
       } else {
         // Đã sở hữu hết đúng bậc đó (hoặc kho rỗng) — quy đổi ra vàng để
         // không "mở trúng mà không nhận được gì".
         const n = wantExpensive ? 40 : 15;
         if(typeof grantGold === 'function') grantGold(n, crate.name);
-        reward = { type:'gold', amount:n, label:'🪙 +' + n + ' (đã đủ vật phẩm loại này)' };
+        rewards.push({ type:'gold', amount:n, label:'🪙 +' + n + ' (đã đủ vật phẩm loại này)' });
       }
     }
-    try{ if(typeof logGameEvent === 'function') logGameEvent('crate_open', { crate_id:id, free:!!useFree, reward_type: reward.type }); }catch(e){}
-    return { ok:true, reward };
+    const stacked = _stackRewards(rewards);
+    try{ if(typeof logGameEvent === 'function') logGameEvent('crate_open', { crate_id:id, free:!!useFree, reward_type: stacked[0] && stacked[0].type }); }catch(e){}
+    return { ok:true, rewards: stacked, reward: stacked[0] || null };
   }
 
   if(useFree){
@@ -184,5 +276,5 @@ async function openLootCrate(id, useFree){
 
   if(useFree) _markCrateFreeUsed(id);
   try{ if(typeof logGameEvent === 'function') logGameEvent('crate_open', { crate_id:id, free:!!useFree, reward_type: reward && reward.type }); }catch(e){}
-  return { ok:true, reward };
+  return { ok:true, rewards: _stackRewards([reward]), reward };
 }

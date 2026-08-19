@@ -352,6 +352,15 @@
 
     if (tab === "chests") {
       if (typeof renderCrateGridInto === "function") renderCrateGridInto(body);
+      // Dòng tóm tắt "quantity stacking" (rương miễn phí hôm nay + sạc kỹ năng
+      // sở hữu) hiển thị phía trên lưới rương trong tab Rương của Cửa hàng.
+      const summary = (typeof crateInventorySummaryHtml === "function") ? crateInventorySummaryHtml() : "";
+      if (summary) {
+        const note = document.createElement("div");
+        note.className = "shop-chest-note";
+        note.innerHTML = summary;
+        if (body.parentNode) body.parentNode.insertBefore(note, body);
+      }
       return;
     }
 

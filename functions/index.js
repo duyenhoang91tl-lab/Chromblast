@@ -794,20 +794,12 @@ function pickWeighted(pool) {
   return pool[pool.length - 1];
 }
 
-exports.openTierCrate = onCall({ region: 'asia-southeast1' }, async (request) => {
-  const uid = request.auth && request.auth.uid;
-  if (!uid) throw new HttpsError('unauthenticated', 'Cần đăng nhập.');
-  const crateId = request.data && request.data.crateId;
-  const useFree = !!(request.data && request.data.useFree);
-  const crate = TIER_CRATES[crateId];
-  if (!crate) throw new HttpsError('invalid-argument', 'Rương không hợp lệ.');
-  if (useFree && !crate.freeDaily) throw new HttpsError('invalid-argument', 'Rương này không có lượt miễn phí.');
-
-  const ref = db.collection('players').doc(uid);
-  const dayKey = periodKey('day');
-  const claimRef = db.collection('players').doc(uid).collection('claims').doc('tierCrateFree_' + crateId + '_' + dayKey);
-
-  return db.runTransaction(async (tx) => {
+/** Transaction mở rương BẬC dùng chung cho openTierCrate (trả {category, amount})
+ *  và openTierCrateRewards (trả mảng {rewards}). Toàn bộ random + trừ giá + cộng
+ *  thưởng phần tiền tệ chạy chung 1 transaction ở server; phần cosmetic chỉ trả
+ *  về category để client tự chọn skin chưa sở hữu rồi mở khoá cục bộ. */
+function tierCrateTx(crate, useFree, ref, claimRef) {
+  return async (tx) => {
     const snap = await tx.get(ref);
     const w = walletOf(snap.exists ? snap.data() : {});
 
@@ -826,11 +818,16 @@ exports.openTierCrate = onCall({ region: 'asia-southeast1' }, async (request) =>
     }
 
     let rewardAmount = 0;
+    const rewards = [];
     if (picked.cat === 'gold' || picked.cat === 'diamonds' || picked.cat === 'hearts') {
       rewardAmount = picked.min + Math.floor(Math.random() * (picked.max - picked.min + 1));
-      if (picked.cat === 'gold') goldDelta += rewardAmount;
-      else if (picked.cat === 'diamonds') diaDelta += rewardAmount;
-      else { heartsDelta = Math.max(0, Math.min(rewardAmount, MAX_HEARTS - w.hearts)); rewardAmount = heartsDelta; }
+      if (picked.cat === 'gold') { goldDelta += rewardAmount; rewards.push({ type: 'gold', amount: rewardAmount }); }
+      else if (picked.cat === 'diamonds') { diaDelta += rewardAmount; rewards.push({ type: 'diamonds', amount: rewardAmount }); }
+      else {
+        heartsDelta = Math.max(0, Math.min(rewardAmount, MAX_HEARTS - w.hearts));
+        rewardAmount = heartsDelta;
+        if (heartsDelta > 0) rewards.push({ type: 'hearts', amount: heartsDelta });
+      }
     }
 
     if (useFree) tx.set(claimRef, { ts: FieldValue.serverTimestamp() });
@@ -840,9 +837,46 @@ exports.openTierCrate = onCall({ region: 'asia-southeast1' }, async (request) =>
       hearts: FieldValue.increment(heartsDelta)
     }, { merge: true });
 
-    return { ok: true, category: picked.cat, amount: rewardAmount };
-  });
+    return { ok: true, category: picked.cat, amount: rewardAmount, rewards };
+  };
+}
+
+exports.openTierCrate = onCall({ region: 'asia-southeast1' }, async (request) => {
+  const uid = request.auth && request.auth.uid;
+  if (!uid) throw new HttpsError('unauthenticated', 'Cần đăng nhập.');
+  const crateId = request.data && request.data.crateId;
+  const useFree = !!(request.data && request.data.useFree);
+  const crate = TIER_CRATES[crateId];
+  if (!crate) throw new HttpsError('invalid-argument', 'Rương không hợp lệ.');
+  if (useFree && !crate.freeDaily) throw new HttpsError('invalid-argument', 'Rương này không có lượt miễn phí.');
+
+  const ref = db.collection('players').doc(uid);
+  const dayKey = periodKey('day');
+  const claimRef = db.collection('players').doc(uid).collection('claims').doc('tierCrateFree_' + crateId + '_' + dayKey);
+
+  return db.runTransaction(tierCrateTx(crate, useFree, ref, claimRef));
 });
+
+/** Phiên bản trả về MẢNG phần thưởng { rewards:[{type,amount}...] } — client dùng
+ *  để hiển thị modal mở rương liệt kê đầy đủ từng món (quantity stacking) thay vì
+ *  chỉ 1 món duy nhất. Logic giữ nguyên 100% openTierCrate (cùng transaction). */
+exports.openTierCrateRewards = onCall({ region: 'asia-southeast1' }, async (request) => {
+  const uid = request.auth && request.auth.uid;
+  if (!uid) throw new HttpsError('unauthenticated', 'Cần đăng nhập.');
+  const crateId = request.data && request.data.crateId;
+  const useFree = !!(request.data && request.data.useFree);
+  const crate = TIER_CRATES[crateId];
+  if (!crate) throw new HttpsError('invalid-argument', 'Rương không hợp lệ.');
+  if (useFree && !crate.freeDaily) throw new HttpsError('invalid-argument', 'Rương này không có lượt miễn phí.');
+
+  const ref = db.collection('players').doc(uid);
+  const dayKey = periodKey('day');
+  const claimRef = db.collection('players').doc(uid).collection('claims').doc('tierCrateFree_' + crateId + '_' + dayKey);
+
+  const res = await db.runTransaction(tierCrateTx(crate, useFree, ref, claimRef));
+  return { ok: true, rewards: res.rewards || [], category: res.category, amount: res.amount };
+});
+
 
 exports.openCurrencyCrate = onCall({ region: 'asia-southeast1' }, async (request) => {
   const uid = request.auth && request.auth.uid;
