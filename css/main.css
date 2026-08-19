@@ -6405,7 +6405,11 @@ body:has(#secret-stage.active) .streak-dot.lit{
   border-color:rgba(240,160,0,0.5); color:#fff;
 }
 .quests-body{
-  flex:1; min-height:0; overflow:auto; padding:8px 14px 24px;
+  flex:1; min-height:0; overflow-y:auto; overflow-x:hidden;
+  padding:8px 14px 24px;
+  -webkit-overflow-scrolling:touch;  /* trượt mượt (momentum) trên iOS/WebView */
+  touch-action:pan-y;                /* kéo DỌC để cuộn — không bị chặn/đóng băng */
+  overscroll-behavior:contain;       /* cuộn tới mép thì dừng, không cuộn lây ra sau */
 }
 .quests-detail{ display:flex; flex-direction:column; gap:14px; }
 .quests-checkin-wrap[hidden]{ display:none !important; }

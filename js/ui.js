@@ -41,6 +41,32 @@ function showAchievementToast(a){
   setTimeout(()=>{ toast.style.animation='toastOut 0.4s ease-in forwards'; setTimeout(()=>toast.remove(),400); }, 2800);
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   HỖ TRỢ CUỘN MƯỢT CHO MÀN ĐIỂM DANH (#quests-screen)
+   Ép lại đúng thuộc tính cuộn lên đúng container scroll (#quests-body)
+   để WebView Android/iOS không "đóng băng" khi người dùng kéo dọc:
+   overflow-y:auto (phải có vùng cuộn), -webkit-overflow-scrolling:touch
+   (trượt mượt có quán tính), touch-action:pan-y (nhận cử chỉ kéo dọc),
+   overscroll-behavior:contain (không cuộn lây ra trang phía sau).
+   ═══════════════════════════════════════════════════════════════ */
+function enableTouchScroll(el){
+  if(!el) return;
+  try{
+    el.style.setProperty('overflow-y','auto');
+    el.style.setProperty('overflow-x','hidden');
+    el.style.setProperty('-webkit-overflow-scrolling','touch');
+    el.style.setProperty('touch-action','pan-y');
+    el.style.setProperty('overscroll-behavior','contain');
+  }catch(e){}
+}
+(function bindQuestScrollSupport(){
+  function bind(){
+    enableTouchScroll(document.getElementById('quests-body'));
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', bind);
+  else bind();
+})();
+
 function showUnlockOverlay(){
   const chk=document.getElementById('unlock-autoskip-chk');
   if(chk) chk.checked=autoSkipHiddenMaps;
