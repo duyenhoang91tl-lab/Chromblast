@@ -316,15 +316,17 @@ function showRoundGuide(){
       '<p>'+desc+'</p></div>';
   }
   body.innerHTML = html;
-  document.getElementById('roundguide-panel').classList.add('show');
+  document.getElementById('roundguide-panel')?.classList.add('show');
 }
 
 function showMapHelp(key){
   const info = MAP_HELP_FOR(key);
   if(!info) return;
-  document.getElementById('maphelp-title').textContent = info.title;
-  document.getElementById('maphelp-body').innerHTML = info.body;
-  document.getElementById('maphelp-panel').classList.add('show');
+  const tEl=document.getElementById('maphelp-title');
+  const bEl=document.getElementById('maphelp-body');
+  if(tEl) tEl.textContent = info.title;
+  if(bEl) bEl.innerHTML = info.body;
+  document.getElementById('maphelp-panel')?.classList.add('show');
 }
 
 function renderHiddenMapMenu(){
@@ -430,7 +432,7 @@ async function doChangePassword(oldPass, newPass, newPass2){
     });
     msg.classList.add('ok');
     msg.textContent = 'Đổi mật khẩu thành công!';
-    document.getElementById('change-password-form').reset();
+    document.getElementById('change-password-form')?.reset();
   }catch(e){
     msg.classList.add('err');
     msg.textContent = (e && e.message === 'errPassShort') ? 'Mật khẩu mới cần tối thiểu 6 ký tự.'
