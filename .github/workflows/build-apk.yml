@@ -1,0 +1,87 @@
+# Build Android APK cho ChromaBlast trên GitHub Actions (runner có sẵn Android SDK).
+# Các bước: Setup Java 21 → Setup Node 22 → npm ci → build web (www/) → `cap sync
+# android` → Gradle build APK debug. Nếu repo có đủ 4 secret ký app thì AAB release
+# cũng được KÝ sẵn sàng upload CH Play:
+#   KEYSTORE_BASE64   (file .jks/.keystore mã hoá base64: `base64 -w0 my.keystore`)
+#   KEYSTORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD
+# Chưa có secret → vẫn build AAB chưa ký (Play không nhận; dùng để kiểm tra).
+name: Build Android APK
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'css/**'
+      - 'js/**'
+      - 'maps/**'
+      - 'fonts/**'
+      - 'sounds/**'
+      - 'android/**'
+      - 'capacitor.config.json'
+      - 'package.json'
+      - 'scripts/build-www.mjs'
+      - '.github/workflows/build-apk.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    env:
+      KEYSTORE_B64: ${{ secrets.KEYSTORE_BASE64 }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Setup Java 21 (temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Cài dependency, build web & đồng bộ Capacitor
+        run: |
+          npm ci
+          npm run build:www
+          npx cap sync android
+
+      - name: Build APK debug bằng Gradle
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Giải mã keystore (nếu có secret)
+        if: ${{ env.KEYSTORE_B64 != '' }}
+        run: echo "$KEYSTORE_B64" | base64 -d > android/app/release.keystore
+
+      - name: Build AAB release (ký nếu có keystore)
+        working-directory: android
+        run: |
+          if [ -f app/release.keystore ]; then
+            ./gradlew bundleRelease --no-daemon \
+              -Pandroid.injected.signing.store.file="$PWD/app/release.keystore" \
+              -Pandroid.injected.signing.store.password="${{ secrets.KEYSTORE_PASSWORD }}" \
+              -Pandroid.injected.signing.key.alias="${{ secrets.KEY_ALIAS }}" \
+              -Pandroid.injected.signing.key.password="${{ secrets.KEY_PASSWORD }}"
+          else
+            ./gradlew bundleRelease --no-daemon
+          fi
+
+      - name: Upload APK debug
+        uses: actions/upload-artifact@v4
+        with:
+          name: chromablast-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Upload AAB release
+        uses: actions/upload-artifact@v4
+        with:
+          name: chromablast-release-aab
+          path: android/app/build/outputs/bundle/release/app-release*.aab
