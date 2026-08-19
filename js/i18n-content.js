@@ -2114,10 +2114,10 @@ function MILESTONE_MSG(tier){
     vi:{
       caroMenuTitle:'❌⭕ Caro', caroMenuRank:'Xếp hạng', caroMenuFriends:'Bạn bè',
       caroMenuDaily:'Điểm danh', caroMenuAds:'Xem QC', caroMenuSkin:'Chọn nền',
-      caroMenuQuick:'⚡ Chơi nhanh', caroMenuWithFriend:'🤝 Chơi với bạn',
+      caroMenuQuick:'⚡ Chơi Nhanh', caroMenuWithFriend:'🤝 Chơi với bạn',
       caroMenuTable:'🚪 Chọn phòng', caroMenuRankBtn:'🏆 Xếp hạng', caroMenuTour:'🏅 Giải đấu',
-      caroDailyTitle:'🎁 Điểm danh Caro',
-      caroDailySub:'Điểm danh mỗi ngày khi chơi Caro: XP + vàng riêng. Bỏ lỡ 1 ngày sẽ mất chuỗi.',
+      caroDailyTitle:'🎁 Điểm Danh Hàng Ngày',
+      caroDailySub:'Nhận quà mỗi ngày',
       caroTourTitle:'🏅 Giải đấu',
       caroTourSub:'Chế độ giải đấu đang được chuẩn bị — quay lại sau nhé!',
       caroRankNeedsOnline:'Cần bật Online để đấu xếp hạng',
