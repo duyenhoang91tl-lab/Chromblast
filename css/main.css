@@ -658,7 +658,28 @@ body.tutorial-open #start-screen{
 }
 .admin-panel-like.show { display:flex; }
 /* Caro cài đặt phải nổi trên #caro-stage (z-index 10060) khi chơi online */
-#caro-settings-panel.admin-panel-like { z-index: 10070; }
+#caro-settings-panel.admin-panel-like{
+  z-index: 10070;
+  padding:0; align-items:stretch; justify-content:stretch; background:transparent;
+}
+/* ── Cài đặt Caro: TOÀN MÀN HÌNH (không còn popup căn giữa) ──
+   Cùng khuôn kỹ thuật với player-profile-panel/versus-setup-panel: khung ngoài
+   trong suốt + .admin-card phủ full 100% (rộng = cao = 100%, không margin/viền)
+   mới mang nền gradient pastel sáng. Chỉ đổi CSS, giữ nguyên HTML/logic. */
+#caro-settings-panel .admin-card{
+  width:100%; max-width:none; height:100%; max-height:none;
+  margin:0; border:none; border-radius:0; box-shadow:none; overflow-y:auto;
+  background:linear-gradient(165deg,#f6d9ee 0%,#e9d3f3 50%,#dcd8f6 100%);
+  color:#2b2340;
+  padding:max(20px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+}
+#caro-settings-panel .admin-title{ color:#2b2340; }
+#caro-settings-panel .admin-close{ color:#6b5f8a; }
+#caro-settings-panel .auth-field label{ color:rgba(90,51,69,0.65); }
+#caro-settings-panel .caro-seg-btn{
+  background:#fff; color:#4a3f6b; border-color:rgba(90,70,140,0.25);
+}
+#caro-settings-panel .set-toggle{ color:#5a3345; }
 
 /* ── "Thẻ trò chơi" (game-pass-card) — điểm vào mới cho mục Xếp hạng ──
    Biến màu chung dùng lại cho nội dung 4 tab (Phần thưởng/Nhiệm vụ/Đi đổi/
