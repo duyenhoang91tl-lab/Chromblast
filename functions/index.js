@@ -3,6 +3,7 @@
 const { setGlobalOptions } = require('firebase-functions/v2');
 const { onDocumentCreated, onDocumentUpdated, onDocumentDeleted } = require('firebase-functions/v2/firestore');
 const { onCall, onRequest, HttpsError } = require('firebase-functions/v2/https');
+const { onSchedule } = require('firebase-functions/v2/scheduler');
 const { initializeApp } = require('firebase-admin/app');
 const { getFirestore, FieldValue, Timestamp } = require('firebase-admin/firestore');
 const { getAuth } = require('firebase-admin/auth');
@@ -324,6 +325,41 @@ exports.claimPendingRewards = onCall({ region: 'asia-southeast1' }, async (reque
 const MAX_HEARTS = 5;                    // khớp js/inventory.js: MAX_HEARTS
 const HEART_REGEN_MS = 30 * 60 * 1000;   // khớp js/inventory.js: HEART_REGEN_MS
 const GOLD_PER_DIAMOND = 100;            // khớp js/inventory.js: GOLD_PER_DIAMOND
+
+// ═══════════════════════════════════════════════════════════════
+// GUILD (HỘI NHÓM) — hằng số cấu hình (dễ tinh chỉnh, không hardcode rải rác)
+// ═══════════════════════════════════════════════════════════════
+const GUILD_NAME_MIN = 2;                // độ dài tên nhóm tối thiểu
+const GUILD_NAME_MAX = 24;               // độ dài tên nhóm tối đa
+const GUILD_MAX_LEVEL = 7;               // cấp tối đa
+const GUILD_CAPACITY_BY_LEVEL = [10, 20, 30, 40, 50, 70, 100]; // index 0 = cấp 1
+// Chi phí nâng cấp Lv k→k+1 (index 0 = Lv1→2) — nhân đôi mỗi cấp, dựa trên gốc 100/20
+const GUILD_UPGRADE_COST = [
+  { gold: 100,  diamonds: 20  },   // Lv1→2 → capacity 20
+  { gold: 200,  diamonds: 40  },   // Lv2→3 → capacity 30
+  { gold: 400,  diamonds: 80  },   // Lv3→4 → capacity 40
+  { gold: 800,  diamonds: 160 },   // Lv4→5 → capacity 50
+  { gold: 1600, diamonds: 320 },   // Lv5→6 → capacity 70
+  { gold: 3200, diamonds: 640 }    // Lv6→7 → capacity 100
+];
+// Hạn mức đóng góp / ngày cơ bản (member) — deputy ×2, leader ×3
+const GUILD_DAILY_CAP = { gold: 10, diamonds: 1 };
+const GUILD_ROLE_CAP_MULT = { member: 1, deputy: 2, leader: 3 };
+// Điểm năng động thưởng cho từng loại nhiệm vụ nhóm
+const GUILD_QUEST_REWARD = { caro_win_streak: 30, versus_win_streak: 30, hidden_map_clear: 40, daily_checkin: 5 };
+// Định nghĩa nhiệm vụ tuần mặc định của guild (questId = def.type, 4 quest cố định)
+const GUILD_QUEST_DEFS = [
+  { type: 'caro_win_streak',   requiredParticipants: 5,  rewardActivityPoints: 30 },
+  { type: 'versus_win_streak', requiredParticipants: 5,  rewardActivityPoints: 30 },
+  { type: 'hidden_map_clear',  requiredParticipants: 10, rewardActivityPoints: 40 },
+  { type: 'daily_checkin',     requiredParticipants: 0,  rewardActivityPoints: 5  }
+];
+// Bảng thưởng top tuần — áp cho MỖI hạng mục, phát cho MỖI thành viên đang có trong guild
+const GUILD_WEEKLY_REWARD_TABLE = [
+  { minRank: 1, maxRank: 1, gold: 30, diamonds: 3 },
+  { minRank: 2, maxRank: 2, gold: 20, diamonds: 2 },
+  { minRank: 3, maxRank: 3, gold: 10, diamonds: 1 }
+];
 
 function walletOf(data) {
   const d = data || {};
@@ -1407,3 +1443,539 @@ exports.resetAccountPassword = onCall({ region: 'asia-southeast1' }, async (requ
   await ref.update({ passwordHash: pw.hash, passwordSalt: pw.salt });
   return { ok: true };
 });
+
+// ═══════════════════════════════════════════════════════════════
+// GUILD (HỘI NHÓM) — Cloud Functions
+// Toàn bộ thay đổi cấu trúc nhóm đều qua đây (transaction Firestore để tránh
+// race khi nhiều người đóng góp/nâng cấp cùng lúc). Client chỉ đọc qua SDK;
+// các field nhạy cảm bị khoá ở firestore.rules (guildSensitiveFieldsUnchanged).
+// ═══════════════════════════════════════════════════════════════
+
+/** Ngày/giờ hiện tại theo giờ Việt Nam (UTC+7) — dùng getUTC* trên kết quả này
+ *  để ra đúng giá trị giờ VN mà không phụ thuộc timezone máy chạy. */
+function guildNowVn() {
+  return new Date(Date.now() + 7 * 3600 * 1000);
+}
+
+/** Khoá ngày "YYYY-MM-DD" theo giờ VN — để so sánh/đặt lại hạn mức đóng góp ngày. */
+function guildDayKey(d) {
+  d = d || guildNowVn();
+  return d.getUTCFullYear() + '-' + pad2(d.getUTCMonth() + 1) + '-' + pad2(d.getUTCDate());
+}
+
+/** seasonId dạng "2026-W35" theo ISO week tính theo giờ VN. */
+function guildSeasonId(d) {
+  return isoWeekId(d || guildNowVn());
+}
+
+/** Tạo 4 quest tuần mặc định cho guild (trong transaction — chỉ được set doc,
+ *  không được query subcollection). questId = def.type. */
+function _ensureGuildQuests(tx, guildId, seasonId) {
+  const questsCol = db.collection('guilds').doc(guildId).collection('quests');
+  for (const def of GUILD_QUEST_DEFS) {
+    tx.set(questsCol.doc(def.type), {
+      type: def.type,
+      requiredParticipants: def.requiredParticipants || null,
+      progressUids: [],
+      rewardActivityPoints: def.rewardActivityPoints,
+      weekId: seasonId,
+      completed: false,
+      createdAt: Timestamp.now()
+    });
+  }
+}
+
+/** 1. Tạo nhóm — người tạo thành leader, level=1, capacity=10. */
+exports.createGuild = onCall({ region: 'asia-southeast1' }, async (request) => {
+  const uid = request.auth && request.auth.uid;
+  if (!uid) throw new HttpsError('unauthenticated', 'Cần đăng nhập.');
+  const data = request.data || {};
+  const name = typeof data.name === 'string' ? data.name.trim() : '';
+  const iconId = typeof data.iconId === 'string' && data.iconId.trim() ? data.iconId.trim() : 'default';
+  if (name.length < GUILD_NAME_MIN || name.length > GUILD_NAME_MAX) {
+    throw new HttpsError('invalid-argument', 'Tên nhóm phải từ ' + GUILD_NAME_MIN + '-' + GUILD_NAME_MAX + ' ký tự.');
+  }
+
+  const playerSnap = await db.collection('players').doc(uid).get();
+  const displayName = (playerSnap.exists && playerSnap.data().displayName) || 'Player';
+  const now = Timestamp.now();
+  const seasonId = guildSeasonId();
+  const guildRef = db.collection('guilds').doc();
+  const guildId = guildRef.id;
+
+  return db.runTransaction(async (tx) => {
+    // 1 người chỉ được ở 1 nhóm — chặn bằng playerGuilds/{uid}
+    const pgSnap = await tx.get(db.collection('playerGuilds').doc(uid));
+    if (pgSnap.exists) throw new HttpsError('failed-precondition', 'Bạn đã có nhóm rồi.');
+
+    tx.set(guildRef, {
+      name: name,
+      iconId: iconId,
+      level: 1,
+      capacity: GUILD_CAPACITY_BY_LEVEL[0],
+      memberCount: 1,
+      vaultGold: 0,
+      vaultDiamond: 0,
+      leaderUid: uid,
+      deputyUids: [],
+      weeklyActivity: 0,
+      weeklyGold: 0,
+      weeklyDiamond: 0,
+      seasonId: seasonId,
+      createdAt: now,
+      updatedAt: now
+    });
+    tx.set(guildRef.collection('members').doc(uid), {
+      displayName: displayName,
+      role: 'leader',
+      joinedAt: now,
+      weeklyActivity: 0,
+      weeklyGoldContributed: 0,
+      weeklyDiamondContributed: 0,
+      lastContributionDate: guildDayKey(),
+      dailyGoldContributed: 0,
+      dailyDiamondContributed: 0
+    });
+    tx.set(db.collection('playerGuilds').doc(uid), { guildId: guildId, joinedAt: now });
+    tx.set(db.collection('guildIndex').doc(guildId), {
+      name: name,
+      iconId: iconId,
+      level: 1,
+      capacity: GUILD_CAPACITY_BY_LEVEL[0],
+      memberCount: 1,
+      updatedAt: now
+    });
+    _ensureGuildQuests(tx, guildId, seasonId);
+    return { ok: true, guildId: guildId };
+  });
+});
+
+
+/** 2a. Tham gia nhóm — kiểm tra memberCount < capacity trước khi vào. */
+exports.joinGuild = onCall({ region: 'asia-southeast1' }, async (request) => {
+  const uid = request.auth && request.auth.uid;
+  if (!uid) throw new HttpsError('unauthenticated', 'Cần đăng nhập.');
+  const guildId = request.data && request.data.guildId;
+  if (!guildId || typeof guildId !== 'string') throw new HttpsError('invalid-argument', 'Thiếu guildId.');
+
+  const guildRef = db.collection('guilds').doc(guildId);
+  const playerSnap = await db.collection('players').doc(uid).get();
+  const displayName = (playerSnap.exists && playerSnap.data().displayName) || 'Player';
+  const now = Timestamp.now();
+
+  return db.runTransaction(async (tx) => {
+    const pgSnap = await tx.get(db.collection('playerGuilds').doc(uid));
+    if (pgSnap.exists) throw new HttpsError('failed-precondition', 'Bạn đã có nhóm rồi.');
+    const guildSnap = await tx.get(guildRef);
+    if (!guildSnap.exists) throw new HttpsError('not-found', 'Nhóm không tồn tại.');
+    const g = guildSnap.data();
+    if ((g.memberCount || 0) >= (g.capacity || 10)) {
+      throw new HttpsError('resource-exhausted', 'Nhóm đã đầy.');
+    }
+    const memberSnap = await tx.get(guildRef.collection('members').doc(uid));
+    if (memberSnap.exists) throw new HttpsError('already-exists', 'Bạn đã trong nhóm này.');
+
+    tx.set(guildRef, { memberCount: FieldValue.increment(1), updatedAt: now }, { merge: true });
+    tx.set(guildRef.collection('members').doc(uid), {
+      displayName: displayName,
+      role: 'member',
+      joinedAt: now,
+      weeklyActivity: 0,
+      weeklyGoldContributed: 0,
+      weeklyDiamondContributed: 0,
+      lastContributionDate: guildDayKey(),
+      dailyGoldContributed: 0,
+      dailyDiamondContributed: 0
+    });
+    tx.set(db.collection('playerGuilds').doc(uid), { guildId: guildId, joinedAt: now });
+    tx.set(db.collection('guildIndex').doc(guildId), { memberCount: FieldValue.increment(1), updatedAt: now }, { merge: true });
+    return { ok: true, guildId: guildId };
+  });
+});
+
+/** 2b. Rời nhóm — leader rời thì chuyển quyền cho phó nhóm/weeklyActivity cao
+ *  nhất; hết người thì giải tán nhóm. */
+exports.leaveGuild = onCall({ region: 'asia-southeast1' }, async (request) => {
+  const uid = request.auth && request.auth.uid;
+  if (!uid) throw new HttpsError('unauthenticated', 'Cần đăng nhập.');
+  const guildId = request.data && request.data.guildId;
+  if (!guildId || typeof guildId !== 'string') throw new HttpsError('invalid-argument', 'Thiếu guildId.');
+
+  const guildRef = db.collection('guilds').doc(guildId);
+  const memberRef = guildRef.collection('members').doc(uid);
+
+  // Đọc trước (ngoài transaction — transaction không query được collection) để
+  // biết có cần chuyển quyền leader không, và chọn người kế nhiệm.
+  const memberSnap0 = await memberRef.get();
+  if (!memberSnap0.exists) return { ok: true };
+  const me0 = memberSnap0.data();
+  let successor = null;
+  if (me0.role === 'leader') {
+    const membersSnap = await guildRef.collection('members').get();
+    const members = membersSnap.docs
+      .map(d => ({ uid: d.id, ...d.data() }))
+      .filter(m => m.uid !== uid);
+    const byActivity = (a, b) => (b.weeklyActivity || 0) - (a.weeklyActivity || 0);
+    const deputies = members.filter(m => m.role === 'deputy').sort(byActivity);
+    const others = members.sort(byActivity);
+    successor = (deputies[0] || others[0] || null);
+  }
+
+  let disbanded = false;
+  const result = await db.runTransaction(async (tx) => {
+    const guildSnap = await tx.get(guildRef);
+    const now = Timestamp.now();
+    if (!guildSnap.exists) {
+      tx.delete(db.collection('playerGuilds').doc(uid));
+      return { ok: true };
+    }
+    const g = guildSnap.data();
+    const memberSnap = await tx.get(memberRef);
+    if (!memberSnap.exists) {
+      tx.delete(db.collection('playerGuilds').doc(uid));
+      return { ok: true };
+    }
+    const me = memberSnap.data();
+
+    tx.delete(memberRef);
+    tx.delete(db.collection('playerGuilds').doc(uid));
+    tx.set(guildRef, { memberCount: FieldValue.increment(-1), updatedAt: now }, { merge: true });
+    tx.set(db.collection('guildIndex').doc(guildId), { memberCount: FieldValue.increment(-1), updatedAt: now }, { merge: true });
+
+    if (me.role === 'leader') {
+      if (!successor) {
+        // Không còn ai → giải tán nhóm (doc cha bị xoá; subcollection quests dọn sau)
+        disbanded = true;
+        tx.delete(guildRef);
+        tx.delete(db.collection('guildIndex').doc(guildId));
+      } else {
+        const newDeputies = Array.isArray(g.deputyUids) ? g.deputyUids.slice() : [];
+        const idx = newDeputies.indexOf(successor.uid);
+        if (idx >= 0) newDeputies.splice(idx, 1);
+        tx.set(guildRef, { leaderUid: successor.uid, deputyUids: newDeputies, updatedAt: now }, { merge: true });
+        tx.set(guildRef.collection('members').doc(successor.uid), { role: 'leader' }, { merge: true });
+      }
+    }
+    return { ok: true };
+  });
+
+  // Giải tán: dọn subcollection quests (không thể query trong transaction)
+  if (disbanded) {
+    const questsSnap = await guildRef.collection('quests').get();
+    const batch = db.batch();
+    questsSnap.docs.forEach(doc => batch.delete(doc.ref));
+    await batch.commit();
+  }
+  return result;
+});
+
+
+/** 3. Đóng góp vàng/kim cương cho nhóm.
+ *  Hạn mức/ngày theo vai trò (member ×1, deputy ×2, leader ×3), reset khi qua
+ *  ngày mới theo giờ VN. Trừ ví cá nhân (players/{uid}) + cộng vault/weekly của
+ *  guild và member trong CÙNG 1 transaction. */
+exports.contributeToGuild = onCall({ region: 'asia-southeast1' }, async (request) => {
+  const uid = request.auth && request.auth.uid;
+  if (!uid) throw new HttpsError('unauthenticated', 'Cần đăng nhập.');
+  const data = request.data || {};
+  const guildId = data.guildId;
+  if (!guildId || typeof guildId !== 'string') throw new HttpsError('invalid-argument', 'Thiếu guildId.');
+  const gold = Math.max(0, Math.floor(Number(data.gold) || 0));
+  const diamonds = Math.max(0, Math.floor(Number(data.diamonds) || 0));
+  if (gold <= 0 && diamonds <= 0) throw new HttpsError('invalid-argument', 'Chưa có gì để đóng góp.');
+
+  const guildRef = db.collection('guilds').doc(guildId);
+  const memberRef = guildRef.collection('members').doc(uid);
+  const playerRef = db.collection('players').doc(uid);
+  const day = guildDayKey();
+
+  return db.runTransaction(async (tx) => {
+    const guildSnap = await tx.get(guildRef);
+    if (!guildSnap.exists) throw new HttpsError('not-found', 'Nhóm không tồn tại.');
+    const memberSnap = await tx.get(memberRef);
+    if (!memberSnap.exists) throw new HttpsError('not-found', 'Bạn không trong nhóm này.');
+    const m = memberSnap.data();
+    const role = (m.role === 'leader' || m.role === 'deputy') ? m.role : 'member';
+    const mult = GUILD_ROLE_CAP_MULT[role] || 1;
+    const capGold = GUILD_DAILY_CAP.gold * mult;
+    const capDia = GUILD_DAILY_CAP.diamonds * mult;
+
+    // Reset hạn mức ngày nếu đã qua ngày mới (giờ VN)
+    const sameDay = m.lastContributionDate === day;
+    const usedGold = sameDay ? (m.dailyGoldContributed || 0) : 0;
+    const usedDia = sameDay ? (m.dailyDiamondContributed || 0) : 0;
+    if (usedGold + gold > capGold || usedDia + diamonds > capDia) {
+      throw new HttpsError('failed-precondition', 'Đã đạt giới hạn đóng góp hôm nay.');
+    }
+
+    // Trừ ví cá nhân THẬT trên server (client sẽ syncWalletFromServer sau đó)
+    const playerSnap = await tx.get(playerRef);
+    const w = walletOf(playerSnap.exists ? playerSnap.data() : {});
+    if (w.gold < gold || w.diamonds < diamonds) {
+      throw new HttpsError('failed-precondition', 'Không đủ vàng/kim cương.');
+    }
+
+    const now = Timestamp.now();
+    tx.set(playerRef, { gold: FieldValue.increment(-gold), diamonds: FieldValue.increment(-diamonds) }, { merge: true });
+    tx.set(guildRef, {
+      vaultGold: FieldValue.increment(gold),
+      vaultDiamond: FieldValue.increment(diamonds),
+      weeklyGold: FieldValue.increment(gold),
+      weeklyDiamond: FieldValue.increment(diamonds),
+      updatedAt: now
+    }, { merge: true });
+    tx.set(memberRef, {
+      weeklyGoldContributed: FieldValue.increment(gold),
+      weeklyDiamondContributed: FieldValue.increment(diamonds),
+      lastContributionDate: day,
+      dailyGoldContributed: usedGold + gold,
+      dailyDiamondContributed: usedDia + diamonds
+    }, { merge: true });
+
+    return {
+      ok: true, gold: gold, diamonds: diamonds,
+      remainingGold: Math.max(0, capGold - usedGold - gold),
+      remainingDiamonds: Math.max(0, capDia - usedDia - diamonds)
+    };
+  });
+});
+
+/** 4. Nâng cấp nhóm — chỉ leader/deputy; trừ vault theo bảng chi phí, tăng
+ *  level + capacity (không hoàn tài nguyên dư, giữ nguyên phần dư trong vault). */
+exports.upgradeGuild = onCall({ region: 'asia-southeast1' }, async (request) => {
+  const uid = request.auth && request.auth.uid;
+  if (!uid) throw new HttpsError('unauthenticated', 'Cần đăng nhập.');
+  const guildId = request.data && request.data.guildId;
+  if (!guildId || typeof guildId !== 'string') throw new HttpsError('invalid-argument', 'Thiếu guildId.');
+
+  const guildRef = db.collection('guilds').doc(guildId);
+  const memberRef = guildRef.collection('members').doc(uid);
+
+  return db.runTransaction(async (tx) => {
+    const guildSnap = await tx.get(guildRef);
+    if (!guildSnap.exists) throw new HttpsError('not-found', 'Nhóm không tồn tại.');
+    const g = guildSnap.data();
+    const memberSnap = await tx.get(memberRef);
+    if (!memberSnap.exists) throw new HttpsError('permission-denied', 'Bạn không trong nhóm này.');
+    const role = memberSnap.data().role;
+    if (role !== 'leader' && role !== 'deputy') {
+      throw new HttpsError('permission-denied', 'Chỉ trưởng/phó nhóm mới nâng cấp được.');
+    }
+
+    const level = Math.max(1, Math.floor(g.level || 1));
+    if (level >= GUILD_MAX_LEVEL) throw new HttpsError('failed-precondition', 'Nhóm đã đạt cấp tối đa.');
+    const cost = GUILD_UPGRADE_COST[level - 1];
+    if (!cost) throw new HttpsError('failed-precondition', 'Không có chi phí cho cấp này.');
+
+    const vaultGold = Math.floor(g.vaultGold || 0);
+    const vaultDia = Math.floor(g.vaultDiamond || 0);
+    if (vaultGold < cost.gold || vaultDia < cost.diamonds) {
+      throw new HttpsError('failed-precondition', 'Kho nhóm không đủ vàng/kim cương.');
+    }
+
+    const newLevel = level + 1;
+    const newCapacity = GUILD_CAPACITY_BY_LEVEL[newLevel - 1] || (g.capacity || 10);
+    const now = Timestamp.now();
+    tx.set(guildRef, {
+      level: newLevel,
+      capacity: newCapacity,
+      vaultGold: FieldValue.increment(-cost.gold),
+      vaultDiamond: FieldValue.increment(-cost.diamonds),
+      updatedAt: now
+    }, { merge: true });
+    tx.set(db.collection('guildIndex').doc(guildId), { level: newLevel, capacity: newCapacity, updatedAt: now }, { merge: true });
+    return { ok: true, level: newLevel, capacity: newCapacity };
+  });
+});
+
+
+/** 5. Ghi nhận hoàn thành nhiệm vụ nhóm.
+ *  - Loại cần đủ người (caro_win_streak/versus_win_streak/hidden_map_clear): thêm
+ *    uid vào progressUids (chống trùng); khi đủ requiredParticipants → completed
+ *    và cộng điểm năng động cho TẤT CẢ người đã tham gia (không phải cả guild).
+ *  - Loại daily_checkin: cơ chế RIÊNG — điểm danh thành công là cộng ngay điểm
+ *    năng động cho CHÍNH người đó (và guild.weeklyActivity); progressUids chỉ để
+ *    hiển thị "đã có X/tổng thành viên điểm danh hôm nay", không phải điều kiện
+ *    chặn thưởng. */
+exports.completeGuildQuest = onCall({ region: 'asia-southeast1' }, async (request) => {
+  const uid = request.auth && request.auth.uid;
+  if (!uid) throw new HttpsError('unauthenticated', 'Cần đăng nhập.');
+  const data = request.data || {};
+  const guildId = data.guildId;
+  const questId = data.questId;
+  if (!guildId || typeof guildId !== 'string' || !questId || typeof questId !== 'string') {
+    throw new HttpsError('invalid-argument', 'Thiếu guildId/questId.');
+  }
+
+  const guildRef = db.collection('guilds').doc(guildId);
+  const questRef = guildRef.collection('quests').doc(questId);
+  const currentSeason = guildSeasonId();
+
+  return db.runTransaction(async (tx) => {
+    const questSnap = await tx.get(questRef);
+    if (!questSnap.exists) throw new HttpsError('not-found', 'Nhiệm vụ không tồn tại.');
+    const q = questSnap.data();
+    if (q.weekId !== currentSeason) throw new HttpsError('failed-precondition', 'Nhiệm vụ đã hết tuần.');
+
+    const memberSnap = await tx.get(guildRef.collection('members').doc(uid));
+    if (!memberSnap.exists) throw new HttpsError('not-found', 'Bạn không trong nhóm này.');
+
+    const guildSnap = await tx.get(guildRef);
+    const g = guildSnap.exists ? guildSnap.data() : {};
+    const now = Timestamp.now();
+    const progress = Array.isArray(q.progressUids) ? q.progressUids.slice() : [];
+    const rewardPts = Math.max(0, q.rewardActivityPoints || GUILD_QUEST_REWARD[q.type] || 0);
+
+    if (q.type === 'daily_checkin') {
+      if (progress.includes(uid)) return { ok: true, already: true, activityGained: 0 };
+      progress.push(uid);
+      tx.set(questRef, {
+        progressUids: progress,
+        completed: progress.length >= (g.memberCount || 1),
+        updatedAt: now
+      }, { merge: true });
+      tx.set(guildRef, { weeklyActivity: FieldValue.increment(rewardPts), updatedAt: now }, { merge: true });
+      tx.set(guildRef.collection('members').doc(uid), { weeklyActivity: FieldValue.increment(rewardPts) }, { merge: true });
+      return { ok: true, activityGained: rewardPts, checkinCount: progress.length, totalMembers: g.memberCount || 1 };
+    }
+
+    // Loại cần đủ N người tham gia
+    if (progress.includes(uid)) return { ok: true, already: true };
+    progress.push(uid);
+    const required = Math.max(1, q.requiredParticipants || 1);
+    if (progress.length < required) {
+      tx.set(questRef, { progressUids: progress, updatedAt: now }, { merge: true });
+      return { ok: true, progress: progress.length, required: required, completed: false };
+    }
+
+    // Đủ N người → completed; cộng điểm cho TẤT CẢ người trong progressUids
+    tx.set(questRef, { progressUids: progress, completed: true, updatedAt: now }, { merge: true });
+    const totalPts = rewardPts * progress.length;
+    for (const puid of progress) {
+      tx.set(guildRef.collection('members').doc(puid), { weeklyActivity: FieldValue.increment(rewardPts) }, { merge: true });
+    }
+    tx.set(guildRef, { weeklyActivity: FieldValue.increment(totalPts), updatedAt: now }, { merge: true });
+    return { ok: true, completed: true, rewardEarners: progress.length, activityGained: rewardPts };
+  });
+});
+
+
+/** Commit một lô batch, tự chia nhỏ theo giới hạn 500 thao tác của Firestore. */
+async function _guildResetCommitChunked(ops) {
+  for (let i = 0; i < ops.length; i += 400) {
+    const batch = db.batch();
+    const chunk = ops.slice(i, i + 400);
+    for (const op of chunk) {
+      if (op.type === 'delete') batch.delete(op.ref);
+      else batch.set(op.ref, op.data, { merge: true });
+    }
+    await batch.commit();
+  }
+}
+
+/** 6. Reset tuần guild — chạy 00:00 thứ Hai giờ Việt Nam (Cloud Scheduler).
+ *  Tính hạng 4 hạng mục ĐỘC LẬP nhau, phát thưởng mỗi hạng mục cho MỖI thành
+ *  viên đang có, ghi snapshot vào guildRankings, reset weekly* + quest tuần mới.
+ *  KHÔNG reset vault (kho tích luỹ dài hạn để nâng cấp). */
+exports.weeklyGuildReset = onSchedule(
+  { schedule: '0 0 * * 1', timeZone: 'Asia/Ho_Chi_Minh' },
+  async () => {
+    const guildsSnap = await db.collection('guilds').get();
+    const guilds = guildsSnap.docs.map(d => ({ id: d.id, data: d.data() }));
+    if (!guilds.length) return;
+
+    const nowVn = guildNowVn();
+    const prevSeason = guildSeasonId(nowVn);
+    const nextSeason = guildSeasonId(new Date(nowVn.getTime() + 7 * 86400000));
+
+    const sortBy = (key) => guilds.slice().sort((a, b) => (b.data[key] || 0) - (a.data[key] || 0));
+    const rankMembers = sortBy('memberCount');
+    const rankActivity = sortBy('weeklyActivity');
+    const rankGold = sortBy('weeklyGold');
+    const rankDiamond = sortBy('weeklyDiamond');
+    const rankOf = (list, gid) => list.findIndex(x => x.id === gid) + 1;
+
+    // Xử lý từng guild, mỗi guild 1 lô batch (tự chunk nếu quá 400 thao tác)
+    for (const g of guilds) {
+      const gid = g.id;
+      const ranks = {
+        members: rankOf(rankMembers, gid),
+        activity: rankOf(rankActivity, gid),
+        gold: rankOf(rankGold, gid),
+        diamond: rankOf(rankDiamond, gid)
+      };
+      let rewardGold = 0;
+      let rewardDiamond = 0;
+      for (const r of [ranks.members, ranks.activity, ranks.gold, ranks.diamond]) {
+        const row = GUILD_WEEKLY_REWARD_TABLE.find(x => r >= x.minRank && r <= x.maxRank);
+        if (row) { rewardGold += row.gold; rewardDiamond += row.diamonds; }
+      }
+
+      const memberCol = db.collection('guilds').doc(gid).collection('members');
+      const membersSnap = await memberCol.get();
+      const memberDocs = membersSnap.docs;
+
+      const ops = [];
+      // Snapshot hạng cuối tuần
+      ops.push({
+        type: 'set',
+        ref: db.collection('guildRankings').doc(prevSeason).collection('entries').doc(gid),
+        data: {
+          rank_members: ranks.members,
+          rank_activity: ranks.activity,
+          rank_gold: ranks.gold,
+          rank_diamond: ranks.diamond,
+          rewardGoldPerMember: rewardGold,
+          rewardDiamondPerMember: rewardDiamond,
+          seasonId: prevSeason,
+          settledAt: FieldValue.serverTimestamp()
+        }
+      });
+      // Reset điểm tuần guild + đổi season sang tuần mới
+      ops.push({
+        type: 'set',
+        ref: db.collection('guilds').doc(gid),
+        data: { weeklyActivity: 0, weeklyGold: 0, weeklyDiamond: 0, seasonId: nextSeason, updatedAt: FieldValue.serverTimestamp() }
+      });
+      // Reset từng member + trả thưởng ví cá nhân
+      for (const m of memberDocs) {
+        ops.push({
+          type: 'set',
+          ref: memberCol.doc(m.id),
+          data: { weeklyActivity: 0, weeklyGoldContributed: 0, weeklyDiamondContributed: 0 }
+        });
+        if (rewardGold > 0 || rewardDiamond > 0) {
+          ops.push({
+            type: 'set',
+            ref: db.collection('players').doc(m.id),
+            data: { gold: FieldValue.increment(rewardGold), diamonds: FieldValue.increment(rewardDiamond) }
+          });
+        }
+      }
+      // Xoá quest cũ không còn trong định nghĩa rồi tạo quest tuần mới
+      const questsSnap = await db.collection('guilds').doc(gid).collection('quests').get();
+      const validTypes = GUILD_QUEST_DEFS.map(d => d.type);
+      questsSnap.docs.forEach(qdoc => {
+        if (!validTypes.includes(qdoc.id)) ops.push({ type: 'delete', ref: qdoc.ref });
+      });
+      for (const def of GUILD_QUEST_DEFS) {
+        ops.push({
+          type: 'set',
+          ref: db.collection('guilds').doc(gid).collection('quests').doc(def.type),
+          data: {
+            type: def.type,
+            requiredParticipants: def.requiredParticipants || null,
+            progressUids: [],
+            rewardActivityPoints: def.rewardActivityPoints,
+            weekId: nextSeason,
+            completed: false,
+            createdAt: FieldValue.serverTimestamp()
+          }
+        });
+      }
+
+      await _guildResetCommitChunked(ops);
+    }
+  }
+);
+
