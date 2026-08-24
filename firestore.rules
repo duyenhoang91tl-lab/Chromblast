@@ -50,6 +50,37 @@ service cloud.firestore {
         && fieldLocked('heartsAt');
     }
 
+    /* ── GUILD (Hội nhóm) — helpers dùng chung cho toàn bộ rule guild bên dưới ── */
+    function guildMemberOf(guildId) {
+      return signedIn()
+        && exists(/databases/$(database)/documents/guilds/$(guildId)/members/$(request.auth.uid));
+    }
+    function guildModeratorOf(guildId) {
+      return guildMemberOf(guildId) && (
+        get(/databases/$(database)/documents/guilds/$(guildId)).data.leaderUid == request.auth.uid
+        || request.auth.uid in get(/databases/$(database)/documents/guilds/$(guildId)).data.deputyUids
+      );
+    }
+    /* Field cấu trúc nhóm chỉ Cloud Function (Admin SDK) được ghi — client gửi lên
+       field này coi như không đổi gì. Chặn tự sửa level/capacity/leaderUid/deputyUids/
+       memberCount/vaultGold/vaultDiamond/điểm tuần — mọi thay đổi phải qua Cloud
+       Function transaction để tránh gian lận/race condition. */
+    function guildSensitiveFieldsUnchanged() {
+      return fieldLocked('level') && fieldLocked('capacity') && fieldLocked('leaderUid')
+        && fieldLocked('deputyUids') && fieldLocked('memberCount')
+        && fieldLocked('vaultGold') && fieldLocked('vaultDiamond')
+        && fieldLocked('weeklyActivity') && fieldLocked('weeklyGold') && fieldLocked('weeklyDiamond')
+        && fieldLocked('seasonId') && fieldLocked('createdAt');
+    }
+    /* Field vai trò/điểm/đóng góp của member chỉ Cloud Function quản lý — chặn
+       client tự reset hạn mức ngày/tuần hay tự cộng điểm năng động của chính mình. */
+    function guildMemberFieldsUnchanged() {
+      return fieldLocked('role') && fieldLocked('joinedAt')
+        && fieldLocked('weeklyActivity') && fieldLocked('weeklyGoldContributed')
+        && fieldLocked('weeklyDiamondContributed') && fieldLocked('lastContributionDate')
+        && fieldLocked('dailyGoldContributed') && fieldLocked('dailyDiamondContributed');
+    }
+
     /* Chặn "báo thắng khống tức thời": trước đây bất kỳ host/guest nào cũng tự chuyển
        status phòng của mình sang 'finished' kèm winnerId/hostScore/guestScore tuỳ ý —
        applyMatchResult (Admin SDK) tin thẳng các field này nên chỉ chuyển việc CỘNG điểm
@@ -357,6 +388,81 @@ service cloud.firestore {
         allow create: if signedIn()
           && chatPayloadOk()
           && request.auth.uid in get(/databases/$(database)/documents/dms/$(dmId)).data.members;
+      }
+    }
+
+    /* ══════════════ GUILD (HỘI NHÓM) ══════════════
+       Tạo/join/leave/đóng góp/nâng cấp/nhiệm vụ/reset tuần đều qua Cloud Function
+       (functions/index.js: createGuild/joinGuild/leaveGuild/contributeToGuild/
+       upgradeGuild/completeGuildQuest/weeklyGuildReset) — Admin SDK bỏ qua rules.
+       Client chỉ được:
+         - ĐỌC guild + subcollection (members/quests) nếu LÀ THÀNH VIÊN của guild đó.
+         - Leader/Phó cập nhật tên/icon của guild (field nhạy cảm level/capacity/
+           leaderUid/deputyUids/memberCount/vault... vẫn bị khoá — chỉ Cloud
+           Function đổi, KHÔNG update thẳng qua SDK).
+         - Tự đổi displayName của CHÍNH mình trong members/{uid}.
+       KHÔNG cho client tự sửa vaultGold/vaultDiamond hay field đóng góp trực tiếp
+       qua SDK (phải qua Cloud Function transaction để tránh gian lận/race). */
+    match /guilds/{guildId} {
+      allow read: if guildMemberOf(guildId);
+      // Tạo nhóm qua createGuild (Cloud Function) — client không tự tạo doc trực tiếp.
+      allow create: if false;
+      allow update: if guildModeratorOf(guildId)
+        && (!('name' in request.resource.data)
+            || (request.resource.data.name is string
+                && request.resource.data.name.size() >= 2
+                && request.resource.data.name.size() <= 24))
+        && (!('iconId' in request.resource.data) || request.resource.data.iconId is string)
+        && request.resource.data.updatedAt == request.time
+        && guildSensitiveFieldsUnchanged();
+      allow delete: if false;
+
+      match /members/{uid} {
+        allow read: if guildMemberOf(guildId);
+        // Tham gia qua joinGuild (Cloud Function) — client không tự tạo hồ sơ.
+        allow create: if false;
+        // Thành viên chỉ được sửa doc CỦA CHÍNH MÌNH, và chỉ đổi displayName —
+        // mọi field vai trò/điểm/đóng góp do Cloud Function quản lý (không tự
+        // ghi hộ người khác, không tự reset hạn mức/điểm của mình).
+        allow update: if signedIn() && uid == request.auth.uid
+          && request.resource.data.displayName is string
+          && request.resource.data.displayName.size() >= 1
+          && request.resource.data.displayName.size() <= 24
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName'])
+          && guildMemberFieldsUnchanged();
+        allow delete: if false;
+      }
+
+      match /quests/{questId} {
+        allow read: if guildMemberOf(guildId);
+        // Nhiệm vụ nhóm do completeGuildQuest / weeklyGuildReset (Cloud Function)
+        // tạo & cập nhật — client chỉ đọc.
+        allow write: if false;
+      }
+    }
+
+    /* Chỉ mục CÔNG KHAI để người chưa có nhóm duyệt danh sách guild còn slot
+       (Tìm & tham gia nhóm) — chỉ chứa field hiển thị tối thiểu, Cloud Function
+       đồng bộ khi tạo/join/leave/nâng cấp. Không lộ field nội bộ nhóm. */
+    match /guildIndex/{guildId} {
+      allow read: if signedIn();
+      allow write: if false;
+    }
+
+    /* Bản đồ uid → guildId của chính người chơi (tra cứu nhóm mình đang ở) —
+       chủ tài khoản đọc, chỉ Cloud Function ghi. */
+    match /playerGuilds/{uid} {
+      allow read: if isOwner(uid);
+      allow write: if false;
+    }
+
+    /* BXH tuần của guild (snapshot cuối tuần) — công khai cho ai đã đăng nhập
+       đọc lịch sử, chỉ Cloud Function weeklyGuildReset ghi. */
+    match /guildRankings/{weekId} {
+      allow read: if signedIn();
+      match /entries/{guildId} {
+        allow read: if signedIn();
+        allow write: if false;
       }
     }
   }
