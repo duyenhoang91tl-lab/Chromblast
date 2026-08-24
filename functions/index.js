@@ -1543,6 +1543,10 @@ exports.createGuild = onCall({ region: 'asia-southeast1' }, async (request) => {
       level: 1,
       capacity: GUILD_CAPACITY_BY_LEVEL[0],
       memberCount: 1,
+      weeklyActivity: 0,
+      weeklyGold: 0,
+      weeklyDiamond: 0,
+      seasonId: seasonId,
       updatedAt: now
     });
     _ensureGuildQuests(tx, guildId, seasonId);
@@ -1731,6 +1735,12 @@ exports.contributeToGuild = onCall({ region: 'asia-southeast1' }, async (request
       dailyGoldContributed: usedGold + gold,
       dailyDiamondContributed: usedDia + diamonds
     }, { merge: true });
+    // Đồng bộ chỉ mục công khai (dùng cho bảng xếp hạng đua top tuần)
+    tx.set(db.collection('guildIndex').doc(guildId), {
+      weeklyGold: FieldValue.increment(gold),
+      weeklyDiamond: FieldValue.increment(diamonds),
+      updatedAt: now
+    }, { merge: true });
 
     return {
       ok: true, gold: gold, diamonds: diamonds,
@@ -1836,6 +1846,7 @@ exports.completeGuildQuest = onCall({ region: 'asia-southeast1' }, async (reques
       }, { merge: true });
       tx.set(guildRef, { weeklyActivity: FieldValue.increment(rewardPts), updatedAt: now }, { merge: true });
       tx.set(guildRef.collection('members').doc(uid), { weeklyActivity: FieldValue.increment(rewardPts) }, { merge: true });
+      tx.set(db.collection('guildIndex').doc(guildId), { weeklyActivity: FieldValue.increment(rewardPts), updatedAt: now }, { merge: true });
       return { ok: true, activityGained: rewardPts, checkinCount: progress.length, totalMembers: g.memberCount || 1 };
     }
 
@@ -1855,6 +1866,7 @@ exports.completeGuildQuest = onCall({ region: 'asia-southeast1' }, async (reques
       tx.set(guildRef.collection('members').doc(puid), { weeklyActivity: FieldValue.increment(rewardPts) }, { merge: true });
     }
     tx.set(guildRef, { weeklyActivity: FieldValue.increment(totalPts), updatedAt: now }, { merge: true });
+    tx.set(db.collection('guildIndex').doc(guildId), { weeklyActivity: FieldValue.increment(totalPts), updatedAt: now }, { merge: true });
     return { ok: true, completed: true, rewardEarners: progress.length, activityGained: rewardPts };
   });
 });
@@ -1937,6 +1949,12 @@ exports.weeklyGuildReset = onSchedule(
         ref: db.collection('guilds').doc(gid),
         data: { weeklyActivity: 0, weeklyGold: 0, weeklyDiamond: 0, seasonId: nextSeason, updatedAt: FieldValue.serverTimestamp() }
       });
+      // Reset chỉ mục công khai (đua top tuần mới bắt đầu từ 0)
+      ops.push({
+        type: 'set',
+        ref: db.collection('guildIndex').doc(gid),
+        data: { weeklyActivity: 0, weeklyGold: 0, weeklyDiamond: 0, seasonId: nextSeason, updatedAt: FieldValue.serverTimestamp() }
+      });
       // Reset từng member + trả thưởng ví cá nhân
       for (const m of memberDocs) {
         ops.push({
@@ -1978,4 +1996,96 @@ exports.weeklyGuildReset = onSchedule(
     }
   }
 );
+
+
+/** 7. Thăng chức thành viên.
+ *  - Leader: member → deputy (tối đa 2 phó); deputy → leader (chuyển quyền trưởng
+ *    nhóm, trưởng cũ thành member).
+ *  - Phó nhóm: member → deputy. Không thăng chức được leader. */
+exports.promoteGuildMember = onCall({ region: 'asia-southeast1' }, async (request) => {
+  const uid = request.auth && request.auth.uid;
+  if (!uid) throw new HttpsError('unauthenticated', 'Cần đăng nhập.');
+  const data = request.data || {};
+  const guildId = data.guildId;
+  const targetUid = data.targetUid;
+  if (!guildId || typeof guildId !== 'string' || !targetUid || typeof targetUid !== 'string') {
+    throw new HttpsError('invalid-argument', 'Thiếu guildId/targetUid.');
+  }
+  if (targetUid === uid) throw new HttpsError('invalid-argument', 'Không thể tự thăng chức cho mình.');
+
+  const guildRef = db.collection('guilds').doc(guildId);
+  return db.runTransaction(async (tx) => {
+    const guildSnap = await tx.get(guildRef);
+    if (!guildSnap.exists) throw new HttpsError('not-found', 'Nhóm không tồn tại.');
+    const g = guildSnap.data();
+    const meSnap = await tx.get(guildRef.collection('members').doc(uid));
+    const targetSnap = await tx.get(guildRef.collection('members').doc(targetUid));
+    if (!meSnap.exists || !targetSnap.exists) throw new HttpsError('not-found', 'Thành viên không tồn tại.');
+    const meRole = meSnap.data().role;
+    const targetRole = targetSnap.data().role;
+    if (meRole !== 'leader' && meRole !== 'deputy') {
+      throw new HttpsError('permission-denied', 'Chỉ trưởng/phó nhóm mới thăng chức được.');
+    }
+    if (targetRole === 'leader') throw new HttpsError('failed-precondition', 'Không thể thăng chức cho trưởng nhóm.');
+
+    const now = Timestamp.now();
+    const deputies = Array.isArray(g.deputyUids) ? g.deputyUids.slice() : [];
+
+    if (meRole === 'leader' && targetRole === 'deputy') {
+      // Leader chuyển quyền cho phó nhóm
+      tx.set(guildRef, { leaderUid: targetUid, deputyUids: deputies.filter(d => d !== targetUid), updatedAt: now }, { merge: true });
+      tx.set(guildRef.collection('members').doc(targetUid), { role: 'leader' }, { merge: true });
+      tx.set(guildRef.collection('members').doc(uid), { role: 'member' }, { merge: true });
+      return { ok: true, targetRole: 'leader' };
+    }
+
+    // member → deputy (tối đa 2 phó)
+    if (deputies.length >= 2) throw new HttpsError('failed-precondition', 'Nhóm đã đủ 2 phó nhóm.');
+    deputies.push(targetUid);
+    tx.set(guildRef, { deputyUids: deputies, updatedAt: now }, { merge: true });
+    tx.set(guildRef.collection('members').doc(targetUid), { role: 'deputy' }, { merge: true });
+    return { ok: true, targetRole: 'deputy' };
+  });
+});
+
+/** 8. Đuổi thành viên — leader đuổi được tất cả (trừ chính mình); phó nhóm chỉ
+ *  đuổi được thành viên thường (không đuổi phó nhóm khác / trưởng nhóm). */
+exports.kickGuildMember = onCall({ region: 'asia-southeast1' }, async (request) => {
+  const uid = request.auth && request.auth.uid;
+  if (!uid) throw new HttpsError('unauthenticated', 'Cần đăng nhập.');
+  const data = request.data || {};
+  const guildId = data.guildId;
+  const targetUid = data.targetUid;
+  if (!guildId || typeof guildId !== 'string' || !targetUid || typeof targetUid !== 'string') {
+    throw new HttpsError('invalid-argument', 'Thiếu guildId/targetUid.');
+  }
+  if (targetUid === uid) {
+    throw new HttpsError('invalid-argument', 'Không thể tự đuổi mình — hãy dùng Rời nhóm.');
+  }
+
+  const guildRef = db.collection('guilds').doc(guildId);
+  return db.runTransaction(async (tx) => {
+    const guildSnap = await tx.get(guildRef);
+    if (!guildSnap.exists) throw new HttpsError('not-found', 'Nhóm không tồn tại.');
+    const meSnap = await tx.get(guildRef.collection('members').doc(uid));
+    const targetSnap = await tx.get(guildRef.collection('members').doc(targetUid));
+    if (!meSnap.exists || !targetSnap.exists) throw new HttpsError('not-found', 'Thành viên không tồn tại.');
+    const meRole = meSnap.data().role;
+    const targetRole = targetSnap.data().role;
+    if (meRole !== 'leader' && meRole !== 'deputy') {
+      throw new HttpsError('permission-denied', 'Chỉ trưởng/phó nhóm mới đuổi được.');
+    }
+    if (targetRole === 'leader') throw new HttpsError('failed-precondition', 'Không thể đuổi trưởng nhóm.');
+    if (meRole === 'deputy' && targetRole === 'deputy') {
+      throw new HttpsError('permission-denied', 'Phó nhóm không đuổi được phó nhóm khác.');
+    }
+
+    const now = Timestamp.now();
+    tx.delete(guildRef.collection('members').doc(targetUid));
+    tx.delete(db.collection('playerGuilds').doc(targetUid));
+    tx.set(guildRef, { memberCount: FieldValue.increment(-1), updatedAt: now }, { merge: true });
+    tx.set(db.collection('guildIndex').doc(guildId), { memberCount: FieldValue.increment(-1), updatedAt: now }, { merge: true });
+    return { ok: true };
+  });
+});
 

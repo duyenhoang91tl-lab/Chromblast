@@ -2238,3 +2238,97 @@ function MILESTONE_MSG(tier){
   };
   Object.keys(fill).forEach(l=>{ if(typeof I18N!=='undefined' && I18N[l]) Object.assign(I18N[l], fill[l]); });
 })();
+
+(function(){
+  const fill = {
+    vi:{
+      guildLoading:'Đang tải...', guildNoGuildTitle:'Chưa có nhóm',
+      guildNoGuildSub:'Tạo nhóm riêng hoặc tìm & tham gia một nhóm đang tuyển thành viên.',
+      guildCreate:'Tạo nhóm', guildJoin:'Tham gia nhóm', guildFindTitle:'Nhóm đang tuyển',
+      guildNamePlaceholder:'Tên nhóm (2-24 ký tự)', guildEmptyRooms:'Chưa có nhóm nào còn chỗ — hãy tạo nhóm mới!',
+      guildLevel:'Cấp {0}', guildMemberCount:'{0}/{1} thành viên', guildVault:'Kho nhóm',
+      guildUpgrade:'Nâng cấp', guildUpgradeCost:'Chi phí cấp {0}→{1}: 🪙{2} + 💎{3}',
+      guildUpgrading:'Đang nâng cấp...', guildCapMax:'Đã đạt cấp tối đa',
+      guildContribute:'Đóng góp hàng ngày', guildContributeToday:'Đã đóng góp {0}/{1} vàng · {2}/{3} kim cương hôm nay',
+      guildGoldPlaceholder:'Vàng', guildDiamondPlaceholder:'Kim cương', guildContributeBtn:'Gửi đóng góp',
+      guildQuests:'Nhiệm vụ nhóm tuần này', guildQuestProgress:'{0}/{1} thành viên',
+      guildQuestDailyCheckin:'Điểm danh hôm nay', guildCheckinCount:'{0}/{1} thành viên đã điểm danh',
+      guildLeaderboard:'Đua top', guildRankMembers:'Số thành viên', guildRankActivity:'Năng động',
+      guildRankGold:'Vàng đóng góp', guildRankDiamond:'Kim cương đóng góp', guildRankMe:'★ Nhóm của bạn',
+      guildMembers:'Thành viên ({0})', guildRoleLeader:'Trưởng nhóm', guildRoleDeputy:'Phó nhóm', guildRoleMember:'Thành viên',
+      guildPromote:'Thăng chức', guildKick:'Đuổi', guildLeave:'Rời nhóm',
+      guildResetCountdown:'Reset tuần sau: {0}', guildMyGuild:'Nhóm của tôi',
+      guildNeedOnline:'Cần bật Online để dùng Hội nhóm',
+      guildContributeOk:'Đã đóng góp 🪙{0} + 💎{1}', guildContributeLimit:'Đã đạt giới hạn đóng góp hôm nay',
+      guildUpgradeOk:'Nhóm đã lên cấp {0}', guildKickOk:'Đã đuổi thành viên', guildPromoteOk:'Đã thăng chức',
+      guildVaultShort:'Kho không đủ', guildCreated:'Đã tạo nhóm {0}', guildJoined:'Đã tham gia nhóm {0}',
+      guildLeft:'Đã rời nhóm', guildFull:'Nhóm đã đầy', guildAlreadyIn:'Bạn đã có nhóm rồi',
+      guildKickSelf:'Không thể tự đuổi mình — hãy dùng Rời nhóm.'
+    },
+    en:{
+      guildLoading:'Loading...', guildNoGuildTitle:'No guild yet',
+      guildNoGuildSub:'Create your own guild or find & join one that is recruiting members.',
+      guildCreate:'Create guild', guildJoin:'Join guild', guildFindTitle:'Recruiting guilds',
+      guildNamePlaceholder:'Guild name (2-24 chars)', guildEmptyRooms:'No guild has free slots — create a new one!',
+      guildLevel:'Level {0}', guildMemberCount:'{0}/{1} members', guildVault:'Guild vault',
+      guildUpgrade:'Upgrade', guildUpgradeCost:'Cost Lv{0}→{1}: 🪙{2} + 💎{3}',
+      guildUpgrading:'Upgrading...', guildCapMax:'Already at max level',
+      guildContribute:'Daily contribution', guildContributeToday:'Contributed {0}/{1} gold · {2}/{3} diamonds today',
+      guildGoldPlaceholder:'Gold', guildDiamondPlaceholder:'Diamonds', guildContributeBtn:'Contribute',
+      guildQuests:'This week guild quests', guildQuestProgress:'{0}/{1} members',
+      guildQuestDailyCheckin:'Daily check-in', guildCheckinCount:'{0}/{1} members checked in',
+      guildLeaderboard:'Weekly race', guildRankMembers:'Members', guildRankActivity:'Activity',
+      guildRankGold:'Gold contributed', guildRankDiamond:'Diamonds contributed', guildRankMe:'★ Your guild',
+      guildMembers:'Members ({0})', guildRoleLeader:'Leader', guildRoleDeputy:'Deputy', guildRoleMember:'Member',
+      guildPromote:'Promote', guildKick:'Kick', guildLeave:'Leave guild',
+      guildResetCountdown:'Weekly reset in: {0}', guildMyGuild:'My guild',
+      guildNeedOnline:'Online must be enabled to use Guilds',
+      guildContributeOk:'Contributed 🪙{0} + 💎{1}', guildContributeLimit:'Daily contribution limit reached',
+      guildUpgradeOk:'Guild upgraded to level {0}', guildKickOk:'Member kicked', guildPromoteOk:'Promoted',
+      guildVaultShort:'Not enough in vault', guildCreated:'Created guild {0}', guildJoined:'Joined guild {0}',
+      guildLeft:'Left the guild', guildFull:'Guild is full', guildAlreadyIn:'You already have a guild',
+      guildKickSelf:'Cannot kick yourself — use Leave guild instead.'
+    }
+  };
+  Object.keys(fill).forEach(l=>{ if(typeof I18N!=='undefined' && I18N[l]) Object.assign(I18N[l], fill[l]); });
+})();
+
+
+(function(){
+  const fill = {
+    ko:{
+      guildLoading:'로딩 중...', guildNoGuildTitle:'길드 없음', guildCreate:'길드 만들기', guildJoin:'길드 가입',
+      guildFindTitle:'모집 중인 길드', guildNamePlaceholder:'길드 이름 (2-24자)', guildEmptyRooms:'자리가 있는 길드가 없습니다 — 새로 만드세요!',
+      guildLevel:'레벨 {0}', guildMemberCount:'{0}/{1} 멤버', guildVault:'길드 금고', guildUpgrade:'업그레이드',
+      guildContribute:'일일 기부', guildContributeBtn:'기부', guildQuests:'이번 주 길드 퀘스트',
+      guildLeaderboard:'주간 경쟁', guildMembers:'멤버 ({0})', guildRoleLeader:'길드장', guildRoleDeputy:'부길드장', guildRoleMember:'멤버',
+      guildPromote:'승격', guildKick:'추방', guildLeave:'길드 탈퇴', guildMyGuild:'내 길드', guildResetCountdown:'주간 초기화까지: {0}'
+    },
+    ja:{
+      guildLoading:'読み込み中...', guildNoGuildTitle:'ギルドなし', guildCreate:'ギルド作成', guildJoin:'ギルド参加',
+      guildFindTitle:'募集中のギルド', guildNamePlaceholder:'ギルド名 (2-24文字)', guildEmptyRooms:'空きのあるギルドがありません — 新規作成してください！',
+      guildLevel:'レベル {0}', guildMemberCount:'{0}/{1} メンバー', guildVault:'ギルド金庫', guildUpgrade:'アップグレード',
+      guildContribute:'毎日の寄付', guildContributeBtn:'寄付', guildQuests:'今週のギルドクエスト',
+      guildLeaderboard:'週間レース', guildMembers:'メンバー ({0})', guildRoleLeader:'ギルドマスター', guildRoleDeputy:'副マスター', guildRoleMember:'メンバー',
+      guildPromote:'昇格', guildKick:'追放', guildLeave:'脱退', guildMyGuild:'マイギルド', guildResetCountdown:'週間リセットまで: {0}'
+    },
+    zh:{
+      guildLoading:'加载中...', guildNoGuildTitle:'还没有公会', guildCreate:'创建公会', guildJoin:'加入公会',
+      guildFindTitle:'招募中的公会', guildNamePlaceholder:'公会名（2-24字）', guildEmptyRooms:'没有有空位的公会 — 创建新公会吧！',
+      guildLevel:'等级 {0}', guildMemberCount:'{0}/{1} 成员', guildVault:'公会仓库', guildUpgrade:'升级',
+      guildContribute:'每日捐献', guildContributeBtn:'捐献', guildQuests:'本周公会任务',
+      guildLeaderboard:'每周竞赛', guildMembers:'成员 ({0})', guildRoleLeader:'会长', guildRoleDeputy:'副会长', guildRoleMember:'成员',
+      guildPromote:'晋升', guildKick:'踢出', guildLeave:'退出公会', guildMyGuild:'我的公会', guildResetCountdown:'每周重置：{0}'
+    },
+    es:{
+      guildLoading:'Cargando...', guildNoGuildTitle:'Sin gremio', guildCreate:'Crear gremio', guildJoin:'Unirse a gremio',
+      guildFindTitle:'Gremios reclutando', guildNamePlaceholder:'Nombre del gremio (2-24)', guildEmptyRooms:'No hay gremios con huecos — ¡crea uno nuevo!',
+      guildLevel:'Nivel {0}', guildMemberCount:'{0}/{1} miembros', guildVault:'Cofre del gremio', guildUpgrade:'Mejorar',
+      guildContribute:'Contribución diaria', guildContributeBtn:'Contribuir', guildQuests:'Misiones del gremio esta semana',
+      guildLeaderboard:'Carrera semanal', guildMembers:'Miembros ({0})', guildRoleLeader:'Líder', guildRoleDeputy:'Sub-líder', guildRoleMember:'Miembro',
+      guildPromote:'Ascender', guildKick:'Expulsar', guildLeave:'Salir del gremio', guildMyGuild:'Mi gremio', guildResetCountdown:'Reinicio semanal: {0}'
+    }
+  };
+  Object.keys(fill).forEach(l=>{ if(typeof I18N!=='undefined' && I18N[l]) Object.assign(I18N[l], fill[l]); });
+})();
+

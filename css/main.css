@@ -7310,6 +7310,132 @@ body:has(#secret-stage.active) .streak-dot.lit{
 .acgrp-empty-sub{ font-size:13px; font-weight:700; color:rgba(43,35,64,0.55); max-width:260px; line-height:1.5; }
 
 /* ══════════════════════════════════════════
+   HỘI NHÓM (Guild) — #account-groups dashboard
+   Tông pastel trắng-hồng giống khung account-hub, chữ tối để đọc rõ.
+══════════════════════════════════════════ */
+.acgrp-note{
+  margin:12px 0 0; font-size:12.5px; font-weight:800; color:#5a3345;
+  background:rgba(255,255,255,0.7); border:1px solid rgba(200,90,130,0.16);
+  border-radius:12px; padding:9px 12px; text-align:center;
+}
+.acgrp-btn{
+  display:block; width:100%; border:none; border-radius:999px; padding:11px 12px;
+  font-family:inherit; font-weight:900; font-size:14px; cursor:pointer;
+  background:linear-gradient(135deg,#ff9ac1,#ff7ab0); color:#fff;
+  box-shadow:0 4px 12px rgba(200,90,130,0.25); margin-top:10px;
+}
+.acgrp-btn:disabled{ opacity:0.5; cursor:default; box-shadow:none; }
+.acgrp-btn.green{ background:linear-gradient(135deg,#66bb6a,#2e7d32); box-shadow:0 4px 12px rgba(46,125,50,0.25); }
+.acgrp-btn.purple{ background:linear-gradient(135deg,#7c6bd8,#a78bfa); box-shadow:0 4px 12px rgba(124,107,216,0.25); }
+.acgrp-btn.ghost{ background:rgba(255,255,255,0.8); color:#7a3d5a; box-shadow:none; border:1px solid rgba(200,90,130,0.25); }
+.acgrp-btn.danger{ background:linear-gradient(135deg,#ef6a6a,#c62828); box-shadow:0 4px 12px rgba(198,40,40,0.25); }
+.acgrp-input{
+  width:100%; border:1px solid rgba(200,90,130,0.22); border-radius:12px;
+  background:rgba(255,255,255,0.85); color:#5a3345; padding:10px 12px;
+  font-family:inherit; font-weight:700; font-size:13px; box-sizing:border-box;
+}
+
+/* ── No-guild: tạo / tìm nhóm ── */
+.acgrp-card{
+  background:rgba(255,255,255,0.7); border:1px solid rgba(200,90,130,0.16);
+  border-radius:16px; padding:14px; margin-top:12px;
+}
+.acgrp-card-title{ font-size:14px; font-weight:900; color:#5a3345; margin-bottom:8px; }
+.acgrp-list{ display:flex; flex-direction:column; gap:8px; }
+.acgrp-item{
+  display:flex; align-items:center; gap:10px; padding:10px 12px;
+  background:#fff; border:1px solid rgba(200,90,130,0.16); border-radius:12px;
+}
+.acgrp-item-icon{ font-size:26px; flex-shrink:0; }
+.acgrp-item-main{ flex:1; min-width:0; }
+.acgrp-item-name{ font-size:13.5px; font-weight:900; color:#5a3345; }
+.acgrp-item-sub{ font-size:11.5px; font-weight:700; color:rgba(90,51,69,0.6); margin-top:2px; }
+.acgrp-item-btn{
+  flex-shrink:0; border:none; border-radius:999px; padding:8px 14px; cursor:pointer;
+  background:linear-gradient(135deg,#66bb6a,#2e7d32); color:#fff; font-weight:900; font-size:12.5px;
+}
+
+/* ── Dashboard: header / sức chứa / kho / nâng cấp ── */
+.acgrp-head{
+  display:flex; align-items:center; gap:12px; padding:14px;
+  background:linear-gradient(135deg,#f7d9ef,#ead6f7); border:1px solid rgba(200,90,130,0.18);
+  border-radius:16px; margin-top:12px;
+}
+.acgrp-head-icon{ font-size:40px; flex-shrink:0; }
+.acgrp-head-main{ flex:1; min-width:0; }
+.acgrp-head-name{ font-size:17px; font-weight:900; color:#2b2340; }
+.acgrp-head-meta{ font-size:12px; font-weight:800; color:#6b5f8a; margin-top:2px; }
+.acgrp-cap{ height:8px; border-radius:999px; background:rgba(90,51,69,0.12); margin-top:8px; overflow:hidden; }
+.acgrp-cap i{ display:block; height:100%; border-radius:999px; background:linear-gradient(90deg,#ff9ac1,#ff7ab0); }
+.acgrp-vault{
+  display:flex; gap:8px; margin-top:12px;
+}
+.acgrp-vault-box{
+  flex:1; display:flex; align-items:center; justify-content:center; gap:6px;
+  background:rgba(255,255,255,0.75); border:1px solid rgba(200,90,130,0.16);
+  border-radius:12px; padding:10px 6px; font-size:13px; font-weight:900; color:#5a3345;
+}
+.acgrp-upgrade-box{ margin-top:12px; }
+.acgrp-upgrade-cost{ font-size:12px; font-weight:800; color:#6b5f8a; text-align:center; margin-bottom:6px; }
+
+/* ── Đóng góp hàng ngày ── */
+.acgrp-contribute{ margin-top:12px; }
+.acgrp-contribute-row{ display:flex; gap:8px; margin-top:8px; }
+.acgrp-contribute-row input{ flex:1; min-width:0; }
+.acgrp-contribute-note{ font-size:12px; font-weight:800; color:#6b5f8a; margin-top:8px; }
+
+/* ── Nhiệm vụ nhóm ── */
+.acgrp-quest{
+  display:flex; flex-direction:column; gap:6px; padding:11px 12px;
+  background:#fff; border:1px solid rgba(200,90,130,0.16); border-radius:12px;
+}
+.acgrp-quest-top{ display:flex; align-items:center; gap:8px; }
+.acgrp-quest-ico{ font-size:20px; flex-shrink:0; }
+.acgrp-quest-name{ flex:1; font-size:13px; font-weight:900; color:#5a3345; }
+.acgrp-quest-done{ font-size:11px; font-weight:900; color:#2e6b32; flex-shrink:0; }
+.acgrp-bar{ height:6px; border-radius:999px; background:rgba(90,51,69,0.12); overflow:hidden; }
+.acgrp-bar i{ display:block; height:100%; border-radius:999px; background:linear-gradient(90deg,#ffd54a,#ff9e40); }
+.acgrp-quest-sub{ font-size:11.5px; font-weight:800; color:rgba(90,51,69,0.6); }
+
+/* ── Đua top ── */
+.acgrp-lb-tabs{ display:flex; gap:6px; margin-top:10px; }
+.acgrp-lb-tab{
+  flex:1; border:1px solid rgba(200,90,130,0.2); border-radius:10px; padding:8px 4px;
+  background:rgba(255,255,255,0.7); color:#8a5b70; font-family:inherit; font-weight:900;
+  font-size:11px; cursor:pointer;
+}
+.acgrp-lb-tab.active{ background:linear-gradient(135deg,#ff9ac1,#ff7ab0); color:#fff; border-color:transparent; }
+.acgrp-lb-row{
+  display:flex; align-items:center; gap:8px; padding:8px 10px;
+  background:#fff; border:1px solid rgba(200,90,130,0.14); border-radius:10px; margin-top:6px;
+}
+.acgrp-lb-rank{ width:26px; text-align:center; font-weight:900; color:#c97a00; flex-shrink:0; }
+.acgrp-lb-name{ flex:1; font-size:12.5px; font-weight:900; color:#5a3345; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.acgrp-lb-val{ font-size:12.5px; font-weight:900; color:#2b2340; flex-shrink:0; }
+.acgrp-lb-row.me{ border-color:rgba(240,160,0,0.5); background:rgba(255,213,74,0.14); }
+.acgrp-reset-note{ font-size:11.5px; font-weight:800; color:#6b5f8a; text-align:center; margin-top:8px; }
+
+/* ── Thành viên ── */
+.acgrp-member{
+  display:flex; align-items:center; gap:8px; padding:9px 10px;
+  background:#fff; border:1px solid rgba(200,90,130,0.14); border-radius:12px;
+}
+.acgrp-member-role{ font-size:10px; font-weight:900; border-radius:999px; padding:2px 7px; flex-shrink:0; }
+.acgrp-member-role.leader{ background:rgba(255,213,74,0.28); color:#8a5600; }
+.acgrp-member-role.deputy{ background:rgba(124,107,216,0.18); color:#4a3f8a; }
+.acgrp-member-role.member{ background:rgba(200,90,130,0.14); color:#8a3d5a; }
+.acgrp-member-name{ flex:1; min-width:0; font-size:13px; font-weight:900; color:#5a3345; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.acgrp-member-activity{ font-size:11.5px; font-weight:800; color:#c97a00; flex-shrink:0; }
+.acgrp-member-act{
+  flex-shrink:0; border:none; border-radius:8px; padding:5px 9px; cursor:pointer;
+  font-family:inherit; font-weight:900; font-size:10.5px;
+}
+.acgrp-member-act.promote{ background:rgba(124,107,216,0.18); color:#4a3f8a; }
+.acgrp-member-act.kick{ background:rgba(239,106,106,0.18); color:#c62828; }
+.acgrp-section-title{ font-size:13px; font-weight:900; color:#5a3345; margin:14px 0 8px; }
+
+
+/* ══════════════════════════════════════════
    TÀI KHOẢN → "Hội viên" (#account-membership) — tông sang trọng hơn 1 chút
    (thêm ánh vàng nhạt), vẫn cùng gia đình pastel với khung account-hub.
 ══════════════════════════════════════════ */
