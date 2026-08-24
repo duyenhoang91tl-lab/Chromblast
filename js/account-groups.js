@@ -457,3 +457,40 @@ function _acgrpBindDashboard(container){
   else bind();
 })();
 
+
+/* ── Hook nhiệm vụ nhóm (Task 4) ──
+   Các hệ thống game gọi notifyGuildQuest(type) khi có sự kiện hoàn thành
+   (thắng 2 ván Caro/Versus liên tiếp, vượt map ẩn 1, điểm danh hôm nay);
+   hàm này tự tra guild của người chơi rồi gọi Cloud Function completeGuildQuest.
+   Streak thắng liên tiếp lưu tạm ở localStorage, reset khi thua/hoà, khi đạt 2
+   trận thắng liên tiếp thì báo quest 1 lần rồi đếm lại. */
+async function notifyGuildQuest(type){
+  try{
+    const uid = (typeof getOnlineUid === 'function') ? getOnlineUid() : null;
+    if(!uid) return;
+    const db = _acgrpDb();
+    if(!db) return;
+    const pgSnap = await db.collection('playerGuilds').doc(uid).get();
+    if(!pgSnap.exists) return;
+    const guildId = pgSnap.data().guildId;
+    if(!guildId) return;
+    const res = await _acgrpCall('completeGuildQuest', { guildId: guildId, questId: type });
+    if(res && res.ok && res.activityGained > 0){
+      try{ if(typeof showComboFlash === 'function') showComboFlash(0, false, '⚡ +' + res.activityGained + ' điểm năng động nhóm'); }catch(e){}
+    }
+  }catch(e){ console.warn('[groups] quest hook', e); }
+}
+function notifyGuildWinStreak(kind, won){
+  const key = 'chromablast_guild_streak_' + kind;
+  let cur = 0;
+  try{ cur = parseInt(localStorage.getItem(key) || '0', 10) || 0; }catch(e){}
+  cur = won ? cur + 1 : 0;
+  try{ localStorage.setItem(key, String(cur)); }catch(e){}
+  if(won && cur >= 2){
+    try{ localStorage.setItem(key, '0'); }catch(e){}
+    notifyGuildQuest(kind === 'caro' ? 'caro_win_streak' : 'versus_win_streak');
+  }
+}
+window.notifyGuildQuest = notifyGuildQuest;
+window.notifyGuildWinStreak = notifyGuildWinStreak;
+

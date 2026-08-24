@@ -133,6 +133,8 @@ function claimDailyReward(){
   try{ if(typeof noteCupLoginClaim==='function') noteCupLoginClaim(); }catch(e){}
   try{ if(typeof noteQuestEvent==='function') noteQuestEvent('checkin', 1); }catch(e){}
   try{ if(typeof logGameEvent==='function') logGameEvent('daily_reward_claim', { day: dom, xp, gold }); }catch(e){}
+  // Hook nhiệm vụ nhóm: điểm danh thành công → cộng điểm năng động ngay (daily_checkin)
+  try{ if(typeof notifyGuildQuest==='function') notifyGuildQuest('daily_checkin'); }catch(e){}
   return { day: dom, xp, gold, hearts, milestone };
 }
 

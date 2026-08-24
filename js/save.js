@@ -138,6 +138,8 @@ function markMapCleared(key){
   renderHiddenMapMenu();
   try{ if(typeof onHiddenMapClearedForBrick==='function') onHiddenMapClearedForBrick(aliased); }catch(e){}
   try{ if(typeof onHiddenMapClearedForBoard==='function') onHiddenMapClearedForBoard(); }catch(e){}
+  // Hook nhiệm vụ nhóm: vượt "Map ẩn 1" (secret1)
+  try{ if(aliased === 'secret1' && typeof notifyGuildQuest==='function') notifyGuildQuest('hidden_map_clear'); }catch(e){}
 }
 
 /* ──────────────────────────────────────────

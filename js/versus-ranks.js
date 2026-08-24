@@ -99,6 +99,8 @@ function applyLocalVersusResult(outcome){
   s.winRate = s.total > 0 ? Math.round((s.wins / s.total) * 1000) / 10 : 0;
   s.rank = getVersusRank(s.points);
   saveLocalVersusStats(s);
+  // Hook nhiệm vụ nhóm: thắng 2 trận Versus online liên tiếp
+  try{ if(typeof notifyGuildWinStreak === 'function') notifyGuildWinStreak('versus', outcome === 'win'); }catch(e){}
   return s;
 }
 

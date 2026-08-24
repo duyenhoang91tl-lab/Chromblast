@@ -80,6 +80,8 @@ function applyLocalCaroResult(outcome){
   s.winRate = s.total > 0 ? Math.round((s.wins / s.total) * 1000) / 10 : 0;
   s.rank = getCaroRank(s.points);
   saveLocalCaroStats(s);
+  // Hook nhiệm vụ nhóm: thắng 2 ván Caro online liên tiếp
+  try{ if(typeof notifyGuildWinStreak === 'function') notifyGuildWinStreak('caro', outcome === 'win'); }catch(e){}
   return s;
 }
 
