@@ -453,6 +453,13 @@ function _acbagRenderDetail(){
   if(_acbagView === 'nametags'){ _acbagRenderNameEffects(grid); return; }
   if(_acbagView === 'fonts'){ _acbagRenderTextEffects(grid); return; }
   if(_acbagView === 'chests'){
+    // grid mặc định mang class 'acbag-grid' (display:grid 2 cột) còn sót lại
+    // từ hạng mục xem trước đó. renderCrateGridInto() chỉ đổ vào ĐÚNG 1 khối
+    // bọc .gpcard-crate-grid — nếu để nguyên class lưới ngoài, khối này bị ép
+    // làm 1 trong 2 cột của grid ngoài nên cả bảng rương bị co hẹp một nửa so
+    // với bên Cửa hàng (#shop-body vốn là container thường, không phải grid).
+    // Bỏ class lưới ngoài để khối rương hiển thị full-width giống hệt Cửa hàng.
+    grid.className = 'acbag-chest-wrap';
     // Dùng chung đúng hàm vẽ lưới rương với màn "Rương bảo vật" (menu chính)
     // và tab Rương trong Cửa hàng (js/gpcard-redeem.js) — icon/dữ liệu/hành
     // vi mua-mở luôn khớp tuyệt đối ở cả 3 nơi, không có bản copy riêng.

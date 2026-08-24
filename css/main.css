@@ -7215,6 +7215,10 @@ body:has(#secret-stage.active) .streak-dot.lit{
   display:grid; grid-template-columns:1fr 1fr; gap:10px; padding-bottom:16px;
   align-items:stretch;
 }
+/* Bọc thường (không phải grid) cho tab Rương trong "Túi của tôi" — khớp với
+   #shop-body (Cửa hàng), để .gpcard-crate-grid dùng chung không bị ép co hẹp
+   vào 1 cột của lưới acbag-grid 2 cột. */
+.acbag-chest-wrap{ padding-bottom:16px; }
 .acbag-card{
   display:flex; flex-direction:column; align-items:center;
   background:#fff; border-radius:16px; padding:12px 10px;
