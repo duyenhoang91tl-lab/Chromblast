@@ -4,10 +4,13 @@ const { setGlobalOptions } = require('firebase-functions/v2');
 const { onDocumentCreated, onDocumentUpdated, onDocumentDeleted } = require('firebase-functions/v2/firestore');
 const { onCall, onRequest, HttpsError } = require('firebase-functions/v2/https');
 const { onSchedule } = require('firebase-functions/v2/scheduler');
+const { onValueCreated } = require('firebase-functions/v2/database');
 const { initializeApp } = require('firebase-admin/app');
 const { getFirestore, FieldValue, Timestamp } = require('firebase-admin/firestore');
 const { getAuth } = require('firebase-admin/auth');
+const { getDatabase } = require('firebase-admin/database');
 const { filterText, containsProfanity } = require('./profanity-filter.js');
+const clanBattle = require('./clan-battle-formulas.js');
 const crypto = require('crypto');
 initializeApp();
 // Dùng API modular (getFirestore/FieldValue) thay vì admin.firestore() namespace cũ —
@@ -15,6 +18,7 @@ initializeApp();
 // (namespace không còn tự đăng ký khi chỉ require('firebase-admin') trơn).
 const db = getFirestore();
 const auth = getAuth();
+const rtdb = getDatabase();
 // Đặt vùng mặc định cho toàn bộ function trong file này — nên trùng với
 // vùng của Cloud Firestore trong dự án Firebase để giảm độ trễ.
 setGlobalOptions({ region: 'asia-southeast1' });
@@ -2089,3 +2093,216 @@ exports.kickGuildMember = onCall({ region: 'asia-southeast1' }, async (request) 
   });
 });
 
+
+
+// ═══════════════════════════════════════════════════════════════
+// Task 9 — Đấu Clan "Muông Thú Đại Chiến": xác thực event RTDB +
+// tổng hợp kết quả cuối trận + cộng điểm năng động clan.
+// Nguồn: spec "Đấu Clan — Muông Thú Đại Chiến" (bản chốt), mục 1, 5, 9.
+//
+// Schema RTDB (mục 1):
+//   battles/{battleId}/meta                       — { teamAClanId, teamBClanId,
+//                                                       teamAPlayerIds, teamBPlayerIds,
+//                                                       status: 'active'|'finished', endsAt }
+//   battles/{battleId}/players/{playerId}/pos      — client tự ghi (RTDB rules)
+//   battles/{battleId}/players/{playerId}/state    — CHỈ Cloud Function ghi:
+//                                                       { teamId, animalId, currentHP,
+//                                                         eatCount, alive, skillCharge }
+//   battles/{battleId}/events/{eventId}            — client push, CF xử lý 1 lần
+//   battles/{battleId}/fruits/{fruitId}            — { position, active }
+//
+// LƯU Ý: việc TẠO battles/{battleId} (meta/players/fruits ban đầu) thuộc Task 1/2/6
+// (màn thách đấu + chọn nhân vật) — CHƯA có trong scope Task 9 này.
+// ═══════════════════════════════════════════════════════════════
+
+const { getDirectSkillDamage } = require('./clan-battle-skill-effects.js');
+
+// Khoảng cách hợp lý tối đa giữa 2 lần cập nhật vị trí liên quan tới 1 event,
+// dùng để chặn gian lận thô (dạy-porting/spoof vị trí) — PLACEHOLDER, CẦN
+// XÁC NHẬN LẠI theo tốc độ di chuyển thật khi ghép UI/joystick (mục 1 spec:
+// "khoảng cách hợp lý giữa 2 vị trí").
+const CLAN_BATTLE_MAX_PLAUSIBLE_DIST = 0.5;
+
+function _cbDistance(posA, posB) {
+  if (!posA || !posB) return Infinity;
+  const dx = (posA.x || 0) - (posB.x || 0);
+  const dy = (posA.y || 0) - (posB.y || 0);
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+async function _cbGetAllPlayerStates(battleId) {
+  const snap = await rtdb.ref(`battles/${battleId}/players`).get();
+  const players = snap.exists() ? snap.val() : {};
+  const teamA = [];
+  const teamB = [];
+  for (const [playerId, p] of Object.entries(players)) {
+    const state = p && p.state;
+    if (!state) continue;
+    const withId = { id: playerId, ...state };
+    if (state.teamId === 'A') teamA.push(withId);
+    else if (state.teamId === 'B') teamB.push(withId);
+  }
+  return { teamA, teamB };
+}
+
+/**
+ * Chốt kết quả trận + cộng điểm năng động clan. Idempotent: dùng RTDB
+ * transaction trên meta/status để chỉ 1 lần gọi thắng (chống double-award
+ * khi cả elimination lẫn timeout cùng kích hoạt).
+ */
+async function _cbFinalizeBattle(battleId, context) {
+  const metaRef = rtdb.ref(`battles/${battleId}/meta`);
+  const txResult = await metaRef.transaction((meta) => {
+    if (!meta || meta.status !== 'active') return; // đã kết thúc rồi hoặc chưa tồn tại -> bỏ qua
+    meta.status = 'finished';
+    return meta;
+  });
+
+  if (!txResult.committed || !txResult.snapshot.exists()) {
+    return { alreadyFinalized: true };
+  }
+  const meta = txResult.snapshot.val();
+
+  const { teamA, teamB } = await _cbGetAllPlayerStates(battleId);
+  const result = clanBattle.resolveBattleResult(teamA, teamB, context);
+
+  if (result.winner === null) {
+    // Không đủ điều kiện kết thúc thật sự -> hoàn tác trạng thái để không kẹt trận.
+    await metaRef.child('status').set('active');
+    return { aborted: true, reason: result.reason };
+  }
+
+  const reward = clanBattle.getClanActivityReward(result.winner);
+  const teamAClanId = meta.teamAClanId;
+  const teamBClanId = meta.teamBClanId;
+  const now = Timestamp.now();
+
+  await db.runTransaction(async (tx) => {
+    if (reward.teamA > 0 && teamAClanId) {
+      tx.set(db.collection('guilds').doc(teamAClanId), { weeklyActivity: FieldValue.increment(reward.teamA), updatedAt: now }, { merge: true });
+      tx.set(db.collection('guildIndex').doc(teamAClanId), { weeklyActivity: FieldValue.increment(reward.teamA), updatedAt: now }, { merge: true });
+    }
+    if (reward.teamB > 0 && teamBClanId) {
+      tx.set(db.collection('guilds').doc(teamBClanId), { weeklyActivity: FieldValue.increment(reward.teamB), updatedAt: now }, { merge: true });
+      tx.set(db.collection('guildIndex').doc(teamBClanId), { weeklyActivity: FieldValue.increment(reward.teamB), updatedAt: now }, { merge: true });
+    }
+    tx.set(db.collection('clanBattles').doc(battleId), {
+      winner: result.winner,
+      reason: result.reason,
+      trigger: context.timeUp ? 'time_up' : 'elimination',
+      teamAClanId: teamAClanId || null,
+      teamBClanId: teamBClanId || null,
+      teamAScore: clanBattle.getTeamScore(teamA),
+      teamBScore: clanBattle.getTeamScore(teamB),
+      activityAwarded: reward,
+      finishedAt: now,
+    }, { merge: true });
+  });
+
+  return { finalized: true, winner: result.winner, reward };
+}
+
+/** Xử lý 1 event trong hàng đợi battles/{battleId}/events — xác thực tối thiểu rồi
+ *  áp dụng lên state chính thức. Đây là nơi DUY NHẤT cập nhật máu/điểm chính thức (mục 1). */
+exports.onClanBattleEventCreated = onValueCreated(
+  { ref: 'battles/{battleId}/events/{eventId}', region: 'asia-southeast1' },
+  async (event) => {
+    const battleId = event.params.battleId;
+    const eventId = event.params.eventId;
+    const data = event.data.val();
+    if (!data || data.processed) return;
+
+    const eventRef = rtdb.ref(`battles/${battleId}/events/${eventId}`);
+    const metaSnap = await rtdb.ref(`battles/${battleId}/meta`).get();
+    const meta = metaSnap.exists() ? metaSnap.val() : null;
+    if (!meta || meta.status !== 'active') {
+      await eventRef.child('processed').set(true);
+      return;
+    }
+
+    const actorId = data.actorId;
+    const actorRef = rtdb.ref(`battles/${battleId}/players/${actorId}`);
+    const actorSnap = await actorRef.get();
+    if (!actorSnap.exists()) {
+      await eventRef.child('processed').set(true);
+      return;
+    }
+    const actorNode = actorSnap.val();
+    const actorState = { id: actorId, ...actorNode.state };
+    const actorPos = actorNode.pos;
+
+    try {
+      if (data.type === 'eat_fruit') {
+        const fruitRef = rtdb.ref(`battles/${battleId}/fruits/${data.fruitId}`);
+        const fruitSnap = await fruitRef.get();
+        const fruit = fruitSnap.exists() ? fruitSnap.val() : null;
+        if (fruit && fruit.active !== false && actorState.alive &&
+            _cbDistance(actorPos, fruit.position) <= CLAN_BATTLE_MAX_PLAUSIBLE_DIST) {
+          const newActor = clanBattle.applyFruitEat(actorState);
+          await actorRef.child('state').set(_cbStripId(newActor));
+          await fruitRef.child('active').set(false);
+        }
+      } else if (data.type === 'eat_player') {
+        const targetId = data.targetId;
+        const targetRef = rtdb.ref(`battles/${battleId}/players/${targetId}`);
+        const targetSnap = await targetRef.get();
+        if (targetSnap.exists()) {
+          const targetNode = targetSnap.val();
+          const targetState = { id: targetId, ...targetNode.state };
+          const targetPos = targetNode.pos;
+          if (actorState.alive && targetState.alive &&
+              _cbDistance(actorPos, targetPos) <= CLAN_BATTLE_MAX_PLAUSIBLE_DIST &&
+              clanBattle.canEat(actorState, targetState)) {
+            const { eater, target } = clanBattle.applyEatResult(actorState, targetState);
+            await actorRef.child('state').set(_cbStripId(eater));
+            await targetRef.child('state').set(_cbStripId(target));
+          }
+        }
+      } else if (data.type === 'skill') {
+        if (actorState.alive && actorState.skillCharge >= clanBattle.SKILL_CHARGE_MAX) {
+          let newActor = clanBattle.useSkill(actorState);
+          await actorRef.child('state').set(_cbStripId(newActor));
+
+          const damage = getDirectSkillDamage(actorState.animalId);
+          const targetIds = Array.isArray(data.targetIds) ? data.targetIds : [];
+          if (damage > 0 && targetIds.length > 0) {
+            for (const targetId of targetIds) {
+              const targetRef = rtdb.ref(`battles/${battleId}/players/${targetId}/state`);
+              const targetSnap = await targetRef.get();
+              if (!targetSnap.exists()) continue;
+              const targetState = targetSnap.val();
+              if (!targetState.alive) continue;
+              const newTarget = clanBattle.applySkillDamage(targetState, damage);
+              await targetRef.set(newTarget);
+            }
+          }
+        }
+      }
+    } finally {
+      await eventRef.child('processed').set(true);
+    }
+
+    // Sau khi áp dụng event, kiểm tra điều kiện kết thúc do bị loại hết đội (mục 5).
+    const { teamA, teamB } = await _cbGetAllPlayerStates(battleId);
+    if (clanBattle.isTeamEliminated(teamA) || clanBattle.isTeamEliminated(teamB)) {
+      await _cbFinalizeBattle(battleId, { timeUp: false });
+    }
+  }
+);
+
+function _cbStripId(playerWithId) {
+  const { id, ...state } = playerWithId;
+  return state;
+}
+
+/** Client gọi khi hết giờ giới hạn trận (mục 5) để chốt kết quả theo tổng eatCount. */
+exports.finalizeClanBattleOnTimeout = onCall({ region: 'asia-southeast1' }, async (request) => {
+  const uid = request.auth && request.auth.uid;
+  if (!uid) throw new HttpsError('unauthenticated', 'Cần đăng nhập.');
+  const battleId = request.data && request.data.battleId;
+  if (!battleId || typeof battleId !== 'string') {
+    throw new HttpsError('invalid-argument', 'Thiếu battleId.');
+  }
+  const result = await _cbFinalizeBattle(battleId, { timeUp: true });
+  return { ok: true, ...result };
+});
