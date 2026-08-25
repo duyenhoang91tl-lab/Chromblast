@@ -1,0 +1,36 @@
+{
+  "rules": {
+    "battles": {
+      "$battleId": {
+        "meta": {
+          ".read": "auth != null",
+          ".write": false
+        },
+        "players": {
+          "$playerId": {
+            "pos": {
+              ".read": "auth != null",
+              ".write": "auth != null && auth.uid === $playerId",
+              ".validate": "newData.hasChildren(['x', 'y', 'ts'])"
+            },
+            "state": {
+              ".read": "auth != null",
+              ".write": false
+            }
+          }
+        },
+        "events": {
+          "$eventId": {
+            ".read": "auth != null",
+            ".write": "auth != null && !data.exists() && newData.child('actorId').val() === auth.uid",
+            ".validate": "newData.hasChildren(['type', 'actorId', 'clientTs'])"
+          }
+        },
+        "fruits": {
+          ".read": "auth != null",
+          ".write": false
+        }
+      }
+    }
+  }
+}
