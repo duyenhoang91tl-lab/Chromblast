@@ -27,6 +27,16 @@
     catch(e){ console.warn('[orientation] unlock failed', e); }
   };
 
+  // Dùng cho các màn cần ép ngang bắt buộc (vd. Đấu Clan "Muông Thú Đại Chiến")
+  // trên app native. Trên web thường, dùng js/orientation-lock-fallback.js
+  // (overlay yêu cầu xoay máy) vì Capacitor không tồn tại ở đó.
+  window.lockLandscapeOrientation = async function(){
+    const so = _plugin();
+    if(!so) return;
+    try{ await so.lock({ orientation: 'landscape' }); }
+    catch(e){ console.warn('[orientation] lock landscape failed', e); }
+  };
+
   // Khóa dọc ngay khi app khởi động (mặc định cho toàn bộ các màn,
   // trừ những nơi chủ động gọi unlockOrientation()).
   document.addEventListener('DOMContentLoaded', function(){

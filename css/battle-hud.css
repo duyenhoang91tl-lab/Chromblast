@@ -1,0 +1,177 @@
+/*
+ * battle-hud.css
+ * Style cho joystick.js, skillButton.js, healthBar.js, orientation-lock-fallback.js
+ * Tông màu: nền tối trong suốt (semi-transparent), viền phát sáng nhẹ khi skill sẵn sàng —
+ * phù hợp overlay trên nền game (không che khuất nhân vật/bối cảnh).
+ */
+
+:root {
+  --hud-bg: rgba(10, 14, 20, 0.55);
+  --hud-border: rgba(255, 255, 255, 0.25);
+  --hud-accent: #ffb703;
+  --hud-own-team: #4fd1c5;
+  --hud-enemy-team: #f56565;
+  --hud-text: #f5f5f5;
+}
+
+/* ---------- Joystick ---------- */
+
+.joystick-base {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  margin-left: -50px;
+  margin-top: -50px;
+  border-radius: 50%;
+  background: var(--hud-bg);
+  border: 2px solid var(--hud-border);
+  touch-action: none;
+}
+
+.joystick-knob {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 44px;
+  height: 44px;
+  margin-left: -22px;
+  margin-top: -22px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  transition: transform 0.02s linear;
+}
+
+/* ---------- Skill button ---------- */
+
+.skill-button {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--hud-bg);
+  border: 2px solid var(--hud-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--hud-text);
+  font-size: 12px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.skill-button.skill-ready {
+  border-color: var(--hud-accent);
+  box-shadow: 0 0 12px 2px var(--hud-accent);
+}
+
+.skill-button[aria-disabled='true'] {
+  opacity: 0.85;
+  cursor: default;
+}
+
+.skill-segments {
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4px;
+}
+
+.skill-segment {
+  width: 12px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.skill-segment.filled {
+  background: var(--hud-accent);
+}
+
+/* ---------- Health bar ---------- */
+
+.health-bar-hud {
+  width: 96px;
+  font-family: sans-serif;
+  color: var(--hud-text);
+  text-align: center;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.health-bar-name {
+  font-size: 11px;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.health-bar-track {
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--hud-border);
+  overflow: hidden;
+}
+
+.health-bar-fill {
+  height: 100%;
+  background: var(--hud-own-team);
+  transition: width 0.15s ease-out;
+}
+
+.health-bar-hud.enemy-team .health-bar-fill {
+  background: var(--hud-enemy-team);
+}
+
+.health-bar-hud.low-hp .health-bar-fill {
+  background: #e53e3e;
+}
+
+.health-bar-hud.eliminated {
+  opacity: 0.4;
+}
+
+.health-bar-hud.eliminated .health-bar-name::after {
+  content: ' (đã bị loại)';
+  font-size: 10px;
+  opacity: 0.8;
+}
+
+/* ---------- Orientation lock overlay ---------- */
+
+.orientation-lock-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(5, 8, 12, 0.96);
+  color: var(--hud-text);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-family: sans-serif;
+  text-align: center;
+  padding: 24px;
+}
+
+.orientation-lock-icon {
+  font-size: 48px;
+  animation: orientation-lock-spin 1.6s linear infinite;
+}
+
+.orientation-lock-message {
+  font-size: 16px;
+  max-width: 260px;
+}
+
+@keyframes orientation-lock-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
