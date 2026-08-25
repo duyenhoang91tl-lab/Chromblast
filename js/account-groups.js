@@ -230,6 +230,9 @@ function _acgrpDashboardHtml(){
     + '</div>';
   html += '<div class="acgrp-section-title">📋 ' + _acgrpT('guildQuests') + '</div>';
   html += '<div class="acgrp-list">' + (st.quests.length ? st.quests.map(_acgrpQuestHtml).join('') : '<div class="acgrp-note">—</div>') + '</div>';
+  // Đấu clan (js/clan-battle.js) — chỉ render nếu file đó đã nạp, tránh lỗi nếu
+  // thiếu script trong 1 build nào đó.
+  if(typeof renderClanBattleCard === 'function') html += renderClanBattleCard(canMod, st.guildId, g.name);
   html += _acgrpLeaderboardHtml();
   html += '<div class="acgrp-section-title">👥 ' + _acgrpFmt('guildMembers', st.members.length) + '</div>';
   html += '<div class="acgrp-list">' + st.members.map(m => _acgrpMemberHtml(m, myRole)).join('') + '</div>';
@@ -368,6 +371,8 @@ async function _acgrpJoinGuild(guildId){
 
 function _acgrpBindDashboard(container){
   const uid = (typeof getOnlineUid === 'function') ? getOnlineUid() : null;
+  // Đấu clan (js/clan-battle.js)
+  if(typeof bindClanBattleCard === 'function') bindClanBattleCard(container);
   // Đua top: chuyển tab
   container.querySelectorAll('[data-lb-tab]').forEach(btn=>{
     btn.addEventListener('click', ()=>{

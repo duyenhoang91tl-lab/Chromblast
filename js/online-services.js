@@ -1623,6 +1623,73 @@ async function createOnlineRoom(opts){
   return { roomId: ref.id, code, reused: false, room: Object.assign({ roomId: ref.id }, roomData) };
 }
 
+/** Tạo phòng Caro/Versus THẬT cho 1 trận Đấu clan đã ghép cặp (js/clan-battle.js gọi
+ * hàm này, KHÔNG dùng createOnlineRoom() ở trên) — cố tình viết TÁCH RIÊNG, không tái
+ * dùng logic "tái sử dụng phòng cũ cùng gameType" của createOnlineRoom(): phòng đấu clan
+ * luôn phải là phòng MỚI, gắn đúng battleId/hostClanId/guestClanId ngay từ lúc tạo, nếu
+ * lỡ dùng chung logic reuse ở trên thì có thể vô tình "tái chế" 1 phòng casual cũ đang mở
+ * của người chơi (không có tag) thành phòng đấu clan (thiếu tag) hoặc ngược lại — rất khó
+ * dò ra khi debug. guestId cố tình để trống (null)/status 'open' như phòng thường: người
+ * được ghép (biết trước roomId từ clanBattles.roomId) vẫn vào bằng đúng joinOnlineRoomById
+ * hiện có (js/clan-battle.js _cbEnterVersusRoom/caroJoinRoomById) — không cần đường vào
+ * riêng, tận dụng lại toàn bộ rule + luồng vào phòng đã có sẵn.
+ * tag = { battleId, hostClanId, guestClanId } — 3 field này bị khoá (fieldLocked) ngay
+ * sau khi tạo ở firestore.rules, và allow create cũng xác thực khớp với clanBattles/
+ * {battleId} tương ứng (status 'matched', roomId còn null, hostUid đúng người tạo) —
+ * xem roomClanTagOk() trong firestore.rules. */
+async function createClanBattleRoom(gameType, tag){
+  const uid = await ensureOnlineAuth();
+  const name = getOnlineDisplayName();
+  const avatar = getOnlineAvatar();
+  const code = _roomCode();
+  const ref = _onlineDb.collection('rooms').doc();
+  const roomData = {
+    code,
+    gameType,
+    hostId: uid,
+    guestId: null,
+    hostName: name,
+    guestName: null,
+    hostAvatar: avatar,
+    guestAvatar: null,
+    status: 'open',
+    mode: 'casual',
+    seed: null,
+    currentTurn: null,
+    hostReady: true,
+    guestReady: false,
+    hostScore: 0,
+    guestScore: 0,
+    startedAt: null,
+    endedAt: null,
+    winnerId: null,
+    turnSec: null,
+    boardSkin: null,
+    hostBrickSkin: (typeof getActiveBrickSkin === 'function') ? getActiveBrickSkin() : null,
+    hostBoardSkin: (typeof getActiveBoardSkin === 'function') ? getActiveBoardSkin() : null,
+    hostCaroPoints: _myCaroPointsSafe(),
+    guestCaroPoints: null,
+    hostVersusPoints: _myVersusPointsSafe(),
+    guestVersusPoints: null,
+    guestBrickSkin: null,
+    guestBoardSkin: null,
+    wagerCurrency: null,
+    wagerAmount: 0,
+    hostEscrowed: false,
+    guestEscrowed: false,
+    wagerSettled: false,
+    // Tag đấu clan — bất biến sau khi tạo (xem fieldLocked trong allow update, firestore.rules).
+    battleId: tag.battleId,
+    hostClanId: tag.hostClanId,
+    guestClanId: tag.guestClanId,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  await ref.set(roomData);
+  return { roomId: ref.id, code, room: Object.assign({ roomId: ref.id }, roomData) };
+}
+
 /** Chặn vào phòng khác khi đang host trận / phòng đã có khách. */
 async function _assertCanJoinAsGuest(exceptRoomId){
   const uid = _onlineUid || (await ensureOnlineAuth());

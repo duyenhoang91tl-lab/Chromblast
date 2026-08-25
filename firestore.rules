@@ -238,6 +238,24 @@ service cloud.firestore {
       allow delete: if signedIn();
     }
 
+    /* Đấu clan (Task 3): 1 phòng /rooms được TẠO SẴN với battleId/hostClanId/guestClanId
+       (qua createClanBattleRoom, js/online-services.js) chỉ hợp lệ nếu khớp ĐÚNG 1
+       clanBattles/{battleId} đang 'matched', roomId của battle đó còn null (chưa ai tạo
+       phòng cho battle này), người tạo phòng đúng là hostUid của battle, và vẫn còn là
+       leader/deputy của hostClanId lúc này (guildModeratorOf) — không có battleId thì
+       coi như phòng casual bình thường, bỏ qua hết điều kiện này (giữ nguyên hành vi cũ). */
+    function roomClanTagOk() {
+      return !('battleId' in request.resource.data) || request.resource.data.battleId == null || (
+        request.resource.data.hostClanId is string
+        && request.resource.data.guestClanId is string
+        && get(/databases/$(database)/documents/clanBattles/$(request.resource.data.battleId)).data.status == 'matched'
+        && get(/databases/$(database)/documents/clanBattles/$(request.resource.data.battleId)).data.roomId == null
+        && get(/databases/$(database)/documents/clanBattles/$(request.resource.data.battleId)).data.hostUid == request.auth.uid
+        && get(/databases/$(database)/documents/clanBattles/$(request.resource.data.battleId)).data.hostClanId == request.resource.data.hostClanId
+        && get(/databases/$(database)/documents/clanBattles/$(request.resource.data.battleId)).data.guestClanId == request.resource.data.guestClanId
+        && guildModeratorOf(request.resource.data.hostClanId)
+      );
+    }
     match /rooms/{roomId} {
       allow read: if signedIn();
       // Người tạo phải là host hoặc guest của chính room đó (chặn ghép mạo danh),
@@ -276,7 +294,8 @@ service cloud.firestore {
         && (!('wagerSettled' in request.resource.data) || request.resource.data.wagerSettled == false)
         // createdAt phải là mốc server thật (không tự đặt lùi về quá khứ được) — đây là
         // "đồng hồ" mà roomFinishOk() dựa vào để chặn báo thắng khống tức thời.
-        && request.resource.data.createdAt == request.time;
+        && request.resource.data.createdAt == request.time
+        && roomClanTagOk();
       // hostId bất biến sau khi tạo — NGOẠI LỆ DUY NHẤT: chính chủ phòng hiện tại tự
       // chuyển quyền chủ phòng sang đúng khách đang có trong phòng trước khi rời (xem
       // leaveOnlineRoom, js/online-services.js) — không ai khác được kích hoạt nhánh
@@ -312,6 +331,10 @@ service cloud.firestore {
         // KHÔNG được tự set các cờ này dù đúng hay sai giá trị.
         && fieldLocked('wagerAmount') && fieldLocked('wagerCurrency')
         && fieldLocked('hostEscrowed') && fieldLocked('guestEscrowed') && fieldLocked('wagerSettled')
+        // Tag đấu clan (Task 3) — bất biến sau khi tạo, không ai (kể cả host/guest) tự gắn/
+        // đổi/gỡ sau đó qua SDK — chặn kiểu tự gắn battleId của trận người khác vào phòng
+        // mình để "ăn ké" điểm năng động clan khi Cloud Function tính kết quả (Task 9).
+        && fieldLocked('battleId') && fieldLocked('hostClanId') && fieldLocked('guestClanId')
         && roomFinishOk();
       // Chủ phòng luôn được tự xoá phòng của mình. Ngoài ra, BẤT KỲ ai đã đăng nhập cũng
       // được xoá một phòng nếu "nhịp tim" (lastSeen, nay ở collection roomPresence riêng —
@@ -346,6 +369,85 @@ service cloud.firestore {
           get(/databases/$(database)/documents/rooms/$(roomId)).data.guestId == request.auth.uid
         );
       }
+    }
+
+    /* ══════════════ ĐẤU CLAN (clanBattles) — SPEC "Muông Thú Đại Chiến" Phase 1/Task 1 ══════════════
+       Phòng thách đấu clan (mã 6 ký tự), TÁCH RIÊNG khỏi /rooms (rooms là ván Caro/Versus
+       thật, gắn battleId vào ở Task 3). Ở Task 1 này, client chỉ:
+         - Đọc mọi phòng đã đăng nhập (để duyệt/vào bằng mã — Task 2).
+         - TẠO phòng nếu chính là hostUid VÀ đang thực sự là leader/deputy của ĐÚNG
+           clan mình khai (chặn giả mạo đại diện clan khác) — playerGuilds/{uid}.guildId
+           phải khớp hostClanId khai trong doc.
+         - XOÁ phòng của chính mình (huỷ chờ) khi vẫn còn "open" (chưa ai ghép).
+       Việc GHÉP đối thủ (update guestXxx/status→'matched') để Task 2 mở thêm, và việc
+       CHUYỂN status→'finished'/winnerClanId CHỈ Cloud Function (Admin SDK, Task 9) được
+       ghi — client tuyệt đối không tự update các field đó qua SDK. */
+    function cbIsMyGuild(guildId) {
+      return signedIn()
+        && exists(/databases/$(database)/documents/playerGuilds/$(request.auth.uid))
+        && get(/databases/$(database)/documents/playerGuilds/$(request.auth.uid)).data.guildId == guildId;
+    }
+    /* Task 2: ghép đối thủ — CHỈ 1 chuyển tiếp hợp lệ duy nhất 'open' → 'matched',
+       do CHÍNH leader/deputy của 1 clan KHÁC hostClanId thực hiện, tự nhận đúng UID/
+       clan của mình (không gán hộ clan/uid khác); mọi field của HOST (kể cả code/
+       mode/createdAt) và winnerClanId/roomId (dành cho Task 3/9) bất biến ở bước này.
+       Vì điều kiện đòi resource.data.status=='open', bất kỳ ai thử update lần 2 sau
+       khi đã 'matched' đều bị chặn — không cần thêm nhánh nào khác ở Task 2. */
+    function cbJoinOk() {
+      return resource.data.status == 'open'
+        && request.resource.data.status == 'matched'
+        && request.resource.data.guestUid == request.auth.uid
+        && request.resource.data.guestClanId is string
+        && request.resource.data.guestClanId != resource.data.hostClanId
+        && cbIsMyGuild(request.resource.data.guestClanId)
+        && guildModeratorOf(request.resource.data.guestClanId)
+        && request.resource.data.guestRole in ['leader', 'deputy']
+        && fieldLocked('hostUid') && fieldLocked('hostClanId') && fieldLocked('hostClanName')
+        && fieldLocked('hostName') && fieldLocked('hostAvatar') && fieldLocked('hostRole')
+        && fieldLocked('code') && fieldLocked('mode') && fieldLocked('createdAt')
+        && fieldLocked('winnerClanId') && fieldLocked('roomId');
+    }
+    /* Task 3: SAU KHI đã ghép ('matched'), CHÍNH host (đúng hostUid) gắn roomId của
+       phòng Caro/Versus THẬT (đã tạo qua createClanBattleRoom, js/online-services.js)
+       vào lại đây — để guest (và cả 2 bên nếu tự mở lại tab) biết phòng nào mà vào.
+       Chỉ được set 1 LẦN (resource.data.roomId phải đang null), và room đó phải THẬT
+       SỰ do chính mình host + đã gắn đúng battleId/hostClanId/guestClanId của CHÍNH
+       battle này (không được trỏ láo sang phòng người khác/phòng không gắn tag) —
+       roomClanTagOk() ở match /rooms/{roomId} bên dưới đã xác thực chiều ngược lại
+       (phòng phải khớp battle) lúc TẠO phòng, ở đây xác thực thêm chiều này (battle
+       chỉ được nhận đúng roomId của phòng đã khớp mình) để chặn 2 phía đều phải khớp. */
+    function cbSetRoomIdOk() {
+      return resource.data.status == 'matched'
+        && resource.data.hostUid == request.auth.uid
+        && resource.data.roomId == null
+        && request.resource.data.roomId is string
+        && get(/databases/$(database)/documents/rooms/$(request.resource.data.roomId)).data.hostId == request.auth.uid
+        && get(/databases/$(database)/documents/rooms/$(request.resource.data.roomId)).data.battleId == battleId
+        && get(/databases/$(database)/documents/rooms/$(request.resource.data.roomId)).data.gameType == resource.data.mode
+        && fieldLocked('hostUid') && fieldLocked('hostClanId') && fieldLocked('hostClanName')
+        && fieldLocked('hostName') && fieldLocked('hostAvatar') && fieldLocked('hostRole')
+        && fieldLocked('guestUid') && fieldLocked('guestClanId') && fieldLocked('guestClanName')
+        && fieldLocked('guestName') && fieldLocked('guestAvatar') && fieldLocked('guestRole')
+        && fieldLocked('code') && fieldLocked('mode') && fieldLocked('createdAt')
+        && fieldLocked('status') && fieldLocked('winnerClanId');
+    }
+    match /clanBattles/{battleId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.hostUid == request.auth.uid
+        && request.resource.data.hostClanId is string
+        && cbIsMyGuild(request.resource.data.hostClanId)
+        && guildModeratorOf(request.resource.data.hostClanId)
+        && request.resource.data.mode in ['caro', 'versus']
+        && request.resource.data.status == 'open'
+        && (!('guestUid' in request.resource.data) || request.resource.data.guestUid == null)
+        && (!('winnerClanId' in request.resource.data) || request.resource.data.winnerClanId == null)
+        && request.resource.data.createdAt == request.time;
+      allow update: if signedIn() && (cbJoinOk() || cbSetRoomIdOk());
+      // Chủ phòng tự huỷ phòng CHỜ của mình (chưa ai ghép) bất cứ lúc nào.
+      allow delete: if signedIn()
+        && resource.data.hostUid == request.auth.uid
+        && resource.data.status == 'open';
     }
 
     /* Báo cáo người dùng / nội dung vi phạm — client chỉ được tạo, không đọc/sửa/xoá */
