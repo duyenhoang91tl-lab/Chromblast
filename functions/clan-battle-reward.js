@@ -7,16 +7,19 @@
 // khỏi lệch số liệu giữa 1v1 (Phase 1) và 2v2/3v3 (Phase 2) — mục 5 spec quy
 // định cùng 1 hằng số áp dụng chung cho cả 2.
 //
-// Shape tài liệu clanBattles/{battleId} cho luồng 1v1 (tham khảo, không bắt buộc):
-//   { clanIdA, clanIdB, mode: '1v1', status: 'pending'|'in_progress'|'completed',
-//     winnerClanId: string|null, activityAwarded?: boolean }
+// Shape tài liệu clanBattles/{battleId} thực tế cho luồng 1v1 (đã khớp với
+// js/clan-battle.js — Task 1/2, commit "add clan battle challenge system for 1v1"):
+//   { hostClanId, guestClanId, mode: 'caro'|'versus', status: 'open'|'matched'|'completed',
+//     roomId, winnerClanId: string|null, activityAwarded?: boolean }
+// LƯU Ý: field là hostClanId/guestClanId (không phải clanIdA/clanIdB) — khớp
+// đúng tên field host/guest đã dùng xuyên suốt js/clan-battle.js.
 
 const { CLAN_BATTLE_WIN_ACTIVITY } = require('./clan-battle-formulas.js');
 
 /**
  * Xác định trận có nên được cộng điểm năng động clan ngay bây giờ không.
  * Trả về null nếu KHÔNG nên cộng (chưa xong / đã cộng rồi / hoà / dữ liệu bất thường).
- * @param {{status:string, winnerClanId:string|null, clanIdA:string, clanIdB:string, activityAwarded?:boolean}} battleDoc
+ * @param {{status:string, winnerClanId:string|null, hostClanId:string, guestClanId:string, activityAwarded?:boolean}} battleDoc
  * @returns {{winnerClanId:string, loserClanId:string, amount:number}|null}
  */
 function resolveActivityAward(battleDoc) {
@@ -25,10 +28,10 @@ function resolveActivityAward(battleDoc) {
   if (battleDoc.activityAwarded === true) return null;
   if (!battleDoc.winnerClanId) return null;
 
-  const { winnerClanId, clanIdA, clanIdB } = battleDoc;
-  if (winnerClanId !== clanIdA && winnerClanId !== clanIdB) return null;
+  const { winnerClanId, hostClanId, guestClanId } = battleDoc;
+  if (winnerClanId !== hostClanId && winnerClanId !== guestClanId) return null;
 
-  const loserClanId = winnerClanId === clanIdA ? clanIdB : clanIdA;
+  const loserClanId = winnerClanId === hostClanId ? guestClanId : hostClanId;
   return { winnerClanId, loserClanId, amount: CLAN_BATTLE_WIN_ACTIVITY };
 }
 

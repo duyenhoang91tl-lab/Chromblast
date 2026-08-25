@@ -2313,13 +2313,14 @@ exports.finalizeClanBattleOnTimeout = onCall({ region: 'asia-southeast1' }, asyn
 // đấu clan, cộng CLAN_BATTLE_WIN_ACTIVITY (10) vào guild.weeklyActivity của
 // clan thắng khi clanBattles/{battleId}.status chuyển sang 'completed'.
 //
-// LƯU Ý: Task 1-3 (UI "Thách đấu clan", luồng join phòng đối phương, và gắn
-// battleId/clanId vào kết quả ván Caro/Versus) CHƯA được xây — nghĩa là chưa
-// có nơi nào thực sự set status='completed' + winnerClanId cho luồng 1v1 này.
-// Function dưới đây sẵn sàng nhưng sẽ không tự kích hoạt cho tới khi Task 1-3
-// hoàn tất. Không ảnh hưởng tới luồng 2v2/3v3 (Task 9) vì các doc clanBattles
-// do Task 9 ghi không có field `status`, nên didBattleJustComplete() trả về
-// false cho các doc đó.
+// LƯU Ý: Task 1-2 (UI "Thách đấu clan" + luồng vào phòng đối phương) đã có ở
+// js/clan-battle.js. Task 3 (gắn battleId/winnerClanId ngược lại vào
+// clanBattles/{battleId} khi ván Caro/Versus kết thúc, set status='completed')
+// CHƯA được xây — nghĩa là chưa có nơi nào thực sự kích hoạt function dưới
+// đây. Function đã sẵn sàng và khớp đúng field hostClanId/guestClanId của
+// js/clan-battle.js, chỉ cần Task 3 nối vào là chạy được ngay. Không ảnh
+// hưởng tới luồng 2v2/3v3 (Task 9) vì các doc clanBattles do Task 9 ghi không
+// có field `status`, nên didBattleJustComplete() trả về false cho các doc đó.
 //
 // Toàn bộ quyết định "có nên cộng không, cộng bao nhiêu, cho ai" nằm ở
 // clan-battle-reward.js (logic thuần, tách riêng để dễ kiểm tra) — function
