@@ -2329,7 +2329,9 @@ exports.finalizeClanBattleOnTimeout = onCall({ region: 'asia-southeast1' }, asyn
 
 const { resolveActivityAward: cbResolveActivityAward, didBattleJustComplete } = require('./clan-battle-reward.js');
 
-exports.onClanBattleCompleted = onDocumentUpdated('clanBattles/{battleId}', async (event) => {
+exports.onClanBattleCompleted = onDocumentUpdated(
+  { document: 'clanBattles/{battleId}', region: 'asia-southeast1' },
+  async (event) => {
   const before = event.data.before.data();
   const after = event.data.after.data();
   const { battleId } = event.params;
@@ -2362,3 +2364,4 @@ exports.onClanBattleCompleted = onDocumentUpdated('clanBattles/{battleId}', asyn
 
   return null;
 });
+
