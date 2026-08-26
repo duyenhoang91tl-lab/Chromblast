@@ -1095,6 +1095,33 @@ async function replayCaroMatch(roomId, hostId, guestId) {
   return null; // chưa đủ nước đi để phân thắng bại/hoà thật — không tính điểm
 }
 
+/**
+ * Task 3 (Đấu Clan 1v1) — nếu phòng Caro/Versus này được tạo qua
+ * createClanBattleRoom (có battleId/hostClanId/guestClanId — xem
+ * js/online-services.js), gắn kết quả thật (đã xác thực ở applyMatchResult,
+ * KHÔNG tin thẳng client) ngược lại vào clanBattles/{battleId}. Việc set
+ * status='completed' + winnerClanId ở đây tự kích hoạt onClanBattleCompleted
+ * (Task 4) cộng điểm năng động cho clan thắng.
+ * winnerId=null nghĩa là hoà HOẶC không xác thực được thắng thua thật →
+ * winnerClanId cũng null, không bên nào được cộng điểm (đúng ý đồ, tránh
+ * clan gian lận bằng cách báo finished khống mà không hề chơi).
+ */
+async function _cbLinkRoomResultToClanBattle(after, roomId, winnerId) {
+  if (!after.battleId) return; // không phải phòng đấu clan -> bỏ qua
+  const winnerClanId =
+    winnerId === after.hostId ? after.hostClanId :
+    winnerId === after.guestId ? after.guestClanId :
+    null;
+  await db.collection('clanBattles').doc(after.battleId).set({
+    status: 'completed',
+    winnerClanId,
+    roomId,
+    finishedAt: FieldValue.serverTimestamp(),
+  }, { merge: true }).catch((e) => {
+    console.error('[clan-battle] link room result failed', after.battleId, e);
+  });
+}
+
 exports.applyMatchResult = onDocumentUpdated(
   { document: 'rooms/{roomId}', region: 'asia-southeast1' },
   async (event) => {
@@ -1145,6 +1172,7 @@ exports.applyMatchResult = onDocumentUpdated(
         // khống mà không hề chơi) → không cộng/trừ điểm cho ai, hoàn cược nếu có,
         // chỉ đánh dấu đã xử lý.
         await settleWager(null);
+        await _cbLinkRoomResultToClanBattle(after, event.params.roomId, null);
         await event.data.after.ref.set({ statsApplied: true }, { merge: true }).catch(() => {});
         return null;
       }
@@ -1181,6 +1209,7 @@ exports.applyMatchResult = onDocumentUpdated(
         await applyPlayer(hostId, 'loss');
       }
       await settleWager(isDraw ? null : winnerId);
+      await _cbLinkRoomResultToClanBattle(after, event.params.roomId, isDraw ? null : winnerId);
     } else {
       const hostScore = Number(after.hostScore) || 0;
       const guestScore = Number(after.guestScore) || 0;
@@ -1213,6 +1242,7 @@ exports.applyMatchResult = onDocumentUpdated(
         await ref.set(patch, { merge: true });
       }));
       await settleWager(winnerId);
+      await _cbLinkRoomResultToClanBattle(after, event.params.roomId, winnerId);
     }
 
     await event.data.after.ref.set({ statsApplied: true }, { merge: true }).catch(() => {});
