@@ -2395,3 +2395,242 @@ exports.onClanBattleCompleted = onDocumentUpdated(
   return null;
 });
 
+
+
+// ═══════════════════════════════════════════════════════════════
+// Đấu Clan 2v2/3v3 "Muông Thú Đại Chiến" — dựng trận thật trên Realtime
+// Database khi đội hình Firestore muongThuBattles/{id} đủ người, xử lý màn
+// chọn nhân vật (mục 7), rồi bàn giao cho onClanBattleEventCreated (đã có ở
+// trên) điều khiển phần thân trận đấu thật.
+// ═══════════════════════════════════════════════════════════════
+
+const { isValidAnimalId, FREE_ANIMAL_IDS } = require('./clan-battle-animals.js');
+
+const MTDC_SELECTION_COUNTDOWN_MS = 10000; // mục 7: đếm ngược 10s chọn nhân vật
+const MTDC_MATCH_DURATION_MS = 4 * 60 * 1000; // PLACEHOLDER — mục 5 đề xuất 3-5 phút, cần chốt lại
+const MTDC_BASE_SIZE = 0.035; // đơn vị đấu trường chuẩn hoá 0..1, xem js/clan-battle-collision.js
+const MTDC_BASE_SPEED = 0.15; // đơn vị/giây trong không gian 0..1
+const MTDC_ARENA_CENTER = 0.5;
+const MTDC_SPAWN_RADIUS = 0.32;
+const MTDC_FRUIT_MARGIN = 0.08;
+
+function _mtdcSpawnPositions(n) {
+  const positions = [];
+  for (let i = 0; i < n; i++) {
+    const angle = (2 * Math.PI * i) / n;
+    positions.push({
+      x: MTDC_ARENA_CENTER + MTDC_SPAWN_RADIUS * Math.cos(angle),
+      y: MTDC_ARENA_CENTER + MTDC_SPAWN_RADIUS * Math.sin(angle),
+    });
+  }
+  return positions;
+}
+
+function _mtdcRandomFruitPos() {
+  const span = 1 - 2 * MTDC_FRUIT_MARGIN;
+  return {
+    x: MTDC_FRUIT_MARGIN + Math.random() * span,
+    y: MTDC_FRUIT_MARGIN + Math.random() * span,
+  };
+}
+
+async function _mtdcSpawnFruits(battleId, count) {
+  const updates = {};
+  for (let i = 0; i < count; i++) {
+    const fruitRef = rtdb.ref(`battles/${battleId}/fruits`).push();
+    updates[fruitRef.key] = { position: _mtdcRandomFruitPos(), active: true };
+  }
+  await rtdb.ref(`battles/${battleId}/fruits`).update(updates);
+}
+
+/** Xác thực lại đội hình (KHÔNG tin thẳng field client tự set trên Firestore
+ *  dù rule đã chặn phần lớn) rồi mới thật sự tạo trận trên RTDB. */
+exports.onMuongThuBattleFull = onDocumentUpdated(
+  { document: 'muongThuBattles/{battleId}', region: 'asia-southeast1' },
+  async (event) => {
+    const before = event.data.before.data();
+    const after = event.data.after.data();
+    const { battleId } = event.params;
+    if (!after || (before && before.status === 'full') || after.status !== 'full') return null;
+    if (after.rtdbBattleId) return null; // đã tạo trận rồi -> tránh tạo trùng
+
+    const teamSize = after.mode === '3v3' ? 3 : 2;
+    const slots = Array.isArray(after.slots) ? after.slots : [];
+    const teamA = slots.filter((s) => s.teamId === 'A');
+    const teamB = slots.filter((s) => s.teamId === 'B');
+    const uids = slots.map((s) => s.uid);
+    const uniqueUids = new Set(uids);
+
+    const valid =
+      slots.length === teamSize * 2 &&
+      uniqueUids.size === slots.length &&
+      teamA.length === teamSize &&
+      teamB.length === teamSize &&
+      teamA.every((s) => s.clanId === after.hostClanId) &&
+      teamB.every((s) => s.clanId === after.guestClanId);
+
+    if (!valid) {
+      console.error('[muong-thu] đội hình không hợp lệ khi status=full', battleId, JSON.stringify(slots));
+      await event.data.after.ref.set({ status: 'open' }, { merge: true }).catch(() => {});
+      return null;
+    }
+
+    // Xác nhận từng người THẬT SỰ còn là thành viên clan họ khai (chống mạo danh/rời clan giữa chừng).
+    const memberChecks = await Promise.all(
+      slots.map((s) => db.collection('guilds').doc(s.clanId).collection('members').doc(s.uid).get())
+    );
+    if (memberChecks.some((snap) => !snap.exists)) {
+      console.error('[muong-thu] có người không còn là thành viên clan đã khai', battleId);
+      await event.data.after.ref.set({ status: 'open' }, { merge: true }).catch(() => {});
+      return null;
+    }
+
+    const rtdbBattleId = rtdb.ref('battles').push().key;
+    const spawnPositions = _mtdcSpawnPositions(slots.length);
+    const now = Date.now();
+
+    const playersUpdate = {};
+    slots.forEach((s, i) => {
+      playersUpdate[s.uid] = {
+        pos: { x: spawnPositions[i].x, y: spawnPositions[i].y, ts: now },
+        state: {
+          teamId: s.teamId,
+          animalId: null,
+          currentHP: clanBattle.BASE_HP,
+          eatCount: 0,
+          alive: true,
+          skillCharge: 0,
+          baseSize: MTDC_BASE_SIZE,
+          baseSpeed: MTDC_BASE_SPEED,
+        },
+      };
+    });
+
+    await rtdb.ref(`battles/${rtdbBattleId}`).set({
+      meta: {
+        mode: after.mode,
+        teamAClanId: after.hostClanId,
+        teamBClanId: after.guestClanId,
+        teamAPlayerIds: teamA.map((s) => s.uid),
+        teamBPlayerIds: teamB.map((s) => s.uid),
+        status: 'selecting',
+        selectionEndsAt: now + MTDC_SELECTION_COUNTDOWN_MS,
+        matchDurationMs: MTDC_MATCH_DURATION_MS,
+        endsAt: null,
+        createdAt: now,
+      },
+      players: playersUpdate,
+    });
+    await _mtdcSpawnFruits(rtdbBattleId, teamSize * 2 * 3); // ~3 quả/người, PLACEHOLDER
+
+    await event.data.after.ref.set({ rtdbBattleId }, { merge: true });
+    return null;
+  }
+);
+
+async function _mtdcGetAllPlayerStates(battleId, teamAIds, teamBIds) {
+  const snap = await rtdb.ref(`battles/${battleId}/players`).get();
+  const players = snap.exists() ? snap.val() : {};
+  const teamA = teamAIds.map((id) => ({ id, ...(players[id] && players[id].state) }));
+  const teamB = teamBIds.map((id) => ({ id, ...(players[id] && players[id].state) }));
+  return { teamA, teamB };
+}
+
+/** Nếu tất cả người chơi đã chọn xong nhân vật -> chuyển selecting -> active. */
+async function _mtdcMaybeStartBattle(battleId) {
+  const metaRef = rtdb.ref(`battles/${battleId}/meta`);
+  const metaSnap = await metaRef.get();
+  if (!metaSnap.exists()) return;
+  const meta = metaSnap.val();
+  if (meta.status !== 'selecting') return;
+
+  const { teamA, teamB } = await _mtdcGetAllPlayerStates(battleId, meta.teamAPlayerIds, meta.teamBPlayerIds);
+  const allPicked = [...teamA, ...teamB].every((p) => !!p.animalId);
+  if (!allPicked) return;
+
+  await metaRef.transaction((current) => {
+    if (!current || current.status !== 'selecting') return; // đã có người khác chuyển rồi -> bỏ qua
+    current.status = 'active';
+    current.endsAt = Date.now() + (current.matchDurationMs || MTDC_MATCH_DURATION_MS);
+    return current;
+  });
+}
+
+/** Client push đúng 1 lần vào battles/{battleId}/selectionRequests/{uid} = {animalId, clientTs}. */
+exports.onClanBattleSelectionRequestCreated = onValueCreated(
+  { ref: 'battles/{battleId}/selectionRequests/{playerId}', region: 'asia-southeast1' },
+  async (event) => {
+    const { battleId, playerId } = event.params;
+    const req = event.data.val();
+    if (!req || !req.animalId) return;
+
+    const metaSnap = await rtdb.ref(`battles/${battleId}/meta`).get();
+    const meta = metaSnap.exists() ? metaSnap.val() : null;
+    const reqRef = rtdb.ref(`battles/${battleId}/selectionRequests/${playerId}`);
+
+    if (!meta || meta.status !== 'selecting') {
+      await reqRef.child('rejected').set('battle_not_selecting');
+      return;
+    }
+    if (!isValidAnimalId(req.animalId)) {
+      await reqRef.child('rejected').set('invalid_animal');
+      return;
+    }
+
+    const playerStateRef = rtdb.ref(`battles/${battleId}/players/${playerId}/state`);
+    const playerStateSnap = await playerStateRef.get();
+    const playerState = playerStateSnap.exists() ? playerStateSnap.val() : null;
+    if (!playerState) {
+      await reqRef.child('rejected').set('player_not_found');
+      return;
+    }
+    if (playerState.animalId) {
+      return; // đã chọn rồi -> bỏ qua yên lặng (idempotent, không phải lỗi)
+    }
+
+    // Không cho trùng con vật với đồng đội (mục 7).
+    const { teamA, teamB } = await _mtdcGetAllPlayerStates(battleId, meta.teamAPlayerIds, meta.teamBPlayerIds);
+    const myTeam = playerState.teamId === 'A' ? teamA : teamB;
+    const takenByTeammate = myTeam.some((p) => p.id !== playerId && p.animalId === req.animalId);
+    if (takenByTeammate) {
+      await reqRef.child('rejected').set('animal_taken');
+      return;
+    }
+
+    await playerStateRef.child('animalId').set(req.animalId);
+    await _mtdcMaybeStartBattle(battleId);
+  }
+);
+
+/** Auto-pick khi hết 10s đếm ngược (mục 7) — client tự gọi khi timer về 0. */
+exports.autoPickClanBattleAnimals = onCall({ region: 'asia-southeast1' }, async (request) => {
+  const uid = request.auth && request.auth.uid;
+  if (!uid) throw new HttpsError('unauthenticated', 'Cần đăng nhập.');
+  const battleId = request.data && request.data.battleId;
+  if (!battleId || typeof battleId !== 'string') {
+    throw new HttpsError('invalid-argument', 'Thiếu battleId.');
+  }
+
+  const metaSnap = await rtdb.ref(`battles/${battleId}/meta`).get();
+  if (!metaSnap.exists()) throw new HttpsError('not-found', 'Trận không tồn tại.');
+  const meta = metaSnap.val();
+  if (meta.status !== 'selecting') return { ok: true, alreadyStarted: true };
+
+  const { teamA, teamB } = await _mtdcGetAllPlayerStates(battleId, meta.teamAPlayerIds, meta.teamBPlayerIds);
+
+  for (const team of [teamA, teamB]) {
+    const takenInTeam = team.filter((p) => p.animalId).map((p) => p.animalId);
+    for (const p of team) {
+      if (p.animalId) continue;
+      const preferFree = FREE_ANIMAL_IDS.filter((id) => !takenInTeam.includes(id));
+      const pickId = (preferFree[0]) ||
+        require('./clan-battle-animals.js').VALID_ANIMAL_IDS.find((id) => !takenInTeam.includes(id));
+      if (!pickId) continue; // không còn con nào trống (không nên xảy ra với tối đa 3 người/đội)
+      takenInTeam.push(pickId);
+      await rtdb.ref(`battles/${battleId}/players/${p.id}/state/animalId`).set(pickId);
+    }
+  }
+
+  await _mtdcMaybeStartBattle(battleId);
+  return { ok: true };
+});

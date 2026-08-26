@@ -26,6 +26,13 @@
             ".validate": "newData.hasChildren(['type', 'actorId', 'clientTs'])"
           }
         },
+        "selectionRequests": {
+          "$playerId": {
+            ".read": "auth != null",
+            ".write": "auth != null && !data.exists() && auth.uid === $playerId",
+            ".validate": "newData.hasChildren(['animalId', 'clientTs'])"
+          }
+        },
         "fruits": {
           ".read": "auth != null",
           ".write": false

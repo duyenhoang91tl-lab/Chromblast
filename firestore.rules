@@ -431,6 +431,60 @@ service cloud.firestore {
         && fieldLocked('code') && fieldLocked('mode') && fieldLocked('createdAt')
         && fieldLocked('status') && fieldLocked('winnerClanId');
     }
+    /* ── Đấu clan 2v2/3v3 "Muông Thú Đại Chiến" — Task 1/2 tương đương cho Phase 2.
+       Rule ở đây CHỦ ĐÍCH lỏng hơn /clanBattles (1v1) — không ép đúng số người mỗi
+       đội TRƯỚC khi đủ người, chỉ khoá các field cấu trúc + xác thực người tham gia
+       đúng là thành viên clan họ khai. Việc xác thực CHẶT (đúng số lượng mỗi đội,
+       không trùng uid) do onMuongThuBattleFull (functions/index.js, Admin SDK) làm
+       lại lần nữa trước khi thật sự tạo trận trên Realtime Database — khớp mức độ
+       rủi ro đã chấp nhận cho toàn bộ tính năng đấu clan (chỉ đổi điểm năng động). */
+    function mtdcTeamSize() {
+      return resource.data.mode == '3v3' ? 3 : 2;
+    }
+    function mtdcJoinOk() {
+      let newSlot = request.resource.data.slots[resource.data.slots.size()];
+      return resource.data.status == 'open'
+        && request.resource.data.slots.size() == resource.data.slots.size() + 1
+        && newSlot.uid == request.auth.uid
+        && guildMemberOf(newSlot.clanId)
+        && (
+          (newSlot.clanId == resource.data.hostClanId && newSlot.teamId == 'A')
+          || (
+            newSlot.clanId != resource.data.hostClanId && newSlot.teamId == 'B'
+            && (resource.data.guestClanId == null || resource.data.guestClanId == newSlot.clanId)
+          )
+        )
+        && (request.resource.data.guestClanId == resource.data.guestClanId || request.resource.data.guestClanId == newSlot.clanId)
+        && (
+          request.resource.data.status == 'open'
+          || (request.resource.data.status == 'full' && request.resource.data.slots.size() == mtdcTeamSize() * 2)
+        )
+        && fieldLocked('hostClanId') && fieldLocked('hostClanName') && fieldLocked('mode')
+        && fieldLocked('teamSize') && fieldLocked('code') && fieldLocked('createdAt')
+        && fieldLocked('rtdbBattleId');
+    }
+    match /muongThuBattles/{battleId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.hostClanId is string
+        && cbIsMyGuild(request.resource.data.hostClanId)
+        && guildModeratorOf(request.resource.data.hostClanId)
+        && request.resource.data.mode in ['2v2', '3v3']
+        && request.resource.data.teamSize == (request.resource.data.mode == '3v3' ? 3 : 2)
+        && request.resource.data.status == 'open'
+        && (!('guestClanId' in request.resource.data) || request.resource.data.guestClanId == null)
+        && (!('rtdbBattleId' in request.resource.data) || request.resource.data.rtdbBattleId == null)
+        && request.resource.data.slots.size() == 1
+        && request.resource.data.slots[0].uid == request.auth.uid
+        && request.resource.data.slots[0].teamId == 'A'
+        && request.resource.data.slots[0].clanId == request.resource.data.hostClanId
+        && request.resource.data.createdAt == request.time;
+      allow update: if signedIn() && mtdcJoinOk();
+      allow delete: if signedIn()
+        && resource.data.slots[0].uid == request.auth.uid
+        && resource.data.status == 'open';
+    }
+
     match /clanBattles/{battleId} {
       allow read: if signedIn();
       allow create: if signedIn()

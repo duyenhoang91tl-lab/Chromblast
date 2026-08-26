@@ -9,7 +9,12 @@
 // kết quả va chạm ngay lập tức (optimistic update) trước khi CF xác nhận.
 // ═══════════════════════════════════════════════════════════════
 
-const CB_FRUIT_RADIUS = 0.15; // cùng đơn vị baseSize — CẦN XÁC NHẬN LẠI theo tỉ lệ ảnh thật
+// Không gian đấu trường chuẩn hoá 0..1 x 0..1 (arena vuông logic, canvas tự
+// letterbox theo tỉ lệ màn hình thật — xem js/clan-battle-arena.js).
+// baseSize người chơi mặc định 0.035 (~3.5% bề rộng đấu trường ở HP gốc 30) —
+// xem chỗ khởi tạo player thật ở js/clan-battle-arena.js (client) và
+// onMuongThuBattleFull (functions/index.js, server) để khớp cùng 1 giá trị.
+const CB_FRUIT_RADIUS = 0.012; // CẦN XÁC NHẬN LẠI khi có thiết kế UI/kích thước ảnh thật
 
 function cbGetDistance(posA, posB) {
   const dx = posA.x - posB.x;
