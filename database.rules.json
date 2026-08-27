@@ -29,7 +29,7 @@
         "selectionRequests": {
           "$playerId": {
             ".read": "auth != null",
-            ".write": "auth != null && !data.exists() && auth.uid === $playerId",
+            ".write": "auth != null && auth.uid === $playerId && (!data.exists() || data.child('rejected').exists())",
             ".validate": "newData.hasChildren(['animalId', 'clientTs'])"
           }
         },
