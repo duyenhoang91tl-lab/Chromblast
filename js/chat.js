@@ -847,7 +847,7 @@
       if(typeof ensureCaroLoaded === 'function'){
         try{ await ensureCaroLoaded(); }catch(e){ console.error('[chat]', e); }
       }
-      if(typeof openCaroHub === 'function') openCaroHub();
+      if(typeof _caroHubSetup === 'function') _caroHubSetup();
       if(typeof caroJoinRoomById === 'function') await caroJoinRoomById(invite.roomId);
     }
   }

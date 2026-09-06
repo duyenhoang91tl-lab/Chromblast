@@ -1062,10 +1062,16 @@ function _caroHide(id){
 }
 
 function _caroStatus(msg, err){
-  const el=document.getElementById('caro-online-status');
-  if(!el) return;
-  el.textContent = msg || '';
-  el.className = 'online-status' + (err ? ' err' : '');
+  // Ghi cả 2 nơi — #caro-online-status (bên trong #caro-hub-panel cũ, hiện
+  // không còn hiện lên nữa) và #crb-online-status (màn Phòng, lối vào chính
+  // giờ đây) — để thông báo lỗi/kết quả luôn hiện được ở màn đang thật sự
+  // hiển thị, không phụ thuộc đang ở đúng màn nào.
+  ['caro-online-status', 'crb-online-status'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.textContent = msg || '';
+    el.className = 'online-status' + (err ? ' err' : '');
+  });
 }
 
 function _caroNewBoard(){
@@ -1635,7 +1641,7 @@ function _caroEnterGame(roomData){
         if(!res.ok){
           try{ showHint((typeof t==='function'?t('vsWagerFail','Không đủ tiền cược — huỷ trận'):'Không đủ tiền cược — huỷ trận'), { hold: 3200 }); }catch(e){}
           _caroQuit({ noForfeit: true });
-          try{ openCaroHub(); }catch(e){}
+          try{ if(typeof openCaroRoomBrowser === 'function') openCaroRoomBrowser(); }catch(e){}
         }
       });
     }
@@ -2194,7 +2200,7 @@ function _caroOpenLobby(roomId, code, role, roomData){
 function _caroReturnToRoomList(msg){
   try{ if(typeof stopRoomHeartbeat === 'function') stopRoomHeartbeat(); }catch(e){}
   try{ showHint(msg, { hold: 2600 }); }catch(e){}
-  openCaroHub();
+  if(typeof openCaroRoomBrowser === 'function') openCaroRoomBrowser();
 }
 
 /** Phòng bị xoá vì chủ phòng đã rời/mất kết nối (trường hợp chính yêu cầu ở đây). */
@@ -2426,6 +2432,7 @@ async function caroCreateRoom(){
       }catch(e2){}
     }
     const msg = e.message==='already_hosting' ? t('onlineAlreadyHosting') : e.message;
+    if(typeof openCaroRoomBrowser === 'function') openCaroRoomBrowser();
     _caroStatus(msg, true);
   }
 }
@@ -2486,7 +2493,7 @@ async function caroFindOpponent(){
     }, { gameType:'caro', turnSec: prefs.turnSec, boardSkin: prefs.skin });
   }catch(e){
     _caroHide('caro-mm-panel');
-    _caroShow('caro-hub-panel');
+    if(typeof openCaroRoomBrowser === 'function') openCaroRoomBrowser();
     const msg = e.message==='already_hosting' ? t('onlineAlreadyHosting') : e.message;
     _caroStatus(msg, true);
   }
@@ -2495,7 +2502,7 @@ async function caroFindOpponent(){
 function caroCancelMM(){
   cancelMatchmaking();
   _caroHide('caro-mm-panel');
-  _caroShow('caro-hub-panel');
+  if(typeof openCaroRoomBrowser === 'function') openCaroRoomBrowser();
 }
 
 async function caroStartMatch(){
