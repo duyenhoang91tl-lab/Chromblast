@@ -21,8 +21,9 @@
      "Đang dùng"/"Dùng" đọc/ghi qua getPlayerProfile().bubbleStyle (savePlayerProfile)
      — đúng field CaroSocial.currentBubbleStyle() đang dùng, không tạo field mới.
    - Map ẩn: HIDDEN_MAP_LIST (js/main.js) + clearedHiddenMaps (Set, js/main.js) —
-     bấm vào ô map đã qua sẽ chơi lại đúng map đó qua hàm run() có sẵn trong từng
-     phần tử danh sách; map chưa qua chỉ hiện khoá, không bấm được.
+     chỉ liệt kê map ĐÃ QUA, bấm vào sẽ chơi lại đúng map đó qua hàm run() có
+     sẵn trong từng phần tử danh sách; map chưa qua không hiện ở đây (mua/mở
+     khoá không phải việc của "Túi của tôi").
    - Mẫu tên hiển thị (Hiệu ứng tên) / Mẫu chữ (Hiệu ứng chữ): NAME_EFFECTS
      (js/name-effects.js) + TEXT_EFFECTS (js/text-effects.js) — sở hữu/trang bị
      qua isNameEffectOwned/equippedNameEffect/equipNameEffect và
@@ -148,15 +149,15 @@ function _acbagBubblePreviewEl(skinId){
 
 function _acbagSkinCardEl(item, kind){
   // kind: 'board' | 'brick' | 'bubble'
-  const unlocked = kind==='board' ? isBoardSkinUnlocked(item.id)
-                  : kind==='brick' ? isBrickSkinUnlocked(item.id)
-                  : (item.id==='classic' ? true : (typeof isBubbleSkinUnlocked==='function' && isBubbleSkinUnlocked(item.id)));
+  // Danh sách gọi hàm này đã lọc chỉ còn vật phẩm đã sở hữu (xem
+  // _acbagRenderDetail) — "Túi của tôi" chỉ xem lại đồ đã có, không hiện đồ
+  // khoá/chưa mua kèm nút mua (đó là việc của Cửa hàng).
   const active = kind==='board' ? (getActiveBoardSkin() === item.id)
                 : kind==='brick' ? (getActiveBrickSkin() === item.id)
                 : (typeof CaroSocial!=='undefined' && CaroSocial.currentBubbleStyle ? CaroSocial.currentBubbleStyle()===item.id : false);
 
   const card = document.createElement('div');
-  card.className = 'acbag-card' + (unlocked ? '' : ' locked') + (active ? ' active' : '');
+  card.className = 'acbag-card' + (active ? ' active' : '');
 
   const previewWrap = document.createElement('div');
   previewWrap.className = 'acbag-card-preview';
@@ -165,12 +166,6 @@ function _acbagSkinCardEl(item, kind){
     kind==='brick' ? _acbagBrickPreviewEl(item.id) :
     _acbagBubblePreviewEl(item.id)
   );
-  if(!unlocked){
-    const lock = document.createElement('div');
-    lock.className = 'acbag-lock';
-    lock.textContent = '🔒';
-    previewWrap.appendChild(lock);
-  }
   card.appendChild(previewWrap);
 
   const name = document.createElement('div');
@@ -178,26 +173,24 @@ function _acbagSkinCardEl(item, kind){
   name.textContent = item.name || item.id;
   card.appendChild(name);
 
-  if(unlocked){
-    if(active){
-      const check = document.createElement('div');
-      check.className = 'acbag-check';
-      check.textContent = '✓ ' + _acbagT('acbagInUse');
-      card.appendChild(check);
-    }else{
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'acbag-use-btn';
-      btn.textContent = _acbagT('acbagUse');
-      btn.addEventListener('click', ()=>{
-        try{ sfxClick(); }catch(e){}
-        if(kind==='board') applyBoardSkin(item.id);
-        else if(kind==='brick') applyBrickSkin(item.id);
-        else if(typeof savePlayerProfile==='function') savePlayerProfile({ bubbleStyle:item.id });
-        _acbagRenderDetail();
-      });
-      card.appendChild(btn);
-    }
+  if(active){
+    const check = document.createElement('div');
+    check.className = 'acbag-check';
+    check.textContent = '✓ ' + _acbagT('acbagInUse');
+    card.appendChild(check);
+  }else{
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'acbag-use-btn';
+    btn.textContent = _acbagT('acbagUse');
+    btn.addEventListener('click', ()=>{
+      try{ sfxClick(); }catch(e){}
+      if(kind==='board') applyBoardSkin(item.id);
+      else if(kind==='brick') applyBrickSkin(item.id);
+      else if(typeof savePlayerProfile==='function') savePlayerProfile({ bubbleStyle:item.id });
+      _acbagRenderDetail();
+    });
+    card.appendChild(btn);
   }
   return card;
 }
@@ -211,11 +204,11 @@ function _acbagSkinCardEl(item, kind){
 function _acbagRenderSkills(grid){
   grid.className = 'acbag-grid';
   grid.innerHTML = '';
-  const list = (typeof VS_OBSTACLES !== 'undefined') ? VS_OBSTACLES : [];
+  const list = ((typeof VS_OBSTACLES !== 'undefined') ? VS_OBSTACLES : [])
+    .filter(function(ob){ return typeof isVsCardUnlocked==='function' && isVsCardUnlocked(ob.id); });
   list.forEach(function(ob){
-    const unlocked = typeof isVsCardUnlocked==='function' && isVsCardUnlocked(ob.id);
     const card = document.createElement('div');
-    card.className = 'acbag-card' + (unlocked ? '' : ' locked');
+    card.className = 'acbag-card';
 
     const previewWrap = document.createElement('div');
     previewWrap.className = 'acbag-card-preview';
@@ -223,12 +216,6 @@ function _acbagRenderSkills(grid){
     emo.className = 'acbag-map-emo';
     emo.textContent = ob.emoji;
     previewWrap.appendChild(emo);
-    if(!unlocked){
-      const lock = document.createElement('div');
-      lock.className = 'acbag-lock';
-      lock.textContent = '🔒';
-      previewWrap.appendChild(lock);
-    }
     card.appendChild(previewWrap);
 
     const name = document.createElement('div');
@@ -236,27 +223,10 @@ function _acbagRenderSkills(grid){
     name.textContent = (typeof MECH_NAME==='function' ? MECH_NAME(ob.nameIdx) : ob.id).replace(/^\S+\s/, '');
     card.appendChild(name);
 
-    if(ob.free){
-      const check = document.createElement('div');
-      check.className = 'acbag-check';
-      check.textContent = _acbagT('acbagVsCardFree');
-      card.appendChild(check);
-    }else if(unlocked){
-      const check = document.createElement('div');
-      check.className = 'acbag-check';
-      check.textContent = '✓ ' + _acbagT('acbagInUse');
-      card.appendChild(check);
-    }else{
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'acbag-use-btn';
-      btn.textContent = _acbagT('acbagVsCardBuy');
-      btn.addEventListener('click', ()=>{
-        try{ sfxClick(); }catch(e){}
-        if(typeof openShop==='function') openShop('vscards');
-      });
-      card.appendChild(btn);
-    }
+    const check = document.createElement('div');
+    check.className = 'acbag-check';
+    check.textContent = ob.free ? _acbagT('acbagVsCardFree') : ('✓ ' + _acbagT('acbagInUse'));
+    card.appendChild(check);
     grid.appendChild(card);
   });
 }
@@ -277,64 +247,50 @@ function _acbagIsMapCleared(key){
   return false;
 }
 
-/* ── Map ẩn: lưới 22 map, đã qua thì bấm chơi lại, chưa qua thì khoá ── */
+/* ── Map ẩn: lưới các map ĐÃ QUA, bấm vào để chơi lại ── */
 function _acbagRenderMaps(grid){
+  const list = ((typeof HIDDEN_MAP_LIST !== 'undefined') ? HIDDEN_MAP_LIST : [])
+    .filter(m => m && _acbagIsMapCleared(m.key));
+  if(!list.length){ _acbagRenderEmptyOwned(grid, 'maps'); return; }
   grid.className = 'acbag-grid';
-  const list = (typeof HIDDEN_MAP_LIST !== 'undefined') ? HIDDEN_MAP_LIST : [];
   grid.innerHTML = '';
   list.forEach(m=>{
-    if(!m) return;
-    const done = _acbagIsMapCleared(m.key);
     const card = document.createElement('div');
-    card.className = 'acbag-card' + (done ? '' : ' locked');
+    card.className = 'acbag-card';
     const previewWrap = document.createElement('div');
     previewWrap.className = 'acbag-card-preview';
     const emo = document.createElement('div');
     emo.className = 'acbag-map-emo';
-    emo.textContent = done ? '🗺️' : '❔';
+    emo.textContent = '🗺️';
     previewWrap.appendChild(emo);
-    if(!done){
-      const lock = document.createElement('div');
-      lock.className = 'acbag-lock';
-      lock.textContent = '🔒';
-      previewWrap.appendChild(lock);
-    }
     card.appendChild(previewWrap);
     const name = document.createElement('div');
     name.className = 'acbag-card-name';
     name.textContent = m.label || m.key;
     card.appendChild(name);
-    if(done){
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'acbag-use-btn';
-      btn.textContent = _acbagT('acbagReplay');
-      btn.addEventListener('click', ()=>{
-        try{ sfxClick(); }catch(e){}
-        // Đóng hết panel Tài khoản (Túi → Hub) trước khi vào lại map, đúng cặp
-        // hàm _acchubCloseSub/closeAccountHub account-hub.js đang dùng cho mọi
-        // panel con khác — không tự chế cách đóng khác.
-        try{ if(typeof _acchubCloseSub==='function') _acchubCloseSub('account-bag-panel'); }catch(e){}
-        try{ if(typeof closeAccountHub==='function') closeAccountHub(); }catch(e){}
-        if(typeof m.run === 'function') m.run();
-      });
-      card.appendChild(btn);
-    } else {
-      // Ô map chưa qua — chèn ô đệm giữ đúng chiều cao với ô đã qua, giữ lưới
-      // căn giữa đều hàng, không bị lệch trái do thiếu nút phía dưới.
-      const spacer = document.createElement('div');
-      spacer.className = 'acbag-card-placeholder';
-      card.appendChild(spacer);
-    }
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'acbag-use-btn';
+    btn.textContent = _acbagT('acbagReplay');
+    btn.addEventListener('click', ()=>{
+      try{ sfxClick(); }catch(e){}
+      // Đóng hết panel Tài khoản (Túi → Hub) trước khi vào lại map, đúng cặp
+      // hàm _acchubCloseSub/closeAccountHub account-hub.js đang dùng cho mọi
+      // panel con khác — không tự chế cách đóng khác.
+      try{ if(typeof _acchubCloseSub==='function') _acchubCloseSub('account-bag-panel'); }catch(e){}
+      try{ if(typeof closeAccountHub==='function') closeAccountHub(); }catch(e){}
+      if(typeof m.run === 'function') m.run();
+    });
+    card.appendChild(btn);
     grid.appendChild(card);
   });
 }
 
 /* ── Mẫu tên hiển thị / Mẫu chữ → đổi tên hiển thị thành "Hiệu ứng tên" /
    "Hiệu ứng chữ" cho khớp tên dùng ở Cửa hàng, và nối dữ liệu thật
-   (NAME_EFFECTS/js/name-effects.js, TEXT_EFFECTS/js/text-effects.js) — không
-   còn là "sắp ra mắt" nữa. Thẻ chưa sở hữu bấm vào mở thẳng đúng tab Cửa hàng
-   tương ứng, giống hệt cách hạng mục Skill đang làm với 'vscards'. ── */
+   (NAME_EFFECTS/js/name-effects.js, TEXT_EFFECTS/js/text-effects.js) — chỉ
+   liệt kê hiệu ứng ĐÃ SỞ HỮU (isNameEffectOwned/isTextEffectOwned), mua thêm
+   là việc của Cửa hàng, không lặp lại luồng mua ở đây. ── */
 function _acbagFxPreviewEl(fx, kind){
   const wrap = document.createElement('div');
   if(kind === 'name'){
@@ -357,24 +313,18 @@ function _acbagFxPreviewEl(fx, kind){
 }
 
 function _acbagFxCardEl(fx, kind){
-  const ownedFn = kind === 'name' ? (typeof isNameEffectOwned==='function' ? isNameEffectOwned : null) : (typeof isTextEffectOwned==='function' ? isTextEffectOwned : null);
+  // Danh sách gọi hàm này đã lọc chỉ còn hiệu ứng đã sở hữu (xem
+  // _acbagRenderNameEffects/_acbagRenderTextEffects).
   const equippedFn = kind === 'name' ? (typeof equippedNameEffect==='function' ? equippedNameEffect : null) : (typeof equippedTextEffect==='function' ? equippedTextEffect : null);
   const equipFn = kind === 'name' ? equipNameEffect : equipTextEffect;
-  const owned = !!(ownedFn && ownedFn(fx.id));
-  const active = owned && equippedFn && equippedFn() === fx.id;
+  const active = equippedFn && equippedFn() === fx.id;
 
   const card = document.createElement('div');
-  card.className = 'acbag-card' + (owned ? '' : ' locked') + (active ? ' active' : '');
+  card.className = 'acbag-card' + (active ? ' active' : '');
 
   const previewWrap = document.createElement('div');
   previewWrap.className = 'acbag-card-preview';
   previewWrap.appendChild(_acbagFxPreviewEl(fx, kind));
-  if(!owned){
-    const lock = document.createElement('div');
-    lock.className = 'acbag-lock';
-    lock.textContent = '🔒';
-    previewWrap.appendChild(lock);
-  }
   card.appendChild(previewWrap);
 
   const name = document.createElement('div');
@@ -382,32 +332,20 @@ function _acbagFxCardEl(fx, kind){
   name.textContent = fx.name || fx.id;
   card.appendChild(name);
 
-  if(owned){
-    if(active){
-      const check = document.createElement('div');
-      check.className = 'acbag-check';
-      check.textContent = '✓ ' + _acbagT('acbagInUse');
-      card.appendChild(check);
-    }else{
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'acbag-use-btn';
-      btn.textContent = _acbagT('acbagUse');
-      btn.addEventListener('click', ()=>{
-        try{ sfxClick(); }catch(e){}
-        if(typeof equipFn === 'function') equipFn(fx.id);
-        _acbagRenderDetail();
-      });
-      card.appendChild(btn);
-    }
+  if(active){
+    const check = document.createElement('div');
+    check.className = 'acbag-check';
+    check.textContent = '✓ ' + _acbagT('acbagInUse');
+    card.appendChild(check);
   }else{
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'acbag-use-btn';
-    btn.textContent = _acbagT('acbagVsCardBuy');
+    btn.textContent = _acbagT('acbagUse');
     btn.addEventListener('click', ()=>{
       try{ sfxClick(); }catch(e){}
-      if(typeof openShop==='function') openShop(kind==='name' ? 'nameeffects' : 'textfx');
+      if(typeof equipFn === 'function') equipFn(fx.id);
+      _acbagRenderDetail();
     });
     card.appendChild(btn);
   }
@@ -415,16 +353,20 @@ function _acbagFxCardEl(fx, kind){
 }
 
 function _acbagRenderNameEffects(grid){
+  const list = ((typeof NAME_EFFECTS !== 'undefined') ? NAME_EFFECTS : [])
+    .filter(fx => fx && typeof isNameEffectOwned==='function' && isNameEffectOwned(fx.id));
+  if(!list.length){ _acbagRenderEmptyOwned(grid, 'nametags'); return; }
   grid.className = 'acbag-grid';
   grid.innerHTML = '';
-  const list = (typeof NAME_EFFECTS !== 'undefined') ? NAME_EFFECTS : [];
-  list.forEach(fx=>{ if(fx) grid.appendChild(_acbagFxCardEl(fx, 'name')); });
+  list.forEach(fx=>{ grid.appendChild(_acbagFxCardEl(fx, 'name')); });
 }
 function _acbagRenderTextEffects(grid){
+  const list = ((typeof TEXT_EFFECTS !== 'undefined') ? TEXT_EFFECTS : [])
+    .filter(fx => fx && typeof isTextEffectOwned==='function' && isTextEffectOwned(fx.id));
+  if(!list.length){ _acbagRenderEmptyOwned(grid, 'fonts'); return; }
   grid.className = 'acbag-grid';
   grid.innerHTML = '';
-  const list = (typeof TEXT_EFFECTS !== 'undefined') ? TEXT_EFFECTS : [];
-  list.forEach(fx=>{ if(fx) grid.appendChild(_acbagFxCardEl(fx, 'text')); });
+  list.forEach(fx=>{ grid.appendChild(_acbagFxCardEl(fx, 'text')); });
 }
 
 /* ── Bước 2: chi tiết 1 hạng mục ── */
@@ -438,6 +380,19 @@ function _acbagRenderSoon(grid, cat){
     + '<div class="acbag-empty-icon">'+_acbagCatIconHtml(cat)+'</div>'
     + '<div class="acbag-empty-title">'+_acbagEsc(_acbagT('acbagSoonTitle'))+'</div>'
     + '<div class="acbag-empty-sub">'+_acbagEsc(_acbagT('acbagSoonSub'))+'</div>'
+    + '</div>';
+}
+
+/* Dùng khi 1 hạng mục đã lọc xong (chỉ giữ vật phẩm đã sở hữu) nhưng rỗng —
+ * ví dụ người chơi mới chưa qua map ẩn nào / chưa mua hiệu ứng tên-chữ nào.
+ * Tái dùng đúng khối .acbag-empty của _acbagRenderSoon ở trên, khác nội dung. */
+function _acbagRenderEmptyOwned(grid, cat){
+  grid.className = 'acbag-soon-wrap';
+  grid.innerHTML =
+    '<div class="acbag-empty">'
+    + '<div class="acbag-empty-icon">'+_acbagCatIconHtml(cat)+'</div>'
+    + '<div class="acbag-empty-title">'+_acbagEsc(_acbagT('acbagEmptyOwnedTitle'))+'</div>'
+    + '<div class="acbag-empty-sub">'+_acbagEsc(_acbagT('acbagEmptyOwnedSub'))+'</div>'
     + '</div>';
 }
 
@@ -479,15 +434,18 @@ function _acbagRenderDetail(){
   grid.className = 'acbag-grid';
   grid.innerHTML = '';
   if(_acbagView === 'boards'){
-    const list = (typeof BOARD_SKINS !== 'undefined') ? BOARD_SKINS : [];
-    list.forEach(s=>{ if(s) grid.appendChild(_acbagSkinCardEl(s, 'board')); });
+    const list = ((typeof BOARD_SKINS !== 'undefined') ? BOARD_SKINS : [])
+      .filter(s => s && isBoardSkinUnlocked(s.id));
+    list.forEach(s=>{ grid.appendChild(_acbagSkinCardEl(s, 'board')); });
   }else if(_acbagView === 'bricks'){
-    const list = (typeof BRICK_SKINS !== 'undefined') ? BRICK_SKINS : [];
-    list.forEach(s=>{ if(s) grid.appendChild(_acbagSkinCardEl(s, 'brick')); });
+    const list = ((typeof BRICK_SKINS !== 'undefined') ? BRICK_SKINS : [])
+      .filter(s => s && isBrickSkinUnlocked(s.id));
+    list.forEach(s=>{ grid.appendChild(_acbagSkinCardEl(s, 'brick')); });
   }else if(_acbagView === 'bubbles'){
     const list = [{ id:'classic', name:_acbagT('acbagBubbleClassic') }]
-      .concat((typeof CHAT_BUBBLE_SKINS !== 'undefined') ? CHAT_BUBBLE_SKINS : []);
-    list.forEach(s=>{ if(s) grid.appendChild(_acbagSkinCardEl(s, 'bubble')); });
+      .concat(((typeof CHAT_BUBBLE_SKINS !== 'undefined') ? CHAT_BUBBLE_SKINS : [])
+        .filter(s => s && typeof isBubbleSkinUnlocked==='function' && isBubbleSkinUnlocked(s.id)));
+    list.forEach(s=>{ grid.appendChild(_acbagSkinCardEl(s, 'bubble')); });
   }
 }
 
