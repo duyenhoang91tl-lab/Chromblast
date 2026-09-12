@@ -897,6 +897,31 @@ body.tutorial-open #start-screen{
   background:rgba(255,213,74,0.18); border-color:rgba(200,150,20,0.4);
 }
 #caro-lobby-panel .caro-room-info small, #online-lobby-panel .caro-room-info small{ color:#6b5f8a; }
+/* Nhãn "Mã phòng" và các dòng người chơi trong phòng chờ vẫn đang dùng màu chữ
+   trắng/gần trắng của nền tối cũ (.online-room-code-wrap, .online-player) —
+   bị bỏ sót khi 9 panel này chuyển sang nền sáng ở trên, khiến chữ gần như vô
+   hình trên nền hồng/tím nhạt. Ghi đè lại thành chữ tối, theo đúng bảng màu
+   #2b2340/#6b5f8a đã dùng cho các phần tử khác trong cùng panel. */
+#caro-lobby-panel .online-room-code-wrap, #caro-mm-panel .online-room-code-wrap,
+#caro-result-panel .online-room-code-wrap, #online-lobby-panel .online-room-code-wrap,
+#online-matchmaking-panel .online-room-code-wrap, #versus-result-panel .online-room-code-wrap{
+  color:#6b5f8a;
+}
+#caro-lobby-panel .online-room-code-wrap strong, #caro-mm-panel .online-room-code-wrap strong,
+#caro-result-panel .online-room-code-wrap strong, #online-lobby-panel .online-room-code-wrap strong,
+#online-matchmaking-panel .online-room-code-wrap strong, #versus-result-panel .online-room-code-wrap strong{
+  color:#c9950a;
+}
+#caro-lobby-panel .online-player, #caro-mm-panel .online-player,
+#caro-result-panel .online-player, #online-lobby-panel .online-player,
+#online-matchmaking-panel .online-player, #versus-result-panel .online-player{
+  background:#fff !important; border-color:rgba(90,70,140,0.18) !important; color:#2b2340 !important;
+}
+#caro-lobby-panel .online-player .online-wait, #caro-mm-panel .online-player .online-wait,
+#caro-result-panel .online-player .online-wait, #online-lobby-panel .online-player .online-wait,
+#online-matchmaking-panel .online-player .online-wait, #versus-result-panel .online-player .online-wait{
+  color:#6b5f8a;
+}
 #online-lobby-panel .online-wager-toggle{
   border-color:rgba(180,130,0,0.35); background:rgba(255,213,74,0.18); color:#8a6d00;
 }
