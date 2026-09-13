@@ -410,19 +410,11 @@ function _acbagRenderDetail(){
   if(_acbagView === 'chests'){
     // "Túi của tôi" chỉ xem đồ ĐÃ CÓ, mua/mở rương là việc của Cửa hàng (đúng
     // triết lý đã áp cho mọi hạng mục khác — xem đầu file). Rương tự thân
-    // không phải "vật phẩm sở hữu": mở xong ra vàng/kim cương/skin thì các
-    // thứ đó đã hiện sẵn ở nơi khác (thanh vàng-kim cương phía trên, các hạng
-    // mục Skin/Hiệu ứng riêng) — thứ DUY NHẤT còn đọng lại chỉ thuộc về rương
-    // là số sạc kỹ năng đã tích luỹ. Vì vậy ở đây chỉ hiện đúng con số đó,
-    // không hiện lưới rương kèm nút mua như trước.
+    // không phải "vật phẩm sở hữu" (mở xong là hết, không tồn kho) nên hạng
+    // mục này luôn ở trạng thái rỗng, giống hệt cách các hạng mục khác hiện
+    // khi chưa sở hữu món nào — không hiện số sạc kỹ năng/lưới rương/nút mua.
     grid.className = 'acbag-chest-wrap';
-    const n = (typeof _ownedSkillCharges === 'function') ? _ownedSkillCharges() : 0;
-    if(n > 0){
-      grid.innerHTML = '<div class="acbag-chest-note">⚡ '
-        + _acbagEsc(_acbagT('acbagSkillChargesOwned')) + ': <b>×' + n + '</b></div>';
-    } else {
-      _acbagRenderEmptyOwned(grid, _acbagView);
-    }
+    _acbagRenderEmptyOwned(grid, _acbagView);
     return;
   }
 
