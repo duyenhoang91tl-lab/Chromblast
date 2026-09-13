@@ -2145,7 +2145,7 @@ exports.kickGuildMember = onCall({ region: 'asia-southeast1' }, async (request) 
 // (màn thách đấu + chọn nhân vật) — CHƯA có trong scope Task 9 này.
 // ═══════════════════════════════════════════════════════════════
 
-const { getDirectSkillDamage } = require('./clan-battle-skill-effects.js');
+const { getSkillEffect, SKILL_EFFECT_TYPES } = require('./clan-battle-skill-effects.js');
 
 // Khoảng cách hợp lý tối đa giữa 2 lần cập nhật vị trí liên quan tới 1 event,
 // dùng để chặn gian lận thô (dạy-porting/spoof vị trí) — PLACEHOLDER, CẦN
@@ -2160,18 +2160,35 @@ function _cbDistance(posA, posB) {
   return Math.sqrt(dx * dx + dy * dy);
 }
 
+// Đọc state mọi người chơi + tiện thể "dồn" mọi tick độc (Rắn) đã tới hạn
+// tính tới hiện tại rồi ghi lại nếu có thay đổi. Hàm này vốn đã được gọi
+// sau MỌI event (ăn quả/ăn người/dùng kỹ năng) của cả 2 đội, nên tận dụng
+// làm điểm quét độc mà không cần thêm event loại mới hay Cloud Scheduler
+// riêng — với tần suất event dày của lối chơi này, độc sẽ được trừ máu gần
+// như ngay lập tức; nextTickAt tính theo thời gian thực nên không thể bị
+// gian lận bằng cách gửi event dồn dập hay ngắt kết nối.
 async function _cbGetAllPlayerStates(battleId) {
   const snap = await rtdb.ref(`battles/${battleId}/players`).get();
   const players = snap.exists() ? snap.val() : {};
   const teamA = [];
   const teamB = [];
+  const now = Date.now();
+  const writes = [];
   for (const [playerId, p] of Object.entries(players)) {
     const state = p && p.state;
     if (!state) continue;
-    const withId = { id: playerId, ...state };
+    let withId = { id: playerId, ...state };
+    if (Array.isArray(state.activeDots) && state.activeDots.length > 0) {
+      const swept = clanBattle.resolveDueDots(withId, now);
+      if (swept.currentHP !== withId.currentHP || swept.activeDots.length !== state.activeDots.length) {
+        writes.push(rtdb.ref(`battles/${battleId}/players/${playerId}/state`).set(_cbStripId(swept)));
+      }
+      withId = swept;
+    }
     if (state.teamId === 'A') teamA.push(withId);
     else if (state.teamId === 'B') teamB.push(withId);
   }
+  if (writes.length) await Promise.all(writes);
   return { teamA, teamB };
 }
 
@@ -2266,7 +2283,7 @@ exports.onClanBattleEventCreated = onValueCreated(
         const fruitRef = rtdb.ref(`battles/${battleId}/fruits/${data.fruitId}`);
         const fruitSnap = await fruitRef.get();
         const fruit = fruitSnap.exists() ? fruitSnap.val() : null;
-        if (fruit && fruit.active !== false && actorState.alive &&
+        if (fruit && fruit.active !== false && actorState.alive && !clanBattle.isStunned(actorState) &&
             _cbDistance(actorPos, fruit.position) <= CLAN_BATTLE_MAX_PLAUSIBLE_DIST) {
           const newActor = clanBattle.applyFruitEat(actorState);
           await actorRef.child('state').set(_cbStripId(newActor));
@@ -2280,32 +2297,75 @@ exports.onClanBattleEventCreated = onValueCreated(
           const targetNode = targetSnap.val();
           const targetState = { id: targetId, ...targetNode.state };
           const targetPos = targetNode.pos;
-          if (actorState.alive && targetState.alive &&
+          if (actorState.alive && targetState.alive && !clanBattle.isStunned(actorState) &&
               _cbDistance(actorPos, targetPos) <= CLAN_BATTLE_MAX_PLAUSIBLE_DIST &&
               clanBattle.canEat(actorState, targetState)) {
-            const { eater, target } = clanBattle.applyEatResult(actorState, targetState);
-            await actorRef.child('state').set(_cbStripId(eater));
-            await targetRef.child('state').set(_cbStripId(target));
+            const now = Date.now();
+            if (clanBattle.isBuffActive(targetState, 'reflect', now)) {
+              // Nhím đang phản đòn: kẻ định ăn bị trả sát thương thay vì ăn được, Nhím không mất máu/không bị ăn.
+              const reflected = Math.round(clanBattle.HP_LOSS_ON_EATEN * targetState.activeBuff.value);
+              const newActor = clanBattle.applySkillDamage(actorState, reflected);
+              await actorRef.child('state').set(_cbStripId(newActor));
+            } else {
+              const { eater, target } = clanBattle.applyEatResultWithDefense(actorState, targetState, now);
+              await actorRef.child('state').set(_cbStripId(eater));
+              await targetRef.child('state').set(_cbStripId(target));
+            }
           }
         }
       } else if (data.type === 'skill') {
-        if (actorState.alive && actorState.skillCharge >= clanBattle.SKILL_CHARGE_MAX) {
+        if (actorState.alive && !clanBattle.isStunned(actorState) && actorState.skillCharge >= clanBattle.SKILL_CHARGE_MAX) {
           let newActor = clanBattle.useSkill(actorState);
-          await actorRef.child('state').set(_cbStripId(newActor));
-
-          const damage = getDirectSkillDamage(actorState.animalId);
+          const effect = getSkillEffect(actorState.animalId);
+          const now = Date.now();
           const targetIds = Array.isArray(data.targetIds) ? data.targetIds : [];
-          if (damage > 0 && targetIds.length > 0) {
-            for (const targetId of targetIds) {
-              const targetRef = rtdb.ref(`battles/${battleId}/players/${targetId}/state`);
-              const targetSnap = await targetRef.get();
-              if (!targetSnap.exists()) continue;
-              const targetState = targetSnap.val();
-              if (!targetState.alive) continue;
-              const newTarget = clanBattle.applySkillDamage(targetState, damage);
-              await targetRef.set(newTarget);
+
+          if (effect) {
+            switch (effect.type) {
+              case SKILL_EFFECT_TYPES.DAMAGE:
+              case SKILL_EFFECT_TYPES.DASH_DAMAGE:
+              case SKILL_EFFECT_TYPES.STUN: {
+                for (const targetId of targetIds) {
+                  const targetStateRef = rtdb.ref(`battles/${battleId}/players/${targetId}/state`);
+                  const targetSnap = await targetStateRef.get();
+                  if (!targetSnap.exists()) continue;
+                  const targetState = targetSnap.val();
+                  if (!targetState.alive) continue;
+                  const resolved = clanBattle.resolveIncomingDamage(newActor, targetState, effect.damage, now);
+                  newActor = resolved.attacker;
+                  const finalTarget = effect.type === SKILL_EFFECT_TYPES.STUN
+                    ? clanBattle.setStun(resolved.target, effect.stunDurationMs, now)
+                    : resolved.target;
+                  await targetStateRef.set(finalTarget);
+                }
+                break;
+              }
+              case SKILL_EFFECT_TYPES.DOT: {
+                for (const targetId of targetIds) {
+                  const targetStateRef = rtdb.ref(`battles/${battleId}/players/${targetId}/state`);
+                  const targetSnap = await targetStateRef.get();
+                  if (!targetSnap.exists()) continue;
+                  const targetState = targetSnap.val();
+                  if (!targetState.alive) continue;
+                  await targetStateRef.set(clanBattle.addDot(targetState, effect, now));
+                }
+                break;
+              }
+              case SKILL_EFFECT_TYPES.DEFENSE_BUFF:
+                newActor = clanBattle.applyBuff(newActor, 'defense', effect.damageReductionPct, effect.durationMs, now);
+                break;
+              case SKILL_EFFECT_TYPES.SPEED_BUFF:
+                newActor = clanBattle.applyBuff(newActor, 'speed', effect.speedMultiplier, effect.durationMs, now);
+                break;
+              case SKILL_EFFECT_TYPES.REFLECT:
+                newActor = clanBattle.applyBuff(newActor, 'reflect', effect.reflectPct, effect.durationMs, now);
+                break;
+              default:
+                break;
             }
           }
+
+          await actorRef.child('state').set(_cbStripId(newActor));
         }
       }
     } finally {
