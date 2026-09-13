@@ -49,6 +49,85 @@ function applySkillDamage(player, damage) {
   return { ...player, currentHP: newHP, alive: newHP > 0 };
 }
 
+// ── Hiệu ứng theo thời gian: khiên/phản đòn/tăng tốc (buff tự hết hạn qua
+// expiresAt, không cần vòng lặp riêng) + độc (DOT, dồn tick qua nextTickAt)
+// + choáng (stunnedUntil). Dùng chung cho Rùa/Nhím/Thỏ/Rắn/Gấu trúc.
+
+function applyBuff(player, buffType, value, durationMs, now = Date.now()) {
+  return { ...player, activeBuff: { type: buffType, value, expiresAt: now + durationMs } };
+}
+
+function isBuffActive(player, buffType, now = Date.now()) {
+  return !!(player.activeBuff && player.activeBuff.type === buffType && player.activeBuff.expiresAt > now);
+}
+
+// Sát thương có tính khiên (Rùa) + phản đòn (Nhím). Trả {attacker, target}
+// vì phản đòn khiến attacker nhận sát thương thay vì target.
+function resolveIncomingDamage(attacker, target, rawDamage, now = Date.now()) {
+  if (isBuffActive(target, 'reflect', now)) {
+    const reflected = Math.round(rawDamage * target.activeBuff.value);
+    return { attacker: applySkillDamage(attacker, reflected), target };
+  }
+  const finalDamage = isBuffActive(target, 'defense', now)
+    ? Math.max(0, Math.round(rawDamage * (1 - target.activeBuff.value)))
+    : rawDamage;
+  return { attacker, target: applySkillDamage(target, finalDamage) };
+}
+
+// Giống applyEatResult nhưng tôn trọng khiên của Rùa khi bị ăn.
+function applyEatResultWithDefense(eater, target, now = Date.now()) {
+  const loss = isBuffActive(target, 'defense', now)
+    ? Math.max(0, Math.round(HP_LOSS_ON_EATEN * (1 - target.activeBuff.value)))
+    : HP_LOSS_ON_EATEN;
+  const newEater = {
+    ...eater,
+    currentHP: eater.currentHP + HP_GAIN_ON_EAT,
+    eatCount: eater.eatCount + 1,
+    skillCharge: Math.min(SKILL_CHARGE_MAX, eater.skillCharge + 1),
+  };
+  const newTargetHP = target.currentHP - loss;
+  const newTarget = { ...target, currentHP: newTargetHP, alive: newTargetHP > 0 };
+  return { eater: newEater, target: newTarget };
+}
+
+function addDot(player, dotDef, now = Date.now()) {
+  const dots = Array.isArray(player.activeDots) ? player.activeDots.slice() : [];
+  dots.push({
+    damagePerTick: dotDef.damagePerTick,
+    tickIntervalMs: dotDef.tickIntervalMs,
+    remainingTicks: dotDef.tickCount,
+    nextTickAt: now + dotDef.tickIntervalMs,
+  });
+  return { ...player, activeDots: dots };
+}
+
+// Áp mọi tick độc đã tới hạn tính tới `now` (dồn tick nếu bỏ lỡ do không có
+// event nào chạm tới player này trong lúc đó). Gọi mỗi khi đọc lại state.
+function resolveDueDots(player, now = Date.now()) {
+  if (!Array.isArray(player.activeDots) || player.activeDots.length === 0 || !player.alive) return player;
+  let hp = player.currentHP;
+  const remainingDots = [];
+  for (const dot of player.activeDots) {
+    let ticksLeft = dot.remainingTicks;
+    let nextTickAt = dot.nextTickAt;
+    while (nextTickAt <= now && ticksLeft > 0 && hp > 0) {
+      hp -= dot.damagePerTick;
+      ticksLeft -= 1;
+      nextTickAt += dot.tickIntervalMs;
+    }
+    if (ticksLeft > 0 && hp > 0) remainingDots.push({ ...dot, remainingTicks: ticksLeft, nextTickAt });
+  }
+  return { ...player, currentHP: hp, alive: hp > 0, activeDots: remainingDots };
+}
+
+function setStun(player, durationMs, now = Date.now()) {
+  return { ...player, stunnedUntil: now + durationMs };
+}
+
+function isStunned(player, now = Date.now()) {
+  return !!(player.stunnedUntil && player.stunnedUntil > now);
+}
+
 function getTeamScore(teamPlayers) {
   return teamPlayers.reduce((sum, p) => sum + p.eatCount, 0);
 }
@@ -95,9 +174,17 @@ module.exports = {
   CLAN_BATTLE_WIN_ACTIVITY,
   canEat,
   applyEatResult,
+  applyEatResultWithDefense,
   applyFruitEat,
   useSkill,
   applySkillDamage,
+  applyBuff,
+  isBuffActive,
+  resolveIncomingDamage,
+  addDot,
+  resolveDueDots,
+  setStun,
+  isStunned,
   getTeamScore,
   isTeamEliminated,
   resolveBattleResult,
