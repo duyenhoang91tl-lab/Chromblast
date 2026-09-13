@@ -408,25 +408,20 @@ function _acbagRenderDetail(){
   if(_acbagView === 'nametags'){ _acbagRenderNameEffects(grid); return; }
   if(_acbagView === 'fonts'){ _acbagRenderTextEffects(grid); return; }
   if(_acbagView === 'chests'){
-    // grid mặc định mang class 'acbag-grid' (display:grid 2 cột) còn sót lại
-    // từ hạng mục xem trước đó. renderCrateGridInto() chỉ đổ vào ĐÚNG 1 khối
-    // bọc .gpcard-crate-grid — nếu để nguyên class lưới ngoài, khối này bị ép
-    // làm 1 trong 2 cột của grid ngoài nên cả bảng rương bị co hẹp một nửa so
-    // với bên Cửa hàng (#shop-body vốn là container thường, không phải grid).
-    // Bỏ class lưới ngoài để khối rương hiển thị full-width giống hệt Cửa hàng.
+    // "Túi của tôi" chỉ xem đồ ĐÃ CÓ, mua/mở rương là việc của Cửa hàng (đúng
+    // triết lý đã áp cho mọi hạng mục khác — xem đầu file). Rương tự thân
+    // không phải "vật phẩm sở hữu": mở xong ra vàng/kim cương/skin thì các
+    // thứ đó đã hiện sẵn ở nơi khác (thanh vàng-kim cương phía trên, các hạng
+    // mục Skin/Hiệu ứng riêng) — thứ DUY NHẤT còn đọng lại chỉ thuộc về rương
+    // là số sạc kỹ năng đã tích luỹ. Vì vậy ở đây chỉ hiện đúng con số đó,
+    // không hiện lưới rương kèm nút mua như trước.
     grid.className = 'acbag-chest-wrap';
-    // Dùng chung đúng hàm vẽ lưới rương với màn "Rương bảo vật" (menu chính)
-    // và tab Rương trong Cửa hàng (js/gpcard-redeem.js) — icon/dữ liệu/hành
-    // vi mua-mở luôn khớp tuyệt đối ở cả 3 nơi, không có bản copy riêng.
-    if(typeof renderCrateGridInto === 'function') renderCrateGridInto(grid);
-    // Dòng tóm tắt số lượng (rương miễn phí hôm nay + sạc kỹ năng đang sở hữu) —
-    // hiển thị "quantity stacking" của kho rương trên màn Túi của tôi.
-    const summary = (typeof crateInventorySummaryHtml === 'function') ? crateInventorySummaryHtml() : '';
-    if(summary){
-      const note = document.createElement('div');
-      note.className = 'acbag-chest-note';
-      note.innerHTML = summary;
-      if(grid.parentNode) grid.parentNode.insertBefore(note, grid);
+    const n = (typeof _ownedSkillCharges === 'function') ? _ownedSkillCharges() : 0;
+    if(n > 0){
+      grid.innerHTML = '<div class="acbag-chest-note">⚡ '
+        + _acbagEsc(_acbagT('acbagSkillChargesOwned')) + ': <b>×' + n + '</b></div>';
+    } else {
+      _acbagRenderEmptyOwned(grid, _acbagView);
     }
     return;
   }
