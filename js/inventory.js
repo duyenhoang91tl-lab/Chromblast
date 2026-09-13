@@ -23,9 +23,9 @@ let inv = {
   hearts: MAX_HEARTS,
   gold: START_GOLD,
   diamonds: 0,
-  fires: 1,
-  bubbles: 1,
-  winds: 1,
+  fires: 0,
+  bubbles: 0,
+  winds: 0,
   /** Timestamp ms khi hồi +1 tim; 0 khi đầy cap hoặc hết ngân sách hồi ngày */
   nextHeartAt: 0,
   combo5Seen: false,
