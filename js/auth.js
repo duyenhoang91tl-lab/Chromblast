@@ -308,6 +308,34 @@ function initAuthScreen(){
   _initAuthSocialBtn('auth-playgames-btn', 'Play Games', typeof signInWithPlayGames==='function' ? signInWithPlayGames : null,
     /playgames_android_only|playgames_plugin_missing|playgames_no_auth_code/i);
 
+  // Mã mời bạn bè ngay ở màn hình chính — dùng lại đúng submitReferralCode()
+  // đã có (js/online-services.js → Cloud Function claimReferral), không tạo
+  // luồng thưởng riêng. Đặt ở đây để người chơi MỚI thấy ngay từ đầu thay vì
+  // phải tìm vào mục Bạn bè mới biết tính năng này tồn tại.
+  document.getElementById('auth-referral-btn')?.addEventListener('click', async ()=>{
+    sfxClick();
+    const input = document.getElementById('auth-referral-input');
+    const statusEl = document.getElementById('auth-referral-status');
+    const code = (input && input.value || '').trim().toUpperCase();
+    if(!code) return;
+    if(statusEl){ statusEl.textContent = '…'; statusEl.className = 'online-status'; }
+    const res = await submitReferralCode(code);
+    if(!statusEl) return;
+    if(res && res.ok){
+      if(input) input.value = '';
+      statusEl.textContent = t('referralOk');
+      statusEl.className = 'online-status';
+    } else {
+      const reason = res && res.reason;
+      const key = reason === 'already-exists' ? 'referralAlreadyUsed'
+        : reason === 'not-found' ? 'referralNotFound'
+        : (reason === 'offline' || reason === 'no_functions') ? 'errNetwork'
+        : 'referralInvalid';
+      statusEl.textContent = t(key);
+      statusEl.className = 'online-status err';
+    }
+  });
+
   showRegister.addEventListener('click', ()=> showAuthForm('register'));
   showLogin.addEventListener('click', ()=> showAuthForm('login'));
   if(showForgot) showForgot.addEventListener('click', ()=> showAuthForm('forgot'));

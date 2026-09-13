@@ -68,6 +68,15 @@
     <div class="auth-switch" style="margin-bottom:10px;" data-i18n="orDivider">— hoặc —</div>
     <div id="lang-picker-auth" class="lang-picker"></div>
 
+    <div class="auth-field" style="margin-top:14px;">
+      <label data-i18n="authReferralLabel">Có mã mời từ bạn bè? (không bắt buộc)</label>
+      <div style="display:flex;gap:6px;">
+        <input type="text" id="auth-referral-input" maxlength="10" autocomplete="off" style="flex:1;text-transform:uppercase;letter-spacing:1px;text-align:center;font-weight:700;" data-i18n-placeholder="authReferralPh" placeholder="CBABC123">
+        <button type="button" id="auth-referral-btn" class="auth-submit-btn btn-ghost" style="width:auto;padding:0 16px;margin:0;" data-i18n="authReferralBtn">Nhập</button>
+      </div>
+      <div id="auth-referral-status" class="online-status"></div>
+    </div>
+
     <form id="login-form" class="auth-form active">
       <div class="auth-field">
         <label data-i18n="lblUsername">Tên đăng nhập</label>
