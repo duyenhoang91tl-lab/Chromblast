@@ -12,7 +12,7 @@
 // đưa vào cân bằng số liệu chính thức / merge production.
 // ═══════════════════════════════════════════════════════════════
 
-const { SKILL_CHARGE_MAX, useSkill, applySkillDamage } = window.ClanBattleFormulas;
+const { SKILL_CHARGE_MAX, useSkill, applySkillDamage, setStun } = window.ClanBattleFormulas;
 
 // Các loại hiệu ứng kỹ năng hỗ trợ.
 const CB_SKILL_EFFECT_TYPES = {
@@ -73,10 +73,17 @@ function cbActivateSkill(animalId, casterPlayer, targets = []) {
 
   switch (effect.type) {
     case CB_SKILL_EFFECT_TYPES.DAMAGE:
-    case CB_SKILL_EFFECT_TYPES.DASH_DAMAGE:
-    case CB_SKILL_EFFECT_TYPES.STUN: {
+    case CB_SKILL_EFFECT_TYPES.DASH_DAMAGE: {
       const dmg = effect.damage ?? 0;
       newTargets = targets.map((t) => (t.alive ? applySkillDamage(t, dmg) : t));
+      break;
+    }
+    case CB_SKILL_EFFECT_TYPES.STUN: {
+      // BUG cũ: bị gộp chung với DAMAGE/DASH_DAMAGE nên chỉ trừ máu, không
+      // hề làm choáng mục tiêu — Gấu trúc mất hẳn phần "choáng" trong kỹ năng.
+      const dmg = effect.damage ?? 0;
+      const now = Date.now();
+      newTargets = targets.map((t) => (t.alive ? setStun(applySkillDamage(t, dmg), effect.stunDurationMs, now) : t));
       break;
     }
     case CB_SKILL_EFFECT_TYPES.DOT: {
@@ -117,25 +124,19 @@ function cbActivateSkill(animalId, casterPlayer, targets = []) {
 }
 
 // Gắn buff tạm thời (defense/speed/reflect) lên chính người dùng skill.
+// Shape thống nhất { type, value, expiresAt } — khớp với applyBuff/isBuffActive
+// ở clan-battle-formulas.js (cả bản client lẫn functions/) để 2 bên tương thích
+// khi module này được nối vào game loop thật.
 function cbApplySelfBuffIfAny(caster, effect) {
   const now = Date.now();
   if (effect.type === CB_SKILL_EFFECT_TYPES.DEFENSE_BUFF) {
-    return {
-      ...caster,
-      activeBuff: { type: 'defense', damageReductionPct: effect.damageReductionPct, expiresAt: now + effect.durationMs },
-    };
+    return { ...caster, activeBuff: { type: 'defense', value: effect.damageReductionPct, expiresAt: now + effect.durationMs } };
   }
   if (effect.type === CB_SKILL_EFFECT_TYPES.SPEED_BUFF) {
-    return {
-      ...caster,
-      activeBuff: { type: 'speed', speedMultiplier: effect.speedMultiplier, expiresAt: now + effect.durationMs },
-    };
+    return { ...caster, activeBuff: { type: 'speed', value: effect.speedMultiplier, expiresAt: now + effect.durationMs } };
   }
   if (effect.type === CB_SKILL_EFFECT_TYPES.REFLECT) {
-    return {
-      ...caster,
-      activeBuff: { type: 'reflect', reflectPct: effect.reflectPct, expiresAt: now + effect.durationMs },
-    };
+    return { ...caster, activeBuff: { type: 'reflect', value: effect.reflectPct, expiresAt: now + effect.durationMs } };
   }
   return caster;
 }
