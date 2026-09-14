@@ -833,7 +833,10 @@ body.tutorial-open #start-screen{
 #online-lobby-panel.admin-panel-like,
 #online-matchmaking-panel.admin-panel-like,
 #versus-result-panel.admin-panel-like,
-#hiddenmap-menu-panel.admin-panel-like{
+#hiddenmap-menu-panel.admin-panel-like,
+#caro-tour-panel.admin-panel-like,
+#skill-loadout-panel.admin-panel-like,
+#versus-daily-panel.admin-panel-like{
   padding:0; align-items:stretch; justify-content:stretch; background:transparent;
 }
 #caro-lobby-panel .admin-card,
@@ -844,7 +847,10 @@ body.tutorial-open #start-screen{
 #online-lobby-panel .admin-card,
 #online-matchmaking-panel .admin-card,
 #versus-result-panel .admin-card,
-#hiddenmap-menu-panel .admin-card{
+#hiddenmap-menu-panel .admin-card,
+#caro-tour-panel .admin-card,
+#skill-loadout-panel .admin-card,
+#versus-daily-panel .admin-card{
   width:100%; max-width:none; height:100%; max-height:none;
   margin:0; border:none; border-radius:0; box-shadow:none; overflow-y:auto;
   background:linear-gradient(165deg,#f6d9ee 0%,#e9d3f3 50%,#dcd8f6 100%);
@@ -853,17 +859,20 @@ body.tutorial-open #start-screen{
 }
 #caro-lobby-panel .admin-title, #caro-mm-panel .admin-title, #caro-result-panel .admin-title,
 #caro-rank-panel .admin-title, #caro-daily-panel .admin-title, #online-lobby-panel .admin-title,
-#online-matchmaking-panel .admin-title, #versus-result-panel .admin-title, #hiddenmap-menu-panel .admin-title{
+#online-matchmaking-panel .admin-title, #versus-result-panel .admin-title, #hiddenmap-menu-panel .admin-title,
+#caro-tour-panel .admin-title, #skill-loadout-panel .admin-title, #versus-daily-panel .admin-title{
   color:#2b2340;
 }
 #caro-lobby-panel .admin-close, #caro-mm-panel .admin-close, #caro-result-panel .admin-close,
 #caro-rank-panel .admin-close, #caro-daily-panel .admin-close, #online-lobby-panel .admin-close,
-#online-matchmaking-panel .admin-close, #versus-result-panel .admin-close, #hiddenmap-menu-panel .admin-close{
+#online-matchmaking-panel .admin-close, #versus-result-panel .admin-close, #hiddenmap-menu-panel .admin-close,
+#caro-tour-panel .admin-close, #skill-loadout-panel .admin-close, #versus-daily-panel .admin-close{
   color:#6b5f8a;
 }
 #caro-lobby-panel .admin-sub, #caro-mm-panel .admin-sub, #caro-result-panel .admin-sub,
 #caro-rank-panel .admin-sub, #caro-daily-panel .admin-sub, #online-lobby-panel .admin-sub,
-#online-matchmaking-panel .admin-sub, #versus-result-panel .admin-sub, #hiddenmap-menu-panel .admin-sub{
+#online-matchmaking-panel .admin-sub, #versus-result-panel .admin-sub, #hiddenmap-menu-panel .admin-sub,
+#caro-tour-panel .admin-sub, #skill-loadout-panel .admin-sub, #versus-daily-panel .admin-sub{
   color:#6b5f8a;
 }
 /* .btn-ghost vốn ép nền/chữ trắng (!important, thiết kế cho nền tối) — ghi đè lại
@@ -873,7 +882,9 @@ body.tutorial-open #start-screen{
 #caro-result-panel .auth-submit-btn.btn-ghost, #caro-rank-panel .auth-submit-btn.btn-ghost,
 #caro-daily-panel .auth-submit-btn.btn-ghost, #online-lobby-panel .auth-submit-btn.btn-ghost,
 #online-matchmaking-panel .auth-submit-btn.btn-ghost, #versus-result-panel .auth-submit-btn.btn-ghost,
-#hiddenmap-menu-panel .auth-submit-btn.btn-ghost{
+#hiddenmap-menu-panel .auth-submit-btn.btn-ghost,
+#caro-tour-panel .auth-submit-btn.btn-ghost, #skill-loadout-panel .auth-submit-btn.btn-ghost,
+#versus-daily-panel .auth-submit-btn.btn-ghost{
   color:#4a3f6b !important; text-shadow:none !important;
   background:#fff !important; border:1px solid rgba(90,70,140,0.28) !important;
 }
